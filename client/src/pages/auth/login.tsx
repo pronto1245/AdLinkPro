@@ -66,6 +66,13 @@ export default function Login() {
             </div>
           </CardHeader>
           <CardContent>
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
+              <div className="font-medium text-blue-800 mb-2">Тестовые данные для входа:</div>
+              <div className="text-blue-700">
+                <div><strong>Супер-админ:</strong> superadmin / admin123</div>
+              </div>
+            </div>
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="username">{t('username')} / {t('email')}</Label>
