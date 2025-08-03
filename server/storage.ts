@@ -63,6 +63,17 @@ export interface IStorage {
   // Fraud alerts
   getFraudAlerts(): Promise<FraudAlert[]>;
   createFraudAlert(alert: InsertFraudAlert): Promise<FraudAlert>;
+  updateFraudAlert(id: string, data: Partial<InsertFraudAlert>): Promise<FraudAlert>;
+  
+  // Admin functions
+  getAllUsers(role?: string): Promise<User[]>;
+  deleteUser(id: string): Promise<void>;
+  getAllOffers(): Promise<Offer[]>;
+  getAdminAnalytics(): Promise<any>;
+  
+  // KYC documents
+  getKycDocuments(): Promise<any[]>;
+  updateKycDocument(id: string, data: any): Promise<any>;
   
   // Dashboard analytics
   getDashboardMetrics(role: string, userId?: string): Promise<any>;
@@ -312,6 +323,73 @@ export class DatabaseStorage implements IStorage {
       .values(alert)
       .returning();
     return newAlert;
+  }
+
+  async updateFraudAlert(id: string, data: Partial<InsertFraudAlert>): Promise<FraudAlert> {
+    const [alert] = await db
+      .update(fraudAlerts)
+      .set(data)
+      .where(eq(fraudAlerts.id, id))
+      .returning();
+    return alert;
+  }
+
+  async getAllUsers(role?: string): Promise<User[]> {
+    if (role) {
+      return await db.select().from(users)
+        .where(eq(users.role, role))
+        .orderBy(desc(users.createdAt));
+    }
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
+  }
+
+  async getAllOffers(): Promise<Offer[]> {
+    return await db.select({
+      id: offers.id,
+      name: offers.name,
+      description: offers.description,
+      category: offers.category,
+      advertiserId: offers.advertiserId,
+      payout: offers.payout,
+      payoutType: offers.payoutType,
+      currency: offers.currency,
+      status: offers.status,
+      createdAt: offers.createdAt,
+      updatedAt: offers.updatedAt,
+      advertiser: {
+        id: users.id,
+        username: users.username,
+        company: users.company,
+        email: users.email
+      }
+    })
+    .from(offers)
+    .leftJoin(users, eq(offers.advertiserId, users.id))
+    .orderBy(desc(offers.createdAt));
+  }
+
+  async getAdminAnalytics(): Promise<any> {
+    // Implement admin analytics logic
+    return {
+      totalUsers: 0,
+      totalOffers: 0,
+      totalRevenue: 0,
+      pendingKyc: 0
+    };
+  }
+
+  async getKycDocuments(): Promise<any[]> {
+    // Mock implementation - would integrate with actual KYC system
+    return [];
+  }
+
+  async updateKycDocument(id: string, data: any): Promise<any> {
+    // Mock implementation - would integrate with actual KYC system
+    return { id, ...data };
   }
 
   async getDashboardMetrics(role: string, userId?: string): Promise<any> {

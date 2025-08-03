@@ -157,6 +157,133 @@ export const fraudAlerts = pgTable("fraud_alerts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Creative assets for offers
+export const creatives = pgTable("creatives", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  offerId: varchar("offer_id").notNull().references(() => offers.id),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'banner', 'video', 'text', 'prelanding'
+  format: text("format"), // 'jpg', 'png', 'gif', 'mp4', 'html'
+  size: text("size"), // '300x250', '728x90'
+  url: text("url").notNull(),
+  preview: text("preview"),
+  clicks: integer("clicks").default(0),
+  impressions: integer("impressions").default(0),
+  ctr: decimal("ctr", { precision: 5, scale: 2 }).default('0'),
+  isActive: boolean("is_active").default(true),
+  targetGeo: jsonb("target_geo"), // Array of country codes
+  targetDevice: text("target_device"), // 'desktop', 'mobile', 'tablet'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// White label settings for advertisers
+export const whiteLabels = pgTable("white_labels", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  brandName: text("brand_name").notNull(),
+  logo: text("logo"),
+  primaryColor: text("primary_color").default('#0066cc'),
+  secondaryColor: text("secondary_color").default('#ffffff'),
+  domain: text("domain"),
+  customCss: text("custom_css"),
+  favicon: text("favicon"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Staff members for advertisers
+export const staffMembers = pgTable("staff_members", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  role: text("role").notNull(), // 'manager', 'support', 'analyst', 'accountant'
+  permissions: jsonb("permissions"), // Array of permissions
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// KYC documents
+export const kycDocuments = pgTable("kyc_documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  type: text("type").notNull(), // 'passport', 'id_card', 'selfie', 'address'
+  status: text("status").default('pending'), // 'pending', 'approved', 'rejected'
+  fileUrl: text("file_url").notNull(),
+  notes: text("notes"),
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Partner ratings and achievements
+export const partnerRatings = pgTable("partner_ratings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  partnerId: varchar("partner_id").notNull().references(() => users.id),
+  advertiserId: varchar("advertiser_id").references(() => users.id),
+  revenue: decimal("revenue", { precision: 12, scale: 2 }).default('0'),
+  conversionRate: decimal("conversion_rate", { precision: 5, scale: 2 }).default('0'),
+  epc: decimal("epc", { precision: 8, scale: 2 }).default('0'),
+  fraudScore: integer("fraud_score").default(0), // 0-100
+  trafficQuality: integer("traffic_quality").default(0), // 0-100
+  rating: decimal("rating", { precision: 3, scale: 2 }).default('0'), // 0-5
+  rank: integer("rank").default(0),
+  achievements: jsonb("achievements"), // Array of achievement IDs
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// A/B test groups for offers
+export const abTestGroups = pgTable("ab_test_groups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  offerIds: jsonb("offer_ids").notNull(), // Array of offer IDs
+  trafficSplit: jsonb("traffic_split").notNull(), // Object with percentages
+  isActive: boolean("is_active").default(true),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  winnerOfferId: varchar("winner_offer_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Compliance rules
+export const complianceRules = pgTable("compliance_rules", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  offerId: varchar("offer_id").notNull().references(() => offers.id),
+  type: text("type").notNull(), // 'kyc_required', 'geo_restriction', 'traffic_source'
+  rule: jsonb("rule").notNull(), // Rule configuration
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// API keys for external integrations
+export const apiKeys = pgTable("api_keys", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  name: text("name").notNull(),
+  keyHash: text("key_hash").notNull(),
+  permissions: jsonb("permissions").notNull(), // Array of permissions
+  lastUsed: timestamp("last_used"),
+  expiresAt: timestamp("expires_at"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Postback logs
+export const postbackLogs = pgTable("postback_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  postbackId: varchar("postback_id").notNull().references(() => postbacks.id),
+  url: text("url").notNull(),
+  method: text("method").notNull(),
+  payload: jsonb("payload"),
+  responseStatus: integer("response_status"),
+  responseBody: text("response_body"),
+  retryCount: integer("retry_count").default(0),
+  status: text("status").default('pending'), // 'pending', 'sent', 'failed'
+  sentAt: timestamp("sent_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   offers: many(offers),
@@ -262,6 +389,74 @@ export const fraudAlertsRelations = relations(fraudAlerts, ({ one }) => ({
   }),
 }));
 
+export const creativesRelations = relations(creatives, ({ one }) => ({
+  offer: one(offers, {
+    fields: [creatives.offerId],
+    references: [offers.id],
+  }),
+}));
+
+export const whiteLabelsRelations = relations(whiteLabels, ({ one }) => ({
+  advertiser: one(users, {
+    fields: [whiteLabels.advertiserId],
+    references: [users.id],
+  }),
+}));
+
+export const staffMembersRelations = relations(staffMembers, ({ one }) => ({
+  advertiser: one(users, {
+    fields: [staffMembers.advertiserId],
+    references: [users.id],
+  }),
+  user: one(users, {
+    fields: [staffMembers.userId],
+    references: [users.id],
+  }),
+}));
+
+export const kycDocumentsRelations = relations(kycDocuments, ({ one }) => ({
+  user: one(users, {
+    fields: [kycDocuments.userId],
+    references: [users.id],
+  }),
+  reviewer: one(users, {
+    fields: [kycDocuments.reviewedBy],
+    references: [users.id],
+  }),
+}));
+
+export const partnerRatingsRelations = relations(partnerRatings, ({ one }) => ({
+  partner: one(users, {
+    fields: [partnerRatings.partnerId],
+    references: [users.id],
+  }),
+  advertiser: one(users, {
+    fields: [partnerRatings.advertiserId],
+    references: [users.id],
+  }),
+}));
+
+export const complianceRulesRelations = relations(complianceRules, ({ one }) => ({
+  offer: one(offers, {
+    fields: [complianceRules.offerId],
+    references: [offers.id],
+  }),
+}));
+
+export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
+  user: one(users, {
+    fields: [apiKeys.userId],
+    references: [users.id],
+  }),
+}));
+
+export const postbackLogsRelations = relations(postbackLogs, ({ one }) => ({
+  postback: one(postbacks, {
+    fields: [postbackLogs.postbackId],
+    references: [postbacks.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -308,6 +503,52 @@ export const insertFraudAlertSchema = createInsertSchema(fraudAlerts).omit({
   createdAt: true,
 });
 
+export const insertCreativeSchema = createInsertSchema(creatives).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertWhiteLabelSchema = createInsertSchema(whiteLabels).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertStaffMemberSchema = createInsertSchema(staffMembers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertKycDocumentSchema = createInsertSchema(kycDocuments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPartnerRatingSchema = createInsertSchema(partnerRatings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAbTestGroupSchema = createInsertSchema(abTestGroups).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertComplianceRuleSchema = createInsertSchema(complianceRules).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPostbackLogSchema = createInsertSchema(postbackLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -325,3 +566,21 @@ export type InsertTicket = z.infer<typeof insertTicketSchema>;
 export type Ticket = typeof tickets.$inferSelect;
 export type InsertFraudAlert = z.infer<typeof insertFraudAlertSchema>;
 export type FraudAlert = typeof fraudAlerts.$inferSelect;
+export type InsertCreative = z.infer<typeof insertCreativeSchema>;
+export type Creative = typeof creatives.$inferSelect;
+export type InsertWhiteLabel = z.infer<typeof insertWhiteLabelSchema>;
+export type WhiteLabel = typeof whiteLabels.$inferSelect;
+export type InsertStaffMember = z.infer<typeof insertStaffMemberSchema>;
+export type StaffMember = typeof staffMembers.$inferSelect;
+export type InsertKycDocument = z.infer<typeof insertKycDocumentSchema>;
+export type KycDocument = typeof kycDocuments.$inferSelect;
+export type InsertPartnerRating = z.infer<typeof insertPartnerRatingSchema>;
+export type PartnerRating = typeof partnerRatings.$inferSelect;
+export type InsertAbTestGroup = z.infer<typeof insertAbTestGroupSchema>;
+export type AbTestGroup = typeof abTestGroups.$inferSelect;
+export type InsertComplianceRule = z.infer<typeof insertComplianceRuleSchema>;
+export type ComplianceRule = typeof complianceRules.$inferSelect;
+export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type InsertPostbackLog = z.infer<typeof insertPostbackLogSchema>;
+export type PostbackLog = typeof postbackLogs.$inferSelect;

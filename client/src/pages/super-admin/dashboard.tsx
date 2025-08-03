@@ -1,20 +1,29 @@
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/auth-context';
+import { useLanguage } from '@/contexts/language-context';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
-import MetricsGrid from '@/components/dashboard/metrics-grid';
-import RevenueChart from '@/components/dashboard/revenue-chart';
-import RecentActivity from '@/components/dashboard/recent-activity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useLanguage } from '@/contexts/language-context';
-import { useAuth } from '@/contexts/auth-context';
+import { Button } from '@/components/ui/button';
+import {
+  Users,
+  Target,
+  DollarSign,
+  Shield,
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Activity
+} from 'lucide-react';
 
 export default function SuperAdminDashboard() {
-  const { t } = useLanguage();
   const { token } = useAuth();
+  const { t } = useLanguage();
 
-  const { data: metrics, isLoading: metricsLoading } = useQuery({
+  const { data: metrics, isLoading } = useQuery({
     queryKey: ['/api/dashboard/metrics'],
     queryFn: async () => {
       const response = await fetch('/api/dashboard/metrics', {
@@ -25,265 +34,244 @@ export default function SuperAdminDashboard() {
     },
   });
 
+  const { data: recentActivity } = useQuery({
+    queryKey: ['/api/admin/recent-activity'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/recent-activity', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch recent activity');
+      return response.json();
+    },
+  });
+
+  const { data: systemAlerts } = useQuery({
+    queryKey: ['/api/admin/system-alerts'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/system-alerts', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch system alerts');
+      return response.json();
+    },
+  });
+
   const dashboardMetrics = [
     {
-      label: 'total_revenue',
-      value: metrics?.totalRevenue ? `$${metrics.totalRevenue}` : '$0',
+      title: 'total_users',
+      value: metrics?.totalUsers?.toString() || '0',
+      change: '+5.2%',
+      changeType: 'increase' as const,
+      icon: <Users className="w-6 h-6" />,
+      iconBg: 'bg-blue-50',
+      iconColor: 'text-blue-600',
+    },
+    {
+      title: 'active_offers',
+      value: metrics?.activeOffers?.toString() || '0',
+      change: '+2.1%',
+      changeType: 'increase' as const,
+      icon: <Target className="w-6 h-6" />,
+      iconBg: 'bg-green-50',
+      iconColor: 'text-green-600',
+    },
+    {
+      title: 'total_revenue',
+      value: `$${metrics?.totalRevenue || '0'}`,
       change: '+12.5%',
       changeType: 'increase' as const,
-      icon: 'fas fa-dollar-sign',
-      iconBg: 'bg-blue-50',
-    },
-    {
-      label: 'active_partners',
-      value: metrics?.activePartners?.toString() || '0',
-      change: '+8.2%',
-      changeType: 'increase' as const,
-      icon: 'fas fa-users',
-      iconBg: 'bg-green-50',
-    },
-    {
-      label: 'conversion_rate',
-      value: `${metrics?.conversionRate || '0'}%`,
-      change: '-2.1%',
-      changeType: 'decrease' as const,
-      icon: 'fas fa-chart-line',
+      icon: <DollarSign className="w-6 h-6" />,
       iconBg: 'bg-purple-50',
+      iconColor: 'text-purple-600',
     },
     {
-      label: 'fraud_rate',
-      value: `${metrics?.fraudRate || '0'}%`,
-      change: '-0.05%',
+      title: 'fraud_alerts',
+      value: metrics?.fraudAlerts?.toString() || '0',
+      change: '-15.3%',
       changeType: 'decrease' as const,
-      icon: 'fas fa-shield-alt',
+      icon: <Shield className="w-6 h-6" />,
       iconBg: 'bg-red-50',
+      iconColor: 'text-red-600',
     },
   ];
 
-  // Mock data for top performers
-  const topPerformers = [
-    {
-      id: '1',
-      name: 'John Doe',
-      initials: 'JD',
-      partnerId: '#1248',
-      revenue: '$24,890',
-      conversionRate: '4.2%',
-      bgColor: 'bg-gradient-to-br from-blue-500 to-purple-600',
-    },
-    {
-      id: '2',
-      name: 'Alice Smith',
-      initials: 'AS',
-      partnerId: '#1156',
-      revenue: '$18,750',
-      conversionRate: '3.8%',
-      bgColor: 'bg-gradient-to-br from-green-500 to-teal-600',
-    },
-    {
-      id: '3',
-      name: 'Mike Johnson',
-      initials: 'MJ',
-      partnerId: '#1089',
-      revenue: '$15,290',
-      conversionRate: '3.1%',
-      bgColor: 'bg-gradient-to-br from-orange-500 to-red-600',
-    },
-  ];
-
-  // Mock data for recent offers
-  const recentOffers = [
-    {
-      id: '1',
-      name: 'Crypto Exchange Pro',
-      category: 'Finance',
-      type: 'CPA',
-      payout: '$150',
-      status: 'Active',
-      logo: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40',
-    },
-    {
-      id: '2',
-      name: 'FitLife Premium',
-      category: 'Health',
-      type: 'CPS',
-      payout: '$75',
-      status: 'Active',
-      logo: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40',
-    },
-    {
-      id: '3',
-      name: 'ShopMaster',
-      category: 'E-commerce',
-      type: 'CPA',
-      payout: '$45',
-      status: 'Pending',
-      logo: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40',
-    },
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+        <Sidebar />
+        <div className="flex-1 overflow-hidden">
+          <Header title={t('dashboard')} />
+          <main className="flex-1 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      
-      <main className="flex-1 lg:ml-64 overflow-y-auto">
-        <Header 
-          title="dashboard" 
-          subtitle="welcome"
-        />
+      <div className="flex-1 overflow-hidden">
+        <Header title={t('dashboard')} />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
+          <div className="max-w-7xl mx-auto">
+            {/* Welcome Section */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                {t('welcome_back')}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                {t('super_admin_dashboard_subtitle')}
+              </p>
+            </div>
 
-        <div className="p-6 space-y-6">
-          {/* Metrics Grid */}
-          {metricsLoading ? (
-            <div className="text-center py-8">Loading metrics...</div>
-          ) : (
-            <MetricsGrid metrics={dashboardMetrics} />
-          )}
-
-          {/* Charts and Activity */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <RevenueChart />
-            <RecentActivity />
-          </div>
-
-          {/* Data Tables Section */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {/* Top Performing Partners */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>{t('top_performers')}</CardTitle>
-                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700" data-testid="button-view-all-partners">
-                    View all
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-slate-100">
-                        <th className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider pb-3">Partner</th>
-                        <th className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider pb-3">Revenue</th>
-                        <th className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider pb-3">CR</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {topPerformers.map((partner) => (
-                        <tr key={partner.id} data-testid={`partner-row-${partner.id}`}>
-                          <td className="py-3">
-                            <div className="flex items-center space-x-3">
-                              <div className={`w-8 h-8 ${partner.bgColor} rounded-full flex items-center justify-center`}>
-                                <span className="text-white text-xs font-medium">{partner.initials}</span>
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-slate-900">{partner.name}</p>
-                                <p className="text-xs text-slate-500">ID: {partner.partnerId}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-3">
-                            <p className="text-sm font-semibold text-slate-900">{partner.revenue}</p>
-                          </td>
-                          <td className="py-3">
-                            <Badge variant="secondary" className="bg-green-100 text-green-600 hover:bg-green-100">
-                              {partner.conversionRate}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recent Offers */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>{t('recent_offers')}</CardTitle>
-                  <Button className="bg-blue-600 hover:bg-blue-700" data-testid="button-create-offer">
-                    <i className="fas fa-plus mr-2"></i>
-                    {t('create_offer')}
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentOffers.map((offer) => (
-                    <div
-                      key={offer.id}
-                      className="flex items-center justify-between p-4 border border-slate-100 rounded-lg hover:bg-slate-50 transition-colors"
-                      data-testid={`offer-row-${offer.id}`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <img
-                          src={offer.logo}
-                          alt={`${offer.name} Logo`}
-                          className="w-10 h-10 rounded-lg object-cover"
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-slate-900">{offer.name}</p>
-                          <p className="text-xs text-slate-500">{offer.type} • {offer.category}</p>
+            {/* Key Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {dashboardMetrics.map((metric, index) => (
+                <Card key={index} data-testid={`metric-card-${metric.title}`}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                          {t(metric.title)}
+                        </p>
+                        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2" data-testid={`metric-value-${metric.title}`}>
+                          {metric.value}
+                        </p>
+                        <div className={`flex items-center mt-2 text-sm ${
+                          metric.changeType === 'increase' 
+                            ? 'text-green-600' 
+                            : 'text-red-600'
+                        }`}>
+                          {metric.changeType === 'increase' ? (
+                            <TrendingUp className="w-4 h-4 mr-1" />
+                          ) : (
+                            <TrendingDown className="w-4 h-4 mr-1" />
+                          )}
+                          {metric.change}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-slate-900">{offer.payout}</p>
-                        <Badge 
-                          variant={offer.status === 'Active' ? 'secondary' : 'outline'}
-                          className={offer.status === 'Active' ? 'bg-green-100 text-green-600 hover:bg-green-100' : 'bg-yellow-100 text-yellow-600 hover:bg-yellow-100'}
-                        >
-                          {offer.status}
-                        </Badge>
+                      <div className={`${metric.iconBg} p-3 rounded-lg`}>
+                        <div className={metric.iconColor}>
+                          {metric.icon}
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="w-5 h-5" />
+                    {t('recent_activity')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {recentActivity?.slice(0, 5).map((activity: any, index: number) => (
+                      <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg" data-testid={`activity-${index}`}>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {activity.description}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(activity.timestamp).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    )) || (
+                      <div className="text-center py-8 text-gray-500">
+                        {t('no_recent_activity')}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* System Alerts */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5" />
+                    {t('system_alerts')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {systemAlerts?.slice(0, 5).map((alert: any, index: number) => (
+                      <div key={index} className="flex items-start gap-3 p-3 border rounded-lg" data-testid={`alert-${index}`}>
+                        <div className={`p-1 rounded ${
+                          alert.severity === 'high' ? 'bg-red-100 text-red-600' :
+                          alert.severity === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                          'bg-blue-100 text-blue-600'
+                        }`}>
+                          {alert.type === 'security' ? <Shield className="w-4 h-4" /> :
+                           alert.type === 'performance' ? <Activity className="w-4 h-4" /> :
+                           <AlertTriangle className="w-4 h-4" />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              {alert.title}
+                            </p>
+                            <Badge variant={alert.resolved ? 'default' : 'destructive'}>
+                              {alert.resolved ? t('resolved') : t('active')}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {alert.description}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(alert.timestamp).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    )) || (
+                      <div className="text-center py-8 text-gray-500">
+                        {t('no_system_alerts')}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('quick_actions')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Button variant="outline" className="h-20 flex flex-col gap-2" data-testid="button-create-user">
+                    <Users className="w-6 h-6" />
+                    <span className="text-sm">{t('create_user')}</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex flex-col gap-2" data-testid="button-create-offer">
+                    <Target className="w-6 h-6" />
+                    <span className="text-sm">{t('create_offer')}</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex flex-col gap-2" data-testid="button-view-reports">
+                    <Activity className="w-6 h-6" />
+                    <span className="text-sm">{t('view_reports')}</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex flex-col gap-2" data-testid="button-system-settings">
+                    <Shield className="w-6 h-6" />
+                    <span className="text-sm">{t('system_settings')}</span>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
-
-          {/* System Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle>System Status & Alerts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <i className="fas fa-heartbeat text-green-600 text-xl"></i>
-                  </div>
-                  <h4 className="text-sm font-semibold text-slate-900">System Health</h4>
-                  <p className="text-2xl font-bold text-green-600" data-testid="system-uptime">99.9%</p>
-                  <p className="text-xs text-slate-500">Uptime</p>
-                </div>
-
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <i className="fas fa-tachometer-alt text-blue-600 text-xl"></i>
-                  </div>
-                  <h4 className="text-sm font-semibold text-slate-900">API Performance</h4>
-                  <p className="text-2xl font-bold text-blue-600" data-testid="api-response-time">142ms</p>
-                  <p className="text-xs text-slate-500">Avg Response</p>
-                </div>
-
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <i className="fas fa-exclamation-triangle text-red-600 text-xl"></i>
-                  </div>
-                  <h4 className="text-sm font-semibold text-slate-900">Active Issues</h4>
-                  <p className="text-2xl font-bold text-red-600" data-testid="active-issues">
-                    {metrics?.fraudAlerts || 0}
-                  </p>
-                  <p className="text-xs text-slate-500">Critical</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

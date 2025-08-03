@@ -499,6 +499,164 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Super Admin Routes
+  app.get("/api/admin/users", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { role } = req.query;
+      const users = await storage.getAllUsers(role as string);
+      
+      // Remove passwords from response
+      const safeUsers = users.map(({ password, ...user }) => user);
+      res.json(safeUsers);
+    } catch (error) {
+      console.error("Get all users error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/users", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(userData.username) || 
+                          await storage.getUserByEmail(userData.email);
+      
+      if (existingUser) {
+        return res.status(400).json({ error: "User already exists" });
+      }
+
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      const user = await storage.createUser({
+        ...userData,
+        password: hashedPassword,
+      });
+      
+      const { password, ...userWithoutPassword } = user;
+      res.status(201).json(userWithoutPassword);
+    } catch (error) {
+      console.error("Create user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/users/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteUser(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Delete user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const offers = await storage.getAllOffers();
+      res.json(offers);
+    } catch (error) {
+      console.error("Get all offers error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const offerData = insertOfferSchema.parse(req.body);
+      const offer = await storage.createOffer(offerData);
+      res.status(201).json(offer);
+    } catch (error) {
+      console.error("Create offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/admin/offers/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const offer = await storage.updateOffer(id, { status });
+      res.json(offer);
+    } catch (error) {
+      console.error("Update offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/offers/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteOffer(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Delete offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Analytics for admin dashboard
+  app.get("/api/admin/analytics", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const analytics = await storage.getAdminAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Get admin analytics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // KYC management
+  app.get("/api/admin/kyc", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const kycDocuments = await storage.getKycDocuments();
+      res.json(kycDocuments);
+    } catch (error) {
+      console.error("Get KYC documents error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/admin/kyc/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, notes } = req.body;
+      const kycDocument = await storage.updateKycDocument(id, {
+        status,
+        notes,
+        reviewedBy: req.user.id,
+        reviewedAt: new Date(),
+      });
+      res.json(kycDocument);
+    } catch (error) {
+      console.error("Update KYC document error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Fraud alerts management
+  app.get("/api/admin/fraud-alerts", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const fraudAlerts = await storage.getFraudAlerts();
+      res.json(fraudAlerts);
+    } catch (error) {
+      console.error("Get fraud alerts error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/admin/fraud-alerts/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { isResolved } = req.body;
+      const fraudAlert = await storage.updateFraudAlert(id, { isResolved });
+      res.json(fraudAlert);
+    } catch (error) {
+      console.error("Update fraud alert error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

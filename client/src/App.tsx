@@ -10,6 +10,8 @@ import Login from "@/pages/auth/login";
 import SuperAdminDashboard from "@/pages/super-admin/dashboard";
 import SuperAdminUsers from "@/pages/super-admin/users";
 import SuperAdminOffers from "@/pages/super-admin/offers";
+import SuperAdminFinances from "@/pages/super-admin/finances";
+import SuperAdminFraudAlerts from "@/pages/super-admin/fraud-alerts";
 import AdvertiserDashboard from "@/pages/advertiser/dashboard";
 import AffiliateDashboard from "@/pages/affiliate/dashboard";
 import { useAuth } from "./contexts/auth-context";
@@ -53,6 +55,16 @@ function Router() {
       <Route path="/admin/offers">
         <ProtectedRoute allowedRoles={['super_admin']}>
           <SuperAdminOffers />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/finances">
+        <ProtectedRoute allowedRoles={['super_admin']}>
+          <SuperAdminFinances />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/fraud-alerts">
+        <ProtectedRoute allowedRoles={['super_admin']}>
+          <SuperAdminFraudAlerts />
         </ProtectedRoute>
       </Route>
       
