@@ -1,65 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { translations } from '@/lib/i18n';
 
 interface LanguageContextType {
   language: string;
   setLanguage: (lang: string) => void;
   t: (key: string) => string;
 }
-
-const translations: Record<string, Record<string, string>> = {
-  en: {
-    'dashboard': 'Dashboard',
-    'users': 'Users',
-    'offers': 'Offers',
-    'finance': 'Finance',
-    'postbacks': 'Postbacks',
-    'analytics': 'Analytics',
-    'support': 'Support',
-    'settings': 'Settings',
-    'welcome': 'Welcome back! Here\'s what\'s happening today.',
-    'total_revenue': 'Total Revenue',
-    'active_partners': 'Active Partners',
-    'conversion_rate': 'Conversion Rate',
-    'fraud_rate': 'Fraud Rate',
-    'revenue_overview': 'Revenue Overview',
-    'recent_activity': 'Recent Activity',
-    'top_performers': 'Top Performing Partners',
-    'recent_offers': 'Recent Offers',
-    'create_offer': 'Create Offer',
-    'login': 'Login',
-    'username': 'Username',
-    'password': 'Password',
-    'email': 'Email',
-    'sign_in': 'Sign In',
-    'logout': 'Logout',
-  },
-  ru: {
-    'dashboard': 'Панель управления',
-    'users': 'Пользователи',
-    'offers': 'Офферы',
-    'finance': 'Финансы',
-    'postbacks': 'Постбеки',
-    'analytics': 'Аналитика',
-    'support': 'Поддержка',
-    'settings': 'Настройки',
-    'welcome': 'Добро пожаловать! Вот что происходит сегодня.',
-    'total_revenue': 'Общий доход',
-    'active_partners': 'Активные партнеры',
-    'conversion_rate': 'Конверсия',
-    'fraud_rate': 'Уровень фрода',
-    'revenue_overview': 'Обзор доходов',
-    'recent_activity': 'Последняя активность',
-    'top_performers': 'Топ партнеры',
-    'recent_offers': 'Последние офферы',
-    'create_offer': 'Создать оффер',
-    'login': 'Вход',
-    'username': 'Имя пользователя',
-    'password': 'Пароль',
-    'email': 'Email',
-    'sign_in': 'Войти',
-    'logout': 'Выйти',
-  },
-};
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
