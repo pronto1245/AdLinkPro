@@ -595,6 +595,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Moderate offer
+  app.post("/api/admin/offers/:id/moderate", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { action, comment } = req.body;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      const result = await storage.moderateOffer(id, action, userId, comment);
+      if (result) {
+        res.json({ success: true });
+      } else {
+        res.status(400).json({ error: 'Failed to moderate offer' });
+      }
+    } catch (error) {
+      console.error('Error moderating offer:', error);
+      res.status(500).json({ error: 'Failed to moderate offer' });
+    }
+  });
+
+  // Get offer logs
+  app.get("/api/admin/offer-logs/:offerId", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { offerId } = req.params;
+      const logs = await storage.getOfferLogs(offerId);
+      res.json(logs);
+    } catch (error) {
+      console.error('Error fetching offer logs:', error);
+      res.status(500).json({ error: 'Failed to fetch offer logs' });
+    }
+  });
+
+  // Get offer statistics
+  app.get("/api/admin/offer-stats/:offerId", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { offerId } = req.params;
+      const stats = await storage.getOfferStats(offerId);
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching offer stats:', error);
+      res.status(500).json({ error: 'Failed to fetch offer stats' });
+    }
+  });
+
   // Analytics for admin dashboard
   app.get("/api/admin/analytics", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {

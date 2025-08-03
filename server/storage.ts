@@ -68,8 +68,20 @@ export interface IStorage {
   // Admin functions
   getAllUsers(role?: string): Promise<User[]>;
   deleteUser(id: string): Promise<void>;
-  getAllOffers(): Promise<Offer[]>;
+  getAllOffers(): Promise<(Offer & { advertiserName?: string })[]>;
   getAdminAnalytics(): Promise<any>;
+  
+  // Admin offer management
+  moderateOffer(id: string, action: string, moderatedBy: string, comment?: string): Promise<boolean>;
+  getOfferLogs(offerId: string): Promise<any[]>;
+  getOfferStats(offerId: string): Promise<any>;
+  logOfferAction(offerId: string, userId: string, action: string, comment?: string, fieldChanged?: string, oldValue?: string, newValue?: string): Promise<void>;
+  
+  // Categories and templates
+  getOfferCategories(): Promise<any[]>;
+  createOfferCategory(data: any): Promise<any>;
+  getModerationTemplates(): Promise<any[]>;
+  createModerationTemplate(data: any): Promise<any>;
   
   // KYC documents
   getKycDocuments(): Promise<any[]>;
@@ -347,29 +359,134 @@ export class DatabaseStorage implements IStorage {
     await db.delete(users).where(eq(users.id, id));
   }
 
-  async getAllOffers(): Promise<Offer[]> {
-    return await db.select({
-      id: offers.id,
-      name: offers.name,
-      description: offers.description,
-      category: offers.category,
-      advertiserId: offers.advertiserId,
-      payout: offers.payout,
-      payoutType: offers.payoutType,
-      currency: offers.currency,
-      status: offers.status,
-      createdAt: offers.createdAt,
-      updatedAt: offers.updatedAt,
-      advertiser: {
-        id: users.id,
-        username: users.username,
-        company: users.company,
-        email: users.email
+  async getAllOffers(): Promise<(Offer & { advertiserName?: string })[]> {
+    const offersWithAdvertisers = await db
+      .select({
+        ...offers,
+        advertiserName: sql<string>`${users.firstName} || ' ' || ${users.lastName}`,
+      })
+      .from(offers)
+      .leftJoin(users, eq(offers.advertiserId, users.id))
+      .orderBy(desc(offers.createdAt));
+    
+    return offersWithAdvertisers.map(row => ({
+      ...row,
+      advertiserName: row.advertiserName || 'Unknown'
+    }));
+  }
+
+  // Admin offer management methods
+  async moderateOffer(id: string, action: string, moderatedBy: string, comment?: string): Promise<boolean> {
+    try {
+      let updates: Partial<Offer> = { updatedAt: new Date() };
+
+      switch (action) {
+        case 'approve':
+          updates.moderationStatus = 'approved';
+          updates.status = 'active';
+          break;
+        case 'reject':
+          updates.moderationStatus = 'rejected';
+          updates.status = 'inactive';
+          break;
+        case 'needs_revision':
+          updates.moderationStatus = 'needs_revision';
+          break;
+        case 'archive':
+          updates.isArchived = true;
+          break;
+        case 'block':
+          updates.isBlocked = true;
+          break;
+        case 'unblock':
+          updates.isBlocked = false;
+          break;
       }
-    })
-    .from(offers)
-    .leftJoin(users, eq(offers.advertiserId, users.id))
-    .orderBy(desc(offers.createdAt));
+
+      if (comment) {
+        updates.moderationComment = comment;
+      }
+
+      await db.update(offers).set(updates).where(eq(offers.id, id));
+      
+      // Log the action
+      await this.logOfferAction(id, moderatedBy, action, comment);
+      
+      return true;
+    } catch (error) {
+      console.error('Error moderating offer:', error);
+      return false;
+    }
+  }
+
+  async getOfferLogs(offerId: string): Promise<any[]> {
+    // For now, return empty array - would need offerLogs table implementation
+    return [];
+  }
+
+  async getOfferStats(offerId: string): Promise<any> {
+    const stats = await db
+      .select({
+        clicks: sum(statistics.clicks),
+        conversions: sum(statistics.conversions),
+        revenue: sum(sql<number>`CAST(${statistics.revenue} AS DECIMAL)`),
+      })
+      .from(statistics)
+      .where(eq(statistics.offerId, offerId));
+
+    if (!stats[0] || stats[0].clicks === null) {
+      return {
+        clicks: 0,
+        conversions: 0,
+        cr: '0.00',
+        epc: '0.00'
+      };
+    }
+
+    const totalClicks = Number(stats[0].clicks) || 0;
+    const totalConversions = Number(stats[0].conversions) || 0;
+    const totalRevenue = Number(stats[0].revenue) || 0;
+    
+    const cr = totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : '0.00';
+    const epc = totalClicks > 0 ? (totalRevenue / totalClicks).toFixed(2) : '0.00';
+
+    return {
+      clicks: totalClicks,
+      conversions: totalConversions,
+      cr,
+      epc
+    };
+  }
+
+  async logOfferAction(offerId: string, userId: string, action: string, comment?: string, fieldChanged?: string, oldValue?: string, newValue?: string): Promise<void> {
+    // For now, just log to console - would need offerLogs table implementation
+    console.log(`Offer ${offerId} ${action} by ${userId}`, { comment, fieldChanged, oldValue, newValue });
+  }
+
+  // Categories and templates - placeholder implementations
+  async getOfferCategories(): Promise<any[]> {
+    return [
+      { id: '1', name: 'Finance', isActive: true },
+      { id: '2', name: 'Dating', isActive: true },
+      { id: '3', name: 'Gaming', isActive: true },
+      { id: '4', name: 'Health', isActive: true },
+    ];
+  }
+
+  async createOfferCategory(data: any): Promise<any> {
+    return { id: randomUUID(), ...data, isActive: true, createdAt: new Date() };
+  }
+
+  async getModerationTemplates(): Promise<any[]> {
+    return [
+      { id: '1', name: 'Incomplete Description', type: 'rejection', message: 'The offer description is incomplete.' },
+      { id: '2', name: 'Missing Geo-targeting', type: 'rejection', message: 'Geo-targeting information is missing.' },
+      { id: '3', name: 'Policy Violation', type: 'rejection', message: 'This offer violates our platform policies.' },
+    ];
+  }
+
+  async createModerationTemplate(data: any): Promise<any> {
+    return { id: randomUUID(), ...data, isActive: true, createdAt: new Date() };
   }
 
   async getAdminAnalytics(): Promise<any> {

@@ -42,17 +42,30 @@ export const offers = pgTable("offers", {
   name: text("name").notNull(),
   description: text("description"),
   category: text("category").notNull(),
+  vertical: text("vertical"), // Industry vertical
+  goals: text("goals"), // Offer goals/objectives
   advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
   payout: decimal("payout", { precision: 10, scale: 2 }).notNull(),
   payoutType: text("payout_type").notNull(), // 'cpa', 'cps', 'cpl'
   currency: text("currency").default('USD'),
   countries: jsonb("countries"), // Array of country codes
+  trafficSources: jsonb("traffic_sources"), // Allowed traffic sources
   status: offerStatusEnum("status").default('draft'),
+  moderationStatus: text("moderation_status").default('pending'), // pending, approved, rejected, needs_revision
+  moderationComment: text("moderation_comment"), // Admin comment for moderation
   trackingUrl: text("tracking_url"),
   landingPageUrl: text("landing_page_url"),
+  previewUrl: text("preview_url"), // Preview link for partners
   restrictions: text("restrictions"),
+  fraudRestrictions: text("fraud_restrictions"), // Global fraud restrictions set by admin
+  macros: text("macros"), // JSON string of macros
   kycRequired: boolean("kyc_required").default(false),
   isPrivate: boolean("is_private").default(false),
+  smartlinkEnabled: boolean("smartlink_enabled").default(false),
+  isBlocked: boolean("is_blocked").default(false),
+  blockedReason: text("blocked_reason"),
+  isArchived: boolean("is_archived").default(false),
+  regionVisibility: jsonb("region_visibility"), // Regions where offer is visible
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -171,8 +184,46 @@ export const creatives = pgTable("creatives", {
   impressions: integer("impressions").default(0),
   ctr: decimal("ctr", { precision: 5, scale: 2 }).default('0'),
   isActive: boolean("is_active").default(true),
+  isApproved: boolean("is_approved").default(false),
+  moderationStatus: text("moderation_status").default('pending'), // pending, approved, rejected
+  moderationComment: text("moderation_comment"),
   targetGeo: jsonb("target_geo"), // Array of country codes
   targetDevice: text("target_device"), // 'desktop', 'mobile', 'tablet'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Offer modification logs
+export const offerLogs = pgTable("offer_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  offerId: varchar("offer_id").notNull().references(() => offers.id),
+  userId: varchar("user_id").notNull().references(() => users.id), // Who made the change
+  action: text("action").notNull(), // 'created', 'updated', 'approved', 'rejected', 'blocked', 'archived'
+  fieldChanged: text("field_changed"), // Which field was changed
+  oldValue: text("old_value"), // Previous value
+  newValue: text("new_value"), // New value
+  comment: text("comment"), // Admin comment
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Offer categories/verticals  
+export const offerCategories = pgTable("offer_categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  parentId: varchar("parent_id"), // Self-reference will be added later
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Moderation templates
+export const moderationTemplates = pgTable("moderation_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'rejection', 'revision_request', 'approval'
+  subject: text("subject").notNull(),
+  message: text("message").notNull(),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
