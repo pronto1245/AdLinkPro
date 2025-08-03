@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/contexts/language-context';
+import Sidebar from '@/components/layout/sidebar';
+import Header from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -188,11 +190,26 @@ export default function OffersManagement() {
   };
 
   if (offersLoading) {
-    return <div className="flex items-center justify-center p-8">{t('loading')}</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar />
+        <div className="flex-1 flex flex-col">
+          <Header />
+          <main className="flex-1 p-6">
+            <div className="flex items-center justify-center p-8">{t('loading')}</div>
+          </main>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="flex min-h-screen bg-background">
+      <Sidebar />
+      <div className="flex-1 flex flex-col">
+        <Header />
+        <main className="flex-1 p-6">
+          <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t('offer_management')}</h1>
@@ -445,7 +462,7 @@ export default function OffersManagement() {
                         <CardTitle className="text-sm font-medium">{t('clicks')}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold">{offerStats.clicks || 0}</div>
+                        <div className="text-2xl font-bold">{(offerStats as any)?.clicks || 0}</div>
                       </CardContent>
                     </Card>
                     <Card>
@@ -453,7 +470,7 @@ export default function OffersManagement() {
                         <CardTitle className="text-sm font-medium">{t('conversions')}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold">{offerStats.conversions || 0}</div>
+                        <div className="text-2xl font-bold">{(offerStats as any)?.conversions || 0}</div>
                       </CardContent>
                     </Card>
                     <Card>
@@ -461,7 +478,7 @@ export default function OffersManagement() {
                         <CardTitle className="text-sm font-medium">{t('cr')}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold">{offerStats.cr || '0.00'}%</div>
+                        <div className="text-2xl font-bold">{(offerStats as any)?.cr || '0.00'}%</div>
                       </CardContent>
                     </Card>
                     <Card>
@@ -469,7 +486,7 @@ export default function OffersManagement() {
                         <CardTitle className="text-sm font-medium">{t('epc')}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold">${offerStats.epc || '0.00'}</div>
+                        <div className="text-2xl font-bold">${(offerStats as any)?.epc || '0.00'}</div>
                       </CardContent>
                     </Card>
                   </div>
@@ -483,9 +500,9 @@ export default function OffersManagement() {
               </TabsContent>
               
               <TabsContent value="history" className="space-y-4">
-                {offerLogs.length > 0 ? (
+                {Array.isArray(offerLogs) && offerLogs.length > 0 ? (
                   <div className="space-y-2">
-                    {offerLogs.map((log: OfferLog) => (
+                    {(offerLogs as OfferLog[]).map((log: OfferLog) => (
                       <div key={log.id} className="border rounded p-3">
                         <div className="flex justify-between items-start">
                           <div>
@@ -675,6 +692,9 @@ export default function OffersManagement() {
           </DialogContent>
         </Dialog>
       )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
