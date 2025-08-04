@@ -1275,14 +1275,20 @@ export default function OffersManagement() {
 
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger data-testid="select-category-filter" title="Фильтр по категории оффера">
-                <SelectValue placeholder={t('category')} />
+                <SelectValue placeholder="Категория" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Все категории</SelectItem>
-                <SelectItem value="finance">{t('finance')}</SelectItem>
-                <SelectItem value="dating">{t('dating')}</SelectItem>
-                <SelectItem value="gaming">{t('gaming')}</SelectItem>
-                <SelectItem value="health">{t('health')}</SelectItem>
+                <SelectItem value="gambling">Gambling</SelectItem>
+                <SelectItem value="finance">Finance</SelectItem>
+                <SelectItem value="nutra">Nutra</SelectItem>
+                <SelectItem value="dating">Dating</SelectItem>
+                <SelectItem value="sweepstakes">Sweepstakes</SelectItem>
+                <SelectItem value="crypto">Crypto</SelectItem>
+                <SelectItem value="e-commerce">E-commerce</SelectItem>
+                <SelectItem value="mobile">Mobile</SelectItem>
+                <SelectItem value="games">Games</SelectItem>
+                <SelectItem value="software">Software</SelectItem>
               </SelectContent>
             </Select>
 
