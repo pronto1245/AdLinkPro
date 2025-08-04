@@ -8,7 +8,7 @@ import Header from '../../components/layout/header';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
-import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, MapPin, Shield, Image, Activity, Clock, FileText, TrendingUp, Filter, Smartphone, Building2, UserCheck, Edit } from 'lucide-react';
+import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, MapPin, Shield, Image, Activity, Clock, FileText, TrendingUp, Filter, Smartphone, Building2, UserCheck, Edit, Copy, Check } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -53,6 +53,30 @@ export default function OfferDetails() {
   
   // Edit offer state
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  // Copy URL state
+  const [copiedUrls, setCopiedUrls] = useState<{[key: string]: boolean}>({});
+  
+  // Copy URL function
+  const copyToClipboard = async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedUrls(prev => ({ ...prev, [id]: true }));
+      toast({
+        title: "URL скопирован",
+        description: "URL успешно скопирован в буфер обмена",
+      });
+      setTimeout(() => {
+        setCopiedUrls(prev => ({ ...prev, [id]: false }));
+      }, 2000);
+    } catch (err) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось скопировать URL",
+        variant: "destructive"
+      });
+    }
+  };
   
   const offerId = params.id;
 
@@ -413,12 +437,26 @@ export default function OfferDetails() {
                               <span className="font-mono truncate">{landing.url}</span>
                             </div>
                           </div>
-                          <Button variant="outline" size="sm" asChild>
-                            <a href={landing.url} target="_blank" rel="noopener noreferrer">
-                              <Eye className="w-4 h-4 mr-2" />
-                              Открыть лендинг
-                            </a>
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => copyToClipboard(landing.url, `landing-${index}`)}
+                            >
+                              {copiedUrls[`landing-${index}`] ? (
+                                <Check className="w-4 h-4 mr-2 text-green-600" />
+                              ) : (
+                                <Copy className="w-4 h-4 mr-2" />
+                              )}
+                              {copiedUrls[`landing-${index}`] ? 'Скопировано' : 'Копировать URL'}
+                            </Button>
+                            <Button variant="outline" size="sm" asChild>
+                              <a href={landing.url} target="_blank" rel="noopener noreferrer">
+                                <Eye className="w-4 h-4 mr-2" />
+                                Открыть лендинг
+                              </a>
+                            </Button>
+                          </div>
                         </div>
                         
                         {/* Зеленый прямоугольник с выплатой и информацией */}

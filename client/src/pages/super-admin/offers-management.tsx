@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Search, Filter, Eye, Edit, Ban, Archive, CheckCircle, XCircle, AlertTriangle, Download, Upload, Plus, Trash2, PlusCircle, Check, Play, Pause } from 'lucide-react';
+import { Search, Filter, Eye, Edit, Ban, Archive, CheckCircle, XCircle, AlertTriangle, Download, Upload, Plus, Trash2, PlusCircle, Check, Play, Pause, Copy } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -772,6 +772,30 @@ export default function OffersManagement() {
   const { isCollapsed } = useSidebar();
   
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
+  
+  // Copy URL state
+  const [copiedUrls, setCopiedUrls] = useState<{[key: string]: boolean}>({});
+  
+  // Copy URL function
+  const copyToClipboard = async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedUrls(prev => ({ ...prev, [id]: true }));
+      toast({
+        title: "URL скопирован",
+        description: "URL успешно скопирован в буфер обмена",
+      });
+      setTimeout(() => {
+        setCopiedUrls(prev => ({ ...prev, [id]: false }));
+      }, 2000);
+    } catch (err) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось скопировать URL",
+        variant: "destructive"
+      });
+    }
+  };
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -1844,14 +1868,27 @@ export default function OffersManagement() {
                         return (
                           <div key={index} className="border rounded p-3">
                             <div className="flex justify-between items-start">
-                              <div>
+                              <div className="flex-1 min-w-0">
                                 <div className="font-medium flex items-center gap-2">
                                   <span>{flag} {geo}</span>
                                   <span>{landing.name}</span>
                                 </div>
-                                <div className="text-sm text-muted-foreground break-all">{landing.url}</div>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <span className="break-all">{landing.url}</span>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => copyToClipboard(landing.url, `modal-landing-${index}`)}
+                                  >
+                                    {copiedUrls[`modal-landing-${index}`] ? (
+                                      <Check className="w-4 h-4 text-green-600" />
+                                    ) : (
+                                      <Copy className="w-4 h-4" />
+                                    )}
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="text-right">
+                              <div className="text-right ml-4">
                                 <div className="font-medium text-lg">{flag}{geo}-{landing.payoutAmount}{currencySymbol}</div>
                                 <div className="text-sm text-muted-foreground">{landing.currency}</div>
                               </div>
@@ -2273,44 +2310,65 @@ export default function OffersManagement() {
                 <Label>Landing Pages</Label>
                 <div className="space-y-3 mt-2">
                   {(editingOffer.landingPages || []).map((lp, index) => (
-                    <div key={index} className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 border rounded">
-                      <Input
-                        placeholder="Название"
-                        defaultValue={lp.name}
-                        onChange={(e) => {
-                          const updated = [...(editingOffer.landingPages || [])];
-                          updated[index] = { ...lp, name: e.target.value };
-                          handleOfferUpdate({ landingPages: updated });
-                        }}
-                      />
-                      <Input
-                        placeholder="URL"
-                        defaultValue={lp.url}
-                        onChange={(e) => {
-                          const updated = [...(editingOffer.landingPages || [])];
-                          updated[index] = { ...lp, url: e.target.value };
-                          handleOfferUpdate({ landingPages: updated });
-                        }}
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Сумма"
-                        defaultValue={lp.payoutAmount.toString()}
-                        onChange={(e) => {
-                          const updated = [...(editingOffer.landingPages || [])];
-                          updated[index] = { ...lp, payoutAmount: parseFloat(e.target.value) || 0 };
-                          handleOfferUpdate({ landingPages: updated });
-                        }}
-                      />
-                      <Input
-                        placeholder="GEO"
-                        defaultValue={lp.geo}
-                        onChange={(e) => {
-                          const updated = [...(editingOffer.landingPages || [])];
-                          updated[index] = { ...lp, geo: e.target.value };
-                          handleOfferUpdate({ landingPages: updated });
-                        }}
-                      />
+                    <div key={index} className="space-y-3 p-3 border rounded">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <Input
+                          placeholder="Название"
+                          defaultValue={lp.name}
+                          onChange={(e) => {
+                            const updated = [...(editingOffer.landingPages || [])];
+                            updated[index] = { ...lp, name: e.target.value };
+                            handleOfferUpdate({ landingPages: updated });
+                          }}
+                        />
+                        <div className="flex items-center gap-2">
+                          <Input
+                            placeholder="URL"
+                            defaultValue={lp.url}
+                            className="flex-1"
+                            onChange={(e) => {
+                              const updated = [...(editingOffer.landingPages || [])];
+                              updated[index] = { ...lp, url: e.target.value };
+                              handleOfferUpdate({ landingPages: updated });
+                            }}
+                          />
+                          {lp.url && (
+                            <Button 
+                              type="button"
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => copyToClipboard(lp.url, `edit-landing-${index}`)}
+                            >
+                              {copiedUrls[`edit-landing-${index}`] ? (
+                                <Check className="w-4 h-4 text-green-600" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <Input
+                          type="number"
+                          placeholder="Сумма"
+                          defaultValue={lp.payoutAmount.toString()}
+                          onChange={(e) => {
+                            const updated = [...(editingOffer.landingPages || [])];
+                            updated[index] = { ...lp, payoutAmount: parseFloat(e.target.value) || 0 };
+                            handleOfferUpdate({ landingPages: updated });
+                          }}
+                        />
+                        <Input
+                          placeholder="GEO"
+                          defaultValue={lp.geo}
+                          onChange={(e) => {
+                            const updated = [...(editingOffer.landingPages || [])];
+                            updated[index] = { ...lp, geo: e.target.value };
+                            handleOfferUpdate({ landingPages: updated });
+                          }}
+                        />
+                      </div>
                     </div>
                   ))}
                   <Button
