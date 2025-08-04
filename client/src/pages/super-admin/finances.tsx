@@ -320,7 +320,7 @@ export default function FinancesManagement() {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+      <div className="flex-1 flex flex-col transition-all duration-300">
         <Header title="Финансы" />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
           {/* Header Section */}
