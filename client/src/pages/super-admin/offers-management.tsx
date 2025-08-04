@@ -932,7 +932,6 @@ export default function OffersManagement() {
                   <TableHead>{t('advertiser')}</TableHead>
                   <TableHead>{t('category')}</TableHead>
                   <TableHead>{t('payout')}</TableHead>
-                  <TableHead>{t('countries')}</TableHead>
                   <TableHead>Источники трафика</TableHead>
                   <TableHead>{t('status')}</TableHead>
                   <TableHead>{t('created')}</TableHead>
@@ -1033,13 +1032,6 @@ export default function OffersManagement() {
                           <div className="font-medium">${offer.payout}</div>
                         </div>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {Array.isArray(offer.countries) && offer.countries.length > 0 
-                          ? offer.countries.slice(0, 2).join(', ') + (offer.countries.length > 2 ? `... +${offer.countries.length - 2}` : '')
-                          : t('all_countries')}
-                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="text-xs space-y-1">
