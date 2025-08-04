@@ -222,6 +222,7 @@ export const translations = {
     'type': 'Type',
     'geo': 'Geo',
     'not_specified': 'Not specified',
+    'offer_goals': 'Offer Goals',
     
     // Categories
     'gambling': 'Gambling',
@@ -488,6 +489,7 @@ export const translations = {
     'type': 'Тип',
     'geo': 'Гео',
     'not_specified': 'Не указано',
+    'offer_goals': 'Цели оффера',
     
     // Categories
     'gambling': 'Гемблинг',

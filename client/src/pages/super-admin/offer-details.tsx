@@ -724,7 +724,7 @@ export default function OfferDetails() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Target className="w-5 h-5" />
-                    Цели оффера
+                    {t('offer_goals')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
