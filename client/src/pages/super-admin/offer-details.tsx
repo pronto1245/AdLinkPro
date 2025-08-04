@@ -8,12 +8,14 @@ import Header from '../../components/layout/header';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
-import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, MapPin, Shield, Image, Activity, Clock, FileText, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, MapPin, Shield, Image, Activity, Clock, FileText, TrendingUp, Filter, Smartphone, Building2, UserCheck } from 'lucide-react';
 import { Separator } from '../../components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { useToast } from '../../hooks/use-toast';
 import { Upload, X, Download } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Input } from '../../components/ui/input';
 
 export default function OfferDetails() {
   const [, setLocation] = useLocation();
@@ -25,6 +27,13 @@ export default function OfferDetails() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  
+  // Analytics filters state
+  const [dateFilter, setDateFilter] = useState('7');
+  const [geoFilter, setGeoFilter] = useState('all');
+  const [deviceFilter, setDeviceFilter] = useState('all');
+  const [advertiserFilter, setAdvertiserFilter] = useState('all');
+  const [partnerFilter, setPartnerFilter] = useState('all');
   
   const offerId = params.id;
 
@@ -738,6 +747,184 @@ export default function OfferDetails() {
 
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
+            {/* Analytics Filters */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Filter className="w-5 h-5" />
+                  Фильтры аналитики
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  {/* Date Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Период
+                    </label>
+                    <Select value={dateFilter} onValueChange={setDateFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите период" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Сегодня</SelectItem>
+                        <SelectItem value="7">7 дней</SelectItem>
+                        <SelectItem value="30">30 дней</SelectItem>
+                        <SelectItem value="90">90 дней</SelectItem>
+                        <SelectItem value="365">Год</SelectItem>
+                        <SelectItem value="all">Все время</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Geo Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      <Globe className="w-4 h-4" />
+                      География
+                    </label>
+                    <Select value={geoFilter} onValueChange={setGeoFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите страну" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Все страны</SelectItem>
+                        <SelectItem value="US">🇺🇸 США</SelectItem>
+                        <SelectItem value="GB">🇬🇧 Великобритания</SelectItem>
+                        <SelectItem value="DE">🇩🇪 Германия</SelectItem>
+                        <SelectItem value="FR">🇫🇷 Франция</SelectItem>
+                        <SelectItem value="CA">🇨🇦 Канада</SelectItem>
+                        <SelectItem value="AU">🇦🇺 Австралия</SelectItem>
+                        <SelectItem value="RU">🇷🇺 Россия</SelectItem>
+                        <SelectItem value="BR">🇧🇷 Бразилия</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Device Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      <Smartphone className="w-4 h-4" />
+                      Устройства
+                    </label>
+                    <Select value={deviceFilter} onValueChange={setDeviceFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите устройство" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Все устройства</SelectItem>
+                        <SelectItem value="desktop">🖥️ Десктоп</SelectItem>
+                        <SelectItem value="mobile">📱 Мобильные</SelectItem>
+                        <SelectItem value="tablet">📱 Планшеты</SelectItem>
+                        <SelectItem value="ios">🍎 iOS</SelectItem>
+                        <SelectItem value="android">🤖 Android</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Advertiser Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      <Building2 className="w-4 h-4" />
+                      Рекламодатель
+                    </label>
+                    <Select value={advertiserFilter} onValueChange={setAdvertiserFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите рекламодателя" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Все рекламодатели</SelectItem>
+                        <SelectItem value="advertiser1">Advertiser Corp</SelectItem>
+                        <SelectItem value="advertiser2">Global Marketing Ltd</SelectItem>
+                        <SelectItem value="advertiser3">Digital Ads Inc</SelectItem>
+                        <SelectItem value="advertiser4">Performance Media</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Partner Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      <UserCheck className="w-4 h-4" />
+                      Партнер
+                    </label>
+                    <Select value={partnerFilter} onValueChange={setPartnerFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите партнера" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Все партнеры</SelectItem>
+                        <SelectItem value="partner1">TopAffiliates Pro</SelectItem>
+                        <SelectItem value="partner2">Performance Partners</SelectItem>
+                        <SelectItem value="partner3">Digital Media Network</SelectItem>
+                        <SelectItem value="partner4">Elite Affiliates</SelectItem>
+                        <SelectItem value="partner5">Global Traffic Hub</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Applied Filters Summary */}
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Активные фильтры:</span>
+                    {dateFilter !== 'all' && (
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                        {dateFilter === '1' ? 'Сегодня' : 
+                         dateFilter === '7' ? '7 дней' :
+                         dateFilter === '30' ? '30 дней' :
+                         dateFilter === '90' ? '90 дней' :
+                         dateFilter === '365' ? 'Год' : 'Все время'}
+                      </Badge>
+                    )}
+                    {geoFilter !== 'all' && (
+                      <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                        {geoFilter === 'US' ? '🇺🇸 США' :
+                         geoFilter === 'GB' ? '🇬🇧 Великобритания' :
+                         geoFilter === 'DE' ? '🇩🇪 Германия' :
+                         geoFilter === 'FR' ? '🇫🇷 Франция' :
+                         geoFilter === 'CA' ? '🇨🇦 Канада' :
+                         geoFilter === 'AU' ? '🇦🇺 Австралия' :
+                         geoFilter === 'RU' ? '🇷🇺 Россия' :
+                         geoFilter === 'BR' ? '🇧🇷 Бразилия' : geoFilter}
+                      </Badge>
+                    )}
+                    {deviceFilter !== 'all' && (
+                      <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400">
+                        {deviceFilter === 'desktop' ? '🖥️ Десктоп' :
+                         deviceFilter === 'mobile' ? '📱 Мобильные' :
+                         deviceFilter === 'tablet' ? '📱 Планшеты' :
+                         deviceFilter === 'ios' ? '🍎 iOS' :
+                         deviceFilter === 'android' ? '🤖 Android' : deviceFilter}
+                      </Badge>
+                    )}
+                    {advertiserFilter !== 'all' && (
+                      <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
+                        {advertiserFilter === 'advertiser1' ? 'Advertiser Corp' :
+                         advertiserFilter === 'advertiser2' ? 'Global Marketing Ltd' :
+                         advertiserFilter === 'advertiser3' ? 'Digital Ads Inc' :
+                         advertiserFilter === 'advertiser4' ? 'Performance Media' : advertiserFilter}
+                      </Badge>
+                    )}
+                    {partnerFilter !== 'all' && (
+                      <Badge variant="secondary" className="bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-400">
+                        {partnerFilter === 'partner1' ? 'TopAffiliates Pro' :
+                         partnerFilter === 'partner2' ? 'Performance Partners' :
+                         partnerFilter === 'partner3' ? 'Digital Media Network' :
+                         partnerFilter === 'partner4' ? 'Elite Affiliates' :
+                         partnerFilter === 'partner5' ? 'Global Traffic Hub' : partnerFilter}
+                      </Badge>
+                    )}
+                    {dateFilter === 'all' && geoFilter === 'all' && deviceFilter === 'all' && 
+                     advertiserFilter === 'all' && partnerFilter === 'all' && (
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Нет активных фильтров</span>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Main Statistics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
