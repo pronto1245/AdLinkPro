@@ -120,7 +120,7 @@ export default function OfferDetails() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <p className="text-gray-600">{t('offer_not_found')}</p>
-          <Button onClick={() => setLocation('/admin/offers')} className="mt-4">
+          <Button onClick={() => setLocation('/admin/OffersManagement')} className="mt-4">
             {t('back_to_offers')}
           </Button>
         </div>
@@ -323,10 +323,10 @@ export default function OfferDetails() {
           <div className="container mx-auto px-6 py-8 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-6">offer-details</h1>
+          <h1 className="text-3xl font-bold mb-6">OfferDetails</h1>
           <Button
             variant="ghost"
-            onClick={() => setLocation('/admin/offers')}
+            onClick={() => setLocation('/admin/OffersManagement')}
             className="mb-4 hover:bg-gray-100 dark:hover:bg-gray-800"
             title={t('back_to_offers')}
           >

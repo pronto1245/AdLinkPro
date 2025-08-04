@@ -61,12 +61,12 @@ function Router() {
           <SuperAdminUsers />
         </ProtectedRoute>
       </Route>
-      <Route path="/admin/offers">
+      <Route path="/admin/OffersManagement">
         <ProtectedRoute allowedRoles={['super_admin']}>
           <SuperAdminOffersManagement />
         </ProtectedRoute>
       </Route>
-      <Route path="/admin/offers/:id">
+      <Route path="/admin/OfferDetails/:id">
         <ProtectedRoute allowedRoles={['super_admin']}>
           <SuperAdminOfferDetails />
         </ProtectedRoute>

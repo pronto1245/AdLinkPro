@@ -31,7 +31,7 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['super_admin'] },
   { label: 'Users', href: '/admin/users', icon: Users, roles: ['super_admin'], badge: 3 },
-  { label: 'Offers', href: '/admin/offers', icon: Target, roles: ['super_admin', 'advertiser'] },
+  { label: 'Offers', href: '/admin/OffersManagement', icon: Target, roles: ['super_admin', 'advertiser'] },
   { label: 'Finances', href: '/admin/finances', icon: DollarSign, roles: ['super_admin', 'advertiser'] },
   { label: 'Fraud Alerts', href: '/admin/fraud-alerts', icon: Shield, roles: ['super_admin'] },
   { label: 'Postbacks', href: '/admin/postbacks', icon: Webhook, roles: ['super_admin', 'advertiser', 'affiliate'] },

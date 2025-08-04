@@ -1325,7 +1325,7 @@ export default function OffersManagement() {
           <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">offers-management</h1>
+          <h1 className="text-3xl font-bold">OffersManagement</h1>
         </div>
         <div className="flex gap-2">
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -1578,7 +1578,7 @@ export default function OffersManagement() {
                         <div>
                           <div 
                             className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors"
-                            onClick={() => setLocation(`/admin/offers/${offer.id}`)}
+                            onClick={() => setLocation(`/admin/OfferDetails/${offer.id}`)}
                             data-testid={`link-offer-name-${offer.id}`}
                             title="Открыть детали оффера"
                           >
@@ -1839,7 +1839,7 @@ export default function OffersManagement() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setLocation(`/admin/offers/${offer.id}`)}
+                          onClick={() => setLocation(`/admin/OfferDetails/${offer.id}`)}
                           className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                           data-testid={`button-view-offer-${offer.id}`}
                           title={t('view_details')}
