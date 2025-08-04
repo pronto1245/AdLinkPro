@@ -426,6 +426,77 @@ export default function RolesManagement() {
               </CardContent>
             </Card>
 
+            {/* Color Legend */}
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="text-sm font-medium mb-3">Цветовая схема</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                  <div>
+                    <div className="font-medium mb-2">Область действия:</div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-blue-100 text-blue-800 border-blue-200">Глобальная</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-orange-100 text-orange-800 border-orange-200">Рекламодатель</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="font-medium mb-2">Права доступа:</div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">Статистика</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">Офферы</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">Пользователи</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">Финансы</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="font-medium mb-2">Ограничения:</div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">IP</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">GEO</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">Время</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="font-medium mb-2">Количество пользователей:</div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">10+</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">5-10</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">1-5</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">0</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Roles Table */}
             <Card>
               <CardContent className="p-0">
@@ -478,7 +549,10 @@ export default function RolesManagement() {
                             </TableCell>
                             
                             <TableCell>
-                              <Badge variant={role.advertiserId ? 'secondary' : 'default'}>
+                              <Badge 
+                                variant={role.advertiserId ? 'secondary' : 'default'}
+                                className={role.advertiserId ? 'bg-orange-100 text-orange-800 border-orange-200' : 'bg-blue-100 text-blue-800 border-blue-200'}
+                              >
                                 {role.advertiserId ? 'Рекламодатель' : 'Глобальная'}
                               </Badge>
                               {role.advertiserName && (
@@ -490,13 +564,28 @@ export default function RolesManagement() {
                             
                             <TableCell>
                               <div className="flex flex-wrap gap-1">
-                                {role.permissions.slice(0, 3).map((permission) => (
-                                  <Badge key={permission} variant="outline" className="text-xs">
-                                    {availablePermissions.find(p => p.id === permission)?.name.split(' ')[0] || permission}
-                                  </Badge>
-                                ))}
+                                {role.permissions.slice(0, 3).map((permission) => {
+                                  const getPermissionColor = (perm: string) => {
+                                    if (perm.includes('statistics')) return 'bg-green-100 text-green-800 border-green-200';
+                                    if (perm.includes('offers')) return 'bg-purple-100 text-purple-800 border-purple-200';
+                                    if (perm.includes('users')) return 'bg-blue-100 text-blue-800 border-blue-200';
+                                    if (perm.includes('finance')) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                                    if (perm.includes('api')) return 'bg-red-100 text-red-800 border-red-200';
+                                    return 'bg-gray-100 text-gray-800 border-gray-200';
+                                  };
+                                  
+                                  return (
+                                    <Badge 
+                                      key={permission} 
+                                      variant="outline" 
+                                      className={`text-xs ${getPermissionColor(permission)}`}
+                                    >
+                                      {availablePermissions.find(p => p.id === permission)?.name.split(' ')[0] || permission}
+                                    </Badge>
+                                  );
+                                })}
                                 {role.permissions.length > 3 && (
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge variant="outline" className="text-xs bg-gray-100 text-gray-800 border-gray-200">
                                     +{role.permissions.length - 3}
                                   </Badge>
                                 )}
@@ -506,19 +595,19 @@ export default function RolesManagement() {
                             <TableCell>
                               <div className="flex gap-1">
                                 {role.ipRestrictions?.length > 0 && (
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge variant="outline" className="text-xs bg-red-100 text-red-800 border-red-200">
                                     <Network className="h-3 w-3 mr-1" />
                                     IP
                                   </Badge>
                                 )}
                                 {role.geoRestrictions?.length > 0 && (
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge variant="outline" className="text-xs bg-yellow-100 text-yellow-800 border-yellow-200">
                                     <MapPin className="h-3 w-3 mr-1" />
                                     GEO
                                   </Badge>
                                 )}
                                 {role.timeRestrictions && (
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge variant="outline" className="text-xs bg-purple-100 text-purple-800 border-purple-200">
                                     <Clock className="h-3 w-3 mr-1" />
                                     Время
                                   </Badge>
@@ -527,13 +616,29 @@ export default function RolesManagement() {
                             </TableCell>
                             
                             <TableCell>
-                              <div className="text-sm">
-                                {role.assignedUsers || 0} пользователей
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs ${
+                                    (role.assignedUsers || 0) > 10 ? 'bg-green-100 text-green-800 border-green-200' :
+                                    (role.assignedUsers || 0) > 5 ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                                    (role.assignedUsers || 0) > 0 ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                                    'bg-gray-100 text-gray-800 border-gray-200'
+                                  }`}
+                                >
+                                  {role.assignedUsers || 0}
+                                </Badge>
                               </div>
                             </TableCell>
                             
                             <TableCell>
-                              <Badge variant={role.isActive ? 'default' : 'destructive'}>
+                              <Badge 
+                                variant={role.isActive ? 'default' : 'destructive'}
+                                className={`text-xs ${
+                                  role.isActive ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'
+                                }`}
+                              >
                                 {role.isActive ? 'Активна' : 'Неактивна'}
                               </Badge>
                             </TableCell>
