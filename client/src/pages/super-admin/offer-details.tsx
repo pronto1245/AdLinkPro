@@ -364,10 +364,29 @@ export default function OfferDetails() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
                     <label className="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide">Базовая выплата</label>
-                    <div className="mt-1 text-lg font-bold text-green-700 dark:text-green-300">
-                      {offer.payout && offer.payout !== '0.00' 
-                        ? `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}${offer.payout}`
-                        : 'Не указано'}
+                    <div className="mt-1">
+                      {offer.payout && offer.payout !== '0.00' ? (
+                        <div className="text-lg font-bold text-green-700 dark:text-green-300">
+                          {offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}{offer.payout}
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          {offer.logoUrl ? (
+                            <img 
+                              src={offer.logoUrl} 
+                              alt={offer.name}
+                              className="w-8 h-8 object-contain rounded"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                              <Target className="w-4 h-4 text-gray-400" />
+                            </div>
+                          )}
+                          <div className="text-sm font-semibold text-green-700 dark:text-green-300 truncate">
+                            {offer.name}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
@@ -450,8 +469,21 @@ export default function OfferDetails() {
                                 {offer.payout && offer.payout !== '0.00' 
                                   ? `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}${offer.payout}`
                                   : (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0 
-                                     ? `${offer.geoPricing[0].payout}` 
-                                     : '$0')}
+                                     ? `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}${offer.geoPricing[0].payout}` 
+                                     : (
+                                       <div className="flex items-center gap-2 justify-center">
+                                         {offer.logoUrl ? (
+                                           <img 
+                                             src={offer.logoUrl} 
+                                             alt={offer.name}
+                                             className="w-6 h-6 object-contain rounded"
+                                           />
+                                         ) : (
+                                           <Target className="w-4 h-4" />
+                                         )}
+                                         <span className="text-sm">{offer.name}</span>
+                                       </div>
+                                     ))}
                               </div>
                             </div>
                             
@@ -540,8 +572,21 @@ export default function OfferDetails() {
                           {offer.payout && offer.payout !== '0.00' 
                             ? `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}${offer.payout}`
                             : (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0 
-                               ? `${offer.geoPricing[0].payout}` 
-                               : '$0')}
+                               ? `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}${offer.geoPricing[0].payout}` 
+                               : (
+                                 <div className="flex items-center gap-2 justify-center">
+                                   {offer.logoUrl ? (
+                                     <img 
+                                       src={offer.logoUrl} 
+                                       alt={offer.name}
+                                       className="w-6 h-6 object-contain rounded"
+                                     />
+                                   ) : (
+                                     <Target className="w-4 h-4" />
+                                   )}
+                                   <span className="text-sm">{offer.name}</span>
+                                 </div>
+                               ))}
                         </div>
                       </div>
                       
