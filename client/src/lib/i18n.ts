@@ -8,7 +8,7 @@ export interface Translations {
 
 export const translations: Translations = {
   en: {
-    // Navigation
+    // Navigation & Sidebar
     'dashboard': 'Dashboard',
     'users': 'Users',
     'offers': 'Offers',
@@ -22,6 +22,21 @@ export const translations: Translations = {
     'blacklist_management': 'Blacklist Management',
     'audit_logs': 'Audit Logs',
     'fraud_alerts': 'Fraud Alerts',
+    
+    // Sidebar specific
+    'sidebar.dashboard': 'Dashboard',
+    'sidebar.users': 'Users',
+    'sidebar.userAnalytics': 'User Analytics',
+    'sidebar.roles': 'Roles',
+    'sidebar.offers': 'Offers',
+    'sidebar.finances': 'Finances',
+    'sidebar.antifraud': 'Anti-Fraud',
+    'sidebar.postbacks': 'Postbacks',
+    'sidebar.blacklist': 'Blacklist',
+    'sidebar.auditLogs': 'Audit Logs',
+    'sidebar.systemSettings': 'System Settings',
+    'sidebar.analytics': 'Analytics',
+    'sidebar.support': 'Support',
 
     // Common
     'welcome': 'Welcome back! Here\'s what\'s happening today.',
@@ -164,7 +179,7 @@ export const translations: Translations = {
     'partners': 'Partners',
   },
   ru: {
-    // Navigation
+    // Navigation & Sidebar
     'dashboard': 'Панель управления',
     'users': 'Пользователи',
     'offers': 'Офферы',
@@ -178,6 +193,21 @@ export const translations: Translations = {
     'blacklist_management': 'Управление черным списком',
     'audit_logs': 'Журнал аудита',
     'fraud_alerts': 'Уведомления о мошенничестве',
+    
+    // Sidebar specific
+    'sidebar.dashboard': 'Дашборд',
+    'sidebar.users': 'Пользователи',
+    'sidebar.userAnalytics': 'Аналитика пользователей',
+    'sidebar.roles': 'Роли',
+    'sidebar.offers': 'Офферы',
+    'sidebar.finances': 'Финансы',
+    'sidebar.antifraud': 'Антифрод-система',
+    'sidebar.postbacks': 'Постбеки',
+    'sidebar.blacklist': 'Черный список',
+    'sidebar.auditLogs': 'Журнал аудита',
+    'sidebar.systemSettings': 'Настройки системы',
+    'sidebar.analytics': 'Аналитика',
+    'sidebar.support': 'Поддержка',
 
     // Common
     'welcome': 'Добро пожаловать! Вот что происходит сегодня.',

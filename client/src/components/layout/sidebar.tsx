@@ -21,7 +21,7 @@ import {
 import { useSidebar } from '@/contexts/sidebar-context';
 
 interface MenuItem {
-  label: string;
+  labelKey: string;
   href: string;
   icon: React.ElementType;
   roles: string[];
@@ -29,19 +29,19 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['super_admin'] },
-  { label: 'Users', href: '/admin/users', icon: Users, roles: ['super_admin'], badge: 3 },
-  { label: 'User Analytics', href: '/admin/user-analytics', icon: BarChart3, roles: ['super_admin'] },
-  { label: 'Roles', href: '/admin/roles', icon: Shield, roles: ['super_admin'] },
-  { label: 'Offers', href: '/admin/OffersManagement', icon: Target, roles: ['super_admin', 'advertiser'] },
-  { label: 'Finances', href: '/admin/finances', icon: DollarSign, roles: ['super_admin', 'advertiser'] },
-  { label: 'Антифрод-система', href: '/admin/fraud', icon: Shield, roles: ['super_admin'] },
-  { label: 'Postbacks', href: '/admin/postbacks', icon: Webhook, roles: ['super_admin', 'advertiser', 'affiliate'] },
-  { label: 'Blacklist', href: '/admin/blacklist', icon: Ban, roles: ['super_admin'] },
-  { label: 'Audit Logs', href: '/admin/audit-logs', icon: History, roles: ['super_admin'] },
-  { label: 'System Settings', href: '/admin/system-settings', icon: Settings, roles: ['super_admin'] },
-  { label: 'Analytics', href: '/admin/analytics', icon: BarChart3, roles: ['super_admin', 'advertiser', 'affiliate'] },
-  { label: 'Support', href: '/admin/support', icon: HeadphonesIcon, roles: ['super_admin', 'advertiser', 'affiliate'] },
+  { labelKey: 'sidebar.dashboard', href: '/admin', icon: LayoutDashboard, roles: ['super_admin'] },
+  { labelKey: 'sidebar.users', href: '/admin/users', icon: Users, roles: ['super_admin'], badge: 3 },
+  { labelKey: 'sidebar.userAnalytics', href: '/admin/user-analytics', icon: BarChart3, roles: ['super_admin'] },
+  { labelKey: 'sidebar.roles', href: '/admin/roles', icon: Shield, roles: ['super_admin'] },
+  { labelKey: 'sidebar.offers', href: '/admin/OffersManagement', icon: Target, roles: ['super_admin', 'advertiser'] },
+  { labelKey: 'sidebar.finances', href: '/admin/finances', icon: DollarSign, roles: ['super_admin', 'advertiser'] },
+  { labelKey: 'sidebar.antifraud', href: '/admin/fraud', icon: Shield, roles: ['super_admin'] },
+  { labelKey: 'sidebar.postbacks', href: '/admin/postbacks', icon: Webhook, roles: ['super_admin', 'advertiser', 'affiliate'] },
+  { labelKey: 'sidebar.blacklist', href: '/admin/blacklist', icon: Ban, roles: ['super_admin'] },
+  { labelKey: 'sidebar.auditLogs', href: '/admin/audit-logs', icon: History, roles: ['super_admin'] },
+  { labelKey: 'sidebar.systemSettings', href: '/admin/system-settings', icon: Settings, roles: ['super_admin'] },
+  { labelKey: 'sidebar.analytics', href: '/admin/analytics', icon: BarChart3, roles: ['super_admin', 'advertiser', 'affiliate'] },
+  { labelKey: 'sidebar.support', href: '/admin/support', icon: HeadphonesIcon, roles: ['super_admin', 'advertiser', 'affiliate'] },
 ];
 
 interface SidebarProps {
@@ -132,8 +132,8 @@ function Sidebar({ className }: SidebarProps) {
                     : "text-slate-700 hover:bg-slate-100",
                   isCollapsed ? "justify-center" : ""
                 )}
-                data-testid={`nav-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
-                title={isCollapsed ? item.label : undefined}
+                data-testid={`nav-${item.labelKey.split('.')[1]}`}
+                title={isCollapsed ? t(item.labelKey) : undefined}
               >
                 <IconComponent className={cn(
                   "w-5 h-5",
@@ -142,7 +142,7 @@ function Sidebar({ className }: SidebarProps) {
                 )} />
                 {!isCollapsed && (
                   <>
-                    {item.label}
+                    {t(item.labelKey)}
                     {item.badge && (
                       <span className="ml-auto bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full">
                         {item.badge}
