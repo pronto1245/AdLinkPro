@@ -2084,89 +2084,198 @@ export default function OffersManagement() {
       {/* Edit Offer Modal */}
       {selectedOffer && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{t('edit_offer')}</DialogTitle>
+              <DialogTitle>Редактировать оффер: {selectedOffer.name}</DialogTitle>
               <DialogDescription>
-                {t('edit_offer_details')}
+                Полное редактирование всех параметров оффера
               </DialogDescription>
             </DialogHeader>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            {/* Полная форма редактирования оффера */}
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="payout">{t('payout')}</Label>
+                  <Label>Название оффера</Label>
                   <Input
-                    id="payout"
-                    type="number"
-                    step="0.01"
-                    defaultValue={selectedOffer.payout}
-                    onChange={(e) => handleOfferUpdate({ payout: e.target.value })}
-                    onWheel={(e) => e.currentTarget.blur()}
-                    data-testid="input-edit-payout"
+                    defaultValue={selectedOffer.name}
+                    onChange={(e) => handleOfferUpdate({ name: e.target.value })}
+                    placeholder="Введите название оффера"
                   />
                 </div>
+                
                 <div>
-                  <Label htmlFor="payoutType">{t('payout_type')}</Label>
+                  <Label>Категория</Label>
                   <Select 
-                    defaultValue={selectedOffer.payoutType}
-                    onValueChange={(value) => handleOfferUpdate({ payoutType: value })}
+                    defaultValue={selectedOffer.category}
+                    onValueChange={(value) => handleOfferUpdate({ category: value })}
                   >
-                    <SelectTrigger data-testid="select-edit-payout-type">
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="CPA">CPA</SelectItem>
-                      <SelectItem value="CPS">CPS</SelectItem>
-                      <SelectItem value="CPL">CPL</SelectItem>
+                      <SelectItem value="gambling">Гемблинг</SelectItem>
+                      <SelectItem value="finance">Финансы</SelectItem>
+                      <SelectItem value="nutra">Нутра</SelectItem>
+                      <SelectItem value="dating">Знакомства</SelectItem>
+                      <SelectItem value="sweepstakes">Лотереи</SelectItem>
+                      <SelectItem value="crypto">Криптовалюты</SelectItem>
+                      <SelectItem value="e-commerce">E-commerce</SelectItem>
+                      <SelectItem value="mobile">Мобильные</SelectItem>
+                      <SelectItem value="gaming">Игры</SelectItem>
+                      <SelectItem value="software">ПО</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="fraudRestrictions">{t('fraud_restrictions')}</Label>
+                <Label>Описание</Label>
                 <Textarea
-                  id="fraudRestrictions"
-                  placeholder={t('enter_fraud_restrictions')}
-                  defaultValue={selectedOffer.fraudRestrictions || ''}
-                  onChange={(e) => handleOfferUpdate({ fraudRestrictions: e.target.value })}
-                  data-testid="textarea-edit-fraud-restrictions"
+                  defaultValue={selectedOffer.description}
+                  onChange={(e) => handleOfferUpdate({ description: e.target.value })}
+                  placeholder="Описание оффера"
+                  rows={3}
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="smartlink"
-                  defaultChecked={selectedOffer.smartlinkEnabled}
-                  onCheckedChange={(checked) => handleOfferUpdate({ smartlinkEnabled: checked })}
-                  data-testid="switch-edit-smartlink"
-                />
-                <Label htmlFor="smartlink">{t('smartlink_enabled')}</Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="blocked"
-                  defaultChecked={selectedOffer.isBlocked}
-                  onCheckedChange={(checked) => handleOfferUpdate({ isBlocked: checked })}
-                  data-testid="switch-edit-blocked"
-                />
-                <Label htmlFor="blocked">{t('block_offer')}</Label>
-              </div>
-
-              {selectedOffer.isBlocked && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <Label htmlFor="blockedReason">{t('blocked_reason')}</Label>
-                  <Textarea
-                    id="blockedReason"
-                    placeholder={t('enter_blocked_reason')}
-                    defaultValue={selectedOffer.blockedReason || ''}
-                    onChange={(e) => handleOfferUpdate({ blockedReason: e.target.value })}
-                    data-testid="textarea-edit-blocked-reason"
+                  <Label>Статус</Label>
+                  <Select 
+                    defaultValue={selectedOffer.status}
+                    onValueChange={(value) => handleOfferUpdate({ status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Активен</SelectItem>
+                      <SelectItem value="paused">Остановлен</SelectItem>
+                      <SelectItem value="pending">Ожидает</SelectItem>
+                      <SelectItem value="draft">Черновик</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Тип выплаты</Label>
+                  <Select 
+                    defaultValue={selectedOffer.payoutType}
+                    onValueChange={(value) => handleOfferUpdate({ payoutType: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CPA">CPA</SelectItem>
+                      <SelectItem value="CPS">CPS</SelectItem>
+                      <SelectItem value="CPL">CPL</SelectItem>
+                      <SelectItem value="CRL">CRL</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Валюта</Label>
+                  <Select 
+                    defaultValue={selectedOffer.currency}
+                    onValueChange={(value) => handleOfferUpdate({ currency: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="RUB">RUB</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label>URL логотипа</Label>
+                <Input
+                  defaultValue={selectedOffer.logo || ''}
+                  onChange={(e) => handleOfferUpdate({ logo: e.target.value })}
+                  placeholder="https://example.com/logo.png"
+                />
+              </div>
+
+              <div>
+                <Label>KPI условия</Label>
+                <Textarea
+                  defaultValue={selectedOffer.kpiConditions || ''}
+                  onChange={(e) => handleOfferUpdate({ kpiConditions: e.target.value })}
+                  placeholder="Условия достижения KPI"
+                  rows={2}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label>Дневной лимит</Label>
+                  <Input
+                    type="number"
+                    defaultValue={selectedOffer.dailyLimit || ''}
+                    onChange={(e) => handleOfferUpdate({ dailyLimit: e.target.value ? parseInt(e.target.value) : undefined })}
+                    placeholder="Без ограничений"
                   />
                 </div>
-              )}
+                
+                <div>
+                  <Label>Месячный лимит</Label>
+                  <Input
+                    type="number"
+                    defaultValue={selectedOffer.monthlyLimit || ''}
+                    onChange={(e) => handleOfferUpdate({ monthlyLimit: e.target.value ? parseInt(e.target.value) : undefined })}
+                    placeholder="Без ограничений"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="text-base">Защита от фрода</Label>
+                    <div className="text-sm text-muted-foreground">
+                      Включить автоматическую защиту от мошенничества
+                    </div>
+                  </div>
+                  <Switch
+                    defaultChecked={selectedOffer.antifraudEnabled}
+                    onCheckedChange={(checked) => handleOfferUpdate({ antifraudEnabled: checked })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="text-base">Автоодобрение партнеров</Label>
+                    <div className="text-sm text-muted-foreground">
+                      Автоматически одобрять новых партнеров
+                    </div>
+                  </div>
+                  <Switch
+                    defaultChecked={selectedOffer.autoApprovePartners}
+                    onCheckedChange={(checked) => handleOfferUpdate({ autoApprovePartners: checked })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsEditDialogOpen(false)}
+                >
+                  Отмена
+                </Button>
+                <Button 
+                  onClick={() => updateOfferMutation.mutate(selectedOffer)}
+                  disabled={updateOfferMutation.isPending}
+                >
+                  {updateOfferMutation.isPending ? 'Сохранение...' : 'Сохранить изменения'}
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>

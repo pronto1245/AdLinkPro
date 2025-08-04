@@ -1757,6 +1757,155 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
           )}
         />
 
+        {/* Разрешенные источники трафика */}
+        <FormField
+          control={form.control}
+          name="allowedTrafficSources"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Разрешенные источники трафика</FormLabel>
+              <FormControl>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2">
+                    {['Facebook', 'Instagram', 'Google', 'YouTube', 'TikTok', 'Twitter', 'LinkedIn', 'Push', 'Pop', 'Email', 'SMS', 'Native', 'SEO', 'Organic', 'Influencer', 'Teaser'].map((source) => {
+                      const isSelected = (field.value || []).includes(source);
+                      return (
+                        <Button
+                          key={source}
+                          type="button"
+                          variant={isSelected ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            const current = field.value || [];
+                            if (isSelected) {
+                              field.onChange(current.filter((s: string) => s !== source));
+                            } else {
+                              field.onChange([...current, source]);
+                            }
+                          }}
+                        >
+                          {source}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  {field.value && field.value.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {field.value.map((source: string, index: number) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {source}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-4 w-4 p-0 ml-1 hover:bg-transparent"
+                            onClick={() => {
+                              const current = field.value || [];
+                              field.onChange(current.filter((_: string, i: number) => i !== index));
+                            }}
+                          >
+                            ×
+                          </Button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Разрешенные приложения */}
+        <FormField
+          control={form.control}
+          name="allowedApps"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Разрешенные приложения</FormLabel>
+              <FormControl>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: 'web', label: 'Веб-сайты' },
+                      { value: 'mobile_app', label: 'Мобильные приложения' },
+                      { value: 'social_media', label: 'Социальные сети' },
+                      { value: 'email', label: 'Email рассылки' },
+                      { value: 'sms', label: 'SMS рассылки' },
+                      { value: 'telegram_bots', label: 'Telegram боты' },
+                      { value: 'browser_extensions', label: 'Браузерные расширения' },
+                      { value: 'push_notifications', label: 'Push уведомления' },
+                      { value: 'popup_ads', label: 'Popup реклама' },
+                      { value: 'banner_ads', label: 'Баннерная реклама' },
+                      { value: 'video_ads', label: 'Видео реклама' },
+                      { value: 'native_ads', label: 'Нативная реклама' }
+                    ].map((app) => {
+                      const isSelected = (field.value || []).includes(app.value);
+                      return (
+                        <Button
+                          key={app.value}
+                          type="button"
+                          variant={isSelected ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            const current = field.value || [];
+                            if (isSelected) {
+                              field.onChange(current.filter((s: string) => s !== app.value));
+                            } else {
+                              field.onChange([...current, app.value]);
+                            }
+                          }}
+                        >
+                          {app.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  {field.value && field.value.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {field.value.map((appValue: string, index: number) => {
+                        const app = [
+                          { value: 'web', label: 'Веб-сайты' },
+                          { value: 'mobile_app', label: 'Мобильные приложения' },
+                          { value: 'social_media', label: 'Социальные сети' },
+                          { value: 'email', label: 'Email рассылки' },
+                          { value: 'sms', label: 'SMS рассылки' },
+                          { value: 'telegram_bots', label: 'Telegram боты' },
+                          { value: 'browser_extensions', label: 'Браузерные расширения' },
+                          { value: 'push_notifications', label: 'Push уведомления' },
+                          { value: 'popup_ads', label: 'Popup реклама' },
+                          { value: 'banner_ads', label: 'Баннерная реклама' },
+                          { value: 'video_ads', label: 'Видео реклама' },
+                          { value: 'native_ads', label: 'Нативная реклама' }
+                        ].find(a => a.value === appValue);
+                        return (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {app?.label || appValue}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-4 w-4 p-0 ml-1 hover:bg-transparent"
+                              onClick={() => {
+                                const current = field.value || [];
+                                field.onChange(current.filter((_: string, i: number) => i !== index));
+                              }}
+                            >
+                              ×
+                            </Button>
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
@@ -1792,6 +1941,146 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
                     onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                     placeholder="Без ограничений" 
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Landing Pages Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">Landing Pages</h3>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const current = form.getValues('landingPages') || [];
+                form.setValue('landingPages', [...current, { 
+                  name: `Landing ${current.length + 1}`, 
+                  url: '', 
+                  payoutAmount: 0, 
+                  currency: 'USD', 
+                  geo: '' 
+                }]);
+              }}
+            >
+              Добавить Landing Page
+            </Button>
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="landingPages"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="space-y-4">
+                    {(field.value || []).map((landing: any, index: number) => (
+                      <div key={index} className="p-4 border rounded-lg space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium">Landing Page {index + 1}</h4>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const current = field.value || [];
+                              field.onChange(current.filter((_: any, i: number) => i !== index));
+                            }}
+                          >
+                            Удалить
+                          </Button>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-sm font-medium">Название</label>
+                            <Input
+                              value={landing.name || ''}
+                              onChange={(e) => {
+                                const current = field.value || [];
+                                current[index] = { ...current[index], name: e.target.value };
+                                field.onChange([...current]);
+                              }}
+                              placeholder="Название landing page"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm font-medium">GEO</label>
+                            <Input
+                              value={landing.geo || ''}
+                              onChange={(e) => {
+                                const current = field.value || [];
+                                current[index] = { ...current[index], geo: e.target.value };
+                                field.onChange([...current]);
+                              }}
+                              placeholder="US, GB, RU..."
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="text-sm font-medium">URL</label>
+                          <Input
+                            value={landing.url || ''}
+                            onChange={(e) => {
+                              const current = field.value || [];
+                              current[index] = { ...current[index], url: e.target.value };
+                              field.onChange([...current]);
+                            }}
+                            placeholder="https://example.com/landing"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-sm font-medium">Выплата</label>
+                            <Input
+                              type="number"
+                              value={landing.payoutAmount || ''}
+                              onChange={(e) => {
+                                const current = field.value || [];
+                                current[index] = { ...current[index], payoutAmount: parseFloat(e.target.value) || 0 };
+                                field.onChange([...current]);
+                              }}
+                              placeholder="0.00"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm font-medium">Валюта</label>
+                            <Select
+                              value={landing.currency || 'USD'}
+                              onValueChange={(value) => {
+                                const current = field.value || [];
+                                current[index] = { ...current[index], currency: value };
+                                field.onChange([...current]);
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="USD">USD</SelectItem>
+                                <SelectItem value="EUR">EUR</SelectItem>
+                                <SelectItem value="RUB">RUB</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {(!field.value || field.value.length === 0) && (
+                      <div className="text-center py-8 text-gray-500">
+                        Нет добавленных landing pages. Нажмите "Добавить Landing Page" чтобы создать первую.
+                      </div>
+                    )}
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

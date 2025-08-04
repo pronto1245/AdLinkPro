@@ -784,27 +784,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Updating offer:", id, "for user:", authUser.id, authUser.username);
       console.log("Update data:", JSON.stringify(req.body, null, 2));
       
+      // Prepare update data - only include fields that have values
+      const updateData: any = {
+        updatedAt: new Date(),
+      };
+      
+      if (req.body.name !== undefined) updateData.name = req.body.name;
+      if (req.body.category !== undefined) updateData.category = req.body.category;
+      if (req.body.description !== undefined) updateData.description = req.body.description;
+      if (req.body.logo !== undefined) updateData.logo = req.body.logo;
+      if (req.body.status !== undefined) updateData.status = req.body.status;
+      if (req.body.payoutType !== undefined) updateData.payoutType = req.body.payoutType;
+      if (req.body.currency !== undefined) updateData.currency = req.body.currency;
+      if (req.body.landingPages !== undefined) updateData.landingPages = req.body.landingPages;
+      if (req.body.kpiConditions !== undefined) updateData.kpiConditions = req.body.kpiConditions;
+      if (req.body.trafficSources !== undefined) updateData.trafficSources = req.body.trafficSources;
+      if (req.body.allowedTrafficSources !== undefined) updateData.trafficSources = req.body.allowedTrafficSources;
+      if (req.body.allowedApps !== undefined) updateData.allowedApps = req.body.allowedApps;
+      if (req.body.dailyLimit !== undefined) updateData.dailyLimit = req.body.dailyLimit;
+      if (req.body.monthlyLimit !== undefined) updateData.monthlyLimit = req.body.monthlyLimit;
+      if (req.body.antifraudEnabled !== undefined) updateData.antifraudEnabled = req.body.antifraudEnabled;
+      if (req.body.autoApprovePartners !== undefined) updateData.autoApprovePartners = req.body.autoApprovePartners;
+      
+      console.log("Final update data:", updateData);
+      
       // Update offer directly in database
       const [updatedOffer] = await db
         .update(offers)
-        .set({
-          name: req.body.name || undefined,
-          category: req.body.category || undefined,
-          description: req.body.description || undefined,
-          logo: req.body.logo || undefined,
-          status: req.body.status || undefined,
-          payoutType: req.body.payoutType || undefined,
-          currency: req.body.currency || undefined,
-          landingPages: req.body.landingPages || undefined,
-          kpiConditions: req.body.kpiConditions || undefined,
-          trafficSources: req.body.trafficSources || req.body.allowedTrafficSources || undefined,
-          allowedApps: req.body.allowedApps || undefined,
-          dailyLimit: req.body.dailyLimit || undefined,
-          monthlyLimit: req.body.monthlyLimit || undefined,
-          antifraudEnabled: req.body.antifraudEnabled !== undefined ? req.body.antifraudEnabled : undefined,
-          autoApprovePartners: req.body.autoApprovePartners !== undefined ? req.body.autoApprovePartners : undefined,
-          updatedAt: new Date(),
-        })
+        .set(updateData)
         .where(eq(offers.id, id))
         .returning();
       
