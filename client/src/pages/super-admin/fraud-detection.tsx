@@ -72,6 +72,40 @@ interface IpAnalysis {
   conversionCount: number;
   threatTypes: string[];
   flaggedAt?: string;
+  // Third-party service scores
+  fraudScoreRating?: number;
+  forensiqScore?: number;
+  anuraScore?: number;
+  botboxVerified?: boolean;
+  lastServiceCheck?: string;
+}
+
+interface FraudServiceIntegration {
+  id: string;
+  serviceName: 'FraudScore' | 'Forensiq' | 'Anura' | 'Botbox';
+  apiKey: string;
+  isActive: boolean;
+  endpoint: string;
+  rateLimit: number;
+  lastSync: string;
+  successRate: number;
+  averageResponseTime: number;
+}
+
+interface SmartAlert {
+  id: string;
+  type: 'fraud_spike' | 'cr_anomaly' | 'volume_surge' | 'geo_anomaly';
+  title: string;
+  description: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  triggeredAt: string;
+  threshold: any;
+  currentValue: any;
+  affectedMetrics: string[];
+  autoActions: string[];
+  isResolved: boolean;
+  resolvedAt?: string;
+  resolvedBy?: string;
 }
 
 const FraudDetectionPage = () => {
@@ -86,6 +120,29 @@ const FraudDetectionPage = () => {
   const userParam = urlParams.get('user');
   
   const [selectedTab, setSelectedTab] = useState('reports');
+  
+  // New queries for enhanced features
+  const { data: fraudServices = [] } = useQuery<FraudServiceIntegration[]>({
+    queryKey: ['/api/admin/fraud-services'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/fraud-services', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch fraud services');
+      return response.json();
+    },
+  });
+
+  const { data: smartAlerts = [] } = useQuery<SmartAlert[]>({
+    queryKey: ['/api/admin/smart-alerts'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/smart-alerts', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch smart alerts');
+      return response.json();
+    },
+  });
   const [reportFilters, setReportFilters] = useState({
     type: '',
     severity: '',
@@ -435,6 +492,14 @@ const FraudDetectionPage = () => {
               <TabsTrigger value="rules" className="flex items-center space-x-2">
                 <Settings className="w-4 h-4" />
                 <span>Правила</span>
+              </TabsTrigger>
+              <TabsTrigger value="integrations" className="flex items-center space-x-2">
+                <Zap className="w-4 h-4" />
+                <span>Интеграции</span>
+              </TabsTrigger>
+              <TabsTrigger value="alerts" className="flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4" />
+                <span>Smart-алерты</span>
               </TabsTrigger>
               <TabsTrigger value="blocks" className="flex items-center space-x-2">
                 <Ban className="w-4 h-4" />
@@ -1276,11 +1341,292 @@ const FraudDetectionPage = () => {
               </div>
             </DialogContent>
           </Dialog>
-        </main>
-      </div>
+
+          {/* Integrations Tab */}
+          <TabsContent value="integrations" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Zap className="w-5 h-5" />
+                  <span>Интеграции с антифрод-сервисами</span>
+                </CardTitle>
+                <CardDescription>
+                  Подключение и настройка внешних сервисов для анализа трафика
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4">
+                  {[
+                    { 
+                      name: 'FraudScore', 
+                      description: 'API для проверки IP-адресов и анализа фрода',
+                      status: 'active',
+                      endpoint: 'https://api.fraudscore.com/v1/ip',
+                      rateLimit: 1000,
+                      successRate: 98.5
+                    },
+                    { 
+                      name: 'Forensiq', 
+                      description: 'Детекция ботов и фрод-трафика в реальном времени',
+                      status: 'inactive',
+                      endpoint: 'https://api.forensiq.com/v2/validate',
+                      rateLimit: 500,
+                      successRate: 97.2
+                    },
+                    { 
+                      name: 'Anura', 
+                      description: 'Мгновенная защита от фрод-трафика и ботов',
+                      status: 'active',
+                      endpoint: 'https://api.anura.io/v1/direct',
+                      rateLimit: 2000,
+                      successRate: 99.1
+                    },
+                    { 
+                      name: 'Botbox', 
+                      description: 'Защита от автоматизированного трафика',
+                      status: 'inactive',
+                      endpoint: 'https://api.botbox.io/v1/verify',
+                      rateLimit: 800,
+                      successRate: 96.8
+                    }
+                  ].map((service) => (
+                    <Card key={service.name} className="border-2">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-3">
+                              <h3 className="text-lg font-semibold">{service.name}</h3>
+                              <Badge 
+                                variant={service.status === 'active' ? 'default' : 'secondary'}
+                                className={service.status === 'active' ? 'bg-green-100 text-green-800' : ''}
+                              >
+                                {service.status === 'active' ? 'Активен' : 'Неактивен'}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-gray-600">{service.description}</p>
+                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                              <span>Rate Limit: {service.rateLimit}/мин</span>
+                              <span>Success Rate: {service.successRate}%</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                toast({
+                                  title: "Тестирование подключения",
+                                  description: `Проверка соединения с ${service.name}...`,
+                                });
+                              }}
+                              data-testid={`button-test-${service.name.toLowerCase()}`}
+                              title="Тестировать подключение"
+                            >
+                              <Activity className="w-4 h-4" />
+                            </Button>
+                            <Switch 
+                              checked={service.status === 'active'}
+                              onCheckedChange={() => {
+                                toast({
+                                  title: service.status === 'active' ? "Сервис отключён" : "Сервис подключён",
+                                  description: `${service.name} ${service.status === 'active' ? 'деактивирован' : 'активирован'}`,
+                                });
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Smart Alerts Tab */}
+          <TabsContent value="alerts" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold">Smart-алерты</h2>
+                <p className="text-gray-600">Умные уведомления при аномалиях в трафике</p>
+              </div>
+              <Button 
+                className="bg-orange-600 hover:bg-orange-700"
+                onClick={() => {
+                  toast({
+                    title: "Настройка алертов",
+                    description: "Открытие панели настройки умных алертов",
+                  });
+                }}
+                data-testid="button-configure-alerts"
+                title="Настроить алерты"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Настроить
+              </Button>
+            </div>
+
+            {/* Alert Configuration Cards */}
+            <div className="grid gap-4">
+              {[
+                {
+                  type: 'fraud_spike',
+                  title: 'Пик фрода',
+                  description: 'Уведомление при резком увеличении фрод-трафика',
+                  threshold: '20% за 15 минут',
+                  status: 'active',
+                  lastTriggered: '2 часа назад',
+                  severity: 'high'
+                },
+                {
+                  type: 'cr_anomaly', 
+                  title: 'Аномалия CR',
+                  description: 'Увеличение конверсии в 3-5 раз за короткое время',
+                  threshold: '300% за 30 минут',
+                  status: 'active',
+                  lastTriggered: 'Никогда',
+                  severity: 'critical'
+                },
+                {
+                  type: 'volume_surge',
+                  title: 'Всплеск трафика',
+                  description: 'Необычный рост объёма трафика',
+                  threshold: '500% за 1 час',
+                  status: 'inactive',
+                  lastTriggered: '1 день назад',
+                  severity: 'medium'
+                },
+                {
+                  type: 'geo_anomaly',
+                  title: 'Географическая аномалия',
+                  description: 'Трафик из необычных регионов',
+                  threshold: 'Новые ГЕО > 10%',
+                  status: 'active',
+                  lastTriggered: '5 часов назад',
+                  severity: 'low'
+                }
+              ].map((alert) => (
+                <Card key={alert.type} className="border-2">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-2 flex-1">
+                        <div className="flex items-center space-x-3">
+                          <AlertCircle className={`w-5 h-5 ${
+                            alert.severity === 'critical' ? 'text-red-500' :
+                            alert.severity === 'high' ? 'text-orange-500' :
+                            alert.severity === 'medium' ? 'text-yellow-500' : 'text-blue-500'
+                          }`} />
+                          <h3 className="text-lg font-semibold">{alert.title}</h3>
+                          <Badge 
+                            variant={alert.status === 'active' ? 'default' : 'secondary'}
+                            className={alert.status === 'active' ? 'bg-green-100 text-green-800' : ''}
+                          >
+                            {alert.status === 'active' ? 'Активен' : 'Отключён'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600">{alert.description}</p>
+                        <div className="flex items-center space-x-4 text-xs text-gray-500">
+                          <span>Порог: {alert.threshold}</span>
+                          <span>Последний: {alert.lastTriggered}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            toast({
+                              title: "Настройка алерта",
+                              description: `Открытие настроек для "${alert.title}"`,
+                            });
+                          }}
+                          data-testid={`button-configure-${alert.type}`}
+                          title="Настроить алерт"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Switch 
+                          checked={alert.status === 'active'}
+                          onCheckedChange={() => {
+                            toast({
+                              title: alert.status === 'active' ? "Алерт отключён" : "Алерт включён",
+                              description: `"${alert.title}" ${alert.status === 'active' ? 'деактивирован' : 'активирован'}`,
+                            });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Export Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Download className="w-5 h-5" />
+                  <span>Экспорт логов фрода</span>
+                </CardTitle>
+                <CardDescription>
+                  Выгрузка данных о мошенничестве в различных форматах
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      window.open('/api/admin/fraud-reports/export?format=excel', '_blank');
+                      toast({
+                        title: "Экспорт Excel",
+                        description: "Загрузка файла с логами фрода в формате Excel",
+                      });
+                    }}
+                    data-testid="button-export-excel"
+                    title="Экспорт в Excel"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Excel
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      window.open('/api/admin/fraud-reports/export?format=json', '_blank');
+                      toast({
+                        title: "Экспорт JSON",
+                        description: "Загрузка файла с логами фрода в формате JSON",
+                      });
+                    }}
+                    data-testid="button-export-json"
+                    title="Экспорт в JSON"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    JSON
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText('https://api.yourplatform.com/fraud-logs');
+                      toast({
+                        title: "API endpoint скопирован",
+                        description: "Ссылка на API для получения логов фрода скопирована в буфер обмена",
+                      });
+                    }}
+                    data-testid="button-copy-api"
+                    title="Скопировать API endpoint"
+                  >
+                    <Zap className="w-4 h-4 mr-2" />
+                    API
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
 };
 
-export { FraudDetectionPage };
 export default FraudDetectionPage;

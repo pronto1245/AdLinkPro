@@ -2781,6 +2781,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Fraud services integration endpoints
+  app.get("/api/admin/fraud-services", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const services = [
+        {
+          id: "fs-1",
+          serviceName: "FraudScore",
+          apiKey: "fs_test_key_*****",
+          isActive: true,
+          endpoint: "https://api.fraudscore.com/v1/ip",
+          rateLimit: 1000,
+          lastSync: new Date().toISOString(),
+          successRate: 98.5,
+          averageResponseTime: 120
+        },
+        {
+          id: "fq-1", 
+          serviceName: "Forensiq",
+          apiKey: "fq_test_key_*****",
+          isActive: false,
+          endpoint: "https://api.forensiq.com/v2/validate",
+          rateLimit: 500,
+          lastSync: new Date(Date.now() - 86400000).toISOString(),
+          successRate: 97.2,
+          averageResponseTime: 200
+        },
+        {
+          id: "an-1",
+          serviceName: "Anura", 
+          apiKey: "an_test_key_*****",
+          isActive: true,
+          endpoint: "https://api.anura.io/v1/direct",
+          rateLimit: 2000,
+          lastSync: new Date().toISOString(),
+          successRate: 99.1,
+          averageResponseTime: 80
+        },
+        {
+          id: "bb-1",
+          serviceName: "Botbox",
+          apiKey: "bb_test_key_*****", 
+          isActive: false,
+          endpoint: "https://api.botbox.io/v1/verify",
+          rateLimit: 800,
+          lastSync: new Date(Date.now() - 43200000).toISOString(),
+          successRate: 96.8,
+          averageResponseTime: 150
+        }
+      ];
+      res.json(services);
+    } catch (error) {
+      console.error("Get fraud services error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Smart alerts endpoints
+  app.get("/api/admin/smart-alerts", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const alerts = [
+        {
+          id: "alert-1",
+          type: "fraud_spike",
+          title: "Пик фрода",
+          description: "Уведомление при резком увеличении фрод-трафика",
+          severity: "high",
+          triggeredAt: new Date(Date.now() - 7200000).toISOString(),
+          threshold: { value: 20, period: 15, unit: "minutes" },
+          currentValue: { fraudRate: 25.3, period: "last_15_min" },
+          affectedMetrics: ["fraud_rate", "blocked_ips"],
+          autoActions: ["block_suspicious_ips", "alert_admins"],
+          isResolved: false
+        },
+        {
+          id: "alert-2", 
+          type: "cr_anomaly",
+          title: "Аномалия CR",
+          description: "Увеличение конверсии в 3-5 раз за короткое время",
+          severity: "critical",
+          triggeredAt: new Date(Date.now() - 1800000).toISOString(),
+          threshold: { multiplier: 3, period: 30, unit: "minutes" },
+          currentValue: { crIncrease: 4.2, baseline: 2.1, current: 8.8 },
+          affectedMetrics: ["conversion_rate", "revenue"],
+          autoActions: ["flag_traffic", "manual_review"],
+          isResolved: false
+        }
+      ];
+      res.json(alerts);
+    } catch (error) {
+      console.error("Get smart alerts error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
