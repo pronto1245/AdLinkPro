@@ -14,6 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
+import Sidebar from '@/components/layout/sidebar';
+import Header from '@/components/layout/header';
+import { useSidebar } from '@/contexts/sidebar-context';
 
 interface DashboardMetrics {
   activePartners: number;
@@ -53,6 +56,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 export default function Dashboard() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
   
   const [dateFilter, setDateFilter] = useState<string>('7d');
@@ -61,49 +65,21 @@ export default function Dashboard() {
   // Fetch dashboard metrics
   const { data: metrics } = useQuery<DashboardMetrics>({
     queryKey: ['/api/admin/dashboard-metrics', dateFilter],
-    queryFn: async () => {
-      const response = await fetch(`/api/admin/dashboard-metrics/${dateFilter}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      if (!response.ok) throw new Error('Failed to fetch metrics');
-      return response.json();
-    },
   });
 
   // Fetch chart data
   const { data: chartData = [] } = useQuery<ChartData[]>({
     queryKey: ['/api/admin/dashboard-chart', dateFilter],
-    queryFn: async () => {
-      const response = await fetch(`/api/admin/dashboard-chart/${dateFilter}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      if (!response.ok) throw new Error('Failed to fetch chart data');
-      return response.json();
-    },
   });
 
   // Fetch recent activities
   const { data: recentActivities = [] } = useQuery<RecentActivity[]>({
     queryKey: ['/api/admin/recent-activities'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/recent-activities', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      if (!response.ok) throw new Error('Failed to fetch activities');
-      return response.json();
-    },
   });
 
   // Fetch geo distribution
   const { data: geoData = [] } = useQuery<any[]>({
     queryKey: ['/api/admin/geo-distribution', dateFilter],
-    queryFn: async () => {
-      const response = await fetch(`/api/admin/geo-distribution/${dateFilter}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      if (!response.ok) throw new Error('Failed to fetch geo data');
-      return response.json();
-    },
   });
 
   const getActivityIcon = (type: string) => {
@@ -147,10 +123,17 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="p-6">
-        {/* Header Section */}
-        <div className="mb-6">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <Sidebar />
+      <div 
+        className={`flex-1 flex flex-col transition-all duration-300 ${
+          isCollapsed ? 'ml-16' : 'ml-64'
+        }`}
+      >
+        <Header title="Дашборд владельца" />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
+          {/* Header Section */}
+          <div className="mb-6">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -197,10 +180,10 @@ export default function Dashboard() {
               </Select>
             </div>
           </div>
-        </div>
+          </div>
 
-        {/* Real-time Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+          {/* Real-time Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
           
           {/* Active Partners */}
           <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
@@ -327,10 +310,10 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </div>
 
-        {/* KPI Cards Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* KPI Cards Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -381,10 +364,10 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           
           {/* Traffic & Conversions Chart */}
           <Card className="lg:col-span-2">
@@ -475,10 +458,10 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </div>
 
-        {/* Recent Activities & Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent Activities & Quick Actions */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Recent Activities */}
           <Card className="lg:col-span-2">
@@ -587,7 +570,8 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </div>
+        </main>
       </div>
     </div>
   );
