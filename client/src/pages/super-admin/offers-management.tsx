@@ -813,6 +813,7 @@ export default function OffersManagement() {
   const [moderationFilter, setModerationFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [advertiserFilter, setAdvertiserFilter] = useState('all');
+  const [offerNameSearch, setOfferNameSearch] = useState('');
 
   // Fetch offers
   const { data: offers = [], isLoading: offersLoading } = useQuery({
@@ -822,15 +823,18 @@ export default function OffersManagement() {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       // Затем фильтруем
       .filter(offer => {
-        const matchesSearch = offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                             offer.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                             offer.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || offer.status === statusFilter;
+        const matchesGeneralSearch = !searchTerm || (
+          offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          offer.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          offer.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        const matchesOfferNameSearch = !offerNameSearch || 
+          offer.name.toLowerCase().includes(offerNameSearch.toLowerCase());
         const matchesModeration = moderationFilter === 'all' || offer.moderationStatus === moderationFilter;
         const matchesCategory = categoryFilter === 'all' || offer.category === categoryFilter;
         const matchesAdvertiser = advertiserFilter === 'all' || offer.advertiserId === advertiserFilter;
         
-        return matchesSearch && matchesStatus && matchesModeration && matchesCategory && matchesAdvertiser;
+        return matchesGeneralSearch && matchesOfferNameSearch && matchesModeration && matchesCategory && matchesAdvertiser;
       })
   });
 
@@ -1236,18 +1240,17 @@ export default function OffersManagement() {
               />
             </div>
             
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger data-testid="select-status-filter" title="Фильтр по статусу оффера">
-                <SelectValue placeholder={t('status')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все офферы</SelectItem>
-                <SelectItem value="active">{t('active')}</SelectItem>
-                <SelectItem value="paused">Остановлен</SelectItem>
-                <SelectItem value="pending">Ожидает</SelectItem>
-                <SelectItem value="draft">{t('draft')}</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Поиск по названию оффера"
+                value={offerNameSearch}
+                onChange={(e) => setOfferNameSearch(e.target.value)}
+                className="pl-10"
+                data-testid="input-search-offer-name"
+                title="Поиск офферов по названию"
+              />
+            </div>
 
             <Select value={moderationFilter} onValueChange={setModerationFilter}>
               <SelectTrigger data-testid="select-moderation-filter" title="Фильтр по статусу модерации">
