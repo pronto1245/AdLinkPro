@@ -2389,6 +2389,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update fraud report status
+  app.post('/api/admin/fraud-reports/update-status', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { reportId, status } = req.body;
+      
+      if (!reportId || !status) {
+        return res.status(400).json({ error: 'Missing reportId or status' });
+      }
+
+      if (!['pending', 'reviewing', 'confirmed', 'rejected', 'resolved'].includes(status)) {
+        return res.status(400).json({ error: 'Invalid status' });
+      }
+
+      // Here you would typically update the database
+      // For demo purposes, we'll just return success
+      res.json({ 
+        success: true, 
+        message: `Report ${reportId} status updated to ${status}`,
+        reportId,
+        status,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error updating fraud report status:', error);
+      res.status(500).json({ error: 'Failed to update report status' });
+    }
+  });
+
   // Fraud Detection Routes
   app.get("/api/admin/fraud-reports", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {

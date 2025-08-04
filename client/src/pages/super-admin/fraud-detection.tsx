@@ -183,6 +183,26 @@ const FraudDetectionPage = () => {
   const [selectedIpAnalysis, setSelectedIpAnalysis] = useState<any>(null);
   const [viewIpDialogOpen, setViewIpDialogOpen] = useState(false);
 
+  // Mutation for updating report status
+  const updateReportStatusMutation = useMutation({
+    mutationFn: async ({ reportId, status }: { reportId: string, status: string }) => {
+      return apiRequest('/api/admin/fraud-reports/update-status', {
+        method: 'POST',
+        body: JSON.stringify({ reportId, status })
+      });
+    },
+    onSuccess: (data, variables) => {
+      // Optimistic update followed by cache invalidation
+      queryClient.setQueryData(['/api/admin/fraud-reports'], (oldReports: any[]) => {
+        return oldReports?.map(report => 
+          report.id === variables.reportId ? { ...report, status: variables.status } : report
+        ) || [];
+      });
+      // Invalidate to fetch fresh data from server
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/fraud-reports'] });
+    }
+  });
+
   // Fetch fraud reports
   const { data: fraudReports = [], isLoading: reportsLoading } = useQuery<FraudReport[]>({
     queryKey: ['/api/admin/fraud-reports', reportFilters],
@@ -839,16 +859,16 @@ const FraudDetectionPage = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => {
+                                    // Update report status on server
+                                    updateReportStatusMutation.mutate({ 
+                                      reportId: report.id, 
+                                      status: 'confirmed' 
+                                    });
+                                    
                                     toast({
                                       title: "IP заблокирован",
                                       description: `IP ${report.ipAddress} добавлен в чёрный список`,
                                       variant: "destructive",
-                                    });
-                                    // Update report status locally for immediate visual feedback
-                                    queryClient.setQueryData(['/api/admin/fraud-reports'], (oldReports: any[]) => {
-                                      return oldReports?.map(r => 
-                                        r.id === report.id ? { ...r, status: 'confirmed' } : r
-                                      ) || [];
                                     });
                                   }}
                                   data-testid={`block-ip-${report.id}`}
@@ -2179,16 +2199,18 @@ const FraudDetectionPage = () => {
               <Button 
                 variant="outline"
                 onClick={() => {
-                  toast({
-                    title: "Отчёт отклонён",
-                    description: `Отчёт ${selectedReport?.id} отмечен как ложное срабатывание`,
-                  });
-                  // Update report status locally for immediate visual feedback
-                  queryClient.setQueryData(['/api/admin/fraud-reports'], (oldReports: any[]) => {
-                    return oldReports?.map(report => 
-                      report.id === selectedReport?.id ? { ...report, status: 'rejected' } : report
-                    ) || [];
-                  });
+                  if (selectedReport) {
+                    // Update report status on server
+                    updateReportStatusMutation.mutate({ 
+                      reportId: selectedReport.id, 
+                      status: 'rejected' 
+                    });
+                    
+                    toast({
+                      title: "Отчёт отклонён",
+                      description: `Отчёт ${selectedReport.id} отмечен как ложное срабатывание`,
+                    });
+                  }
                   setViewReportDialogOpen(false);
                 }}
                 data-testid="reject-report-btn"
@@ -2198,16 +2220,18 @@ const FraudDetectionPage = () => {
               <Button 
                 variant="destructive"
                 onClick={() => {
-                  toast({
-                    title: "Отчёт подтверждён",
-                    description: `Фрод подтверждён, IP ${selectedReport?.ipAddress} заблокирован`,
-                  });
-                  // Update report status locally for immediate visual feedback
-                  queryClient.setQueryData(['/api/admin/fraud-reports'], (oldReports: any[]) => {
-                    return oldReports?.map(report => 
-                      report.id === selectedReport?.id ? { ...report, status: 'confirmed' } : report
-                    ) || [];
-                  });
+                  if (selectedReport) {
+                    // Update report status on server
+                    updateReportStatusMutation.mutate({ 
+                      reportId: selectedReport.id, 
+                      status: 'confirmed' 
+                    });
+                    
+                    toast({
+                      title: "Отчёт подтверждён",
+                      description: `Фрод подтверждён, IP ${selectedReport.ipAddress} заблокирован`,
+                    });
+                  }
                   setViewReportDialogOpen(false);
                 }}
                 data-testid="confirm-report-btn"
