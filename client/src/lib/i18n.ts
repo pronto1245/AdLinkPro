@@ -189,6 +189,11 @@ export const translations = {
     'file_selected': 'File selected',
     'geo': 'Geo',
     'currency': 'Currency',
+    'change_offer_status': 'Change offer status',
+    'select_new_status_for': 'Select new status for offer',
+    'current_status': 'Current status',
+    'status_changed_successfully': 'Status changed successfully',
+    'failed_to_change_status': 'Failed to change status',
     
     // Categories
     'gambling': 'Gambling',
@@ -422,6 +427,11 @@ export const translations = {
     'file_selected': 'Файл выбран',
     'geo': 'Гео',
     'currency': 'Валюта',
+    'change_offer_status': 'Изменить статус оффера',
+    'select_new_status_for': 'Выберите новый статус для оффера',
+    'current_status': 'Текущий статус',
+    'status_changed_successfully': 'Статус оффера изменен',
+    'failed_to_change_status': 'Не удалось изменить статус',
     
     // Categories
     'gambling': 'Гемблинг',

@@ -1161,14 +1161,14 @@ export default function OffersManagement() {
       setIsStatusDialogOpen(false);
       setStatusChangeOffer(null);
       toast({
-        title: 'Успешно',
-        description: 'Статус оффера изменен',
+        title: t('success'),
+        description: t('status_changed_successfully'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: 'Ошибка',
-        description: error.message,
+        title: t('error'),
+        description: t('failed_to_change_status'),
         variant: "destructive",
       });
     }
@@ -2556,9 +2556,9 @@ export default function OffersManagement() {
         <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Изменить статус оффера</DialogTitle>
+              <DialogTitle>{t('change_offer_status')}</DialogTitle>
               <DialogDescription>
-                Выберите новый статус для оффера "{statusChangeOffer.name}"
+                {t('select_new_status_for')} "{statusChangeOffer.name}"
               </DialogDescription>
             </DialogHeader>
             
@@ -2573,7 +2573,7 @@ export default function OffersManagement() {
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    Активен
+                    {t('active')}
                   </div>
                 </Button>
                 
@@ -2586,7 +2586,7 @@ export default function OffersManagement() {
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    Остановлен
+                    {t('paused')}
                   </div>
                 </Button>
                 
@@ -2599,7 +2599,7 @@ export default function OffersManagement() {
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                    Ожидает
+                    {t('pending')}
                   </div>
                 </Button>
                 
@@ -2611,13 +2611,13 @@ export default function OffersManagement() {
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                    Черновик
+                    {t('draft')}
                   </div>
                 </Button>
               </div>
               
               <div className="text-sm text-muted-foreground">
-                Текущий статус: <strong>{statusChangeOffer.status}</strong>
+                {t('current_status')}: <strong>{t(statusChangeOffer.status)}</strong>
               </div>
             </div>
           </DialogContent>
