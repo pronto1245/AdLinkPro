@@ -1304,11 +1304,11 @@ export default function OffersManagement() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-background">
+      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-800">
         <Sidebar />
         <div className="flex-1 flex flex-col">
           <Header title="" subtitle="" />
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-6 bg-gray-50 dark:bg-gray-800">
             <div className="flex items-center justify-center p-8">{t('loading')}</div>
           </main>
         </div>
@@ -1317,11 +1317,11 @@ export default function OffersManagement() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-800">
       <Sidebar />
       <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
         <Header title="" subtitle="" />
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 bg-gray-50 dark:bg-gray-800">
           <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
