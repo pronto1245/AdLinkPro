@@ -22,7 +22,7 @@ import {
 export default function SuperAdminDashboard() {
   const token = useAuth();
 
-  const { data: metrics } = useQuery({
+  const { data: metrics, isLoading } = useQuery({
     queryKey: ['/api/dashboard/metrics'],
     queryFn: async () => {
       const response = await fetch('/api/dashboard/metrics', {
