@@ -1834,6 +1834,96 @@ const FraudDetectionPage = () => {
         </main>
       </div>
 
+      {/* Edit Rule Dialog */}
+      <Dialog open={editRuleDialogOpen} onOpenChange={setEditRuleDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Редактировать правило антифрода</DialogTitle>
+            <DialogDescription>
+              Измените параметры правила "{selectedRule?.name}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-rule-name">Название правила</Label>
+                <Input
+                  id="edit-rule-name"
+                  defaultValue={selectedRule?.name || ''}
+                  placeholder="Например: Блокировка VPN трафика"
+                  data-testid="edit-rule-name-input"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-rule-severity">Уровень серьёзности</Label>
+                <Select defaultValue={selectedRule?.severity || 'medium'}>
+                  <SelectTrigger id="edit-rule-severity" data-testid="edit-rule-severity-select">
+                    <SelectValue placeholder="Выберите уровень" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Низкий</SelectItem>
+                    <SelectItem value="medium">Средний</SelectItem>
+                    <SelectItem value="high">Высокий</SelectItem>
+                    <SelectItem value="critical">Критический</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-rule-conditions">Условия срабатывания</Label>
+              <Textarea
+                id="edit-rule-conditions"
+                defaultValue={typeof selectedRule?.conditions === 'string' ? selectedRule.conditions : JSON.stringify(selectedRule?.conditions) || ''}
+                placeholder="Опишите условия срабатывания правила..."
+                className="min-h-[100px]"
+                data-testid="edit-rule-conditions-textarea"
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="edit-auto-block" 
+                defaultChecked={selectedRule?.autoBlock || false}
+                data-testid="edit-auto-block-switch"
+              />
+              <Label htmlFor="edit-auto-block">Автоматическая блокировка при срабатывании</Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="edit-rule-active" 
+                defaultChecked={selectedRule?.isActive || false}
+                data-testid="edit-rule-active-switch"
+              />
+              <Label htmlFor="edit-rule-active">Активировать правило</Label>
+            </div>
+          </div>
+          
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setEditRuleDialogOpen(false)}
+              data-testid="edit-rule-cancel-btn"
+            >
+              Отмена
+            </Button>
+            <Button 
+              onClick={() => {
+                toast({
+                  title: "Правило обновлено",
+                  description: `Правило "${selectedRule?.name}" успешно сохранено`,
+                });
+                setEditRuleDialogOpen(false);
+              }}
+              data-testid="edit-rule-save-btn"
+            >
+              Сохранить изменения
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Create Rule Dialog */}
       <Dialog open={createRuleDialogOpen} onOpenChange={setCreateRuleDialogOpen}>
         <DialogContent className="max-w-2xl">
