@@ -267,7 +267,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                   name={`landingPages.${index}.name`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm">Название</FormLabel>
+                      <FormLabel className="text-sm">Название лендинга</FormLabel>
                       <FormControl>
                         <Input {...field} placeholder="Основная страница" data-testid={`input-landing-name-${index}`} />
                       </FormControl>
