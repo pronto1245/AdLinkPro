@@ -465,67 +465,142 @@ export default function UsersManagement() {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <div className="space-y-4">
+            {/* Первая строка фильтров */}
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Поиск по email, ID, имени..."
+                  value={filters.search}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <Select value={filters.role} onValueChange={(value) => handleFilterChange('role', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите роль" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все роли</SelectItem>
+                  <SelectItem value="super_admin">Супер-админ</SelectItem>
+                  <SelectItem value="advertiser">Рекламодатель</SelectItem>
+                  <SelectItem value="affiliate">Партнер</SelectItem>
+                  <SelectItem value="staff">Сотрудник</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите статус" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все статусы</SelectItem>
+                  <SelectItem value="active">Активные</SelectItem>
+                  <SelectItem value="blocked">Заблокированные</SelectItem>
+                  <SelectItem value="inactive">Неактивные</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filters.userType} onValueChange={(value) => handleFilterChange('userType', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Тип пользователя" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все типы</SelectItem>
+                  <SelectItem value="affiliate">Партнер</SelectItem>
+                  <SelectItem value="advertiser">Рекламодатель</SelectItem>
+                  <SelectItem value="admin">Администратор</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Input
-                placeholder="Поиск пользователей..."
-                value={filters.search}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10"
+                placeholder="Страна"
+                value={filters.country}
+                onChange={(e) => handleFilterChange('country', e.target.value)}
+              />
+
+              <Input
+                placeholder="Geo IP"
+                value={filters.geoIP}
+                onChange={(e) => handleFilterChange('geoIP', e.target.value)}
               />
             </div>
 
-            <Select value={filters.role} onValueChange={(value) => handleFilterChange('role', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Выберите роль" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все роли</SelectItem>
-                <SelectItem value="super_admin">Супер-админ</SelectItem>
-                <SelectItem value="advertiser">Рекламодатель</SelectItem>
-                <SelectItem value="affiliate">Партнер</SelectItem>
-                <SelectItem value="staff">Сотрудник</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Вторая строка - фильтры по датам */}
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
+              <div>
+                <label className="text-sm text-muted-foreground">Дата регистрации от:</label>
+                <Input
+                  type="date"
+                  value={filters.dateFrom}
+                  onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
 
-            <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Выберите статус" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все статусы</SelectItem>
-                <SelectItem value="active">Активные</SelectItem>
-                <SelectItem value="blocked">Заблокированные</SelectItem>
-                <SelectItem value="inactive">Неактивные</SelectItem>
-              </SelectContent>
-            </Select>
+              <div>
+                <label className="text-sm text-muted-foreground">Дата регистрации до:</label>
+                <Input
+                  type="date"
+                  value={filters.dateTo}
+                  onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
 
-            <Select value={filters.userType} onValueChange={(value) => handleFilterChange('userType', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Тип пользователя" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все типы</SelectItem>
-                <SelectItem value="affiliate">Партнер</SelectItem>
-                <SelectItem value="advertiser">Рекламодатель</SelectItem>
-                <SelectItem value="admin">Администратор</SelectItem>
-              </SelectContent>
-            </Select>
+              <div>
+                <label className="text-sm text-muted-foreground">Последний вход от:</label>
+                <Input
+                  type="date"
+                  value={filters.lastActivityFrom}
+                  onChange={(e) => handleFilterChange('lastActivityFrom', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
 
-            <Input
-              placeholder="Страна"
-              value={filters.country}
-              onChange={(e) => handleFilterChange('country', e.target.value)}
-            />
+              <div>
+                <label className="text-sm text-muted-foreground">Последний вход до:</label>
+                <Input
+                  type="date"
+                  value={filters.lastActivityTo}
+                  onChange={(e) => handleFilterChange('lastActivityTo', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
 
-            <div className="flex gap-2">
-              <Button variant="outline" size="icon" onClick={() => refetch()}>
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <Download className="h-4 w-4" />
-              </Button>
+              <div className="flex items-end gap-2">
+                <Button variant="outline" size="sm" onClick={() => {
+                  setFilters({
+                    search: '',
+                    role: 'all',
+                    status: 'all',
+                    userType: 'all',
+                    country: '',
+                    dateFrom: '',
+                    dateTo: '',
+                    lastActivityFrom: '',
+                    lastActivityTo: '',
+                    geoIP: '',
+                    page: 1,
+                    limit: 20,
+                    sortBy: 'createdAt',
+                    sortOrder: 'desc'
+                  });
+                }}>
+                  <Filter className="h-4 w-4 mr-1" />
+                  Сбросить
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => refetch()}>
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                  Обновить
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-1" />
+                  Экспорт
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
