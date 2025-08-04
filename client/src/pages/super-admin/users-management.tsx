@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/language-context";
+import { useSidebar } from "@/contexts/sidebar-context";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
@@ -101,6 +102,7 @@ interface UserFilters {
 export default function UsersManagement() {
   const { t, language } = useLanguage();
   const { toast } = useToast();
+  const { isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
   
   const [filters, setFilters] = useState<UserFilters>({
@@ -359,7 +361,9 @@ export default function UsersManagement() {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden ml-0 lg:ml-64">
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
+        isCollapsed ? 'ml-0 lg:ml-16' : 'ml-0 lg:ml-64'
+      }`}>
         <Header title="Управление пользователями" />
         <main className="flex-1 overflow-auto">
           <div className="space-y-6 p-4 sm:p-6 max-w-full">
