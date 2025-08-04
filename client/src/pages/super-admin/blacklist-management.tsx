@@ -1,27 +1,20 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClientt } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useAuth } from '@/contexts/auth-context';
-import { useToastt } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSidebar } from '@/contexts/sidebar-context';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Shield, 
   Plus, 
-  Search, 
   Trash2, 
   Globe, 
   Smartphone, 
@@ -30,9 +23,15 @@ import {
   Calendar as CalendarIcon,
   AlertTriangle,
   CheckCircle,
-  Clock
+  Clock,
+  Search
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 const blacklistEntrySchema = z.object({
   type: z.enum(['ip', 'clickid', 'subid', 'device_id', 'user_agent', 'domain']),
@@ -43,74 +42,17 @@ const blacklistEntrySchema = z.object({
 
 type BlacklistEntryFormData = z.infer<typeof blacklistEntrySchema>;
 
-export default function UsersManagement() {
-  const queryClient = useQueryClient;
-  
+export default function BlacklistManagement() {
+  const { isCollapsed } = useSidebar();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Fetch blacklist entries
+  const { data: blacklistEntries, isLoading } = useQuery({
     queryKey: ['/api/admin/blacklist', searchTerm, typeFilter],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      if (typeFilter !== 'all') params.append('type', typeFilter);
-      
-      const response = await fetch(`/api/admin/blacklist?${params.toString()}`, {
-        headers: token,
-      });
-      if (!response.ok) throw new Error('Failed to fetch blacklist');
-      return response.json();
-    },
-  });
-
-  const createEntryMutation = useMutation({
-    mutationFn: async (data: BlacklistEntryFormData) => {
-      return await apiRequest(POST', '/api/admin/blacklist', data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/blacklist'] });
-      setIsCreateDialogOpen(false);
-      form.reset()
-      toast({
-        title: 'success',
-        description: 'Text',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'error',
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
-
-  const deleteEntryMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return await apiRequest(DELETE', `/api/admin/blacklist/${id}`;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/blacklist'] });
-      toast({
-        title: 'success',
-        description: 'Text',
-      });
-    },
-  });
-
-  const toggleEntryMutation = useMutation({
-    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      return await apiRequest(PATCH', `/api/admin/blacklist/${id}`, { isActive };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/blacklist'] });
-      toast({
-        title: 'success',
-        description: 'Text',
-      });
-    },
   });
 
   const form = useForm<BlacklistEntryFormData>({
@@ -122,45 +64,99 @@ export default function UsersManagement() {
     },
   });
 
-  const entryTypes = [
-    { value: 'all', label: 'All Types', icon: <Shield className="w-4 h-4" /> },
-    { value: 'ip', label: 'IP Address', icon: <Globe className="w-4 h-4" /> },
-    { value: 'clickid', label: 'Click ID', icon: <MousePointer className="w-4 h-4" /> },
-    { value: 'subid', label: 'Sub ID', icon: <User className="w-4 h-4" /> },
-    { value: 'device_id', label: 'Device ID', icon: <Smartphone className="w-4 h-4" /> },
-    { value: 'user_agent', label: 'User Agent', icon: <Globe className="w-4 h-4" /> },
-    { value: 'domain', label: 'Domain', icon: <Globe className="w-4 h-4" /> },
-  ];
+  const createEntryMutation = useMutation({
+    mutationFn: async (data: BlacklistEntryFormData) => {
+      const response = await apiRequest('POST', '/api/admin/blacklist', data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/blacklist'] });
+      setIsCreateDialogOpen(false);
+      form.reset();
+      toast({
+        title: 'Success',
+        description: 'Blacklist entry created successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const deleteEntryMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest('DELETE', `/api/admin/blacklist/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/blacklist'] });
+      toast({
+        title: 'Success',
+        description: 'Blacklist entry removed successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const filteredEntries = blacklistEntries?.filter((entry: any) => {
+    const matchesSearch = searchTerm === '' || 
+      entry.value.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.reason?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesType = typeFilter === 'all' || entry.type === typeFilter;
+    
+    return matchesSearch && matchesType;
+  }) || [];
 
   const getTypeIcon = (type: string) => {
-    const typeObj = entryTypes.find(t => t.value === type);
-    return typeObj?.icon || <Shield className="w-4 h-4" />;
-  };
-
-  const getTypeBadgeColor = (type: string) => {
     switch (type) {
-      case 'ip': return 'bg-red-100 text-red-800';
-      case 'clickid': return 'bg-orange-100 text-orange-800';
-      case 'subid': return 'bg-yellow-100 text-yellow-800';
-      case 'device_id': return 'bg-blue-100 text-blue-800';
-      case 'user_agent': return 'bg-purple-100 text-purple-800';
-      case 'domain': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'ip': return <Globe className="w-4 h-4" />;
+      case 'device_id': return <Smartphone className="w-4 h-4" />;
+      case 'clickid': return <MousePointer className="w-4 h-4" />;
+      case 'subid': return <User className="w-4 h-4" />;
+      case 'user_agent': return <Globe className="w-4 h-4" />;
+      case 'domain': return <Globe className="w-4 h-4" />;
+      default: return <Shield className="w-4 h-4" />;
     }
   };
 
-  const isExpired = (expiresAt: string | null) => {
-    return expiresAt && new Date(expiresAt) < new Date();
+  const getTypeBadgeVariant = (type: string) => {
+    switch (type) {
+      case 'ip': return 'destructive';
+      case 'device_id': return 'secondary';
+      case 'clickid': return 'outline';
+      case 'subid': return 'default';
+      default: return 'secondary';
+    }
+  };
+
+  const onSubmit = (data: BlacklistEntryFormData) => {
+    createEntryMutation.mutate(data);
   };
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
         <Sidebar />
-        <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+        <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
           <Header title="Blacklist Management" />
-          <main className="flex-1 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <main className="p-6">
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                <p className="mt-2 text-gray-600">Loading blacklist...</p>
+              </div>
+            </div>
           </main>
         </div>
       </div>
@@ -168,188 +164,156 @@ export default function UsersManagement() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
         <Header title="Blacklist Management" />
-        <main className="flex-1 overflow-y-auto p-6">
-          {/* Header and Filters */}
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="w-5 h-5" />
-                    Fraud Prevention Blacklist
-                  </CardTitle>
-                  <CardDescription>
-                    Manage blocked IPs, click IDs, and other fraud indicators
-                  </CardDescription>
-                </div>
-                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="flex items-center gap-2" data-testid="button-add-blacklist">
-                      <Plus className="w-4 h-4" />
-                      Add to Blacklist
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Add Blacklist Entry</DialogTitle>
-                    </DialogHeader>
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(data => createEntryMutation.mutate(data))} className="space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="type"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Entry Type</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger data-testid="select-blacklist-type">
-                                    <SelectValue placeholder="Select type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {entryTypes.slice(1).map((type) => (
-                                    <SelectItem key={type.value} value={type.value}>
-                                      <div className="flex items-center gap-2">
-                                        {type.icon}
-                                        {type.label}
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+        <main className="p-6">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+              <Shield className="w-8 h-8" />
+              Blacklist Management
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage blocked IPs, domains, and other security filters
+            </p>
+          </div>
 
-                        <FormField
-                          control={form.control}
-                          name="value"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Value</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 192.168.1.1 or click_id_123" 
-                                  data-testid="input-blacklist-value" 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="reason"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Reason (Optional)</FormLabel>
-                              <FormControl>
-                                  {...field} 
-                                  placeholder="Why is this being blacklisted?" 
-                                  data-testid="input-blacklist-reason" 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="expiresAt"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Expiration Date (Optional)</FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button
-                                      variant="outline"
-                                      className="w-full pl-3 text-left font-normal"
-                                      data-testid="button-select-expiry"
-                                    >
-                                      {field.value ? (
-                                        formafield.value, "PPP"
-                                      ) : (
-                                        <span>No expiration</span>
-                                      )}
-                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    disabled={(date) => date < new Date()}
-                                    initialFocus
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <div className="flex justify-end gap-2">
-                          <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                            Cancel
-                          </Button>
-                          <Button type="submit" disabled={createEntryMutation.isPending}>
-                            {createEntryMutation.isPending ? 'Adding...' : 'Add Entry'}
-                          </Button>
-                        </div>
-                      </form>
-                    </Form>
-                  </DialogContent>
-                </Dialog>
+          {/* Header Actions */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Search blacklist..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-80"
+                  data-testid="input-search-blacklist"
+                />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    placeholder="Поиск по IP, доменам, ID..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                    data-testid="input-search-blacklist"
-                    title="Поиск в черном списке"
-                  />
-                </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
-                  <SelectTrigger className="w-48" data-testid="select-type-filter" title="Фильтр по типу записи">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {entryTypes.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        <div className="flex items-center gap-2">
-                          {type.icon}
-                          {type.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
+
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-48" data-testid="select-type-filter">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="ip">IP Address</SelectItem>
+                  <SelectItem value="domain">Domain</SelectItem>
+                  <SelectItem value="device_id">Device ID</SelectItem>
+                  <SelectItem value="clickid">Click ID</SelectItem>
+                  <SelectItem value="subid">Sub ID</SelectItem>
+                  <SelectItem value="user_agent">User Agent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button data-testid="button-add-blacklist-entry">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Entry
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Blacklist Entry</DialogTitle>
+                  <DialogDescription>
+                    Block specific IPs, domains, or other identifiers
+                  </DialogDescription>
+                </DialogHeader>
+
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-entry-type">
+                                <SelectValue placeholder="Select type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="ip">IP Address</SelectItem>
+                              <SelectItem value="domain">Domain</SelectItem>
+                              <SelectItem value="device_id">Device ID</SelectItem>
+                              <SelectItem value="clickid">Click ID</SelectItem>
+                              <SelectItem value="subid">Sub ID</SelectItem>
+                              <SelectItem value="user_agent">User Agent</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="value"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Value</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Enter value to block" data-testid="input-blacklist-value" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="reason"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Reason (Optional)</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              {...field} 
+                              placeholder="Reason for blocking..." 
+                              rows={3}
+                              data-testid="textarea-blacklist-reason"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsCreateDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={createEntryMutation.isPending}
+                        data-testid="button-save-blacklist-entry"
+                      >
+                        Add Entry
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
 
           {/* Blacklist Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Blocked Entries ({blacklistEntries.length})</CardTitle>
+              <CardTitle>Blacklist Entries</CardTitle>
+              <CardDescription>
+                Currently blocked items and their details
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -358,96 +322,76 @@ export default function UsersManagement() {
                     <TableHead>Type</TableHead>
                     <TableHead>Value</TableHead>
                     <TableHead>Reason</TableHead>
-                    <TableHead>Status</TableHead>
                     <TableHead>Added</TableHead>
-                    <TableHead>Expires</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {blacklistEntries.map((entry: any) => (
-                    <TableRow key={entry.id}>
-                      <TableCell>
-                        <Badge className={`flex items-center gap-1 ${getTypeBadgeColor(entry.type)}`}>
-                          {getTypeIcon(entry.type)}
-                          {entry.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-mono text-sm max-w-xs truncate">
-                        {entry.value}
-                      </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {entry.reason || 'No reason provided'}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {entry.isActive && !isExpired(entry.expiresAt) ? (
-                            <Badge className="bg-red-100 text-red-800 flex items-center gap-1">
-                              <AlertTriangle className="w-3 h-3" />
-                              Active
+                  {filteredEntries.length > 0 ? (
+                    filteredEntries.map((entry: any) => (
+                      <TableRow key={entry.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getTypeIcon(entry.type)}
+                            <Badge variant={getTypeBadgeVariant(entry.type)}>
+                              {entry.type.replace('_', ' ').toUpperCase()}
                             </Badge>
-                          ) : isExpired(entry.expiresAt) ? (
-                            <Badge className="bg-gray-100 text-gray-800 flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              Expired
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-green-100 text-green-800 flex items-center gap-1">
-                              <CheckCircle className="w-3 h-3" />
-                              Inactive
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-500">
-                        {formanew Date(entry.createdAt, 'MMM dd, yyyy')}
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-500">
-                        {entry.expiresAt ? formanew Date(entry.expiresAt, 'MMM dd, yyyy') : 'Never'}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => toggleEntryMutation.mutate({
-                              id: entry.id,
-                              isActive: !entry.isActive
-                            })}
-                            disabled={isExpired(entry.expiresAt)}
-                            data-testid={`button-toggle-${entry.id}`}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono">
+                          {entry.value}
+                        </TableCell>
+                        <TableCell className="max-w-xs truncate">
+                          {entry.reason || '-'}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {format(new Date(entry.createdAt), 'MMM dd, yyyy')}
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={entry.expiresAt && new Date(entry.expiresAt) < new Date() ? 'outline' : 'destructive'}
+                            className="flex items-center gap-1 w-fit"
                           >
-                            {entry.isActive ? 'Disable' : 'Enable'}
-                          </Button>
+                            {entry.expiresAt && new Date(entry.expiresAt) < new Date() ? (
+                              <>
+                                <Clock className="w-3 h-3" />
+                                Expired
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="w-3 h-3" />
+                                Active
+                              </>
+                            )}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
                           <Button
+                            variant="ghost"
                             size="sm"
-                            variant="outline"
                             onClick={() => deleteEntryMutation.mutate(entry.id)}
+                            disabled={deleteEntryMutation.isPending}
                             data-testid={`button-delete-${entry.id}`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8">
+                        <div className="text-gray-500">
+                          <Shield className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                          <p>No blacklist entries found</p>
+                          <p className="text-sm">Add entries to block specific traffic</p>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
-
-              {blacklistEntries.length === 0 && (
-                <div className="text-center py-8">
-                  <Shield className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                    No blacklist entries
-                  </h3>
-                  <p className="text-gray-500">
-                    {typeFilter === 'all' 
-                      ? 'No entries have been added to the blacklist yet.'
-                      : `No ${typeFilter} entries found in the blacklist.`
-                    }
-                  </p>
-                </div>
-              )}
             </CardContent>
           </Card>
         </main>

@@ -5,7 +5,7 @@ interface RevenueChartProps {
   data?: any[];
 }
 
-export default function RevenueChar{ data = [] }: RevenueChartProps {
+export default function RevenueChart({ data = [] }: RevenueChartProps) {
 
   return (
     <Card className="lg:col-span-2">

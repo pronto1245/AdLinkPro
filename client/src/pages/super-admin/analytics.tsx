@@ -135,7 +135,7 @@ export default function Analytics() {
                     title="Поиск аналитических данных"
                   />
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-[140px]" data-testid="select-time-range" title="Выбор временного периода">
                     <SelectValue />
                   </SelectTrigger>

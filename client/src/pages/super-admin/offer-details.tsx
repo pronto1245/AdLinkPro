@@ -80,7 +80,7 @@ export default function SuperAdminOfferDetails() {
       <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
         <Sidebar />
         <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
-          <Header />
+          <Header title="Offer Details" />
           <main className="p-6">
             <div className="text-center py-8">
               <p className="text-red-600">Error loading offer details</p>
@@ -118,7 +118,7 @@ export default function SuperAdminOfferDetails() {
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
-        <Header />
+        <Header title="Offer Details" />
         <main className="p-6">
           {/* Header */}
           <div className="mb-6 flex items-center justify-between">

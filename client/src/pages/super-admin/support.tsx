@@ -1,22 +1,19 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClientt } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/auth-context';
-import { useToastt } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { apiRequest } from '@/lib/queryClient';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSidebar } from '@/contexts/sidebar-context';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
-import {
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
   MessageSquare,
   Plus,
   Search,
@@ -35,6 +32,12 @@ import {
   HelpCircle,
   ExternalLink,
 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 const ticketSchema = z.object({
   subject: z.string().min(1, 'Subject is required'),
@@ -46,397 +49,516 @@ const ticketSchema = z.object({
 
 type TicketFormData = z.infer<typeof ticketSchema>;
 
-export default function Suppor {
-  const queryClient = useQueryClient;
-  
+export default function Support() {
+  const { isCollapsed } = useSidebar();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('tickets');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Mock support tickets data
-  const supportTickets = [
-    {
-      id: '1',
-      subject: 'Payment not processed',
-      category: 'Finance',
-      priority: 'high',
-      status: 'open',
-      createdAt: '2024-08-04T10:30:00Z',
-      updatedAt: '2024-08-04T14:20:00Z',
-      user: { name: 'John Doe', email: 'john@example.com', role: 'affiliate' },
-      description: 'Text',
-      responses: 2,
-    },
-    {
-      id: '2',
-      subject: 'Offer approval request',
-      category: 'Offers',
-      priority: 'medium',
-      status: 'in_progress',
-      createdAt: '2024-08-03T09:15:00Z',
-      updatedAt: '2024-08-04T11:45:00Z',
-      user: { name: 'Jane Smith', email: 'jane@example.com', role: 'advertiser' },
-      description: 'Text',
-      responses: 5,
-    },
-    {
-      id: '3',
-      subject: 'Account verification issue',
-      category: 'Account',
-      priority: 'low',
-      status: 'resolved',
-      createdAt: '2024-08-02T16:20:00Z',
-      updatedAt: '2024-08-03T10:30:00Z',
-      user: { name: 'Mike Johnson', email: 'mike@example.com', role: 'affiliate' },
-      description: 'Text',
-      responses: 3,
-    },
-  ];
+  // Fetch support tickets
+  const { data: supportTickets, isLoading } = useQuery({
+    queryKey: ['/api/admin/support/tickets', filterStatus, filterPriority, searchTerm],
+  });
+
+  // Fetch support metrics
+  const { data: supportMetrics } = useQuery({
+    queryKey: ['/api/admin/support/metrics'],
+  });
 
   const form = useForm<TicketFormData>({
     resolver: zodResolver(ticketSchema),
     defaultValues: {
       subject: '',
-      category: 'general',
+      category: '',
       priority: 'medium',
-      description: 'Text',
+      description: '',
+      userId: '',
     },
   });
 
-  const categories = [
-    'general', 'account', 'finance', 'offers', 'technical', 'billing'
-  ];
+  const createTicketMutation = useMutation({
+    mutationFn: async (data: TicketFormData) => {
+      const response = await apiRequest('POST', '/api/admin/support/tickets', data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/support/tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/support/metrics'] });
+      setIsCreateDialogOpen(false);
+      form.reset();
+      toast({
+        title: 'Success',
+        description: 'Support ticket created successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
 
-  const priorities = [
-    { value: 'low', label: 'Low', color: 'bg-green-100 text-green-800' },
-    { value: 'medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-800' },
-    { value: 'high', label: 'High', color: 'bg-red-100 text-red-800' },
-  ];
+  const updateTicketStatusMutation = useMutation({
+    mutationFn: async ({ ticketId, status }: { ticketId: string; status: string }) => {
+      const response = await apiRequest('PATCH', `/api/admin/support/tickets/${ticketId}`, { status });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/support/tickets'] });
+      toast({
+        title: 'Success',
+        description: 'Ticket status updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
 
-  const statuses = [
-    { value: 'open', label: 'Open', color: 'bg-blue-100 text-blue-800' },
-    { value: 'in_progress', label: 'In Progress', color: 'bg-purple-100 text-purple-800' },
-    { value: 'resolved', label: 'Resolved', color: 'bg-green-100 text-green-800' },
-    { value: 'closed', label: 'Closed', color: 'bg-gray-100 text-gray-800' },
-  ];
-
-  const getStatusBadge = (status: string) => {
-    const statusObj = statuses.find(s => s.value === status);
-    return statusObj ? statusObj : statuses[0];
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    const priorityObj = priorities.find(p => p.value === priority);
-    return priorityObj ? priorityObj : priorities[1];
-  };
-
-  const filteredTickets = supportTickets.filter(ticket => {
+  const filteredTickets = supportTickets?.filter((ticket: any) => {
+    const matchesSearch = searchTerm === '' || 
+      ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.user?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
     const matchesStatus = filterStatus === 'all' || ticket.status === filterStatus;
     const matchesPriority = filterPriority === 'all' || ticket.priority === filterPriority;
-    const matchesSearch = ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.category.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesPriority && matchesSearch;
-  });
+    
+    return matchesSearch && matchesStatus && matchesPriority;
+  }) || [];
 
-  const supportResources = [
-    {
-      title: 'Knowledge Base',
-      description: 'Text',
-      icon: <Book className="w-6 h-6" />,
-      link: '#',
-      articles: 45,
-    },
-    {
-      title: 'API Documentation',
-      description: 'Text',
-      icon: <Settings className="w-6 h-6" />,
-      link: '#',
-      articles: 12,
-    },
-    {
-      title: 'Video Tutorials',
-      description: 'Text',
-      icon: <LifeBuoy className="w-6 h-6" />,
-      link: '#',
-      articles: 23,
-    },
-    {
-      title: 'FAQ',
-      description: 'Text',
-      icon: <HelpCircle className="w-6 h-6" />,
-      link: '#',
-      articles: 38,
-    },
-  ];
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'open': return 'destructive';
+      case 'in_progress': return 'secondary';
+      case 'resolved': return 'default';
+      case 'closed': return 'outline';
+      default: return 'secondary';
+    }
+  };
+
+  const getPriorityBadgeVariant = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'destructive';
+      case 'medium': return 'secondary';
+      case 'low': return 'outline';
+      default: return 'secondary';
+    }
+  };
+
+  const onSubmit = (data: TicketFormData) => {
+    createTicketMutation.mutate(data);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Sidebar />
+        <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+          <Header title="Support Center" />
+          <main className="p-6">
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                <p className="mt-2 text-gray-600">Loading support data...</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
         <Header title="Support Center" />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
-          <div className="max-w-7xl mx-auto">
-            {/* Header Section */}
-            <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Support Center</h1>
-                <p className="text-gray-600 dark:text-gray-400">Manage support tickets and help resources</p>
-              </div>
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button data-testid="button-create-ticket">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Ticket
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle>Create Support Ticket</DialogTitle>
-                  </DialogHeader>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(data => console.log(data))} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="subject"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Subject</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="Brief description of the issue" data-testid="input-subject" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="category"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Category</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger data-testid="select-category">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {categories.map(category => (
-                                    <SelectItem key={category} value={category}>
-                                      {category.charA0.toUpperCase() + category.slice(1)}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="priority"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Priority</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger data-testid="select-priority">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {priorities.map(priority => (
-                                    <SelectItem key={priority.value} value={priority.value}>
-                                      {priority.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Description</FormLabel>
-                            <FormControl>
-                                {...field} 
-                                placeholder="Detailed description of the issue"
-                                rows={4}
-                                data-testid="textarea-description"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                          Cancel
-                        </Button>
-                        <Button type="submit" data-testid="button-submit-ticket">
-                          Create Ticket
-                        </Button>
-                      </div>
-                    </form>
-                  </Form>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList>
-                <TabsTrigger value="tickets" className="flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4" />
-                  Support Tickets
-                </TabsTrigger>
-                <TabsTrigger value="resources" className="flex items-center gap-2">
-                  <Book className="w-4 h-4" />
-                  Resources
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="tickets" className="space-y-6">
-                {/* Filters */}
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <div className="relative flex-1">
-                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Поиск по тикетам, пользователям..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10"
-                          data-testid="input-search-tickets"
-                          title="Поиск тикетов поддержки"
-                        />
-                      </div>
-                      
-                      <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
-                        <SelectTrigger className="w-[140px]" data-testid="select-filter-status" title="Фильтр по статусу тикета">
-                          <SelectValue placeholder="All Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Status</SelectItem>
-                          {statuses.map(status => (
-                            <SelectItem key={status.value} value={status.value}>
-                              {status.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      
-                      <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
-                        <SelectTrigger className="w-[140px]" data-testid="select-filter-priority" title="Фильтр по приоритету">
-                          <SelectValue placeholder="All Priority" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Priority</SelectItem>
-                          {priorities.map(priority => (
-                            <SelectItem key={priority.value} value={priority.value}>
-                              {priority.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Tickets List */}
-                <div className="grid gap-4">
-                  {filteredTickets.map((ticket) => (
-                    <Card key={ticket.id} data-testid={`ticket-card-${ticket.id}`}>
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 space-y-3">
-                            <div className="flex items-center gap-3">
-                              <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
-                                {ticket.subject}
-                              </h3>
-                              <Badge className={getStatusBadge(ticket.status).color}>
-                                {getStatusBadge(ticket.status).label}
-                              </Badge>
-                              <Badge className={getPriorityBadge(ticket.priority).color}>
-                                {getPriorityBadge(ticket.priority).label}
-                              </Badge>
-                            </div>
-                            
-                            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                              <div className="flex items-center gap-1">
-                                <User className="w-4 h-4" />
-                                {ticket.user.name} ({ticket.user.role})
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                {new Date(ticket.createdAt).toLocaleDateString()}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MessageSquare className="w-4 h-4" />
-                                {ticket.responses} responses
-                              </div>
-                            </div>
-                            
-                            <p className="text-gray-700 dark:text-gray-300 text-sm">
-                              {ticket.description}
-                            </p>
-                          </div>
-                          
-                          <Button variant="outline" size="sm" data-testid={`button-view-ticket-${ticket.id}`}>
-                            View
-                            <ArrowRight className="w-4 h-4 ml-1" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="resources" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {supportResources.map((resource, index) => (
-                    <Card key={index} data-testid={`resource-card-${index}`}>
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="text-blue-600">
-                            {resource.icon}
-                          </div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">
-                            {resource.title}
-                          </h3>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                          {resource.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-500">
-                            {resource.articles} articles
-                          </span>
-                          <Button variant="outline" size="sm">
-                            <ExternalLink className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
+        <main className="p-6">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+              <LifeBuoy className="w-8 h-8" />
+              Support Center
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage support tickets and help center resources
+            </p>
           </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="tickets">Support Tickets</TabsTrigger>
+              <TabsTrigger value="knowledge">Knowledge Base</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="tickets" className="space-y-6">
+              {/* Support Metrics */}
+              {supportMetrics && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600">Open Tickets</p>
+                          <p className="text-2xl font-bold text-red-600">{supportMetrics.openTickets || 0}</p>
+                        </div>
+                        <div className="p-3 bg-red-100 rounded-lg">
+                          <AlertCircle className="w-6 h-6 text-red-600" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600">In Progress</p>
+                          <p className="text-2xl font-bold text-orange-600">{supportMetrics.inProgressTickets || 0}</p>
+                        </div>
+                        <div className="p-3 bg-orange-100 rounded-lg">
+                          <Clock className="w-6 h-6 text-orange-600" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600">Resolved Today</p>
+                          <p className="text-2xl font-bold text-green-600">{supportMetrics.resolvedToday || 0}</p>
+                        </div>
+                        <div className="p-3 bg-green-100 rounded-lg">
+                          <CheckCircle className="w-6 h-6 text-green-600" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600">Avg Response Time</p>
+                          <p className="text-2xl font-bold text-blue-600">{supportMetrics.avgResponseTime || '0h'}</p>
+                        </div>
+                        <div className="p-3 bg-blue-100 rounded-lg">
+                          <MessageSquare className="w-6 h-6 text-blue-600" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Filters and Actions */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Search tickets..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-80"
+                      data-testid="input-search-tickets"
+                    />
+                  </div>
+
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger className="w-48" data-testid="select-status-filter">
+                      <SelectValue placeholder="All Statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="open">Open</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="resolved">Resolved</SelectItem>
+                      <SelectItem value="closed">Closed</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={filterPriority} onValueChange={setFilterPriority}>
+                    <SelectTrigger className="w-48" data-testid="select-priority-filter">
+                      <SelectValue placeholder="All Priorities" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Priorities</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button data-testid="button-create-ticket">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Ticket
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Create Support Ticket</DialogTitle>
+                      <DialogDescription>
+                        Create a new support ticket for user assistance
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="category"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Category</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger data-testid="select-ticket-category">
+                                      <SelectValue placeholder="Select category" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="general">General</SelectItem>
+                                    <SelectItem value="technical">Technical</SelectItem>
+                                    <SelectItem value="billing">Billing</SelectItem>
+                                    <SelectItem value="offers">Offers</SelectItem>
+                                    <SelectItem value="payouts">Payouts</SelectItem>
+                                    <SelectItem value="account">Account</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="priority"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Priority</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger data-testid="select-ticket-priority">
+                                      <SelectValue placeholder="Select priority" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="low">Low</SelectItem>
+                                    <SelectItem value="medium">Medium</SelectItem>
+                                    <SelectItem value="high">High</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <FormField
+                          control={form.control}
+                          name="subject"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Subject</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="Ticket subject" data-testid="input-ticket-subject" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  {...field} 
+                                  placeholder="Describe the issue or request..." 
+                                  rows={4}
+                                  data-testid="textarea-ticket-description"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsCreateDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={createTicketMutation.isPending}
+                            data-testid="button-save-ticket"
+                          >
+                            Create Ticket
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {/* Support Tickets Table */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Support Tickets</CardTitle>
+                  <CardDescription>
+                    Manage and respond to user support requests
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Ticket</TableHead>
+                        <TableHead>User</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredTickets.length > 0 ? (
+                        filteredTickets.map((ticket: any) => (
+                          <TableRow key={ticket.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{ticket.subject}</p>
+                                <p className="text-sm text-gray-600">#{ticket.id}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{ticket.user?.name || 'Unknown'}</p>
+                                <p className="text-sm text-gray-600">{ticket.user?.email}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{ticket.category}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={getPriorityBadgeVariant(ticket.priority)}>
+                                {ticket.priority}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={getStatusBadgeVariant(ticket.status)}>
+                                {ticket.status.replace('_', ' ')}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {format(new Date(ticket.createdAt), 'MMM dd, yyyy')}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => updateTicketStatusMutation.mutate({ 
+                                    ticketId: ticket.id, 
+                                    status: ticket.status === 'open' ? 'in_progress' : 'resolved' 
+                                  })}
+                                  disabled={updateTicketStatusMutation.isPending}
+                                  data-testid={`button-update-status-${ticket.id}`}
+                                >
+                                  <ArrowRight className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <div className="text-gray-500">
+                              <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                              <p>No support tickets found</p>
+                              <p className="text-sm">All caught up!</p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="knowledge" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Knowledge Base</CardTitle>
+                  <CardDescription>
+                    Manage help articles and documentation
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <Book className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-semibold mb-2">Knowledge Base</h3>
+                    <p className="text-gray-600 mb-4">Create and manage help articles for users</p>
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Article
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="settings" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Support Settings</CardTitle>
+                  <CardDescription>
+                    Configure support system preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <Settings className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-semibold mb-2">Support Configuration</h3>
+                    <p className="text-gray-600 mb-4">Configure automated responses, SLA settings, and more</p>
+                    <Button variant="outline">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Configure Settings
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
     </div>
