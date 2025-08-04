@@ -69,16 +69,7 @@ export default function OfferDetails() {
     );
   }
 
-  // Отладочная информация для понимания структуры данных
-  console.log('Offer data:', {
-    id: offer.id,
-    name: offer.name,
-    payout: offer.payout,
-    currency: offer.currency,
-    geoPricing: offer.geoPricing,
-    countries: offer.countries,
-    landingPages: offer.landingPages
-  });
+
 
   // Category colors
   const getCategoryColor = (category: string) => {
@@ -724,6 +715,90 @@ export default function OfferDetails() {
               </CardContent>
             </Card>
 
+            {/* Краткая информация об оффере */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Краткая информация
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">Выплата</div>
+                    <div className="text-lg font-bold text-green-700 dark:text-green-300">
+                      {(() => {
+                        // Проверяем базовую выплату оффера
+                        if (offer.payout && offer.payout !== '0.00') {
+                          const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
+                          return `${currencySymbol}${offer.payout}`;
+                        }
+                        // Проверяем geo-pricing
+                        if (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0) {
+                          const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
+                          return `${currencySymbol}${offer.geoPricing[0].payout}`;
+                        }
+                        // Показываем гео-цены, если доступны
+                        return formatGeoPricing(offer.geoPricing, offer.payout, offer.currency);
+                      })()}
+                    </div>
+                  </div>
+                  <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">Валюта</div>
+                    <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
+                      {offer.currency || 'USD'}
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">Тип</div>
+                    <div className="text-lg font-bold text-purple-700 dark:text-purple-300">
+                      {offer.payoutType?.toUpperCase() || 'CPA'}
+                    </div>
+                  </div>
+                  <div className="text-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <div className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-1">Гео</div>
+                    <div className="text-lg font-bold text-orange-700 dark:text-orange-300">
+                      {(() => {
+                        // Приоритет: geo-pricing -> общие страны оффера
+                        let countries = [];
+                        
+                        if (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0) {
+                          countries = offer.geoPricing.map((geo: any) => geo.country).filter(Boolean);
+                        } else if (offer.countries && Array.isArray(offer.countries) && offer.countries.length > 0) {
+                          countries = offer.countries;
+                        }
+                        
+                        if (countries.length === 0) {
+                          return <span className="text-sm">Не указано</span>;
+                        }
+                        
+                        const countryFlags: { [key: string]: string } = {
+                          'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
+                          'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦'
+                        };
+                        
+                        return (
+                          <div className="flex flex-wrap justify-center gap-1">
+                            {countries.slice(0, 2).map((country: string, idx: number) => (
+                              <span key={idx} className="text-xs">
+                                {countryFlags[country] || '🌍'}{country}
+                              </span>
+                            ))}
+                            {countries.length > 2 && (
+                              <span className="text-xs">+{countries.length - 2}</span>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Additional Info */}
             <Card>
               <CardHeader>
@@ -738,14 +813,6 @@ export default function OfferDetails() {
                     <span className="text-sm text-gray-600 dark:text-gray-400">Дневной лимит</span>
                     <Badge variant="secondary">
                       {offer.dailyLimit} конверсий
-                    </Badge>
-                  </div>
-                )}
-                {offer.currency && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Валюта</span>
-                    <Badge variant="secondary">
-                      {offer.currency}
                     </Badge>
                   </div>
                 )}
