@@ -299,7 +299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Offer management with hierarchy
-  app.get("/api/offers", authenticateToken, async (req, res) => {
+  app.get("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       let offers;
       
@@ -337,7 +337,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/offers", authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
+  app.post("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const offerData = insertOfferSchema.parse(req.body);
       

@@ -54,17 +54,27 @@ export const users = pgTable("users", {
 // Offers table
 export const offers = pgTable("offers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  number: text("number"), // Offer number
   name: text("name").notNull(),
   description: text("description"),
+  logo: text("logo"), // Logo URL
   category: text("category").notNull(),
   vertical: text("vertical"), // Industry vertical
   goals: text("goals"), // Offer goals/objectives
   advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
   payout: decimal("payout", { precision: 10, scale: 2 }).notNull(),
-  payoutType: text("payout_type").notNull(), // 'cpa', 'cps', 'cpl'
+  payoutType: text("payout_type").notNull(), // 'cpa', 'cps', 'cpl', 'cpm', 'cpc', 'cpi', 'cro', 'revshare', 'hybrid', 'fixed'
   currency: text("currency").default('USD'),
   countries: jsonb("countries"), // Array of country codes
+  geoTargeting: text("geo_targeting"), // Free text geo targeting
+  landingPages: jsonb("landing_pages"), // Array of landing pages with different prices
+  geoPricing: jsonb("geo_pricing"), // Array of geo-specific pricing
+  kpiConditions: text("kpi_conditions"), // KPI conditions
   trafficSources: jsonb("traffic_sources"), // Allowed traffic sources
+  dailyLimit: integer("daily_limit"), // Daily conversion limit
+  monthlyLimit: integer("monthly_limit"), // Monthly conversion limit
+  antifraudEnabled: boolean("antifraud_enabled").default(true),
+  autoApprovePartners: boolean("auto_approve_partners").default(false),
   status: offerStatusEnum("status").default('draft'),
   moderationStatus: text("moderation_status").default('pending'), // pending, approved, rejected, needs_revision
   moderationComment: text("moderation_comment"), // Admin comment for moderation
