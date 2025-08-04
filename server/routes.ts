@@ -784,18 +784,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Updating offer:", id, "for user:", authUser.id, authUser.username);
       console.log("Update data:", JSON.stringify(req.body, null, 2));
       
-      // Prepare update data - exclude timestamp fields and only include fields that have values
-      const { createdAt, updatedAt, id: bodyId, ...bodyData } = req.body;
+      // Prepare update data - exclude timestamp and system fields
+      const excludedFields = ['id', 'createdAt', 'updatedAt', 'advertiserId', 'advertiserName'];
       const updateData: any = {};
       
-      // Only include defined fields, excluding timestamp fields
-      Object.keys(bodyData).forEach(key => {
-        if (bodyData[key] !== undefined && key !== 'createdAt' && key !== 'updatedAt') {
-          updateData[key] = bodyData[key];
+      // Only include defined fields, excluding system fields
+      Object.keys(req.body).forEach(key => {
+        if (req.body[key] !== undefined && !excludedFields.includes(key)) {
+          // Special handling for specific fields that might cause issues
+          if (key === 'allowedTrafficSources') {
+            updateData.trafficSources = req.body[key];
+          } else {
+            updateData[key] = req.body[key];
+          }
         }
       });
       
-      console.log("Final update data:", updateData);
+      console.log("Final update data:", JSON.stringify(updateData, null, 2));
+      console.log("Excluded fields from body:", excludedFields.filter(field => req.body[field] !== undefined));
       
       // Update offer directly in database
       const [updatedOffer] = await db
