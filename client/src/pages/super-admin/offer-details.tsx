@@ -443,23 +443,19 @@ export default function OfferDetails() {
                               </div>
                               <div className="text-xl font-bold text-green-700 dark:text-green-300">
                                 {(() => {
-                                  // Проверяем специфичную выплату для этого лендинга
+                                  const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
+                                  
+                                  // Приоритет: payoutAmount -> payout -> базовая выплата оффера
+                                  if (landing.payoutAmount) {
+                                    return `${currencySymbol}${landing.payoutAmount}`;
+                                  }
                                   if (landing.payout && landing.payout !== '0.00') {
-                                    const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
                                     return `${currencySymbol}${landing.payout}`;
                                   }
-                                  // Проверяем базовую выплату оффера
                                   if (offer.payout && offer.payout !== '0.00') {
-                                    const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
                                     return `${currencySymbol}${offer.payout}`;
                                   }
-                                  // Проверяем geo-pricing
-                                  if (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0) {
-                                    const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
-                                    return `${currencySymbol}${offer.geoPricing[0].payout}`;
-                                  }
-                                  // Резервный вариант
-                                  return `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '$'}0`;
+                                  return `${currencySymbol}0`;
                                 })()}
                               </div>
                             </div>
@@ -491,40 +487,24 @@ export default function OfferDetails() {
                               </div>
                               <div className="text-lg font-semibold text-green-700 dark:text-green-300">
                                 {(() => {
-                                  // Приоритет: страны лендинга -> geo-pricing -> общие страны оффера
-                                  let countries = [];
-                                  
-                                  if (landing.countries && Array.isArray(landing.countries) && landing.countries.length > 0) {
-                                    countries = landing.countries;
-                                  } else if (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0) {
-                                    countries = offer.geoPricing.map((geo: any) => geo.country).filter(Boolean);
-                                  } else if (offer.countries && Array.isArray(offer.countries) && offer.countries.length > 0) {
-                                    countries = offer.countries;
-                                  }
-                                  
-                                  if (countries.length === 0) {
-                                    return <span className="text-sm">Не указано</span>;
-                                  }
-                                  
                                   const countryFlags: { [key: string]: string } = {
-                                    'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
-                                    'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦',
-                                    'PL': '🇵🇱', 'NL': '🇳🇱', 'SE': '🇸🇪', 'NO': '🇳🇴', 'DK': '🇩🇰', 'FI': '🇫🇮',
-                                    'JP': '🇯🇵', 'KR': '🇰🇷', 'CN': '🇨🇳', 'IN': '🇮🇳', 'TH': '🇹🇭', 'VN': '🇻🇳'
+                                    'us': '🇺🇸', 'gb': '🇬🇧', 'de': '🇩🇪', 'fr': '🇫🇷', 'es': '🇪🇸', 'it': '🇮🇹',
+                                    'ca': '🇨🇦', 'au': '🇦🇺', 'br': '🇧🇷', 'mx': '🇲🇽', 'ru': '🇷🇺', 'ua': '🇺🇦',
+                                    'pl': '🇵🇱', 'nl': '🇳🇱', 'se': '🇸🇪', 'no': '🇳🇴', 'dk': '🇩🇰', 'fi': '🇫🇮',
+                                    'jp': '🇯🇵', 'kr': '🇰🇷', 'cn': '🇨🇳', 'in': '🇮🇳', 'th': '🇹🇭', 'vn': '🇻🇳'
                                   };
                                   
-                                  return (
-                                    <div className="flex flex-wrap justify-center gap-1">
-                                      {countries.slice(0, 3).map((country: string, idx: number) => (
-                                        <span key={idx} className="text-sm">
-                                          {countryFlags[country] || '🌍'}{country}
-                                        </span>
-                                      ))}
-                                      {countries.length > 3 && (
-                                        <span className="text-sm">+{countries.length - 3}</span>
-                                      )}
-                                    </div>
-                                  );
+                                  if (landing.geo) {
+                                    const geo = landing.geo.toLowerCase();
+                                    const flag = countryFlags[geo] || '🌍';
+                                    return (
+                                      <span className="text-sm">
+                                        {flag}{geo.toUpperCase()}-{landing.payoutAmount || 0}$
+                                      </span>
+                                    );
+                                  }
+                                  
+                                  return <span className="text-sm">Не указано</span>;
                                 })()}
                               </div>
                             </div>
@@ -729,18 +709,22 @@ export default function OfferDetails() {
                     <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">Выплата</div>
                     <div className="text-lg font-bold text-green-700 dark:text-green-300">
                       {(() => {
-                        // Проверяем базовую выплату оффера
-                        if (offer.payout && offer.payout !== '0.00') {
+                        // Приоритет: landingPages -> geoPricing -> базовая выплата
+                        if (offer.landingPages && Array.isArray(offer.landingPages) && offer.landingPages.length > 0) {
                           const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
-                          return `${currencySymbol}${offer.payout}`;
+                          return `${currencySymbol}${offer.landingPages[0].payoutAmount}`;
                         }
                         // Проверяем geo-pricing
                         if (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0) {
                           const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
                           return `${currencySymbol}${offer.geoPricing[0].payout}`;
                         }
-                        // Показываем гео-цены, если доступны
-                        return formatGeoPricing(offer.geoPricing, offer.payout, offer.currency);
+                        // Проверяем базовую выплату оффера
+                        if (offer.payout && offer.payout !== '0.00') {
+                          const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
+                          return `${currencySymbol}${offer.payout}`;
+                        }
+                        return '$0';
                       })()}
                     </div>
                   </div>
@@ -762,10 +746,12 @@ export default function OfferDetails() {
                     <div className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-1">Гео</div>
                     <div className="text-lg font-bold text-orange-700 dark:text-orange-300">
                       {(() => {
-                        // Приоритет: geo-pricing -> общие страны оффера
+                        // Приоритет: landingPages -> geoPricing -> общие страны оффера
                         let countries = [];
                         
-                        if (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0) {
+                        if (offer.landingPages && Array.isArray(offer.landingPages) && offer.landingPages.length > 0) {
+                          countries = offer.landingPages.map((landing: any) => landing.geo?.toUpperCase()).filter(Boolean);
+                        } else if (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0) {
                           countries = offer.geoPricing.map((geo: any) => geo.country).filter(Boolean);
                         } else if (offer.countries && Array.isArray(offer.countries) && offer.countries.length > 0) {
                           countries = offer.countries;
@@ -837,7 +823,9 @@ export default function OfferDetails() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{offer.goals}</p>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 break-words overflow-hidden">
+                    {offer.goals}
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -852,7 +840,9 @@ export default function OfferDetails() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{offer.kpiConditions}</p>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 break-words overflow-hidden max-h-32 overflow-y-auto">
+                    {offer.kpiConditions}
+                  </div>
                 </CardContent>
               </Card>
             )}
