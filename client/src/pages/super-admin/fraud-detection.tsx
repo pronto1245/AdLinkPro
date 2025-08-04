@@ -19,7 +19,7 @@ import {
   Shield, AlertTriangle, Activity, Eye, Ban, Settings, Target, Globe, 
   Smartphone, Monitor, MapPin, Zap, TrendingUp, AlertCircle, CheckCircle, 
   XCircle, Clock, Search, Filter, Download, RefreshCw, Plus, Edit, Trash2,
-  BarChart3, PieChart, Users, Flag, Lock, Unlock, FileText, Save
+  BarChart3, PieChart, Users, Flag, Lock, Unlock, FileText, Save, Wifi, WifiOff, Server
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -474,32 +474,47 @@ const FraudDetectionPage = () => {
             </Card>
           </div>
 
+
+
           {/* Main Content Tabs */}
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="reports" className="flex items-center space-x-2">
-                <FileText className="w-4 h-4" />
-                <span>Фрод-отчёты</span>
+            <TabsList className="grid w-full grid-cols-8 h-12">
+              <TabsTrigger value="reports" className="flex items-center justify-center space-x-1 text-xs">
+                <FileText className="w-3 h-3" />
+                <span className="hidden sm:inline">Фрод-отчёты</span>
+                <span className="sm:hidden">Отчёты</span>
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4" />
-                <span>Аналитика</span>
+              <TabsTrigger value="analytics" className="flex items-center justify-center space-x-1 text-xs">
+                <BarChart3 className="w-3 h-3" />
+                <span className="hidden sm:inline">Аналитика</span>
+                <span className="sm:hidden">Данные</span>
               </TabsTrigger>
-              <TabsTrigger value="ip-analysis" className="flex items-center space-x-2">
-                <Globe className="w-4 h-4" />
-                <span>IP Анализ</span>
+              <TabsTrigger value="ip-analysis" className="flex items-center justify-center space-x-1 text-xs">
+                <Globe className="w-3 h-3" />
+                <span className="hidden sm:inline">IP Анализ</span>
+                <span className="sm:hidden">IP</span>
               </TabsTrigger>
-              <TabsTrigger value="rules" className="flex items-center space-x-2">
-                <Settings className="w-4 h-4" />
+              <TabsTrigger value="rules" className="flex items-center justify-center space-x-1 text-xs">
+                <Settings className="w-3 h-3" />
                 <span>Правила</span>
               </TabsTrigger>
-              <TabsTrigger value="integrations" className="flex items-center space-x-2">
-                <Zap className="w-4 h-4" />
-                <span>Интеграции</span>
+              <TabsTrigger value="integrations" className="flex items-center justify-center space-x-1 text-xs">
+                <Zap className="w-3 h-3" />
+                <span className="hidden sm:inline">Интеграции</span>
+                <span className="sm:hidden">API</span>
               </TabsTrigger>
-              <TabsTrigger value="alerts" className="flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4" />
-                <span>Smart-алерты</span>
+              <TabsTrigger value="alerts" className="flex items-center justify-center space-x-1 text-xs">
+                <AlertCircle className="w-3 h-3" />
+                <span className="hidden sm:inline">Smart-алерты</span>
+                <span className="sm:hidden">Алерты</span>
+              </TabsTrigger>
+              <TabsTrigger value="blocks" className="flex items-center justify-center space-x-1 text-xs">
+                <Ban className="w-3 h-3" />
+                <span>Блокировки</span>
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center justify-center space-x-1 text-xs">
+                <Settings className="w-3 h-3" />
+                <span>Настройки</span>
               </TabsTrigger>
               <TabsTrigger value="blocks" className="flex items-center space-x-2">
                 <Ban className="w-4 h-4" />
@@ -1619,6 +1634,73 @@ const FraudDetectionPage = () => {
                     <Zap className="w-4 h-4 mr-2" />
                     API
                   </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Blocks Tab */}
+          <TabsContent value="blocks" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Ban className="w-5 h-5" />
+                  <span>Управление блокировками</span>
+                </CardTitle>
+                <CardDescription>
+                  Просмотр и управление заблокированными IP-адресами и пользователями
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-gray-600">Активных блокировок: <span className="font-semibold">247</span></p>
+                    <Button variant="outline" size="sm">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Добавить блокировку
+                    </Button>
+                  </div>
+                  <div className="border rounded-lg p-4">
+                    <p className="text-center text-gray-500">Список блокировок будет здесь</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Settings className="w-5 h-5" />
+                  <span>Настройки антифрода</span>
+                </CardTitle>
+                <CardDescription>
+                  Глобальные настройки системы защиты от мошенничества
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label>Общий риск-порог</Label>
+                      <div className="flex items-center space-x-2">
+                        <input type="range" min="0" max="100" defaultValue="75" className="flex-1" />
+                        <span className="text-sm font-medium">75%</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Автоблокировка</Label>
+                      <Switch defaultChecked />
+                    </div>
+                  </div>
+                  <div className="border-t pt-4">
+                    <Button className="bg-green-600 hover:bg-green-700">
+                      <Save className="w-4 h-4 mr-2" />
+                      Сохранить настройки
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
