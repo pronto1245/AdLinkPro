@@ -30,6 +30,10 @@ const createOfferSchema = z.object({
   status: z.string().default('draft'),
   description: z.string().optional(),
   logo: z.string().optional(),
+  advertiserId: z.string().optional(), // Будет установлен на сервере
+  payout: z.number().min(0, 'Сумма выплаты обязательна'),
+  payoutType: z.string().default('cpa'),
+  currency: z.string().default('USD'),
   landingPages: z.array(z.object({
     name: z.string().min(1, 'Название обязательно'),
     url: z.string().url('Неверный URL'),
@@ -37,12 +41,7 @@ const createOfferSchema = z.object({
     currency: z.string().default('USD'),
     geo: z.string().optional(),
   })).default([{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]),
-  payoutType: z.string().default('cpa'),
-  payoutAmount: z.number().min(0),
-  currency: z.string().default('USD'),
-  landingInfo: z.string().optional(),
   kpiConditions: z.string().optional(),
-
   allowedTrafficSources: z.array(z.string()).default([]),
   dailyLimit: z.number().optional(),
   monthlyLimit: z.number().optional(),
@@ -71,7 +70,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
       logo: '',
       landingPages: [{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }],
       payoutType: 'cpa',
-      payoutAmount: 0,
+      payout: 0,
       currency: 'USD',
       landingInfo: '',
       kpiConditions: '',
@@ -441,6 +440,28 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="payout"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Сумма выплаты по умолчанию</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field} 
+                  type="number" 
+                  step="0.01"
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                  placeholder="0.00" 
+                  data-testid="input-payout-amount" 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}

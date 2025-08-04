@@ -344,6 +344,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set advertiser ID based on user role
       if (req.user.role === 'advertiser') {
         offerData.advertiserId = req.user.id;
+      } else if (req.user.role === 'super_admin') {
+        // Super admin needs to provide advertiserId or use their own ID
+        if (!offerData.advertiserId) {
+          offerData.advertiserId = req.user.id;
+        }
       }
       
       const offer = await storage.createOffer(offerData);
