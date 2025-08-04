@@ -88,6 +88,7 @@ The application features a multi-role dashboard system with role-based access co
   * Поля для ограничений и комментариев модерации
   * Переключатели для KYC, приватности и smartlink функций
 - ✅ Восстановлена кнопка "Создать оффер" после запроса пользователя
+- ✅ Удалена кнопка "Редактировать оффер" со страницы OFFER-DETAILS для упрощения интерфейса
 
 # User Preferences
 
