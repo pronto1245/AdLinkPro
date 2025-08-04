@@ -8,7 +8,7 @@ import Header from '../../components/layout/header';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
-import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, MapPin, Shield, Image, Activity, Clock, FileText } from 'lucide-react';
+import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, MapPin, Shield, Image, Activity, Clock, FileText, TrendingUp } from 'lucide-react';
 import { Separator } from '../../components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
