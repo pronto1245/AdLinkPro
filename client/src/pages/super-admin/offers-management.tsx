@@ -833,11 +833,12 @@ export default function OffersManagement() {
       );
       const matchesOfferNameSearch = !offerNameSearch || offerNameSearch === 'all' || 
         offer.name === offerNameSearch;
+      const matchesStatus = statusFilter === 'all' || offer.status === statusFilter;
       const matchesModeration = moderationFilter === 'all' || offer.moderationStatus === moderationFilter;
       const matchesCategory = categoryFilter === 'all' || offer.category === categoryFilter;
       const matchesAdvertiser = advertiserFilter === 'all' || offer.advertiserId === advertiserFilter;
       
-      return matchesGeneralSearch && matchesOfferNameSearch && matchesModeration && matchesCategory && matchesAdvertiser;
+      return matchesGeneralSearch && matchesOfferNameSearch && matchesStatus && matchesModeration && matchesCategory && matchesAdvertiser;
     });
 
   const isLoading = !allOffers.length;
@@ -1232,7 +1233,7 @@ export default function OffersManagement() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -1255,6 +1256,19 @@ export default function OffersManagement() {
                     {offer.name}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger data-testid="select-status-filter" title="Фильтр по статусу оффера">
+                <SelectValue placeholder="Статус" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все</SelectItem>
+                <SelectItem value="active">Активен</SelectItem>
+                <SelectItem value="paused">Остановлен</SelectItem>
+                <SelectItem value="pending">Ожидает</SelectItem>
+                <SelectItem value="draft">Черновик</SelectItem>
               </SelectContent>
             </Select>
 
