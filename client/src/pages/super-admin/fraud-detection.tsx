@@ -897,7 +897,7 @@ const FraudDetectionPage = () => {
                             <TableRow key={ip.id}>
                               <TableCell className="font-mono text-sm">{ip.ipAddress}</TableCell>
                               <TableCell>{ip.country}</TableCell>
-                              <TableCell className="text-sm">{ip.provider}</TableCell>
+                              <TableCell className="text-sm">{ip.isp || 'Неизвестно'}</TableCell>
                               <TableCell>
                                 <div className="flex items-center space-x-2">
                                   <span className={`text-sm font-medium ${
@@ -921,18 +921,19 @@ const FraudDetectionPage = () => {
                               </TableCell>
                               <TableCell>
                                 <Badge variant={
-                                  ip.threatType === 'proxy' || ip.threatType === 'vpn' ? 'destructive' :
-                                  ip.threatType === 'suspicious' ? 'default' : 'secondary'
+                                  ip.threatTypes?.includes('proxy') || ip.threatTypes?.includes('vpn') ? 'destructive' :
+                                  ip.threatTypes?.includes('suspicious') ? 'default' : 'secondary'
                                 } className="text-xs">
-                                  {ip.threatType === 'clean' && 'Чистый'}
-                                  {ip.threatType === 'proxy' && 'Прокси'}
-                                  {ip.threatType === 'vpn' && 'VPN'}
-                                  {ip.threatType === 'suspicious' && 'Подозрительный'}
-                                  {ip.threatType === 'datacenter' && 'Дата-центр'}
+                                  {ip.threatTypes?.includes('clean') && 'Чистый'}
+                                  {ip.threatTypes?.includes('proxy') && 'Прокси'}
+                                  {ip.threatTypes?.includes('vpn') && 'VPN'}
+                                  {ip.threatTypes?.includes('suspicious') && 'Подозрительный'}
+                                  {ip.threatTypes?.includes('datacenter') && 'Дата-центр'}
+                                  {!ip.threatTypes?.length && 'Неизвестно'}
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-sm text-gray-500">
-                                {new Date(ip.lastSeen).toLocaleDateString('ru-RU', {
+                                {new Date(ip.createdAt).toLocaleDateString('ru-RU', {
                                   month: 'short',
                                   day: 'numeric',
                                   hour: '2-digit',
@@ -1004,7 +1005,7 @@ const FraudDetectionPage = () => {
                               />
                               <div>
                                 <h4 className="font-medium">{rule.name}</h4>
-                                <p className="text-sm text-gray-500">{rule.description}</p>
+                                <p className="text-sm text-gray-500">{rule.conditions || 'Условия не указаны'}</p>
                               </div>
                             </div>
                             <div className="flex items-center space-x-4 mt-2">

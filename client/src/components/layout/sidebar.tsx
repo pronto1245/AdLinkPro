@@ -85,14 +85,14 @@ function Sidebar({ className }: SidebarProps) {
 
   return (
     <aside className={cn(
-      "fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200 transform transition-all duration-300 lg:translate-x-0",
+      "fixed inset-y-0 left-0 z-50 bg-white dark:bg-gray-900 border-r border-slate-200 dark:border-gray-700 transform transition-all duration-300 lg:translate-x-0",
       isCollapsed ? "w-16" : "w-64",
       className
     )}>
       <div className="flex flex-col h-full">
         {/* Header with Toggle */}
         <div className={cn(
-          "flex items-center border-b border-slate-200",
+          "flex items-center border-b border-slate-200 dark:border-gray-700",
           isCollapsed ? "px-4 py-4 justify-center" : "px-6 py-4 justify-between"
         )}>
           {!isCollapsed && (
@@ -101,8 +101,8 @@ function Sidebar({ className }: SidebarProps) {
                 <Target className="text-white w-4 h-4" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-slate-900">AffiliateHub</h1>
-                <p className="text-xs text-slate-500">{getRoleLabel()}</p>
+                <h1 className="text-lg font-bold text-slate-900 dark:text-white">AffiliateHub</h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{getRoleLabel()}</p>
               </div>
             </div>
           )}
@@ -110,7 +110,7 @@ function Sidebar({ className }: SidebarProps) {
             variant="ghost"
             size="sm"
             onClick={toggleSidebar}
-            className="text-slate-400 hover:text-slate-600"
+            className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
             data-testid="button-toggle-sidebar"
           >
             {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -128,8 +128,8 @@ function Sidebar({ className }: SidebarProps) {
                 className={cn(
                   "flex items-center px-3 py-2 text-sm font-medium rounded-lg group transition-colors relative",
                   location === item.href
-                    ? "text-white bg-blue-600"
-                    : "text-slate-700 hover:bg-slate-100",
+                    ? "text-white bg-blue-600 dark:bg-blue-700"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-800",
                   isCollapsed ? "justify-center" : ""
                 )}
                 data-testid={`nav-${item.labelKey.split('.')[1]}`}
@@ -138,13 +138,13 @@ function Sidebar({ className }: SidebarProps) {
                 <IconComponent className={cn(
                   "w-5 h-5",
                   isCollapsed ? "" : "mr-3",
-                  location === item.href ? "text-white" : "text-slate-400"
+                  location === item.href ? "text-white" : "text-slate-400 dark:text-slate-500"
                 )} />
                 {!isCollapsed && (
                   <>
                     {t(item.labelKey)}
                     {item.badge && (
-                      <span className="ml-auto bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full">
+                      <span className="ml-auto bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 text-xs font-medium px-2 py-1 rounded-full">
                         {item.badge}
                       </span>
                     )}
