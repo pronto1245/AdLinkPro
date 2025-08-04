@@ -772,6 +772,7 @@ export default function OffersManagement() {
   const { isCollapsed } = useSidebar();
   
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
+  const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
@@ -1134,9 +1135,9 @@ export default function OffersManagement() {
   };
 
   const handleOfferUpdate = (updates: Partial<Offer>) => {
-    if (!selectedOffer) return;
-    setSelectedOffer({
-      ...selectedOffer,
+    if (!editingOffer) return;
+    setEditingOffer({
+      ...editingOffer,
       ...updates
     });
   };
@@ -1682,7 +1683,7 @@ export default function OffersManagement() {
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            setSelectedOffer(offer);
+                            setEditingOffer(offer);
                             setIsEditDialogOpen(true);
                           }}
                           className="h-8 w-8 p-0 hover:bg-green-50 dark:hover:bg-green-900/20"
@@ -2070,11 +2071,14 @@ export default function OffersManagement() {
       )}
 
       {/* Edit Offer Modal */}
-      {selectedOffer && (
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      {editingOffer && (
+        <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
+          setIsEditDialogOpen(open);
+          if (!open) setEditingOffer(null);
+        }}>
           <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Редактировать оффер: {selectedOffer.name}</DialogTitle>
+              <DialogTitle>Редактировать оффер: {editingOffer.name}</DialogTitle>
               <DialogDescription>
                 Полное редактирование всех параметров оффера
               </DialogDescription>
@@ -2085,7 +2089,7 @@ export default function OffersManagement() {
                 <div>
                   <Label>Название оффера</Label>
                   <Input
-                    defaultValue={selectedOffer.name}
+                    defaultValue={editingOffer.name}
                     onChange={(e) => handleOfferUpdate({ name: e.target.value })}
                     placeholder="Введите название оффера"
                   />
@@ -2094,7 +2098,7 @@ export default function OffersManagement() {
                 <div>
                   <Label>Категория</Label>
                   <Select 
-                    defaultValue={selectedOffer.category}
+                    defaultValue={editingOffer.category}
                     onValueChange={(value) => handleOfferUpdate({ category: value })}
                   >
                     <SelectTrigger>
@@ -2119,7 +2123,7 @@ export default function OffersManagement() {
               <div>
                 <Label>Описание</Label>
                 <Textarea
-                  defaultValue={selectedOffer.description}
+                  defaultValue={editingOffer.description}
                   onChange={(e) => handleOfferUpdate({ description: e.target.value })}
                   placeholder="Описание оффера"
                   rows={3}
@@ -2130,7 +2134,7 @@ export default function OffersManagement() {
                 <div>
                   <Label>Статус</Label>
                   <Select 
-                    defaultValue={selectedOffer.status}
+                    defaultValue={editingOffer.status}
                     onValueChange={(value) => handleOfferUpdate({ status: value })}
                   >
                     <SelectTrigger>
@@ -2148,7 +2152,7 @@ export default function OffersManagement() {
                 <div>
                   <Label>Тип выплаты</Label>
                   <Select 
-                    defaultValue={selectedOffer.payoutType}
+                    defaultValue={editingOffer.payoutType}
                     onValueChange={(value) => handleOfferUpdate({ payoutType: value })}
                   >
                     <SelectTrigger>
@@ -2166,7 +2170,7 @@ export default function OffersManagement() {
                 <div>
                   <Label>Валюта</Label>
                   <Select 
-                    defaultValue={selectedOffer.currency}
+                    defaultValue={editingOffer.currency}
                     onValueChange={(value) => handleOfferUpdate({ currency: value })}
                   >
                     <SelectTrigger>
@@ -2184,7 +2188,7 @@ export default function OffersManagement() {
               <div>
                 <Label>URL логотипа</Label>
                 <Input
-                  defaultValue={selectedOffer.logo || ''}
+                  defaultValue={editingOffer.logo || ''}
                   onChange={(e) => handleOfferUpdate({ logo: e.target.value })}
                   placeholder="https://example.com/logo.png"
                 />
@@ -2193,7 +2197,7 @@ export default function OffersManagement() {
               <div>
                 <Label>KPI условия</Label>
                 <Textarea
-                  defaultValue={selectedOffer.kpiConditions || ''}
+                  defaultValue={editingOffer.kpiConditions || ''}
                   onChange={(e) => handleOfferUpdate({ kpiConditions: e.target.value })}
                   placeholder="Условия достижения KPI"
                   rows={2}
@@ -2205,7 +2209,7 @@ export default function OffersManagement() {
                   <Label>Дневной лимит</Label>
                   <Input
                     type="number"
-                    defaultValue={selectedOffer.dailyLimit?.toString() || ''}
+                    defaultValue={editingOffer.dailyLimit?.toString() || ''}
                     onChange={(e) => handleOfferUpdate({ dailyLimit: e.target.value ? parseInt(e.target.value) : undefined })}
                     placeholder="Без ограничений"
                   />
@@ -2215,7 +2219,7 @@ export default function OffersManagement() {
                   <Label>Месячный лимит</Label>
                   <Input
                     type="number"
-                    defaultValue={selectedOffer.monthlyLimit?.toString() || ''}
+                    defaultValue={editingOffer.monthlyLimit?.toString() || ''}
                     onChange={(e) => handleOfferUpdate({ monthlyLimit: e.target.value ? parseInt(e.target.value) : undefined })}
                     placeholder="Без ограничений"
                   />
@@ -2231,9 +2235,9 @@ export default function OffersManagement() {
                       <input
                         type="checkbox"
                         id={`traffic-${source}`}
-                        checked={selectedOffer.trafficSources?.includes(source) || false}
+                        checked={editingOffer.trafficSources?.includes(source) || false}
                         onChange={(e) => {
-                          const current = selectedOffer.trafficSources || [];
+                          const current = editingOffer.trafficSources || [];
                           const updated = e.target.checked 
                             ? [...current, source]
                             : current.filter(s => s !== source);
@@ -2256,9 +2260,9 @@ export default function OffersManagement() {
                       <input
                         type="checkbox"
                         id={`app-${app}`}
-                        checked={selectedOffer.allowedApps?.includes(app) || false}
+                        checked={editingOffer.allowedApps?.includes(app) || false}
                         onChange={(e) => {
-                          const current = selectedOffer.allowedApps || [];
+                          const current = editingOffer.allowedApps || [];
                           const updated = e.target.checked 
                             ? [...current, app]
                             : current.filter(a => a !== app);
@@ -2276,13 +2280,13 @@ export default function OffersManagement() {
               <div>
                 <Label>Landing Pages</Label>
                 <div className="space-y-3 mt-2">
-                  {(selectedOffer.landingPages || []).map((lp, index) => (
+                  {(editingOffer.landingPages || []).map((lp, index) => (
                     <div key={index} className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 border rounded">
                       <Input
                         placeholder="Название"
                         defaultValue={lp.name}
                         onChange={(e) => {
-                          const updated = [...(selectedOffer.landingPages || [])];
+                          const updated = [...(editingOffer.landingPages || [])];
                           updated[index] = { ...lp, name: e.target.value };
                           handleOfferUpdate({ landingPages: updated });
                         }}
@@ -2291,7 +2295,7 @@ export default function OffersManagement() {
                         placeholder="URL"
                         defaultValue={lp.url}
                         onChange={(e) => {
-                          const updated = [...(selectedOffer.landingPages || [])];
+                          const updated = [...(editingOffer.landingPages || [])];
                           updated[index] = { ...lp, url: e.target.value };
                           handleOfferUpdate({ landingPages: updated });
                         }}
@@ -2301,7 +2305,7 @@ export default function OffersManagement() {
                         placeholder="Сумма"
                         defaultValue={lp.payoutAmount.toString()}
                         onChange={(e) => {
-                          const updated = [...(selectedOffer.landingPages || [])];
+                          const updated = [...(editingOffer.landingPages || [])];
                           updated[index] = { ...lp, payoutAmount: parseFloat(e.target.value) || 0 };
                           handleOfferUpdate({ landingPages: updated });
                         }}
@@ -2310,7 +2314,7 @@ export default function OffersManagement() {
                         placeholder="GEO"
                         defaultValue={lp.geo}
                         onChange={(e) => {
-                          const updated = [...(selectedOffer.landingPages || [])];
+                          const updated = [...(editingOffer.landingPages || [])];
                           updated[index] = { ...lp, geo: e.target.value };
                           handleOfferUpdate({ landingPages: updated });
                         }}
@@ -2321,11 +2325,11 @@ export default function OffersManagement() {
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      const updated = [...(selectedOffer.landingPages || []), {
+                      const updated = [...(editingOffer.landingPages || []), {
                         name: '',
                         url: '',
                         payoutAmount: 0,
-                        currency: selectedOffer.currency,
+                        currency: editingOffer.currency,
                         geo: ''
                       }];
                       handleOfferUpdate({ landingPages: updated });
@@ -2341,7 +2345,7 @@ export default function OffersManagement() {
                 <div>
                   <Label>Ограничения</Label>
                   <Textarea
-                    defaultValue={selectedOffer.restrictions || ''}
+                    defaultValue={editingOffer.restrictions || ''}
                     onChange={(e) => handleOfferUpdate({ restrictions: e.target.value })}
                     placeholder="Ограничения по траффику"
                     rows={2}
@@ -2351,7 +2355,7 @@ export default function OffersManagement() {
                 <div>
                   <Label>Комментарий модерации</Label>
                   <Textarea
-                    defaultValue={selectedOffer.moderationComment || ''}
+                    defaultValue={editingOffer.moderationComment || ''}
                     onChange={(e) => handleOfferUpdate({ moderationComment: e.target.value })}
                     placeholder="Комментарий модератора"
                     rows={2}
@@ -2368,7 +2372,7 @@ export default function OffersManagement() {
                     </div>
                   </div>
                   <Switch
-                    defaultChecked={selectedOffer.antifraudEnabled || false}
+                    defaultChecked={editingOffer.antifraudEnabled || false}
                     onCheckedChange={(checked) => handleOfferUpdate({ antifraudEnabled: checked })}
                   />
                 </div>
@@ -2381,7 +2385,7 @@ export default function OffersManagement() {
                     </div>
                   </div>
                   <Switch
-                    defaultChecked={selectedOffer.autoApprovePartners || false}
+                    defaultChecked={editingOffer.autoApprovePartners || false}
                     onCheckedChange={(checked) => handleOfferUpdate({ autoApprovePartners: checked })}
                   />
                 </div>
@@ -2396,7 +2400,7 @@ export default function OffersManagement() {
                     </div>
                   </div>
                   <Switch
-                    defaultChecked={selectedOffer.kycRequired || false}
+                    defaultChecked={editingOffer.kycRequired || false}
                     onCheckedChange={(checked) => handleOfferUpdate({ kycRequired: checked })}
                   />
                 </div>
@@ -2409,7 +2413,7 @@ export default function OffersManagement() {
                     </div>
                   </div>
                   <Switch
-                    defaultChecked={selectedOffer.isPrivate || false}
+                    defaultChecked={editingOffer.isPrivate || false}
                     onCheckedChange={(checked) => handleOfferUpdate({ isPrivate: checked })}
                   />
                 </div>
@@ -2422,7 +2426,7 @@ export default function OffersManagement() {
                     </div>
                   </div>
                   <Switch
-                    defaultChecked={selectedOffer.smartlinkEnabled || false}
+                    defaultChecked={editingOffer.smartlinkEnabled || false}
                     onCheckedChange={(checked) => handleOfferUpdate({ smartlinkEnabled: checked })}
                   />
                 </div>
@@ -2437,8 +2441,8 @@ export default function OffersManagement() {
                 </Button>
                 <Button 
                   onClick={() => {
-                    if (selectedOffer) {
-                      updateOfferMutation.mutate(selectedOffer);
+                    if (editingOffer) {
+                      updateOfferMutation.mutate(editingOffer);
                     }
                   }}
                   disabled={updateOfferMutation.isPending}
