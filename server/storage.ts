@@ -1,10 +1,12 @@
 import { 
   users, offers, partnerOffers, trackingLinks, statistics, transactions, 
   postbacks, tickets, fraudAlerts, customRoles, userRoleAssignments,
+  cryptoWallets, cryptoTransactions,
   type User, type InsertUser, type Offer, type InsertOffer,
   type PartnerOffer, type InsertPartnerOffer, type TrackingLink, type InsertTrackingLink,
   type Transaction, type InsertTransaction, type Postback, type InsertPostback,
-  type Ticket, type InsertTicket, type FraudAlert, type InsertFraudAlert
+  type Ticket, type InsertTicket, type FraudAlert, type InsertFraudAlert,
+  type CryptoWallet, type InsertCryptoWallet, type CryptoTransaction, type InsertCryptoTransaction
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, count, sum, sql } from "drizzle-orm";
@@ -163,6 +165,29 @@ export interface IStorage {
   getUserAnalyticsDetailed(period: string, role?: string): Promise<any>;
   getFraudAnalytics(period: string): Promise<any>;
   exportAnalytics(format: string, period: string, role?: string): Promise<string>;
+
+  // Crypto Wallet management
+  getCryptoWallets(filters: {
+    currency?: string;
+    walletType?: string;
+    status?: string;
+  }): Promise<CryptoWallet[]>;
+  getCryptoWallet(id: string): Promise<CryptoWallet | undefined>;
+  createCryptoWallet(wallet: InsertCryptoWallet): Promise<CryptoWallet>;
+  updateCryptoWallet(id: string, data: Partial<InsertCryptoWallet>): Promise<CryptoWallet>;
+  deleteCryptoWallet(id: string): Promise<void>;
+  getCryptoPortfolio(): Promise<any>;
+  getCryptoBalance(currency: string): Promise<any>;
+  getUserCryptoWallets(userId: string): Promise<CryptoWallet[]>;
+  createUserCryptoWallet(userId: string, currency: string): Promise<CryptoWallet>;
+  syncCryptoWallet(walletId: string): Promise<any>;
+  getCryptoTransactions(filters: {
+    walletId?: string;
+    currency?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ data: CryptoTransaction[]; total: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1525,6 +1550,242 @@ export class DatabaseStorage implements IStorage {
       }
     } catch (error) {
       console.error('Error exporting analytics:', error);
+      throw error;
+    }
+  }
+
+  // Crypto Wallet Methods
+  async getCryptoWallets(filters: {
+    currency?: string;
+    walletType?: string;
+    status?: string;
+  }): Promise<CryptoWallet[]> {
+    try {
+      let query = db.select().from(cryptoWallets);
+      
+      const conditions = [];
+      if (filters.currency) conditions.push(eq(cryptoWallets.currency, filters.currency as any));
+      if (filters.walletType) conditions.push(eq(cryptoWallets.walletType, filters.walletType as any));
+      if (filters.status) conditions.push(eq(cryptoWallets.status, filters.status as any));
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+      
+      return await query;
+    } catch (error) {
+      console.error('Error getting crypto wallets:', error);
+      throw error;
+    }
+  }
+
+  async getCryptoWallet(id: string): Promise<CryptoWallet | undefined> {
+    try {
+      const [wallet] = await db
+        .select()
+        .from(cryptoWallets)
+        .where(eq(cryptoWallets.id, id));
+      return wallet;
+    } catch (error) {
+      console.error('Error getting crypto wallet:', error);
+      throw error;
+    }
+  }
+
+  async createCryptoWallet(wallet: InsertCryptoWallet): Promise<CryptoWallet> {
+    try {
+      const [newWallet] = await db
+        .insert(cryptoWallets)
+        .values(wallet)
+        .returning();
+      return newWallet;
+    } catch (error) {
+      console.error('Error creating crypto wallet:', error);
+      throw error;
+    }
+  }
+
+  async updateCryptoWallet(id: string, data: Partial<InsertCryptoWallet>): Promise<CryptoWallet> {
+    try {
+      const [updatedWallet] = await db
+        .update(cryptoWallets)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(cryptoWallets.id, id))
+        .returning();
+      return updatedWallet;
+    } catch (error) {
+      console.error('Error updating crypto wallet:', error);
+      throw error;
+    }
+  }
+
+  async deleteCryptoWallet(id: string): Promise<void> {
+    try {
+      await db
+        .delete(cryptoWallets)
+        .where(eq(cryptoWallets.id, id));
+    } catch (error) {
+      console.error('Error deleting crypto wallet:', error);
+      throw error;
+    }
+  }
+
+  async getCryptoPortfolio(): Promise<any> {
+    try {
+      const platformWallets = await db
+        .select()
+        .from(cryptoWallets)
+        .where(eq(cryptoWallets.walletType, 'platform'));
+
+      const portfolio = platformWallets.reduce((acc, wallet) => {
+        const currency = wallet.currency;
+        if (!acc[currency]) {
+          acc[currency] = {
+            currency,
+            balance: '0',
+            lockedBalance: '0',
+            walletCount: 0
+          };
+        }
+        
+        acc[currency].balance = (parseFloat(acc[currency].balance) + parseFloat(wallet.balance || '0')).toString();
+        acc[currency].lockedBalance = (parseFloat(acc[currency].lockedBalance) + parseFloat(wallet.lockedBalance || '0')).toString();
+        acc[currency].walletCount += 1;
+        
+        return acc;
+      }, {} as any);
+
+      return Object.values(portfolio);
+    } catch (error) {
+      console.error('Error getting crypto portfolio:', error);
+      throw error;
+    }
+  }
+
+  async getCryptoBalance(currency: string): Promise<any> {
+    try {
+      const wallets = await db
+        .select()
+        .from(cryptoWallets)
+        .where(and(
+          eq(cryptoWallets.currency, currency as any),
+          eq(cryptoWallets.walletType, 'platform')
+        ));
+
+      const totalBalance = wallets.reduce((sum, wallet) => sum + parseFloat(wallet.balance || '0'), 0);
+      const totalLocked = wallets.reduce((sum, wallet) => sum + parseFloat(wallet.lockedBalance || '0'), 0);
+
+      return {
+        currency,
+        balance: totalBalance.toString(),
+        lockedBalance: totalLocked.toString(),
+        availableBalance: (totalBalance - totalLocked).toString(),
+        walletCount: wallets.length
+      };
+    } catch (error) {
+      console.error('Error getting crypto balance:', error);
+      throw error;
+    }
+  }
+
+  async getUserCryptoWallets(userId: string): Promise<CryptoWallet[]> {
+    try {
+      return await db
+        .select()
+        .from(cryptoWallets)
+        .where(and(
+          eq(cryptoWallets.userId, userId),
+          eq(cryptoWallets.walletType, 'user')
+        ));
+    } catch (error) {
+      console.error('Error getting user crypto wallets:', error);
+      throw error;
+    }
+  }
+
+  async createUserCryptoWallet(userId: string, currency: string): Promise<CryptoWallet> {
+    try {
+      // Generate a mock address for demo purposes
+      const address = `${currency.toLowerCase()}_${randomUUID().slice(0, 8)}`;
+      
+      const walletData: InsertCryptoWallet = {
+        userId,
+        walletType: 'user',
+        currency: currency as any,
+        address,
+        network: currency === 'BTC' ? 'bitcoin' : 'ethereum',
+        balance: '0',
+        lockedBalance: '0'
+      };
+
+      return await this.createCryptoWallet(walletData);
+    } catch (error) {
+      console.error('Error creating user crypto wallet:', error);
+      throw error;
+    }
+  }
+
+  async syncCryptoWallet(walletId: string): Promise<any> {
+    try {
+      // Mock sync implementation - in real app would connect to blockchain
+      const wallet = await this.getCryptoWallet(walletId);
+      if (!wallet) throw new Error('Wallet not found');
+
+      // Update lastSyncAt
+      await this.updateCryptoWallet(walletId, {
+        lastSyncAt: new Date()
+      });
+
+      return {
+        success: true,
+        walletId,
+        lastSync: new Date(),
+        newTransactions: 0
+      };
+    } catch (error) {
+      console.error('Error syncing crypto wallet:', error);
+      throw error;
+    }
+  }
+
+  async getCryptoTransactions(filters: {
+    walletId?: string;
+    currency?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ data: CryptoTransaction[]; total: number }> {
+    try {
+      const page = filters.page || 1;
+      const limit = Math.min(filters.limit || 50, 100);
+      const offset = (page - 1) * limit;
+
+      let query = db.select().from(cryptoTransactions);
+      
+      const conditions = [];
+      if (filters.walletId) conditions.push(eq(cryptoTransactions.walletId, filters.walletId));
+      if (filters.currency) conditions.push(eq(cryptoTransactions.currency, filters.currency as any));
+      if (filters.status) conditions.push(eq(cryptoTransactions.status, filters.status as any));
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+      
+      const data = await query
+        .orderBy(desc(cryptoTransactions.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      // Get total count
+      let countQuery = db.select({ count: count() }).from(cryptoTransactions);
+      if (conditions.length > 0) {
+        countQuery = countQuery.where(and(...conditions));
+      }
+      const [{ count: total }] = await countQuery;
+
+      return { data, total };
+    } catch (error) {
+      console.error('Error getting crypto transactions:', error);
       throw error;
     }
   }

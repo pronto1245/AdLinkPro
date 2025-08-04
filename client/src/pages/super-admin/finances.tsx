@@ -149,6 +149,28 @@ export default function FinancesManagement() {
     },
   });
 
+  const { data: cryptoPortfolio = [] } = useQuery<any[]>({
+    queryKey: ['/api/admin/crypto-portfolio'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/crypto-portfolio', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch crypto portfolio');
+      return response.json();
+    },
+  });
+
+  const { data: cryptoWallets = [] } = useQuery<any[]>({
+    queryKey: ['/api/admin/crypto-wallets'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/crypto-wallets', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch crypto wallets');
+      return response.json();
+    },
+  });
+
   // Mutations
   const updateTransactionMutation = useMutation({
     mutationFn: async ({ transactionId, status, note }: { transactionId: string; status: string; note?: string }) => {
@@ -377,6 +399,7 @@ export default function FinancesManagement() {
                   { id: 'payouts', label: '💳 Выплаты', icon: Send },
                   { id: 'deposits', label: '🧮 Пополнения', icon: ArrowUpRight },
                   { id: 'commission', label: '📦 Комиссия', icon: DollarSign },
+                  { id: 'crypto', label: '₿ Криптокошельки', icon: Bitcoin },
                   { id: 'reports', label: '📁 Отчёты', icon: FileText },
                 ].map((tab) => {
                   const Icon = tab.icon;
@@ -1324,6 +1347,204 @@ export default function FinancesManagement() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {selectedTab === 'crypto' && (
+          <div className="space-y-6">
+            {/* Crypto Portfolio Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {cryptoPortfolio.map((crypto: any) => (
+                <Card key={crypto.currency} className="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-orange-500 rounded-lg">
+                          <Bitcoin className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                            {crypto.currency}
+                          </p>
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                            {parseFloat(crypto.balance).toFixed(8)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Заблокировано
+                        </p>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {parseFloat(crypto.lockedBalance).toFixed(8)}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Crypto Wallets Management */}
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Wallet className="w-5 h-5" />
+                      <span>Криптокошельки</span>
+                    </CardTitle>
+                    <CardDescription>
+                      Управление криптокошельками платформы
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700"
+                    data-testid="button-create-wallet"
+                    title="Создать кошелёк"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Новый кошелёк
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Filters */}
+                  <div className="flex space-x-4">
+                    <Select>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Валюта" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="BTC">Bitcoin (BTC)</SelectItem>
+                        <SelectItem value="ETH">Ethereum (ETH)</SelectItem>
+                        <SelectItem value="USDT">Tether (USDT)</SelectItem>
+                        <SelectItem value="USDC">USD Coin (USDC)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Тип кошелька" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="platform">Платформенный</SelectItem>
+                        <SelectItem value="user">Пользовательский</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Статус" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Активный</SelectItem>
+                        <SelectItem value="suspended">Приостановлен</SelectItem>
+                        <SelectItem value="maintenance">Обслуживание</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Crypto Wallets Table */}
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Валюта</TableHead>
+                          <TableHead>Адрес</TableHead>
+                          <TableHead>Тип</TableHead>
+                          <TableHead>Баланс</TableHead>
+                          <TableHead>Заблокировано</TableHead>
+                          <TableHead>Статус</TableHead>
+                          <TableHead>Действия</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {cryptoWallets.map((wallet: any) => (
+                          <TableRow key={wallet.id}>
+                            <TableCell>
+                              <div className="flex items-center space-x-2">
+                                <div className="p-1 bg-orange-100 dark:bg-orange-900/30 rounded">
+                                  <Bitcoin className="w-4 h-4 text-orange-600" />
+                                </div>
+                                <span className="font-medium">{wallet.currency}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center space-x-2">
+                                <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                                  {wallet.address}
+                                </code>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => navigator.clipboard.writeText(wallet.address)}
+                                  data-testid="button-copy-address"
+                                  title="Копировать адрес"
+                                >
+                                  <Copy className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={wallet.walletType === 'platform' ? 'default' : 'secondary'}>
+                                {wallet.walletType === 'platform' ? 'Платформенный' : 'Пользовательский'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-mono">
+                              {parseFloat(wallet.balance).toFixed(8)}
+                            </TableCell>
+                            <TableCell className="font-mono">
+                              {parseFloat(wallet.lockedBalance).toFixed(8)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={
+                                  wallet.status === 'active' ? 'default' :
+                                  wallet.status === 'suspended' ? 'destructive' : 'secondary'
+                                }
+                              >
+                                {wallet.status === 'active' ? 'Активный' :
+                                 wallet.status === 'suspended' ? 'Приостановлен' : 'Обслуживание'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  data-testid="button-sync-wallet"
+                                  title="Синхронизировать"
+                                >
+                                  <RefreshCw className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  data-testid="button-view-wallet"
+                                  title="Просмотр"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  data-testid="button-edit-wallet"
+                                  title="Редактировать"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               </CardContent>
             </Card>

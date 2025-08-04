@@ -2232,6 +2232,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Crypto Wallet Management Routes
+  app.get("/api/admin/crypto-wallets", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { currency, walletType, status } = req.query;
+      const wallets = await storage.getCryptoWallets({
+        currency: currency as string,
+        walletType: walletType as string,
+        status: status as string
+      });
+      res.json(wallets);
+    } catch (error) {
+      console.error("Get crypto wallets error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/crypto-portfolio", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const portfolio = await storage.getCryptoPortfolio();
+      res.json(portfolio);
+    } catch (error) {
+      console.error("Get crypto portfolio error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
