@@ -351,7 +351,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     name={`landingPages.${index}.currency`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm">Валюта</FormLabel>
+                        <FormLabel className="text-sm">{t('currency')}</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid={`select-landing-currency-${index}`}>
@@ -375,7 +375,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     name={`landingPages.${index}.geo`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm">Гео</FormLabel>
+                        <FormLabel className="text-sm">{t('geo')}</FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="US, GB, DE" data-testid={`input-landing-geo-${index}`} />
                         </FormControl>

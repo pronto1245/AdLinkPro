@@ -187,6 +187,8 @@ export const translations = {
     'creating': 'Creating...',
     'choose_file': 'Choose file',
     'file_selected': 'File selected',
+    'geo': 'Geo',
+    'currency': 'Currency',
     
     // Categories
     'gambling': 'Gambling',
@@ -418,6 +420,8 @@ export const translations = {
     'creating': 'Создание...',
     'choose_file': 'Выбрать файл',
     'file_selected': 'Файл выбран',
+    'geo': 'Гео',
+    'currency': 'Валюта',
     
     // Categories
     'gambling': 'Гемблинг',
