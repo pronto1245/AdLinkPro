@@ -27,6 +27,7 @@ const createOfferSchema = z.object({
   name: z.string().min(1, 'Название оффера обязательно'),
   category: z.string().min(1, 'Категория обязательна'),
   description: z.string().optional(),
+  logo: z.string().optional(),
   payoutType: z.string().default('cpa'),
   currency: z.string().default('USD'),
   landingPages: z.array(z.object({
@@ -60,6 +61,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
       name: '',
       category: '',
       description: '',
+      logo: '',
       landingPages: [{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }],
       payoutType: 'cpa',
       currency: 'USD',
@@ -159,6 +161,49 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
               <FormLabel>Описание</FormLabel>
               <FormControl>
                 <Textarea {...field} placeholder="Описание оффера" rows={3} data-testid="textarea-description" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="logo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Логотип оффера</FormLabel>
+              <FormControl>
+                <div className="space-y-3">
+                  <Input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          field.onChange(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    data-testid="input-logo" 
+                  />
+                  {field.value && (
+                    <div className="flex items-center gap-3">
+                      <img src={field.value} alt="Логотип" className="h-16 w-16 object-cover rounded border" />
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => field.onChange('')}
+                      >
+                        Удалить логотип
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

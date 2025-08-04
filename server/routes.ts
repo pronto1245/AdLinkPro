@@ -665,16 +665,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
+      console.log("Raw request body:", JSON.stringify(req.body, null, 2)); 
+      console.log("Auth user ID:", authUser.id);
       
       // Transform frontend data to match backend schema
       const transformedData = {
-        ...req.body,
+        name: req.body.name,
+        category: req.body.category,
+        description: req.body.description || null,
+        logo: req.body.logo || null,
         payout: "0.00", // Default payout as string for decimal field
+        payoutType: req.body.payoutType || 'cpa',
+        currency: req.body.currency || 'USD',
         advertiserId: authUser.id, // Set to current admin user
+        landingPages: req.body.landingPages || [],
+        kpiConditions: req.body.kpiConditions || null,
         trafficSources: req.body.allowedTrafficSources || [], // Map allowedTrafficSources to trafficSources
+        dailyLimit: req.body.dailyLimit || null,
+        monthlyLimit: req.body.monthlyLimit || null,
+        antifraudEnabled: req.body.antifraudEnabled !== undefined ? req.body.antifraudEnabled : true,
+        autoApprovePartners: req.body.autoApprovePartners !== undefined ? req.body.autoApprovePartners : false,
       };
       
-
+      console.log("Transformed data:", JSON.stringify(transformedData, null, 2));
       const offerData = insertOfferSchema.parse(transformedData);
       const offer = await storage.createOffer(offerData);
       res.status(201).json(offer);
