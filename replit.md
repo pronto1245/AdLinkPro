@@ -76,6 +76,10 @@ The application features a multi-role dashboard system with role-based access co
   * Удалены дублирующиеся записи "Все статусы" в фильтрах
   * Изменен заголовок на "OFFER-MANAGEMENT" (заглавные буквы через дефис)
 - ✅ Исправлены LSP ошибки в server/routes.ts (добавлен импорт eq, удален totalLimit)
+- ✅ Убраны дублирующиеся заголовки на страницах:
+  * На странице offers_management убран Header с "offers_management" и "manage_and_moderate_offers" 
+  * Остался только заголовок "OFFER-MANAGEMENT" заглавными буквами через дефис
+  * На странице offer_details добавлен заголовок "OFFER-DETAILS" в том же стиле
 
 # User Preferences
 

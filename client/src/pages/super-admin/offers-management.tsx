@@ -1141,7 +1141,7 @@ export default function OffersManagement() {
       <div className="flex min-h-screen bg-background">
         <Sidebar />
         <div className="flex-1 flex flex-col">
-          <Header title="Управление офферами" />
+          <Header title="" subtitle="" />
           <main className="flex-1 p-6">
             <div className="flex items-center justify-center p-8">{t('loading')}</div>
           </main>
@@ -1154,7 +1154,7 @@ export default function OffersManagement() {
     <div className="flex min-h-screen bg-background">
       <Sidebar />
       <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
-        <Header title="offers_management" subtitle="manage_and_moderate_offers" />
+        <Header title="" subtitle="" />
         <main className="flex-1 p-6">
           <div className="space-y-6">
       <div className="flex items-center justify-between">
