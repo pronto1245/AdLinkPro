@@ -263,8 +263,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           
           <div className="space-y-3">
             {form.watch('landingPages').map((_, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                <div className="md:col-span-2">
+              <div key={index} className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                   <FormField
                     control={form.control}
                     name={`landingPages.${index}.name`}
@@ -278,9 +278,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       </FormItem>
                     )}
                   />
-                </div>
-                
-                <div className="md:col-span-2">
+                  
                   <FormField
                     control={form.control}
                     name={`landingPages.${index}.url`}
@@ -296,13 +294,13 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                   />
                 </div>
                 
-                <div className="grid grid-cols-3 gap-2 md:col-span-1">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                   <FormField
                     control={form.control}
                     name={`landingPages.${index}.payoutAmount`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm">Сумма</FormLabel>
+                        <FormLabel className="text-sm">Сумма выплаты</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
@@ -352,29 +350,29 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       <FormItem>
                         <FormLabel className="text-sm">Гео</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="US" data-testid={`input-landing-geo-${index}`} />
+                          <Input {...field} placeholder="US, GB, DE" data-testid={`input-landing-geo-${index}`} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </div>
-                
-                <div className="flex items-end justify-end">
-                  {form.watch('landingPages').length > 1 && (
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => {
-                        const current = form.getValues('landingPages');
-                        form.setValue('landingPages', current.filter((_, i) => i !== index));
-                      }}
-                      data-testid={`button-remove-landing-page-${index}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
+                  
+                  <div className="flex justify-end">
+                    {form.watch('landingPages').length > 1 && (
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          const current = form.getValues('landingPages');
+                          form.setValue('landingPages', current.filter((_, i) => i !== index));
+                        }}
+                        data-testid={`button-remove-landing-page-${index}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
