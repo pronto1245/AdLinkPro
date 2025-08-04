@@ -1287,15 +1287,7 @@ export default function OffersManagement() {
                 <Upload className="w-4 h-4 mr-2" />
                 Импорт
               </Button>
-              <Button
-                size="sm"
-                onClick={() => setIsCreateDialogOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                data-testid="button-create-offer"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                {t('create_offer')}
-              </Button>
+
             </div>
           </div>
         </CardHeader>
