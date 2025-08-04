@@ -31,7 +31,7 @@ const createOfferSchema = z.object({
   description: z.string().optional(),
   logo: z.string().optional(),
   advertiserId: z.string().optional(), // Будет установлен на сервере
-  payout: z.number().min(0, 'Сумма выплаты обязательна'),
+
   payoutType: z.string().default('cpa'),
   currency: z.string().default('USD'),
   landingPages: z.array(z.object({
@@ -70,7 +70,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
       logo: '',
       landingPages: [{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }],
       payoutType: 'cpa',
-      payout: 0,
+
       currency: 'USD',
       landingInfo: '',
       kpiConditions: '',
@@ -318,6 +318,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                           step="0.01"
                           value={field.value || ''}
                           onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          onWheel={(e) => e.currentTarget.blur()}
                           placeholder="0.00" 
                           data-testid={`input-landing-payout-${index}`}
                           className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -442,28 +443,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="payout"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Сумма выплаты по умолчанию</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field} 
-                  type="number" 
-                  step="0.01"
-                  value={field.value || ''}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                  placeholder="0.00" 
-                  data-testid="input-payout-amount"
-                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
 
         <FormField
           control={form.control}
@@ -524,6 +504,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     type="number"
                     value={field.value || ''}
                     onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                    onWheel={(e) => e.currentTarget.blur()}
                     placeholder="Без ограничений" 
                     data-testid="input-daily-limit"
                     className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -546,6 +527,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     type="number"
                     value={field.value || ''}
                     onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                    onWheel={(e) => e.currentTarget.blur()}
                     placeholder="Без ограничений" 
                     data-testid="input-monthly-limit"
                     className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -1168,6 +1150,7 @@ export default function OffersManagement() {
                     step="0.01"
                     defaultValue={selectedOffer.payout}
                     onChange={(e) => handleOfferUpdate({ payout: e.target.value })}
+                    onWheel={(e) => e.currentTarget.blur()}
                     data-testid="input-edit-payout"
                   />
                 </div>
