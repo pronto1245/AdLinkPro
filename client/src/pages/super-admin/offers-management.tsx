@@ -62,7 +62,7 @@ interface CreateOfferFormProps {
 }
 
 function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -886,7 +886,7 @@ interface OfferLog {
 }
 
 export default function OffersManagement() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
