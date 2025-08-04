@@ -458,24 +458,25 @@ export default function OfferDetails() {
                                 Выплата
                               </div>
                               <div className="text-xl font-bold text-green-700 dark:text-green-300">
-                                {offer.payout && offer.payout !== '0.00' 
-                                  ? `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}${offer.payout}`
-                                  : (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0 
-                                     ? `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}${offer.geoPricing[0].payout}` 
-                                     : (
-                                       <div className="flex items-center gap-2 justify-center">
-                                         {offer.logoUrl ? (
-                                           <img 
-                                             src={offer.logoUrl} 
-                                             alt={offer.name}
-                                             className="w-6 h-6 object-contain rounded"
-                                           />
-                                         ) : (
-                                           <Target className="w-4 h-4" />
-                                         )}
-                                         <span className="text-sm">{offer.name}</span>
-                                       </div>
-                                     ))}
+                                {(() => {
+                                  // Проверяем специфичную выплату для этого лендинга
+                                  if (landing.payout && landing.payout !== '0.00') {
+                                    const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
+                                    return `${currencySymbol}${landing.payout}`;
+                                  }
+                                  // Проверяем базовую выплату оффера
+                                  if (offer.payout && offer.payout !== '0.00') {
+                                    const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
+                                    return `${currencySymbol}${offer.payout}`;
+                                  }
+                                  // Проверяем geo-pricing
+                                  if (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0) {
+                                    const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
+                                    return `${currencySymbol}${offer.geoPricing[0].payout}`;
+                                  }
+                                  // Резервный вариант
+                                  return `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '$'}0`;
+                                })()}
                               </div>
                             </div>
                             
@@ -561,24 +562,20 @@ export default function OfferDetails() {
                           Выплата
                         </div>
                         <div className="text-xl font-bold text-green-700 dark:text-green-300">
-                          {offer.payout && offer.payout !== '0.00' 
-                            ? `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}${offer.payout}`
-                            : (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0 
-                               ? `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}${offer.geoPricing[0].payout}` 
-                               : (
-                                 <div className="flex items-center gap-2 justify-center">
-                                   {offer.logoUrl ? (
-                                     <img 
-                                       src={offer.logoUrl} 
-                                       alt={offer.name}
-                                       className="w-6 h-6 object-contain rounded"
-                                     />
-                                   ) : (
-                                     <Target className="w-4 h-4" />
-                                   )}
-                                   <span className="text-sm">{offer.name}</span>
-                                 </div>
-                               ))}
+                          {(() => {
+                            // Проверяем базовую выплату оффера
+                            if (offer.payout && offer.payout !== '0.00') {
+                              const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
+                              return `${currencySymbol}${offer.payout}`;
+                            }
+                            // Проверяем geo-pricing
+                            if (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0) {
+                              const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
+                              return `${currencySymbol}${offer.geoPricing[0].payout}`;
+                            }
+                            // Резервный вариант
+                            return `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '$'}0`;
+                          })()}
                         </div>
                       </div>
                       
