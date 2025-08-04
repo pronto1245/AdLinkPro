@@ -190,11 +190,12 @@ export default function AuditLogs() {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
-                      placeholder="Search logs..."
+                      placeholder="Поиск по логам..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
                       data-testid="input-search-logs"
+                      title="Поиск в логах аудита"
                     />
                   </div>
                 </div>
@@ -202,7 +203,7 @@ export default function AuditLogs() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Action</label>
                   <Select value={actionFilter} onValueChange={setActionFilter}>
-                    <SelectTrigger data-testid="select-action-filter">
+                    <SelectTrigger data-testid="select-action-filter" title="Фильтр по действию">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -218,7 +219,7 @@ export default function AuditLogs() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Resource</label>
                   <Select value={resourceFilter} onValueChange={setResourceFilter}>
-                    <SelectTrigger data-testid="select-resource-filter">
+                    <SelectTrigger data-testid="select-resource-filter" title="Фильтр по ресурсу">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -234,7 +235,7 @@ export default function AuditLogs() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">User</label>
                   <Select value={userFilter} onValueChange={setUserFilter}>
-                    <SelectTrigger data-testid="select-user-filter">
+                    <SelectTrigger data-testid="select-user-filter" title="Фильтр по пользователю">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

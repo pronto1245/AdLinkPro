@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
@@ -37,6 +38,7 @@ import {
   Download,
   Filter,
   RefreshCw,
+  Search,
 } from 'lucide-react';
 
 export default function Analytics() {
@@ -44,6 +46,7 @@ export default function Analytics() {
   const { t } = useLanguage();
   const [timeRange, setTimeRange] = useState('30d');
   const [selectedMetric, setSelectedMetric] = useState('revenue');
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Mock analytics data - in real app this would come from API
   const analyticsData = {
@@ -103,6 +106,13 @@ export default function Analytics() {
     },
   ];
 
+  // Filter metrics based on search term
+  const filteredMetrics = metrics.filter(metric => 
+    !searchTerm || 
+    metric.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    metric.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
@@ -117,8 +127,19 @@ export default function Analytics() {
                 <p className="text-gray-600 dark:text-gray-400">Platform performance insights and metrics</p>
               </div>
               <div className="flex gap-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder="Поиск метрик..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-48"
+                    data-testid="input-search-analytics"
+                    title="Поиск аналитических данных"
+                  />
+                </div>
                 <Select value={timeRange} onValueChange={setTimeRange}>
-                  <SelectTrigger className="w-[140px]" data-testid="select-time-range">
+                  <SelectTrigger className="w-[140px]" data-testid="select-time-range" title="Выбор временного периода">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -128,11 +149,11 @@ export default function Analytics() {
                     <SelectItem value="1y">Last year</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm" data-testid="button-refresh">
+                <Button variant="outline" size="sm" data-testid="button-refresh" title="Обновить данные">
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Refresh
                 </Button>
-                <Button variant="outline" size="sm" data-testid="button-export">
+                <Button variant="outline" size="sm" data-testid="button-export" title="Экспорт данных">
                   <Download className="w-4 h-4 mr-2" />
                   Export
                 </Button>
@@ -141,7 +162,7 @@ export default function Analytics() {
 
             {/* Key Metrics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-              {metrics.map((metric, index) => (
+              {filteredMetrics.map((metric, index) => (
                 <Card key={index} data-testid={`metric-card-${metric.title.toLowerCase().replace(/\s+/g, '-')}`}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">

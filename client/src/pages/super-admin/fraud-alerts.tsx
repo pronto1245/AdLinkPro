@@ -6,6 +6,7 @@ import { queryClient } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -21,30 +22,43 @@ import {
   Activity,
   Users,
   DollarSign,
-  Globe
+  Globe,
+  Search
 } from 'lucide-react';
 
 export default function FraudAlertsManagement() {
   const { token } = useAuth();
   const { t } = useLanguage();
+  const [searchTerm, setSearchTerm] = useState('');
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [selectedAlert, setSelectedAlert] = useState<any>(null);
 
-  const { data: fraudAlerts, isLoading } = useQuery({
-    queryKey: ['/api/admin/fraud-alerts', filterSeverity, filterStatus],
+  const { data: allFraudAlerts, isLoading } = useQuery({
+    queryKey: ['/api/admin/fraud-alerts'],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      if (filterSeverity !== 'all') params.append('severity', filterSeverity);
-      if (filterStatus !== 'all') params.append('status', filterStatus);
-      
-      const response = await fetch(`/api/admin/fraud-alerts?${params.toString()}`, {
+      const response = await fetch('/api/admin/fraud-alerts', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch fraud alerts');
       return response.json();
     },
   });
+
+  // Filter alerts based on search term and filters
+  const fraudAlerts = allFraudAlerts?.filter((alert: any) => {
+    const matchesSearch = searchTerm === '' || 
+      alert.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      alert.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      alert.offer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      alert.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      alert.type?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesSeverity = filterSeverity === 'all' || alert.severity === filterSeverity;
+    const matchesStatus = filterStatus === 'all' || (alert.isResolved ? 'resolved' : 'pending') === filterStatus;
+    
+    return matchesSearch && matchesSeverity && matchesStatus;
+  }) || [];
 
   const { data: fraudMetrics } = useQuery({
     queryKey: ['/api/admin/fraud-metrics'],
@@ -177,8 +191,20 @@ export default function FraudAlertsManagement() {
             <Card className="mb-6">
               <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Поиск по пользователю, офферу или описанию..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                      data-testid="input-search-alerts"
+                      title="Поиск алертов"
+                    />
+                  </div>
+                  
                   <Select value={filterSeverity} onValueChange={setFilterSeverity}>
-                    <SelectTrigger className="w-[180px]" data-testid="select-filter-severity">
+                    <SelectTrigger className="w-[180px]" data-testid="select-filter-severity" title="Фильтр по важности">
                       <SelectValue placeholder={t('filter_by_severity')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -190,7 +216,7 @@ export default function FraudAlertsManagement() {
                   </Select>
 
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="w-[180px]" data-testid="select-filter-status">
+                    <SelectTrigger className="w-[180px]" data-testid="select-filter-status" title="Фильтр по статусу">
                       <SelectValue placeholder={t('filter_by_status')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -203,10 +229,12 @@ export default function FraudAlertsManagement() {
                   <Button 
                     variant="outline" 
                     onClick={() => {
+                      setSearchTerm('');
                       setFilterSeverity('all');
                       setFilterStatus('all');
                     }}
                     data-testid="button-clear-filters"
+                    title="Очистить фильтры"
                   >
                     {t('clear_filters')}
                   </Button>

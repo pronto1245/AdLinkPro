@@ -223,7 +223,7 @@ export default function PostbacksManagement() {
               {activeTab === 'postbacks' && (
                 <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="flex items-center gap-2" data-testid="button-create-postback">
+                    <Button className="flex items-center gap-2" data-testid="button-create-postback" title="Создать глобальный постбэк">
                       <Plus className="w-4 h-4" />
                       Add Global Postback
                     </Button>
@@ -391,6 +391,7 @@ export default function PostbacksManagement() {
                           onClick={() => testPostbackMutation.mutate(postback.id)}
                           disabled={testPostbackMutation.isPending}
                           data-testid={`button-test-postback-${postback.id}`}
+                          title="Тестировать постбэк"
                         >
                           <TestTube className="w-4 h-4" />
                         </Button>
@@ -402,6 +403,7 @@ export default function PostbacksManagement() {
                             data: { isActive: !postback.isActive }
                           })}
                           data-testid={`button-toggle-postback-${postback.id}`}
+                          title={postback.isActive ? "Приостановить постбэк" : "Активировать постбэк"}
                         >
                           {postback.isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                         </Button>
@@ -569,7 +571,7 @@ export default function PostbacksManagement() {
                   </div>
 
                   <div className="pt-4 border-t">
-                    <Button className="flex items-center gap-2">
+                    <Button className="flex items-center gap-2" title="Сохранить настройки">
                       <Settings className="w-4 h-4" />
                       Save Settings
                     </Button>

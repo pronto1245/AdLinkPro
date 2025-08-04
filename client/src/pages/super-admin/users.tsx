@@ -254,15 +254,16 @@ export default function UsersManagement() {
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
-                      placeholder={t('search_users')}
+                      placeholder="Поиск по имени, email, компании..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
                       data-testid="input-search-users"
+                      title="Поиск пользователей"
                     />
                   </div>
                   <Select value={filterRole} onValueChange={setFilterRole}>
-                    <SelectTrigger className="w-[180px]" data-testid="select-filter-role">
+                    <SelectTrigger className="w-[180px]" data-testid="select-filter-role" title="Фильтр по роли">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -349,7 +350,7 @@ export default function UsersManagement() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <Button size="sm" variant="ghost" data-testid={`button-edit-${user.id}`}>
+                              <Button size="sm" variant="ghost" data-testid={`button-edit-${user.id}`} title="Редактировать пользователя">
                                 <Edit className="w-4 h-4" />
                               </Button>
                               <Button 
@@ -358,6 +359,7 @@ export default function UsersManagement() {
                                 onClick={() => deleteUserMutation.mutate(user.id)}
                                 disabled={deleteUserMutation.isPending}
                                 data-testid={`button-delete-${user.id}`}
+                                title="Удалить пользователя"
                               >
                                 <Trash2 className="w-4 h-4 text-red-500" />
                               </Button>

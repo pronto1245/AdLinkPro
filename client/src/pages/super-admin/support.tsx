@@ -322,16 +322,17 @@ export default function Support() {
                       <div className="relative flex-1">
                         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
-                          placeholder="Search tickets..."
+                          placeholder="Поиск по тикетам, пользователям..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                           className="pl-10"
                           data-testid="input-search-tickets"
+                          title="Поиск тикетов поддержки"
                         />
                       </div>
                       
                       <Select value={filterStatus} onValueChange={setFilterStatus}>
-                        <SelectTrigger className="w-[140px]" data-testid="select-filter-status">
+                        <SelectTrigger className="w-[140px]" data-testid="select-filter-status" title="Фильтр по статусу тикета">
                           <SelectValue placeholder="All Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -345,7 +346,7 @@ export default function Support() {
                       </Select>
                       
                       <Select value={filterPriority} onValueChange={setFilterPriority}>
-                        <SelectTrigger className="w-[140px]" data-testid="select-filter-priority">
+                        <SelectTrigger className="w-[140px]" data-testid="select-filter-priority" title="Фильтр по приоритету">
                           <SelectValue placeholder="All Priority" />
                         </SelectTrigger>
                         <SelectContent>

@@ -29,27 +29,41 @@ import {
 export default function FinancesManagement() {
   const { token } = useAuth();
   const { t } = useLanguage();
+  const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
 
-  const { data: transactions, isLoading } = useQuery({
-    queryKey: ['/api/admin/finances', filterStatus, filterType, startDate, endDate],
+  const { data: allTransactions, isLoading } = useQuery({
+    queryKey: ['/api/admin/finances'],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      if (filterStatus !== 'all') params.append('status', filterStatus);
-      if (filterType !== 'all') params.append('type', filterType);
-      if (startDate) params.append('startDate', startDate.toISOString());
-      if (endDate) params.append('endDate', endDate.toISOString());
-      
-      const response = await fetch(`/api/admin/finances?${params.toString()}`, {
+      const response = await fetch('/api/admin/finances', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch transactions');
       return response.json();
     },
   });
+
+  // Filter transactions based on search term and filters
+  const transactions = allTransactions?.filter((transaction: any) => {
+    const matchesSearch = searchTerm === '' || 
+      transaction.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = filterStatus === 'all' || transaction.status === filterStatus;
+    const matchesType = filterType === 'all' || transaction.type === filterType;
+    
+    const transactionDate = new Date(transaction.createdAt);
+    const matchesStartDate = !startDate || transactionDate >= startDate;
+    const matchesEndDate = !endDate || transactionDate <= endDate;
+    
+    return matchesSearch && matchesStatus && matchesType && matchesStartDate && matchesEndDate;
+  }) || [];
 
   const { data: financialMetrics } = useQuery({
     queryKey: ['/api/admin/financial-metrics'],
@@ -199,9 +213,21 @@ export default function FinancesManagement() {
             {/* Filters */}
             <Card className="mb-6">
               <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Поиск по пользователю, ID, типу..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                      data-testid="input-search-transactions"
+                      title="Поиск транзакций"
+                    />
+                  </div>
+
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger data-testid="select-filter-status">
+                    <SelectTrigger data-testid="select-filter-status" title="Фильтр по статусу">
                       <SelectValue placeholder={t('filter_by_status')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -215,7 +241,7 @@ export default function FinancesManagement() {
                   </Select>
 
                   <Select value={filterType} onValueChange={setFilterType}>
-                    <SelectTrigger data-testid="select-filter-type">
+                    <SelectTrigger data-testid="select-filter-type" title="Фильтр по типу">
                       <SelectValue placeholder={t('filter_by_type')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -242,12 +268,14 @@ export default function FinancesManagement() {
                   <Button 
                     variant="outline" 
                     onClick={() => {
+                      setSearchTerm('');
                       setFilterStatus('all');
                       setFilterType('all');
                       setStartDate(undefined);
                       setEndDate(undefined);
                     }}
                     data-testid="button-clear-filters"
+                    title="Очистить фильтры"
                   >
                     {t('clear_filters')}
                   </Button>

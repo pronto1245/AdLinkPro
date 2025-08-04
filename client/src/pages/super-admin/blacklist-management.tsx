@@ -326,15 +326,16 @@ export default function BlacklistManagement() {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
-                    placeholder="Search blacklist entries..."
+                    placeholder="Поиск по IP, доменам, ID..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
                     data-testid="input-search-blacklist"
+                    title="Поиск в черном списке"
                   />
                 </div>
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-48" data-testid="select-type-filter">
+                  <SelectTrigger className="w-48" data-testid="select-type-filter" title="Фильтр по типу записи">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

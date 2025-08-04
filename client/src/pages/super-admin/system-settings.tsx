@@ -19,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
-import { Settings, Database, Shield, DollarSign, Globe, Zap, Plus, Edit, Save, Trash2 } from 'lucide-react';
+import { Settings, Database, Shield, DollarSign, Globe, Zap, Plus, Edit, Save, Trash2, Search } from 'lucide-react';
 
 const systemSettingSchema = z.object({
   key: z.string().min(1, 'Key is required'),
@@ -38,6 +38,7 @@ export default function SystemSettings() {
   const queryClient = useQueryClient();
   
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingSetting, setEditingSetting] = useState<any>(null);
 
@@ -130,9 +131,14 @@ export default function SystemSettings() {
     { value: 'ui', label: 'User Interface', icon: <Globe className="w-4 h-4" /> },
   ];
 
-  const filteredSettings = settings.filter((setting: any) => 
-    selectedCategory === 'all' || setting.category === selectedCategory
-  );
+  const filteredSettings = settings.filter((setting: any) => {
+    const matchesCategory = selectedCategory === 'all' || setting.category === selectedCategory;
+    const matchesSearch = !searchTerm || 
+      setting.key.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      setting.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      setting.value?.toString().toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const getCategoryBadgeColor = (category: string) => {
     switch (category) {
@@ -172,12 +178,12 @@ export default function SystemSettings() {
       <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
         <Header title="System Settings" />
         <main className="flex-1 overflow-y-auto p-6">
-          {/* Category Tabs */}
+          {/* Category Tabs and Search */}
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
             <div className="flex items-center justify-between">
               <TabsList className="grid w-full grid-cols-7">
                 {categories.map((category) => (
-                  <TabsTrigger key={category.value} value={category.value} className="flex items-center gap-2">
+                  <TabsTrigger key={category.value} value={category.value} className="flex items-center gap-2" title={`Фильтр по категории: ${category.label}`}>
                     {category.icon}
                     <span className="hidden sm:inline">{category.label}</span>
                   </TabsTrigger>
@@ -186,7 +192,7 @@ export default function SystemSettings() {
               
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="flex items-center gap-2" data-testid="button-create-setting">
+                  <Button className="flex items-center gap-2" data-testid="button-create-setting" title="Создать новую настройку">
                     <Plus className="w-4 h-4" />
                     Add Setting
                   </Button>
@@ -296,6 +302,23 @@ export default function SystemSettings() {
               </Dialog>
             </div>
 
+            {/* Search Filter */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder="Поиск по ключу, описанию, значению..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                    data-testid="input-search-settings"
+                    title="Поиск системных настроек"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Settings List */}
             <div className="grid gap-4">
               {filteredSettings.map((setting: any) => (
@@ -319,6 +342,7 @@ export default function SystemSettings() {
                           variant="outline"
                           onClick={() => setEditingSetting(setting)}
                           data-testid={`button-edit-setting-${setting.id}`}
+                          title="Редактировать настройку"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -327,6 +351,7 @@ export default function SystemSettings() {
                           variant="outline"
                           onClick={() => deleteSettingMutation.mutate(setting.id)}
                           data-testid={`button-delete-setting-${setting.id}`}
+                          title="Удалить настройку"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

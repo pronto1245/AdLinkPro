@@ -1237,7 +1237,7 @@ export default function OffersManagement() {
             </div>
             
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger data-testid="select-status-filter">
+              <SelectTrigger data-testid="select-status-filter" title="Фильтр по статусу оффера">
                 <SelectValue placeholder={t('status')} />
               </SelectTrigger>
               <SelectContent>
@@ -1250,7 +1250,7 @@ export default function OffersManagement() {
             </Select>
 
             <Select value={moderationFilter} onValueChange={setModerationFilter}>
-              <SelectTrigger data-testid="select-moderation-filter">
+              <SelectTrigger data-testid="select-moderation-filter" title="Фильтр по статусу модерации">
                 <SelectValue placeholder={t('moderation_status')} />
               </SelectTrigger>
               <SelectContent>
@@ -1263,7 +1263,7 @@ export default function OffersManagement() {
             </Select>
 
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger data-testid="select-category-filter">
+              <SelectTrigger data-testid="select-category-filter" title="Фильтр по категории оффера">
                 <SelectValue placeholder={t('category')} />
               </SelectTrigger>
               <SelectContent>
@@ -1276,7 +1276,7 @@ export default function OffersManagement() {
             </Select>
 
             <Select value={advertiserFilter} onValueChange={setAdvertiserFilter}>
-              <SelectTrigger data-testid="select-advertiser-filter">
+              <SelectTrigger data-testid="select-advertiser-filter" title="Фильтр по рекламодателю">
                 <SelectValue placeholder={t('advertiser')} />
               </SelectTrigger>
               <SelectContent>
