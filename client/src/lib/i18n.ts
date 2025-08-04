@@ -152,6 +152,16 @@ export const translations: Translations = {
     'landing_name': 'Landing Name',
     'main_page': 'Main Page',
     'payout_amount': 'Payout Amount',
+
+    // Analytics Metrics
+    'unique_users': 'Unique Users',
+    'cr_value': 'CR$',
+    'epc_value': 'EPC$',
+    'registrations': 'REG',
+    'deposits': 'DEP',
+    'geo_breakdown': 'GEO',
+    'fraud_rejects': 'Fraud Rejects',
+    'partners': 'Partners',
   },
   ru: {
     // Navigation
@@ -298,6 +308,16 @@ export const translations: Translations = {
     'landing_name': 'Название лендинга',
     'main_page': 'Основная страница',
     'payout_amount': 'Сумма выплаты',
+
+    // Analytics Metrics
+    'unique_users': 'Уники',
+    'cr_value': 'CR$',
+    'epc_value': 'EPC$',
+    'registrations': 'REG',
+    'deposits': 'DEP',
+    'geo_breakdown': 'GEO',
+    'fraud_rejects': 'Фрод-Отклонение',
+    'partners': 'Партнер',
   },
 };
 
