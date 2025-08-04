@@ -48,7 +48,7 @@ interface SidebarProps {
   className?: string;
 }
 
-export default function Sidebar({ className }: SidebarProps) {
+function Sidebar({ className }: SidebarProps) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [location] = useLocation();
@@ -163,3 +163,5 @@ export default function Sidebar({ className }: SidebarProps) {
     </aside>
   );
 }
+
+export default Sidebar;
