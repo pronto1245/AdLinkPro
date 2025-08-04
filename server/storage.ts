@@ -285,7 +285,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
 
     return await query.orderBy(desc(statistics.date));
@@ -392,7 +392,7 @@ export class DatabaseStorage implements IStorage {
   async getAllUsers(role?: string): Promise<User[]> {
     if (role) {
       return await db.select().from(users)
-        .where(eq(users.role, role))
+        .where(eq(users.role, role as any))
         .orderBy(desc(users.createdAt));
     }
     return await db.select().from(users).orderBy(desc(users.createdAt));
@@ -405,17 +405,53 @@ export class DatabaseStorage implements IStorage {
   async getAllOffers(): Promise<(Offer & { advertiserName?: string })[]> {
     const offersWithAdvertisers = await db
       .select({
-        ...offers,
-        advertiserName: sql<string>`${users.firstName} || ' ' || ${users.lastName}`,
+        id: offers.id,
+        number: offers.number,
+        name: offers.name,
+        description: offers.description,
+        logo: offers.logo,
+        category: offers.category,
+        vertical: offers.vertical,
+        goals: offers.goals,
+        advertiserId: offers.advertiserId,
+        payout: offers.payout,
+        payoutType: offers.payoutType,
+        currency: offers.currency,
+        countries: offers.countries,
+        geoTargeting: offers.geoTargeting,
+        landingPages: offers.landingPages,
+        geoPricing: offers.geoPricing,
+        kpiConditions: offers.kpiConditions,
+        trafficSources: offers.trafficSources,
+        dailyLimit: offers.dailyLimit,
+        monthlyLimit: offers.monthlyLimit,
+        antifraudEnabled: offers.antifraudEnabled,
+        autoApprovePartners: offers.autoApprovePartners,
+        status: offers.status,
+        moderationStatus: offers.moderationStatus,
+        moderationComment: offers.moderationComment,
+        trackingUrl: offers.trackingUrl,
+        landingPageUrl: offers.landingPageUrl,
+        previewUrl: offers.previewUrl,
+        restrictions: offers.restrictions,
+        fraudRestrictions: offers.fraudRestrictions,
+        macros: offers.macros,
+        kycRequired: offers.kycRequired,
+        isPrivate: offers.isPrivate,
+        smartlinkEnabled: offers.smartlinkEnabled,
+        isBlocked: offers.isBlocked,
+        blockedReason: offers.blockedReason,
+        isArchived: offers.isArchived,
+        regionVisibility: offers.regionVisibility,
+        createdAt: offers.createdAt,
+        updatedAt: offers.updatedAt,
+        advertiserName: sql<string>`COALESCE(${users.firstName} || ' ' || ${users.lastName}, 'Unknown')`,
       })
       .from(offers)
       .leftJoin(users, eq(offers.advertiserId, users.id))
       .orderBy(desc(offers.createdAt));
     
-    return offersWithAdvertisers.map(row => ({
-      ...row,
-      advertiserName: row.advertiserName || 'Unknown'
-    }));
+    return offersWithAdvertisers;
   }
 
   // Admin offer management methods
@@ -430,7 +466,7 @@ export class DatabaseStorage implements IStorage {
           break;
         case 'reject':
           updates.moderationStatus = 'rejected';
-          updates.status = 'inactive';
+          updates.status = 'paused';
           break;
         case 'needs_revision':
           updates.moderationStatus = 'needs_revision';

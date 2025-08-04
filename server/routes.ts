@@ -40,6 +40,14 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
   }
 };
 
+// Helper to assert user is authenticated
+const getAuthenticatedUser = (req: Request): User => {
+  if (!req.user) {
+    throw new Error('User not authenticated');
+  }
+  return req.user;
+};
+
 // Role-based access control with hierarchy
 const requireRole = (roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -203,7 +211,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Protected routes
   app.get("/api/auth/me", authenticateToken, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.id);
+      const authUser = getAuthenticatedUser(req);
+      const user = await storage.getUser(authUser.id);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -219,7 +228,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dashboard metrics
   app.get("/api/dashboard/metrics", authenticateToken, async (req, res) => {
     try {
-      const metrics = await storage.getDashboardMetrics(req.user.role, req.user.id);
+      const authUser = getAuthenticatedUser(req);
+      const metrics = await storage.getDashboardMetrics(authUser.role, authUser.id);
       res.json(metrics);
     } catch (error) {
       console.error("Dashboard metrics error:", error);
@@ -230,15 +240,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User management with hierarchy
   app.get("/api/users", authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
     try {
+      const authUser = getAuthenticatedUser(req);
       const { role } = req.query;
       let users;
       
-      if (req.user.role === 'super_admin') {
+      if (authUser.role === 'super_admin') {
         // Super admin sees all users
         users = await storage.getUsers(role as string);
-      } else if (req.user.role === 'advertiser') {
+      } else if (authUser.role === 'advertiser') {
         // Advertiser sees only their owned users (staff and affiliates)
-        users = await storage.getUsersByOwner(req.user.id, role as string);
+        users = await storage.getUsersByOwner(authUser.id, role as string);
       } else {
         return res.status(403).json({ error: "Access denied" });
       }
@@ -254,6 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/users", authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
     try {
+      const authUser = getAuthenticatedUser(req);
       const userData = insertUserSchema.parse(req.body);
       
       // Check if user already exists
@@ -265,17 +277,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate role creation permissions
-      if (req.user.role === 'advertiser') {
+      if (authUser.role === 'advertiser') {
         // Advertisers can only create staff and affiliates
         if (!['staff', 'affiliate'].includes(userData.role)) {
           return res.status(403).json({ error: "Advertisers can only create staff and affiliate users" });
         }
         // Set owner to current advertiser
-        userData.ownerId = req.user.id;
-      } else if (req.user.role === 'super_admin') {
+        userData.ownerId = authUser.id;
+      } else if (authUser.role === 'super_admin') {
         // Super admin can create anyone but set proper ownership
         if (userData.role === 'advertiser') {
-          userData.ownerId = req.user.id; // Owner is super admin
+          userData.ownerId = authUser.id; // Owner is super admin
         }
       }
 
@@ -301,17 +313,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Offer management with hierarchy
   app.get("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
+      const authUser = getAuthenticatedUser(req);
       let offers;
       
-      if (req.user.role === 'super_admin') {
+      if (authUser.role === 'super_admin') {
         // Super admin sees all offers
         offers = await storage.getOffers();
-      } else if (req.user.role === 'advertiser') {
+      } else if (authUser.role === 'advertiser') {
         // Advertiser sees only their own offers
-        offers = await storage.getOffers(req.user.id);
-      } else if (req.user.role === 'affiliate') {
+        offers = await storage.getOffers(authUser.id);
+      } else if (authUser.role === 'affiliate') {
         // Affiliate sees only offers they're approved for or public offers from their owner's advertisers
-        const partnerOffers = await storage.getPartnerOffers(req.user.id);
+        const partnerOffers = await storage.getPartnerOffers(authUser.id);
         const offerIds = partnerOffers.map(po => po.offerId);
         
         if (offerIds.length > 0) {
@@ -321,10 +334,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           offers = await storage.getOffers();
           offers = offers.filter(offer => !offer.isPrivate);
         }
-      } else if (req.user.role === 'staff') {
+      } else if (authUser.role === 'staff') {
         // Staff can see offers of their owner (the advertiser who created them)
-        if (req.user.ownerId) {
-          offers = await storage.getOffers(req.user.ownerId);
+        if (authUser.ownerId) {
+          offers = await storage.getOffers(authUser.ownerId);
         } else {
           offers = [];
         }
@@ -339,15 +352,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
+      const authUser = getAuthenticatedUser(req);
       const offerData = insertOfferSchema.parse(req.body);
       
       // Set advertiser ID based on user role
-      if (req.user.role === 'advertiser') {
-        offerData.advertiserId = req.user.id;
-      } else if (req.user.role === 'super_admin') {
+      if (authUser.role === 'advertiser') {
+        offerData.advertiserId = authUser.id;
+      } else if (authUser.role === 'super_admin') {
         // Super admin needs to provide advertiserId or use their own ID
         if (!offerData.advertiserId) {
-          offerData.advertiserId = req.user.id;
+          offerData.advertiserId = authUser.id;
         }
       }
       
@@ -364,13 +378,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/offers/:id", authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
     try {
+      const authUser = getAuthenticatedUser(req);
       const { id } = req.params;
       const offerData = req.body;
       
       // Check if user owns this offer (for advertisers)
-      if (req.user.role === 'advertiser') {
+      if (authUser.role === 'advertiser') {
         const existingOffer = await storage.getOffer(id);
-        if (!existingOffer || existingOffer.advertiserId !== req.user.id) {
+        if (!existingOffer || existingOffer.advertiserId !== authUser.id) {
           return res.status(403).json({ error: "Access denied" });
         }
       }
@@ -386,7 +401,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Tracking links
   app.get("/api/tracking-links", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
-      const links = await storage.getTrackingLinks(req.user.id);
+      const authUser = getAuthenticatedUser(req);
+      const links = await storage.getTrackingLinks(authUser.id);
       res.json(links);
     } catch (error) {
       console.error("Get tracking links error:", error);
@@ -396,10 +412,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/tracking-links", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
+      const authUser = getAuthenticatedUser(req);
       const { offerId, subId1, subId2, subId3, subId4, subId5 } = req.body;
       
       // Check if affiliate has access to this offer
-      const partnerOffers = await storage.getPartnerOffers(req.user.id, offerId);
+      const partnerOffers = await storage.getPartnerOffers(authUser.id, offerId);
       const offer = await storage.getOffer(offerId);
       
       if (!offer) {
@@ -411,10 +428,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Generate unique tracking code
-      const trackingCode = `${req.user.id.slice(0, 8)}_${offerId.slice(0, 8)}_${Date.now().toString(36)}`;
+      const trackingCode = `${authUser.id.slice(0, 8)}_${offerId.slice(0, 8)}_${Date.now().toString(36)}`;
       
       const link = await storage.createTrackingLink({
-        partnerId: req.user.id,
+        partnerId: authUser.id,
         offerId,
         trackingCode,
         url: `${process.env.TRACKING_DOMAIN || 'http://localhost:5000'}/track/${trackingCode}`,
@@ -435,15 +452,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Statistics
   app.get("/api/statistics", authenticateToken, async (req, res) => {
     try {
+      const authUser = getAuthenticatedUser(req);
       const { startDate, endDate, offerId } = req.query;
       
       const filters: any = {};
       
-      if (req.user.role === 'affiliate') {
-        filters.partnerId = req.user.id;
-      } else if (req.user.role === 'advertiser') {
+      if (authUser.role === 'affiliate') {
+        filters.partnerId = authUser.id;
+      } else if (authUser.role === 'advertiser') {
         // Get offers belonging to this advertiser
-        const offers = await storage.getOffers(req.user.id);
+        const offers = await storage.getOffers(authUser.id);
         const offerIds = offers.map(offer => offer.id);
         if (offerIds.length === 0) {
           return res.json([]);
@@ -466,12 +484,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Transactions
   app.get("/api/transactions", authenticateToken, async (req, res) => {
     try {
+      const authUser = getAuthenticatedUser(req);
       let transactions;
       
-      if (req.user.role === 'super_admin') {
+      if (authUser.role === 'super_admin') {
         transactions = await storage.getTransactions();
       } else {
-        transactions = await storage.getTransactions(req.user.id);
+        transactions = await storage.getTransactions(authUser.id);
       }
       
       res.json(transactions);
@@ -484,12 +503,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Support tickets
   app.get("/api/tickets", authenticateToken, async (req, res) => {
     try {
+      const authUser = getAuthenticatedUser(req);
       let tickets;
       
-      if (req.user.role === 'super_admin') {
+      if (authUser.role === 'super_admin') {
         tickets = await storage.getTickets();
       } else {
-        tickets = await storage.getTickets(req.user.id);
+        tickets = await storage.getTickets(authUser.id);
       }
       
       res.json(tickets);
@@ -503,7 +523,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const ticketData = insertTicketSchema.parse({
         ...req.body,
-        userId: req.user.id,
+        userId: getAuthenticatedUser(req).id,
       });
       
       const ticket = await storage.createTicket(ticketData);
@@ -531,7 +551,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Postbacks
   app.get("/api/postbacks", authenticateToken, async (req, res) => {
     try {
-      const postbacks = await storage.getPostbacks(req.user.id);
+      const postbacks = await storage.getPostbacks(getAuthenticatedUser(req).id);
       res.json(postbacks);
     } catch (error) {
       console.error("Get postbacks error:", error);
@@ -545,9 +565,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { partnerId, offerId, customPayout } = req.body;
       
       // Check if advertiser owns the offer
-      if (req.user.role === 'advertiser') {
+      const authUser = getAuthenticatedUser(req);
+      if (authUser.role === 'advertiser') {
         const offer = await storage.getOffer(offerId);
-        if (!offer || offer.advertiserId !== req.user.id) {
+        if (!offer || offer.advertiserId !== authUser.id) {
           return res.status(403).json({ error: "Access denied" });
         }
       }
@@ -556,7 +577,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         partnerId,
         offerId,
         customPayout,
-        isApproved: req.user.role === 'super_admin', // Super admin auto-approves
+        isApproved: authUser.role === 'super_admin', // Super admin auto-approves
       });
       
       res.status(201).json(partnerOffer);
@@ -751,7 +772,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const kycDocument = await storage.updateKycDocument(id, {
         status,
         notes,
-        reviewedBy: req.user.id,
+        reviewedBy: getAuthenticatedUser(req).id,
         reviewedAt: new Date(),
       });
       res.json(kycDocument);
@@ -802,7 +823,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const setting = await storage.createSystemSetting({
         ...req.body,
-        updatedBy: req.user.id
+        updatedBy: getAuthenticatedUser(req).id
       });
       res.status(201).json(setting);
     } catch (error: any) {
@@ -816,7 +837,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const setting = await storage.updateSystemSetting(req.params.id, {
         ...req.body,
-        updatedBy: req.user.id
+        updatedBy: getAuthenticatedUser(req).id
       });
       res.json(setting);
     } catch (error: any) {
@@ -936,7 +957,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const entry = await storage.createBlacklistEntry({
         ...req.body,
-        addedBy: req.user.id
+        addedBy: getAuthenticatedUser(req).id
       });
       res.status(201).json(entry);
     } catch (error: any) {
