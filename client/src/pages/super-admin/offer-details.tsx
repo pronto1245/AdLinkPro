@@ -414,6 +414,23 @@ export default function OfferDetails() {
           <div className="lg:col-span-2 space-y-6">
 
 
+            {/* KPI Conditions */}
+            {offer.kpiConditions && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    KPI условия
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 break-words overflow-hidden">
+                    {offer.kpiConditions}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Landing Pages */}
             <Card>
               <CardHeader>
@@ -775,22 +792,7 @@ export default function OfferDetails() {
               </Card>
             )}
 
-            {/* KPI Conditions */}
-            {offer.kpiConditions && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5" />
-                    KPI условия
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 break-words overflow-hidden max-h-32 overflow-y-auto">
-                    {offer.kpiConditions}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+
 
             {/* Description */}
             {offer.description && (
