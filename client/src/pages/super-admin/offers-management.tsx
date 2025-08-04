@@ -766,6 +766,7 @@ export default function OffersManagement() {
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
   const [isModerationDialogOpen, setIsModerationDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
@@ -884,7 +885,11 @@ export default function OffersManagement() {
   // Экспорт офферов
   const handleExportOffers = () => {
     try {
-      const dataToExport = filteredOffers.map(offer => ({
+      const offersToExport = selectedOffers.length > 0 
+        ? filteredOffers.filter(offer => selectedOffers.includes(offer.id))
+        : filteredOffers;
+        
+      const dataToExport = offersToExport.map(offer => ({
         id: offer.id,
         name: offer.name,
         category: offer.category,
@@ -918,6 +923,9 @@ export default function OffersManagement() {
         title: "Успех",
         description: `Экспортировано ${dataToExport.length} офферов`,
       });
+      
+      // Сбрасываем выбор после экспорта
+      setSelectedOffers([]);
     } catch (error) {
       toast({
         title: "Ошибка",
@@ -926,6 +934,26 @@ export default function OffersManagement() {
       });
     }
   };
+
+  // Функции для работы с выбором офферов
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedOffers(filteredOffers.map(offer => offer.id));
+    } else {
+      setSelectedOffers([]);
+    }
+  };
+
+  const handleSelectOffer = (offerId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedOffers(prev => [...prev, offerId]);
+    } else {
+      setSelectedOffers(prev => prev.filter(id => id !== offerId));
+    }
+  };
+
+  const isAllSelected = filteredOffers.length > 0 && selectedOffers.length === filteredOffers.length;
+  const isIndeterminate = selectedOffers.length > 0 && selectedOffers.length < filteredOffers.length;
 
   // Импорт офферов
   const handleImportOffers = async (file: File) => {
@@ -1173,9 +1201,10 @@ export default function OffersManagement() {
                 onClick={handleExportOffers}
                 className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
                 data-testid="button-export-offers"
+                disabled={filteredOffers.length === 0}
               >
                 <Download className="w-4 h-4 mr-2" />
-                Экспорт
+                {selectedOffers.length > 0 ? `Экспорт (${selectedOffers.length})` : 'Экспорт'}
               </Button>
               <Button
                 size="sm"
@@ -1204,6 +1233,19 @@ export default function OffersManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={isAllSelected}
+                      onCheckedChange={handleSelectAll}
+                      data-testid="checkbox-select-all"
+                      className={isIndeterminate ? "data-[state=checked]:bg-blue-600" : ""}
+                      ref={(el) => {
+                        if (el) {
+                          el.indeterminate = isIndeterminate;
+                        }
+                      }}
+                    />
+                  </TableHead>
                   <TableHead>{t('offer_name')}</TableHead>
                   <TableHead>{t('advertiser')}</TableHead>
                   <TableHead>{t('category')}</TableHead>
@@ -1218,6 +1260,13 @@ export default function OffersManagement() {
               <TableBody>
                 {offers.map((offer) => (
                   <TableRow key={offer.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedOffers.includes(offer.id)}
+                        onCheckedChange={(checked) => handleSelectOffer(offer.id, checked as boolean)}
+                        data-testid={`checkbox-select-${offer.id}`}
+                      />
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         {offer.logo && (
