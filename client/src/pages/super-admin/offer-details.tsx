@@ -275,14 +275,10 @@ export default function OfferDetails() {
           
           <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-4 mb-2">
+              <div className="mb-2">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                   {offer.name}
                 </h1>
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <Calendar className="w-4 h-4" />
-                  <span>{new Date(offer.createdAt).toLocaleDateString('ru-RU')}</span>
-                </div>
               </div>
               <div className="flex items-center gap-3">
                 <Badge className={getStatusColor(offer.status)}>
@@ -304,6 +300,10 @@ export default function OfferDetails() {
                    offer.category === 'gaming' ? 'Игры' :
                    offer.category === 'software' ? 'ПО' : offer.category}
                 </Badge>
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <Calendar className="w-4 h-4" />
+                  <span>{new Date(offer.createdAt).toLocaleDateString('ru-RU')}</span>
+                </div>
               </div>
             </div>
             {offer.logo && (
