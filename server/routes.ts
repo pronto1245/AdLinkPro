@@ -2875,55 +2875,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // In-memory storage for fraud services state
+  const fraudServicesState = new Map([
+    ["fs-1", {
+      id: "fs-1",
+      serviceName: "FraudScore", 
+      apiKey: "fs_live_xxxxxxxxxxxxxxxx",
+      isActive: true,
+      endpoint: "https://api.fraudscore.io/v1",
+      rateLimit: 1000,
+      lastSync: new Date(Date.now() - 300000).toISOString(),
+      successRate: 99.2,
+      averageResponseTime: 250
+    }],
+    ["fq-1", {
+      id: "fq-1",
+      serviceName: "Forensiq",
+      apiKey: "fq_prod_xxxxxxxxxxxxxxxx", 
+      isActive: false,
+      endpoint: "https://api.forensiq.com/v2",
+      rateLimit: 500,
+      lastSync: new Date(Date.now() - 86400000).toISOString(),
+      successRate: 97.8,
+      averageResponseTime: 180
+    }],
+    ["an-1", {
+      id: "an-1",
+      serviceName: "Anura",
+      apiKey: "an_key_xxxxxxxxxxxxxxxx",
+      isActive: true,
+      endpoint: "https://api.anura.io/direct", 
+      rateLimit: 2000,
+      lastSync: new Date(Date.now() - 150000).toISOString(),
+      successRate: 98.5,
+      averageResponseTime: 320
+    }],
+    ["bb-1", {
+      id: "bb-1",
+      serviceName: "Botbox",
+      apiKey: "bb_api_xxxxxxxxxxxxxxxx",
+      isActive: false,
+      endpoint: "https://api.botbox.io/v1",
+      rateLimit: 800,
+      lastSync: new Date(Date.now() - 3600000).toISOString(),
+      successRate: 96.1,
+      averageResponseTime: 450
+    }]
+  ]);
+
   // Fraud services endpoints
   app.get("/api/admin/fraud-services", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
-      const fraudServices = [
-        {
-          id: "service-1",
-          serviceName: "FraudScore",
-          apiKey: "fs_live_xxxxxxxxxxxxxxxx",
-          isActive: true,
-          endpoint: "https://api.fraudscore.io/v1",
-          rateLimit: 1000,
-          lastSync: new Date(Date.now() - 300000).toISOString(),
-          successRate: 99.2,
-          averageResponseTime: 250
-        },
-        {
-          id: "service-2",
-          serviceName: "Forensiq",
-          apiKey: "fq_prod_xxxxxxxxxxxxxxxx",
-          isActive: false,
-          endpoint: "https://api.forensiq.com/v2",
-          rateLimit: 500,
-          lastSync: new Date(Date.now() - 86400000).toISOString(),
-          successRate: 97.8,
-          averageResponseTime: 180
-        },
-        {
-          id: "service-3",
-          serviceName: "Anura",
-          apiKey: "an_key_xxxxxxxxxxxxxxxx",
-          isActive: true,
-          endpoint: "https://api.anura.io/direct",
-          rateLimit: 2000,
-          lastSync: new Date(Date.now() - 150000).toISOString(),
-          successRate: 98.5,
-          averageResponseTime: 320
-        },
-        {
-          id: "service-4",
-          serviceName: "Botbox",
-          apiKey: "bb_api_xxxxxxxxxxxxxxxx",
-          isActive: false,
-          endpoint: "https://api.botbox.io/v1",
-          rateLimit: 800,
-          lastSync: new Date(Date.now() - 3600000).toISOString(),
-          successRate: 96.1,
-          averageResponseTime: 450
-        }
-      ];
+      const fraudServices = Array.from(fraudServicesState.values());
       res.json(fraudServices);
     } catch (error) {
       console.error("Get fraud services error:", error);
@@ -2967,15 +2970,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const { isActive } = req.body;
       
-      // In a real app, this would update the database
-      const updatedService = {
-        id,
-        isActive,
-        lastSync: new Date().toISOString()
-      };
+      // Update the service in our state
+      const service = fraudServicesState.get(id);
+      if (!service) {
+        return res.status(404).json({ error: "Service not found" });
+      }
+      
+      service.isActive = isActive;
+      service.lastSync = new Date().toISOString();
+      fraudServicesState.set(id, service);
       
       auditLog(req, 'FRAUD_SERVICE_UPDATED', id, true, { isActive });
-      res.json(updatedService);
+      res.json(service);
     } catch (error) {
       console.error("Update fraud service error:", error);
       res.status(500).json({ error: "Failed to update service" });
