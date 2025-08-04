@@ -306,9 +306,9 @@ export default function OfferDetails() {
                 </Badge>
               </div>
             </div>
-            {offer.logoUrl && (
+            {offer.logo && (
               <img 
-                src={offer.logoUrl} 
+                src={offer.logo} 
                 alt={offer.name}
                 className="w-20 h-20 object-contain rounded-lg border border-gray-200 dark:border-gray-700"
               />
@@ -367,9 +367,9 @@ export default function OfferDetails() {
                   {/* Фото и название оффера в правом углу */}
                   <div className="text-right">
                     <div className="flex justify-end mb-2">
-                      {offer.logoUrl ? (
+                      {offer.logo ? (
                         <img 
-                          src={offer.logoUrl} 
+                          src={offer.logo} 
                           alt={offer.name}
                           className="w-16 h-16 object-contain rounded"
                         />
