@@ -1094,10 +1094,16 @@ const FraudDetectionPage = () => {
                               <Switch 
                                 checked={rule.isActive}
                                 onCheckedChange={(checked) => {
-                                  // Handle rule toggle
+                                  // Handle rule toggle - for now just show toast, later add API call
                                   toast({
                                     title: checked ? "Правило активировано" : "Правило деактивировано",
                                     description: `Правило "${rule.name}" ${checked ? 'включено' : 'отключено'}`,
+                                  });
+                                  // Update the rule state locally for immediate visual feedback
+                                  queryClient.setQueryData(['/api/admin/fraud-rules'], (oldRules: FraudRule[]) => {
+                                    return oldRules?.map(r => 
+                                      r.id === rule.id ? { ...r, isActive: checked } : r
+                                    ) || [];
                                   });
                                 }}
                                 data-testid={`toggle-rule-${rule.id}`}
