@@ -879,7 +879,8 @@ export default function OffersManagement() {
   // Change status mutation
   const changeStatusMutation = useMutation({
     mutationFn: async ({ offerId, status }: { offerId: string; status: string }) => {
-      return await apiRequest('PUT', `/api/admin/offers/${offerId}`, { status });
+      const response = await apiRequest('PUT', `/api/admin/offers/${offerId}`, { status });
+      return await response.json();
     },
     onSuccess: (updatedOffer) => {
       // Update the cache directly instead of invalidating to preserve order
