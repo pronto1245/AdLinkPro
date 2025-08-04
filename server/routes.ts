@@ -785,9 +785,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Update data:", JSON.stringify(req.body, null, 2));
       
       // Prepare update data - only include fields that have values
-      const updateData: any = {
-        updatedAt: new Date(),
-      };
+      const updateData: any = {};
       
       if (req.body.name !== undefined) updateData.name = req.body.name;
       if (req.body.category !== undefined) updateData.category = req.body.category;
@@ -805,6 +803,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.body.monthlyLimit !== undefined) updateData.monthlyLimit = req.body.monthlyLimit;
       if (req.body.antifraudEnabled !== undefined) updateData.antifraudEnabled = req.body.antifraudEnabled;
       if (req.body.autoApprovePartners !== undefined) updateData.autoApprovePartners = req.body.autoApprovePartners;
+      if (req.body.restrictions !== undefined) updateData.restrictions = req.body.restrictions;
+      if (req.body.moderationComment !== undefined) updateData.moderationComment = req.body.moderationComment;
+      if (req.body.kycRequired !== undefined) updateData.kycRequired = req.body.kycRequired;
+      if (req.body.isPrivate !== undefined) updateData.isPrivate = req.body.isPrivate;
+      if (req.body.smartlinkEnabled !== undefined) updateData.smartlinkEnabled = req.body.smartlinkEnabled;
       
       console.log("Final update data:", updateData);
       
