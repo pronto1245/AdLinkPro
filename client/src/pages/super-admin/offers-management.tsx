@@ -815,28 +815,32 @@ export default function OffersManagement() {
   const [advertiserFilter, setAdvertiserFilter] = useState('all');
   const [offerNameSearch, setOfferNameSearch] = useState('');
 
-  // Fetch offers
-  const { data: offers = [], isLoading: offersLoading } = useQuery({
+  // Fetch all offers for dropdown
+  const { data: allOffers = [] } = useQuery({
     queryKey: ['/api/admin/offers'],
-    select: (data: Offer[]) => data
-      // Сначала сортируем по дате создания (новые вверху)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      // Затем фильтруем
-      .filter(offer => {
-        const matchesGeneralSearch = !searchTerm || (
-          offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          offer.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          offer.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        const matchesOfferNameSearch = !offerNameSearch || 
-          offer.name.toLowerCase().includes(offerNameSearch.toLowerCase());
-        const matchesModeration = moderationFilter === 'all' || offer.moderationStatus === moderationFilter;
-        const matchesCategory = categoryFilter === 'all' || offer.category === categoryFilter;
-        const matchesAdvertiser = advertiserFilter === 'all' || offer.advertiserId === advertiserFilter;
-        
-        return matchesGeneralSearch && matchesOfferNameSearch && matchesModeration && matchesCategory && matchesAdvertiser;
-      })
   });
+
+  // Filter and sort offers
+  const offers = allOffers
+    // Сначала сортируем по дате создания (новые вверху)
+    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    // Затем фильтруем
+    .filter((offer: any) => {
+      const matchesGeneralSearch = !searchTerm || (
+        offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        offer.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        offer.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      const matchesOfferNameSearch = !offerNameSearch || 
+        offer.name === offerNameSearch;
+      const matchesModeration = moderationFilter === 'all' || offer.moderationStatus === moderationFilter;
+      const matchesCategory = categoryFilter === 'all' || offer.category === categoryFilter;
+      const matchesAdvertiser = advertiserFilter === 'all' || offer.advertiserId === advertiserFilter;
+      
+      return matchesGeneralSearch && matchesOfferNameSearch && matchesModeration && matchesCategory && matchesAdvertiser;
+    });
+
+  const isLoading = !allOffers.length;
 
 
 
@@ -1173,7 +1177,7 @@ export default function OffersManagement() {
     });
   };
 
-  if (offersLoading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar />
@@ -1240,17 +1244,19 @@ export default function OffersManagement() {
               />
             </div>
             
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Поиск по названию оффера"
-                value={offerNameSearch}
-                onChange={(e) => setOfferNameSearch(e.target.value)}
-                className="pl-10"
-                data-testid="input-search-offer-name"
-                title="Поиск офферов по названию"
-              />
-            </div>
+            <Select value={offerNameSearch} onValueChange={setOfferNameSearch}>
+              <SelectTrigger data-testid="select-offer-name" title="Выбор оффера по названию">
+                <SelectValue placeholder="Все офферы" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Все офферы</SelectItem>
+                {allOffers?.map((offer: any) => (
+                  <SelectItem key={offer.id} value={offer.name}>
+                    {offer.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             <Select value={moderationFilter} onValueChange={setModerationFilter}>
               <SelectTrigger data-testid="select-moderation-filter" title="Фильтр по статусу модерации">
