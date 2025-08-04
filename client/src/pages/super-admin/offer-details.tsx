@@ -355,23 +355,31 @@ export default function OfferDetails() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Выплата</label>
-                    <div className="mt-1 text-lg font-semibold text-green-600 dark:text-green-400">
-                      {formatGeoPricing(offer.geoPricing, offer.payout, offer.currency)}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                    <label className="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide">Базовая выплата</label>
+                    <div className="mt-1 text-lg font-bold text-green-700 dark:text-green-300">
+                      {offer.payout && offer.payout !== '0.00' 
+                        ? `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}${offer.payout}`
+                        : 'Не указано'}
                     </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Тип выплат</label>
-                    <div className="mt-1 text-lg font-semibold text-blue-600 dark:text-blue-400">
-                      {offer.payoutType === 'cpa' ? 'CPA - За действие' :
-                       offer.payoutType === 'cps' ? 'CPS - От продаж' :
-                       offer.payoutType === 'cpm' ? 'CPM - За показы' :
-                       offer.payoutType === 'cpc' ? 'CPC - За клики' :
-                       offer.payoutType === 'cpl' ? 'CPL - За лид' :
-                       offer.payoutType === 'revshare' ? 'RevShare - Доля прибыли' : 
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                    <label className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">Тип выплат</label>
+                    <div className="mt-1 text-lg font-bold text-blue-700 dark:text-blue-300">
+                      {offer.payoutType === 'cpa' ? 'CPA' :
+                       offer.payoutType === 'cps' ? 'CPS' :
+                       offer.payoutType === 'cpm' ? 'CPM' :
+                       offer.payoutType === 'cpc' ? 'CPC' :
+                       offer.payoutType === 'cpl' ? 'CPL' :
+                       offer.payoutType === 'revshare' ? 'RevShare' : 
                        offer.payoutType ? offer.payoutType.toUpperCase() : 'Не указано'}
+                    </div>
+                  </div>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
+                    <label className="text-xs font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wide">Валюта</label>
+                    <div className="mt-1 text-lg font-bold text-purple-700 dark:text-purple-300">
+                      {offer.currency || 'USD'}
                     </div>
                   </div>
                 </div>
@@ -406,36 +414,113 @@ export default function OfferDetails() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Globe className="w-5 h-5" />
-                  Лендинги
+                  Лендинги и выплаты
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {offer.landingPages && offer.landingPages.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {offer.landingPages.map((landing: any, index: number) => (
-                      <div key={index} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">{landing.name || `Лендинг ${index + 1}`}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{landing.url}</p>
-                            {landing.countries && (
-                              <p className="text-sm text-gray-500 mt-1">
-                                Гео: {landing.countries.join(', ')}
-                              </p>
+                      <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                          {/* Информация о лендинге */}
+                          <div className="lg:col-span-2">
+                            <div className="mb-3">
+                              <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                                {landing.name || `Лендинг ${index + 1}`}
+                              </h4>
+                              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                <Globe className="w-4 h-4" />
+                                <span className="font-mono break-all">{landing.url}</span>
+                              </div>
+                            </div>
+                            
+                            {/* Гео и страны */}
+                            {landing.countries && landing.countries.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                {landing.countries.map((country: string, idx: number) => (
+                                  <Badge key={idx} variant="secondary" className="text-xs">
+                                    {country}
+                                  </Badge>
+                                ))}
+                              </div>
                             )}
                           </div>
-                          <Button variant="outline" size="sm" asChild>
-                            <a href={landing.url} target="_blank" rel="noopener noreferrer">
-                              <Eye className="w-4 h-4 mr-1" />
-                              Открыть
-                            </a>
-                          </Button>
+                          
+                          {/* Выплаты и действия */}
+                          <div className="space-y-3">
+                            {/* Сумма выплаты */}
+                            <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                              <div className="text-center">
+                                <div className="text-sm text-green-600 dark:text-green-400 font-medium">
+                                  Выплата
+                                </div>
+                                <div className="text-lg font-bold text-green-700 dark:text-green-300">
+                                  {formatGeoPricing(offer.geoPricing, offer.payout, offer.currency)}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Валюта и тип */}
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-center">
+                                <div className="text-xs text-blue-600 dark:text-blue-400">Валюта</div>
+                                <div className="font-semibold text-blue-700 dark:text-blue-300">
+                                  {offer.currency || 'USD'}
+                                </div>
+                              </div>
+                              <div className="bg-purple-50 dark:bg-purple-900/20 p-2 rounded text-center">
+                                <div className="text-xs text-purple-600 dark:text-purple-400">Тип</div>
+                                <div className="font-semibold text-purple-700 dark:text-purple-300">
+                                  {offer.payoutType?.toUpperCase() || 'CPA'}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Кнопка открытия */}
+                            <Button variant="outline" size="sm" className="w-full" asChild>
+                              <a href={landing.url} target="_blank" rel="noopener noreferrer">
+                                <Eye className="w-4 h-4 mr-2" />
+                                Открыть лендинг
+                              </a>
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500">Лендинги не добавлены</p>
+                  /* Если лендингов нет - показываем основную информацию о выплатах */
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg text-center">
+                      <div className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">
+                        Сумма выплаты
+                      </div>
+                      <div className="text-xl font-bold text-green-700 dark:text-green-300">
+                        {formatGeoPricing(offer.geoPricing, offer.payout, offer.currency)}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center">
+                      <div className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">
+                        Валюта выплаты
+                      </div>
+                      <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                        {offer.currency || 'USD'}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg text-center">
+                      <div className="text-sm text-purple-600 dark:text-purple-400 font-medium mb-1">
+                        Гео-таргетинг
+                      </div>
+                      <div className="text-lg font-bold text-purple-700 dark:text-purple-300">
+                        {offer.countries && Array.isArray(offer.countries) && offer.countries.length > 0 
+                          ? offer.countries.slice(0, 3).join(', ') + (offer.countries.length > 3 ? '...' : '')
+                          : 'Не указано'}
+                      </div>
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
