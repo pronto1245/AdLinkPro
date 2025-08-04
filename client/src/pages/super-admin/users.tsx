@@ -89,7 +89,7 @@ export default function UsersManagement() {
     },
   });
 
-  const filteredUsers = users?.filter((user: any) => {
+  const filteredUsers = users?.data?.filter((user: any) => {
     const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
