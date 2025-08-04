@@ -168,8 +168,9 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="draft">Черновик</SelectItem>
+                    <SelectItem value="pending">Ожидает</SelectItem>
                     <SelectItem value="active">Активный</SelectItem>
-                    <SelectItem value="inactive">Неактивный</SelectItem>
+                    <SelectItem value="paused">Остановлен</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -998,7 +999,8 @@ export default function OffersManagement() {
               <SelectContent>
                 <SelectItem value="all">{t('all_statuses')}</SelectItem>
                 <SelectItem value="active">{t('active')}</SelectItem>
-                <SelectItem value="inactive">{t('inactive')}</SelectItem>
+                <SelectItem value="paused">Остановлен</SelectItem>
+                <SelectItem value="pending">Ожидает</SelectItem>
                 <SelectItem value="draft">{t('draft')}</SelectItem>
               </SelectContent>
             </Select>
