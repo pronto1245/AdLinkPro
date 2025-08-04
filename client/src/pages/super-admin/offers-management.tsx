@@ -813,7 +813,7 @@ export default function OffersManagement() {
   const [moderationFilter, setModerationFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [advertiserFilter, setAdvertiserFilter] = useState('all');
-  const [offerNameSearch, setOfferNameSearch] = useState('');
+  const [offerNameSearch, setOfferNameSearch] = useState('all');
 
   // Fetch all offers for dropdown
   const { data: allOffers = [] } = useQuery({
@@ -831,7 +831,7 @@ export default function OffersManagement() {
         offer.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         offer.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      const matchesOfferNameSearch = !offerNameSearch || 
+      const matchesOfferNameSearch = !offerNameSearch || offerNameSearch === 'all' || 
         offer.name === offerNameSearch;
       const matchesModeration = moderationFilter === 'all' || offer.moderationStatus === moderationFilter;
       const matchesCategory = categoryFilter === 'all' || offer.category === categoryFilter;
@@ -1249,7 +1249,7 @@ export default function OffersManagement() {
                 <SelectValue placeholder="Все офферы" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Все офферы</SelectItem>
+                <SelectItem value="all">Все офферы</SelectItem>
                 {allOffers?.map((offer: any) => (
                   <SelectItem key={offer.id} value={offer.name}>
                     {offer.name}
