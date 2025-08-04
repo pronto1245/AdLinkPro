@@ -907,6 +907,7 @@ export default function OffersManagement() {
                   <TableHead>{t('category')}</TableHead>
                   <TableHead>{t('payout')}</TableHead>
                   <TableHead>{t('countries')}</TableHead>
+                  <TableHead>Источники трафика</TableHead>
                   <TableHead>{t('status')}</TableHead>
                   <TableHead>{t('created')}</TableHead>
                   <TableHead>{t('actions')}</TableHead>
@@ -1008,6 +1009,51 @@ export default function OffersManagement() {
                         {Array.isArray(offer.countries) && offer.countries.length > 0 
                           ? offer.countries.slice(0, 2).join(', ') + (offer.countries.length > 2 ? `... +${offer.countries.length - 2}` : '')
                           : t('all_countries')}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-xs space-y-1">
+                        {offer.trafficSources && offer.trafficSources.length > 0 ? (
+                          offer.trafficSources.slice(0, 2).map((source, index) => {
+                            const trafficSourceLabels: {[key: string]: string} = {
+                              'facebook_ads': 'Facebook',
+                              'google_ads': 'Google',
+                              'instagram_ads': 'Instagram',
+                              'tiktok_ads': 'TikTok',
+                              'youtube_ads': 'YouTube',
+                              'twitter_ads': 'Twitter',
+                              'linkedin_ads': 'LinkedIn',
+                              'pinterest_ads': 'Pinterest',
+                              'snapchat_ads': 'Snapchat',
+                              'native_ads': 'Native',
+                              'push_notifications': 'Push',
+                              'email_marketing': 'Email',
+                              'sms_marketing': 'SMS',
+                              'display_ads': 'Display',
+                              'video_ads': 'Video',
+                              'search_ads': 'Search',
+                              'affiliate_networks': 'Affiliate',
+                              'influencer_marketing': 'Influencer',
+                              'content_marketing': 'Content',
+                              'social_media': 'Social',
+                              'direct_traffic': 'Direct',
+                              'organic_search': 'Organic',
+                              'referral_traffic': 'Referral',
+                              'other': 'Other'
+                            };
+                            const sourceLabel = trafficSourceLabels[source] || source;
+                            return (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {sourceLabel}
+                              </Badge>
+                            );
+                          })
+                        ) : (
+                          <span className="text-muted-foreground">Не указано</span>
+                        )}
+                        {offer.trafficSources && offer.trafficSources.length > 2 && (
+                          <div className="text-muted-foreground">+{offer.trafficSources.length - 2}</div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -1181,6 +1227,50 @@ export default function OffersManagement() {
                   <Label>{t('landing_page')}</Label>
                   <div className="font-medium break-all">{selectedOffer.landingPageUrl || 'Не указано'}</div>
                 </div>
+                
+                {selectedOffer.trafficSources && selectedOffer.trafficSources.length > 0 && (
+                  <div>
+                    <Label>Разрешенные источники трафика</Label>
+                    <div className="mt-2 space-y-2">
+                      {selectedOffer.trafficSources.map((source, index) => {
+                        const trafficSourceLabels: {[key: string]: string} = {
+                          'facebook_ads': 'Facebook Ads',
+                          'google_ads': 'Google Ads',
+                          'instagram_ads': 'Instagram Ads',
+                          'tiktok_ads': 'TikTok Ads',
+                          'youtube_ads': 'YouTube Ads',
+                          'twitter_ads': 'Twitter Ads',
+                          'linkedin_ads': 'LinkedIn Ads',
+                          'pinterest_ads': 'Pinterest Ads',
+                          'snapchat_ads': 'Snapchat Ads',
+                          'native_ads': 'Native Ads',
+                          'push_notifications': 'Push уведомления',
+                          'email_marketing': 'Email маркетинг',
+                          'sms_marketing': 'SMS маркетинг',
+                          'display_ads': 'Display реклама',
+                          'video_ads': 'Видео реклама',
+                          'search_ads': 'Поисковая реклама',
+                          'affiliate_networks': 'Партнерские сети',
+                          'influencer_marketing': 'Инфлюенсер маркетинг',
+                          'content_marketing': 'Контент маркетинг',
+                          'social_media': 'Социальные сети',
+                          'direct_traffic': 'Прямой трафик',
+                          'organic_search': 'Органический поиск',
+                          'referral_traffic': 'Реферальный трафик',
+                          'other': 'Другое'
+                        };
+                        const sourceLabel = trafficSourceLabels[source] || source;
+                        return (
+                          <div key={index} className="inline-block">
+                            <Badge variant="secondary" className="mr-2 mb-2">
+                              {sourceLabel}
+                            </Badge>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 
                 <div>
                   <Label>{t('restrictions')}</Label>
