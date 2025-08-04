@@ -357,23 +357,23 @@ export default function UsersManagement() {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden ml-0 lg:ml-64">
         <Header title="Управление пользователями" />
-        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
-          <div className="space-y-6 p-6">
+        <main className="flex-1 overflow-auto">
+          <div className="space-y-6 p-4 sm:p-6 max-w-full">
             {/* Header */}
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Управление пользователями
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm sm:text-base">
             Управляйте пользователями системы, их ролями и настройками
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button onClick={() => setShowCreateDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Добавить пользователя
@@ -399,7 +399,7 @@ export default function UsersManagement() {
       </div>
 
       {/* Analytics Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -461,7 +461,7 @@ export default function UsersManagement() {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
@@ -529,8 +529,9 @@ export default function UsersManagement() {
 
       {/* Users Table */}
       <Card>
-        <CardContent>
-          <Table>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">
@@ -807,6 +808,7 @@ export default function UsersManagement() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
