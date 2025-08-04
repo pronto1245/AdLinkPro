@@ -2337,6 +2337,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Export fraud reports
+  app.get('/api/admin/fraud-reports/export', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const reports = await storage.getFraudReports({}, 1, 10000); // Get all reports
+      
+      // Create CSV content
+      const csvHeader = 'ID,Type,Severity,Status,IP Address,Country,Description,Created At\n';
+      const csvRows = reports.map(report => 
+        `${report.id},${report.type},${report.severity},${report.status},${report.ipAddress},${report.country},"${report.description}",${report.createdAt}`
+      ).join('\n');
+      
+      const csvContent = csvHeader + csvRows;
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="fraud-reports.csv"');
+      res.send(csvContent);
+    } catch (error) {
+      console.error('Export fraud reports error:', error);
+      res.status(500).json({ error: 'Failed to export fraud reports' });
+    }
+  });
+
+  // Block IP address
+  app.post('/api/admin/block-ip', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { ipAddress, reason } = req.body;
+      const userId = (req as any).user.id;
+      
+      if (!ipAddress) {
+        return res.status(400).json({ error: 'IP address is required' });
+      }
+
+      // Create fraud block entry
+      const blockId = nanoid();
+      await storage.createFraudBlock({
+        id: blockId,
+        type: 'ip',
+        targetId: ipAddress,
+        reason: reason || 'Manual block',
+        autoBlocked: false,
+        isActive: true,
+        blockedBy: userId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+
+      auditLog(req, 'IP_BLOCKED', blockId, true, { ipAddress, reason });
+      res.json({ success: true, message: 'IP address blocked successfully' });
+    } catch (error) {
+      console.error('Block IP error:', error);
+      res.status(500).json({ error: 'Failed to block IP address' });
+    }
+  });
+
   app.post("/api/admin/fraud-blocks", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const { type, targetId, reason, reportId } = req.body;

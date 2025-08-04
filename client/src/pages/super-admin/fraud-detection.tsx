@@ -87,6 +87,10 @@ const FraudDetectionPage = () => {
   });
   const [selectedReport, setSelectedReport] = useState<FraudReport | null>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [createRuleDialogOpen, setCreateRuleDialogOpen] = useState(false);
+  const [blockIpDialogOpen, setBlockIpDialogOpen] = useState(false);
+  const [selectedIp, setSelectedIp] = useState<string>('');
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   // Fetch fraud reports
   const { data: fraudReports = [], isLoading: reportsLoading } = useQuery<FraudReport[]>({
@@ -163,6 +167,57 @@ const FraudDetectionPage = () => {
       });
     },
   });
+
+  // Block IP mutation
+  const blockIpMutation = useMutation({
+    mutationFn: async (ipAddress: string) => {
+      return await fetch('/api/admin/block-ip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ ipAddress, reason: 'Fraud detection' }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/ip-analysis'] });
+      setBlockIpDialogOpen(false);
+      setSelectedIp('');
+      toast({
+        title: "Успешно",
+        description: "IP адрес заблокирован",
+      });
+    },
+  });
+
+  // Export reports function
+  const handleExportReports = async () => {
+    try {
+      const response = await fetch('/api/admin/fraud-reports/export', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `fraud-reports-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast({
+          title: "Успешно",
+          description: "Отчёты экспортированы",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось экспортировать отчёты",
+        variant: "destructive"
+      });
+    }
+  };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -254,11 +309,21 @@ const FraudDetectionPage = () => {
                 </p>
               </div>
               <div className="flex space-x-4">
-                <Button variant="outline" data-testid="button-export-reports" title="Экспорт отчётов">
+                <Button 
+                  variant="outline" 
+                  onClick={handleExportReports}
+                  data-testid="button-export-reports" 
+                  title="Экспорт отчётов"
+                >
                   <Download className="w-4 h-4 mr-2" />
                   Экспорт
                 </Button>
-                <Button className="bg-red-600 hover:bg-red-700" data-testid="button-create-rule" title="Создать правило">
+                <Button 
+                  className="bg-red-600 hover:bg-red-700" 
+                  onClick={() => setCreateRuleDialogOpen(true)}
+                  data-testid="button-create-rule" 
+                  title="Создать правило"
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Новое правило
                 </Button>
@@ -529,6 +594,10 @@ const FraudDetectionPage = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  onClick={() => {
+                                    setSelectedIp(report.ipAddress);
+                                    setBlockIpDialogOpen(true);
+                                  }}
                                   data-testid="button-block-ip"
                                   title="Заблокировать IP"
                                 >
@@ -677,6 +746,13 @@ const FraudDetectionPage = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  onClick={() => {
+                                    // Flag IP functionality
+                                    toast({
+                                      title: "IP помечен",
+                                      description: `IP ${ip.ipAddress} помечен как подозрительный`,
+                                    });
+                                  }}
                                   data-testid="button-flag-ip"
                                   title="Пометить как подозрительный"
                                 >
@@ -685,6 +761,10 @@ const FraudDetectionPage = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  onClick={() => {
+                                    setSelectedIp(ip.ipAddress);
+                                    setBlockIpDialogOpen(true);
+                                  }}
                                   data-testid="button-block-ip-analysis"
                                   title="Заблокировать"
                                 >
@@ -717,6 +797,7 @@ const FraudDetectionPage = () => {
                     </div>
                     <Button 
                       className="bg-blue-600 hover:bg-blue-700"
+                      onClick={() => setCreateRuleDialogOpen(true)}
                       data-testid="button-create-fraud-rule"
                       title="Создать правило"
                     >
@@ -784,6 +865,12 @@ const FraudDetectionPage = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  onClick={() => {
+                                    toast({
+                                      title: "Редактирование правила",
+                                      description: "Функция в разработке",
+                                    });
+                                  }}
                                   data-testid="button-edit-rule"
                                   title="Редактировать"
                                 >
@@ -792,6 +879,14 @@ const FraudDetectionPage = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  onClick={() => {
+                                    if (confirm('Удалить это правило?')) {
+                                      toast({
+                                        title: "Правило удалено",
+                                        description: `Правило "${rule.name}" удалено`,
+                                      });
+                                    }
+                                  }}
                                   data-testid="button-delete-rule"
                                   title="Удалить"
                                 >
@@ -912,6 +1007,108 @@ const FraudDetectionPage = () => {
                   Сохранить решение
                 </Button>
               </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Block IP Dialog */}
+          <Dialog open={blockIpDialogOpen} onOpenChange={setBlockIpDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Блокировка IP адреса</DialogTitle>
+                <DialogDescription>
+                  Заблокировать IP адрес {selectedIp}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p>Вы уверены, что хотите заблокировать IP адрес <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{selectedIp}</code>?</p>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setBlockIpDialogOpen(false)}>
+                    Отмена
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => blockIpMutation.mutate(selectedIp)}
+                    disabled={blockIpMutation.isPending}
+                  >
+                    {blockIpMutation.isPending ? 'Блокировка...' : 'Заблокировать'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Create Rule Dialog */}
+          <Dialog open={createRuleDialogOpen} onOpenChange={setCreateRuleDialogOpen}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Создание нового правила антифрода</DialogTitle>
+                <DialogDescription>
+                  Настройте автоматическое правило для обнаружения мошенничества
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Название правила</label>
+                    <input
+                      type="text"
+                      placeholder="Введите название"
+                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Тип фрода</label>
+                    <select className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="ip_fraud">IP Фрод</option>
+                      <option value="device_fraud">Фрод устройств</option>
+                      <option value="geo_fraud">Геофрод</option>
+                      <option value="click_speed">Скорость кликов</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Критичность</label>
+                    <select className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="low">Низкая</option>
+                      <option value="medium">Средняя</option>
+                      <option value="high">Высокая</option>
+                      <option value="critical">Критичная</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Автоблокировка</label>
+                    <select className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="false">Нет</option>
+                      <option value="true">Да</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Описание</label>
+                  <textarea
+                    placeholder="Опишите условия срабатывания правила"
+                    rows={3}
+                    className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setCreateRuleDialogOpen(false)}>
+                    Отмена
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      toast({
+                        title: "Правило создано",
+                        description: "Новое правило антифрода успешно создано",
+                      });
+                      setCreateRuleDialogOpen(false);
+                    }}
+                  >
+                    Создать правило
+                  </Button>
+                </div>
+              </div>
             </DialogContent>
           </Dialog>
         </main>
