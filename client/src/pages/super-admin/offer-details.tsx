@@ -363,8 +363,7 @@ export default function OfferDetails() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                    <label className="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide">Логотип</label>
-                    <div className="mt-1 flex justify-center">
+                    <div className="flex justify-center">
                       {offer.logoUrl ? (
                         <img 
                           src={offer.logoUrl} 
