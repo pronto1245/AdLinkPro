@@ -205,6 +205,11 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
+                        // Проверяем размер файла (максимум 2MB)
+                        if (file.size > 2 * 1024 * 1024) {
+                          alert('Размер файла слишком большой. Максимум 2MB.');
+                          return;
+                        }
                         const reader = new FileReader();
                         reader.onload = () => {
                           field.onChange(reader.result as string);

@@ -664,24 +664,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
-      const authUser = getAuthenticatedUser(req);
-      console.log("Auth user:", JSON.stringify(authUser, null, 2));
+      const authUser = req.user!; // Middleware guarantees this exists
+      console.log("Creating offer for user:", authUser.id, authUser.username);
       
-      if (!authUser || !authUser.id) {
-        return res.status(401).json({ error: "User not authenticated properly" });
-      }
-      
-      // Create offer data directly without complex validation
+      // Create offer with required fields
       const offerData = {
         name: req.body.name || "Unnamed Offer",
-        category: req.body.category || "other",
+        category: req.body.category || "other", 
         description: req.body.description || null,
         logo: req.body.logo || null,
         status: req.body.status || 'draft',
         payout: "0.00",
         payoutType: req.body.payoutType || 'cpa',
         currency: req.body.currency || 'USD',
-        advertiserId: authUser.id,
+        advertiserId: authUser.id, // From authenticated user
         landingPages: req.body.landingPages || null,
         kpiConditions: req.body.kpiConditions || null,
         trafficSources: req.body.allowedTrafficSources || null,
@@ -691,16 +687,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         autoApprovePartners: req.body.autoApprovePartners === true,
       };
       
-      console.log("Final offer data:", JSON.stringify(offerData, null, 2));
+      console.log("Creating offer with data:", JSON.stringify(offerData, null, 2));
       const offer = await storage.createOffer(offerData);
       res.status(201).json(offer);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        console.error("Validation error:", error.errors);
-        return res.status(400).json({ error: error.errors });
-      }
       console.error("Create offer error:", error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ error: "Failed to create offer", details: error.message });
     }
   });
 
