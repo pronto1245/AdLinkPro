@@ -948,11 +948,43 @@ export default function OffersManagement() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium">${offer.payout}</div>
-                      <div className="text-sm text-muted-foreground">{offer.payoutType}</div>
-                      {offer.landingPages && offer.landingPages.length > 0 && (
-                        <div className="text-xs text-blue-600 mt-1">
-                          {offer.landingPages.length} гео-цен
+                      {offer.landingPages && offer.landingPages.length > 0 ? (
+                        <div>
+                          <div className="text-sm font-medium space-x-1">
+                            {offer.landingPages.map((landing, index) => {
+                              const countryFlags: {[key: string]: string} = {
+                                'us': '🇺🇸',
+                                'gb': '🇬🇧', 
+                                'uk': '🇬🇧',
+                                'it': '🇮🇹',
+                                'de': '🇩🇪',
+                                'fr': '🇫🇷',
+                                'es': '🇪🇸',
+                                'ca': '🇨🇦',
+                                'au': '🇦🇺',
+                                'br': '🇧🇷',
+                                'mx': '🇲🇽',
+                                'jp': '🇯🇵',
+                                'kr': '🇰🇷',
+                                'in': '🇮🇳',
+                                'ru': '🇷🇺',
+                                'cn': '🇨🇳'
+                              };
+                              const flag = countryFlags[landing.geo?.toLowerCase() || ''] || '🌍';
+                              const geo = (landing.geo || 'XX').toUpperCase();
+                              return (
+                                <span key={index} className="inline-block mr-1 text-xs">
+                                  {flag}{geo}-{landing.payoutAmount}
+                                </span>
+                              );
+                            })}
+                          </div>
+                          <div className="text-xs text-muted-foreground">{offer.payoutType}</div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="font-medium">${offer.payout}</div>
+                          <div className="text-sm text-muted-foreground">{offer.payoutType}</div>
                         </div>
                       )}
                     </TableCell>
@@ -1071,22 +1103,46 @@ export default function OffersManagement() {
                   <div>
                     <Label>Лендинги и цены по гео</Label>
                     <div className="mt-2 space-y-2">
-                      {selectedOffer.landingPages.map((landing, index) => (
-                        <div key={index} className="border rounded p-3">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <div className="font-medium">{landing.name}</div>
-                              <div className="text-sm text-muted-foreground break-all">{landing.url}</div>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-medium">${landing.payoutAmount} {landing.currency}</div>
-                              {landing.geo && (
-                                <div className="text-sm text-muted-foreground uppercase">{landing.geo}</div>
-                              )}
+                      {selectedOffer.landingPages.map((landing, index) => {
+                        const countryFlags: {[key: string]: string} = {
+                          'us': '🇺🇸',
+                          'gb': '🇬🇧', 
+                          'uk': '🇬🇧',
+                          'it': '🇮🇹',
+                          'de': '🇩🇪',
+                          'fr': '🇫🇷',
+                          'es': '🇪🇸',
+                          'ca': '🇨🇦',
+                          'au': '🇦🇺',
+                          'br': '🇧🇷',
+                          'mx': '🇲🇽',
+                          'jp': '🇯🇵',
+                          'kr': '🇰🇷',
+                          'in': '🇮🇳',
+                          'ru': '🇷🇺',
+                          'cn': '🇨🇳'
+                        };
+                        const flag = countryFlags[landing.geo?.toLowerCase() || ''] || '🌍';
+                        const geo = (landing.geo || 'XX').toUpperCase();
+                        
+                        return (
+                          <div key={index} className="border rounded p-3">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="font-medium flex items-center gap-2">
+                                  <span>{flag} {geo}</span>
+                                  <span>{landing.name}</span>
+                                </div>
+                                <div className="text-sm text-muted-foreground break-all">{landing.url}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-medium text-lg">{flag}{geo}-{landing.payoutAmount}</div>
+                                <div className="text-sm text-muted-foreground">{landing.currency}</div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
