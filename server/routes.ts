@@ -784,30 +784,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Updating offer:", id, "for user:", authUser.id, authUser.username);
       console.log("Update data:", JSON.stringify(req.body, null, 2));
       
-      // Prepare update data - only include fields that have values
+      // Prepare update data - exclude timestamp fields and only include fields that have values
+      const { createdAt, updatedAt, id: bodyId, ...bodyData } = req.body;
       const updateData: any = {};
       
-      if (req.body.name !== undefined) updateData.name = req.body.name;
-      if (req.body.category !== undefined) updateData.category = req.body.category;
-      if (req.body.description !== undefined) updateData.description = req.body.description;
-      if (req.body.logo !== undefined) updateData.logo = req.body.logo;
-      if (req.body.status !== undefined) updateData.status = req.body.status;
-      if (req.body.payoutType !== undefined) updateData.payoutType = req.body.payoutType;
-      if (req.body.currency !== undefined) updateData.currency = req.body.currency;
-      if (req.body.landingPages !== undefined) updateData.landingPages = req.body.landingPages;
-      if (req.body.kpiConditions !== undefined) updateData.kpiConditions = req.body.kpiConditions;
-      if (req.body.trafficSources !== undefined) updateData.trafficSources = req.body.trafficSources;
-      if (req.body.allowedTrafficSources !== undefined) updateData.trafficSources = req.body.allowedTrafficSources;
-      if (req.body.allowedApps !== undefined) updateData.allowedApps = req.body.allowedApps;
-      if (req.body.dailyLimit !== undefined) updateData.dailyLimit = req.body.dailyLimit;
-      if (req.body.monthlyLimit !== undefined) updateData.monthlyLimit = req.body.monthlyLimit;
-      if (req.body.antifraudEnabled !== undefined) updateData.antifraudEnabled = req.body.antifraudEnabled;
-      if (req.body.autoApprovePartners !== undefined) updateData.autoApprovePartners = req.body.autoApprovePartners;
-      if (req.body.restrictions !== undefined) updateData.restrictions = req.body.restrictions;
-      if (req.body.moderationComment !== undefined) updateData.moderationComment = req.body.moderationComment;
-      if (req.body.kycRequired !== undefined) updateData.kycRequired = req.body.kycRequired;
-      if (req.body.isPrivate !== undefined) updateData.isPrivate = req.body.isPrivate;
-      if (req.body.smartlinkEnabled !== undefined) updateData.smartlinkEnabled = req.body.smartlinkEnabled;
+      // Only include defined fields, excluding timestamp fields
+      Object.keys(bodyData).forEach(key => {
+        if (bodyData[key] !== undefined && key !== 'createdAt' && key !== 'updatedAt') {
+          updateData[key] = bodyData[key];
+        }
+      });
       
       console.log("Final update data:", updateData);
       
