@@ -389,7 +389,9 @@ export default function OfferDetails() {
                 
                 <div>
                   <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Описание</label>
-                  <p className="mt-1 text-gray-900 dark:text-white">{offer.description || 'Не указано'}</p>
+                  <div className="mt-1 text-gray-900 dark:text-white break-words overflow-hidden max-h-24 overflow-y-auto text-sm">
+                    {offer.description || 'Не указано'}
+                  </div>
                 </div>
                 
                 {offer.number && (
