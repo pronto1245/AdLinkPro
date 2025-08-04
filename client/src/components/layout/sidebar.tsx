@@ -18,7 +18,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { useState } from 'react';
+import { useSidebar } from '@/contexts/sidebar-context';
 
 interface MenuItem {
   label: string;
@@ -50,7 +50,7 @@ export default function Sidebar({ className }: SidebarProps) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [location] = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isCollapsed, toggleSidebar } = useSidebar();
 
   if (!user) return null;
 
@@ -107,7 +107,7 @@ export default function Sidebar({ className }: SidebarProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={toggleSidebar}
             className="text-slate-400 hover:text-slate-600"
             data-testid="button-toggle-sidebar"
           >

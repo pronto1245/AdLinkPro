@@ -2,6 +2,7 @@ import { useParams, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '../../contexts/language-context';
 import Sidebar from '../../components/layout/sidebar';
+import { useSidebar } from '../../contexts/sidebar-context';
 import Header from '../../components/layout/header';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -13,6 +14,7 @@ export default function OfferDetails() {
   const [, setLocation] = useLocation();
   const params = useParams();
   const { t, language } = useLanguage();
+  const { isCollapsed } = useSidebar();
   
   const offerId = params.id;
 
@@ -168,7 +170,7 @@ export default function OfferDetails() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
       <Sidebar />
-      <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
         <Header title="offer_details" subtitle="detailed_offer_information" />
         <main className="flex-1 p-6">
           <div className="container mx-auto px-6 py-8 max-w-6xl">
