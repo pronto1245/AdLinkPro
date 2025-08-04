@@ -200,7 +200,7 @@ export default function PostbacksManagement() {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
         <Header title="Postbacks Management" />
         <main className="flex-1 overflow-y-auto p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -413,11 +413,13 @@ export default function PostbacksManagement() {
                       <div>
                         <h4 className="text-sm font-medium mb-2">Events</h4>
                         <div className="flex flex-wrap gap-1">
-                          {postback.events.map((event: string) => (
+                          {postback.events && Array.isArray(postback.events) ? postback.events.map((event: string) => (
                             <Badge key={event} variant="outline" className="text-xs">
                               {event}
                             </Badge>
-                          ))}
+                          )) : (
+                            <Badge variant="outline" className="text-xs">No events</Badge>
+                          )}
                         </div>
                       </div>
                       <div>
