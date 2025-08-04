@@ -63,16 +63,16 @@ export default function OfferDetails() {
       await navigator.clipboard.writeText(text);
       setCopiedUrls(prev => ({ ...prev, [id]: true }));
       toast({
-        title: "URL скопирован",
-        description: "URL успешно скопирован в буфер обмена",
+        title: t('url_copied'),
+        description: t('url_copied_success'),
       });
       setTimeout(() => {
         setCopiedUrls(prev => ({ ...prev, [id]: false }));
       }, 2000);
     } catch (err) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось скопировать URL",
+        title: t('copy_error'),
+        description: t('copy_error_message'),
         variant: "destructive"
       });
     }
@@ -112,9 +112,9 @@ export default function OfferDetails() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-gray-600">Оффер не найден</p>
+          <p className="text-gray-600">{t('offer_not_found')}</p>
           <Button onClick={() => setLocation('/admin/offers')} className="mt-4">
-            Вернуться к списку офферов
+            {t('back_to_offers')}
           </Button>
         </div>
       </div>
@@ -316,15 +316,15 @@ export default function OfferDetails() {
           <div className="container mx-auto px-6 py-8 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-6">OFFER-DETAILS</h1>
+          <h1 className="text-3xl font-bold mb-6">{t('offer_details')}</h1>
           <Button
             variant="ghost"
             onClick={() => setLocation('/admin/offers')}
             className="mb-4 hover:bg-gray-100 dark:hover:bg-gray-800"
-            title="Вернуться к списку офферов"
+            title={t('back_to_offers')}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Вернуться к списку офферов
+            {t('back_to_offers')}
           </Button>
           
           <div className="flex items-center justify-between">
@@ -336,23 +336,10 @@ export default function OfferDetails() {
               </div>
               <div className="flex items-center gap-3">
                 <Badge className={getStatusColor(offer.status)}>
-                  {offer.status === 'active' ? 'Активен' :
-                   offer.status === 'pending' ? 'Ожидает' :
-                   offer.status === 'draft' ? 'Черновик' :
-                   offer.status === 'blocked' ? 'Заблокирован' :
-                   offer.status === 'archived' ? 'Архивный' : offer.status}
+                  {t(offer.status)}
                 </Badge>
                 <Badge className={getCategoryColor(offer.category)}>
-                  {offer.category === 'gambling' ? 'Гемблинг' :
-                   offer.category === 'finance' ? 'Финансы' :
-                   offer.category === 'nutra' ? 'Нутра' :
-                   offer.category === 'dating' ? 'Знакомства' :
-                   offer.category === 'lottery' ? 'Лотереи' :
-                   offer.category === 'crypto' ? 'Криптовалюты' :
-                   offer.category === 'ecommerce' ? 'E-commerce' :
-                   offer.category === 'mobile' ? 'Мобильные' :
-                   offer.category === 'gaming' ? 'Игры' :
-                   offer.category === 'software' ? 'ПО' : offer.category}
+                  {t(offer.category)}
                 </Badge>
                 <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <Calendar className="w-4 h-4" />
@@ -382,28 +369,28 @@ export default function OfferDetails() {
               className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
             >
               <Target className="w-4 h-4" />
-              Детали
+              {t('details')}
             </TabsTrigger>
             <TabsTrigger 
               value="analytics" 
               className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
             >
               <BarChart3 className="w-4 h-4" />
-              Аналитика
+              {t('analytics')}
             </TabsTrigger>
             <TabsTrigger 
               value="creatives" 
               className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
             >
               <Image className="w-4 h-4" />
-              Креативы
+              {t('creatives')}
             </TabsTrigger>
             <TabsTrigger 
               value="history" 
               className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
             >
               <Clock className="w-4 h-4" />
-              История
+              {t('history')}
             </TabsTrigger>
           </TabsList>
 
@@ -420,7 +407,7 @@ export default function OfferDetails() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5" />
-                    KPI условия
+                    KPI {t('offer_description')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -436,7 +423,7 @@ export default function OfferDetails() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Globe className="w-5 h-5" />
-                  Лендинги и выплаты
+                  {t('preview_url')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -448,7 +435,7 @@ export default function OfferDetails() {
                         <div className="flex items-center justify-between gap-4 mb-4">
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <h4 className="font-semibold text-gray-900 dark:text-white">
-                              {landing.name || `Лендинг ${index + 1}`}
+                              {landing.name || `${t('preview_url')} ${index + 1}`}
                             </h4>
                             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 truncate">
                               <Globe className="w-4 h-4 flex-shrink-0" />
@@ -461,7 +448,7 @@ export default function OfferDetails() {
                               size="sm"
                               className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
                               onClick={() => copyToClipboard(landing.url, `landing-${index}`)}
-                              title="Копировать URL"
+                              title={t('copy_link')}
                             >
                               {copiedUrls[`landing-${index}`] ? (
                                 <Check className="w-4 h-4 text-green-600" />
@@ -474,7 +461,7 @@ export default function OfferDetails() {
                               size="sm" 
                               className="h-8 w-8 p-0 hover:bg-purple-100 hover:text-purple-600"
                               asChild
-                              title="Открыть лендинг"
+                              title={t('preview_url')}
                             >
                               <a href={landing.url} target="_blank" rel="noopener noreferrer">
                                 <Eye className="w-4 h-4 text-purple-600" />
@@ -668,7 +655,7 @@ export default function OfferDetails() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="w-5 h-5" />
-                  Статистика
+                  {t('analytics')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -677,13 +664,13 @@ export default function OfferDetails() {
                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {statsData?.clicks || 0}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Клики</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{t('clicks')}</div>
                   </div>
                   <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                       {statsData?.conversions || 0}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Конверсии</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{t('conversions')}</div>
                   </div>
                 </div>
                 <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
@@ -696,7 +683,7 @@ export default function OfferDetails() {
                   <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                     ${statsData?.revenue || 0}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Доход</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">{t('revenue')}</div>
                 </div>
               </CardContent>
             </Card>
