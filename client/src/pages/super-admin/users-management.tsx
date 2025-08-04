@@ -60,10 +60,9 @@ interface User {
   firstName?: string;
   lastName?: string;
   role: string;
-  status: string;
-  userType: string;
+  userType?: string;
   country?: string;
-  isBlocked: boolean;
+  isBlocked?: boolean;
   blockReason?: string;
   lastLoginAt?: string;
   createdAt: string;
@@ -202,16 +201,11 @@ export default function UsersManagement() {
   };
 
   const getStatusBadge = (user: User) => {
-    if (user.isBlocked) {
+    // Use isActive field since isBlocked might not exist yet
+    if (!user.isActive) {
       return <Badge variant="destructive" className="flex items-center gap-1">
         <Ban className="w-3 h-3" />
         {t.blocked || "Заблокирован"}
-      </Badge>;
-    }
-    
-    if (!user.isActive) {
-      return <Badge variant="secondary">
-        {t.inactive || "Неактивен"}
       </Badge>;
     }
     
@@ -283,7 +277,7 @@ export default function UsersManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {usersData?.data?.filter((u: User) => u.isActive && !u.isBlocked).length || 0}
+              {usersData?.data?.filter((u: User) => u.isActive).length || 0}
             </div>
           </CardContent>
         </Card>
@@ -297,7 +291,7 @@ export default function UsersManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {usersData?.data?.filter((u: User) => u.isBlocked).length || 0}
+              {usersData?.data?.filter((u: User) => !u.isActive).length || 0}
             </div>
           </CardContent>
         </Card>
@@ -482,7 +476,7 @@ export default function UsersManagement() {
                             <Edit className="mr-2 h-4 w-4" />
                             {t.edit || "Редактировать"}
                           </DropdownMenuItem>
-                          {user.isBlocked ? (
+                          {!user.isActive ? (
                             <DropdownMenuItem onClick={() => unblockUserMutation.mutate(user.id)}>
                               <ShieldCheck className="mr-2 h-4 w-4" />
                               {t.unblock || "Разблокировать"}
