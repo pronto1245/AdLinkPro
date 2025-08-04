@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { insertUserSchema, insertOfferSchema, insertTicketSchema, type User, offers } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { z } from "zod";
 import express from "express";
@@ -435,7 +436,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             allowedApps: offerData.allowedApps || [],
             dailyLimit: offerData.dailyLimit || null,
             monthlyLimit: offerData.monthlyLimit || null,
-            totalLimit: offerData.totalLimit || null,
             restrictions: offerData.restrictions || '',
             geoPricing: offerData.geoPricing || [],
             kycRequired: offerData.kycRequired || false,

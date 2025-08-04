@@ -1159,43 +1159,10 @@ export default function OffersManagement() {
           <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">{t('offer_management')}</h1>
-          <p className="text-muted-foreground">{t('manage_all_offers_platform')}</p>
+          <h1 className="text-3xl font-bold">OFFER-MANAGEMENT</h1>
         </div>
         <div className="flex gap-2">
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button data-testid="button-create-offer">
-                <Plus className="w-4 h-4 mr-2" />
-                Создать оффер
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Создать новый оффер</DialogTitle>
-                <DialogDescription>
-                  Заполните информацию для создания нового оффера
-                </DialogDescription>
-              </DialogHeader>
-              <CreateOfferForm onSuccess={() => setIsCreateDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
-          <Button 
-            variant="outline"
-            onClick={() => setIsImportDialogOpen(true)}
-            className="border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            {t('import')}
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={handleExportOffers}
-            className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            {t('export')}
-          </Button>
+          {/* Buttons removed as requested */}
         </div>
       </div>
 
@@ -1225,7 +1192,7 @@ export default function OffersManagement() {
                 <SelectValue placeholder={t('status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('all_statuses')}</SelectItem>
+                <SelectItem value="all">Все статусы</SelectItem>
                 <SelectItem value="active">{t('active')}</SelectItem>
                 <SelectItem value="paused">Остановлен</SelectItem>
                 <SelectItem value="pending">Ожидает</SelectItem>
@@ -1238,7 +1205,7 @@ export default function OffersManagement() {
                 <SelectValue placeholder={t('moderation_status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('all_statuses')}</SelectItem>
+                <SelectItem value="all">Все статусы</SelectItem>
                 <SelectItem value="pending">{t('pending')}</SelectItem>
                 <SelectItem value="approved">{t('approved')}</SelectItem>
                 <SelectItem value="rejected">{t('rejected')}</SelectItem>
@@ -1251,7 +1218,7 @@ export default function OffersManagement() {
                 <SelectValue placeholder={t('category')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('all_categories')}</SelectItem>
+                <SelectItem value="all">Все категории</SelectItem>
                 <SelectItem value="finance">{t('finance')}</SelectItem>
                 <SelectItem value="dating">{t('dating')}</SelectItem>
                 <SelectItem value="gaming">{t('gaming')}</SelectItem>
@@ -1264,7 +1231,7 @@ export default function OffersManagement() {
                 <SelectValue placeholder={t('advertiser')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('all_advertisers')}</SelectItem>
+                <SelectItem value="all">Все рекламодатели</SelectItem>
               </SelectContent>
             </Select>
           </div>
