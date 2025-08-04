@@ -57,6 +57,7 @@ interface CreateOfferFormProps {
 }
 
 function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
