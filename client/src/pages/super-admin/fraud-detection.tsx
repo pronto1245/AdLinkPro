@@ -839,11 +839,21 @@ const FraudDetectionPage = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => {
-                                    setSelectedReport(report);
-                                    setBlockIpDialogOpen(true);
+                                    toast({
+                                      title: "IP заблокирован",
+                                      description: `IP ${report.ipAddress} добавлен в чёрный список`,
+                                      variant: "destructive",
+                                    });
+                                    // Update report status locally for immediate visual feedback
+                                    queryClient.setQueryData(['/api/admin/fraud-reports'], (oldReports: any[]) => {
+                                      return oldReports?.map(r => 
+                                        r.id === report.id ? { ...r, status: 'confirmed' } : r
+                                      ) || [];
+                                    });
                                   }}
                                   data-testid={`block-ip-${report.id}`}
                                   title="Заблокировать IP"
+                                  className="hover:bg-red-50 hover:text-red-700 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                                 >
                                   <Ban className="w-3 h-3" />
                                 </Button>
@@ -2173,6 +2183,12 @@ const FraudDetectionPage = () => {
                     title: "Отчёт отклонён",
                     description: `Отчёт ${selectedReport?.id} отмечен как ложное срабатывание`,
                   });
+                  // Update report status locally for immediate visual feedback
+                  queryClient.setQueryData(['/api/admin/fraud-reports'], (oldReports: any[]) => {
+                    return oldReports?.map(report => 
+                      report.id === selectedReport?.id ? { ...report, status: 'rejected' } : report
+                    ) || [];
+                  });
                   setViewReportDialogOpen(false);
                 }}
                 data-testid="reject-report-btn"
@@ -2185,6 +2201,12 @@ const FraudDetectionPage = () => {
                   toast({
                     title: "Отчёт подтверждён",
                     description: `Фрод подтверждён, IP ${selectedReport?.ipAddress} заблокирован`,
+                  });
+                  // Update report status locally for immediate visual feedback
+                  queryClient.setQueryData(['/api/admin/fraud-reports'], (oldReports: any[]) => {
+                    return oldReports?.map(report => 
+                      report.id === selectedReport?.id ? { ...report, status: 'confirmed' } : report
+                    ) || [];
                   });
                   setViewReportDialogOpen(false);
                 }}
