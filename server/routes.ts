@@ -353,7 +353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Removed old POST route - replaced by working one below
 
-  app.put("/api/offers/:id", authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
+  app.put("/api/admin/offers/:id", authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
       const { id } = req.params;

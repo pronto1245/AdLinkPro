@@ -446,6 +446,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: offers.createdAt,
         updatedAt: offers.updatedAt,
         advertiserName: sql<string>`COALESCE(${users.firstName} || ' ' || ${users.lastName}, 'Unknown')`,
+        allowedApps: offers.allowedApps,
       })
       .from(offers)
       .leftJoin(users, eq(offers.advertiserId, users.id))

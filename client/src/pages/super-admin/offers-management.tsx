@@ -878,8 +878,7 @@ export default function OffersManagement() {
   // Change status mutation
   const changeStatusMutation = useMutation({
     mutationFn: async ({ offerId, status }: { offerId: string; status: string }) => {
-      const response = await apiRequest('PUT', `/api/admin/offers/${offerId}`, { status });
-      return response.json();
+      return await apiRequest('PUT', `/api/admin/offers/${offerId}`, { status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
@@ -1142,7 +1141,7 @@ export default function OffersManagement() {
                               };
                               const currencySymbol = currencySymbols[landing.currency] || landing.currency;
                               return (
-                                <span key={index} className={`text-xs ${offer.landingPages?.length >= 3 ? 'block' : 'inline-block mr-1'}`}>
+                                <span key={index} className={`text-xs ${(offer.landingPages?.length || 0) >= 3 ? 'block' : 'inline-block mr-1'}`}>
                                   {flag}{geo}-{landing.payoutAmount}{currencySymbol}
                                 </span>
                               );
