@@ -93,16 +93,16 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
       toast({
-        title: "Успех",
-        description: "Оффер успешно создан",
+        title: t('success'),
+        description: t('offer_created_successfully'),
       });
       onSuccess();
       form.reset();
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось создать оффер",
+        title: t('error'),
+        description: error.message || t('failed_to_create_offer'),
         variant: "destructive",
       });
     },
@@ -129,9 +129,9 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Название оффера *</FormLabel>
+              <FormLabel>{t('offer_name')} *</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Введите название оффера (например: Pronto Casino)" data-testid="input-offer-name" />
+                <Input {...field} placeholder={t('enter_offer_name_placeholder')} data-testid="input-offer-name" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -144,11 +144,11 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Категория</FormLabel>
+                <FormLabel>{t('category')}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-category">
-                      <SelectValue placeholder="Выберите категорию" />
+                      <SelectValue placeholder={t('select_category')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -169,7 +169,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Статус</FormLabel>
+                <FormLabel>{t('status')}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-status">
@@ -177,10 +177,10 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="draft">Черновик</SelectItem>
-                    <SelectItem value="pending">Ожидает</SelectItem>
-                    <SelectItem value="active">Активный</SelectItem>
-                    <SelectItem value="paused">Остановлен</SelectItem>
+                    <SelectItem value="draft">{t('draft')}</SelectItem>
+                    <SelectItem value="pending">{t('waiting')}</SelectItem>
+                    <SelectItem value="active">{t('active')}</SelectItem>
+                    <SelectItem value="paused">{t('paused')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -195,9 +195,9 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Описание</FormLabel>
+              <FormLabel>{t('description')}</FormLabel>
               <FormControl>
-                <Textarea {...field} placeholder="Описание оффера" rows={3} data-testid="textarea-description" />
+                <Textarea {...field} placeholder={t('offer_description_placeholder')} rows={3} data-testid="textarea-description" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -209,7 +209,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           name="logo"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Логотип оффера</FormLabel>
+              <FormLabel>{t('offer_logo')}</FormLabel>
               <FormControl>
                 <div className="space-y-3">
                   <Input 
@@ -220,7 +220,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       if (file) {
                         // Проверяем размер файла (максимум 2MB)
                         if (file.size > 2 * 1024 * 1024) {
-                          alert('Размер файла слишком большой. Максимум 2MB.');
+                          alert(t('file_size_too_large'));
                           return;
                         }
                         const reader = new FileReader();
@@ -234,15 +234,15 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                   />
                   {field.value && (
                     <div className="flex items-center gap-3">
-                      <img src={field.value} alt="Логотип" className="h-16 w-16 object-cover rounded border" />
+                      <img src={field.value} alt={t('logo')} className="h-16 w-16 object-cover rounded border" />
                       <Button 
                         type="button" 
                         variant="outline" 
                         size="sm"
                         onClick={() => field.onChange('')}
-                        title="Удалить логотип"
+                        title={t('remove_logo')}
                       >
-                        Удалить логотип
+                        {t('remove_logo')}
                       </Button>
                     </div>
                   )}
@@ -257,7 +257,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label className="text-base font-medium">Посадочные страницы</Label>
+            <Label className="text-base font-medium">{t('landing_pages')}</Label>
             <Button 
               type="button" 
               variant="outline" 
@@ -267,10 +267,10 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 form.setValue('landingPages', [...current, { name: '', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]);
               }}
               data-testid="button-add-landing-page"
-              title="Добавить новую лендинг страницу"
+              title={t('add_new_landing_page')}
             >
               <PlusCircle className="w-4 h-4 mr-2" />
-              Добавить страницу
+              {t('add_page')}
             </Button>
           </div>
           
@@ -283,9 +283,9 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     name={`landingPages.${index}.name`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm">Название лендинга</FormLabel>
+                        <FormLabel className="text-sm">{t('landing_name')}</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Основная страница" data-testid={`input-landing-name-${index}`} />
+                          <Input {...field} placeholder={t('main_page')} data-testid={`input-landing-name-${index}`} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -313,7 +313,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     name={`landingPages.${index}.payoutAmount`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm">Сумма выплаты</FormLabel>
+                        <FormLabel className="text-sm">{t('payout_amount')}</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
@@ -1212,9 +1212,9 @@ export default function OffersManagement() {
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Создать новый оффер</DialogTitle>
+                <DialogTitle>{t('create_new_offer')}</DialogTitle>
                 <DialogDescription>
-                  Заполните информацию для создания нового оффера
+                  {t('fill_offer_information')}
                 </DialogDescription>
               </DialogHeader>
               <CreateOfferForm onSuccess={() => setIsCreateDialogOpen(false)} />

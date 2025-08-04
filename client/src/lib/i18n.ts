@@ -1,12 +1,4 @@
-export interface Translation {
-  [key: string]: string;
-}
-
-export interface Translations {
-  [language: string]: Translation;
-}
-
-export const translations: Translations = {
+export const translations = {
   en: {
     // Navigation
     'dashboard': 'Dashboard',
@@ -19,9 +11,12 @@ export const translations: Translations = {
     'settings': 'Settings',
     'anti_fraud': 'Anti-Fraud',
     'integrations': 'Integrations',
+    'blacklist_management': 'Blacklist Management',
+    'audit_logs': 'Audit Logs',
+    'fraud_alerts': 'Fraud Alerts',
 
     // Common
-    'welcome': 'Welcome back! Here\'s what\'s happening today.',
+    'welcome': 'Welcome! Here\'s what\'s happening today.',
     'loading': 'Loading...',
     'search': 'Search...',
     'cancel': 'Cancel',
@@ -30,7 +25,7 @@ export const translations: Translations = {
     'edit': 'Edit',
     'create': 'Create',
     'update': 'Update',
-    'view_all': 'View all',
+    'view_all': 'View All',
     'back': 'Back',
     'next': 'Next',
     'previous': 'Previous',
@@ -40,7 +35,6 @@ export const translations: Translations = {
     'filters': 'Filters',
     'actions': 'Actions',
     'details': 'Details',
-    'analytics': 'Analytics',
     'creatives': 'Creatives',
     'history': 'History',
     'more': 'more',
@@ -51,6 +45,11 @@ export const translations: Translations = {
     'waiting': 'Waiting',
     'not_specified': 'Not specified',
     'selected_offers': 'Selected offers',
+    'active': 'Active',
+    'stopped': 'Stopped',
+    'status': 'Status',
+    'success': 'Success',
+    'error': 'Error',
 
     // Authentication
     'login': 'Login',
@@ -62,201 +61,98 @@ export const translations: Translations = {
     'sign_in': 'Sign In',
     'sign_up': 'Sign Up',
     'forgot_password': 'Forgot Password',
-    'remember_me': 'Remember me',
+    'remember_me': 'Remember Me',
 
     // User Management
     'first_name': 'First Name',
     'last_name': 'Last Name',
     'company': 'Company',
     'phone': 'Phone',
-    'country': 'Country',
-    'language': 'Language',
-    'timezone': 'Timezone',
-    'currency': 'Currency',
     'role': 'Role',
-    'status': 'Status',
-    'active': 'Active',
-    'inactive': 'Inactive',
-    'created': 'Created',
-    'updated': 'Updated',
+    'super_admin': 'Super Admin',
+    'affiliate': 'Affiliate',
+    'advertiser': 'Advertiser',
+    'staff': 'Staff',
+    'kyc_status': 'KYC Status',
+    'verified': 'Verified',
+    'pending': 'Pending',
+    'rejected': 'Rejected',
+    'telegram': 'Telegram',
+    'created_at': 'Created',
+    'last_activity': 'Last Activity',
 
-    // Metrics
+    // Statistics
     'total_revenue': 'Total Revenue',
+    'total_users': 'Total Users',
     'active_partners': 'Active Partners',
     'active_offers': 'Active Offers',
     'total_partners': 'Total Partners',
     'conversion_rate': 'Conversion Rate',
     'fraud_rate': 'Fraud Rate',
-
-
     'total_clicks': 'Total Clicks',
     'total_conversions': 'Total Conversions',
     'total_earnings': 'Total Earnings',
     'average_cr': 'Average CR',
-    'total_payout': 'Total Payout',
 
-    // Dashboard
-    'revenue_overview': 'Revenue Overview',
-    'recent_activity': 'Recent Activity',
-    'top_performers': 'Top Performing Partners',
-    'recent_offers': 'Recent Offers',
-    'system_status': 'System Status & Alerts',
-    'performance_overview': 'Performance Overview',
-    'quick_actions': 'Quick Actions',
-
-    // Offers
-    'create_offer': 'Create Offer',
+    // Offers Management
     'offer_name': 'Offer Name',
-    'offer_description': 'Offer Description',
     'category': 'Category',
     'payout': 'Payout',
-    'payout_type': 'Payout Type',
-    'landing_page': 'Landing Page',
-    'tracking_url': 'Tracking URL',
-    'restrictions': 'Restrictions',
-    'kyc_required': 'KYC Required',
-    'private_offer': 'Private Offer',
-    'geo_targeting': 'Geo Targeting',
-    'traffic_sources': 'Traffic Sources',
-
-    // Statistics
-    'clicks': 'Clicks',
-    'unique_clicks': 'Unique Clicks',
-    'leads': 'Leads',
-    'conversions': 'Conversions',
-    'approved': 'Approved',
-    'rejected': 'Rejected',
-    'pending': 'Pending',
-    'revenue': 'Revenue',
-    'earnings': 'Earnings',
-    'epc': 'EPC',
-    'cr': 'CR',
-    'ctr': 'CTR',
-
-    // Tracking
-    'tracking_links': 'Tracking Links',
-    'tracking_code': 'Tracking Code',
-    'generate_link': 'Generate Link',
-    'sub_id': 'Sub ID',
-    'source': 'Source',
-    'campaign': 'Campaign',
-    'medium': 'Medium',
-
-    // Finance
-    'balance': 'Balance',
-    'transactions': 'Transactions',
-    'deposits': 'Deposits',
-    'withdrawals': 'Withdrawals',
-    'payouts': 'Payouts',
-    'commission': 'Commission',
-    'invoice': 'Invoice',
-    'payment_method': 'Payment Method',
-    'amount': 'Amount',
-    'reference': 'Reference',
-
-    // Support
-    'tickets': 'Tickets',
-    'create_ticket': 'Create Ticket',
-    'subject': 'Subject',
-    'message': 'Message',
-    'priority': 'Priority',
-    'assigned_to': 'Assigned To',
-    'open': 'Open',
-    'closed': 'Closed',
-    'resolved': 'Resolved',
-
-    // Status messages
-    'success': 'Success',
-    'error': 'Error',
-    'warning': 'Warning',
-    'info': 'Information',
-    'operation_completed': 'Operation completed successfully',
-    'data_updated': 'Data updated successfully',
-    'data_deleted': 'Data deleted successfully',
-    'data_created': 'Data created successfully',
-
-    // Time periods
-    'today': 'Today',
-    'yesterday': 'Yesterday',
-    'last_7_days': 'Last 7 days',
-    'last_30_days': 'Last 30 days',
-    'this_month': 'This month',
-    'last_month': 'Last month',
-    'this_year': 'This year',
-    'last_year': 'Last year',
-    'custom': 'Custom',
-
-    // Admin specific
-    'super_admin': 'Super Admin',
-    'advertiser': 'Advertiser',
-    'affiliate': 'Affiliate',
-    'staff': 'Staff',
-    'add_user': 'Add User',
-    'edit_user': 'Edit User',
-    'delete_user': 'Delete User',
-    'approve_user': 'Approve User',
-    'block_user': 'Block User',
-    'unblock_user': 'Unblock User',
-    'no_users_found': 'No users found',
-    'no_offers_found': 'No offers found',
-    'total_users': 'Total Users',
-    'pending_approvals': 'Pending Approvals',
-    'fraud_alerts_count': 'Fraud Alerts',
-    'system_health': 'System Health',
-    'overview': 'Overview',
-    'financial_management': 'Financial Management',
-    'transaction_monitoring': 'Transaction Monitoring',
-    'payout_management': 'Payout Management',
-    'commission_tracking': 'Commission Tracking',
-    'suspicious_activity': 'Suspicious Activity',
-    'fraud_prevention': 'Fraud Prevention',
-    'risk_assessment': 'Risk Assessment',
-    'security_alerts': 'Security Alerts',
-    
-    // Offer management specific
-    'manage_all_offers_platform': 'Manage all offers across the platform',
-    'all_statuses': 'All Statuses',
-    'draft': 'Draft',
-    'moderation_status': 'Moderation Status',
-    'needs_revision': 'Needs Revision',
-    'all_categories': 'All Categories',
-    'dating': 'Dating',
-    'gaming': 'Gaming',
-    'health': 'Health',
-    'all_advertisers': 'All Advertisers',
-    'all_countries': 'All Countries',
-    'archived': 'Archived',
-    'blocked': 'Blocked',
-    'no_restrictions': 'No restrictions',
-    'no_creatives_available': 'No creatives available',
-    'no_history_available': 'No history available',
-    'edit_offer': 'Edit Offer',
-    'edit_offer_details': 'Edit offer details and settings',
-    'enter_fraud_restrictions': 'Enter fraud restrictions',
-    'smartlink_enabled': 'SmartLink Enabled',
-    'block_offer': 'Block Offer',
-    'enter_blocked_reason': 'Enter blocked reason',
-    'moderate_offer': 'Moderate Offer',
-    'approve': 'Approve',
-    'reject': 'Reject',
-    'archive': 'Archive',
-    'comment': 'Comment',
-    'enter_moderation_comment': 'Enter moderation comment',
+    'traffic_sources_column': 'Traffic Sources',
+    'allowed_apps_column': 'Allowed Apps',
+    'all_offers': 'All Offers',
+    'all_statuses_filter': 'All Statuses',
+    'all_categories_filter': 'All Categories',
+    'all_advertisers_filter': 'All Advertisers',
+    'create_offer_button': 'Create Offer',
+    'view_details': 'View Details',
+    'edit_offer_action': 'Edit Offer',
+    'delete_offer': 'Delete Offer',
+    'confirm_delete_offer': 'Are you sure you want to delete this offer?',
+    'logo': 'Logo',
     'offer_management': 'OFFER-MANAGEMENT',
-    'import_offers': 'Import Offers',
-    'bulk_actions': 'Bulk Actions',
-    'offer_id': 'Offer ID',
-    'offer_name_column': 'Offer Name',
-    'category_column': 'Category',
-    'payout_column': 'Payout',
-    'geo_column': 'Geo',
-    'status_column': 'Status',
-    'created_date_column': 'Created',
-    'actions_column': 'Actions',
-    'copy_tracking_url': 'Copy Tracking URL',
-    'archive_offer': 'Archive Offer',
-    'no_offers_match_filters': 'No offers match the current filters',
-    'clear_filters': 'Clear Filters',
+    
+    // Categories
+    'gambling': 'Gambling',
+    'nutra': 'Nutra',
+    'dating': 'Dating',
+    'sweepstakes': 'Sweepstakes',
+    'crypto': 'Crypto',
+    'e_commerce': 'E-commerce',
+    'mobile': 'Mobile',
+    'games': 'Games',
+    'software': 'Software',
+    
+    // Tooltips
+    'export_csv_tooltip': 'Export offers to CSV file',
+    'import_csv_tooltip': 'Import offers from CSV file',
+    'activate_selected_tooltip': 'Activate selected offers',
+    'pause_selected_tooltip': 'Pause selected offers',
+    'delete_selected_tooltip': 'Delete selected offers',
+    'cancel_selection_tooltip': 'Cancel selection',
+    'offer_name_filter_tooltip': 'Filter by offer name',
+    'status_filter_tooltip': 'Filter by offer status',
+    'category_filter_tooltip': 'Filter by offer category',
+    'advertiser_filter_tooltip': 'Filter by advertiser',
+
+    // Create Offer Form
+    'create_new_offer': 'Create New Offer',
+    'fill_offer_information': 'Fill in the information to create a new offer',
+    'offer_created_successfully': 'Offer created successfully',
+    'failed_to_create_offer': 'Failed to create offer',
+    'enter_offer_name_placeholder': 'Enter offer name (e.g., Pronto Casino)',
+    'select_category': 'Select category',
+    'description': 'Description',
+    'offer_description_placeholder': 'Offer description',
+    'offer_logo': 'Offer Logo',
+    'file_size_too_large': 'File size is too large. Maximum 2MB.',
+    'remove_logo': 'Remove Logo',
+    'landing_pages': 'Landing Pages',
+    'add_new_landing_page': 'Add new landing page',
+    'add_page': 'Add Page',
+    'landing_name': 'Landing Name',
+    'main_page': 'Main Page',
+    'payout_amount': 'Payout Amount',
   },
   ru: {
     // Navigation
@@ -270,6 +166,9 @@ export const translations: Translations = {
     'settings': 'Настройки',
     'anti_fraud': 'Антифрод',
     'integrations': 'Интеграции',
+    'blacklist_management': 'Управление черным списком',
+    'audit_logs': 'Журнал аудита',
+    'fraud_alerts': 'Уведомления о мошенничестве',
 
     // Common
     'welcome': 'Добро пожаловать! Вот что происходит сегодня.',
@@ -291,7 +190,6 @@ export const translations: Translations = {
     'filters': 'Фильтры',
     'actions': 'Действия',
     'details': 'Детали',
-    'analytics': 'Аналитика',
     'creatives': 'Креативы',
     'history': 'История',
     'more': 'еще',
@@ -302,10 +200,57 @@ export const translations: Translations = {
     'waiting': 'Ожидает',
     'not_specified': 'Не указано',
     'selected_offers': 'Выбрано офферов',
+    'active': 'Активный',
+    'stopped': 'Остановлен',
+    'status': 'Статус',
+    'success': 'Успех',
+    'error': 'Ошибка',
+
+    // Authentication
+    'login': 'Вход',
+    'logout': 'Выход',
+    'register': 'Регистрация',
+    'username': 'Имя пользователя',
+    'password': 'Пароль',
+    'email': 'Электронная почта',
+    'sign_in': 'Войти',
+    'sign_up': 'Зарегистрироваться',
+    'forgot_password': 'Забыли пароль',
+    'remember_me': 'Запомнить меня',
+
+    // User Management
+    'first_name': 'Имя',
+    'last_name': 'Фамилия',
+    'company': 'Компания',
+    'phone': 'Телефон',
+    'role': 'Роль',
+    'super_admin': 'Супер-админ',
+    'affiliate': 'Аффилиат',
+    'advertiser': 'Рекламодатель',
+    'staff': 'Сотрудник',
+    'kyc_status': 'Статус KYC',
+    'verified': 'Подтвержден',
+    'pending': 'В ожидании',
+    'rejected': 'Отклонен',
+    'telegram': 'Телеграм',
+    'created_at': 'Создано',
+    'last_activity': 'Последняя активность',
+
+    // Statistics
+    'total_revenue': 'Общий доход',
+    'total_users': 'Всего пользователей',
+    'active_partners': 'Активные партнеры',
+    'active_offers': 'Активные офферы',
+    'total_partners': 'Всего партнеров',
+    'conversion_rate': 'Конверсия',
+    'fraud_rate': 'Процент мошенничества',
+    'total_clicks': 'Всего кликов',
+    'total_conversions': 'Всего конверсий',
+    'total_earnings': 'Общий доход',
+    'average_cr': 'Средняя конверсия',
 
     // Offers Management
     'offer_name': 'Название оффера',
-    'advertiser': 'Рекламодатель',
     'category': 'Категория',
     'payout': 'Выплата',
     'traffic_sources_column': 'Источники трафика',
@@ -320,6 +265,7 @@ export const translations: Translations = {
     'delete_offer': 'Удалить оффер',
     'confirm_delete_offer': 'Вы уверены, что хотите удалить этот оффер?',
     'logo': 'Логотип',
+    'offer_management': 'УПРАВЛЕНИЕ ОФФЕРАМИ',
     
     // Categories
     'gambling': 'Гемблинг',
@@ -344,281 +290,31 @@ export const translations: Translations = {
     'category_filter_tooltip': 'Фильтр по категории оффера',
     'advertiser_filter_tooltip': 'Фильтр по рекламодателю',
 
-    // Authentication
-    'login': 'Вход',
-    'logout': 'Выход',
-    'register': 'Регистрация',
-    'username': 'Имя пользователя',
-    'password': 'Пароль',
-    'email': 'Электронная почта',
-    'sign_in': 'Войти',
-    'sign_up': 'Зарегистрироваться',
-    'forgot_password': 'Забыли пароль',
-    'remember_me': 'Запомнить меня',
-
-    // User Management
-    'first_name': 'Имя',
-    'last_name': 'Фамилия',
-    'company': 'Компания',
-    'phone': 'Телефон',
-    'country': 'Страна',
-    'language': 'Язык',
-    'timezone': 'Часовой пояс',
-    'currency': 'Валюта',
-    'role': 'Роль',
-    'status': 'Статус',
-    'active': 'Активен',
-    'inactive': 'Неактивен',
-    'created': 'Создан',
-    'updated': 'Обновлен',
-
-    // Metrics
-    'total_revenue': 'Общая выручка',
-    'active_partners': 'Активные партнеры',
-    'active_offers': 'Активные офферы',
-    'total_partners': 'Всего партнеров',
-    'conversion_rate': 'Конверсия',
-    'fraud_rate': 'Уровень фрода',
-    'total_clicks': 'Всего кликов',
-    'total_conversions': 'Всего конверсий',
-    'total_earnings': 'Общий заработок',
-    'average_cr': 'Средний CR',
-    'total_payout': 'Общие выплаты',
-
-    // Dashboard
-    'revenue_overview': 'Обзор доходов',
-    'recent_activity': 'Последняя активность',
-    'top_performers': 'Лучшие партнеры',
-    'recent_offers': 'Последние офферы',
-    'system_status': 'Состояние системы и уведомления',
-    'performance_overview': 'Обзор производительности',
-    'quick_actions': 'Быстрые действия',
-
-    // Offers
-    'create_offer': 'Создать оффер',
-    'offer_name': 'Название оффера',
-    'offer_description': 'Описание оффера',
-    'category': 'Категория',
-    'payout': 'Выплата',
-    'payout_type': 'Тип выплаты',
-    'landing_page': 'Лендинг',
-    'tracking_url': 'URL трекинга',
-    'restrictions': 'Ограничения',
-    'kyc_required': 'KYC обязателен',
-    'private_offer': 'Приватный оффер',
-    'geo_targeting': 'Гео таргетинг',
-    'traffic_sources': 'Источники трафика',
-
-    // Statistics
-    'clicks': 'Клики',
-    'unique_clicks': 'Уникальные клики',
-    'leads': 'Лиды',
-    'conversions': 'Конверсии',
-    'approved': 'Подтверждено',
-    'rejected': 'Отклонено',
-    'pending': 'В ожидании',
-    'revenue': 'Доход',
-    'earnings': 'Заработок',
-    'epc': 'EPC',
-    'cr': 'CR',
-    'ctr': 'CTR',
-
-    // Tracking
-    'tracking_links': 'Трекинговые ссылки',
-    'tracking_code': 'Код трекинга',
-    'generate_link': 'Создать ссылку',
-    'sub_id': 'Sub ID',
-    'source': 'Источник',
-    'campaign': 'Кампания',
-    'medium': 'Канал',
-
-    // Finance
-    'balance': 'Баланс',
-    'transactions': 'Транзакции',
-    'deposits': 'Пополнения',
-    'withdrawals': 'Выводы',
-    'payouts': 'Выплаты',
-    'commission': 'Комиссия',
-    'invoice': 'Счет',
-    'payment_method': 'Способ оплаты',
-    'amount': 'Сумма',
-    'reference': 'Ссылка',
-
-    // Support
-    'tickets': 'Тикеты',
-    'create_ticket': 'Создать тикет',
-    'subject': 'Тема',
-    'message': 'Сообщение',
-    'priority': 'Приоритет',
-    'assigned_to': 'Назначен',
-    'open': 'Открыт',
-    'closed': 'Закрыт',
-    'resolved': 'Решен',
-
-    // Status messages
-    'success': 'Успех',
-    'error': 'Ошибка',
-    'warning': 'Предупреждение',
-    'info': 'Информация',
-    'operation_completed': 'Операция выполнена успешно',
-    'data_updated': 'Данные обновлены успешно',
-    'data_deleted': 'Данные удалены успешно',
-    'data_created': 'Данные созданы успешно',
-
-    // Time periods
-    'today': 'Сегодня',
-    'yesterday': 'Вчера',
-    'last_7_days': 'Последние 7 дней',
-    'last_30_days': 'Последние 30 дней',
-    'this_month': 'Этот месяц',
-    'last_month': 'Прошлый месяц',
-    'this_year': 'Этот год',
-    'last_year': 'Прошлый год',
-    'custom': 'Настраиваемый',
-
-    // Admin specific
-    'super_admin': 'Супер Админ',
-    'advertiser': 'Рекламодатель',
-    'affiliate': 'Партнер',
-    'staff': 'Сотрудник',
-    'add_user': 'Добавить пользователя',
-    'edit_user': 'Редактировать пользователя',
-    'delete_user': 'Удалить пользователя',
-    'approve_user': 'Одобрить пользователя',
-    'block_user': 'Заблокировать пользователя',
-    'unblock_user': 'Разблокировать пользователя',
-    'no_users_found': 'Пользователи не найдены',
-    'no_offers_found': 'Офферы не найдены',
-    'total_users': 'Всего пользователей',
-    'pending_approvals': 'Ожидают одобрения',
-    'fraud_alerts_count': 'Фрод уведомления',
-    'system_health': 'Здоровье системы',
-    'overview': 'Обзор',
-    'financial_management': 'Финансовое управление',
-    'transaction_monitoring': 'Мониторинг транзакций',
-    'payout_management': 'Управление выплатами',
-    'commission_tracking': 'Отслеживание комиссий',
-    'suspicious_activity': 'Подозрительная активность',
-    'fraud_prevention': 'Предотвращение мошенничества',
-    'risk_assessment': 'Оценка рисков',
-    'security_alerts': 'Уведомления безопасности',
-    
-    // Offer management specific
-    'manage_all_offers_platform': 'Управление всеми офферами на платформе',
-    'all_statuses': 'Все статусы',
-    'draft': 'Черновик',
-    'moderation_status': 'Статус модерации',
-    'needs_revision': 'Требует доработки',
-    'all_categories': 'Все категории',
-    'dating': 'Знакомства',
-    'gaming': 'Игры',
-    'health': 'Здоровье',
-    'all_advertisers': 'Все рекламодатели',
-    'all_countries': 'Все страны',
-    'archived': 'Архивный',
-    'blocked': 'Заблокирован',
-    'actions': 'Действия',
-    'details': 'Детали',
-    'creatives': 'Креативы',
-    'history': 'История',
-    'no_restrictions': 'Нет ограничений',
-    'no_creatives_available': 'Креативы не доступны',
-    'no_history_available': 'История не доступна',
-    'edit_offer': 'Редактировать оффер',
-    'edit_offer_details': 'Редактировать детали и настройки оффера',
-    'enter_fraud_restrictions': 'Введите ограничения по фроду',
-    'smartlink_enabled': 'SmartLink включен',
-    'block_offer': 'Заблокировать оффер',
-    'enter_blocked_reason': 'Введите причину блокировки',
-    'moderate_offer': 'Модерировать оффер',
-    'approve': 'Одобрить',
-    'reject': 'Отклонить',
-    'archive': 'Архивировать',
-    'comment': 'Комментарий',
-    'enter_moderation_comment': 'Введите комментарий модерации',
-    
-    // Offer Management Page
-    'offer_management': 'УПРАВЛЕНИЕ ОФФЕРАМИ',
-    'filters': 'Фильтры',
-    'all_offers': 'Все офферы',
-    'all_statuses_filter': 'Все статусы',
-    'paused': 'Остановлен',
-    'waiting': 'Ожидает',
-    'all_categories_filter': 'Все категории',
-    'gambling': 'Гемблинг',
-    'nutra': 'Нутра',
-    'sweepstakes': 'Лотереи',
-    'crypto': 'Крипто',
-    'e_commerce': 'Электронная коммерция',
-    'mobile': 'Мобайл',
-    'games': 'Игры',
-    'software': 'Софт',
-    'all_advertisers_filter': 'Все рекламодатели',
-    'create_offer_button': 'Создать оффер',
-    'import_offers': 'Импорт офферов',
-    'bulk_actions': 'Массовые действия',
-    'offer_id': 'ID оффера',
-    'offer_name_column': 'Название оффера',
-    'category_column': 'Категория',
-    'payout_column': 'Выплата',
-    'geo_column': 'Гео',
-    'traffic_sources_column': 'Источники трафика',
-    'allowed_apps_column': 'Разрешенные приложения',
-    'status_column': 'Статус',
-    'created_date_column': 'Создано',
-    'actions_column': 'Действия',
-    'view_details': 'Просмотр деталей',
-    'edit_offer_action': 'Редактировать оффер',
-    'copy_tracking_url': 'Копировать URL трекинга',
-    'archive_offer': 'Архивировать оффер',
-    'delete_offer': 'Удалить оффер',
-    'not_specified': 'Не указано',
-    'no_offers_match_filters': 'Нет офферов, соответствующих текущим фильтрам',
-    'clear_filters': 'Очистить фильтры',
+    // Create Offer Form
+    'create_new_offer': 'Создать новый оффер',
+    'fill_offer_information': 'Заполните информацию для создания нового оффера',
+    'offer_created_successfully': 'Оффер успешно создан',
+    'failed_to_create_offer': 'Не удалось создать оффер',
+    'enter_offer_name_placeholder': 'Введите название оффера (например: Pronto Casino)',
+    'select_category': 'Выберите категорию',
+    'description': 'Описание',
+    'offer_description_placeholder': 'Описание оффера',
+    'offer_logo': 'Логотип оффера',
+    'file_size_too_large': 'Размер файла слишком большой. Максимум 2MB.',
+    'remove_logo': 'Удалить логотип',
+    'landing_pages': 'Посадочные страницы',
+    'add_new_landing_page': 'Добавить новую лендинг страницу',
+    'add_page': 'Добавить страницу',
+    'landing_name': 'Название лендинга',
+    'main_page': 'Основная страница',
+    'payout_amount': 'Сумма выплаты',
   },
 };
 
-export class I18nService {
-  private static currentLanguage = 'en';
-  private static fallbackLanguage = 'en';
+export type TranslationKey = keyof typeof translations.en;
 
-  static setLanguage(language: string): void {
-    if (translations[language]) {
-      this.currentLanguage = language;
-      localStorage.setItem('language', language);
-    }
-  }
-
-  static getLanguage(): string {
-    return this.currentLanguage;
-  }
-
-  static loadSavedLanguage(): void {
-    const savedLanguage = localStorage.getItem('language');
-    if (savedLanguage && translations[savedLanguage]) {
-      this.currentLanguage = savedLanguage;
-    }
-  }
-
-  static translate(key: string, language?: string): string {
-    const lang = language || this.currentLanguage;
-    const translation = translations[lang]?.[key] || translations[this.fallbackLanguage]?.[key];
-    return translation || key;
-  }
-
-  static getAvailableLanguages(): string[] {
-    return Object.keys(translations);
-  }
-
-  static getLanguageName(code: string): string {
-    const names: { [key: string]: string } = {
-      'en': 'English',
-      'ru': 'Русский'
-    };
-    return names[code] || code;
-  }
+export function useTranslation(language: 'en' | 'ru') {
+  return function t(key: TranslationKey): string {
+    return translations[language][key] || key;
+  };
 }
-
-export const t = (key: string, language?: string): string => {
-  return I18nService.translate(key, language);
-};
