@@ -103,9 +103,9 @@ export default function UsersManagement() {
   
   const [filters, setFilters] = useState<UserFilters>({
     search: '',
-    role: '',
-    status: '',
-    userType: '',
+    role: 'all',
+    status: 'all',
+    userType: 'all',
     country: '',
     dateFrom: '',
     dateTo: '',
@@ -155,9 +155,11 @@ export default function UsersManagement() {
     queryFn: async () => {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value.toString());
+        if (value && value !== 'all') params.append(key, value.toString());
       });
-      return apiRequest(`/api/admin/users?${params.toString()}`);
+      return apiRequest(`/api/admin/users?${params.toString()}`, {
+        method: 'GET'
+      });
     }
   });
 
@@ -483,7 +485,7 @@ export default function UsersManagement() {
                 <SelectValue placeholder={t.selectRole || "Выберите роль"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Все роли</SelectItem>
+                <SelectItem value="all">Все роли</SelectItem>
                 <SelectItem value="super_admin">Супер-админ</SelectItem>
                 <SelectItem value="advertiser">Рекламодатель</SelectItem>
                 <SelectItem value="affiliate">Партнер</SelectItem>
@@ -496,7 +498,7 @@ export default function UsersManagement() {
                 <SelectValue placeholder={t.selectStatus || "Выберите статус"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Все статусы</SelectItem>
+                <SelectItem value="all">Все статусы</SelectItem>
                 <SelectItem value="active">Активные</SelectItem>
                 <SelectItem value="blocked">Заблокированные</SelectItem>
                 <SelectItem value="inactive">Неактивные</SelectItem>
@@ -508,7 +510,7 @@ export default function UsersManagement() {
                 <SelectValue placeholder={t.selectUserType || "Тип пользователя"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Все типы</SelectItem>
+                <SelectItem value="all">Все типы</SelectItem>
                 <SelectItem value="affiliate">Партнер</SelectItem>
                 <SelectItem value="advertiser">Рекламодатель</SelectItem>
                 <SelectItem value="admin">Администратор</SelectItem>
