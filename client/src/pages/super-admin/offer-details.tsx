@@ -321,6 +321,7 @@ export default function OfferDetails() {
             variant="ghost"
             onClick={() => setLocation('/admin/offers')}
             className="mb-4 hover:bg-gray-100 dark:hover:bg-gray-800"
+            title="Вернуться к списку офферов"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Вернуться к списку офферов
@@ -1437,6 +1438,7 @@ export default function OfferDetails() {
                               variant="ghost"
                               onClick={() => removeCreative(creative.id)}
                               className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              title="Удалить креатив"
                             >
                               <X className="w-4 h-4" />
                             </Button>

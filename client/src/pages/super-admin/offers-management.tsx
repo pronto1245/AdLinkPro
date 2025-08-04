@@ -240,6 +240,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                         variant="outline" 
                         size="sm"
                         onClick={() => field.onChange('')}
+                        title="Удалить логотип"
                       >
                         Удалить логотип
                       </Button>
@@ -266,6 +267,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 form.setValue('landingPages', [...current, { name: '', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]);
               }}
               data-testid="button-add-landing-page"
+              title="Добавить новую лендинг страницу"
             >
               <PlusCircle className="w-4 h-4 mr-2" />
               Добавить страницу
@@ -379,6 +381,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                           form.setValue('landingPages', current.filter((_, i) => i !== index));
                         }}
                         data-testid={`button-remove-landing-page-${index}`}
+                        title="Удалить лендинг страницу"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -1194,7 +1197,7 @@ export default function OffersManagement() {
         <div className="flex gap-2">
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button data-testid="button-create-offer">
+              <Button data-testid="button-create-offer" title="Создать новый оффер">
                 <Plus className="w-4 h-4 mr-2" />
                 Создать оффер
               </Button>
@@ -1297,6 +1300,7 @@ export default function OffersManagement() {
                 className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
                 data-testid="button-export-offers"
                 disabled={offers.length === 0}
+                title="Экспортировать офферы в CSV файл"
               >
                 <Download className="w-4 h-4 mr-2" />
                 {selectedOffers.length > 0 ? `Экспорт (${selectedOffers.length})` : 'Экспорт'}
@@ -1307,6 +1311,7 @@ export default function OffersManagement() {
                 onClick={() => setIsImportDialogOpen(true)}
                 className="border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                 data-testid="button-import-offers"
+                title="Импортировать офферы из CSV файла"
               >
                 <Upload className="w-4 h-4 mr-2" />
                 Импорт
@@ -1333,6 +1338,7 @@ export default function OffersManagement() {
                     onClick={() => bulkActivateMutation.mutate(selectedOffers)}
                     disabled={bulkActivateMutation.isPending}
                     className="border-green-600 text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                    title="Активировать выбранные офферы"
                   >
                     <Play className="w-4 h-4 mr-1" />
                     Активировать
@@ -1343,6 +1349,7 @@ export default function OffersManagement() {
                     onClick={() => bulkPauseMutation.mutate(selectedOffers)}
                     disabled={bulkPauseMutation.isPending}
                     className="border-yellow-600 text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                    title="Остановить выбранные офферы"
                   >
                     <Pause className="w-4 h-4 mr-1" />
                     Остановить
@@ -1353,6 +1360,7 @@ export default function OffersManagement() {
                     onClick={() => bulkDeleteMutation.mutate(selectedOffers)}
                     disabled={bulkDeleteMutation.isPending}
                     className="border-red-600 text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    title="Удалить выбранные офферы"
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
                     Удалить
@@ -1365,6 +1373,7 @@ export default function OffersManagement() {
                       setShowBulkActions(false);
                     }}
                     className="text-gray-600 hover:text-gray-800"
+                    title="Отменить выбор"
                   >
                     <XCircle className="w-4 h-4 mr-1" />
                     Отменить
@@ -1704,7 +1713,7 @@ export default function OffersManagement() {
                           }}
                           className="h-8 w-8 p-0 hover:bg-green-50 dark:hover:bg-green-900/20"
                           data-testid={`button-edit-offer-${offer.id}`}
-                          title="Редактировать"
+                          title="Редактировать оффер"
                         >
                           <Edit className="w-4 h-4 text-green-600" />
                         </Button>
@@ -1719,6 +1728,7 @@ export default function OffersManagement() {
                           className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
                           data-testid={`button-delete-offer-${offer.id}`}
                           disabled={deleteOfferMutation.isPending}
+                          title="Удалить оффер"
                         >
                           <Trash2 className="w-4 h-4 text-red-600" />
                         </Button>
@@ -2388,6 +2398,7 @@ export default function OffersManagement() {
                       }];
                       handleOfferUpdate({ landingPages: updated });
                     }}
+                    title="Добавить новую лендинг страницу"
                   >
                     Добавить Landing Page
                   </Button>
