@@ -1405,6 +1405,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Enhanced user management routes
   
+  // Create user
+  app.post('/api/admin/users', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { username, email, password, role, firstName, lastName, country } = req.body;
+      
+      if (!username || !email || !password) {
+        return res.status(400).json({ error: "Username, email, and password are required" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(username) || await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ error: "User already exists" });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      const userData = {
+        id: randomUUID(),
+        username,
+        email,
+        password: hashedPassword,
+        role: role || 'affiliate',
+        firstName,
+        lastName,
+        country,
+        isActive: true,
+        ownerId: req.user!.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const user = await storage.createUser(userData as any);
+      res.status(201).json(user);
+    } catch (error: any) {
+      console.error("Create user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update user
+  app.patch('/api/admin/users/:id', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { firstName, lastName, country, role, isActive } = req.body;
+      
+      const updateData: any = {};
+      if (firstName !== undefined) updateData.firstName = firstName;
+      if (lastName !== undefined) updateData.lastName = lastName;
+      if (country !== undefined) updateData.country = country;
+      if (role !== undefined) updateData.role = role;
+      if (isActive !== undefined) updateData.isActive = isActive;
+      
+      const user = await storage.updateUser(req.params.id, updateData);
+      res.json(user);
+    } catch (error: any) {
+      console.error("Update user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
   // Get users with filters
   app.get('/api/admin/users', authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
@@ -1529,6 +1589,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.send(data);
     } catch (error: any) {
       console.error("Export users error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Bulk block users
+  app.post('/api/admin/users/bulk-block', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { userIds, reason } = req.body;
+      const blockedBy = getAuthenticatedUser(req).id;
+      
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ error: "userIds array is required" });
+      }
+      
+      const results = await storage.bulkBlockUsers(userIds, reason, blockedBy);
+      res.json(results);
+    } catch (error: any) {
+      console.error("Bulk block users error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Bulk unblock users
+  app.post('/api/admin/users/bulk-unblock', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { userIds } = req.body;
+      
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ error: "userIds array is required" });
+      }
+      
+      const results = await storage.bulkUnblockUsers(userIds);
+      res.json(results);
+    } catch (error: any) {
+      console.error("Bulk unblock users error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Bulk delete users
+  app.post('/api/admin/users/bulk-delete', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { userIds, hardDelete = false } = req.body;
+      const deletedBy = getAuthenticatedUser(req).id;
+      
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ error: "userIds array is required" });
+      }
+      
+      const results = await storage.bulkDeleteUsers(userIds, hardDelete, deletedBy);
+      res.json(results);
+    } catch (error: any) {
+      console.error("Bulk delete users error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

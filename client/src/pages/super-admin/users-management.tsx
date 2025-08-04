@@ -37,7 +37,8 @@ import {
   User,
   Shield,
   Globe,
-  Activity
+  Activity,
+  Save
 } from "lucide-react";
 import { 
   DropdownMenu, 
@@ -102,6 +103,12 @@ export default function UsersManagement() {
   const [blockReason, setBlockReason] = useState('');
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [userToBlock, setUserToBlock] = useState<string | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showBulkDialog, setShowBulkDialog] = useState(false);
+  const [bulkAction, setBulkAction] = useState<'block' | 'unblock' | 'delete'>('block');
 
   // Get users with filters
   const { data: usersData, isLoading, refetch } = useQuery({
@@ -181,6 +188,91 @@ export default function UsersManagement() {
     }
   });
 
+  // Create user mutation
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      return apiRequest('/api/admin/users', {
+        method: 'POST',
+        body: userData
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: t.userCreated || "Пользователь создан",
+        description: t.userCreatedSuccess || "Пользователь успешно создан"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      setShowCreateDialog(false);
+    }
+  });
+
+  // Edit user mutation
+  const editUserMutation = useMutation({
+    mutationFn: async ({ userId, userData }: { userId: string; userData: any }) => {
+      return apiRequest(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        body: userData
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: t.userUpdated || "Пользователь обновлен",
+        description: t.userUpdatedSuccess || "Пользователь успешно обновлен"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      setShowEditDialog(false);
+    }
+  });
+
+  // Reset password mutation
+  const resetPasswordMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return apiRequest(`/api/admin/users/${userId}/reset-password`, {
+        method: 'POST'
+      });
+    },
+    onSuccess: (data) => {
+      toast({
+        title: t.passwordReset || "Пароль сброшен",
+        description: `Новый пароль: ${data.newPassword}`
+      });
+    }
+  });
+
+  // Bulk operations mutation
+  const bulkOperationMutation = useMutation({
+    mutationFn: async ({ action, userIds, reason }: { action: string; userIds: string[]; reason?: string }) => {
+      switch (action) {
+        case 'block':
+          return apiRequest('/api/admin/users/bulk-block', {
+            method: 'POST',
+            body: { userIds, reason }
+          });
+        case 'unblock':
+          return apiRequest('/api/admin/users/bulk-unblock', {
+            method: 'POST',
+            body: { userIds }
+          });
+        case 'delete':
+          return apiRequest('/api/admin/users/bulk-delete', {
+            method: 'POST',
+            body: { userIds, hardDelete: false }
+          });
+        default:
+          throw new Error('Unknown bulk action');
+      }
+    },
+    onSuccess: (data) => {
+      toast({
+        title: t.bulkOperationComplete || "Массовая операция завершена",
+        description: `Успешно: ${data.success}, Ошибок: ${data.failed}`
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      setSelectedUsers([]);
+      setShowBulkDialog(false);
+    }
+  });
+
   const handleFilterChange = (key: keyof UserFilters, value: string | number) => {
     setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
   };
@@ -248,10 +340,29 @@ export default function UsersManagement() {
             {t.usersManagementDescription || "Управляйте пользователями системы"}
           </p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          {t.addUser || "Добавить пользователя"}
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t.addUser || "Добавить пользователя"}
+          </Button>
+          
+          {selectedUsers.length > 0 && (
+            <Button variant="outline" onClick={() => setShowBulkDialog(true)}>
+              {t.bulkActions || "Массовые операции"} ({selectedUsers.length})
+            </Button>
+          )}
+          
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              const params = new URLSearchParams(filters as any);
+              window.open(`/api/admin/users/export?${params.toString()}&format=csv`, '_blank');
+            }}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {t.export || "Экспорт"}
+          </Button>
+        </div>
       </div>
 
       {/* Analytics Cards */}
@@ -390,7 +501,18 @@ export default function UsersManagement() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">
-                  <input type="checkbox" className="rounded" />
+                  <input 
+                    type="checkbox" 
+                    className="rounded"
+                    checked={selectedUsers.length === usersData?.data?.length && usersData?.data?.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedUsers(usersData?.data?.map((u: User) => u.id) || []);
+                      } else {
+                        setSelectedUsers([]);
+                      }
+                    }}
+                  />
                 </TableHead>
                 <TableHead>{t.username || "Имя пользователя"}</TableHead>
                 <TableHead>{t.email || "Email"}</TableHead>
@@ -468,11 +590,17 @@ export default function UsersManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedUser(user);
+                            setShowViewDialog(true);
+                          }}>
                             <Eye className="mr-2 h-4 w-4" />
                             {t.view || "Просмотр"}
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedUser(user);
+                            setShowEditDialog(true);
+                          }}>
                             <Edit className="mr-2 h-4 w-4" />
                             {t.edit || "Редактировать"}
                           </DropdownMenuItem>
@@ -490,6 +618,10 @@ export default function UsersManagement() {
                           <DropdownMenuItem onClick={() => forceLogoutMutation.mutate(user.id)}>
                             <LogOut className="mr-2 h-4 w-4" />
                             {t.forceLogout || "Завершить сессии"}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => resetPasswordMutation.mutate(user.id)}>
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            {t.resetPassword || "Сбросить пароль"}
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => deleteUserMutation.mutate(user.id)}
@@ -540,6 +672,285 @@ export default function UsersManagement() {
                   <Ban className="mr-2 h-4 w-4" />
                 )}
                 {t.block || "Заблокировать"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t.createUser || "Создать пользователя"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>{t.username || "Имя пользователя"}</Label>
+                <Input id="username" placeholder="john_doe" />
+              </div>
+              <div>
+                <Label>{t.email || "Email"}</Label>
+                <Input id="email" type="email" placeholder="user@example.com" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>{t.firstName || "Имя"}</Label>
+                <Input id="firstName" placeholder="Иван" />
+              </div>
+              <div>
+                <Label>{t.lastName || "Фамилия"}</Label>
+                <Input id="lastName" placeholder="Иванов" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>{t.role || "Роль"}</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите роль" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="affiliate">Партнер</SelectItem>
+                    <SelectItem value="advertiser">Рекламодатель</SelectItem>
+                    <SelectItem value="staff">Сотрудник</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>{t.country || "Страна"}</Label>
+                <Input id="country" placeholder="RU" />
+              </div>
+            </div>
+            <div>
+              <Label>{t.password || "Пароль"}</Label>
+              <Input id="password" type="password" placeholder="••••••••" />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              {t.cancel || "Отмена"}
+            </Button>
+            <Button onClick={() => {
+              const formData = {
+                username: (document.getElementById('username') as HTMLInputElement)?.value,
+                email: (document.getElementById('email') as HTMLInputElement)?.value,
+                firstName: (document.getElementById('firstName') as HTMLInputElement)?.value,
+                lastName: (document.getElementById('lastName') as HTMLInputElement)?.value,
+                password: (document.getElementById('password') as HTMLInputElement)?.value,
+                country: (document.getElementById('country') as HTMLInputElement)?.value,
+                role: 'affiliate'
+              };
+              createUserMutation.mutate(formData);
+            }}>
+              {createUserMutation.isPending ? (
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="mr-2 h-4 w-4" />
+              )}
+              {t.create || "Создать"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View User Dialog */}
+      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t.userProfile || "Профиль пользователя"}</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">ID</Label>
+                  <p className="text-sm">{selectedUser.id}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.username || "Имя пользователя"}</Label>
+                  <p className="text-sm">{selectedUser.username}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.email || "Email"}</Label>
+                  <p className="text-sm">{selectedUser.email}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.role || "Роль"}</Label>
+                  <div className="mt-1">{getRoleBadge(selectedUser.role)}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.status || "Статус"}</Label>
+                  <div className="mt-1">{getStatusBadge(selectedUser)}</div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.country || "Страна"}</Label>
+                  <p className="text-sm">{selectedUser.country || 'Не указано'}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.registered || "Зарегистрирован"}</Label>
+                  <p className="text-sm">{formatDate(selectedUser.createdAt)}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.lastActivity || "Последняя активность"}</Label>
+                  <p className="text-sm">{selectedUser.lastLoginAt ? formatDate(selectedUser.lastLoginAt) : 'Никогда'}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t.editUser || "Редактировать пользователя"}</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>{t.firstName || "Имя"}</Label>
+                  <Input 
+                    id="editFirstName" 
+                    defaultValue={selectedUser.firstName || ''} 
+                    placeholder="Иван" 
+                  />
+                </div>
+                <div>
+                  <Label>{t.lastName || "Фамилия"}</Label>
+                  <Input 
+                    id="editLastName" 
+                    defaultValue={selectedUser.lastName || ''} 
+                    placeholder="Иванов" 
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>{t.role || "Роль"}</Label>
+                  <Select defaultValue={selectedUser.role}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="affiliate">Партнер</SelectItem>
+                      <SelectItem value="advertiser">Рекламодатель</SelectItem>
+                      <SelectItem value="staff">Сотрудник</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>{t.country || "Страна"}</Label>
+                  <Input 
+                    id="editCountry" 
+                    defaultValue={selectedUser.country || ''} 
+                    placeholder="RU" 
+                  />
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="checkbox" 
+                  id="editIsActive" 
+                  defaultChecked={selectedUser.isActive}
+                  className="rounded"
+                />
+                <Label htmlFor="editIsActive">{t.activeUser || "Активный пользователь"}</Label>
+              </div>
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              {t.cancel || "Отмена"}
+            </Button>
+            <Button onClick={() => {
+              if (!selectedUser) return;
+              
+              const formData = {
+                firstName: (document.getElementById('editFirstName') as HTMLInputElement)?.value,
+                lastName: (document.getElementById('editLastName') as HTMLInputElement)?.value,
+                country: (document.getElementById('editCountry') as HTMLInputElement)?.value,
+                isActive: (document.getElementById('editIsActive') as HTMLInputElement)?.checked
+              };
+              
+              editUserMutation.mutate({ userId: selectedUser.id, userData: formData });
+            }}>
+              {editUserMutation.isPending ? (
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              {t.save || "Сохранить"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Actions Dialog */}
+      <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t.bulkActions || "Массовые операции"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Выбрано пользователей: {selectedUsers.length}
+            </p>
+            
+            <div>
+              <Label>{t.selectAction || "Выберите действие"}</Label>
+              <Select value={bulkAction} onValueChange={(value: any) => setBulkAction(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="block">Заблокировать</SelectItem>
+                  <SelectItem value="unblock">Разблокировать</SelectItem>
+                  <SelectItem value="delete">Удалить</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {bulkAction === 'block' && (
+              <div>
+                <Label>{t.reason || "Причина"}</Label>
+                <Textarea
+                  placeholder="Укажите причину..."
+                  value={blockReason}
+                  onChange={(e) => setBlockReason(e.target.value)}
+                />
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowBulkDialog(false)}>
+                {t.cancel || "Отмена"}
+              </Button>
+              <Button 
+                variant="destructive"
+                onClick={() => {
+                  bulkOperationMutation.mutate({
+                    action: bulkAction,
+                    userIds: selectedUsers,
+                    reason: bulkAction === 'block' ? blockReason : undefined
+                  });
+                }}
+                disabled={bulkOperationMutation.isPending || (bulkAction === 'block' && !blockReason.trim())}
+              >
+                {bulkOperationMutation.isPending ? (
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                {t.execute || "Выполнить"}
               </Button>
             </div>
           </div>
