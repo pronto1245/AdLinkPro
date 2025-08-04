@@ -835,6 +835,28 @@ export default function OffersManagement() {
     }
   });
 
+  // Delete offer mutation
+  const deleteOfferMutation = useMutation({
+    mutationFn: async (offerId: string) => {
+      const response = await apiRequest('DELETE', `/api/admin/offers/${offerId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
+      toast({
+        title: "Успех",
+        description: "Оффер успешно удален",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось удалить оффер",
+        variant: "destructive",
+      });
+    },
+  });
+
   const getStatusBadge = (status: string, moderationStatus: string, isBlocked: boolean, isArchived: boolean) => {
     if (isArchived) return <Badge variant="secondary">{t('archived')}</Badge>;
     if (isBlocked) return <Badge variant="destructive">{t('blocked')}</Badge>;
@@ -1223,14 +1245,15 @@ export default function OffersManagement() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedOffer(offer)}
+                          className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                           data-testid={`button-view-offer-${offer.id}`}
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-4 h-4 text-blue-600" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -1239,20 +1262,24 @@ export default function OffersManagement() {
                             setSelectedOffer(offer);
                             setIsEditDialogOpen(true);
                           }}
+                          className="h-8 w-8 p-0 hover:bg-green-50 dark:hover:bg-green-900/20"
                           data-testid={`button-edit-offer-${offer.id}`}
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-4 h-4 text-green-600" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            setSelectedOffer(offer);
-                            setIsModerationDialogOpen(true);
+                            if (confirm('Вы уверены, что хотите удалить этот оффер?')) {
+                              deleteOfferMutation.mutate(offer.id);
+                            }
                           }}
-                          data-testid={`button-moderate-offer-${offer.id}`}
+                          className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          data-testid={`button-delete-offer-${offer.id}`}
+                          disabled={deleteOfferMutation.isPending}
                         >
-                          <AlertTriangle className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4 text-red-600" />
                         </Button>
                       </div>
                     </TableCell>

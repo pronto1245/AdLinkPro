@@ -375,6 +375,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/admin/offers/:id", authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { id } = req.params;
+      
+      // Check if user owns this offer (for advertisers)
+      if (authUser.role === 'advertiser') {
+        const existingOffer = await storage.getOffer(id);
+        if (!existingOffer || existingOffer.advertiserId !== authUser.id) {
+          return res.status(403).json({ error: "Access denied" });
+        }
+      }
+      
+      await storage.deleteOffer(id);
+      res.json({ success: true, message: "Offer deleted successfully" });
+    } catch (error) {
+      console.error("Delete offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Tracking links
   app.get("/api/tracking-links", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
