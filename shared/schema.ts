@@ -614,7 +614,26 @@ export const fraudBlocks = pgTable('fraud_blocks', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
-// Global postbacks configuration
+// Enhanced postbacks management
+export const postbackTemplates = pgTable("postback_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  level: text("level").notNull(), // 'global' or 'offer'
+  url: text("url").notNull(),
+  events: jsonb("events").notNull(), // ['lead', 'sale', 'rejected', 'hold']
+  parameters: jsonb("parameters"), // Available parameters like {click_id}, {status}, etc.
+  headers: jsonb("headers"), // Custom headers
+  retryAttempts: integer("retry_attempts").default(3),
+  timeout: integer("timeout").default(30),
+  isActive: boolean("is_active").default(true),
+  offerId: varchar("offer_id").references(() => offers.id), // null for global
+  advertiserId: varchar("advertiser_id").references(() => users.id), // who created this
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Global postbacks configuration  
 export const globalPostbacks = pgTable("global_postbacks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -627,6 +646,29 @@ export const globalPostbacks = pgTable("global_postbacks", {
   timeout: integer("timeout").default(30),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Postback delivery logs with detailed tracking
+export const postbackDeliveryLogs = pgTable("postback_delivery_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  postbackId: varchar("postback_id").references(() => postbackTemplates.id),
+  conversionId: varchar("conversion_id"), // Related conversion ID
+  offerId: varchar("offer_id").references(() => offers.id),
+  partnerId: varchar("partner_id").references(() => users.id),
+  url: text("url").notNull(), // Final URL with replaced parameters
+  method: text("method").default('GET'),
+  headers: jsonb("headers"),
+  payload: jsonb("payload"),
+  responseCode: integer("response_code"),
+  responseBody: text("response_body"),
+  responseTime: integer("response_time"), // in milliseconds
+  status: text("status").notNull(), // 'success', 'failed', 'pending', 'retry'
+  errorMessage: text("error_message"),
+  attempt: integer("attempt").default(1),
+  maxAttempts: integer("max_attempts").default(3),
+  nextRetryAt: timestamp("next_retry_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Webhooks configuration
@@ -1045,6 +1087,17 @@ export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
 });
 
 export const insertPostbackLogSchema = createInsertSchema(postbackLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPostbackTemplateSchema = createInsertSchema(postbackTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPostbackDeliveryLogSchema = createInsertSchema(postbackDeliveryLogs).omit({
   id: true,
   createdAt: true,
 });

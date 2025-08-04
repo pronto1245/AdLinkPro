@@ -16,7 +16,8 @@ import {
   BarChart3, 
   HeadphonesIcon,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Send
 } from 'lucide-react';
 import { useSidebar } from '@/contexts/sidebar-context';
 
@@ -36,7 +37,7 @@ const menuItems: MenuItem[] = [
   { labelKey: 'sidebar.offers', href: '/admin/OffersManagement', icon: Target, roles: ['super_admin', 'advertiser'] },
   { labelKey: 'sidebar.finances', href: '/admin/finances', icon: DollarSign, roles: ['super_admin', 'advertiser'] },
   { labelKey: 'sidebar.antifraud', href: '/admin/fraud', icon: Shield, roles: ['super_admin'] },
-  { labelKey: 'sidebar.postbacks', href: '/admin/postbacks', icon: Webhook, roles: ['super_admin', 'advertiser', 'affiliate'] },
+  { labelKey: 'sidebar.postbacks', href: '/super-admin/postbacks', icon: Webhook, roles: ['super_admin', 'advertiser', 'affiliate'] },
   { labelKey: 'sidebar.blacklist', href: '/admin/blacklist', icon: Ban, roles: ['super_admin'] },
   { labelKey: 'sidebar.auditLogs', href: '/admin/audit-logs', icon: History, roles: ['super_admin'] },
   { labelKey: 'sidebar.systemSettings', href: '/admin/system-settings', icon: Settings, roles: ['super_admin'] },

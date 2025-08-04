@@ -2136,6 +2136,286 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  // Postback template management
+  async getPostbackTemplates(filters: {
+    level?: string;
+    status?: string;
+    search?: string;
+  }): Promise<any[]> {
+    // Mock data for postback templates
+    const templates = [
+      {
+        id: 'tpl_001',
+        name: 'Основной трекер',
+        level: 'global',
+        url: 'https://tracker.com/postback?click_id={click_id}&status={status}&payout={payout}',
+        events: ['sale', 'lead'],
+        parameters: {
+          click_id: 'Unique click identifier',
+          status: 'Conversion status',
+          payout: 'Payout amount'
+        },
+        headers: {
+          'User-Agent': 'AffiliateTracker/1.0'
+        },
+        retryAttempts: 3,
+        timeout: 30,
+        isActive: true,
+        offerId: null,
+        offerName: null,
+        advertiserId: 'user_001',
+        advertiserName: 'Super Admin',
+        createdBy: 'user_001',
+        createdAt: '2025-08-04T10:00:00Z',
+        updatedAt: '2025-08-04T10:00:00Z'
+      },
+      {
+        id: 'tpl_002',
+        name: 'Кейтаро интеграция',
+        level: 'offer',
+        url: 'https://keitaro.tracker.com/api/v1/postback?subid={click_id}&status={status}&sum={payout}&offer={offer_id}',
+        events: ['sale'],
+        parameters: {
+          click_id: 'SubID from click',
+          status: 'Conversion status',
+          payout: 'Revenue amount',
+          offer_id: 'Offer identifier'
+        },
+        headers: {
+          'X-API-Key': 'secret_key_here'
+        },
+        retryAttempts: 5,
+        timeout: 45,
+        isActive: true,
+        offerId: 'offer_001',
+        offerName: 'Gambling Offer Premium',
+        advertiserId: 'user_002',
+        advertiserName: 'Advertiser One',
+        createdBy: 'user_001',
+        createdAt: '2025-08-04T11:00:00Z',
+        updatedAt: '2025-08-04T11:30:00Z'
+      },
+      {
+        id: 'tpl_003',
+        name: 'Binom трекер',
+        level: 'global',
+        url: 'https://binom.tracker.com/click.php?cnv_id={click_id}&cnv_status={status}&revenue={payout}',
+        events: ['sale', 'lead', 'rejected'],
+        parameters: {
+          click_id: 'Click ID',
+          status: 'Conversion status',
+          payout: 'Conversion revenue'
+        },
+        headers: {},
+        retryAttempts: 3,
+        timeout: 30,
+        isActive: false,
+        offerId: null,
+        offerName: null,
+        advertiserId: 'user_001',
+        advertiserName: 'Super Admin',
+        createdBy: 'user_001',
+        createdAt: '2025-08-03T14:00:00Z',
+        updatedAt: '2025-08-04T09:00:00Z'
+      }
+    ];
+
+    let filtered = templates;
+
+    if (filters && filters.level) {
+      filtered = filtered.filter(t => t.level === filters.level);
+    }
+
+    if (filters && filters.status) {
+      const isActive = filters.status === 'active';
+      filtered = filtered.filter(t => t.isActive === isActive);
+    }
+
+    if (filters && filters.search) {
+      const search = filters.search.toLowerCase();
+      filtered = filtered.filter(t => 
+        t.name.toLowerCase().includes(search) ||
+        t.url.toLowerCase().includes(search) ||
+        (t.offerName && t.offerName.toLowerCase().includes(search))
+      );
+    }
+
+    return filtered;
+  }
+
+  async createPostbackTemplate(data: any): Promise<any> {
+    const template = {
+      id: `tpl_${Date.now()}`,
+      ...data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    console.log('Creating postback template:', template);
+    return template;
+  }
+
+  async updatePostbackTemplate(id: string, data: any): Promise<any> {
+    console.log(`Updating postback template ${id}:`, data);
+    return {
+      id,
+      ...data,
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  async deletePostbackTemplate(id: string): Promise<void> {
+    console.log(`Deleting postback template: ${id}`);
+  }
+
+  async getPostbackLogs(filters: {
+    status?: string;
+    offerId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    search?: string;
+  }): Promise<any[]> {
+    // Mock data for postback logs
+    const logs = [
+      {
+        id: 'log_001',
+        postbackId: 'tpl_001',
+        postbackName: 'Основной трекер',
+        conversionId: 'conv_001',
+        offerId: 'offer_001',
+        offerName: 'Gambling Offer Premium',
+        partnerId: 'user_003',
+        partnerName: 'Partner Alpha',
+        url: 'https://tracker.com/postback?click_id=abc123&status=sale&payout=50.00',
+        method: 'GET',
+        headers: {
+          'User-Agent': 'AffiliateTracker/1.0',
+          'Content-Type': 'application/json'
+        },
+        payload: {},
+        responseCode: 200,
+        responseBody: '{"status":"ok","message":"Conversion recorded"}',
+        responseTime: 247,
+        status: 'success',
+        errorMessage: null,
+        attempt: 1,
+        maxAttempts: 3,
+        nextRetryAt: null,
+        completedAt: '2025-08-04T12:15:30Z',
+        createdAt: '2025-08-04T12:15:28Z'
+      },
+      {
+        id: 'log_002',
+        postbackId: 'tpl_002',
+        postbackName: 'Кейтаро интеграция',
+        conversionId: 'conv_002',
+        offerId: 'offer_002',
+        offerName: 'Dating Offer VIP',
+        partnerId: 'user_004',
+        partnerName: 'Partner Beta',
+        url: 'https://keitaro.tracker.com/api/v1/postback?subid=xyz789&status=lead&sum=25.00&offer=offer_002',
+        method: 'POST',
+        headers: {
+          'X-API-Key': 'secret_key_here',
+          'Content-Type': 'application/json'
+        },
+        payload: {
+          subid: 'xyz789',
+          status: 'lead',
+          sum: '25.00'
+        },
+        responseCode: 500,
+        responseBody: '{"error":"Internal server error"}',
+        responseTime: 5000,
+        status: 'failed',
+        errorMessage: 'Server returned 500 Internal Server Error',
+        attempt: 2,
+        maxAttempts: 5,
+        nextRetryAt: '2025-08-04T12:25:00Z',
+        completedAt: null,
+        createdAt: '2025-08-04T12:20:15Z'
+      },
+      {
+        id: 'log_003',
+        postbackId: 'tpl_001',
+        postbackName: 'Основной трекер',
+        conversionId: 'conv_003',
+        offerId: 'offer_003',
+        offerName: 'Crypto Offer Elite',
+        partnerId: 'user_005',
+        partnerName: 'Partner Gamma',
+        url: 'https://tracker.com/postback?click_id=def456&status=rejected&payout=0.00',
+        method: 'GET',
+        headers: {
+          'User-Agent': 'AffiliateTracker/1.0'
+        },
+        payload: {},
+        responseCode: 404,
+        responseBody: 'Not Found',
+        responseTime: 3200,
+        status: 'failed',
+        errorMessage: 'Endpoint not found',
+        attempt: 3,
+        maxAttempts: 3,
+        nextRetryAt: null,
+        completedAt: '2025-08-04T12:18:45Z',
+        createdAt: '2025-08-04T12:18:42Z'
+      },
+      {
+        id: 'log_004',
+        postbackId: 'tpl_002',
+        postbackName: 'Кейтаро интеграция',
+        conversionId: null,
+        offerId: 'offer_001',
+        offerName: 'Gambling Offer Premium',
+        partnerId: 'user_003',
+        partnerName: 'Partner Alpha',
+        url: 'https://keitaro.tracker.com/api/v1/postback?subid=ghi789&status=hold&sum=75.00&offer=offer_001',
+        method: 'POST',
+        headers: {
+          'X-API-Key': 'secret_key_here'
+        },
+        payload: {},
+        responseCode: null,
+        responseBody: null,
+        responseTime: null,
+        status: 'pending',
+        errorMessage: null,
+        attempt: 1,
+        maxAttempts: 5,
+        nextRetryAt: '2025-08-04T12:30:00Z',
+        completedAt: null,
+        createdAt: '2025-08-04T12:25:00Z'
+      }
+    ];
+
+    let filtered = logs;
+
+    if (filters && filters.status) {
+      filtered = filtered.filter(l => l.status === filters.status);
+    }
+
+    if (filters && filters.offerId) {
+      filtered = filtered.filter(l => l.offerId === filters.offerId);
+    }
+
+    if (filters && filters.search) {
+      const search = filters.search.toLowerCase();
+      filtered = filtered.filter(l => 
+        l.postbackName.toLowerCase().includes(search) ||
+        l.url.toLowerCase().includes(search) ||
+        (l.offerName && l.offerName.toLowerCase().includes(search)) ||
+        (l.partnerName && l.partnerName.toLowerCase().includes(search))
+      );
+    }
+
+    return filtered;
+  }
+
+  async retryPostback(logId: string): Promise<void> {
+    // Mock implementation - in reality, would update database and queue for retry
+    console.log(`Retrying postback log: ${logId}`);
+  }
 }
 
 export const storage = new DatabaseStorage();

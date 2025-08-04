@@ -2518,6 +2518,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === POSTBACK MANAGEMENT ROUTES ===
+  
+  // Get postback templates
+  app.get('/api/admin/postback-templates', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { level, status, search } = req.query;
+      const templates = await storage.getPostbackTemplates({
+        level: level as string,
+        status: status as string,
+        search: search as string,
+      });
+      res.json(templates);
+    } catch (error) {
+      console.error('Get postback templates error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Create postback template
+  app.post('/api/admin/postback-templates', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const template = await storage.createPostbackTemplate({
+        ...req.body,
+        createdBy: userId,
+        advertiserId: userId
+      });
+      res.status(201).json(template);
+    } catch (error) {
+      console.error('Create postback template error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Update postback template
+  app.patch('/api/admin/postback-templates/:id', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const template = await storage.updatePostbackTemplate(req.params.id, req.body);
+      res.json(template);
+    } catch (error) {
+      console.error('Update postback template error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Delete postback template
+  app.delete('/api/admin/postback-templates/:id', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      await storage.deletePostbackTemplate(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Delete postback template error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get postback delivery logs
+  app.get('/api/admin/postback-logs', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { status, offerId, dateFrom, dateTo, search } = req.query;
+      const filters = {
+        status: status as string || undefined,
+        offerId: offerId as string || undefined,
+        dateFrom: dateFrom as string || undefined,
+        dateTo: dateTo as string || undefined,
+        search: search as string || undefined,
+      };
+      // Remove undefined values
+      Object.keys(filters).forEach(key => 
+        filters[key as keyof typeof filters] === undefined && delete filters[key as keyof typeof filters]
+      );
+      
+      const logs = await storage.getPostbackLogs(filters);
+      res.json(logs);
+    } catch (error) {
+      console.error('Get postback logs error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Retry postback
+  app.post('/api/admin/postback-logs/:id/retry', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      await storage.retryPostback(req.params.id);
+      res.json({ success: true, message: 'Postback queued for retry' });
+    } catch (error) {
+      console.error('Retry postback error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Block IP address
   app.post('/api/admin/block-ip', authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
