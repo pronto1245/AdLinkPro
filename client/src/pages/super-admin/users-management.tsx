@@ -116,6 +116,23 @@ export default function UsersManagement() {
   const [blockReason, setBlockReason] = useState('');
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [userToBlock, setUserToBlock] = useState<string | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [deleteType, setDeleteType] = useState<'soft' | 'hard'>('soft');
+  const [editForm, setEditForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: 'affiliate',
+    country: '',
+    isActive: true,
+    twoFactorEnabled: false,
+    ipRestrictions: '',
+    geoRestrictions: '',
+    advertiserName: ''
+  });
 
   // Helper functions
   const handleSearch = useCallback((value: string) => {
@@ -223,15 +240,59 @@ export default function UsersManagement() {
     }
   });
 
+  // Edit user mutation
+  const editUserMutation = useMutation({
+    mutationFn: async ({ userId, userData }: { userId: string; userData: any }) => {
+      return apiRequest(`/api/admin/users/${userId}`, 'PATCH', userData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Пользователь обновлен",
+        description: "Данные пользователя успешно обновлены"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      setShowEditDialog(false);
+    }
+  });
+
   // Delete user mutation
   const deleteUserMutation = useMutation({
-    mutationFn: async (userId: string) => {
-      return apiRequest(`/api/admin/users/${userId}`, 'DELETE');
+    mutationFn: async ({ userId, type }: { userId: string; type: 'soft' | 'hard' }) => {
+      return apiRequest(`/api/admin/users/${userId}`, 'DELETE', { deleteType: type });
     },
     onSuccess: () => {
       toast({
         title: "Пользователь удален",
-        description: "Пользователь успешно удален из системы"
+        description: deleteType === 'soft' ? "Пользователь перемещен в архив" : "Пользователь полностью удален"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      setShowDeleteDialog(false);
+    }
+  });
+
+  // Toggle 2FA mutation
+  const toggle2FAMutation = useMutation({
+    mutationFn: async ({ userId, enabled }: { userId: string; enabled: boolean }) => {
+      return apiRequest(`/api/admin/users/${userId}/2fa`, 'PATCH', { enabled });
+    },
+    onSuccess: () => {
+      toast({
+        title: "2FA настроена",
+        description: "Настройки двухфакторной аутентификации обновлены"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    }
+  });
+
+  // Set IP/GEO restrictions mutation
+  const setRestrictionsMutation = useMutation({
+    mutationFn: async ({ userId, restrictions }: { userId: string; restrictions: any }) => {
+      return apiRequest(`/api/admin/users/${userId}/restrictions`, 'PATCH', restrictions);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Ограничения обновлены",
+        description: "IP и GEO ограничения успешно применены"
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     }
@@ -240,6 +301,43 @@ export default function UsersManagement() {
   const confirmBlockUser = () => {
     if (userToBlock && blockReason.trim()) {
       blockUserMutation.mutate({ userId: userToBlock, reason: blockReason });
+    }
+  };
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setEditForm({
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      email: user.email,
+      role: user.role,
+      country: user.country || '',
+      isActive: user.isActive,
+      twoFactorEnabled: false, // будет загружено с сервера
+      ipRestrictions: '',
+      geoRestrictions: '',
+      advertiserName: user.advertiserName || ''
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleDeleteUser = (user: User) => {
+    setSelectedUser(user);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedUser) {
+      deleteUserMutation.mutate({ userId: selectedUser.id, type: deleteType });
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (selectedUser) {
+      editUserMutation.mutate({ 
+        userId: selectedUser.id, 
+        userData: editForm 
+      });
     }
   };
 
@@ -682,11 +780,14 @@ export default function UsersManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedUser(user);
+                            setShowViewDialog(true);
+                          }}>
                             <Eye className="mr-2 h-4 w-4" />
                             Просмотр
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditUser(user)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Редактировать
                           </DropdownMenuItem>
@@ -710,7 +811,7 @@ export default function UsersManagement() {
                             Сбросить пароль
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => deleteUserMutation.mutate(user.id)}
+                            onClick={() => handleDeleteUser(user)}
                             className="text-red-600"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
@@ -760,6 +861,277 @@ export default function UsersManagement() {
                 )}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Редактировать пользователя</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Имя</Label>
+                <Input
+                  value={editForm.firstName}
+                  onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
+                  placeholder="Введите имя"
+                />
+              </div>
+              <div>
+                <Label>Фамилия</Label>
+                <Input
+                  value={editForm.lastName}
+                  onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
+                  placeholder="Введите фамилию"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={editForm.email}
+                onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                placeholder="email@example.com"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Роль</Label>
+                <Select value={editForm.role} onValueChange={(value) => setEditForm({...editForm, role: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="super_admin">Супер-админ</SelectItem>
+                    <SelectItem value="advertiser">Рекламодатель</SelectItem>
+                    <SelectItem value="affiliate">Партнер</SelectItem>
+                    <SelectItem value="staff">Сотрудник</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Страна</Label>
+                <Input
+                  value={editForm.country}
+                  onChange={(e) => setEditForm({...editForm, country: e.target.value})}
+                  placeholder="Россия"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>Привязанный рекламодатель</Label>
+              <Input
+                value={editForm.advertiserName}
+                onChange={(e) => setEditForm({...editForm, advertiserName: e.target.value})}
+                placeholder="Название рекламодателя"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>IP ограничения (через запятую)</Label>
+              <Textarea
+                value={editForm.ipRestrictions}
+                onChange={(e) => setEditForm({...editForm, ipRestrictions: e.target.value})}
+                placeholder="192.168.1.1, 10.0.0.0/24"
+                rows={2}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>GEO ограничения (коды стран через запятую)</Label>
+              <Textarea
+                value={editForm.geoRestrictions}
+                onChange={(e) => setEditForm({...editForm, geoRestrictions: e.target.value})}
+                placeholder="RU, BY, KZ"
+                rows={2}
+              />
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="checkbox" 
+                  id="isActive"
+                  checked={editForm.isActive}
+                  onChange={(e) => setEditForm({...editForm, isActive: e.target.checked})}
+                />
+                <Label htmlFor="isActive">Активный пользователь</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="checkbox" 
+                  id="twoFactorEnabled"
+                  checked={editForm.twoFactorEnabled}
+                  onChange={(e) => setEditForm({...editForm, twoFactorEnabled: e.target.checked})}
+                />
+                <Label htmlFor="twoFactorEnabled">2FA включена</Label>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Отмена
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={editUserMutation.isPending}>
+              {editUserMutation.isPending ? (
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Сохранить
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View User Dialog */}
+      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Профиль пользователя</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>ID пользователя</Label>
+                  <div className="font-mono text-sm bg-gray-100 p-2 rounded">
+                    {selectedUser.id}
+                  </div>
+                </div>
+                <div>
+                  <Label>Имя пользователя</Label>
+                  <div className="font-medium">{selectedUser.username}</div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Email</Label>
+                  <div>{selectedUser.email}</div>
+                </div>
+                <div>
+                  <Label>Роль</Label>
+                  <Badge variant="outline">{selectedUser.role}</Badge>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Статус</Label>
+                  <Badge variant={selectedUser.isActive ? 'default' : 'destructive'}>
+                    {selectedUser.isActive ? 'Активен' : 'Заблокирован'}
+                  </Badge>
+                </div>
+                <div>
+                  <Label>Страна</Label>
+                  <div>{selectedUser.country || 'Не указана'}</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Дата регистрации</Label>
+                  <div>{formatDate(selectedUser.createdAt)}</div>
+                </div>
+                <div>
+                  <Label>Последний вход</Label>
+                  <div>
+                    {selectedUser.lastLoginAt ? formatDate(selectedUser.lastLoginAt) : 'Никогда'}
+                    {selectedUser.lastLoginIP && (
+                      <div className="text-xs text-muted-foreground font-mono">
+                        {selectedUser.lastLoginIP}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label>Привязанный рекламодатель</Label>
+                <div>{selectedUser.advertiserName || 'Не привязан'}</div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Удаление пользователя</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              Выберите тип удаления для пользователя: <strong>{selectedUser?.username}</strong>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="radio" 
+                  id="soft-delete"
+                  name="deleteType"
+                  checked={deleteType === 'soft'}
+                  onChange={() => setDeleteType('soft')}
+                />
+                <Label htmlFor="soft-delete" className="flex-1">
+                  <div className="font-medium">Мягкое удаление (архив)</div>
+                  <div className="text-sm text-muted-foreground">
+                    Пользователь будет перемещен в архив, данные сохранятся
+                  </div>
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="radio" 
+                  id="hard-delete"
+                  name="deleteType"
+                  checked={deleteType === 'hard'}
+                  onChange={() => setDeleteType('hard')}
+                />
+                <Label htmlFor="hard-delete" className="flex-1">
+                  <div className="font-medium text-red-600">Полное удаление</div>
+                  <div className="text-sm text-muted-foreground">
+                    Все данные пользователя будут безвозвратно удалены
+                  </div>
+                </Label>
+              </div>
+            </div>
+
+            {deleteType === 'hard' && (
+              <div className="bg-red-50 border border-red-200 p-3 rounded">
+                <div className="text-sm text-red-800">
+                  ⚠️ Внимание! Это действие нельзя отменить. Все данные пользователя, включая статистику и историю, будут полностью удалены.
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Отмена
+            </Button>
+            <Button 
+              variant={deleteType === 'hard' ? 'destructive' : 'default'}
+              onClick={confirmDelete}
+              disabled={deleteUserMutation.isPending}
+            >
+              {deleteUserMutation.isPending ? (
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              {deleteType === 'soft' ? 'В архив' : 'Удалить навсегда'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

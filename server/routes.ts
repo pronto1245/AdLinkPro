@@ -780,6 +780,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PATCH endpoint for partial user updates
+  app.patch("/api/admin/users/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      
+      // Hash password if provided
+      if (updateData.password) {
+        updateData.password = await bcrypt.hash(updateData.password, 10);
+      }
+      
+      const user = await storage.updateUser(id, updateData);
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Update user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Toggle 2FA for user
+  app.patch("/api/admin/users/:id/2fa", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { enabled } = req.body;
+      
+      const user = await storage.updateUser(id, { twoFactorEnabled: enabled });
+      res.json({ success: true, twoFactorEnabled: enabled });
+    } catch (error) {
+      console.error("Update 2FA error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Set IP/GEO restrictions
+  app.patch("/api/admin/users/:id/restrictions", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { ipRestrictions, geoRestrictions } = req.body;
+      
+      const updateData: any = {};
+      if (ipRestrictions !== undefined) {
+        updateData.ipRestrictions = ipRestrictions.split(',').map((ip: string) => ip.trim()).filter(Boolean);
+      }
+      if (geoRestrictions !== undefined) {
+        updateData.geoRestrictions = geoRestrictions.split(',').map((geo: string) => geo.trim()).filter(Boolean);
+      }
+      
+      const user = await storage.updateUser(id, updateData);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Update restrictions error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.post("/api/admin/users/:id/block", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const { id } = req.params;
@@ -830,16 +886,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/users/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const { id } = req.params;
-      const { hardDelete = false } = req.body;
+      const { deleteType = 'soft' } = req.body;
       
-      if (hardDelete) {
+      if (deleteType === 'hard') {
         await storage.deleteUser(id);
+        res.json({ success: true, type: 'hard', message: 'User permanently deleted' });
       } else {
         const authUser = getAuthenticatedUser(req);
         await storage.softDeleteUser(id, authUser.id);
+        res.json({ success: true, type: 'soft', message: 'User moved to archive' });
       }
-      
-      res.status(204).send();
     } catch (error) {
       console.error("Delete user error:", error);
       res.status(500).json({ error: "Internal server error" });
