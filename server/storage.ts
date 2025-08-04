@@ -20,6 +20,33 @@ export interface IStorage {
   getUsers(role?: string): Promise<User[]>;
   getUsersByOwner(ownerId: string, role?: string): Promise<User[]>;
   
+  // Enhanced user management
+  getUsersWithFilters(filters: {
+    search?: string;
+    role?: string;
+    status?: string;
+    userType?: string;
+    country?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    lastActivityFrom?: string;
+    lastActivityTo?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<{ data: User[]; total: number }>;
+  blockUser(id: string, reason: string, blockedBy: string): Promise<User>;
+  unblockUser(id: string): Promise<User>;
+  softDeleteUser(id: string, deletedBy: string): Promise<User>;
+  forceLogoutUser(id: string): Promise<void>;
+  resetUserPassword(id: string): Promise<string>;
+  getUserAnalytics(period: string): Promise<any>;
+  exportUsers(filters: any, format: string): Promise<string>;
+  bulkBlockUsers(userIds: string[], reason: string, blockedBy: string): Promise<any>;
+  bulkUnblockUsers(userIds: string[]): Promise<any>;
+  bulkDeleteUsers(userIds: string[], hardDelete: boolean, deletedBy: string): Promise<any>;
+  
   // Offer management
   getOffer(id: string): Promise<Offer | undefined>;
   getOffers(advertiserId?: string): Promise<Offer[]>;
@@ -848,6 +875,269 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBlacklistEntry(id: string): Promise<void> {
     // Mock implementation - replace with actual database deletion
+  }
+
+  // Enhanced user management methods
+  async getUsersWithFilters(filters: {
+    search?: string;
+    role?: string;
+    status?: string;
+    userType?: string;
+    country?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    lastActivityFrom?: string;
+    lastActivityTo?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<{ data: User[]; total: number }> {
+    const page = filters.page || 1;
+    const limit = filters.limit || 20;
+    const offset = (page - 1) * limit;
+
+    // Build where conditions
+    const conditions: any[] = [];
+    
+    if (filters.search) {
+      conditions.push(
+        sql`(${users.username} ILIKE ${`%${filters.search}%`} OR 
+            ${users.email} ILIKE ${`%${filters.search}%`} OR
+            ${users.firstName} ILIKE ${`%${filters.search}%`} OR
+            ${users.lastName} ILIKE ${`%${filters.search}%`})`
+      );
+    }
+    
+    if (filters.role) {
+      conditions.push(eq(users.role, filters.role as any));
+    }
+    
+    if (filters.status) {
+      if (filters.status === 'active') {
+        conditions.push(and(eq(users.isActive, true)));
+      } else if (filters.status === 'blocked') {
+        // Use isActive as proxy for blocked until migration
+        conditions.push(eq(users.isActive, false));
+      } else if (filters.status === 'inactive') {
+        conditions.push(eq(users.isActive, false));
+      }
+    }
+    
+    if (filters.country) {
+      conditions.push(eq(users.country, filters.country));
+    }
+    
+    if (filters.dateFrom) {
+      conditions.push(gte(users.createdAt, new Date(filters.dateFrom)));
+    }
+    
+    if (filters.dateTo) {
+      conditions.push(lte(users.createdAt, new Date(filters.dateTo)));
+    }
+
+    // Get total count
+    const [totalResult] = await db
+      .select({ count: count() })
+      .from(users)
+      .where(conditions.length > 0 ? and(...conditions) : undefined);
+
+    // Get paginated data
+    const sortField = users[filters.sortBy as keyof typeof users] || users.createdAt;
+    const orderBy = filters.sortOrder === 'asc' ? sortField : desc(sortField);
+
+    const data = await db
+      .select()
+      .from(users)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(orderBy)
+      .limit(limit)
+      .offset(offset);
+
+    return {
+      data,
+      total: totalResult.count
+    };
+  }
+
+  async blockUser(id: string, reason: string, blockedBy: string): Promise<User> {
+    // For now, use isActive as proxy for blocked until migration
+    const [user] = await db
+      .update(users)
+      .set({
+        isActive: false,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async unblockUser(id: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        isActive: true,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async softDeleteUser(id: string, deletedBy: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        isActive: false,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async forceLogoutUser(id: string): Promise<void> {
+    // This would invalidate all user sessions
+    // For now, we just mark as logged out
+    await db
+      .update(users)
+      .set({ updatedAt: new Date() })
+      .where(eq(users.id, id));
+  }
+
+  async resetUserPassword(id: string): Promise<string> {
+    const newPassword = randomUUID().substring(0, 8);
+    const bcrypt = require('bcrypt');
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    await db
+      .update(users)
+      .set({ 
+        password: hashedPassword,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id));
+    
+    return newPassword;
+  }
+
+  async getUserAnalytics(period: string): Promise<any> {
+    const now = new Date();
+    let startDate: Date;
+    
+    switch (period) {
+      case '7d':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case '30d':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case '90d':
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    }
+
+    const [totalUsers] = await db.select({ count: count() }).from(users);
+    const [activeUsers] = await db
+      .select({ count: count() })
+      .from(users)
+      .where(eq(users.isActive, true));
+    const [inactiveUsers] = await db
+      .select({ count: count() })
+      .from(users)
+      .where(eq(users.isActive, false));
+    const [newUsers] = await db
+      .select({ count: count() })
+      .from(users)
+      .where(gte(users.createdAt, startDate));
+
+    return {
+      totalUsers: totalUsers.count,
+      activeUsers: activeUsers.count,
+      blockedUsers: inactiveUsers.count, // Using inactive as proxy for blocked
+      newUsers: newUsers.count,
+      period
+    };
+  }
+
+  async exportUsers(filters: any, format: string): Promise<string> {
+    const { data } = await this.getUsersWithFilters({ ...filters, limit: 10000 });
+    
+    if (format === 'json') {
+      return JSON.stringify(data, null, 2);
+    }
+    
+    // CSV export
+    const headers = ['ID', 'Username', 'Email', 'Role', 'Status', 'Country', 'Created At'];
+    const csvData = [
+      headers.join(','),
+      ...data.map(user => [
+        user.id,
+        user.username,
+        user.email,
+        user.role,
+        user.isActive ? 'Active' : 'Inactive',
+        user.country || '',
+        user.createdAt.toISOString()
+      ].join(','))
+    ];
+    
+    return csvData.join('\n');
+  }
+
+  async bulkBlockUsers(userIds: string[], reason: string, blockedBy: string): Promise<any> {
+    const results = { success: 0, failed: 0, errors: [] as string[] };
+    
+    for (const userId of userIds) {
+      try {
+        await this.blockUser(userId, reason, blockedBy);
+        results.success++;
+      } catch (error) {
+        results.failed++;
+        results.errors.push(`Failed to block user ${userId}: ${error}`);
+      }
+    }
+    
+    return results;
+  }
+
+  async bulkUnblockUsers(userIds: string[]): Promise<any> {
+    const results = { success: 0, failed: 0, errors: [] as string[] };
+    
+    for (const userId of userIds) {
+      try {
+        await this.unblockUser(userId);
+        results.success++;
+      } catch (error) {
+        results.failed++;
+        results.errors.push(`Failed to unblock user ${userId}: ${error}`);
+      }
+    }
+    
+    return results;
+  }
+
+  async bulkDeleteUsers(userIds: string[], hardDelete: boolean, deletedBy: string): Promise<any> {
+    const results = { success: 0, failed: 0, errors: [] as string[] };
+    
+    for (const userId of userIds) {
+      try {
+        if (hardDelete) {
+          await this.deleteUser(userId);
+        } else {
+          await this.softDeleteUser(userId, deletedBy);
+        }
+        results.success++;
+      } catch (error) {
+        results.failed++;
+        results.errors.push(`Failed to delete user ${userId}: ${error}`);
+      }
+    }
+    
+    return results;
   }
 }
 

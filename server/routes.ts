@@ -683,15 +683,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Super Admin Routes
+  // Enhanced Super Admin Routes for Users Management
   app.get("/api/admin/users", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
-      const { role } = req.query;
-      const users = await storage.getAllUsers(role as string);
+      const { 
+        search, 
+        role, 
+        status, 
+        userType, 
+        country, 
+        dateFrom, 
+        dateTo, 
+        lastActivityFrom, 
+        lastActivityTo,
+        page = 1, 
+        limit = 20,
+        sortBy = 'createdAt',
+        sortOrder = 'desc'
+      } = req.query;
+
+      const users = await storage.getUsersWithFilters({
+        search: search as string,
+        role: role as string,
+        status: status as string,
+        userType: userType as string,
+        country: country as string,
+        dateFrom: dateFrom as string,
+        dateTo: dateTo as string,
+        lastActivityFrom: lastActivityFrom as string,
+        lastActivityTo: lastActivityTo as string,
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        sortBy: sortBy as string,
+        sortOrder: sortOrder as 'asc' | 'desc'
+      });
       
       // Remove passwords from response
-      const safeUsers = users.map(({ password, ...user }) => user);
-      res.json(safeUsers);
+      const safeUsers = users.data?.map(({ password, ...user }) => user) || [];
+      
+      res.json({
+        data: safeUsers,
+        total: users.total || 0,
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        totalPages: Math.ceil((users.total || 0) / parseInt(limit as string))
+      });
     } catch (error) {
       console.error("Get all users error:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -724,13 +760,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced user management endpoints
+  app.put("/api/admin/users/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      
+      // Hash password if provided
+      if (updateData.password) {
+        updateData.password = await bcrypt.hash(updateData.password, 10);
+      }
+      
+      const user = await storage.updateUser(id, updateData);
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Update user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/users/:id/block", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+      const authUser = getAuthenticatedUser(req);
+      
+      const user = await storage.blockUser(id, reason, authUser.id);
+      res.json({ success: true, message: "User blocked successfully" });
+    } catch (error) {
+      console.error("Block user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/users/:id/unblock", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = await storage.unblockUser(id);
+      res.json({ success: true, message: "User unblocked successfully" });
+    } catch (error) {
+      console.error("Unblock user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/users/:id/force-logout", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.forceLogoutUser(id);
+      res.json({ success: true, message: "User sessions terminated" });
+    } catch (error) {
+      console.error("Force logout error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/users/:id/reset-password", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const newPassword = await storage.resetUserPassword(id);
+      res.json({ success: true, temporaryPassword: newPassword });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.delete("/api/admin/users/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const { id } = req.params;
-      await storage.deleteUser(id);
+      const { hardDelete = false } = req.body;
+      
+      if (hardDelete) {
+        await storage.deleteUser(id);
+      } else {
+        const authUser = getAuthenticatedUser(req);
+        await storage.softDeleteUser(id, authUser.id);
+      }
+      
       res.status(204).send();
     } catch (error) {
       console.error("Delete user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // User analytics endpoint
+  app.get("/api/admin/users/analytics", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { period = '30d' } = req.query;
+      const analytics = await storage.getUserAnalytics(period as string);
+      res.json(analytics);
+    } catch (error) {
+      console.error("User analytics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Export users
+  app.get("/api/admin/users/export", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { format = 'csv', ...filters } = req.query;
+      const data = await storage.exportUsers(filters, format as string);
+      
+      res.setHeader('Content-Type', format === 'json' ? 'application/json' : 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=users.${format}`);
+      res.send(data);
+    } catch (error) {
+      console.error("Export users error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Bulk user operations
+  app.post("/api/admin/users/bulk-block", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { userIds, reason } = req.body;
+      const authUser = getAuthenticatedUser(req);
+      
+      const results = await storage.bulkBlockUsers(userIds, reason, authUser.id);
+      res.json(results);
+    } catch (error) {
+      console.error("Bulk block error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/users/bulk-unblock", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { userIds } = req.body;
+      const results = await storage.bulkUnblockUsers(userIds);
+      res.json(results);
+    } catch (error) {
+      console.error("Bulk unblock error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/users/bulk-delete", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { userIds, hardDelete = false } = req.body;
+      const authUser = getAuthenticatedUser(req);
+      
+      const results = await storage.bulkDeleteUsers(userIds, hardDelete, authUser.id);
+      res.json(results);
+    } catch (error) {
+      console.error("Bulk delete error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -1223,6 +1399,177 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error: any) {
       console.error("Delete blacklist entry error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Enhanced user management routes
+  
+  // Get users with filters
+  app.get('/api/admin/users', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const filters = {
+        search: req.query.search as string,
+        role: req.query.role as string,
+        status: req.query.status as string,
+        userType: req.query.userType as string,
+        country: req.query.country as string,
+        dateFrom: req.query.dateFrom as string,
+        dateTo: req.query.dateTo as string,
+        page: parseInt(req.query.page as string) || 1,
+        limit: parseInt(req.query.limit as string) || 20,
+        sortBy: req.query.sortBy as string || 'createdAt',
+        sortOrder: (req.query.sortOrder as 'asc' | 'desc') || 'desc'
+      };
+      
+      const result = await storage.getUsersWithFilters(filters);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Get users error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Block user
+  app.post('/api/admin/users/:id/block', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { reason } = req.body;
+      const blockedBy = getAuthenticatedUser(req).id;
+      
+      const user = await storage.blockUser(req.params.id, reason, blockedBy);
+      res.json(user);
+    } catch (error: any) {
+      console.error("Block user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Unblock user
+  app.post('/api/admin/users/:id/unblock', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const user = await storage.unblockUser(req.params.id);
+      res.json(user);
+    } catch (error: any) {
+      console.error("Unblock user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Force logout user
+  app.post('/api/admin/users/:id/force-logout', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      await storage.forceLogoutUser(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Force logout user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Delete user
+  app.delete('/api/admin/users/:id', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { hardDelete } = req.query;
+      const deletedBy = getAuthenticatedUser(req).id;
+      
+      if (hardDelete === 'true') {
+        await storage.deleteUser(req.params.id);
+      } else {
+        await storage.softDeleteUser(req.params.id, deletedBy);
+      }
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Delete user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Reset user password
+  app.post('/api/admin/users/:id/reset-password', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const newPassword = await storage.resetUserPassword(req.params.id);
+      res.json({ newPassword });
+    } catch (error: any) {
+      console.error("Reset user password error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get user analytics
+  app.get('/api/admin/users/analytics', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const period = req.query.period as string || '30d';
+      const analytics = await storage.getUserAnalytics(period);
+      res.json(analytics);
+    } catch (error: any) {
+      console.error("Get user analytics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Export users
+  app.get('/api/admin/users/export', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const format = req.query.format as string || 'csv';
+      const filters = {
+        search: req.query.search as string,
+        role: req.query.role as string,
+        status: req.query.status as string,
+        userType: req.query.userType as string,
+        country: req.query.country as string,
+        dateFrom: req.query.dateFrom as string,
+        dateTo: req.query.dateTo as string
+      };
+      
+      const data = await storage.exportUsers(filters, format);
+      
+      res.setHeader('Content-Type', format === 'json' ? 'application/json' : 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=users.${format}`);
+      res.send(data);
+    } catch (error: any) {
+      console.error("Export users error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Bulk block users
+  app.post('/api/admin/users/bulk-block', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { userIds, reason } = req.body;
+      const blockedBy = getAuthenticatedUser(req).id;
+      
+      const result = await storage.bulkBlockUsers(userIds, reason, blockedBy);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Bulk block users error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Bulk unblock users
+  app.post('/api/admin/users/bulk-unblock', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { userIds } = req.body;
+      
+      const result = await storage.bulkUnblockUsers(userIds);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Bulk unblock users error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Bulk delete users
+  app.post('/api/admin/users/bulk-delete', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { userIds, hardDelete } = req.body;
+      const deletedBy = getAuthenticatedUser(req).id;
+      
+      const result = await storage.bulkDeleteUsers(userIds, hardDelete, deletedBy);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Bulk delete users error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

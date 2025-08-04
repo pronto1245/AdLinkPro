@@ -12,6 +12,8 @@ export const ticketStatusEnum = pgEnum('ticket_status', ['open', 'in_progress', 
 export const kycStatusEnum = pgEnum('kyc_status', ['pending', 'approved', 'rejected']);
 export const postbackStatusEnum = pgEnum('postback_status', ['pending', 'sent', 'failed', 'retry']);
 export const auditActionEnum = pgEnum('audit_action', ['create', 'update', 'delete', 'login', 'logout', 'view', 'approve', 'reject']);
+export const userStatusEnum = pgEnum('user_status', ['active', 'blocked', 'deleted', 'pending_verification']);
+export const userTypeEnum = pgEnum('user_type', ['advertiser', 'affiliate', 'staff', 'admin']);
 
 // Users table
 export const users = pgTable("users", {
@@ -36,7 +38,19 @@ export const users = pgTable("users", {
   currency: text("currency").default('USD'),
   kycStatus: kycStatusEnum("kyc_status").default('pending'),
   isActive: boolean("is_active").default(true),
+  status: userStatusEnum("status").default('active'),
+  userType: userTypeEnum("user_type").default('affiliate'),
   lastLoginAt: timestamp("last_login_at"),
+  registrationIp: text("registration_ip"),
+  geoRestrictions: jsonb("geo_restrictions"), // Array of allowed countries
+  timeRestrictions: jsonb("time_restrictions"), // Login time restrictions
+  isBlocked: boolean("is_blocked").default(false),
+  blockReason: text("block_reason"),
+  blockedAt: timestamp("blocked_at"),
+  blockedBy: varchar("blocked_by").references(() => users.id),
+  isDeleted: boolean("is_deleted").default(false),
+  deletedAt: timestamp("deleted_at"),
+  deletedBy: varchar("deleted_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   // Hierarchy fields - who created/owns this user
@@ -625,6 +639,94 @@ export const postbackLogsRelations = relations(postbackLogs, ({ one }) => ({
   }),
 }));
 
+// User roles and permissions management
+export const customRoles = pgTable("custom_roles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  permissions: jsonb("permissions").notNull(), // Array of permission strings
+  advertiserId: varchar("advertiser_id").references(() => users.id), // null = global role
+  ipRestrictions: jsonb("ip_restrictions"), // Array of allowed IPs
+  geoRestrictions: jsonb("geo_restrictions"), // Array of allowed countries
+  timeRestrictions: jsonb("time_restrictions"), // Time-based access restrictions
+  isActive: boolean("is_active").default(true),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User role assignments
+export const userRoleAssignments = pgTable("user_role_assignments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  customRoleId: varchar("custom_role_id").notNull().references(() => customRoles.id),
+  assignedBy: varchar("assigned_by").notNull().references(() => users.id),
+  isActive: boolean("is_active").default(true),
+  expiresAt: timestamp("expires_at"), // Optional role expiration
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User sessions for tracking active sessions
+export const userSessions = pgTable("user_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  sessionToken: text("session_token").notNull().unique(),
+  ipAddress: text("ip_address").notNull(),
+  userAgent: text("user_agent"),
+  country: text("country"),
+  city: text("city"),
+  device: text("device"),
+  browser: text("browser"),
+  isActive: boolean("is_active").default(true),
+  lastActivity: timestamp("last_activity").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User notifications
+export const userNotifications = pgTable("user_notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  type: text("type").notNull(), // registration, block, login, etc.
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  data: jsonb("data"), // Additional notification data
+  channel: text("channel").notNull(), // email, telegram, system
+  status: text("status").default('pending'), // pending, sent, failed
+  isRead: boolean("is_read").default(false),
+  sentAt: timestamp("sent_at"),
+  readAt: timestamp("read_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Password reset tokens
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").default(false),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User analytics for dashboard
+export const userAnalytics = pgTable("user_analytics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  date: timestamp("date").notNull(),
+  totalUsers: integer("total_users").default(0),
+  activeUsers24h: integer("active_users_24h").default(0),
+  activeUsers7d: integer("active_users_7d").default(0),
+  activeUsers30d: integer("active_users_30d").default(0),
+  newRegistrations: integer("new_registrations").default(0),
+  usersByRole: jsonb("users_by_role"), // Breakdown by role
+  usersByStatus: jsonb("users_by_status"), // Breakdown by status
+  usersByCountry: jsonb("users_by_country"), // Geographic breakdown
+  fraudAlerts: integer("fraud_alerts").default(0),
+  blockedUsers: integer("blocked_users").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -770,3 +872,26 @@ export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertPostbackLog = z.infer<typeof insertPostbackLogSchema>;
 export type PostbackLog = typeof postbackLogs.$inferSelect;
+
+export const insertCustomRoleSchema = createInsertSchema(customRoles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertUserNotificationSchema = createInsertSchema(userNotifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertCustomRole = z.infer<typeof insertCustomRoleSchema>;
+export type CustomRole = typeof customRoles.$inferSelect;
+export type InsertUserNotification = z.infer<typeof insertUserNotificationSchema>;
+export type UserNotification = typeof userNotifications.$inferSelect;
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
+export type UserSession = typeof userSessions.$inferSelect;
