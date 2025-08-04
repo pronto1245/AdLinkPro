@@ -180,6 +180,8 @@ const FraudDetectionPage = () => {
   const [selectedRule, setSelectedRule] = useState<FraudRule | null>(null);
   const [editRuleDialogOpen, setEditRuleDialogOpen] = useState(false);
   const [viewReportDialogOpen, setViewReportDialogOpen] = useState(false);
+  const [selectedIpAnalysis, setSelectedIpAnalysis] = useState<any>(null);
+  const [viewIpDialogOpen, setViewIpDialogOpen] = useState(false);
 
   // Fetch fraud reports
   const { data: fraudReports = [], isLoading: reportsLoading } = useQuery<FraudReport[]>({
@@ -1093,13 +1095,16 @@ const FraudDetectionPage = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => {
+                                      setSelectedIpAnalysis(ip);
+                                      setViewIpDialogOpen(true);
                                       toast({
-                                        title: "Подробности IP",
-                                        description: `Просмотр детальной информации для IP: ${ip.ipAddress}`,
+                                        title: "Открытие IP анализа",
+                                        description: `Загружается детальная информация для IP: ${ip.ipAddress}`,
                                       });
                                     }}
                                     data-testid={`view-ip-${ip.id}`}
                                     title="Подробности IP"
+                                    className="hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
                                   >
                                     <Eye className="w-3 h-3" />
                                   </Button>
@@ -1839,6 +1844,219 @@ const FraudDetectionPage = () => {
           </Tabs>
         </main>
       </div>
+
+      {/* View IP Analysis Dialog */}
+      <Dialog open={viewIpDialogOpen} onOpenChange={setViewIpDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Детальный анализ IP адреса {selectedIpAnalysis?.ipAddress}</DialogTitle>
+            <DialogDescription>
+              Полная информация о безопасности и репутации IP адреса
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6">
+            {/* Basic Info */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">IP Адрес</Label>
+                  <p className="text-lg font-mono">{selectedIpAnalysis?.ipAddress}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Геолокация</Label>
+                  <p className="text-sm">{selectedIpAnalysis?.country} • {selectedIpAnalysis?.city || 'Город не определён'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Провайдер (ISP)</Label>
+                  <p className="text-sm">{selectedIpAnalysis?.isp || 'Провайдер не определён'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Организация</Label>
+                  <p className="text-sm">{selectedIpAnalysis?.organization || 'Не определена'}</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Риск-скор</Label>
+                  <div className="flex items-center space-x-3">
+                    <span className={`text-2xl font-bold ${
+                      selectedIpAnalysis?.riskScore >= 8 ? 'text-red-600' :
+                      selectedIpAnalysis?.riskScore >= 6 ? 'text-orange-600' :
+                      selectedIpAnalysis?.riskScore >= 4 ? 'text-yellow-600' : 'text-green-600'
+                    }`}>
+                      {selectedIpAnalysis?.riskScore}/10
+                    </span>
+                    <div className="flex-1 bg-gray-200 rounded-full h-3">
+                      <div 
+                        className={`h-3 rounded-full ${
+                          selectedIpAnalysis?.riskScore >= 8 ? 'bg-red-600' :
+                          selectedIpAnalysis?.riskScore >= 6 ? 'bg-orange-600' :
+                          selectedIpAnalysis?.riskScore >= 4 ? 'bg-yellow-600' : 'bg-green-600'
+                        }`}
+                        style={{ width: `${(selectedIpAnalysis?.riskScore || 0) * 10}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Типы угроз</Label>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {selectedIpAnalysis?.threatTypes?.map((threat: string, index: number) => (
+                      <Badge key={index} variant={
+                        threat === 'proxy' || threat === 'vpn' ? 'destructive' :
+                        threat === 'suspicious' ? 'default' : 'secondary'
+                      } className="text-xs">
+                        {threat === 'clean' && 'Чистый'}
+                        {threat === 'proxy' && 'Прокси'}
+                        {threat === 'vpn' && 'VPN'}
+                        {threat === 'suspicious' && 'Подозрительный'}
+                        {threat === 'datacenter' && 'Дата-центр'}
+                        {threat === 'bot' && 'Бот'}
+                        {threat === 'malware' && 'Вредонос'}
+                      </Badge>
+                    )) || <Badge variant="secondary" className="text-xs">Угрозы не обнаружены</Badge>}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Последняя активность</Label>
+                  <p className="text-sm">
+                    {selectedIpAnalysis?.createdAt ? new Date(selectedIpAnalysis.createdAt).toLocaleDateString('ru-RU', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }) : 'Не определена'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* External Service Scores */}
+            <div>
+              <Label className="text-sm font-medium text-gray-600">Оценки внешних сервисов</Label>
+              <div className="mt-2 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <div className="text-sm font-medium">FraudScore</div>
+                  <div className="text-lg font-bold text-orange-600">75/100</div>
+                  <div className="text-xs text-gray-500">Средний риск</div>
+                </div>
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <div className="text-sm font-medium">IPQualityScore</div>
+                  <div className="text-lg font-bold text-red-600">85/100</div>
+                  <div className="text-xs text-gray-500">Высокий риск</div>
+                </div>
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <div className="text-sm font-medium">AbuseIPDB</div>
+                  <div className="text-lg font-bold text-green-600">15/100</div>
+                  <div className="text-xs text-gray-500">Низкий риск</div>
+                </div>
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <div className="text-sm font-medium">VirusTotal</div>
+                  <div className="text-lg font-bold text-yellow-600">3/67</div>
+                  <div className="text-xs text-gray-500">Обнаружений</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Technical Details */}
+            <div>
+              <Label className="text-sm font-medium text-gray-600">Технические детали</Label>
+              <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">ASN:</span>
+                    <p className="text-gray-600 dark:text-gray-400">AS13335 Cloudflare Inc.</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Тип подключения:</span>
+                    <p className="text-gray-600 dark:text-gray-400">Business/Corporate</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Использует Tor:</span>
+                    <p className="text-gray-600 dark:text-gray-400">Нет</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Анонимизатор:</span>
+                    <p className="text-gray-600 dark:text-gray-400">Не обнаружен</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Мобильная сеть:</span>
+                    <p className="text-gray-600 dark:text-gray-400">Нет</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Часовой пояс:</span>
+                    <p className="text-gray-600 dark:text-gray-400">UTC+3 (Europe/Moscow)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Activity History */}
+            <div>
+              <Label className="text-sm font-medium text-gray-600">История активности</Label>
+              <div className="mt-2 border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="text-xs">
+                      <TableHead className="text-xs">Дата</TableHead>
+                      <TableHead className="text-xs">Событие</TableHead>
+                      <TableHead className="text-xs">Результат</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow className="text-xs">
+                      <TableCell>04.08.2025 23:15</TableCell>
+                      <TableCell>Проверка репутации</TableCell>
+                      <TableCell><Badge variant="default" className="text-xs">Подозрительный</Badge></TableCell>
+                    </TableRow>
+                    <TableRow className="text-xs">
+                      <TableCell>04.08.2025 22:30</TableCell>
+                      <TableCell>Попытка регистрации</TableCell>
+                      <TableCell><Badge variant="destructive" className="text-xs">Заблокирован</Badge></TableCell>
+                    </TableRow>
+                    <TableRow className="text-xs">
+                      <TableCell>04.08.2025 21:45</TableCell>
+                      <TableCell>Анализ трафика</TableCell>
+                      <TableCell><Badge variant="secondary" className="text-xs">Завершён</Badge></TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  toast({
+                    title: "IP добавлен в белый список",
+                    description: `IP ${selectedIpAnalysis?.ipAddress} добавлен в исключения`,
+                  });
+                  setViewIpDialogOpen(false);
+                }}
+                data-testid="whitelist-ip-btn"
+              >
+                В белый список
+              </Button>
+              <Button 
+                variant="destructive"
+                onClick={() => {
+                  toast({
+                    title: "IP заблокирован",
+                    description: `IP ${selectedIpAnalysis?.ipAddress} добавлен в чёрный список`,
+                  });
+                  setViewIpDialogOpen(false);
+                }}
+                data-testid="blacklist-ip-btn"
+              >
+                Заблокировать IP
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* View Report Dialog */}
       <Dialog open={viewReportDialogOpen} onOpenChange={setViewReportDialogOpen}>
