@@ -773,18 +773,6 @@ export default function OffersManagement() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [advertiserFilter, setAdvertiserFilter] = useState('all');
 
-  // Обработка URL-параметра для автоматического открытия оффера
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const offerId = urlParams.get('offer');
-    if (offerId && offers.length > 0) {
-      const offer = offers.find(o => o.id === offerId);
-      if (offer) {
-        setSelectedOffer(offer);
-      }
-    }
-  }, [offers]);
-
   // Fetch offers
   const { data: offers = [], isLoading: offersLoading } = useQuery({
     queryKey: ['/api/admin/offers'],
@@ -804,6 +792,18 @@ export default function OffersManagement() {
         return matchesSearch && matchesStatus && matchesModeration && matchesCategory && matchesAdvertiser;
       })
   });
+
+  // Обработка URL-параметра для автоматического открытия оффера
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const offerId = urlParams.get('offer');
+    if (offerId && offers.length > 0) {
+      const offer = offers.find(o => o.id === offerId);
+      if (offer) {
+        setSelectedOffer(offer);
+      }
+    }
+  }, [offers]);
 
   // Fetch offer logs
   const { data: offerLogs = [] } = useQuery({
