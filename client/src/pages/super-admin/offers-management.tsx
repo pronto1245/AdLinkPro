@@ -1228,7 +1228,7 @@ export default function OffersManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="w-5 h-5" />
-            {t('filters')}
+            Filters
           </CardTitle>
         </CardHeader>
         <CardContent>
