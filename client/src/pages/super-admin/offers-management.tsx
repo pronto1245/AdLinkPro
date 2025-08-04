@@ -1188,46 +1188,73 @@ export default function OffersManagement() {
                       <div className="text-xs space-y-1">
                         {/* Traffic Sources */}
                         {offer.trafficSources && offer.trafficSources.length > 0 ? (
-                          <div className={`${offer.trafficSources.length >= 3 ? 'grid grid-cols-2 gap-1' : 'flex flex-wrap gap-1'}`}>
-                            {offer.trafficSources.slice(0, 4).map((source, index) => {
-                              const trafficSourceLabels: {[key: string]: string} = {
-                                'facebook_ads': 'Facebook',
-                                'google_ads': 'Google',
-                                'instagram_ads': 'Instagram',
-                                'tiktok_ads': 'TikTok',
-                                'youtube_ads': 'YouTube',
-                                'twitter_ads': 'Twitter',
-                                'linkedin_ads': 'LinkedIn',
-                                'pinterest_ads': 'Pinterest',
-                                'snapchat_ads': 'Snapchat',
-                                'native_ads': 'Native',
-                                'push_notifications': 'Push',
-                                'email_marketing': 'Email',
-                                'sms_marketing': 'SMS',
-                                'display_ads': 'Display',
-                                'video_ads': 'Video',
-                                'search_ads': 'Search',
-                                'affiliate_networks': 'Affiliate',
-                                'influencer_marketing': 'Influencer',
-                                'content_marketing': 'Content',
-                                'social_media': 'Social',
-                                'direct_traffic': 'Direct',
-                                'organic_search': 'Organic',
-                                'referral_traffic': 'Referral',
-                                'uac': 'UAC',
-                                'pps': 'PPS',
-                                'kmc': 'KMC',
-                                'other': 'Other'
-                              };
-                              const sourceLabel = trafficSourceLabels[source] || source;
-                              return (
-                                <Badge key={index} variant="outline" className="text-xs">
-                                  {sourceLabel}
-                                </Badge>
-                              );
-                            })}
+                          <div className="space-y-1">
+                            {/* Группируем источники по 2 в ряд */}
+                            {Array.from({ length: Math.ceil(Math.min(offer.trafficSources.length, 4) / 2) }, (_, rowIndex) => (
+                              <div key={rowIndex} className="flex gap-1">
+                                {offer.trafficSources.slice(rowIndex * 2, (rowIndex + 1) * 2).map((source, index) => {
+                                  const trafficSourceLabels: {[key: string]: string} = {
+                                    'facebook_ads': 'Facebook',
+                                    'google_ads': 'Google',
+                                    'instagram_ads': 'Instagram',
+                                    'tiktok_ads': 'TikTok',
+                                    'youtube_ads': 'YouTube',
+                                    'twitter_ads': 'Twitter',
+                                    'linkedin_ads': 'LinkedIn',
+                                    'pinterest_ads': 'Pinterest',
+                                    'snapchat_ads': 'Snapchat',
+                                    'reddit_ads': 'Reddit',
+                                    'mytarget': 'MyTarget',
+                                    'push_traffic': 'Push',
+                                    'inpage_push': 'InPage',
+                                    'calendar_push': 'Calendar',
+                                    'sms_push': 'SMS Push',
+                                    'outbrain': 'Outbrain',
+                                    'taboola': 'Taboola',
+                                    'mgid': 'MGID',
+                                    'revcontent': 'RevContent',
+                                    'adnow': 'AdNow',
+                                    'pop_traffic': 'Pop',
+                                    'email_marketing': 'Email',
+                                    'seo_organic': 'SEO',
+                                    'mobile_app': 'Mobile',
+                                    'influencer': 'Influencer',
+                                    'teaser_networks': 'Teaser',
+                                    'uac': 'UAC',
+                                    'pps': 'PPS',
+                                    'kmc': 'KMC',
+                                    'other': 'Other'
+                                  };
+                                  const sourceLabel = trafficSourceLabels[source] || source;
+                                  
+                                  // Цвета для разных типов источников трафика
+                                  const getTrafficSourceColor = (source: string) => {
+                                    if (source.includes('facebook') || source.includes('instagram')) return 'bg-blue-100 text-blue-800';
+                                    if (source.includes('google') || source.includes('youtube')) return 'bg-red-100 text-red-800';
+                                    if (source.includes('tiktok')) return 'bg-black text-white';
+                                    if (source.includes('twitter') || source.includes('linkedin')) return 'bg-cyan-100 text-cyan-800';
+                                    if (source.includes('pinterest')) return 'bg-red-100 text-red-800';
+                                    if (source.includes('snapchat')) return 'bg-yellow-100 text-yellow-800';
+                                    if (source.includes('push') || source.includes('pop')) return 'bg-orange-100 text-orange-800';
+                                    if (source.includes('email') || source.includes('sms')) return 'bg-green-100 text-green-800';
+                                    if (source.includes('outbrain') || source.includes('taboola') || source.includes('mgid') || source.includes('revcontent') || source.includes('adnow')) return 'bg-purple-100 text-purple-800';
+                                    if (source.includes('seo') || source.includes('organic')) return 'bg-emerald-100 text-emerald-800';
+                                    if (source.includes('influencer') || source.includes('teaser')) return 'bg-pink-100 text-pink-800';
+                                    return 'bg-gray-100 text-gray-800';
+                                  };
+                                  
+                                  const colorClass = getTrafficSourceColor(source);
+                                  
+                                  return (
+                                    <Badge key={rowIndex * 2 + index} className={`text-xs whitespace-nowrap ${colorClass} border-0`}>
+                                      {sourceLabel}
+                                    </Badge>
+                                  );
+                                })}
+                              </div>
+                            ))}
                             {offer.trafficSources.length > 4 && (
-                              <div className="text-muted-foreground text-xs">+{offer.trafficSources.length - 4}</div>
+                              <div className="text-muted-foreground text-xs">+{offer.trafficSources.length - 4} еще</div>
                             )}
                           </div>
                         ) : (
@@ -1466,42 +1493,71 @@ export default function OffersManagement() {
                   <div>
                     <Label>Разрешенные источники трафика</Label>
                     <div className="mt-2 space-y-2">
-                      {selectedOffer.trafficSources.map((source, index) => {
-                        const trafficSourceLabels: {[key: string]: string} = {
-                          'facebook_ads': 'Facebook Ads',
-                          'google_ads': 'Google Ads',
-                          'instagram_ads': 'Instagram Ads',
-                          'tiktok_ads': 'TikTok Ads',
-                          'youtube_ads': 'YouTube Ads',
-                          'twitter_ads': 'Twitter Ads',
-                          'linkedin_ads': 'LinkedIn Ads',
-                          'pinterest_ads': 'Pinterest Ads',
-                          'snapchat_ads': 'Snapchat Ads',
-                          'native_ads': 'Native Ads',
-                          'push_notifications': 'Push уведомления',
-                          'email_marketing': 'Email маркетинг',
-                          'sms_marketing': 'SMS маркетинг',
-                          'display_ads': 'Display реклама',
-                          'video_ads': 'Видео реклама',
-                          'search_ads': 'Поисковая реклама',
-                          'affiliate_networks': 'Партнерские сети',
-                          'influencer_marketing': 'Инфлюенсер маркетинг',
-                          'content_marketing': 'Контент маркетинг',
-                          'social_media': 'Социальные сети',
-                          'direct_traffic': 'Прямой трафик',
-                          'organic_search': 'Органический поиск',
-                          'referral_traffic': 'Реферальный трафик',
-                          'other': 'Другое'
-                        };
-                        const sourceLabel = trafficSourceLabels[source] || source;
-                        return (
-                          <div key={index} className="inline-block">
-                            <Badge variant="secondary" className="mr-2 mb-2">
-                              {sourceLabel}
-                            </Badge>
-                          </div>
-                        );
-                      })}
+                      {/* Группируем источники по 2 в ряд */}
+                      {Array.from({ length: Math.ceil(selectedOffer.trafficSources.length / 2) }, (_, rowIndex) => (
+                        <div key={rowIndex} className="flex gap-2">
+                          {selectedOffer.trafficSources.slice(rowIndex * 2, (rowIndex + 1) * 2).map((source, index) => {
+                            const trafficSourceLabels: {[key: string]: string} = {
+                              'facebook_ads': 'Facebook Ads',
+                              'google_ads': 'Google Ads',
+                              'instagram_ads': 'Instagram Ads',
+                              'tiktok_ads': 'TikTok Ads',
+                              'youtube_ads': 'YouTube Ads',
+                              'twitter_ads': 'Twitter Ads',
+                              'linkedin_ads': 'LinkedIn Ads',
+                              'pinterest_ads': 'Pinterest Ads',
+                              'snapchat_ads': 'Snapchat Ads',
+                              'reddit_ads': 'Reddit Ads',
+                              'mytarget': 'MyTarget',
+                              'push_traffic': 'Push трафик',
+                              'inpage_push': 'InPage Push',
+                              'calendar_push': 'Calendar Push',
+                              'sms_push': 'SMS Push',
+                              'outbrain': 'Outbrain',
+                              'taboola': 'Taboola',
+                              'mgid': 'MGID',
+                              'revcontent': 'RevContent',
+                              'adnow': 'AdNow',
+                              'pop_traffic': 'Pop трафик',
+                              'email_marketing': 'Email маркетинг',
+                              'seo_organic': 'SEO органический',
+                              'mobile_app': 'Мобильные приложения',
+                              'influencer': 'Инфлюенсер маркетинг',
+                              'teaser_networks': 'Тизерные сети',
+                              'uac': 'UAC',
+                              'pps': 'PPS',
+                              'kmc': 'KMC',
+                              'other': 'Другое'
+                            };
+                            const sourceLabel = trafficSourceLabels[source] || source;
+                            
+                            // Цвета для разных типов источников трафика
+                            const getTrafficSourceColor = (source: string) => {
+                              if (source.includes('facebook') || source.includes('instagram')) return 'bg-blue-100 text-blue-800 border-blue-200';
+                              if (source.includes('google') || source.includes('youtube')) return 'bg-red-100 text-red-800 border-red-200';
+                              if (source.includes('tiktok')) return 'bg-gray-800 text-white border-gray-900';
+                              if (source.includes('twitter') || source.includes('linkedin')) return 'bg-cyan-100 text-cyan-800 border-cyan-200';
+                              if (source.includes('pinterest')) return 'bg-red-100 text-red-800 border-red-200';
+                              if (source.includes('snapchat')) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                              if (source.includes('push') || source.includes('pop')) return 'bg-orange-100 text-orange-800 border-orange-200';
+                              if (source.includes('email') || source.includes('sms')) return 'bg-green-100 text-green-800 border-green-200';
+                              if (source.includes('outbrain') || source.includes('taboola') || source.includes('mgid') || source.includes('revcontent') || source.includes('adnow')) return 'bg-purple-100 text-purple-800 border-purple-200';
+                              if (source.includes('seo') || source.includes('organic')) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                              if (source.includes('influencer') || source.includes('teaser')) return 'bg-pink-100 text-pink-800 border-pink-200';
+                              if (source.includes('mytarget') || source.includes('reddit')) return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+                              return 'bg-gray-100 text-gray-800 border-gray-200';
+                            };
+                            
+                            const colorClass = getTrafficSourceColor(source);
+                            
+                            return (
+                              <Badge key={rowIndex * 2 + index} className={`${colorClass} border`}>
+                                {sourceLabel}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
