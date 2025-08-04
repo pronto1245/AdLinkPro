@@ -104,7 +104,7 @@ export const translations = {
     'all_statuses_filter': 'All Statuses',
     'all_categories_filter': 'All Categories',
     'all_advertisers_filter': 'All Advertisers',
-    'create_offer_button': 'Create Offer',
+    'create_offer_button': 'Create offer',
     'view_details': 'View Details',
     'edit_offer_action': 'Edit Offer',
     'delete_offer': 'Delete Offer',
