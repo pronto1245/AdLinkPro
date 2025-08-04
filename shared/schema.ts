@@ -638,6 +638,24 @@ export const insertOfferSchema = createInsertSchema(offers).omit({
   updatedAt: true,
 });
 
+// Create offer schema for frontend (without required backend fields)
+export const createOfferFrontendSchema = z.object({
+  name: z.string().min(1),
+  category: z.string().min(1),
+  description: z.string().optional(),
+  logo: z.string().optional(),
+  status: z.string().optional(),
+  payoutType: z.string().optional(),
+  currency: z.string().optional(),
+  landingPages: z.any().optional(),
+  kpiConditions: z.string().optional(),
+  allowedTrafficSources: z.array(z.string()).optional(),
+  dailyLimit: z.number().optional(),
+  monthlyLimit: z.number().optional(),
+  antifraudEnabled: z.boolean().optional(),
+  autoApprovePartners: z.boolean().optional(),
+});
+
 export const insertPartnerOfferSchema = createInsertSchema(partnerOffers).omit({
   id: true,
   createdAt: true,

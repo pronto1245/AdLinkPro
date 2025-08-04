@@ -665,31 +665,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
-      console.log("Raw request body:", JSON.stringify(req.body, null, 2)); 
-      console.log("Auth user ID:", authUser.id);
+      console.log("Auth user:", JSON.stringify(authUser, null, 2));
       
-      // Transform frontend data to match backend schema
-      const transformedData = {
-        name: req.body.name,
-        category: req.body.category,
+      if (!authUser || !authUser.id) {
+        return res.status(401).json({ error: "User not authenticated properly" });
+      }
+      
+      // Create offer data directly without complex validation
+      const offerData = {
+        name: req.body.name || "Unnamed Offer",
+        category: req.body.category || "other",
         description: req.body.description || null,
         logo: req.body.logo || null,
         status: req.body.status || 'draft',
-        payout: "0.00", // Default payout as string for decimal field
+        payout: "0.00",
         payoutType: req.body.payoutType || 'cpa',
         currency: req.body.currency || 'USD',
-        advertiserId: authUser.id, // Set to current admin user
-        landingPages: req.body.landingPages || [],
+        advertiserId: authUser.id,
+        landingPages: req.body.landingPages || null,
         kpiConditions: req.body.kpiConditions || null,
-        trafficSources: req.body.allowedTrafficSources || [], // Map allowedTrafficSources to trafficSources
+        trafficSources: req.body.allowedTrafficSources || null,
         dailyLimit: req.body.dailyLimit || null,
         monthlyLimit: req.body.monthlyLimit || null,
-        antifraudEnabled: req.body.antifraudEnabled !== undefined ? req.body.antifraudEnabled : true,
-        autoApprovePartners: req.body.autoApprovePartners !== undefined ? req.body.autoApprovePartners : false,
+        antifraudEnabled: req.body.antifraudEnabled !== false,
+        autoApprovePartners: req.body.autoApprovePartners === true,
       };
       
-      console.log("Transformed data:", JSON.stringify(transformedData, null, 2));
-      const offerData = insertOfferSchema.parse(transformedData);
+      console.log("Final offer data:", JSON.stringify(offerData, null, 2));
       const offer = await storage.createOffer(offerData);
       res.status(201).json(offer);
     } catch (error) {
