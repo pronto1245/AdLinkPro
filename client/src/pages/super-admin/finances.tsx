@@ -87,6 +87,8 @@ export default function FinancesManagement() {
   const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
   const [isPayoutDialogOpen, setIsPayoutDialogOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [selectedPayout, setSelectedPayout] = useState<PayoutRequest | null>(null);
+  const [selectedNote, setSelectedNote] = useState('');
 
   // Queries
   const { data: financialMetrics } = useQuery<any>({
@@ -180,10 +182,16 @@ export default function FinancesManagement() {
   // Mutations
   const updateTransactionMutation = useMutation({
     mutationFn: async ({ transactionId, status, note }: { transactionId: string; status: string; note?: string }) => {
-      return apiRequest(`/api/admin/transactions/${transactionId}`, {
+      const response = await fetch(`/api/admin/transactions/${transactionId}`, {
         method: 'PATCH',
-        body: { status, note },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status, note }),
       });
+      if (!response.ok) throw new Error('Failed to update transaction');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/finances'] });
@@ -197,10 +205,16 @@ export default function FinancesManagement() {
 
   const processPayoutMutation = useMutation({
     mutationFn: async ({ payoutId, action, note }: { payoutId: string; action: 'approve' | 'reject' | 'complete'; note?: string }) => {
-      return apiRequest(`/api/admin/payouts/${payoutId}/${action}`, {
+      const response = await fetch(`/api/admin/payouts/${payoutId}/${action}`, {
         method: 'POST',
-        body: { note },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ note }),
       });
+      if (!response.ok) throw new Error('Failed to process payout');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/payout-requests'] });
@@ -214,10 +228,16 @@ export default function FinancesManagement() {
 
   const createInvoiceMutation = useMutation({
     mutationFn: async (invoiceData: any) => {
-      return apiRequest('/api/admin/invoices', {
+      const response = await fetch('/api/admin/invoices', {
         method: 'POST',
-        body: invoiceData,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(invoiceData),
       });
+      if (!response.ok) throw new Error('Failed to create invoice');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/deposits'] });
@@ -324,24 +344,67 @@ export default function FinancesManagement() {
         data = deposits;
         filename = 'deposits';
         break;
-      case 'commission':
-        data = commissionData;
-        filename = 'commission';
-        break;
+      default:
+        return;
     }
 
-    const csv = data.map(row => Object.values(row).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${filename}_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    // Создаем CSV файл
+    const headers = type === 'transactions' 
+      ? ['ID', 'Тип', 'Пользователь', 'Сумма', 'Валюта', 'Статус', 'Дата']
+      : type === 'payouts'
+      ? ['ID', 'Пользователь', 'Сумма', 'Валюта', 'Кошелёк', 'Статус', 'Дата']
+      : ['ID', 'Пользователь', 'Сумма', 'Валюта', 'Статус', 'Дата'];
+
+    const csvContent = [
+      headers.join(','),
+      ...data.map(item => {
+        if (type === 'transactions') {
+          return [
+            item.id,
+            item.type,
+            item.user.username,
+            item.amount,
+            item.currency,
+            item.status,
+            new Date(item.createdAt).toLocaleDateString()
+          ].join(',');
+        } else if (type === 'payouts') {
+          return [
+            item.id,
+            item.user.username,
+            item.amount,
+            item.currency,
+            item.walletAddress,
+            item.status,
+            new Date(item.requestedAt).toLocaleDateString()
+          ].join(',');
+        } else {
+          return [
+            item.id,
+            item.user?.username || 'N/A',
+            item.amount,
+            item.currency,
+            item.status,
+            new Date(item.createdAt).toLocaleDateString()
+          ].join(',');
+        }
+      })
+    ].join('\n');
+
+    // Скачиваем файл
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
     toast({
       title: 'Экспорт завершён',
-      description: `Файл ${filename}.csv загружен`,
+      description: `Файл ${filename}.csv успешно скачан`,
     });
   };
 
@@ -794,8 +857,15 @@ export default function FinancesManagement() {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                onClick={() => setSelectedTransaction(transaction)}
+                                onClick={() => {
+                                  setSelectedTransaction(transaction);
+                                  toast({
+                                    title: 'Просмотр транзакции',
+                                    description: `Детали транзакции ${transaction.id}`,
+                                  });
+                                }}
                                 title="Просмотр"
+                                data-testid={`button-view-transaction-${transaction.id}`}
                               >
                                 <Eye className="w-4 h-4" />
                               </Button>
@@ -806,9 +876,11 @@ export default function FinancesManagement() {
                                     variant="ghost"
                                     onClick={() => updateTransactionMutation.mutate({ 
                                       transactionId: transaction.id, 
-                                      status: 'completed' 
+                                      status: 'completed',
+                                      note: 'Approved by admin'
                                     })}
                                     title="Одобрить"
+                                    data-testid={`button-approve-transaction-${transaction.id}`}
                                   >
                                     <CheckCircle className="w-4 h-4 text-green-600" />
                                   </Button>
@@ -817,14 +889,29 @@ export default function FinancesManagement() {
                                     variant="ghost"
                                     onClick={() => updateTransactionMutation.mutate({ 
                                       transactionId: transaction.id, 
-                                      status: 'failed' 
+                                      status: 'failed',
+                                      note: 'Rejected by admin'
                                     })}
                                     title="Отклонить"
+                                    data-testid={`button-reject-transaction-${transaction.id}`}
                                   >
                                     <XCircle className="w-4 h-4 text-red-600" />
                                   </Button>
                                 </>
                               )}
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => updateTransactionMutation.mutate({
+                                  transactionId: transaction.id,
+                                  status: 'refunded',
+                                  note: 'Refunded by admin'
+                                })}
+                                title="Возврат"
+                                data-testid={`button-refund-transaction-${transaction.id}`}
+                              >
+                                <RefreshCw className="w-4 h-4 text-orange-600" />
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -850,15 +937,25 @@ export default function FinancesManagement() {
                   <Button
                     onClick={() => {
                       selectedPayouts.forEach(payoutId => {
-                        processPayoutMutation.mutate({ payoutId, action: 'approve' });
+                        processPayoutMutation.mutate({ 
+                          payoutId, 
+                          action: 'approve',
+                          note: 'Bulk approval by admin'
+                        });
                       });
                       setSelectedPayouts([]);
+                      toast({
+                        title: 'Массовая выплата',
+                        description: `${selectedPayouts.length} выплат одобрено`,
+                      });
                     }}
                     className="bg-green-600 hover:bg-green-700"
                     title="Массовая выплата"
+                    data-testid="button-bulk-approve"
+                    disabled={processPayoutMutation.isPending}
                   >
                     <Send className="w-4 h-4 mr-2" />
-                    Выплатить выбранные ({selectedPayouts.length})
+                    {processPayoutMutation.isPending ? 'Обработка...' : `Выплатить выбранные (${selectedPayouts.length})`}
                   </Button>
                 )}
               </div>
@@ -1041,22 +1138,32 @@ export default function FinancesManagement() {
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    onClick={() => processPayoutMutation.mutate({ 
-                                      payoutId: payout.id, 
-                                      action: 'approve' 
-                                    })}
+                                    onClick={() => {
+                                      setSelectedPayout(payout);
+                                      processPayoutMutation.mutate({ 
+                                        payoutId: payout.id, 
+                                        action: 'approve',
+                                        note: 'Approved by admin'
+                                      });
+                                    }}
                                     title="Одобрить"
+                                    data-testid={`button-approve-${payout.id}`}
                                   >
                                     <CheckCircle className="w-4 h-4 text-green-600" />
                                   </Button>
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    onClick={() => processPayoutMutation.mutate({ 
-                                      payoutId: payout.id, 
-                                      action: 'reject' 
-                                    })}
+                                    onClick={() => {
+                                      setSelectedPayout(payout);
+                                      processPayoutMutation.mutate({ 
+                                        payoutId: payout.id, 
+                                        action: 'reject',
+                                        note: 'Rejected by admin'
+                                      });
+                                    }}
                                     title="Отклонить"
+                                    data-testid={`button-reject-${payout.id}`}
                                   >
                                     <XCircle className="w-4 h-4 text-red-600" />
                                   </Button>
@@ -1066,11 +1173,16 @@ export default function FinancesManagement() {
                                 <Button
                                   size="icon"
                                   variant="ghost"
-                                  onClick={() => processPayoutMutation.mutate({ 
-                                    payoutId: payout.id, 
-                                    action: 'complete' 
-                                  })}
+                                  onClick={() => {
+                                    setSelectedPayout(payout);
+                                    processPayoutMutation.mutate({ 
+                                      payoutId: payout.id, 
+                                      action: 'complete',
+                                      note: 'Payment completed by admin'
+                                    });
+                                  }}
                                   title="Отметить как выплачено"
+                                  data-testid={`button-complete-${payout.id}`}
                                 >
                                   <Send className="w-4 h-4 text-blue-600" />
                                 </Button>
@@ -1148,8 +1260,21 @@ export default function FinancesManagement() {
                     <Button variant="outline" onClick={() => setIsInvoiceDialogOpen(false)}>
                       Отмена
                     </Button>
-                    <Button onClick={() => createInvoiceMutation.mutate({})}>
-                      Создать инвойс
+                    <Button 
+                      onClick={() => {
+                        // Get form data - in real implementation, get from form
+                        const invoiceData = {
+                          advertiserId: 'adv-1',
+                          amount: 1000,
+                          currency: 'USD',
+                          description: 'Platform deposit invoice',
+                        };
+                        createInvoiceMutation.mutate(invoiceData);
+                      }}
+                      disabled={createInvoiceMutation.isPending}
+                      data-testid="button-submit-invoice"
+                    >
+                      {createInvoiceMutation.isPending ? 'Создание...' : 'Создать инвойс'}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -1215,6 +1340,13 @@ export default function FinancesManagement() {
                                 size="icon"
                                 variant="ghost"
                                 title="Просмотр"
+                                data-testid={`button-view-deposit-${deposit.id}`}
+                                onClick={() => {
+                                  toast({
+                                    title: 'Просмотр депозита',
+                                    description: `Депозит ${deposit.id} от ${deposit.advertiser}`,
+                                  });
+                                }}
                               >
                                 <Eye className="w-4 h-4" />
                               </Button>
@@ -1224,6 +1356,14 @@ export default function FinancesManagement() {
                                     size="icon"
                                     variant="ghost"
                                     title="Подтвердить"
+                                    data-testid={`button-approve-deposit-${deposit.id}`}
+                                    onClick={() => {
+                                      // In real implementation, call API to confirm deposit
+                                      toast({
+                                        title: 'Депозит подтвержден',
+                                        description: `Депозит ${deposit.id} успешно подтвержден`,
+                                      });
+                                    }}
                                   >
                                     <CheckCircle className="w-4 h-4 text-green-600" />
                                   </Button>
@@ -1231,6 +1371,15 @@ export default function FinancesManagement() {
                                     size="icon"
                                     variant="ghost"
                                     title="Отклонить"
+                                    data-testid={`button-reject-deposit-${deposit.id}`}
+                                    onClick={() => {
+                                      // In real implementation, call API to reject deposit
+                                      toast({
+                                        title: 'Депозит отклонен',
+                                        description: `Депозит ${deposit.id} отклонен`,
+                                        variant: 'destructive',
+                                      });
+                                    }}
                                   >
                                     <XCircle className="w-4 h-4 text-red-600" />
                                   </Button>

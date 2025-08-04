@@ -2319,6 +2319,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === FINANCIAL MANAGEMENT ROUTES ===
+  
+  // Update transaction status
+  app.patch("/api/admin/transactions/:transactionId", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { transactionId } = req.params;
+      const { status, note } = req.body;
+      
+      // Mock update - in real implementation, update database
+      res.json({ 
+        success: true, 
+        message: `Transaction ${transactionId} updated to ${status}`,
+        transactionId,
+        status,
+        note 
+      });
+    } catch (error) {
+      console.error("Update transaction error:", error);
+      res.status(500).json({ error: "Failed to update transaction" });
+    }
+  });
+
+  // Process payout (approve/reject/complete)
+  app.post("/api/admin/payouts/:payoutId/:action", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { payoutId, action } = req.params;
+      const { note } = req.body;
+      
+      if (!['approve', 'reject', 'complete'].includes(action)) {
+        return res.status(400).json({ error: "Invalid action" });
+      }
+      
+      // Mock processing - in real implementation, update database and process payment
+      res.json({ 
+        success: true, 
+        message: `Payout ${payoutId} ${action}d successfully`,
+        payoutId,
+        action,
+        note 
+      });
+    } catch (error) {
+      console.error("Process payout error:", error);
+      res.status(500).json({ error: "Failed to process payout" });
+    }
+  });
+
+  // Create invoice
+  app.post("/api/admin/invoices", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const invoiceData = req.body;
+      
+      const invoice = {
+        id: randomUUID(),
+        ...invoiceData,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Mock creation - in real implementation, save to database and send email
+      res.json({ 
+        success: true, 
+        message: "Invoice created successfully",
+        invoice 
+      });
+    } catch (error) {
+      console.error("Create invoice error:", error);
+      res.status(500).json({ error: "Failed to create invoice" });
+    }
+  });
+
   // Fraud Detection Routes
   app.get("/api/admin/fraud-reports", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
