@@ -350,9 +350,18 @@ const FraudDetectionPage = () => {
         title: isActive ? "Сервис активирован" : "Сервис деактивирован",
         description: `${service?.serviceName} ${isActive ? 'включен' : 'отключен'}`,
       });
+      // Force refetch the data to ensure UI updates
       queryClient.invalidateQueries({ queryKey: ['/api/admin/fraud-services'] });
+      queryClient.refetchQueries({ queryKey: ['/api/admin/fraud-services'] });
     },
-    onError: (error: any) => {
+    onError: (error: any, { serviceId, isActive }) => {
+      // Revert optimistic update on error
+      queryClient.setQueryData(['/api/admin/fraud-services'], (oldServices: FraudServiceIntegration[]) => {
+        return oldServices?.map(s => 
+          s.id === serviceId ? { ...s, isActive: !isActive } : s
+        ) || [];
+      });
+      
       toast({
         title: "Ошибка",
         description: error.message,
@@ -375,6 +384,14 @@ const FraudDetectionPage = () => {
 
   // Handle toggle service
   const handleToggleService = (service: FraudServiceIntegration, isActive: boolean) => {
+    // Optimistic update - immediately update UI
+    queryClient.setQueryData(['/api/admin/fraud-services'], (oldServices: FraudServiceIntegration[]) => {
+      return oldServices?.map(s => 
+        s.id === service.id ? { ...s, isActive, lastSync: new Date().toISOString() } : s
+      ) || [];
+    });
+
+    // Then send to server
     toggleServiceMutation.mutate({ serviceId: service.id, isActive });
   };
 
