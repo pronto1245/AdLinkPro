@@ -322,7 +322,7 @@ export default function OfferDetails() {
           <div className="container mx-auto px-6 py-8 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-6">{t('offer_details')}</h1>
+          <h1 className="text-3xl font-bold mb-6">offer-details</h1>
           <Button
             variant="ghost"
             onClick={() => setLocation('/admin/offers')}
