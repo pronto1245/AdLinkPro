@@ -40,6 +40,7 @@ const createOfferSchema = z.object({
   })).default([{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]),
   kpiConditions: z.string().optional(),
   allowedTrafficSources: z.array(z.string()).default([]),
+  allowedApps: z.array(z.string()).default([]),
   dailyLimit: z.number().optional(),
   monthlyLimit: z.number().optional(),
   antifraudEnabled: z.boolean().default(true),
@@ -69,6 +70,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
       currency: 'USD',
       kpiConditions: '',
       allowedTrafficSources: [],
+      allowedApps: [],
       antifraudEnabled: true,
       autoApprovePartners: false,
     },
@@ -261,98 +263,104 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           
           <div className="space-y-3">
             {form.watch('landingPages').map((_, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-6 gap-3 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                <FormField
-                  control={form.control}
-                  name={`landingPages.${index}.name`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm">Название лендинга</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Основная страница" data-testid={`input-landing-name-${index}`} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name={`landingPages.${index}.url`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm">URL</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="https://example.com" data-testid={`input-landing-url-${index}`} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name={`landingPages.${index}.payoutAmount`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm">Сумма выплаты</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          type="number" 
-                          step="0.01"
-                          value={field.value || ''}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                          onWheel={(e) => e.currentTarget.blur()}
-                          placeholder="0.00" 
-                          data-testid={`input-landing-payout-${index}`}
-                          className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name={`landingPages.${index}.currency`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm">Валюта</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                <div className="md:col-span-2">
+                  <FormField
+                    control={form.control}
+                    name={`landingPages.${index}.name`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Название лендинга</FormLabel>
                         <FormControl>
-                          <SelectTrigger data-testid={`select-landing-currency-${index}`}>
-                            <SelectValue />
-                          </SelectTrigger>
+                          <Input {...field} placeholder="Основная страница" data-testid={`input-landing-name-${index}`} />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="USD">USD</SelectItem>
-                          <SelectItem value="EUR">EUR</SelectItem>
-                          <SelectItem value="GBP">GBP</SelectItem>
-                          <SelectItem value="RUB">RUB</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 
-                <FormField
-                  control={form.control}
-                  name={`landingPages.${index}.geo`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm">Гео</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="US, GB, DE..." data-testid={`input-landing-geo-${index}`} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="md:col-span-2">
+                  <FormField
+                    control={form.control}
+                    name={`landingPages.${index}.url`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">URL</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="https://example.com" data-testid={`input-landing-url-${index}`} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 
-                <div className="flex items-end">
+                <div className="grid grid-cols-3 gap-2 md:col-span-1">
+                  <FormField
+                    control={form.control}
+                    name={`landingPages.${index}.payoutAmount`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Сумма</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            type="number" 
+                            step="0.01"
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            onWheel={(e) => e.currentTarget.blur()}
+                            placeholder="0.00" 
+                            data-testid={`input-landing-payout-${index}`}
+                            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name={`landingPages.${index}.currency`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Валюта</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger data-testid={`select-landing-currency-${index}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="USD">USD</SelectItem>
+                            <SelectItem value="EUR">EUR</SelectItem>
+                            <SelectItem value="GBP">GBP</SelectItem>
+                            <SelectItem value="RUB">RUB</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name={`landingPages.${index}.geo`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Гео</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="US" data-testid={`input-landing-geo-${index}`} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="flex items-end justify-end">
                   {form.watch('landingPages').length > 1 && (
                     <Button 
                       type="button" 
@@ -474,6 +482,101 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="space-y-4">
+          <Label className="text-base font-medium">Разрешенные приложения</Label>
+          <FormField
+            control={form.control}
+            name="allowedApps"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="space-y-3">
+                    <Select 
+                      onValueChange={(value) => {
+                        const current = (field.value as string[]) || [];
+                        if (!current.includes(value)) {
+                          field.onChange([...current, value]);
+                        }
+                      }}
+                    >
+                      <SelectTrigger data-testid="select-allowed-apps">
+                        <SelectValue placeholder="Выберите приложение" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PWA apps">PWA apps</SelectItem>
+                        <SelectItem value="WebView apps">WebView apps</SelectItem>
+                        <SelectItem value="Native Android (.apk) apps">Native Android (.apk) apps</SelectItem>
+                        <SelectItem value="iOS apps">iOS apps</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="Введите своё приложение"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const value = e.currentTarget.value.trim();
+                            if (value) {
+                              const current = field.value || [];
+                              if (!current.includes(value)) {
+                                field.onChange([...current, value]);
+                              }
+                              e.currentTarget.value = '';
+                            }
+                          }
+                        }}
+                        data-testid="input-custom-app"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={(e) => {
+                          const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                          const value = input.value.trim();
+                          if (value) {
+                            const current = (field.value as string[]) || [];
+                            if (!current.includes(value)) {
+                              field.onChange([...current, value]);
+                            }
+                            input.value = '';
+                          }
+                        }}
+                        data-testid="button-add-custom-app"
+                      >
+                        Добавить
+                      </Button>
+                    </div>
+                    
+                    {field.value && (field.value as string[]).length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {(field.value as string[]).map((app: string, index: number) => (
+                          <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                            {app}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-4 w-4 p-0 hover:bg-transparent"
+                              onClick={() => {
+                                const current = (field.value as string[]) || [];
+                                field.onChange(current.filter((_: string, i: number) => i !== index));
+                              }}
+                            >
+                              ×
+                            </Button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -608,6 +711,7 @@ interface Offer {
     currency: string;
   }>;
   trafficSources: string[];
+  allowedApps?: string[];
   status: string;
   moderationStatus: string;
   moderationComment: string;
@@ -979,8 +1083,8 @@ export default function OffersManagement() {
                           <div className="text-xs font-bold text-green-600 uppercase mb-1">
                             {offer.payoutType}
                           </div>
-                          <div className={`text-sm font-medium ${offer.landingPages.length >= 3 ? 'grid grid-cols-2 gap-1' : 'space-x-1'}`}>
-                            {offer.landingPages.map((landing, index) => {
+                          <div className={`text-sm font-medium ${offer.landingPages?.length >= 3 ? 'grid grid-cols-2 gap-1' : 'space-x-1'}`}>
+                            {offer.landingPages?.map((landing, index) => {
                               const countryFlags: {[key: string]: string} = {
                                 'us': '🇺🇸',
                                 'gb': '🇬🇧', 
@@ -1017,7 +1121,7 @@ export default function OffersManagement() {
                               };
                               const currencySymbol = currencySymbols[landing.currency] || landing.currency;
                               return (
-                                <span key={index} className={`text-xs ${offer.landingPages.length >= 3 ? 'block' : 'inline-block mr-1'}`}>
+                                <span key={index} className={`text-xs ${offer.landingPages?.length >= 3 ? 'block' : 'inline-block mr-1'}`}>
                                   {flag}{geo}-{landing.payoutAmount}{currencySymbol}
                                 </span>
                               );
@@ -1035,46 +1139,63 @@ export default function OffersManagement() {
                     </TableCell>
                     <TableCell>
                       <div className="text-xs space-y-1">
+                        {/* Traffic Sources */}
                         {offer.trafficSources && offer.trafficSources.length > 0 ? (
-                          offer.trafficSources.slice(0, 2).map((source, index) => {
-                            const trafficSourceLabels: {[key: string]: string} = {
-                              'facebook_ads': 'Facebook',
-                              'google_ads': 'Google',
-                              'instagram_ads': 'Instagram',
-                              'tiktok_ads': 'TikTok',
-                              'youtube_ads': 'YouTube',
-                              'twitter_ads': 'Twitter',
-                              'linkedin_ads': 'LinkedIn',
-                              'pinterest_ads': 'Pinterest',
-                              'snapchat_ads': 'Snapchat',
-                              'native_ads': 'Native',
-                              'push_notifications': 'Push',
-                              'email_marketing': 'Email',
-                              'sms_marketing': 'SMS',
-                              'display_ads': 'Display',
-                              'video_ads': 'Video',
-                              'search_ads': 'Search',
-                              'affiliate_networks': 'Affiliate',
-                              'influencer_marketing': 'Influencer',
-                              'content_marketing': 'Content',
-                              'social_media': 'Social',
-                              'direct_traffic': 'Direct',
-                              'organic_search': 'Organic',
-                              'referral_traffic': 'Referral',
-                              'other': 'Other'
-                            };
-                            const sourceLabel = trafficSourceLabels[source] || source;
-                            return (
-                              <Badge key={index} variant="outline" className="text-xs">
-                                {sourceLabel}
-                              </Badge>
-                            );
-                          })
+                          <div className={`${offer.trafficSources.length >= 3 ? 'grid grid-cols-2 gap-1' : 'flex flex-wrap gap-1'}`}>
+                            {offer.trafficSources.slice(0, 4).map((source, index) => {
+                              const trafficSourceLabels: {[key: string]: string} = {
+                                'facebook_ads': 'Facebook',
+                                'google_ads': 'Google',
+                                'instagram_ads': 'Instagram',
+                                'tiktok_ads': 'TikTok',
+                                'youtube_ads': 'YouTube',
+                                'twitter_ads': 'Twitter',
+                                'linkedin_ads': 'LinkedIn',
+                                'pinterest_ads': 'Pinterest',
+                                'snapchat_ads': 'Snapchat',
+                                'native_ads': 'Native',
+                                'push_notifications': 'Push',
+                                'email_marketing': 'Email',
+                                'sms_marketing': 'SMS',
+                                'display_ads': 'Display',
+                                'video_ads': 'Video',
+                                'search_ads': 'Search',
+                                'affiliate_networks': 'Affiliate',
+                                'influencer_marketing': 'Influencer',
+                                'content_marketing': 'Content',
+                                'social_media': 'Social',
+                                'direct_traffic': 'Direct',
+                                'organic_search': 'Organic',
+                                'referral_traffic': 'Referral',
+                                'other': 'Other'
+                              };
+                              const sourceLabel = trafficSourceLabels[source] || source;
+                              return (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {sourceLabel}
+                                </Badge>
+                              );
+                            })}
+                            {offer.trafficSources.length > 4 && (
+                              <div className="text-muted-foreground text-xs">+{offer.trafficSources.length - 4}</div>
+                            )}
+                          </div>
                         ) : (
                           <span className="text-muted-foreground">Не указано</span>
                         )}
-                        {offer.trafficSources && offer.trafficSources.length > 2 && (
-                          <div className="text-muted-foreground">+{offer.trafficSources.length - 2}</div>
+                        
+                        {/* Allowed Apps */}
+                        {offer.allowedApps && offer.allowedApps.length > 0 && (
+                          <div className={`mt-2 ${offer.allowedApps.length >= 3 ? 'grid grid-cols-2 gap-1' : 'flex flex-wrap gap-1'}`}>
+                            {offer.allowedApps.slice(0, 4).map((app: string, index: number) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {app}
+                              </Badge>
+                            ))}
+                            {offer.allowedApps.length > 4 && (
+                              <div className="text-muted-foreground text-xs">+{offer.allowedApps.length - 4}</div>
+                            )}
+                          </div>
                         )}
                       </div>
                     </TableCell>

@@ -71,6 +71,7 @@ export const offers = pgTable("offers", {
   geoPricing: jsonb("geo_pricing"), // Array of geo-specific pricing
   kpiConditions: text("kpi_conditions"), // KPI conditions
   trafficSources: jsonb("traffic_sources"), // Allowed traffic sources
+  allowedApps: jsonb("allowed_apps"), // Allowed applications
   dailyLimit: integer("daily_limit"), // Daily conversion limit
   monthlyLimit: integer("monthly_limit"), // Monthly conversion limit
   antifraudEnabled: boolean("antifraud_enabled").default(true),
