@@ -1,5 +1,5 @@
 import { useParams, useLocation } from 'wouter';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '../../contexts/language-context';
 import Sidebar from '../../components/layout/sidebar';
@@ -12,6 +12,8 @@ import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, 
 import { Separator } from '../../components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { useToast } from '../../hooks/use-toast';
+import { Upload, X, Download } from 'lucide-react';
 
 export default function OfferDetails() {
   const [, setLocation] = useLocation();
@@ -19,6 +21,10 @@ export default function OfferDetails() {
   const { t, language } = useLanguage();
   const { isCollapsed } = useSidebar();
   const [activeTab, setActiveTab] = useState('details');
+  const [uploadedCreatives, setUploadedCreatives] = useState<any[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   
   const offerId = params.id;
 
@@ -169,6 +175,73 @@ export default function OfferDetails() {
       name: appNames[app] || app,
       color: colors[index % colors.length]
     }));
+  };
+
+  // Функции для работы с креативами
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    
+    try {
+      const formData = new FormData();
+      Array.from(files).forEach((file, index) => {
+        formData.append(`creative_${index}`, file);
+      });
+      formData.append('offerId', offer.id);
+
+      // Симуляция загрузки (в реальном проекте здесь будет API вызов)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Добавляем загруженные файлы в состояние
+      const newCreatives = Array.from(files).map((file, index) => ({
+        id: Date.now() + index,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: URL.createObjectURL(file),
+        uploadedAt: new Date().toISOString()
+      }));
+
+      setUploadedCreatives(prev => [...prev, ...newCreatives]);
+
+      toast({
+        title: "Успех",
+        description: `Загружено ${files.length} файлов`,
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить файлы",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const removeCreative = (id: number) => {
+    setUploadedCreatives(prev => prev.filter(creative => creative.id !== id));
+    toast({
+      title: "Удалено",
+      description: "Креатив удален",
+    });
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   return (
@@ -554,25 +627,129 @@ export default function OfferDetails() {
           <TabsContent value="creatives" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Image className="w-5 h-5" />
-                  Рекламные материалы
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Image className="w-5 h-5" />
+                    Рекламные материалы
+                  </div>
+                  <Button 
+                    onClick={handleUploadClick}
+                    disabled={isUploading}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {isUploading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Загрузка...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Загрузить файлы
+                      </>
+                    )}
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <Image className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    Креативы не загружены
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Здесь будут отображаться баннеры, изображения и другие рекламные материалы
-                  </p>
-                  <Button>
-                    <Image className="w-4 h-4 mr-2" />
-                    Загрузить креативы
-                  </Button>
-                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,video/*,.pdf,.zip,.rar"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                
+                {uploadedCreatives.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Image className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                      Креативы не загружены
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                      Загрузите баннеры, изображения, видео и другие рекламные материалы
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">
+                      Поддерживаются форматы: JPG, PNG, GIF, MP4, PDF, ZIP, RAR
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Загружено файлов: {uploadedCreatives.length}
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {uploadedCreatives.map((creative) => (
+                        <div 
+                          key={creative.id}
+                          className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800"
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                {creative.name}
+                              </h4>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {formatFileSize(creative.size)}
+                              </p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeCreative(creative.id)}
+                              className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          
+                          {creative.type.startsWith('image/') ? (
+                            <div className="mb-3">
+                              <img 
+                                src={creative.url} 
+                                alt={creative.name}
+                                className="w-full h-32 object-cover rounded border"
+                              />
+                            </div>
+                          ) : (
+                            <div className="mb-3 h-32 bg-gray-100 dark:bg-gray-700 rounded border flex items-center justify-center">
+                              <div className="text-center">
+                                <Image className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {creative.type.split('/')[1]?.toUpperCase() || 'FILE'}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {new Date(creative.uploadedAt).toLocaleDateString('ru-RU')}
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                const link = document.createElement('a');
+                                link.href = creative.url;
+                                link.download = creative.name;
+                                link.click();
+                              }}
+                              className="h-7 px-2 text-xs"
+                            >
+                              <Download className="w-3 h-3 mr-1" />
+                              Скачать
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
