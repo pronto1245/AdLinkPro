@@ -291,6 +291,7 @@ export default function OfferDetails() {
           <div className="container mx-auto px-6 py-8 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-6">OFFER-DETAILS</h1>
           <Button
             variant="ghost"
             onClick={() => setLocation('/admin/offers')}
@@ -303,9 +304,9 @@ export default function OfferDetails() {
           <div className="flex items-center justify-between">
             <div>
               <div className="mb-2">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                   {offer.name}
-                </h1>
+                </h2>
               </div>
               <div className="flex items-center gap-3">
                 <Badge className={getStatusColor(offer.status)}>
