@@ -35,18 +35,14 @@ const createOfferSchema = z.object({
     url: z.string().url('Неверный URL'),
     payoutAmount: z.number().min(0, 'Сумма должна быть положительной'),
     currency: z.string().default('USD'),
-  })).default([{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD' }]),
+    geo: z.string().optional(),
+  })).default([{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]),
   payoutType: z.string().default('cpa'),
   payoutAmount: z.number().min(0),
   currency: z.string().default('USD'),
   landingInfo: z.string().optional(),
   kpiConditions: z.string().optional(),
-  geoTargeting: z.string().optional(),
-  geoPricing: z.array(z.object({
-    country: z.string().min(1, 'Страна обязательна'),
-    payoutAmount: z.number().min(0, 'Сумма должна быть положительной'),
-    currency: z.string().default('USD'),
-  })).default([]),
+
   allowedTrafficSources: z.array(z.string()).default([]),
   dailyLimit: z.number().optional(),
   monthlyLimit: z.number().optional(),
@@ -73,14 +69,13 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
       status: 'draft',
       description: '',
       logo: '',
-      landingPages: [{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD' }],
+      landingPages: [{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }],
       payoutType: 'cpa',
       payoutAmount: 0,
       currency: 'USD',
       landingInfo: '',
       kpiConditions: '',
-      geoTargeting: '',
-      geoPricing: [],
+
       allowedTrafficSources: [],
       antifraudEnabled: true,
       autoApprovePartners: false,
@@ -226,11 +221,35 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             <FormItem>
               <FormLabel>Логотип оффера</FormLabel>
               <FormControl>
-                <div className="flex items-center gap-3">
-                  <Input {...field} placeholder="URL логотипа" data-testid="input-logo" />
-                  <Button type="button" variant="outline" size="sm">
-                    Загрузить логотип
-                  </Button>
+                <div className="space-y-3">
+                  <Input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          field.onChange(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    data-testid="input-logo" 
+                  />
+                  {field.value && (
+                    <div className="flex items-center gap-3">
+                      <img src={field.value} alt="Логотип" className="h-16 w-16 object-cover rounded border" />
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => field.onChange('')}
+                      >
+                        Удалить логотип
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </FormControl>
               <FormMessage />
@@ -247,7 +266,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
               size="sm"
               onClick={() => {
                 const current = form.getValues('landingPages');
-                form.setValue('landingPages', [...current, { name: '', url: '', payoutAmount: 0, currency: 'USD' }]);
+                form.setValue('landingPages', [...current, { name: '', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]);
               }}
               data-testid="button-add-landing-page"
             >
@@ -258,7 +277,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           
           <div className="space-y-3">
             {form.watch('landingPages').map((_, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+              <div key={index} className="grid grid-cols-1 md:grid-cols-6 gap-3 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
                 <FormField
                   control={form.control}
                   name={`landingPages.${index}.name`}
@@ -325,8 +344,23 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                           <SelectItem value="USD">USD</SelectItem>
                           <SelectItem value="EUR">EUR</SelectItem>
                           <SelectItem value="GBP">GBP</SelectItem>
+                          <SelectItem value="RUB">RUB</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name={`landingPages.${index}.geo`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Гео</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="US, GB, DE..." data-testid={`input-landing-geo-${index}`} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -427,124 +461,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="geoTargeting"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Гео-таргетинг (страны)</FormLabel>
-              <FormControl>
-                <Textarea 
-                  {...field} 
-                  placeholder="Введите коды стран через запятую (например: US, GB, DE)&#10;Доступные страны: US, UK, CA, AU, DE, FR, IT, ES, NL, SE, NO, DK, FI, PL, CZ, HU, RO, BG, HR, SI, SK, LT, LV, EE, RU, UA, BY, KZ, JP, KR, CN, IN, BR, MX, AR, CL"
-                  rows={3}
-                  data-testid="textarea-geo-targeting"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-base font-medium">Разные цены по странам</Label>
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                const current = form.getValues('geoPricing');
-                form.setValue('geoPricing', [...current, { country: '', payoutAmount: 0, currency: 'USD' }]);
-              }}
-              data-testid="button-add-geo-pricing"
-            >
-              <PlusCircle className="w-4 h-4 mr-2" />
-              Добавить гео-цену
-            </Button>
-          </div>
-          
-          <div className="space-y-3">
-            {form.watch('geoPricing').map((_, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-3 p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                <FormField
-                  control={form.control}
-                  name={`geoPricing.${index}.country`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm">Страна</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="US, GB, DE..." data-testid={`input-geo-country-${index}`} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name={`geoPricing.${index}.payoutAmount`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm">Сумма выплаты</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          type="number" 
-                          step="0.01"
-                          value={field.value || ''}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                          placeholder="0.00" 
-                          data-testid={`input-geo-payout-${index}`} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name={`geoPricing.${index}.currency`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm">Валюта</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid={`select-geo-currency-${index}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="USD">USD</SelectItem>
-                          <SelectItem value="EUR">EUR</SelectItem>
-                          <SelectItem value="GBP">GBP</SelectItem>
-                          <SelectItem value="RUB">RUB</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="flex items-end">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      const current = form.getValues('geoPricing');
-                      form.setValue('geoPricing', current.filter((_, i) => i !== index));
-                    }}
-                    data-testid={`button-remove-geo-pricing-${index}`}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
         <div className="space-y-4">
           <Label className="text-base font-medium">Разрешенные источники трафика</Label>
