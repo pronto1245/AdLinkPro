@@ -39,7 +39,7 @@ const createOfferSchema = z.object({
   currency: z.string().default('USD'),
   landingInfo: z.string().optional(),
   kpiConditions: z.string().optional(),
-  geoTargeting: z.array(z.string()).default([]),
+  geoTargeting: z.string().optional(),
   allowedTrafficSources: z.array(z.string()).default([]),
   dailyLimit: z.number().optional(),
   monthlyLimit: z.number().optional(),
@@ -72,7 +72,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
       currency: 'USD',
       landingInfo: '',
       kpiConditions: '',
-      geoTargeting: [],
+      geoTargeting: '',
       allowedTrafficSources: [],
       antifraudEnabled: true,
       autoApprovePartners: false,
@@ -105,9 +105,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
     'gambling', 'finance', 'nutra', 'dating', 'sweepstakes', 'crypto', 'e-commerce', 'mobile', 'games', 'software'
   ];
 
-  const countries = [
-    'US', 'UK', 'CA', 'AU', 'DE', 'FR', 'IT', 'ES', 'NL', 'SE', 'NO', 'DK', 'FI', 'PL', 'CZ', 'HU', 'RO', 'BG', 'HR', 'SI', 'SK', 'LT', 'LV', 'EE', 'RU', 'UA', 'BY', 'KZ', 'JP', 'KR', 'CN', 'IN', 'BR', 'MX', 'AR', 'CL'
-  ];
+
 
   const trafficSources = [
     'facebook_ads', 'google_ads', 'tiktok_ads', 'instagram_ads', 'snapchat_ads', 'twitter_ads', 'pinterest_ads', 'reddit_ads', 'linkedin_ads', 'mytarget',
@@ -230,6 +228,13 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     <SelectItem value="cpa">CPA - Cost Per Action</SelectItem>
                     <SelectItem value="cps">CPS - Cost Per Sale</SelectItem>
                     <SelectItem value="cpl">CPL - Cost Per Lead</SelectItem>
+                    <SelectItem value="cpm">CPM - Cost Per Mile</SelectItem>
+                    <SelectItem value="cpc">CPC - Cost Per Click</SelectItem>
+                    <SelectItem value="cpi">CPI - Cost Per Install</SelectItem>
+                    <SelectItem value="cro">CRO - Cost Per Registration</SelectItem>
+                    <SelectItem value="revshare">RevShare - Revenue Share</SelectItem>
+                    <SelectItem value="hybrid">Hybrid</SelectItem>
+                    <SelectItem value="fixed">Fixed</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -302,28 +307,24 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           )}
         />
 
-        <div className="space-y-4">
-          <Label className="text-base font-medium">Гео-таргетинг (страны)</Label>
-          <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-40 overflow-y-auto border rounded-md p-3">
-            {countries.map((country) => (
-              <div key={country} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`country-${country}`}
-                  checked={form.watch('geoTargeting').includes(country)}
-                  onCheckedChange={(checked) => {
-                    const current = form.getValues('geoTargeting');
-                    if (checked) {
-                      form.setValue('geoTargeting', [...current, country]);
-                    } else {
-                      form.setValue('geoTargeting', current.filter(c => c !== country));
-                    }
-                  }}
+        <FormField
+          control={form.control}
+          name="geoTargeting"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Гео-таргетинг (страны)</FormLabel>
+              <FormControl>
+                <Textarea 
+                  {...field} 
+                  placeholder="Введите коды стран через запятую (например: US, GB, DE)&#10;Доступные страны: US, UK, CA, AU, DE, FR, IT, ES, NL, SE, NO, DK, FI, PL, CZ, HU, RO, BG, HR, SI, SK, LT, LV, EE, RU, UA, BY, KZ, JP, KR, CN, IN, BR, MX, AR, CL"
+                  rows={3}
+                  data-testid="textarea-geo-targeting"
                 />
-                <Label htmlFor={`country-${country}`} className="text-sm">{country}</Label>
-              </div>
-            ))}
-          </div>
-        </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="space-y-4">
           <Label className="text-base font-medium">Разрешенные источники трафика</Label>
