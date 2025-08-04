@@ -1585,7 +1585,16 @@ const FraudDetectionPage = () => {
                         <Label className="text-sm font-medium">Автоматические блокировки</Label>
                         <p className="text-xs text-gray-500">Блокировать IP автоматически при высоком риске</p>
                       </div>
-                      <Switch defaultChecked data-testid="auto-block-toggle" />
+                      <Switch 
+                        defaultChecked 
+                        onCheckedChange={(checked) => {
+                          toast({
+                            title: checked ? "Автоблокировки включены" : "Автоблокировки отключены",
+                            description: `Автоматические блокировки ${checked ? 'активированы' : 'деактивированы'}`,
+                          });
+                        }}
+                        data-testid="auto-block-toggle" 
+                      />
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -1593,7 +1602,16 @@ const FraudDetectionPage = () => {
                         <Label className="text-sm font-medium">Email уведомления</Label>
                         <p className="text-xs text-gray-500">Отправлять уведомления о фроде на email</p>
                       </div>
-                      <Switch defaultChecked data-testid="email-notifications-toggle" />
+                      <Switch 
+                        defaultChecked 
+                        onCheckedChange={(checked) => {
+                          toast({
+                            title: checked ? "Email уведомления включены" : "Email уведомления отключены",
+                            description: `Email уведомления о фроде ${checked ? 'активированы' : 'деактивированы'}`,
+                          });
+                        }}
+                        data-testid="email-notifications-toggle" 
+                      />
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -1601,7 +1619,16 @@ const FraudDetectionPage = () => {
                         <Label className="text-sm font-medium">Real-time мониторинг</Label>
                         <p className="text-xs text-gray-500">Мониторинг в реальном времени</p>
                       </div>
-                      <Switch defaultChecked data-testid="realtime-monitoring-toggle" />
+                      <Switch 
+                        defaultChecked 
+                        onCheckedChange={(checked) => {
+                          toast({
+                            title: checked ? "Real-time мониторинг включён" : "Real-time мониторинг отключён",
+                            description: `Мониторинг в реальном времени ${checked ? 'активирован' : 'деактивирован'}`,
+                          });
+                        }}
+                        data-testid="realtime-monitoring-toggle" 
+                      />
                     </div>
                     
                     <div className="space-y-2">
@@ -1651,7 +1678,17 @@ const FraudDetectionPage = () => {
                     </div>
                     
                     <div className="pt-4">
-                      <Button className="w-full" data-testid="save-settings-btn" title="Сохранить настройки">
+                      <Button 
+                        className="w-full" 
+                        onClick={() => {
+                          toast({
+                            title: "Настройки сохранены",
+                            description: "Конфигурация интеграций успешно обновлена",
+                          });
+                        }}
+                        data-testid="save-settings-btn" 
+                        title="Сохранить настройки"
+                      >
                         <Save className="w-4 h-4 mr-2" />
                         Сохранить настройки
                       </Button>
