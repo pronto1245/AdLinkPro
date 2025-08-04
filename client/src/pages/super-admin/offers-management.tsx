@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClientt } from '@tanstack/react-query';
 
 import { useLocation } from 'wouter';
 import Sidebar from '@/components/layout/sidebar';
@@ -13,13 +13,12 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Search, Filter, Eye, Edit, Ban, Archive, CheckCircle, XCircle, AlertTriangle, Download, Upload, Plus, Trash2, PlusCircle, Check, Play, Pause, Copy } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
+import { useToastt } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,12 +37,12 @@ const createOfferSchema = z.object({
   payoutType: z.string().default('cpa'),
   currency: z.string().default('USD'),
   landingPages: z.array(z.object({
-    name: z.string().min(1, 'Название обязательно'),
-    url: z.string().url('Неверный URL'),
-    payoutAmount: z.number().min(0, 'Сумма должна быть положительной'),
+    name: z.string().min(1, 'Name is required'),
+    url: z.string().url('Invalid URL'),
+    payoutAmount: z.number().min(0, 'Amount must be positive'),
     currency: z.string().default('USD'),
     geo: z.string().optional(),
-  })).default([{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]),
+  })).default([{ name: 'Main Page', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]),
   kpiConditions_ru: z.string().optional(),
   kpiConditions_en: z.string().optional(),
   allowedTrafficSources: z.array(z.string()).default([]),
@@ -61,8 +60,7 @@ interface CreateOfferFormProps {
 }
 
 function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient;
   
   const form = useForm<CreateOfferFormData>({
     resolver: zodResolver(createOfferSchema),
@@ -75,7 +73,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
       goals_en: '',
       logo: '',
       status: 'draft',
-      landingPages: [{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }],
+      landingPages: [{ name: 'Main Page', url: '', payoutAmount: 0, currency: 'USD', geo: '' }],
       payoutType: 'cpa',
       currency: 'USD',
       kpiConditions_ru: '',
@@ -113,16 +111,16 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
       toast({
-        title: t('success'),
-        description: t('offer_created_successfully'),
+        title: 'Success',
+        description: 'Text',
       });
       onSuccess();
-      form.reset();
+      form.reset()
     },
     onError: (error: any) => {
       toast({
-        title: t('error'),
-        description: error.message || t('failed_to_create_offer'),
+        title: 'Error',
+        description: error.message || 'Failed to create offer',
         variant: "destructive",
       });
     },
@@ -143,15 +141,15 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((data) => createOfferMutation.mutate(data))} className="space-y-6">
+      <form onSubmit={form.handleSubmit(data => createOfferMutation.mutate(data))} className="space-y-6">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('offer_name')} *</FormLabel>
+              <FormLabel>Offer Name *</FormLabel>
               <FormControl>
-                <Input {...field} placeholder={t('offer_name_placeholder')} data-testid="input-offer-name" />
+                <Input {...field} placeholder="Enter offer name" data-testid="input-offer-name" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -164,17 +162,16 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('category')}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-category">
-                      <SelectValue placeholder={t('select_category')} />
+                      <SelectValue placeholder="Select option" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {categories.map(category => (
                       <SelectItem key={category} value={category}>
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                        {category.charA0.toUpperCase() + category.slice(1)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -189,7 +186,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('status')}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-status">
@@ -197,10 +193,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="draft">{t('draft')}</SelectItem>
-                    <SelectItem value="pending">{t('waiting')}</SelectItem>
-                    <SelectItem value="active">{t('active')}</SelectItem>
-                    <SelectItem value="paused">{t('paused')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -211,7 +203,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
         </div>
 
         <div className="space-y-4">
-          <Label className="text-base font-medium">{t('description')}</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -220,7 +211,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 <FormItem>
                   <FormLabel>Описание (Русский)</FormLabel>
                   <FormControl>
-                    <Textarea {...field} placeholder="Описание оффера на русском языке" rows={3} data-testid="textarea-description-ru" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -233,7 +223,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 <FormItem>
                   <FormLabel>Description (English)</FormLabel>
                   <FormControl>
-                    <Textarea {...field} placeholder="Offer description in English" rows={3} data-testid="textarea-description-en" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -247,7 +236,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           name="logo"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('offer_logo')}</FormLabel>
               <FormControl>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
@@ -261,9 +249,9 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                         input.onchange = (e) => {
                           const file = (e.target as HTMLInputElement).files?.[0];
                           if (file) {
-                            // Проверяем размер файла (максимум 2MB)
+                            // Check file size (максимум 2MB)
                             if (file.size > 2 * 1024 * 1024) {
-                              alert(t('file_size_too_large'));
+                              alert('File size too large');
                               return;
                             }
                             const reader = new FileReader();
@@ -277,23 +265,21 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       }}
                       data-testid="button-choose-logo"
                     >
-                      {t('choose_file')}
                     </Button>
                     {field.value && (
-                      <span className="text-sm text-muted-foreground">{t('file_selected')}</span>
+                      <div className="mt-2">
+                        <img src={field.value} alt="Logo preview" className="w-20 h-20 object-cover rounded" />
+                      </div>
                     )}
                   </div>
                   {field.value && (
                     <div className="flex items-center gap-3">
-                      <img src={field.value} alt={t('logo')} className="h-16 w-16 object-cover rounded border" />
                       <Button 
                         type="button" 
                         variant="outline" 
                         size="sm"
                         onClick={() => field.onChange('')}
-                        title={t('remove_logo')}
                       >
-                        {t('remove_logo')}
                       </Button>
                     </div>
                   )}
@@ -308,7 +294,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label className="text-base font-medium">{t('landing_pages')}</Label>
             <Button 
               type="button" 
               variant="outline" 
@@ -318,10 +303,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 form.setValue('landingPages', [...current, { name: '', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]);
               }}
               data-testid="button-add-landing-page"
-              title={t('add_new_landing_page')}
             >
               <PlusCircle className="w-4 h-4 mr-2" />
-              {t('add_page')}
             </Button>
           </div>
           
@@ -334,9 +317,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     name={`landingPages.${index}.name`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm">{t('landing_name')}</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder={t('main_page')} data-testid={`input-landing-name-${index}`} />
+                          <Input {...field} placeholder="Select option" data-testid={`input-landing-name-${index}`} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -350,7 +332,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       <FormItem>
                         <FormLabel className="text-sm">URL</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder={t('url_placeholder')} data-testid={`input-landing-url-${index}`} />
+                          <Input {...field} placeholder="Select option" data-testid={`input-landing-url-${index}`} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -364,14 +346,13 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     name={`landingPages.${index}.payoutAmount`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm">{t('payout_amount')}</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
                             type="number" 
                             step="0.01"
                             value={field.value || ''}
-                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            onChange={(e) => field.onChange(parseFloae.target.value || 0)}
                             onWheel={(e) => e.currentTarget.blur()}
                             placeholder="0.00" 
                             data-testid={`input-landing-payout-${index}`}
@@ -388,7 +369,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     name={`landingPages.${index}.currency`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm">{t('currency')}</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid={`select-landing-currency-${index}`}>
@@ -412,9 +392,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     name={`landingPages.${index}.geo`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm">{t('geo')}</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder={t('geo_placeholder')} data-testid={`input-landing-geo-${index}`} />
+                          <Input {...field} placeholder="Select option" data-testid={`input-landing-geo-${index}`} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -432,7 +411,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                           form.setValue('landingPages', current.filter((_, i) => i !== index));
                         }}
                         data-testid={`button-remove-landing-page-${index}`}
-                        title={t('remove_landing_page')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -450,7 +428,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             name="payoutType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('payout_type')} ({t('default')})</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-payout-type">
@@ -480,7 +457,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             name="currency"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('default_currency')}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-currency">
@@ -502,7 +478,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
 
 
         <div className="space-y-4">
-          <Label className="text-base font-medium">{t('kpi_conditions')}</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -511,7 +486,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 <FormItem>
                   <FormLabel>KPI условия (Русский)</FormLabel>
                   <FormControl>
-                    <Textarea 
                       {...field} 
                       placeholder="Условия KPI на русском языке"
                       rows={2}
@@ -529,7 +503,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 <FormItem>
                   <FormLabel>KPI Conditions (English)</FormLabel>
                   <FormControl>
-                    <Textarea 
                       {...field} 
                       placeholder="KPI conditions in English"
                       rows={2}
@@ -544,7 +517,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
         </div>
 
         <div className="space-y-4">
-          <Label className="text-base font-medium">{t('offer_goals')}</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -553,7 +525,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 <FormItem>
                   <FormLabel>Цели (Русский)</FormLabel>
                   <FormControl>
-                    <Textarea 
                       {...field} 
                       placeholder="Цели оффера на русском языке"
                       rows={2}
@@ -571,7 +542,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 <FormItem>
                   <FormLabel>Goals (English)</FormLabel>
                   <FormControl>
-                    <Textarea 
                       {...field} 
                       placeholder="Offer goals in English"
                       rows={2}
@@ -588,7 +558,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
 
 
         <div className="space-y-4">
-          <Label className="text-base font-medium">{t('allowed_traffic_sources')}</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto border rounded-md p-3">
             {trafficSources.map((source) => (
               <div key={source} className="flex items-center space-x-2">
@@ -613,7 +582,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
         </div>
 
         <div className="space-y-4">
-          <Label className="text-base font-medium">{t('allowed_apps')}</Label>
           <FormField
             control={form.control}
             name="allowedApps"
@@ -630,29 +598,18 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       }}
                     >
                       <SelectTrigger data-testid="select-allowed-apps">
-                        <SelectValue placeholder={t('select_app')} />
+                          <SelectTrigger><SelectValue placeholder="Select option" /></SelectTrigger>
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="PWA apps">{t('pwa_apps')}</SelectItem>
-                        <SelectItem value="WebView apps">{t('webview_apps')}</SelectItem>
-                        <SelectItem value="Native Android (.apk) apps">{t('android_apps')}</SelectItem>
-                        <SelectItem value="iOS apps">{t('ios_apps')}</SelectItem>
-                        <SelectItem value="Mobile apps">{t('mobile_apps')}</SelectItem>
-                        <SelectItem value="Desktop apps">{t('desktop_apps')}</SelectItem>
-                        <SelectItem value="Web apps">{t('web_apps')}</SelectItem>
-                        <SelectItem value="Telegram bots">{t('telegram_bots')}</SelectItem>
-                        <SelectItem value="Browser extensions">{t('browser_extensions')}</SelectItem>
-                        <SelectItem value="Chrome extensions">{t('chrome_extensions')}</SelectItem>
-                        <SelectItem value="Firefox extensions">{t('firefox_extensions')}</SelectItem>
                       </SelectContent>
                     </Select>
                     
                     <div className="flex gap-2">
                       <Input 
-                        placeholder={t('custom_app_placeholder')}
+                        placeholder="Select option"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
-                            e.preventDefault();
+                            e.preventDefaul;
                             const value = e.currentTarget.value.trim();
                             if (value) {
                               const current = field.value || [];
@@ -681,7 +638,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                         }}
                         data-testid="button-add-custom-app"
                       >
-                        {t('add')}
                       </Button>
                     </div>
                     
@@ -720,15 +676,14 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             name="dailyLimit"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('daily_limit')}</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
                     type="number"
                     value={field.value || ''}
-                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                    onChange={(e) => field.onChange(e.target.value ? parseIne.target.value : undefined)}
                     onWheel={(e) => e.currentTarget.blur()}
-                    placeholder={t('unlimited')} 
+                    placeholder="Select option" 
                     data-testid="input-daily-limit"
                     className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -743,15 +698,14 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             name="monthlyLimit"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('monthly_limit')}</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
                     type="number"
                     value={field.value || ''}
-                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                    onChange={(e) => field.onChange(e.target.value ? parseIne.target.value : undefined)}
                     onWheel={(e) => e.currentTarget.blur()}
-                    placeholder={t('unlimited')} 
+                    placeholder="Select option" 
                     data-testid="input-monthly-limit"
                     className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -769,7 +723,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">{t('antifraud_enabled')}</FormLabel>
                 </div>
                 <FormControl>
                   <Switch
@@ -788,7 +741,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">{t('auto_approve_partners')}</FormLabel>
                 </div>
                 <FormControl>
                   <Switch
@@ -804,14 +756,13 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
 
         <div className="flex justify-end gap-3 pt-6">
           <Button type="button" variant="outline" onClick={onSuccess}>
-            {t('cancel')}
           </Button>
           <Button 
             type="submit" 
             disabled={createOfferMutation.isPending}
             data-testid="button-submit-offer"
           >
-            {createOfferMutation.isPending ? t('creating') : t('create_offer')}
+            {createOfferMutation.isPending ? 'creating' : 'create_offer'}
           </Button>
         </div>
       </form>
@@ -883,9 +834,8 @@ interface OfferLog {
   createdAt: string;
 }
 
-export default function OffersManagement() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+export default function UsersManagement() {
+  const queryClient = useQueryClien;
   const [, setLocation] = useLocation();
   const { isCollapsed } = useSidebar();
   
@@ -897,7 +847,6 @@ export default function OffersManagement() {
   // Copy URL function
   const copyToClipboard = async (text: string, id: string) => {
     try {
-      await navigator.clipboard.writeText(text);
       setCopiedUrls(prev => ({ ...prev, [id]: true }));
       toast({
         title: "URL скопирован",
@@ -931,20 +880,19 @@ export default function OffersManagement() {
   const [offerNameSearch, setOfferNameSearch] = useState('all');
 
   // Fetch all offers for dropdown
-  const { data: allOffers = [] } = useQuery<Offer[]>({
     queryKey: ['/api/admin/offers'],
   });
 
   // Filter and sort offers
   const offers = allOffers
     // Сначала сортируем по дате создания (новые вверху)
-    .sort((a: Offer, b: Offer) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sor(a: Offer, b: Offer => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     // Затем фильтруем
     .filter((offer: Offer) => {
       const matchesGeneralSearch = !searchTerm || (
         offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (typeof offer.description === 'object' ? 
-          getMultilingualText(offer.description, language, '').toLowerCase().includes(searchTerm.toLowerCase()) :
+          (offer.description.en || '').toLowerCase().includes(searchTerm.toLowerCase()) :
           offer.description?.toLowerCase().includes(searchTerm.toLowerCase())
         ) ||
         offer.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -963,13 +911,11 @@ export default function OffersManagement() {
 
 
   // Fetch offer logs
-  const { data: offerLogs = [] } = useQuery({
     queryKey: ['/api/admin/offer-logs', selectedOffer?.id],
     enabled: !!selectedOffer?.id,
   });
 
   // Fetch statistics for selected offer
-  const { data: offerStats } = useQuery({
     queryKey: ['/api/admin/offer-stats', selectedOffer?.id],
     enabled: !!selectedOffer?.id,
   });
@@ -987,13 +933,13 @@ export default function OffersManagement() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
       setIsModerationDialogOpen(false);
       toast({
-        title: t('success'),
-        description: t('operation_completed'),
+        title: 'success',
+        description: 'Text',
       });
     },
     onError: (error: any) => {
       toast({
-        title: t('error'),
+        title: 'error',
         description: error.message,
         variant: "destructive",
       });
@@ -1003,7 +949,7 @@ export default function OffersManagement() {
   // Bulk actions mutations
   const bulkActivateMutation = useMutation({
     mutationFn: async (offerIds: string[]) => {
-      const response = await apiRequest('POST', '/api/admin/offers/bulk-activate', { offerIds });
+      const response = await apiRequest(POST', '/api/admin/offers/bulk-activate', { offerIds };
       return response.json();
     },
     onSuccess: () => {
@@ -1026,7 +972,7 @@ export default function OffersManagement() {
 
   const bulkPauseMutation = useMutation({
     mutationFn: async (offerIds: string[]) => {
-      const response = await apiRequest('POST', '/api/admin/offers/bulk-pause', { offerIds });
+      const response = await apiRequest(POST', '/api/admin/offers/bulk-pause', { offerIds };
       return response.json();
     },
     onSuccess: () => {
@@ -1049,7 +995,7 @@ export default function OffersManagement() {
 
   const bulkDeleteMutation = useMutation({
     mutationFn: async (offerIds: string[]) => {
-      const response = await apiRequest('POST', '/api/admin/offers/bulk-delete', { offerIds });
+      const response = await apiRequest(POST', '/api/admin/offers/bulk-delete', { offerIds };
       return response.json();
     },
     onSuccess: () => {
@@ -1089,27 +1035,27 @@ export default function OffersManagement() {
   };
 
   // Update showBulkActions when selectedOffers changes
-  React.useEffect(() => {
+  React.useEffect( => {
     setShowBulkActions(selectedOffers.length > 0);
   }, [selectedOffers]);
 
   // Update offer mutation
   const updateOfferMutation = useMutation({
     mutationFn: async (offerData: Partial<Offer>) => {
-      const response = await apiRequest('PUT', `/api/admin/offers/${offerData.id}`, offerData);
+      const response = await apiRequest(PUT', `/api/admin/offers/${offerData.id}`, offerData;
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
       setIsEditDialogOpen(false);
       toast({
-        title: t('success'),
-        description: t('data_updated'),
+        title: 'success',
+        description: 'Text',
       });
     },
     onError: (error: any) => {
       toast({
-        title: t('error'),
+        title: 'error',
         description: error.message,
         variant: "destructive",
       });
@@ -1119,7 +1065,7 @@ export default function OffersManagement() {
   // Delete offer mutation
   const deleteOfferMutation = useMutation({
     mutationFn: async (offerId: string) => {
-      const response = await apiRequest('DELETE', `/api/admin/offers/${offerId}`);
+      const response = await apiRequest(DELETE', `/api/admin/offers/${offerId}`;
       return response.json();
     },
     onSuccess: () => {
@@ -1150,7 +1096,7 @@ export default function OffersManagement() {
         name: offer.name,
         category: offer.category,
         description: typeof offer.description === 'object' ? 
-          getMultilingualText(offer.description, language, '') : 
+          (offer.description.en || offer.description.ru || '') :
           offer.description,
         status: offer.status,
         payoutType: offer.payoutType,
@@ -1169,9 +1115,9 @@ export default function OffersManagement() {
       const dataBlob = new Blob([dataStr], { type: 'application/json' });
       
       const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
+      const link = document.createElement('a';
       link.href = url;
-      link.download = `offers_export_${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `offers_export_${new Date().toISOString().spli'T'[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1201,7 +1147,7 @@ export default function OffersManagement() {
   // Импорт офферов
   const handleImportOffers = async (file: File) => {
     try {
-      const text = await file.text();
+      const text = await file.tex;
       const importedOffers = JSON.parse(text);
       
       if (!Array.isArray(importedOffers)) {
@@ -1233,27 +1179,21 @@ export default function OffersManagement() {
   };
 
   const getStatusBadge = (status: string, moderationStatus: string, isBlocked: boolean, isArchived: boolean) => {
-    if (isArchived) return <Badge variant="secondary">{t('archived')}</Badge>;
-    if (isBlocked) return <Badge variant="destructive">{t('blocked')}</Badge>;
     
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500 hover:bg-green-600 text-white">{t('active')}</Badge>;
       case 'paused':
-        return <Badge className="bg-red-500 hover:bg-red-600 text-white">{t('paused')}</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">{t('pending')}</Badge>;
       case 'draft':
-        return <Badge variant="outline">{t('draft')}</Badge>;
       default:
-        return <Badge variant="outline">{t(status)}</Badge>;
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   // Change status mutation
   const changeStatusMutation = useMutation({
     mutationFn: async ({ offerId, status }: { offerId: string; status: string }) => {
-      const response = await apiRequest('PUT', `/api/admin/offers/${offerId}`, { status });
+      const response = await apiRequest(PUT', `/api/admin/offers/${offerId}`, { status };
       return await response.json();
     },
     onSuccess: (updatedOffer) => {
@@ -1267,14 +1207,14 @@ export default function OffersManagement() {
       setIsStatusDialogOpen(false);
       setStatusChangeOffer(null);
       toast({
-        title: t('success'),
-        description: t('status_changed_successfully'),
+        title: 'success',
+        description: 'Text',
       });
     },
     onError: (error: any) => {
       toast({
-        title: t('error'),
-        description: t('failed_to_change_status'),
+        title: 'error',
+        description: 'Text',
         variant: "destructive",
       });
     }
@@ -1304,7 +1244,7 @@ export default function OffersManagement() {
         <div className="flex-1 flex flex-col">
           <Header title="" subtitle="" />
           <main className="flex-1 p-6">
-            <div className="flex items-center justify-center p-8">{t('loading')}</div>
+            <div className="flex items-center justify-center p-8">Loading...</div>
           </main>
         </div>
       </div>
@@ -1320,21 +1260,21 @@ export default function OffersManagement() {
           <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">{t('offer_management')}</h1>
+          <h1 className="text-3xl font-bold">Offer Management</h1>
         </div>
         <div className="flex gap-2">
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button data-testid="button-create-offer" title={t('create_offer_button')}>
+              <Button data-testid="button-create-offer" title="Create Offer">
                 <Plus className="w-4 h-4 mr-2" />
-                {t('create_offer_button')}
+                Create Offer
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>{t('create_new_offer')}</DialogTitle>
+                <DialogTitle>Create New Offer</DialogTitle>
                 <DialogDescription>
-                  {t('fill_offer_information')}
+                  Fill in the information to create a new offer
                 </DialogDescription>
               </DialogHeader>
               <CreateOfferForm onSuccess={() => setIsCreateDialogOpen(false)} />
@@ -1348,7 +1288,6 @@ export default function OffersManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="w-5 h-5" />
-{t('filters')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -1356,7 +1295,7 @@ export default function OffersManagement() {
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={t('search')}
+                placeholder="Select option"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -1364,12 +1303,11 @@ export default function OffersManagement() {
               />
             </div>
             
-            <Select value={offerNameSearch} onValueChange={setOfferNameSearch}>
-              <SelectTrigger data-testid="select-offer-name" title={t('offer_name_filter_tooltip')}>
-                <SelectValue placeholder={t('all_offers')} />
+            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Select option" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('all_offers')}</SelectItem>
                 {allOffers?.map((offer: Offer) => (
                   <SelectItem key={offer.id} value={offer.name}>
                     {offer.name}
@@ -1378,46 +1316,26 @@ export default function OffersManagement() {
               </SelectContent>
             </Select>
 
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger data-testid="select-status-filter" title={t('status_filter_tooltip')}>
-                <SelectValue placeholder={t('status')} />
+            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select option" /></SelectTrigger>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('all_statuses_filter')}</SelectItem>
-                <SelectItem value="active">{t('active')}</SelectItem>
-                <SelectItem value="paused">{t('paused')}</SelectItem>
-                <SelectItem value="pending">{t('waiting')}</SelectItem>
-                <SelectItem value="draft">{t('draft')}</SelectItem>
               </SelectContent>
             </Select>
 
 
 
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger data-testid="select-category-filter" title={t('category_filter_tooltip')}>
-                <SelectValue placeholder={t('category')} />
+            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
+                <SelectValue placeholder="Select option" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('all_categories_filter')}</SelectItem>
-                <SelectItem value="gambling">{t('gambling')}</SelectItem>
-                <SelectItem value="finance">{t('finance')}</SelectItem>
-                <SelectItem value="nutra">{t('nutra')}</SelectItem>
-                <SelectItem value="dating">{t('dating')}</SelectItem>
-                <SelectItem value="sweepstakes">{t('sweepstakes')}</SelectItem>
-                <SelectItem value="crypto">{t('crypto')}</SelectItem>
-                <SelectItem value="e-commerce">{t('e_commerce')}</SelectItem>
-                <SelectItem value="mobile">{t('mobile')}</SelectItem>
-                <SelectItem value="games">{t('games')}</SelectItem>
-                <SelectItem value="software">{t('software')}</SelectItem>
               </SelectContent>
             </Select>
 
-            <Select value={advertiserFilter} onValueChange={setAdvertiserFilter}>
-              <SelectTrigger data-testid="select-advertiser-filter" title={t('advertiser_filter_tooltip')}>
-                <SelectValue placeholder={t('advertiser')} />
+            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select option" /></SelectTrigger>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('all_advertisers_filter')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1428,7 +1346,6 @@ export default function OffersManagement() {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>{t('offers')} ({offers.length})</CardTitle>
             <div className="flex gap-2">
               <Button
                 size="sm"
@@ -1437,10 +1354,8 @@ export default function OffersManagement() {
                 className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
                 data-testid="button-export-offers"
                 disabled={offers.length === 0}
-                title={t('export_csv_tooltip')}
               >
                 <Download className="w-4 h-4 mr-2" />
-                {selectedOffers.length > 0 ? `${t('export')} (${selectedOffers.length})` : t('export')}
               </Button>
               <Button
                 size="sm"
@@ -1448,10 +1363,8 @@ export default function OffersManagement() {
                 onClick={() => setIsImportDialogOpen(true)}
                 className="border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                 data-testid="button-import-offers"
-                title={t('import_csv_tooltip')}
               >
                 <Upload className="w-4 h-4 mr-2" />
-                {t('import')}
               </Button>
 
             </div>
@@ -1465,7 +1378,6 @@ export default function OffersManagement() {
                 <div className="flex items-center gap-2">
                   <Check className="w-5 h-5 text-blue-600" />
                   <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                    {t('selected_offers')}: {selectedOffers.length}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -1475,10 +1387,8 @@ export default function OffersManagement() {
                     onClick={() => bulkActivateMutation.mutate(selectedOffers)}
                     disabled={bulkActivateMutation.isPending}
                     className="border-green-600 text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
-                    title={t('activate_selected_tooltip')}
                   >
                     <Play className="w-4 h-4 mr-1" />
-                    {t('activate')}
                   </Button>
                   <Button
                     size="sm"
@@ -1486,10 +1396,8 @@ export default function OffersManagement() {
                     onClick={() => bulkPauseMutation.mutate(selectedOffers)}
                     disabled={bulkPauseMutation.isPending}
                     className="border-yellow-600 text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-                    title={t('pause_selected_tooltip')}
                   >
                     <Pause className="w-4 h-4 mr-1" />
-                    {t('pause')}
                   </Button>
                   <Button
                     size="sm"
@@ -1497,10 +1405,8 @@ export default function OffersManagement() {
                     onClick={() => bulkDeleteMutation.mutate(selectedOffers)}
                     disabled={bulkDeleteMutation.isPending}
                     className="border-red-600 text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    title={t('delete_selected_tooltip')}
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
-                    {t('delete')}
                   </Button>
                   <Button
                     size="sm"
@@ -1510,10 +1416,8 @@ export default function OffersManagement() {
                       setShowBulkActions(false);
                     }}
                     className="text-gray-600 hover:text-gray-800"
-                    title={t('cancel_selection_tooltip')}
                   >
                     <XCircle className="w-4 h-4 mr-1" />
-                    {t('cancel')}
                   </Button>
                 </div>
               </div>
@@ -1537,15 +1441,6 @@ export default function OffersManagement() {
                       }}
                     />
                   </TableHead>
-                  <TableHead>{t('offer_name')}</TableHead>
-                  <TableHead>{t('advertiser')}</TableHead>
-                  <TableHead>{t('category')}</TableHead>
-                  <TableHead>{t('payout')}</TableHead>
-                  <TableHead>{t('traffic_sources_column')}</TableHead>
-                  <TableHead>{t('allowed_apps_column')}</TableHead>
-                  <TableHead>{t('status')}</TableHead>
-                  <TableHead>{t('created')}</TableHead>
-                  <TableHead>{t('actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1554,7 +1449,7 @@ export default function OffersManagement() {
                     <TableCell>
                       <Checkbox
                         checked={selectedOffers.includes(offer.id)}
-                        onCheckedChange={(checked) => handleOfferSelect(offer.id, checked as boolean)}
+                        onCheckedChange={(checked) => handleOfferSelecoffer.id, checked as boolean}
                         data-testid={`checkbox-select-${offer.id}`}
                       />
                     </TableCell>
@@ -1580,7 +1475,6 @@ export default function OffersManagement() {
                             {offer.name}
                           </div>
                           <div className="text-sm text-muted-foreground truncate max-w-48">
-                            {getMultilingualText(offer.description, language, t('not_specified'))}
                           </div>
                         </div>
                       </div>
@@ -1595,6 +1489,7 @@ export default function OffersManagement() {
                       {(() => {
                         // Цвета для категорий офферов
                         const getCategoryColor = (category: string) => {
+    const colors = {
                           switch (category?.toLowerCase()) {
                             case 'gambling': return 'bg-red-100 text-red-800 border-red-200';
                             case 'finance': return 'bg-green-100 text-green-800 border-green-200';
@@ -1610,17 +1505,16 @@ export default function OffersManagement() {
                           }
                         };
                         const categoryColor = getCategoryColor(offer.category);
-                        const categoryLabels: {[key: string]: string} = {
-                          'gambling': t('gambling'),
-                          'finance': t('finance'),
-                          'nutra': t('nutra'),
-                          'dating': t('dating'),
-                          'sweepstakes': t('sweepstakes'),
-                          'crypto': t('crypto'),
-                          'e-commerce': t('e_commerce'),
-                          'mobile': t('mobile'),
-                          'games': t('games'),
-                          'software': t('software')
+                          'gambling': 'gambling',
+                          'finance': 'finance',
+                          'nutra': 'nutra',
+                          'dating': 'dating',
+                          'sweepstakes': 'sweepstakes',
+                          'crypto': 'crypto',
+                          'e-commerce': 'e_commerce',
+                          'mobile': 'mobile',
+                          'games': 'games',
+                          'software': 'software'
                         };
                         const categoryLabel = categoryLabels[offer.category] || offer.category;
                         return (
@@ -1641,7 +1535,6 @@ export default function OffersManagement() {
                           </div>
                           <div className={`text-sm font-medium ${offer.landingPages?.length >= 3 ? 'grid grid-cols-2 gap-1' : 'space-x-1'}`}>
                             {offer.landingPages?.map((landing, index) => {
-                              const countryFlags: {[key: string]: string} = {
                                 'us': '🇺🇸',
                                 'gb': '🇬🇧', 
                                 'uk': '🇬🇧',
@@ -1661,7 +1554,6 @@ export default function OffersManagement() {
                               };
                               const flag = countryFlags[landing.geo?.toLowerCase() || ''] || '🌍';
                               const geo = (landing.geo || 'XX').toUpperCase();
-                              const currencySymbols: {[key: string]: string} = {
                                 'USD': '$',
                                 'EUR': '€',
                                 'GBP': '£',
@@ -1702,7 +1594,6 @@ export default function OffersManagement() {
                             {Array.from({ length: Math.ceil(Math.min(offer.trafficSources.length, 4) / 2) }, (_, rowIndex) => (
                               <div key={rowIndex} className="flex gap-1">
                                 {offer.trafficSources.slice(rowIndex * 2, (rowIndex + 1) * 2).map((source, index) => {
-                                  const trafficSourceLabels: {[key: string]: string} = {
                                     'facebook_ads': 'Facebook',
                                     'google_ads': 'Google',
                                     'instagram_ads': 'Instagram',
@@ -1763,11 +1654,9 @@ export default function OffersManagement() {
                               </div>
                             ))}
                             {offer.trafficSources.length > 4 && (
-                              <div className="text-muted-foreground text-xs">+{offer.trafficSources.length - 4} {t('more')}</div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-muted-foreground">{t('not_specified')}</span>
                         )}
                       </div>
                     </TableCell>
@@ -1780,7 +1669,6 @@ export default function OffersManagement() {
                             {Array.from({ length: Math.ceil(Math.min(offer.allowedApps?.length || 0, 4) / 2) }, (_, rowIndex) => (
                               <div key={rowIndex} className="flex gap-1">
                                 {(offer.allowedApps || []).slice(rowIndex * 2, (rowIndex + 1) * 2).map((app: string, index: number) => {
-                                  const appLabels: {[key: string]: string} = {
                                     'PWA apps': 'PWA',
                                     'WebView apps': 'WebView',
                                     'Native Android (.apk) apps': 'Android',
@@ -1805,11 +1693,9 @@ export default function OffersManagement() {
                               </div>
                             ))}
                             {(offer.allowedApps?.length || 0) > 4 && (
-                              <div className="text-muted-foreground text-xs">+{(offer.allowedApps?.length || 0) - 4} {t('more')}</div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-muted-foreground">{t('not_specified')}</span>
                         )}
                       </div>
                     </TableCell>
@@ -1837,7 +1723,6 @@ export default function OffersManagement() {
                           onClick={() => setLocation(`/admin/offers/${offer.id}`)}
                           className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                           data-testid={`button-view-offer-${offer.id}`}
-                          title={t('view_details')}
                         >
                           <Eye className="w-4 h-4 text-blue-600" />
                         </Button>
@@ -1850,7 +1735,6 @@ export default function OffersManagement() {
                           }}
                           className="h-8 w-8 p-0 hover:bg-green-50 dark:hover:bg-green-900/20"
                           data-testid={`button-edit-offer-${offer.id}`}
-                          title={t('edit_offer_action')}
                         >
                           <Edit className="w-4 h-4 text-green-600" />
                         </Button>
@@ -1858,14 +1742,13 @@ export default function OffersManagement() {
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            if (confirm(t('confirm_delete_offer'))) {
+                            if (confirm('confirm_delete_offer')) {
                               deleteOfferMutation.mutate(offer.id);
                             }
                           }}
                           className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
                           data-testid={`button-delete-offer-${offer.id}`}
                           disabled={deleteOfferMutation.isPending}
-                          title={t('delete_offer')}
                         >
                           <Trash2 className="w-4 h-4 text-red-600" />
                         </Button>
@@ -1890,16 +1773,11 @@ export default function OffersManagement() {
             
             <Tabs defaultValue="details" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="details">{t('details')}</TabsTrigger>
-                <TabsTrigger value="analytics">{t('analytics')}</TabsTrigger>
-                <TabsTrigger value="creatives">{t('creatives')}</TabsTrigger>
-                <TabsTrigger value="history">{t('history')}</TabsTrigger>
               </TabsList>
               
               <TabsContent value="details" className="space-y-4">
                 {selectedOffer.logo && (
                   <div>
-                    <Label>{t('logo')}</Label>
                     <div className="mt-2">
                       <img 
                         src={selectedOffer.logo} 
@@ -1912,11 +1790,11 @@ export default function OffersManagement() {
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>{t('category')}</Label>
                     <div className="font-medium">
                       {(() => {
                         // Цвета для категорий офферов
                         const getCategoryColor = (category: string) => {
+    const colors = {
                           switch (category?.toLowerCase()) {
                             case 'gambling': return 'bg-red-100 text-red-800 border-red-200';
                             case 'finance': return 'bg-green-100 text-green-800 border-green-200';
@@ -1932,17 +1810,16 @@ export default function OffersManagement() {
                           }
                         };
                         const categoryColor = getCategoryColor(selectedOffer.category);
-                        const categoryLabels: {[key: string]: string} = {
-                          'gambling': t('gambling'),
-                          'finance': t('finance'),
-                          'nutra': t('nutra'),
-                          'dating': t('dating'),
-                          'sweepstakes': t('sweepstakes'),
-                          'crypto': t('crypto'),
-                          'e-commerce': t('e_commerce'),
-                          'mobile': t('mobile'),
-                          'games': t('games'),
-                          'software': t('software')
+                          'gambling': 'gambling',
+                          'finance': 'finance',
+                          'nutra': 'nutra',
+                          'dating': 'dating',
+                          'sweepstakes': 'sweepstakes',
+                          'crypto': 'crypto',
+                          'e-commerce': 'e_commerce',
+                          'mobile': 'mobile',
+                          'games': 'games',
+                          'software': 'software'
                         };
                         const categoryLabel = categoryLabels[selectedOffer.category] || selectedOffer.category;
                         return (
@@ -1954,19 +1831,16 @@ export default function OffersManagement() {
                     </div>
                   </div>
                   <div>
-                    <Label>{t('vertical')}</Label>
                     <div className="font-medium">{selectedOffer.vertical || 'N/A'}</div>
                   </div>
                   <div>
-                    <Label>{t('payout')}</Label>
                     <div className="font-medium">${selectedOffer.payout} {selectedOffer.payoutType}</div>
                   </div>
                   <div>
-                    <Label>{t('countries')}</Label>
                     <div className="font-medium">
                       {Array.isArray(selectedOffer.countries) && selectedOffer.countries.length > 0 
                         ? selectedOffer.countries.join(', ')
-                        : t('all_countries')}
+                        : 'all_countries'}
                     </div>
                   </div>
                 </div>
@@ -1976,7 +1850,6 @@ export default function OffersManagement() {
                     <Label>Лендинги и цены по гео</Label>
                     <div className="mt-2 space-y-2">
                       {selectedOffer.landingPages.map((landing, index) => {
-                        const countryFlags: {[key: string]: string} = {
                           'us': '🇺🇸',
                           'gb': '🇬🇧', 
                           'uk': '🇬🇧',
@@ -1996,7 +1869,6 @@ export default function OffersManagement() {
                         };
                         const flag = countryFlags[landing.geo?.toLowerCase() || ''] || '🌍';
                         const geo = (landing.geo || 'XX').toUpperCase();
-                        const currencySymbols: {[key: string]: string} = {
                           'USD': '$',
                           'EUR': '€',
                           'GBP': '£',
@@ -2050,7 +1922,6 @@ export default function OffersManagement() {
                 )}
                 
                 <div>
-                  <Label>{t('landing_page')}</Label>
                   <div className="font-medium break-all">{selectedOffer.landingPageUrl || 'Не указано'}</div>
                 </div>
                 
@@ -2062,7 +1933,6 @@ export default function OffersManagement() {
                       {Array.from({ length: Math.ceil(selectedOffer.trafficSources.length / 2) }, (_, rowIndex) => (
                         <div key={rowIndex} className="flex gap-2">
                           {selectedOffer.trafficSources.slice(rowIndex * 2, (rowIndex + 1) * 2).map((source, index) => {
-                            const trafficSourceLabels: {[key: string]: string} = {
                               'facebook_ads': 'Facebook Ads',
                               'google_ads': 'Google Ads',
                               'instagram_ads': 'Instagram Ads',
@@ -2135,7 +2005,6 @@ export default function OffersManagement() {
                       {Array.from({ length: Math.ceil((selectedOffer.allowedApps?.length || 0) / 2) }, (_, rowIndex) => (
                         <div key={rowIndex} className="flex gap-2">
                           {(selectedOffer.allowedApps || []).slice(rowIndex * 2, (rowIndex + 1) * 2).map((app: string, index: number) => {
-                            const appLabels: {[key: string]: string} = {
                               'PWA apps': 'PWA приложения',
                               'WebView apps': 'WebView приложения',
                               'Native Android (.apk) apps': 'Android приложения (.apk)',
@@ -2164,8 +2033,7 @@ export default function OffersManagement() {
                 )}
                 
                 <div>
-                  <Label>{t('restrictions')}</Label>
-                  <div className="font-medium">{selectedOffer.restrictions || t('no_restrictions')}</div>
+                  <div className="font-medium">{selectedOffer.restrictions || 'no_restrictions'}</div>
                 </div>
               </TabsContent>
               
@@ -2174,7 +2042,6 @@ export default function OffersManagement() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">{t('clicks')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{(offerStats as any)?.clicks || 0}</div>
@@ -2182,7 +2049,6 @@ export default function OffersManagement() {
                     </Card>
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">{t('conversions')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{(offerStats as any)?.conversions || 0}</div>
@@ -2190,7 +2056,6 @@ export default function OffersManagement() {
                     </Card>
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">{t('cr')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">{(offerStats as any)?.cr || '0.00'}%</div>
@@ -2198,7 +2063,6 @@ export default function OffersManagement() {
                     </Card>
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">{t('epc')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">${(offerStats as any)?.epc || '0.00'}</div>
@@ -2206,12 +2070,10 @@ export default function OffersManagement() {
                     </Card>
                   </div>
                 ) : (
-                  <div className="text-center py-8">{t('no_data')}</div>
                 )}
               </TabsContent>
               
               <TabsContent value="creatives" className="space-y-4">
-                <div className="text-center py-8">{t('no_creatives_available')}</div>
               </TabsContent>
               
               <TabsContent value="history" className="space-y-4">
@@ -2240,7 +2102,6 @@ export default function OffersManagement() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">{t('no_history_available')}</div>
                 )}
               </TabsContent>
             </Tabs>
@@ -2300,7 +2161,6 @@ export default function OffersManagement() {
 
               <div>
                 <Label>Описание</Label>
-                <Textarea
                   defaultValue={editingOffer.description}
                   onChange={(e) => handleOfferUpdate({ description: e.target.value })}
                   placeholder="Описание оффера"
@@ -2374,7 +2234,6 @@ export default function OffersManagement() {
 
               <div>
                 <Label>KPI условия</Label>
-                <Textarea
                   defaultValue={editingOffer.kpiConditions || ''}
                   onChange={(e) => handleOfferUpdate({ kpiConditions: e.target.value })}
                   placeholder="Условия достижения KPI"
@@ -2388,7 +2247,7 @@ export default function OffersManagement() {
                   <Input
                     type="number"
                     defaultValue={editingOffer.dailyLimit?.toString() || ''}
-                    onChange={(e) => handleOfferUpdate({ dailyLimit: e.target.value ? parseInt(e.target.value) : undefined })}
+                    onChange={(e) => handleOfferUpdate({ dailyLimit: e.target.value ? parseIne.target.value : undefined })}
                     placeholder="Без ограничений"
                   />
                 </div>
@@ -2398,7 +2257,7 @@ export default function OffersManagement() {
                   <Input
                     type="number"
                     defaultValue={editingOffer.monthlyLimit?.toString() || ''}
-                    onChange={(e) => handleOfferUpdate({ monthlyLimit: e.target.value ? parseInt(e.target.value) : undefined })}
+                    onChange={(e) => handleOfferUpdate({ monthlyLimit: e.target.value ? parseIne.target.value : undefined })}
                     placeholder="Без ограничений"
                   />
                 </div>
@@ -2506,7 +2365,7 @@ export default function OffersManagement() {
                           defaultValue={lp.payoutAmount.toString()}
                           onChange={(e) => {
                             const updated = [...(editingOffer.landingPages || [])];
-                            updated[index] = { ...lp, payoutAmount: parseFloat(e.target.value) || 0 };
+                            updated[index] = { ...lp, payoutAmount: parseFloae.target.value || 0 };
                             handleOfferUpdate({ landingPages: updated });
                           }}
                         />
@@ -2546,7 +2405,6 @@ export default function OffersManagement() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <Label>Ограничения</Label>
-                  <Textarea
                     defaultValue={editingOffer.restrictions || ''}
                     onChange={(e) => handleOfferUpdate({ restrictions: e.target.value })}
                     placeholder="Ограничения по траффику"
@@ -2556,7 +2414,6 @@ export default function OffersManagement() {
                 
                 <div>
                   <Label>Комментарий модерации</Label>
-                  <Textarea
                     defaultValue={editingOffer.moderationComment || ''}
                     onChange={(e) => handleOfferUpdate({ moderationComment: e.target.value })}
                     placeholder="Комментарий модератора"
@@ -2662,9 +2519,7 @@ export default function OffersManagement() {
         <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t('change_offer_status')}</DialogTitle>
               <DialogDescription>
-                {t('select_new_status_for')} "{statusChangeOffer.name}"
               </DialogDescription>
             </DialogHeader>
             
@@ -2679,7 +2534,6 @@ export default function OffersManagement() {
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    {t('active')}
                   </div>
                 </Button>
                 
@@ -2692,7 +2546,6 @@ export default function OffersManagement() {
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    {t('paused')}
                   </div>
                 </Button>
                 
@@ -2705,7 +2558,6 @@ export default function OffersManagement() {
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                    {t('pending')}
                   </div>
                 </Button>
                 
@@ -2717,13 +2569,11 @@ export default function OffersManagement() {
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                    {t('draft')}
                   </div>
                 </Button>
               </div>
               
               <div className="text-sm text-muted-foreground">
-                {t('current_status')}: <strong>{t(statusChangeOffer.status)}</strong>
               </div>
             </div>
           </DialogContent>
@@ -2735,7 +2585,6 @@ export default function OffersManagement() {
         <Dialog open={isModerationDialogOpen} onOpenChange={setIsModerationDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t('moderate_offer')}</DialogTitle>
               <DialogDescription>
                 {selectedOffer.name}
               </DialogDescription>
@@ -2750,7 +2599,6 @@ export default function OffersManagement() {
                   data-testid="button-approve-offer"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  {t('approve')}
                 </Button>
                 <Button
                   variant="destructive"
@@ -2760,7 +2608,6 @@ export default function OffersManagement() {
                   data-testid="button-reject-offer"
                 >
                   <XCircle className="w-4 h-4 mr-2" />
-                  {t('reject')}
                 </Button>
               </div>
               
@@ -2773,7 +2620,6 @@ export default function OffersManagement() {
                   data-testid="button-needs-revision-offer"
                 >
                   <AlertTriangle className="w-4 h-4 mr-2" />
-                  {t('needs_revision')}
                 </Button>
                 <Button
                   variant="outline"
@@ -2783,15 +2629,12 @@ export default function OffersManagement() {
                   data-testid="button-archive-offer"
                 >
                   <Archive className="w-4 h-4 mr-2" />
-                  {t('archive')}
                 </Button>
               </div>
 
               <div>
-                <Label htmlFor="moderationComment">{t('comment')}</Label>
-                <Textarea
                   id="moderationComment"
-                  placeholder={t('enter_moderation_comment')}
+                  placeholder="Select option"
                   data-testid="textarea-moderation-comment"
                 />
               </div>

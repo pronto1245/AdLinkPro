@@ -25,19 +25,19 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-export default function FinancesManagement() {
-  const { token } = useAuth();
+export default function UsersManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
+  const { token } = useAuth();
 
-  const { data: allTransactions, isLoading } = useQuery({
+  const { data: finances } = useQuery({
     queryKey: ['/api/admin/finances'],
     queryFn: async () => {
       const response = await fetch('/api/admin/finances', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch transactions');
       return response.json();
@@ -63,11 +63,10 @@ export default function FinancesManagement() {
     return matchesSearch && matchesStatus && matchesType && matchesStartDate && matchesEndDate;
   }) || [];
 
-  const { data: financialMetrics } = useQuery({
     queryKey: ['/api/admin/financial-metrics'],
     queryFn: async () => {
       const response = await fetch('/api/admin/financial-metrics', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch financial metrics');
       return response.json();
@@ -80,7 +79,7 @@ export default function FinancesManagement() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer $token`,
         },
         body: JSON.stringify({ status }),
       });
@@ -164,13 +163,13 @@ export default function FinancesManagement() {
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
-        <Header title={t('financial_management')} />
+        <Header title="Loading..." />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
           <div className="max-w-7xl mx-auto">
             {/* Header Section */}
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('financial_management')}</h1>
-              <p className="text-gray-600 dark:text-gray-400">{t('manage_transactions_payouts')}</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Loading...</h1>
+              <p className="text-gray-600 dark:text-gray-400">Loading...</p>
             </div>
 
             {/* Metrics Grid */}
@@ -181,7 +180,7 @@ export default function FinancesManagement() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                          {t(metric.label)}
+                          {metric.label}
                         </p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-white" data-testid={`metric-value-${metric.label}`}>
                           {metric.value}
@@ -224,43 +223,41 @@ export default function FinancesManagement() {
                     />
                   </div>
 
-                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
                     <SelectTrigger data-testid="select-filter-status" title="Фильтр по статусу">
-                      <SelectValue placeholder={t('filter_by_status')} />
+                      <SelectValue placeholder="Loading..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">{t('all_statuses')}</SelectItem>
-                      <SelectItem value="completed">{t('completed')}</SelectItem>
-                      <SelectItem value="pending">{t('pending')}</SelectItem>
-                      <SelectItem value="processing">{t('processing')}</SelectItem>
-                      <SelectItem value="failed">{t('failed')}</SelectItem>
-                      <SelectItem value="cancelled">{t('cancelled')}</SelectItem>
+                      <SelectItem value="all">Loading...</SelectItem>
+                      <SelectItem value="completed">Loading...</SelectItem>
+                      <SelectItem value="pending">Loading...</SelectItem>
+                      <SelectItem value="processing">Loading...</SelectItem>
+                      <SelectItem value="failed">Loading...</SelectItem>
+                      <SelectItem value="cancelled">Loading...</SelectItem>
                     </SelectContent>
                   </Select>
 
-                  <Select value={filterType} onValueChange={setFilterType}>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
                     <SelectTrigger data-testid="select-filter-type" title="Фильтр по типу">
-                      <SelectValue placeholder={t('filter_by_type')} />
+                      <SelectValue placeholder="Loading..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">{t('all_types')}</SelectItem>
-                      <SelectItem value="commission">{t('commission')}</SelectItem>
-                      <SelectItem value="payout">{t('payout')}</SelectItem>
-                      <SelectItem value="bonus">{t('bonus')}</SelectItem>
-                      <SelectItem value="penalty">{t('penalty')}</SelectItem>
+                      <SelectItem value="all">Loading...</SelectItem>
+                      <SelectItem value="commission">Loading...</SelectItem>
+                      <SelectItem value="payout">Loading...</SelectItem>
+                      <SelectItem value="bonus">Loading...</SelectItem>
+                      <SelectItem value="penalty">Loading...</SelectItem>
                     </SelectContent>
                   </Select>
 
                   <DatePicker
                     selected={startDate}
                     onSelect={setStartDate}
-                    placeholderText={t('start_date')}
                   />
 
                   <DatePicker
                     selected={endDate}
                     onSelect={setEndDate}
-                    placeholderText={t('end_date')}
                   />
 
                   <Button 
@@ -275,7 +272,7 @@ export default function FinancesManagement() {
                     data-testid="button-clear-filters"
                     title="Очистить фильтры"
                   >
-                    {t('clear_filters')}
+                    Loading...
                   </Button>
                 </div>
               </CardContent>
@@ -286,7 +283,7 @@ export default function FinancesManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="w-5 h-5" />
-                  {t('transactions')} ({transactions?.length || 0})
+                  (Users)
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -298,13 +295,13 @@ export default function FinancesManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t('id')}</TableHead>
-                        <TableHead>{t('user')}</TableHead>
-                        <TableHead>{t('type')}</TableHead>
-                        <TableHead>{t('amount')}</TableHead>
-                        <TableHead>{t('status')}</TableHead>
-                        <TableHead>{t('date')}</TableHead>
-                        <TableHead>{t('actions')}</TableHead>
+                        <TableHead>Loading...</TableHead>
+                        <TableHead>Loading...</TableHead>
+                        <TableHead>Loading...</TableHead>
+                        <TableHead>Loading...</TableHead>
+                        <TableHead>Loading...</TableHead>
+                        <TableHead>Loading...</TableHead>
+                        <TableHead>Loading...</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -316,7 +313,7 @@ export default function FinancesManagement() {
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
-                                {transaction.user?.firstName?.charAt(0) || transaction.user?.username?.charAt(0) || 'U'}
+                                {transaction.user?.firstName?.charA0 || transaction.user?.username?.charA0 || 'U'}
                               </div>
                               <div>
                                 <div className="font-medium text-gray-900 dark:text-white" data-testid={`text-username-${transaction.id}`}>
@@ -332,7 +329,7 @@ export default function FinancesManagement() {
                             <div className="flex items-center gap-2">
                               {getTypeIcon(transaction.type)}
                               <span className="capitalize" data-testid={`text-type-${transaction.id}`}>
-                                {t(transaction.type)}
+                                {transaction.type}
                               </span>
                             </div>
                           </TableCell>
@@ -344,7 +341,7 @@ export default function FinancesManagement() {
                           <TableCell>
                             <Badge className={`${getStatusBadgeColor(transaction.status)} flex items-center gap-1 w-fit`} data-testid={`status-${transaction.id}`}>
                               {getStatusIcon(transaction.status)}
-                              {t(transaction.status)}
+                              {transaction.status}
                             </Badge>
                           </TableCell>
                           <TableCell data-testid={`text-date-${transaction.id}`}>
@@ -364,7 +361,7 @@ export default function FinancesManagement() {
                                     disabled={updateTransactionMutation.isPending}
                                     data-testid={`button-approve-${transaction.id}`}
                                   >
-                                    {t('approve')}
+                                    Loading...
                                   </Button>
                                   <Button 
                                     size="sm" 
@@ -376,7 +373,7 @@ export default function FinancesManagement() {
                                     disabled={updateTransactionMutation.isPending}
                                     data-testid={`button-reject-${transaction.id}`}
                                   >
-                                    {t('reject')}
+                                    Loading...
                                   </Button>
                                 </>
                               )}

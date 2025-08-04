@@ -20,14 +20,13 @@ import {
 } from 'lucide-react';
 
 export default function SuperAdminDashboard() {
-  const { token } = useAuth();
+  const token = useAuth();
 
-
-  const { data: metrics, isLoading } = useQuery({
+  const { data: metrics } = useQuery({
     queryKey: ['/api/dashboard/metrics'],
     queryFn: async () => {
       const response = await fetch('/api/dashboard/metrics', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch metrics');
       return response.json();
@@ -38,7 +37,7 @@ export default function SuperAdminDashboard() {
     queryKey: ['/api/admin/recent-activity'],
     queryFn: async () => {
       const response = await fetch('/api/admin/recent-activity', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch recent activity');
       return response.json();
@@ -49,7 +48,7 @@ export default function SuperAdminDashboard() {
     queryKey: ['/api/admin/system-alerts'],
     queryFn: async () => {
       const response = await fetch('/api/admin/system-alerts', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch system alerts');
       return response.json();

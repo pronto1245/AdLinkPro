@@ -13,7 +13,6 @@ interface HeaderProps {
 
 export default function Header({ title, subtitle, children }: HeaderProps) {
 
-  const { user, logout } = useAuth();
 
   const getUserDisplayName = () => {
     if (user?.firstName && user?.lastName) {

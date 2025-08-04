@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClientt } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -15,7 +14,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/auth-context';
-import { useToast } from '@/hooks/use-toast';
+import { useToastt } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
@@ -44,17 +43,14 @@ const blacklistEntrySchema = z.object({
 
 type BlacklistEntryFormData = z.infer<typeof blacklistEntrySchema>;
 
-export default function BlacklistManagement() {
-  const { token } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+export default function UsersManagement() {
+  const queryClient = useQueryClient;
   
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Fetch blacklist entries
-  const { data: blacklistEntries = [], isLoading } = useQuery({
     queryKey: ['/api/admin/blacklist', searchTerm, typeFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -62,7 +58,7 @@ export default function BlacklistManagement() {
       if (typeFilter !== 'all') params.append('type', typeFilter);
       
       const response = await fetch(`/api/admin/blacklist?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch blacklist');
       return response.json();
@@ -71,20 +67,20 @@ export default function BlacklistManagement() {
 
   const createEntryMutation = useMutation({
     mutationFn: async (data: BlacklistEntryFormData) => {
-      return await apiRequest('POST', '/api/admin/blacklist', data);
+      return await apiRequest(POST', '/api/admin/blacklist', data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/blacklist'] });
       setIsCreateDialogOpen(false);
-      form.reset();
+      form.reset()
       toast({
-        title: t('success'),
-        description: 'Blacklist entry added successfully',
+        title: 'success',
+        description: 'Text',
       });
     },
     onError: (error: any) => {
       toast({
-        title: t('error'),
+        title: 'error',
         description: error.message,
         variant: "destructive",
       });
@@ -93,26 +89,26 @@ export default function BlacklistManagement() {
 
   const deleteEntryMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest('DELETE', `/api/admin/blacklist/${id}`);
+      return await apiRequest(DELETE', `/api/admin/blacklist/${id}`;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/blacklist'] });
       toast({
-        title: t('success'),
-        description: 'Blacklist entry removed successfully',
+        title: 'success',
+        description: 'Text',
       });
     },
   });
 
   const toggleEntryMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      return await apiRequest('PATCH', `/api/admin/blacklist/${id}`, { isActive });
+      return await apiRequest(PATCH', `/api/admin/blacklist/${id}`, { isActive };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/blacklist'] });
       toast({
-        title: t('success'),
-        description: 'Blacklist entry updated successfully',
+        title: 'success',
+        description: 'Text',
       });
     },
   });
@@ -202,7 +198,7 @@ export default function BlacklistManagement() {
                       <DialogTitle>Add Blacklist Entry</DialogTitle>
                     </DialogHeader>
                     <Form {...form}>
-                      <form onSubmit={form.handleSubmit((data) => createEntryMutation.mutate(data))} className="space-y-4">
+                      <form onSubmit={form.handleSubmit(data => createEntryMutation.mutate(data))} className="space-y-4">
                         <FormField
                           control={form.control}
                           name="type"
@@ -256,7 +252,6 @@ export default function BlacklistManagement() {
                             <FormItem>
                               <FormLabel>Reason (Optional)</FormLabel>
                               <FormControl>
-                                <Textarea 
                                   {...field} 
                                   placeholder="Why is this being blacklisted?" 
                                   data-testid="input-blacklist-reason" 
@@ -282,7 +277,7 @@ export default function BlacklistManagement() {
                                       data-testid="button-select-expiry"
                                     >
                                       {field.value ? (
-                                        format(field.value, "PPP")
+                                        formafield.value, "PPP"
                                       ) : (
                                         <span>No expiration</span>
                                       )}
@@ -332,7 +327,7 @@ export default function BlacklistManagement() {
                     title="Поиск в черном списке"
                   />
                 </div>
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
                   <SelectTrigger className="w-48" data-testid="select-type-filter" title="Фильтр по типу записи">
                     <SelectValue />
                   </SelectTrigger>
@@ -405,10 +400,10 @@ export default function BlacklistManagement() {
                         </div>
                       </TableCell>
                       <TableCell className="text-sm text-gray-500">
-                        {format(new Date(entry.createdAt), 'MMM dd, yyyy')}
+                        {formanew Date(entry.createdAt, 'MMM dd, yyyy')}
                       </TableCell>
                       <TableCell className="text-sm text-gray-500">
-                        {entry.expiresAt ? format(new Date(entry.expiresAt), 'MMM dd, yyyy') : 'Never'}
+                        {entry.expiresAt ? formanew Date(entry.expiresAt, 'MMM dd, yyyy') : 'Never'}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">

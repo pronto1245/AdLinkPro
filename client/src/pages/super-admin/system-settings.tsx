@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClientt } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +13,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/auth-context';
-import { useToast } from '@/hooks/use-toast';
+import { useToastt } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
@@ -25,15 +24,14 @@ const systemSettingSchema = z.object({
   value: z.any(),
   description: z.string().optional(),
   category: z.enum(['fraud', 'finance', 'general', 'security', 'integration', 'ui']),
-  isPublic: z.boolean().default(false),
+  isPublic: z.boolean().defaulfalse,
 });
 
 type SystemSettingFormData = z.infer<typeof systemSettingSchema>;
+  const { token } = useAuth();
 
 export default function SystemSettings() {
-  const { token } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient;
   
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,11 +39,11 @@ export default function SystemSettings() {
   const [editingSetting, setEditingSetting] = useState<any>(null);
 
   // Fetch system settings
-  const { data: settings = [], isLoading } = useQuery({
+  const { data: settings } = useQuery({
     queryKey: ['/api/admin/system-settings'],
     queryFn: async () => {
       const response = await fetch('/api/admin/system-settings', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch settings');
       return response.json();
@@ -54,20 +52,20 @@ export default function SystemSettings() {
 
   const createSettingMutation = useMutation({
     mutationFn: async (data: SystemSettingFormData) => {
-      return await apiRequest('POST', '/api/admin/system-settings', data);
+      return await apiRequest(POST', '/api/admin/system-settings', data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/system-settings'] });
       setIsCreateDialogOpen(false);
-      form.reset();
+      form.reset()
       toast({
-        title: t('success'),
-        description: 'System setting created successfully',
+        title: 'success',
+        description: 'Text',
       });
     },
     onError: (error: any) => {
       toast({
-        title: t('error'),
+        title: 'error',
         description: error.message,
         variant: "destructive",
       });
@@ -76,19 +74,19 @@ export default function SystemSettings() {
 
   const updateSettingMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<SystemSettingFormData> }) => {
-      return await apiRequest('PATCH', `/api/admin/system-settings/${id}`, data);
+      return await apiRequest(PATCH', `/api/admin/system-settings/${id}`, data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/system-settings'] });
       setEditingSetting(null);
       toast({
-        title: t('success'),
-        description: 'System setting updated successfully',
+        title: 'success',
+        description: 'Text',
       });
     },
     onError: (error: any) => {
       toast({
-        title: t('error'),
+        title: 'error',
         description: error.message,
         variant: "destructive",
       });
@@ -97,13 +95,13 @@ export default function SystemSettings() {
 
   const deleteSettingMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest('DELETE', `/api/admin/system-settings/${id}`);
+      return await apiRequest(DELETE', `/api/admin/system-settings/${id}`;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/system-settings'] });
       toast({
-        title: t('success'),
-        description: 'System setting deleted successfully',
+        title: 'success',
+        description: 'Text',
       });
     },
   });
@@ -113,7 +111,7 @@ export default function SystemSettings() {
     defaultValues: {
       key: '',
       value: '',
-      description: '',
+      description: 'Text',
       category: 'general',
       isPublic: false,
     },
@@ -200,7 +198,7 @@ export default function SystemSettings() {
                     <DialogTitle>Create System Setting</DialogTitle>
                   </DialogHeader>
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit((data) => createSettingMutation.mutate(data))} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(data => createSettingMutation.mutate(data))} className="space-y-4">
                       <FormField
                         control={form.control}
                         name="key"
@@ -247,7 +245,6 @@ export default function SystemSettings() {
                           <FormItem>
                             <FormLabel>Value</FormLabel>
                             <FormControl>
-                              <Textarea {...field} placeholder="Setting value (JSON for objects)" data-testid="input-setting-value" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -408,7 +405,6 @@ export default function SystemSettings() {
                   
                   <div>
                     <label className="text-sm font-medium">Value</label>
-                    <Textarea
                       value={formatValue(editingSetting.value)}
                       onChange={(e) => setEditingSetting({
                         ...editingSetting,

@@ -30,7 +30,6 @@ import {
 import { format, addDays } from 'date-fns';
 
 export default function AuditLogs() {
-  const { token } = useAuth();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState<string>('all');
@@ -45,7 +44,6 @@ export default function AuditLogs() {
   });
 
   // Fetch audit logs
-  const { data: auditLogs = [], isLoading } = useQuery({
     queryKey: ['/api/admin/audit-logs', searchTerm, actionFilter, resourceFilter, userFilter, dateRange],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -57,7 +55,7 @@ export default function AuditLogs() {
       if (dateRange.to) params.append('endDate', dateRange.to.toISOString());
       
       const response = await fetch(`/api/admin/audit-logs?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch audit logs');
       return response.json();
@@ -65,11 +63,10 @@ export default function AuditLogs() {
   });
 
   // Fetch users for filter
-  const { data: users = [] } = useQuery({
     queryKey: ['/api/admin/users'],
     queryFn: async () => {
       const response = await fetch('/api/admin/users', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch users');
       return response.json();
@@ -145,9 +142,9 @@ export default function AuditLogs() {
         ).join("\n");
     
     const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
+    const link = document.createElemen"a";
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `audit_logs_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.setAttribute("download", `audit_logs_${formanew Date(, 'yyyy-MM-dd')}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -200,7 +197,7 @@ export default function AuditLogs() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Action</label>
-                  <Select value={actionFilter} onValueChange={setActionFilter}>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
                     <SelectTrigger data-testid="select-action-filter" title="Фильтр по действию">
                       <SelectValue />
                     </SelectTrigger>
@@ -216,7 +213,7 @@ export default function AuditLogs() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Resource</label>
-                  <Select value={resourceFilter} onValueChange={setResourceFilter}>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
                     <SelectTrigger data-testid="select-resource-filter" title="Фильтр по ресурсу">
                       <SelectValue />
                     </SelectTrigger>
@@ -232,13 +229,13 @@ export default function AuditLogs() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">User</label>
-                  <Select value={userFilter} onValueChange={setUserFilter}>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
                     <SelectTrigger data-testid="select-user-filter" title="Фильтр по пользователю">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Users</SelectItem>
-                      {users.map((user: any) => (
+                      {users?.map((user: any) => (
                         <SelectItem key={user.id} value={user.id}>
                           {user.username} ({user.role})
                         </SelectItem>
@@ -258,11 +255,11 @@ export default function AuditLogs() {
                         {dateRange?.from ? (
                           dateRange.to ? (
                             <>
-                              {format(dateRange.from, "LLL dd, y")} -{" "}
-                              {format(dateRange.to, "LLL dd, y")}
+                              {formadateRange.from, "LLL dd, y"} -{" "}
+                              {formadateRange.to, "LLL dd, y"}
                             </>
                           ) : (
-                            format(dateRange.from, "LLL dd, y")
+                            formadateRange.from, "LLL dd, y"
                           )
                         ) : (
                           <span>Pick a date range</span>
@@ -313,7 +310,7 @@ export default function AuditLogs() {
                   {auditLogs.map((log: any) => (
                     <TableRow key={log.id}>
                       <TableCell className="font-mono text-sm">
-                        {format(new Date(log.timestamp), 'MMM dd, HH:mm:ss')}
+                        {formanew Date(log.timestamp, 'MMM dd, HH:mm:ss')}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">

@@ -23,7 +23,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
 }
 
 export function useSidebar() {
-  const context = useContext(SidebarContext);
+  const context = useContexSidebarContext;
   if (context === undefined) {
     throw new Error('useSidebar must be used within a SidebarProvider');
   }

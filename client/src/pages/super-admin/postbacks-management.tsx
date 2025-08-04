@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClientt } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,7 +14,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/auth-context';
-import { useToast } from '@/hooks/use-toast';
+import { useToastt } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
@@ -41,28 +40,25 @@ const globalPostbackSchema = z.object({
   events: z.array(z.string()).min(1, 'At least one event is required'),
   macros: z.record(z.string()).optional(),
   headers: z.record(z.string()).optional(),
-  retryAttempts: z.number().min(0).max(10).default(3),
-  timeout: z.number().min(5).max(120).default(30),
-  isActive: z.boolean().default(true),
+  retryAttempts: z.number().min(0).max(10).defaul3,
+  timeout: z.number().min(5).max(120).defaul30,
+  isActive: z.boolean().defaultrue,
 });
 
 type GlobalPostbackFormData = z.infer<typeof globalPostbackSchema>;
 
-export default function PostbacksManagement() {
-  const { token } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+export default function UsersManagement() {
+  const queryClient = useQueryClient;
   
   const [activeTab, setActiveTab] = useState('postbacks');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedPostback, setSelectedPostback] = useState<any>(null);
 
   // Fetch global postbacks
-  const { data: postbacks = [], isLoading: postbacksLoading } = useQuery({
     queryKey: ['/api/admin/global-postbacks'],
     queryFn: async () => {
       const response = await fetch('/api/admin/global-postbacks', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch postbacks');
       return response.json();
@@ -70,11 +66,10 @@ export default function PostbacksManagement() {
   });
 
   // Fetch postback logs
-  const { data: postbackLogs = [], isLoading: logsLoading } = useQuery({
     queryKey: ['/api/admin/postback-logs'],
     queryFn: async () => {
       const response = await fetch('/api/admin/postback-logs', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch postback logs');
       return response.json();
@@ -83,20 +78,20 @@ export default function PostbacksManagement() {
 
   const createPostbackMutation = useMutation({
     mutationFn: async (data: GlobalPostbackFormData) => {
-      return await apiRequest('POST', '/api/admin/global-postbacks', data);
+      return await apiRequest(POST', '/api/admin/global-postbacks', data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/global-postbacks'] });
       setIsCreateDialogOpen(false);
-      form.reset();
+      form.reset()
       toast({
-        title: t('success'),
-        description: 'Global postback created successfully',
+        title: 'success',
+        description: 'Text',
       });
     },
     onError: (error: any) => {
       toast({
-        title: t('error'),
+        title: 'error',
         description: error.message,
         variant: "destructive",
       });
@@ -105,30 +100,30 @@ export default function PostbacksManagement() {
 
   const updatePostbackMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<GlobalPostbackFormData> }) => {
-      return await apiRequest('PATCH', `/api/admin/global-postbacks/${id}`, data);
+      return await apiRequest(PATCH', `/api/admin/global-postbacks/${id}`, data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/global-postbacks'] });
       toast({
-        title: t('success'),
-        description: 'Postback updated successfully',
+        title: 'success',
+        description: 'Text',
       });
     },
   });
 
   const testPostbackMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest('POST', `/api/admin/global-postbacks/${id}/test`);
+      return await apiRequest(POST', `/api/admin/global-postbacks/${id}/test`;
     },
     onSuccess: () => {
       toast({
-        title: t('success'),
-        description: 'Test postback sent successfully',
+        title: 'success',
+        description: 'Text',
       });
     },
     onError: (error: any) => {
       toast({
-        title: t('error'),
+        title: 'error',
         description: error.message,
         variant: "destructive",
       });
@@ -231,7 +226,7 @@ export default function PostbacksManagement() {
                       <DialogTitle>Create Global Postback</DialogTitle>
                     </DialogHeader>
                     <Form {...form}>
-                      <form onSubmit={form.handleSubmit((data) => createPostbackMutation.mutate(data))} className="space-y-4">
+                      <form onSubmit={form.handleSubmit(data => createPostbackMutation.mutate(data))} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
@@ -303,7 +298,7 @@ export default function PostbacksManagement() {
                                   <Input 
                                     type="number" 
                                     {...field} 
-                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                    onChange={(e) => field.onChange(parseIne.target.value)}
                                     data-testid="input-retry-attempts" 
                                   />
                                 </FormControl>
@@ -322,7 +317,7 @@ export default function PostbacksManagement() {
                                   <Input 
                                     type="number" 
                                     {...field} 
-                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                    onChange={(e) => field.onChange(parseIne.target.value)}
                                     data-testid="input-timeout" 
                                   />
                                 </FormControl>

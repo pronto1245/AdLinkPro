@@ -20,7 +20,7 @@ const defaultActivities: Activity[] = [
     id: '1',
     type: 'user_registration',
     title: 'New partner registered',
-    description: 'john.doe@example.com',
+    description: 'Text',
     timestamp: '2 minutes ago',
     icon: 'fas fa-user-plus',
     iconBg: 'bg-green-100',
@@ -29,7 +29,7 @@ const defaultActivities: Activity[] = [
     id: '2',
     type: 'offer_published',
     title: 'New offer published',
-    description: 'Crypto Exchange - $150 CPA',
+    description: 'Text',
     timestamp: '15 minutes ago',
     icon: 'fas fa-bullseye',
     iconBg: 'bg-blue-100',
@@ -38,7 +38,7 @@ const defaultActivities: Activity[] = [
     id: '3',
     type: 'fraud_alert',
     title: 'Fraud alert triggered',
-    description: 'Suspicious activity detected',
+    description: 'Text',
     timestamp: '1 hour ago',
     icon: 'fas fa-exclamation-triangle',
     iconBg: 'bg-yellow-100',
@@ -47,7 +47,7 @@ const defaultActivities: Activity[] = [
     id: '4',
     type: 'payout_processed',
     title: 'Payout processed',
-    description: '$2,450 to affiliate #1248',
+    description: 'Text',
     timestamp: '3 hours ago',
     icon: 'fas fa-dollar-sign',
     iconBg: 'bg-green-100',
@@ -67,7 +67,7 @@ export default function RecentActivity({ activities = defaultActivities }: Recen
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>{t('recent_activity')}</CardTitle>
+          <CardTitle>Loading...</CardTitle>
           <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700" data-testid="button-view-all-activity">
             View all
           </Button>

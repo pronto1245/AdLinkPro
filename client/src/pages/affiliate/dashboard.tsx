@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClientt } from '@tanstack/react-query';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,43 +11,38 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DataTable } from '@/components/ui/data-table';
 import { useAuth } from '@/contexts/auth-context';
-import { useToast } from '@/hooks/use-toast';
+import { useToastt } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
 export default function AffiliateDashboard() {
-  const { token, user } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient;
   const [selectedOffer, setSelectedOffer] = useState('');
   const [linkModalOpen, setLinkModalOpen] = useState(false);
 
-  const { data: offers = [] } = useQuery({
     queryKey: ['/api/offers'],
     queryFn: async () => {
       const response = await fetch('/api/offers', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch offers');
       return response.json();
     },
   });
 
-  const { data: trackingLinks = [] } = useQuery({
     queryKey: ['/api/tracking-links'],
     queryFn: async () => {
       const response = await fetch('/api/tracking-links', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch tracking links');
       return response.json();
     },
   });
 
-  const { data: statistics = [] } = useQuery({
     queryKey: ['/api/statistics'],
     queryFn: async () => {
       const response = await fetch('/api/statistics', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch statistics');
       return response.json();
@@ -56,7 +51,7 @@ export default function AffiliateDashboard() {
 
   const createLinkMutation = useMutation({
     mutationFn: async (data: { offerId: string; subId1?: string; subId2?: string }) => {
-      return await apiRequest('POST', '/api/tracking-links', data);
+      return await apiRequest(POST', '/api/tracking-links', data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tracking-links'] });
@@ -77,19 +72,19 @@ export default function AffiliateDashboard() {
   });
 
   const handleCreateLink = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefaul;
     const formData = new FormData(e.currentTarget);
     createLinkMutation.mutate({
       offerId: selectedOffer,
-      subId1: formData.get('subId1') as string,
-      subId2: formData.get('subId2') as string,
+      subId1: formData.ge'subId1' as string,
+      subId2: formData.ge'subId2' as string,
     });
   };
 
   // Calculate metrics from statistics
   const totalClicks = statistics.reduce((sum: number, stat: any) => sum + (stat.clicks || 0), 0);
   const totalConversions = statistics.reduce((sum: number, stat: any) => sum + (stat.conversions || 0), 0);
-  const totalRevenue = statistics.reduce((sum: number, stat: any) => sum + parseFloat(stat.payout || 0), 0);
+  const totalRevenue = statistics.reduce((sum: number, stat: any) => sum + parseFloastat.payout || 0, 0);
   const conversionRate = totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : '0.00';
 
   const dashboardMetrics = [
@@ -162,7 +157,6 @@ export default function AffiliateDashboard() {
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => navigator.clipboard.writeText(value)}
             data-testid={`copy-link-${value}`}
           >
             <i className="fas fa-copy text-xs"></i>
@@ -200,7 +194,7 @@ export default function AffiliateDashboard() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-slate-600">{t(metric.label)}</p>
+                      <p className="text-sm font-medium text-slate-600">{metric.label}</p>
                       <p className="text-2xl font-bold text-slate-900" data-testid={`metric-${metric.label}-value`}>
                         {metric.value}
                       </p>
@@ -312,8 +306,8 @@ export default function AffiliateDashboard() {
                           <p className="text-sm font-semibold text-slate-900">
                             {offer.currency} {offer.payout}
                           </p>
-                          <Badge variant={getStatusBadgeVariant(offer.status)}>
-                            {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
+                          <Badge variant={getStatusBadgeVarianoffer.status}>
+                            {offer.status.charA0.toUpperCase() + offer.status.slice(1)}
                           </Badge>
                         </div>
                       </div>

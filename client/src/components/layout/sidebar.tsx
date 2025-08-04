@@ -50,7 +50,6 @@ export default function Sidebar({ className }: SidebarProps) {
   const { user } = useAuth();
 
   const [location] = useLocation();
-  const { isCollapsed, toggleSidebar } = useSidebar();
 
   if (!user) return null;
 

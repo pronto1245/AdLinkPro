@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLocation } from 'wouter';
-import { useToast } from '@/hooks/use-toast';
+import { useToastt } from '@/hooks/use-toast';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -15,10 +15,9 @@ export default function Login() {
   const { login } = useAuth();
 
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefaul;
     setLoading(true);
 
     try {

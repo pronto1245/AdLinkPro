@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClientt } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
-import { useToast } from '@/hooks/use-toast';
+import { useToastt } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -47,10 +46,8 @@ const ticketSchema = z.object({
 
 type TicketFormData = z.infer<typeof ticketSchema>;
 
-export default function Support() {
-  const { token } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+export default function Suppor {
+  const queryClient = useQueryClient;
   
   const [activeTab, setActiveTab] = useState('tickets');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -69,7 +66,7 @@ export default function Support() {
       createdAt: '2024-08-04T10:30:00Z',
       updatedAt: '2024-08-04T14:20:00Z',
       user: { name: 'John Doe', email: 'john@example.com', role: 'affiliate' },
-      description: 'My payment has been pending for 3 days...',
+      description: 'Text',
       responses: 2,
     },
     {
@@ -81,7 +78,7 @@ export default function Support() {
       createdAt: '2024-08-03T09:15:00Z',
       updatedAt: '2024-08-04T11:45:00Z',
       user: { name: 'Jane Smith', email: 'jane@example.com', role: 'advertiser' },
-      description: 'Need to get my new offer approved quickly...',
+      description: 'Text',
       responses: 5,
     },
     {
@@ -93,7 +90,7 @@ export default function Support() {
       createdAt: '2024-08-02T16:20:00Z',
       updatedAt: '2024-08-03T10:30:00Z',
       user: { name: 'Mike Johnson', email: 'mike@example.com', role: 'affiliate' },
-      description: 'Cannot verify my account documents...',
+      description: 'Text',
       responses: 3,
     },
   ];
@@ -104,7 +101,7 @@ export default function Support() {
       subject: '',
       category: 'general',
       priority: 'medium',
-      description: '',
+      description: 'Text',
     },
   });
 
@@ -147,28 +144,28 @@ export default function Support() {
   const supportResources = [
     {
       title: 'Knowledge Base',
-      description: 'Find answers to common questions',
+      description: 'Text',
       icon: <Book className="w-6 h-6" />,
       link: '#',
       articles: 45,
     },
     {
       title: 'API Documentation',
-      description: 'Technical integration guides',
+      description: 'Text',
       icon: <Settings className="w-6 h-6" />,
       link: '#',
       articles: 12,
     },
     {
       title: 'Video Tutorials',
-      description: 'Step-by-step video guides',
+      description: 'Text',
       icon: <LifeBuoy className="w-6 h-6" />,
       link: '#',
       articles: 23,
     },
     {
       title: 'FAQ',
-      description: 'Frequently asked questions',
+      description: 'Text',
       icon: <HelpCircle className="w-6 h-6" />,
       link: '#',
       articles: 38,
@@ -200,7 +197,7 @@ export default function Support() {
                     <DialogTitle>Create Support Ticket</DialogTitle>
                   </DialogHeader>
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit((data) => console.log(data))} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(data => console.log(data))} className="space-y-4">
                       <FormField
                         control={form.control}
                         name="subject"
@@ -231,7 +228,7 @@ export default function Support() {
                                 <SelectContent>
                                   {categories.map(category => (
                                     <SelectItem key={category} value={category}>
-                                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                                      {category.charA0.toUpperCase() + category.slice(1)}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -274,7 +271,6 @@ export default function Support() {
                           <FormItem>
                             <FormLabel>Description</FormLabel>
                             <FormControl>
-                              <Textarea 
                                 {...field} 
                                 placeholder="Detailed description of the issue"
                                 rows={4}
@@ -329,7 +325,7 @@ export default function Support() {
                         />
                       </div>
                       
-                      <Select value={filterStatus} onValueChange={setFilterStatus}>
+                      <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
                         <SelectTrigger className="w-[140px]" data-testid="select-filter-status" title="Фильтр по статусу тикета">
                           <SelectValue placeholder="All Status" />
                         </SelectTrigger>
@@ -343,7 +339,7 @@ export default function Support() {
                         </SelectContent>
                       </Select>
                       
-                      <Select value={filterPriority} onValueChange={setFilterPriority}>
+                      <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
                         <SelectTrigger className="w-[140px]" data-testid="select-filter-priority" title="Фильтр по приоритету">
                           <SelectValue placeholder="All Priority" />
                         </SelectTrigger>

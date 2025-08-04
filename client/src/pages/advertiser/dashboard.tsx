@@ -10,35 +10,31 @@ import { useAuth } from '@/contexts/auth-context';
 import { Link } from 'wouter';
 
 export default function AdvertiserDashboard() {
-  const { token, user } = useAuth();
 
-  const { data: metrics, isLoading: metricsLoading } = useQuery({
     queryKey: ['/api/dashboard/metrics'],
     queryFn: async () => {
       const response = await fetch('/api/dashboard/metrics', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch metrics');
       return response.json();
     },
   });
 
-  const { data: offers = [] } = useQuery({
     queryKey: ['/api/offers'],
     queryFn: async () => {
       const response = await fetch('/api/offers', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch offers');
       return response.json();
     },
   });
 
-  const { data: transactions = [] } = useQuery({
     queryKey: ['/api/transactions'],
     queryFn: async () => {
       const response = await fetch('/api/transactions', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch transactions');
       return response.json();
@@ -188,8 +184,8 @@ export default function AdvertiserDashboard() {
                           <p className="text-sm font-semibold text-slate-900">
                             {offer.currency} {offer.payout}
                           </p>
-                          <Badge variant={getStatusBadgeVariant(offer.status)}>
-                            {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
+                          <Badge variant={getStatusBadgeVarianoffer.status}>
+                            {offer.status.charA0.toUpperCase() + offer.status.slice(1)}
                           </Badge>
                         </div>
                       </div>
@@ -247,8 +243,8 @@ export default function AdvertiserDashboard() {
                             {transaction.type === 'withdrawal' ? '-' : '+'}
                             {transaction.currency} {transaction.amount}
                           </p>
-                          <Badge variant={getTransactionStatusVariant(transaction.status)}>
-                            {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                          <Badge variant={getTransactionStatusVariantransaction.status}>
+                            {transaction.status.charA0.toUpperCase() + transaction.status.slice(1)}
                           </Badge>
                         </div>
                       </div>

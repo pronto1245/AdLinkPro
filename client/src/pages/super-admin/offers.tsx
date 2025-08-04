@@ -13,36 +13,32 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { insertOfferSchema } from '@shared/schema';
 import { z } from 'zod';
 import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play } from 'lucide-react';
 
-export default function OffersManagement() {
-  const { token } = useAuth();
+export default function UsersManagement() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  const { data: offers, isLoading } = useQuery({
     queryKey: ['/api/admin/offers'],
     queryFn: async () => {
       const response = await fetch('/api/admin/offers', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch offers');
       return response.json();
     },
   });
 
-  const { data: advertisers } = useQuery({
     queryKey: ['/api/admin/advertisers'],
     queryFn: async () => {
       const response = await fetch('/api/admin/users?role=advertiser', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to fetch advertisers');
       return response.json();
@@ -55,7 +51,7 @@ export default function OffersManagement() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer $token`,
         },
         body: JSON.stringify(offerData),
       });
@@ -65,7 +61,7 @@ export default function OffersManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
       setIsCreateDialogOpen(false);
-      form.reset();
+      form.reset()
     },
   });
 
@@ -75,7 +71,7 @@ export default function OffersManagement() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer $token`,
         },
         body: JSON.stringify({ status }),
       });
@@ -91,7 +87,7 @@ export default function OffersManagement() {
     mutationFn: async (offerId: string) => {
       const response = await fetch(`/api/admin/offers/${offerId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: token,
       });
       if (!response.ok) throw new Error('Failed to delete offer');
     },
@@ -104,7 +100,7 @@ export default function OffersManagement() {
     resolver: zodResolver(insertOfferSchema),
     defaultValues: {
       name: '',
-      description: '',
+      description: 'Text',
       category: '',
       advertiserId: '',
       payout: '0',
@@ -147,34 +143,34 @@ export default function OffersManagement() {
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className="flex-1 overflow-hidden">
-        <Header title={t('offers_management')} />
+        <Header title="Loading..." />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
           <div className="max-w-7xl mx-auto">
             {/* Header Section */}
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('offers_management')}</h1>
-                <p className="text-gray-600 dark:text-gray-400">{t('manage_platform_offers')}</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Loading...</h1>
+                <p className="text-gray-600 dark:text-gray-400">Loading...</p>
               </div>
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
                   <Button data-testid="button-create-offer">
                     <Plus className="w-4 h-4 mr-2" />
-                    {t('create_offer')}
+                    Loading...
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>{t('create_new_offer')}</DialogTitle>
+                    <DialogTitle>Loading...</DialogTitle>
                   </DialogHeader>
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit((data) => createOfferMutation.mutate(data))} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(data => createOfferMutation.mutate(data))} className="space-y-4">
                       <FormField
                         control={form.control}
                         name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('offer_name')}</FormLabel>
+                            <FormLabel>Loading...</FormLabel>
                             <FormControl>
                               <Input {...field} data-testid="input-offer-name" />
                             </FormControl>
@@ -187,9 +183,8 @@ export default function OffersManagement() {
                         name="description"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('description')}</FormLabel>
+                            <FormLabel>Loading...</FormLabel>
                             <FormControl>
-                              <Textarea {...field} value={String(field.value || '')} data-testid="input-description" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -201,7 +196,7 @@ export default function OffersManagement() {
                           name="category"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t('category')}</FormLabel>
+                              <FormLabel>Loading...</FormLabel>
                               <FormControl>
                                 <Input {...field} data-testid="input-category" />
                               </FormControl>
@@ -214,7 +209,7 @@ export default function OffersManagement() {
                           name="advertiserId"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t('advertiser')}</FormLabel>
+                              <FormLabel>Loading...</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-advertiser">
@@ -240,7 +235,7 @@ export default function OffersManagement() {
                           name="payout"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t('payout')}</FormLabel>
+                              <FormLabel>Loading...</FormLabel>
                               <FormControl>
                                 <Input type="number" {...field} data-testid="input-payout" />
                               </FormControl>
@@ -253,7 +248,7 @@ export default function OffersManagement() {
                           name="payoutType"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t('payout_type')}</FormLabel>
+                              <FormLabel>Loading...</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-payout-type">
@@ -275,7 +270,7 @@ export default function OffersManagement() {
                           name="currency"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t('currency')}</FormLabel>
+                              <FormLabel>Loading...</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-currency">
@@ -295,10 +290,10 @@ export default function OffersManagement() {
                       </div>
                       <div className="flex justify-end gap-2">
                         <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                          {t('cancel')}
+                          Loading...
                         </Button>
                         <Button type="submit" disabled={createOfferMutation.isPending} data-testid="button-submit-offer">
-                          {createOfferMutation.isPending ? t('creating') : t('create')}
+                          {createOfferMutation.isPending ? 'creating' : 'create'}
                         </Button>
                       </div>
                     </form>
@@ -314,23 +309,23 @@ export default function OffersManagement() {
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
-                      placeholder={t('search_offers')}
+                      placeholder="Loading..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
                       data-testid="input-search-offers"
                     />
                   </div>
-                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
                     <SelectTrigger className="w-[180px]" data-testid="select-filter-status">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">{t('all_statuses')}</SelectItem>
-                      <SelectItem value="active">{t('active')}</SelectItem>
-                      <SelectItem value="paused">{t('paused')}</SelectItem>
-                      <SelectItem value="draft">{t('draft')}</SelectItem>
-                      <SelectItem value="archived">{t('archived')}</SelectItem>
+                      <SelectItem value="all">Loading...</SelectItem>
+                      <SelectItem value="active">Loading...</SelectItem>
+                      <SelectItem value="paused">Loading...</SelectItem>
+                      <SelectItem value="draft">Loading...</SelectItem>
+                      <SelectItem value="archived">Loading...</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -342,7 +337,7 @@ export default function OffersManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="w-5 h-5" />
-                  {t('offers')} ({filteredOffers.length})
+                  (Users)
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -354,12 +349,12 @@ export default function OffersManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t('offer')}</TableHead>
-                        <TableHead>{t('advertiser')}</TableHead>
-                        <TableHead>{t('payout')}</TableHead>
-                        <TableHead>{t('status')}</TableHead>
-                        <TableHead>{t('created_at')}</TableHead>
-                        <TableHead>{t('actions')}</TableHead>
+                        <TableHead>Loading...</TableHead>
+                        <TableHead>Loading...</TableHead>
+                        <TableHead>Loading...</TableHead>
+                        <TableHead>Loading...</TableHead>
+                        <TableHead>Loading...</TableHead>
+                        <TableHead>Loading...</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -374,7 +369,7 @@ export default function OffersManagement() {
                               {offer.description && (
                                 <div className="text-xs text-gray-400 mt-1 truncate max-w-xs">
                                   {typeof offer.description === 'object' ? 
-                                    getMultilingualText(offer.description, language, '') : 
+                                    ('') : 
                                     offer.description
                                   }
                                 </div>
@@ -401,7 +396,7 @@ export default function OffersManagement() {
                           <TableCell>
                             <Badge className={`${getStatusBadgeColor(offer.status)} flex items-center gap-1 w-fit`} data-testid={`status-${offer.id}`}>
                               {getStatusIcon(offer.status)}
-                              {t(offer.status)}
+                              {offer.status}
                             </Badge>
                           </TableCell>
                           <TableCell data-testid={`text-created-${offer.id}`}>

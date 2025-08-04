@@ -5,14 +5,14 @@ interface RevenueChartProps {
   data?: any[];
 }
 
-export default function RevenueChart({ data = [] }: RevenueChartProps) {
+export default function RevenueChar{ data = [] }: RevenueChartProps {
 
   return (
     <Card className="lg:col-span-2">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>{t('revenue_overview')}</CardTitle>
+            <CardTitle>Loading...</CardTitle>
             <p className="text-sm text-slate-600">Last 7 days performance</p>
           </div>
           <Select defaultValue="7days">
