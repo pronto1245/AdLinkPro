@@ -1577,13 +1577,17 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
     resolver: zodResolver(editOfferSchema),
     defaultValues: {
       name: offer.name || '',
-      description: offer.description || '',
+      description: typeof offer.description === 'object' ? 
+        getMultilingualText(offer.description, language, '') : 
+        offer.description || '',
       category: offer.category || '',
       status: offer.status || 'draft',
       payoutType: offer.payoutType || 'cpa',
       currency: offer.currency || 'USD',
       logo: offer.logo || '',
-      kpiConditions: offer.kpiConditions || '',
+      kpiConditions: typeof offer.kpiConditions === 'object' ? 
+        getMultilingualText(offer.kpiConditions, language, '') : 
+        offer.kpiConditions || '',
       allowedTrafficSources: offer.trafficSources || [],
       allowedApps: offer.allowedApps || [],
       antifraudEnabled: offer.antifraudEnabled || true,

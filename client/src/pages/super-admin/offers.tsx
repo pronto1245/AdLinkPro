@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
+import { getMultilingualText } from '@/lib/i18n';
 import { queryClient } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
@@ -22,7 +23,7 @@ import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play
 
 export default function OffersManagement() {
   const { token } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -189,7 +190,7 @@ export default function OffersManagement() {
                           <FormItem>
                             <FormLabel>{t('description')}</FormLabel>
                             <FormControl>
-                              <Textarea {...field} data-testid="input-description" />
+                              <Textarea {...field} value={field.value || ''} data-testid="input-description" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -276,7 +277,7 @@ export default function OffersManagement() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t('currency')}</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-currency">
                                     <SelectValue />
@@ -373,7 +374,10 @@ export default function OffersManagement() {
                               <div className="text-sm text-gray-500">{offer.category}</div>
                               {offer.description && (
                                 <div className="text-xs text-gray-400 mt-1 truncate max-w-xs">
-                                  {offer.description}
+                                  {typeof offer.description === 'object' ? 
+                                    getMultilingualText(offer.description, language, '') : 
+                                    offer.description
+                                  }
                                 </div>
                               )}
                             </div>

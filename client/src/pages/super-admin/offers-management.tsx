@@ -946,7 +946,10 @@ export default function OffersManagement() {
     .filter((offer: Offer) => {
       const matchesGeneralSearch = !searchTerm || (
         offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        offer.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (typeof offer.description === 'object' ? 
+          getMultilingualText(offer.description, language, '').toLowerCase().includes(searchTerm.toLowerCase()) :
+          offer.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        ) ||
         offer.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       const matchesOfferNameSearch = !offerNameSearch || offerNameSearch === 'all' || 
@@ -1149,7 +1152,9 @@ export default function OffersManagement() {
         id: offer.id,
         name: offer.name,
         category: offer.category,
-        description: offer.description,
+        description: typeof offer.description === 'object' ? 
+          getMultilingualText(offer.description, language, '') : 
+          offer.description,
         status: offer.status,
         payoutType: offer.payoutType,
         geoPricing: offer.geoPricing,
