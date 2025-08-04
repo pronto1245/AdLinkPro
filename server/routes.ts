@@ -2258,6 +2258,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Crypto deposit
+  app.post("/api/admin/crypto-deposit", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { currency, amount, fromAddress } = req.body;
+      
+      const depositData = {
+        id: randomUUID(),
+        currency,
+        amount,
+        fromAddress,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      };
+      
+      // In real implementation, you would:
+      // 1. Validate the blockchain transaction
+      // 2. Update wallet balance in database
+      // 3. Create transaction record
+      
+      res.json({ 
+        success: true, 
+        message: `Crypto deposit of ${amount} ${currency} created`,
+        deposit: depositData 
+      });
+    } catch (error) {
+      console.error("Crypto deposit error:", error);
+      res.status(500).json({ error: "Failed to process crypto deposit" });
+    }
+  });
+
+  // Crypto withdraw  
+  app.post("/api/admin/crypto-withdraw", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { currency, amount, toAddress } = req.body;
+      
+      const withdrawalData = {
+        id: randomUUID(),
+        currency,
+        amount,
+        toAddress,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      };
+      
+      // In real implementation, you would:
+      // 1. Check wallet balance
+      // 2. Create blockchain transaction
+      // 3. Update wallet balance
+      // 4. Create transaction record
+      
+      res.json({ 
+        success: true, 
+        message: `Crypto withdrawal of ${amount} ${currency} initiated`,
+        withdrawal: withdrawalData 
+      });
+    } catch (error) {
+      console.error("Crypto withdrawal error:", error);
+      res.status(500).json({ error: "Failed to process crypto withdrawal" });
+    }
+  });
+
   // Fraud Detection Routes
   app.get("/api/admin/fraud-reports", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {

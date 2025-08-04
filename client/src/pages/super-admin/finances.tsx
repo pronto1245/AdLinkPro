@@ -70,9 +70,15 @@ export default function FinancesManagement() {
   const { isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
   
-  const [selectedTab, setSelectedTab] = useState<'dashboard' | 'transactions' | 'payouts' | 'deposits' | 'commission' | 'reports'>('dashboard');
+  const [selectedTab, setSelectedTab] = useState<'dashboard' | 'transactions' | 'payouts' | 'deposits' | 'commission' | 'reports' | 'crypto'>('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [depositDialogOpen, setDepositDialogOpen] = useState(false);
+  const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
+  const [selectedWallet, setSelectedWallet] = useState<any>(null);
+  const [depositAmount, setDepositAmount] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [walletAddress, setWalletAddress] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterCurrency, setFilterCurrency] = useState<string>('all');
   const [filterMethod, setFilterMethod] = useState<string>('all');
@@ -1401,14 +1407,34 @@ export default function FinancesManagement() {
                       Управление криптокошельками платформы
                     </CardDescription>
                   </div>
-                  <Button 
-                    className="bg-blue-600 hover:bg-blue-700"
-                    data-testid="button-create-wallet"
-                    title="Создать кошелёк"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Новый кошелёк
-                  </Button>
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="outline"
+                      onClick={() => setDepositDialogOpen(true)}
+                      data-testid="button-deposit-crypto"
+                      title="Пополнить"
+                    >
+                      <ArrowDownRight className="w-4 h-4 mr-2" />
+                      Пополнить
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => setWithdrawDialogOpen(true)}
+                      data-testid="button-withdraw-crypto"
+                      title="Вывести"
+                    >
+                      <ArrowUpRight className="w-4 h-4 mr-2" />
+                      Вывести
+                    </Button>
+                    <Button 
+                      className="bg-blue-600 hover:bg-blue-700"
+                      data-testid="button-create-wallet"
+                      title="Создать кошелёк"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Новый кошелёк
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -1669,7 +1695,185 @@ export default function FinancesManagement() {
             </Card>
           </div>
         )}
-          </div>
+        </div>
+
+        {/* Crypto Deposit Dialog */}
+        <Dialog open={depositDialogOpen} onOpenChange={setDepositDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Пополнение криптокошелька</DialogTitle>
+              <DialogDescription>
+                Внесение средств на выбранный криптокошелёк
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="deposit-currency">Валюта</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите валюту" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BTC">Bitcoin (BTC)</SelectItem>
+                    <SelectItem value="ETH">Ethereum (ETH)</SelectItem>
+                    <SelectItem value="USDT">Tether (USDT)</SelectItem>
+                    <SelectItem value="USDC">USD Coin (USDC)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="deposit-amount">Сумма</Label>
+                <Input
+                  id="deposit-amount"
+                  type="number"
+                  step="0.00000001"
+                  placeholder="0.00000000"
+                  value={depositAmount}
+                  onChange={(e) => setDepositAmount(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="deposit-address">Адрес отправителя</Label>
+                <Input
+                  id="deposit-address"
+                  placeholder="Адрес кошелька отправителя"
+                  value={walletAddress}
+                  onChange={(e) => setWalletAddress(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDepositDialogOpen(false)}>
+                Отмена
+              </Button>
+              <Button 
+                onClick={async () => {
+                  try {
+                    await apiRequest('/api/admin/crypto-deposit', {
+                      method: 'POST',
+                      body: JSON.stringify({
+                        currency: 'BTC',
+                        amount: parseFloat(depositAmount),
+                        fromAddress: walletAddress
+                      }),
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                      }
+                    });
+                    
+                    toast({
+                      title: "Пополнение оформлено",
+                      description: `Внесено ${depositAmount} BTC`,
+                    });
+                    
+                    setDepositDialogOpen(false);
+                    setDepositAmount('');
+                    setWalletAddress('');
+                    queryClient.invalidateQueries({ queryKey: ['/api/admin/crypto-portfolio'] });
+                  } catch (error) {
+                    toast({
+                      title: "Ошибка пополнения",
+                      description: "Не удалось внести средства",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                Пополнить
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Crypto Withdraw Dialog */}
+        <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Вывод криптовалюты</DialogTitle>
+              <DialogDescription>
+                Вывод средств с платформенного кошелька
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="withdraw-currency">Валюта</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите валюту" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BTC">Bitcoin (BTC)</SelectItem>
+                    <SelectItem value="ETH">Ethereum (ETH)</SelectItem>
+                    <SelectItem value="USDT">Tether (USDT)</SelectItem>
+                    <SelectItem value="USDC">USD Coin (USDC)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="withdraw-amount">Сумма</Label>
+                <Input
+                  id="withdraw-amount"
+                  type="number"
+                  step="0.00000001"
+                  placeholder="0.00000000"
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="withdraw-address">Адрес получателя</Label>
+                <Input
+                  id="withdraw-address"
+                  placeholder="Адрес кошелька получателя"
+                  value={walletAddress}
+                  onChange={(e) => setWalletAddress(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setWithdrawDialogOpen(false)}>
+                Отмена
+              </Button>
+              <Button 
+                onClick={async () => {
+                  try {
+                    await apiRequest('/api/admin/crypto-withdraw', {
+                      method: 'POST',
+                      body: JSON.stringify({
+                        currency: 'BTC',
+                        amount: parseFloat(withdrawAmount),
+                        toAddress: walletAddress
+                      }),
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                      }
+                    });
+                    
+                    toast({
+                      title: "Вывод оформлен",
+                      description: `Выведено ${withdrawAmount} BTC`,
+                    });
+                    
+                    setWithdrawDialogOpen(false);
+                    setWithdrawAmount('');
+                    setWalletAddress('');
+                    queryClient.invalidateQueries({ queryKey: ['/api/admin/crypto-portfolio'] });
+                  } catch (error) {
+                    toast({
+                      title: "Ошибка вывода",
+                      description: "Не удалось вывести средства",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                Вывести
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         </main>
       </div>
     </div>
