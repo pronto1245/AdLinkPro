@@ -1035,6 +1035,7 @@ export default function OffersManagement() {
                   <TableHead>{t('category')}</TableHead>
                   <TableHead>{t('payout')}</TableHead>
                   <TableHead>Источники трафика</TableHead>
+                  <TableHead>Разрешенные приложения</TableHead>
                   <TableHead>{t('status')}</TableHead>
                   <TableHead>{t('created')}</TableHead>
                   <TableHead>{t('actions')}</TableHead>
@@ -1184,10 +1185,13 @@ export default function OffersManagement() {
                         ) : (
                           <span className="text-muted-foreground">Не указано</span>
                         )}
-                        
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-xs space-y-1">
                         {/* Allowed Apps */}
-                        {offer.allowedApps && offer.allowedApps.length > 0 && (
-                          <div className={`mt-2 ${offer.allowedApps.length >= 3 ? 'grid grid-cols-2 gap-1' : 'flex flex-wrap gap-1'}`}>
+                        {offer.allowedApps && offer.allowedApps.length > 0 ? (
+                          <div className={`${offer.allowedApps.length >= 3 ? 'grid grid-cols-2 gap-1' : 'flex flex-wrap gap-1'}`}>
                             {offer.allowedApps.slice(0, 4).map((app: string, index: number) => (
                               <Badge key={index} variant="secondary" className="text-xs">
                                 {app}
@@ -1197,6 +1201,8 @@ export default function OffersManagement() {
                               <div className="text-muted-foreground text-xs">+{offer.allowedApps.length - 4}</div>
                             )}
                           </div>
+                        ) : (
+                          <span className="text-muted-foreground">Не указано</span>
                         )}
                       </div>
                     </TableCell>
