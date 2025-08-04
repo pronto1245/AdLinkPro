@@ -810,22 +810,22 @@ export default function OffersManagement() {
   const [statusChangeOffer, setStatusChangeOffer] = useState<Offer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [moderationFilter, setModerationFilter] = useState('all');
+
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [advertiserFilter, setAdvertiserFilter] = useState('all');
   const [offerNameSearch, setOfferNameSearch] = useState('all');
 
   // Fetch all offers for dropdown
-  const { data: allOffers = [] } = useQuery({
+  const { data: allOffers = [] } = useQuery<Offer[]>({
     queryKey: ['/api/admin/offers'],
   });
 
   // Filter and sort offers
   const offers = allOffers
     // Сначала сортируем по дате создания (новые вверху)
-    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort((a: Offer, b: Offer) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     // Затем фильтруем
-    .filter((offer: any) => {
+    .filter((offer: Offer) => {
       const matchesGeneralSearch = !searchTerm || (
         offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         offer.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -834,11 +834,10 @@ export default function OffersManagement() {
       const matchesOfferNameSearch = !offerNameSearch || offerNameSearch === 'all' || 
         offer.name === offerNameSearch;
       const matchesStatus = statusFilter === 'all' || offer.status === statusFilter;
-      const matchesModeration = moderationFilter === 'all' || offer.moderationStatus === moderationFilter;
       const matchesCategory = categoryFilter === 'all' || offer.category === categoryFilter;
       const matchesAdvertiser = advertiserFilter === 'all' || offer.advertiserId === advertiserFilter;
       
-      return matchesGeneralSearch && matchesOfferNameSearch && matchesStatus && matchesModeration && matchesCategory && matchesAdvertiser;
+      return matchesGeneralSearch && matchesOfferNameSearch && matchesStatus && matchesCategory && matchesAdvertiser;
     });
 
   const isLoading = !allOffers.length;
@@ -1233,7 +1232,7 @@ export default function OffersManagement() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -1251,7 +1250,7 @@ export default function OffersManagement() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Все офферы</SelectItem>
-                {allOffers?.map((offer: any) => (
+                {allOffers?.map((offer: Offer) => (
                   <SelectItem key={offer.id} value={offer.name}>
                     {offer.name}
                   </SelectItem>
@@ -1272,18 +1271,7 @@ export default function OffersManagement() {
               </SelectContent>
             </Select>
 
-            <Select value={moderationFilter} onValueChange={setModerationFilter}>
-              <SelectTrigger data-testid="select-moderation-filter" title="Фильтр по статусу модерации">
-                <SelectValue placeholder={t('moderation_status')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все статусы</SelectItem>
-                <SelectItem value="pending">{t('pending')}</SelectItem>
-                <SelectItem value="approved">{t('approved')}</SelectItem>
-                <SelectItem value="rejected">{t('rejected')}</SelectItem>
-                <SelectItem value="needs_revision">{t('needs_revision')}</SelectItem>
-              </SelectContent>
-            </Select>
+
 
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger data-testid="select-category-filter" title="Фильтр по категории оффера">
