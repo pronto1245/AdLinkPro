@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/language-context';
 
 interface Activity {
   id: string;
@@ -20,7 +21,7 @@ const defaultActivities: Activity[] = [
     id: '1',
     type: 'user_registration',
     title: 'New partner registered',
-    description: 'Text',
+    description: 'john.doe@example.com',
     timestamp: '2 minutes ago',
     icon: 'fas fa-user-plus',
     iconBg: 'bg-green-100',
@@ -29,7 +30,7 @@ const defaultActivities: Activity[] = [
     id: '2',
     type: 'offer_published',
     title: 'New offer published',
-    description: 'Text',
+    description: 'Crypto Exchange - $150 CPA',
     timestamp: '15 minutes ago',
     icon: 'fas fa-bullseye',
     iconBg: 'bg-blue-100',
@@ -38,7 +39,7 @@ const defaultActivities: Activity[] = [
     id: '3',
     type: 'fraud_alert',
     title: 'Fraud alert triggered',
-    description: 'Text',
+    description: 'Suspicious activity detected',
     timestamp: '1 hour ago',
     icon: 'fas fa-exclamation-triangle',
     iconBg: 'bg-yellow-100',
@@ -47,7 +48,7 @@ const defaultActivities: Activity[] = [
     id: '4',
     type: 'payout_processed',
     title: 'Payout processed',
-    description: 'Text',
+    description: '$2,450 to affiliate #1248',
     timestamp: '3 hours ago',
     icon: 'fas fa-dollar-sign',
     iconBg: 'bg-green-100',
@@ -55,6 +56,7 @@ const defaultActivities: Activity[] = [
 ];
 
 export default function RecentActivity({ activities = defaultActivities }: RecentActivityProps) {
+  const { t } = useLanguage();
 
   const getIconColor = (iconBg: string) => {
     if (iconBg.includes('green')) return 'text-green-600';
@@ -67,7 +69,7 @@ export default function RecentActivity({ activities = defaultActivities }: Recen
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Loading...</CardTitle>
+          <CardTitle>{t('recent_activity')}</CardTitle>
           <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700" data-testid="button-view-all-activity">
             View all
           </Button>

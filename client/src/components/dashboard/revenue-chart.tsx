@@ -1,18 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useLanguage } from '@/contexts/language-context';
 
 interface RevenueChartProps {
   data?: any[];
 }
 
 export default function RevenueChart({ data = [] }: RevenueChartProps) {
+  const { t } = useLanguage();
 
   return (
     <Card className="lg:col-span-2">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Loading...</CardTitle>
+            <CardTitle>{t('revenue_overview')}</CardTitle>
             <p className="text-sm text-slate-600">Last 7 days performance</p>
           </div>
           <Select defaultValue="7days">

@@ -1,4 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
+import { useLanguage } from '@/contexts/language-context';
 
 interface Metric {
   label: string;
@@ -14,6 +15,7 @@ interface MetricsGridProps {
 }
 
 export default function MetricsGrid({ metrics }: MetricsGridProps) {
+  const { t } = useLanguage();
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -22,7 +24,7 @@ export default function MetricsGrid({ metrics }: MetricsGridProps) {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-600">{metric.label}</p>
+                <p className="text-sm font-medium text-slate-600">{t(metric.label)}</p>
                 <p className="text-2xl font-bold text-slate-900" data-testid={`metric-${metric.label}-value`}>
                   {metric.value}
                 </p>

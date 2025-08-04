@@ -14,12 +14,14 @@ import {
 interface DatePickerProps {
   selected?: Date
   onSelect?: (date: Date | undefined) => void
+  placeholderText?: string
   className?: string
 }
 
 export function DatePicker({
   selected,
   onSelect,
+  placeholderText = "Pick a date",
   className
 }: DatePickerProps) {
   return (
@@ -34,6 +36,7 @@ export function DatePicker({
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
+          {selected ? format(selected, "PPP") : <span>{placeholderText}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
+import { useLanguage } from '@/contexts/language-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -41,6 +42,8 @@ import {
 } from 'lucide-react';
 
 export default function Analytics() {
+  const { token } = useAuth();
+  const { t } = useLanguage();
   const [timeRange, setTimeRange] = useState('30d');
   const [selectedMetric, setSelectedMetric] = useState('revenue');
   const [searchTerm, setSearchTerm] = useState('');
@@ -75,7 +78,7 @@ export default function Analytics() {
       change: '+18.2%',
       changeType: 'increase' as const,
       icon: <DollarSign className="w-6 h-6" />,
-      description: 'Text',
+      description: 'Platform revenue this month',
     },
     {
       title: 'Active Users',
@@ -83,7 +86,7 @@ export default function Analytics() {
       change: '+12.5%',
       changeType: 'increase' as const,
       icon: <Users className="w-6 h-6" />,
-      description: 'Text',
+      description: 'Total active platform users',
     },
     {
       title: 'Total Offers',
@@ -91,7 +94,7 @@ export default function Analytics() {
       change: '+8.3%',
       changeType: 'increase' as const,
       icon: <Target className="w-6 h-6" />,
-      description: 'Text',
+      description: 'Active offers on platform',
     },
     {
       title: 'Click-through Rate',
@@ -99,7 +102,7 @@ export default function Analytics() {
       change: '-2.1%',
       changeType: 'decrease' as const,
       icon: <MousePointer className="w-6 h-6" />,
-      description: 'Text',
+      description: 'Average CTR across all offers',
     },
   ];
 
@@ -135,7 +138,7 @@ export default function Analytics() {
                     title="Поиск аналитических данных"
                   />
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={timeRange} onValueChange={setTimeRange}>
                   <SelectTrigger className="w-[140px]" data-testid="select-time-range" title="Выбор временного периода">
                     <SelectValue />
                   </SelectTrigger>
@@ -242,7 +245,7 @@ export default function Analytics() {
                         dataKey="value"
                         label={({ name, value }) => `${name}: ${value}`}
                       >
-                        {analyticsData.users?.map((entry, index) => (
+                        {analyticsData.users.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>

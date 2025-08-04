@@ -1,98 +1,171 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Sidebar from '@/components/layout/sidebar';
-import { useSidebar } from '@/contexts/sidebar-context';
-import Header from '@/components/layout/header';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, Save, RefreshCw } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useAuth } from '@/contexts/auth-context';
+import { useLanguage } from '@/contexts/language-context';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
+import Sidebar from '@/components/layout/sidebar';
+import Header from '@/components/layout/header';
+import { Settings, Database, Shield, DollarSign, Globe, Zap, Plus, Edit, Save, Trash2, Search } from 'lucide-react';
 
-const systemSettingsSchema = z.object({
-  siteName: z.string().min(1, 'Site name is required'),
-  maintenanceMode: z.boolean().default(false),
-  registrationEnabled: z.boolean().default(true),
-  emailNotifications: z.boolean().default(true),
-  smtpHost: z.string().optional(),
-  smtpPort: z.string().optional(),
-  smtpUser: z.string().optional(),
-  smtpPassword: z.string().optional(),
+const systemSettingSchema = z.object({
+  key: z.string().min(1, 'Key is required'),
+  value: z.any(),
+  description: z.string().optional(),
+  category: z.enum(['fraud', 'finance', 'general', 'security', 'integration', 'ui']),
+  isPublic: z.boolean().default(false),
 });
 
-type SystemSettingsFormData = z.infer<typeof systemSettingsSchema>;
+type SystemSettingFormData = z.infer<typeof systemSettingSchema>;
 
-export default function SuperAdminSystemSettings() {
-  const { isCollapsed } = useSidebar();
+export default function SystemSettings() {
+  const { token } = useAuth();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingSetting, setEditingSetting] = useState<any>(null);
 
   // Fetch system settings
-  const { data: settings, isLoading } = useQuery({
+  const { data: settings = [], isLoading } = useQuery({
     queryKey: ['/api/admin/system-settings'],
-  });
-
-  const form = useForm<SystemSettingsFormData>({
-    resolver: zodResolver(systemSettingsSchema),
-    defaultValues: {
-      siteName: settings?.siteName || 'AffiliateHub',
-      maintenanceMode: settings?.maintenanceMode || false,
-      registrationEnabled: settings?.registrationEnabled || true,
-      emailNotifications: settings?.emailNotifications || true,
-      smtpHost: settings?.smtpHost || '',
-      smtpPort: settings?.smtpPort || '',
-      smtpUser: settings?.smtpUser || '',
-      smtpPassword: settings?.smtpPassword || '',
+    queryFn: async () => {
+      const response = await fetch('/api/admin/system-settings', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch settings');
+      return response.json();
     },
   });
 
-  // Update settings mutation
-  const updateSettingsMutation = useMutation({
-    mutationFn: async (data: SystemSettingsFormData) => {
-      const response = await apiRequest('PUT', '/api/admin/system-settings', data);
-      return response.json();
+  const createSettingMutation = useMutation({
+    mutationFn: async (data: SystemSettingFormData) => {
+      return await apiRequest('POST', '/api/admin/system-settings', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/system-settings'] });
+      setIsCreateDialogOpen(false);
+      form.reset();
       toast({
-        title: 'Success',
-        description: 'System settings updated successfully',
+        title: t('success'),
+        description: 'System setting created successfully',
       });
     },
     onError: (error: any) => {
       toast({
-        title: 'Error',
+        title: t('error'),
         description: error.message,
         variant: "destructive",
       });
     }
   });
 
-  const onSubmit = (data: SystemSettingsFormData) => {
-    updateSettingsMutation.mutate(data);
+  const updateSettingMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<SystemSettingFormData> }) => {
+      return await apiRequest('PATCH', `/api/admin/system-settings/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/system-settings'] });
+      setEditingSetting(null);
+      toast({
+        title: t('success'),
+        description: 'System setting updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: t('error'),
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const deleteSettingMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest('DELETE', `/api/admin/system-settings/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/system-settings'] });
+      toast({
+        title: t('success'),
+        description: 'System setting deleted successfully',
+      });
+    },
+  });
+
+  const form = useForm<SystemSettingFormData>({
+    resolver: zodResolver(systemSettingSchema),
+    defaultValues: {
+      key: '',
+      value: '',
+      description: '',
+      category: 'general',
+      isPublic: false,
+    },
+  });
+
+  const categories = [
+    { value: 'all', label: 'All Categories', icon: <Settings className="w-4 h-4" /> },
+    { value: 'fraud', label: 'Fraud Prevention', icon: <Shield className="w-4 h-4" /> },
+    { value: 'finance', label: 'Financial', icon: <DollarSign className="w-4 h-4" /> },
+    { value: 'security', label: 'Security', icon: <Shield className="w-4 h-4" /> },
+    { value: 'integration', label: 'Integrations', icon: <Zap className="w-4 h-4" /> },
+    { value: 'general', label: 'General', icon: <Settings className="w-4 h-4" /> },
+    { value: 'ui', label: 'User Interface', icon: <Globe className="w-4 h-4" /> },
+  ];
+
+  const filteredSettings = settings.filter((setting: any) => {
+    const matchesCategory = selectedCategory === 'all' || setting.category === selectedCategory;
+    const matchesSearch = !searchTerm || 
+      setting.key.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      setting.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      setting.value?.toString().toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  const getCategoryBadgeColor = (category: string) => {
+    switch (category) {
+      case 'fraud': return 'bg-red-100 text-red-800';
+      case 'finance': return 'bg-green-100 text-green-800';
+      case 'security': return 'bg-yellow-100 text-yellow-800';
+      case 'integration': return 'bg-blue-100 text-blue-800';
+      case 'ui': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatValue = (value: any) => {
+    if (typeof value === 'object') {
+      return JSON.stringify(value, null, 2);
+    }
+    return String(value);
   };
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         <Sidebar />
-        <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
-          <Header />
-          <main className="p-6">
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                <p className="mt-2 text-gray-600">Loading settings...</p>
-              </div>
-            </div>
+        <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+          <Header title="System Settings" />
+          <main className="flex-1 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </main>
         </div>
       </div>
@@ -100,48 +173,83 @@ export default function SuperAdminSystemSettings() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
-        <Header />
-        <main className="p-6">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-              <Settings className="w-8 h-8" />
-              System Settings
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Configure system-wide settings and preferences
-            </p>
-          </div>
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="general">General</TabsTrigger>
-                  <TabsTrigger value="email">Email</TabsTrigger>
-                  <TabsTrigger value="security">Security</TabsTrigger>
-                  <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="general" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>General Settings</CardTitle>
-                      <CardDescription>
-                        Basic system configuration options
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+      <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+        <Header title="System Settings" />
+        <main className="flex-1 overflow-y-auto p-6">
+          {/* Category Tabs and Search */}
+          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
+            <div className="flex items-center justify-between">
+              <TabsList className="grid w-full grid-cols-7">
+                {categories.map((category) => (
+                  <TabsTrigger key={category.value} value={category.value} className="flex items-center gap-2" title={`Фильтр по категории: ${category.label}`}>
+                    {category.icon}
+                    <span className="hidden sm:inline">{category.label}</span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="flex items-center gap-2" data-testid="button-create-setting" title="Создать новую настройку">
+                    <Plus className="w-4 h-4" />
+                    Add Setting
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Create System Setting</DialogTitle>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit((data) => createSettingMutation.mutate(data))} className="space-y-4">
                       <FormField
                         control={form.control}
-                        name="siteName"
+                        name="key"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Site Name</FormLabel>
+                            <FormLabel>Setting Key</FormLabel>
                             <FormControl>
-                              <Input {...field} data-testid="input-site-name" />
+                              <Input {...field} placeholder="e.g., fraud.max_clicks_per_hour" data-testid="input-setting-key" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Category</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger data-testid="select-setting-category">
+                                  <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {categories.slice(1).map((category) => (
+                                  <SelectItem key={category.value} value={category.value}>
+                                    {category.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="value"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Value</FormLabel>
+                            <FormControl>
+                              <Textarea {...field} placeholder="Setting value (JSON for objects)" data-testid="input-setting-value" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -150,225 +258,187 @@ export default function SuperAdminSystemSettings() {
 
                       <FormField
                         control={form.control}
-                        name="registrationEnabled"
+                        name="description"
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">User Registration</FormLabel>
-                              <p className="text-sm text-muted-foreground">
-                                Allow new users to register accounts
-                              </p>
-                            </div>
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
                             <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                data-testid="switch-registration-enabled"
-                              />
+                              <Input {...field} placeholder="Setting description" data-testid="input-setting-description" />
                             </FormControl>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
 
                       <FormField
                         control={form.control}
-                        name="emailNotifications"
+                        name="isPublic"
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">Email Notifications</FormLabel>
-                              <p className="text-sm text-muted-foreground">
-                                Send system notifications via email
-                              </p>
-                            </div>
+                          <FormItem className="flex items-center justify-between">
+                            <FormLabel>Public Setting</FormLabel>
                             <FormControl>
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
-                                data-testid="switch-email-notifications"
+                                data-testid="switch-setting-public"
                               />
                             </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="email" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Email Configuration</CardTitle>
-                      <CardDescription>
-                        Configure SMTP settings for sending emails
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="smtpHost"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>SMTP Host</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="smtp.example.com" data-testid="input-smtp-host" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="smtpPort"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>SMTP Port</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="587" data-testid="input-smtp-port" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="smtpUser"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>SMTP Username</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="user@example.com" data-testid="input-smtp-user" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="smtpPassword"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>SMTP Password</FormLabel>
-                              <FormControl>
-                                <Input {...field} type="password" placeholder="••••••••" data-testid="input-smtp-password" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="security" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Security Settings</CardTitle>
-                      <CardDescription>
-                        Security and access control options
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
-                          <div>
-                            <h4 className="text-sm font-medium">Two-Factor Authentication</h4>
-                            <p className="text-sm text-gray-600">Require 2FA for admin accounts</p>
-                          </div>
-                          <Switch data-testid="switch-2fa" />
-                        </div>
-
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
-                          <div>
-                            <h4 className="text-sm font-medium">IP Whitelist</h4>
-                            <p className="text-sm text-gray-600">Restrict admin access to specific IPs</p>
-                          </div>
-                          <Switch data-testid="switch-ip-whitelist" />
-                        </div>
-
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
-                          <div>
-                            <h4 className="text-sm font-medium">Session Timeout</h4>
-                            <p className="text-sm text-gray-600">Auto-logout after inactivity</p>
-                          </div>
-                          <Switch data-testid="switch-session-timeout" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="maintenance" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Maintenance Mode</CardTitle>
-                      <CardDescription>
-                        System maintenance and downtime settings
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="maintenanceMode"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">Maintenance Mode</FormLabel>
-                              <p className="text-sm text-muted-foreground">
-                                Enable maintenance mode to temporarily disable the platform
-                              </p>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                data-testid="switch-maintenance-mode"
-                              />
-                            </FormControl>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
 
-                      <div className="p-4 bg-yellow-50 border-yellow-200 border rounded-lg">
-                        <h4 className="text-sm font-medium text-yellow-800">Warning</h4>
-                        <p className="text-sm text-yellow-700">
-                          Enabling maintenance mode will prevent all users (except super admins) from accessing the platform.
-                        </p>
+                      <div className="flex justify-end gap-2">
+                        <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" disabled={createSettingMutation.isPending}>
+                          {createSettingMutation.isPending ? 'Creating...' : 'Create Setting'}
+                        </Button>
                       </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </div>
 
-              <div className="flex justify-end space-x-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => form.reset()}
-                  disabled={updateSettingsMutation.isPending}
-                  data-testid="button-reset-settings"
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Reset
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={updateSettingsMutation.isPending}
-                  data-testid="button-save-settings"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {updateSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
-                </Button>
-              </div>
-            </form>
-          </Form>
+            {/* Search Filter */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder="Поиск по ключу, описанию, значению..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                    data-testid="input-search-settings"
+                    title="Поиск системных настроек"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Settings List */}
+            <div className="grid gap-4">
+              {filteredSettings.map((setting: any) => (
+                <Card key={setting.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <CardTitle className="text-lg font-mono">{setting.key}</CardTitle>
+                        <div className="flex items-center gap-2">
+                          <Badge className={getCategoryBadgeColor(setting.category)}>
+                            {setting.category}
+                          </Badge>
+                          {setting.isPublic && (
+                            <Badge variant="outline">Public</Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingSetting(setting)}
+                          data-testid={`button-edit-setting-${setting.id}`}
+                          title="Редактировать настройку"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => deleteSettingMutation.mutate(setting.id)}
+                          data-testid={`button-delete-setting-${setting.id}`}
+                          title="Удалить настройку"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    {setting.description && (
+                      <CardDescription>{setting.description}</CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
+                      <pre className="text-sm whitespace-pre-wrap">
+                        {formatValue(setting.value)}
+                      </pre>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500">
+                      Last updated: {new Date(setting.updatedAt).toLocaleString()}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              {filteredSettings.length === 0 && (
+                <Card>
+                  <CardContent className="text-center py-8">
+                    <Database className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                      No settings found
+                    </h3>
+                    <p className="text-gray-500">
+                      {selectedCategory === 'all' 
+                        ? 'No system settings have been configured yet.'
+                        : `No settings found in the ${selectedCategory} category.`
+                      }
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </Tabs>
+
+          {/* Edit Dialog */}
+          {editingSetting && (
+            <Dialog open={!!editingSetting} onOpenChange={() => setEditingSetting(null)}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Edit System Setting</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Key</label>
+                    <div className="font-mono text-sm p-2 bg-gray-100 dark:bg-gray-800 rounded">
+                      {editingSetting.key}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium">Value</label>
+                    <Textarea
+                      value={formatValue(editingSetting.value)}
+                      onChange={(e) => setEditingSetting({
+                        ...editingSetting,
+                        value: e.target.value
+                      })}
+                      data-testid="input-edit-setting-value"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setEditingSetting(null)}>
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={() => updateSettingMutation.mutate({
+                        id: editingSetting.id,
+                        data: { value: editingSetting.value }
+                      })}
+                      disabled={updateSettingMutation.isPending}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {updateSettingMutation.isPending ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </main>
       </div>
     </div>

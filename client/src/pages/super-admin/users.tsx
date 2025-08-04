@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
+import { useLanguage } from '@/contexts/language-context';
 import { queryClient } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
@@ -19,17 +20,17 @@ import { z } from 'zod';
 import { Plus, Search, Edit, Trash2, Shield, Users, DollarSign } from 'lucide-react';
 
 export default function UsersManagement() {
+  const { token } = useAuth();
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  
 
-  const { data: users } = useQuery({
+  const { data: users, isLoading } = useQuery({
     queryKey: ['/api/admin/users'],
     queryFn: async () => {
       const response = await fetch('/api/admin/users', {
-        headers: token,
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch users');
       return response.json();
@@ -42,7 +43,7 @@ export default function UsersManagement() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer $token`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(userData),
       });
@@ -52,7 +53,7 @@ export default function UsersManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setIsCreateDialogOpen(false);
-      form.reset()
+      form.reset();
     },
   });
 
@@ -60,7 +61,7 @@ export default function UsersManagement() {
     mutationFn: async (userId: string) => {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
-        headers: token,
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to delete user');
     },
@@ -120,34 +121,34 @@ export default function UsersManagement() {
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
-        <Header title="Loading..." subtitle="" />
+        <Header title={t('users_management')} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
           <div className="max-w-7xl mx-auto">
             {/* Header Section */}
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Loading...</h1>
-                <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('users_management')}</h1>
+                <p className="text-gray-600 dark:text-gray-400">{t('manage_platform_users')}</p>
               </div>
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
                   <Button data-testid="button-create-user">
                     <Plus className="w-4 h-4 mr-2" />
-                    Loading...
+                    {t('create_user')}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Loading...</DialogTitle>
+                    <DialogTitle>{t('create_new_user')}</DialogTitle>
                   </DialogHeader>
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit(data => createUserMutation.mutate(data))} className="space-y-4">
+                    <form onSubmit={form.handleSubmit((data) => createUserMutation.mutate(data))} className="space-y-4">
                       <FormField
                         control={form.control}
                         name="username"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Loading...</FormLabel>
+                            <FormLabel>{t('username')}</FormLabel>
                             <FormControl>
                               <Input {...field} data-testid="input-username" />
                             </FormControl>
@@ -160,7 +161,7 @@ export default function UsersManagement() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Loading...</FormLabel>
+                            <FormLabel>{t('email')}</FormLabel>
                             <FormControl>
                               <Input type="email" {...field} data-testid="input-email" />
                             </FormControl>
@@ -173,7 +174,7 @@ export default function UsersManagement() {
                         name="password"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Loading...</FormLabel>
+                            <FormLabel>{t('password')}</FormLabel>
                             <FormControl>
                               <Input type="password" {...field} data-testid="input-password" />
                             </FormControl>
@@ -186,7 +187,7 @@ export default function UsersManagement() {
                         name="role"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Loading...</FormLabel>
+                            <FormLabel>{t('role')}</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger data-testid="select-role">
@@ -194,10 +195,10 @@ export default function UsersManagement() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="affiliate">Loading...</SelectItem>
-                                <SelectItem value="advertiser">Loading...</SelectItem>
-                                <SelectItem value="staff">Loading...</SelectItem>
-                                <SelectItem value="super_admin">Loading...</SelectItem>
+                                <SelectItem value="affiliate">{t('affiliate')}</SelectItem>
+                                <SelectItem value="advertiser">{t('advertiser')}</SelectItem>
+                                <SelectItem value="staff">{t('staff')}</SelectItem>
+                                <SelectItem value="super_admin">{t('super_admin')}</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -210,7 +211,7 @@ export default function UsersManagement() {
                           name="firstName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Loading...</FormLabel>
+                              <FormLabel>{t('first_name')}</FormLabel>
                               <FormControl>
                                 <Input {...field} data-testid="input-first-name" />
                               </FormControl>
@@ -223,7 +224,7 @@ export default function UsersManagement() {
                           name="lastName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Loading...</FormLabel>
+                              <FormLabel>{t('last_name')}</FormLabel>
                               <FormControl>
                                 <Input {...field} data-testid="input-last-name" />
                               </FormControl>
@@ -234,10 +235,10 @@ export default function UsersManagement() {
                       </div>
                       <div className="flex justify-end gap-2">
                         <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                          Loading...
+                          {t('cancel')}
                         </Button>
                         <Button type="submit" disabled={createUserMutation.isPending} data-testid="button-submit-user">
-                          {createUserMutation.isPending ? 'creating' : 'create'}
+                          {createUserMutation.isPending ? t('creating') : t('create')}
                         </Button>
                       </div>
                     </form>
@@ -261,16 +262,16 @@ export default function UsersManagement() {
                       title="Поиск пользователей"
                     />
                   </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[180px]" data-testid="select-filter-role" title="Filter by role">
+                  <Select value={filterRole} onValueChange={setFilterRole}>
+                    <SelectTrigger className="w-[180px]" data-testid="select-filter-role" title="Фильтр по роли">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Roles</SelectItem>
-                      <SelectItem value="super_admin">Super Admin</SelectItem>
-                      <SelectItem value="advertiser">Advertiser</SelectItem>
-                      <SelectItem value="affiliate">Affiliate</SelectItem>
-                      <SelectItem value="staff">Staff</SelectItem>
+                      <SelectItem value="all">{t('all_roles')}</SelectItem>
+                      <SelectItem value="super_admin">{t('super_admin')}</SelectItem>
+                      <SelectItem value="advertiser">{t('advertiser')}</SelectItem>
+                      <SelectItem value="affiliate">{t('affiliate')}</SelectItem>
+                      <SelectItem value="staff">{t('staff')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -282,7 +283,7 @@ export default function UsersManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  (Users)
+                  {t('users')} ({filteredUsers.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -294,21 +295,21 @@ export default function UsersManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
+                        <TableHead>{t('user')}</TableHead>
+                        <TableHead>{t('role')}</TableHead>
+                        <TableHead>{t('status')}</TableHead>
+                        <TableHead>{t('kyc_status')}</TableHead>
+                        <TableHead>{t('created_at')}</TableHead>
+                        <TableHead>{t('actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {users?.map((user: any) => (
+                      {filteredUsers.map((user: any) => (
                         <TableRow key={user.id} data-testid={`row-user-${user.id}`}>
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
-                                {user.firstName?.charA0 || user.username.charA0}
+                                {user.firstName?.charAt(0) || user.username.charAt(0)}
                               </div>
                               <div>
                                 <div className="font-medium text-gray-900 dark:text-white" data-testid={`text-username-${user.id}`}>
@@ -328,12 +329,12 @@ export default function UsersManagement() {
                           <TableCell>
                             <Badge className={`${getRoleBadgeColor(user.role)} flex items-center gap-1 w-fit`}>
                               {getRoleIcon(user.role)}
-                              {user.role}
+                              {t(user.role)}
                             </Badge>
                           </TableCell>
                           <TableCell>
                             <Badge variant={user.isActive ? 'default' : 'secondary'} data-testid={`status-${user.id}`}>
-                              {user.isActive ? 'active' : 'inactive'}
+                              {user.isActive ? t('active') : t('inactive')}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -341,7 +342,7 @@ export default function UsersManagement() {
                               variant={user.kycStatus === 'approved' ? 'default' : user.kycStatus === 'rejected' ? 'destructive' : 'secondary'}
                               data-testid={`kyc-status-${user.id}`}
                             >
-                              {user.kycStatus}
+                              {t(user.kycStatus)}
                             </Badge>
                           </TableCell>
                           <TableCell data-testid={`text-created-${user.id}`}>

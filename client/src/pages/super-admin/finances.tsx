@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
+import { useLanguage } from '@/contexts/language-context';
 import { queryClient } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
@@ -25,21 +26,20 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-export default function UsersManagement() {
+export default function FinancesManagement() {
+  const { token } = useAuth();
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
-  const { token } = useAuth();
 
-  const { data: finances } = useQuery({
+  const { data: allTransactions, isLoading } = useQuery({
     queryKey: ['/api/admin/finances'],
     queryFn: async () => {
       const response = await fetch('/api/admin/finances', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch transactions');
       return response.json();
@@ -47,7 +47,7 @@ export default function UsersManagement() {
   });
 
   // Filter transactions based on search term and filters
-  const transactions = finances?.filter((transaction: any) => {
+  const transactions = allTransactions?.filter((transaction: any) => {
     const matchesSearch = searchTerm === '' || 
       transaction.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -69,9 +69,7 @@ export default function UsersManagement() {
     queryKey: ['/api/admin/financial-metrics'],
     queryFn: async () => {
       const response = await fetch('/api/admin/financial-metrics', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch financial metrics');
       return response.json();
@@ -168,13 +166,13 @@ export default function UsersManagement() {
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
-        <Header title="Loading..." />
+        <Header title={t('financial_management')} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
           <div className="max-w-7xl mx-auto">
             {/* Header Section */}
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Loading...</h1>
-              <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('financial_management')}</h1>
+              <p className="text-gray-600 dark:text-gray-400">{t('manage_transactions_payouts')}</p>
             </div>
 
             {/* Metrics Grid */}
@@ -185,7 +183,7 @@ export default function UsersManagement() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                          {metric.label}
+                          {t(metric.label)}
                         </p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-white" data-testid={`metric-value-${metric.label}`}>
                           {metric.value}
@@ -228,41 +226,43 @@ export default function UsersManagement() {
                     />
                   </div>
 
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
                     <SelectTrigger data-testid="select-filter-status" title="Фильтр по статусу">
-                      <SelectValue placeholder="All Statuses" />
+                      <SelectValue placeholder={t('filter_by_status')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="processing">Processing</SelectItem>
-                      <SelectItem value="failed">Failed</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                      <SelectItem value="all">{t('all_statuses')}</SelectItem>
+                      <SelectItem value="completed">{t('completed')}</SelectItem>
+                      <SelectItem value="pending">{t('pending')}</SelectItem>
+                      <SelectItem value="processing">{t('processing')}</SelectItem>
+                      <SelectItem value="failed">{t('failed')}</SelectItem>
+                      <SelectItem value="cancelled">{t('cancelled')}</SelectItem>
                     </SelectContent>
                   </Select>
 
                   <Select value={filterType} onValueChange={setFilterType}>
                     <SelectTrigger data-testid="select-filter-type" title="Фильтр по типу">
-                      <SelectValue placeholder="All Types" />
+                      <SelectValue placeholder={t('filter_by_type')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="commission">Commission</SelectItem>
-                      <SelectItem value="payout">Payout</SelectItem>
-                      <SelectItem value="bonus">Bonus</SelectItem>
-                      <SelectItem value="penalty">Penalty</SelectItem>
+                      <SelectItem value="all">{t('all_types')}</SelectItem>
+                      <SelectItem value="commission">{t('commission')}</SelectItem>
+                      <SelectItem value="payout">{t('payout')}</SelectItem>
+                      <SelectItem value="bonus">{t('bonus')}</SelectItem>
+                      <SelectItem value="penalty">{t('penalty')}</SelectItem>
                     </SelectContent>
                   </Select>
 
                   <DatePicker
                     selected={startDate}
                     onSelect={setStartDate}
+                    placeholderText={t('start_date')}
                   />
 
                   <DatePicker
                     selected={endDate}
                     onSelect={setEndDate}
+                    placeholderText={t('end_date')}
                   />
 
                   <Button 
@@ -277,7 +277,7 @@ export default function UsersManagement() {
                     data-testid="button-clear-filters"
                     title="Очистить фильтры"
                   >
-                    Loading...
+                    {t('clear_filters')}
                   </Button>
                 </div>
               </CardContent>
@@ -288,7 +288,7 @@ export default function UsersManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="w-5 h-5" />
-                  (Users)
+                  {t('transactions')} ({transactions?.length || 0})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -300,13 +300,13 @@ export default function UsersManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
+                        <TableHead>{t('id')}</TableHead>
+                        <TableHead>{t('user')}</TableHead>
+                        <TableHead>{t('type')}</TableHead>
+                        <TableHead>{t('amount')}</TableHead>
+                        <TableHead>{t('status')}</TableHead>
+                        <TableHead>{t('date')}</TableHead>
+                        <TableHead>{t('actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -318,7 +318,7 @@ export default function UsersManagement() {
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
-                                {transaction.user?.firstName?.charA0 || transaction.user?.username?.charA0 || 'U'}
+                                {transaction.user?.firstName?.charAt(0) || transaction.user?.username?.charAt(0) || 'U'}
                               </div>
                               <div>
                                 <div className="font-medium text-gray-900 dark:text-white" data-testid={`text-username-${transaction.id}`}>
@@ -334,7 +334,7 @@ export default function UsersManagement() {
                             <div className="flex items-center gap-2">
                               {getTypeIcon(transaction.type)}
                               <span className="capitalize" data-testid={`text-type-${transaction.id}`}>
-                                {transaction.type}
+                                {t(transaction.type)}
                               </span>
                             </div>
                           </TableCell>
@@ -346,7 +346,7 @@ export default function UsersManagement() {
                           <TableCell>
                             <Badge className={`${getStatusBadgeColor(transaction.status)} flex items-center gap-1 w-fit`} data-testid={`status-${transaction.id}`}>
                               {getStatusIcon(transaction.status)}
-                              {transaction.status}
+                              {t(transaction.status)}
                             </Badge>
                           </TableCell>
                           <TableCell data-testid={`text-date-${transaction.id}`}>
@@ -366,7 +366,7 @@ export default function UsersManagement() {
                                     disabled={updateTransactionMutation.isPending}
                                     data-testid={`button-approve-${transaction.id}`}
                                   >
-                                    Loading...
+                                    {t('approve')}
                                   </Button>
                                   <Button 
                                     size="sm" 
@@ -378,7 +378,7 @@ export default function UsersManagement() {
                                     disabled={updateTransactionMutation.isPending}
                                     data-testid={`button-reject-${transaction.id}`}
                                   >
-                                    Loading...
+                                    {t('reject')}
                                   </Button>
                                 </>
                               )}

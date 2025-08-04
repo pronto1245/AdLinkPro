@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
-
+import { useLanguage } from '@/contexts/language-context';
+import { getMultilingualText } from '@/lib/i18n';
 import { queryClient } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
@@ -13,32 +14,36 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { insertOfferSchema } from '@shared/schema';
 import { z } from 'zod';
 import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play } from 'lucide-react';
 
-export default function UsersManagement() {
-
+export default function OffersManagement() {
+  const { token } = useAuth();
+  const { t, language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
+  const { data: offers, isLoading } = useQuery({
     queryKey: ['/api/admin/offers'],
     queryFn: async () => {
       const response = await fetch('/api/admin/offers', {
-        headers: token,
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch offers');
       return response.json();
     },
   });
 
+  const { data: advertisers } = useQuery({
     queryKey: ['/api/admin/advertisers'],
     queryFn: async () => {
       const response = await fetch('/api/admin/users?role=advertiser', {
-        headers: token,
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch advertisers');
       return response.json();
@@ -51,7 +56,7 @@ export default function UsersManagement() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer $token`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(offerData),
       });
@@ -61,7 +66,7 @@ export default function UsersManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
       setIsCreateDialogOpen(false);
-      form.reset()
+      form.reset();
     },
   });
 
@@ -71,7 +76,7 @@ export default function UsersManagement() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer $token`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ status }),
       });
@@ -87,7 +92,7 @@ export default function UsersManagement() {
     mutationFn: async (offerId: string) => {
       const response = await fetch(`/api/admin/offers/${offerId}`, {
         method: 'DELETE',
-        headers: token,
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to delete offer');
     },
@@ -100,7 +105,7 @@ export default function UsersManagement() {
     resolver: zodResolver(insertOfferSchema),
     defaultValues: {
       name: '',
-      description: 'Text',
+      description: '',
       category: '',
       advertiserId: '',
       payout: '0',
@@ -143,34 +148,34 @@ export default function UsersManagement() {
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className="flex-1 overflow-hidden">
-        <Header title="Loading..." />
+        <Header title={t('offers_management')} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
           <div className="max-w-7xl mx-auto">
             {/* Header Section */}
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Loading...</h1>
-                <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('offers_management')}</h1>
+                <p className="text-gray-600 dark:text-gray-400">{t('manage_platform_offers')}</p>
               </div>
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
                   <Button data-testid="button-create-offer">
                     <Plus className="w-4 h-4 mr-2" />
-                    Loading...
+                    {t('create_offer')}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Loading...</DialogTitle>
+                    <DialogTitle>{t('create_new_offer')}</DialogTitle>
                   </DialogHeader>
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit(data => createOfferMutation.mutate(data))} className="space-y-4">
+                    <form onSubmit={form.handleSubmit((data) => createOfferMutation.mutate(data))} className="space-y-4">
                       <FormField
                         control={form.control}
                         name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Loading...</FormLabel>
+                            <FormLabel>{t('offer_name')}</FormLabel>
                             <FormControl>
                               <Input {...field} data-testid="input-offer-name" />
                             </FormControl>
@@ -183,8 +188,9 @@ export default function UsersManagement() {
                         name="description"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Loading...</FormLabel>
+                            <FormLabel>{t('description')}</FormLabel>
                             <FormControl>
+                              <Textarea {...field} value={field.value || ''} data-testid="input-description" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -196,7 +202,7 @@ export default function UsersManagement() {
                           name="category"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Loading...</FormLabel>
+                              <FormLabel>{t('category')}</FormLabel>
                               <FormControl>
                                 <Input {...field} data-testid="input-category" />
                               </FormControl>
@@ -209,7 +215,7 @@ export default function UsersManagement() {
                           name="advertiserId"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Loading...</FormLabel>
+                              <FormLabel>{t('advertiser')}</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-advertiser">
@@ -235,7 +241,7 @@ export default function UsersManagement() {
                           name="payout"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Loading...</FormLabel>
+                              <FormLabel>{t('payout')}</FormLabel>
                               <FormControl>
                                 <Input type="number" {...field} data-testid="input-payout" />
                               </FormControl>
@@ -248,7 +254,7 @@ export default function UsersManagement() {
                           name="payoutType"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Loading...</FormLabel>
+                              <FormLabel>{t('payout_type')}</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-payout-type">
@@ -270,7 +276,7 @@ export default function UsersManagement() {
                           name="currency"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Loading...</FormLabel>
+                              <FormLabel>{t('currency')}</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-currency">
@@ -290,10 +296,10 @@ export default function UsersManagement() {
                       </div>
                       <div className="flex justify-end gap-2">
                         <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                          Loading...
+                          {t('cancel')}
                         </Button>
                         <Button type="submit" disabled={createOfferMutation.isPending} data-testid="button-submit-offer">
-                          {createOfferMutation.isPending ? 'creating' : 'create'}
+                          {createOfferMutation.isPending ? t('creating') : t('create')}
                         </Button>
                       </div>
                     </form>
@@ -309,23 +315,23 @@ export default function UsersManagement() {
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
-                      placeholder="Loading..."
+                      placeholder={t('search_offers')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
                       data-testid="input-search-offers"
                     />
                   </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
                     <SelectTrigger className="w-[180px]" data-testid="select-filter-status">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Loading...</SelectItem>
-                      <SelectItem value="active">Loading...</SelectItem>
-                      <SelectItem value="paused">Loading...</SelectItem>
-                      <SelectItem value="draft">Loading...</SelectItem>
-                      <SelectItem value="archived">Loading...</SelectItem>
+                      <SelectItem value="all">{t('all_statuses')}</SelectItem>
+                      <SelectItem value="active">{t('active')}</SelectItem>
+                      <SelectItem value="paused">{t('paused')}</SelectItem>
+                      <SelectItem value="draft">{t('draft')}</SelectItem>
+                      <SelectItem value="archived">{t('archived')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -337,7 +343,7 @@ export default function UsersManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="w-5 h-5" />
-                  (Users)
+                  {t('offers')} ({filteredOffers.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -349,12 +355,12 @@ export default function UsersManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
-                        <TableHead>Loading...</TableHead>
+                        <TableHead>{t('offer')}</TableHead>
+                        <TableHead>{t('advertiser')}</TableHead>
+                        <TableHead>{t('payout')}</TableHead>
+                        <TableHead>{t('status')}</TableHead>
+                        <TableHead>{t('created_at')}</TableHead>
+                        <TableHead>{t('actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -369,7 +375,7 @@ export default function UsersManagement() {
                               {offer.description && (
                                 <div className="text-xs text-gray-400 mt-1 truncate max-w-xs">
                                   {typeof offer.description === 'object' ? 
-                                    ('') : 
+                                    getMultilingualText(offer.description, language, '') : 
                                     offer.description
                                   }
                                 </div>
@@ -396,7 +402,7 @@ export default function UsersManagement() {
                           <TableCell>
                             <Badge className={`${getStatusBadgeColor(offer.status)} flex items-center gap-1 w-fit`} data-testid={`status-${offer.id}`}>
                               {getStatusIcon(offer.status)}
-                              {offer.status}
+                              {t(offer.status)}
                             </Badge>
                           </TableCell>
                           <TableCell data-testid={`text-created-${offer.id}`}>
