@@ -42,7 +42,8 @@ import {
   User,
   Shield,
   Globe,
-  Activity
+  Activity,
+  Save
 } from "lucide-react";
 import { 
   DropdownMenu, 
@@ -50,7 +51,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/queryClient";
@@ -58,18 +59,27 @@ import { useToast } from "@/hooks/use-toast";
 
 interface User {
   id: string;
-  userType: string;
   username: string;
   email: string;
-  role: string;
-  isActive: boolean;
-  createdAt: string;
-  lastLoginAt: string;
-  lastLoginIP: string;
-  advertiserName?: string;
   firstName?: string;
   lastName?: string;
+  company?: string;
+  phone?: string;
+  telegram?: string;
+  role: string;
+  userType?: string;
   country?: string;
+  status?: string;
+  kycStatus?: string;
+  isBlocked?: boolean;
+  blockReason?: string;
+  lastLoginAt?: string;
+  lastIpAddress?: string;
+  registrationIp?: string;
+  advertiserId?: string;
+  advertiserName?: string;
+  createdAt: string;
+  isActive: boolean;
 }
 
 interface UserFilters {
@@ -116,16 +126,14 @@ export default function UsersManagement() {
   const [blockReason, setBlockReason] = useState('');
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [userToBlock, setUserToBlock] = useState<string | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showBulkDialog, setShowBulkDialog] = useState(false);
+  const [bulkAction, setBulkAction] = useState<'block' | 'unblock' | 'delete'>('block');
 
-  // Helper functions
-  const handleSearch = useCallback((value: string) => {
-    setFilters(prev => ({ ...prev, search: value, page: 1 }));
-  }, []);
-
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
-  }, []);
-
+  // Utility functions for sorting
   const handleSort = (field: string) => {
     const newOrder = filters.sortBy === field && filters.sortOrder === 'asc' ? 'desc' : 'asc';
     setFilters({ ...filters, sortBy: field, sortOrder: newOrder });
@@ -135,17 +143,15 @@ export default function UsersManagement() {
     if (filters.sortBy !== field) return '↕️';
     return filters.sortOrder === 'asc' ? '↑' : '↓';
   };
-
-  const handleBlockUser = (userId: string) => {
-    setUserToBlock(userId);
-    setShowBlockDialog(true);
-  };
-
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'dd.MM.yyyy HH:mm', {
-      locale: language === 'ru' ? ru : enUS
-    });
-  };
+  
+  // Edit form state
+  const [editForm, setEditForm] = useState({
+    firstName: '',
+    lastName: '',
+    role: 'affiliate',
+    country: '',
+    isActive: true
+  });
 
   // Get users with filters
   const { data: usersData, isLoading, refetch } = useQuery({
@@ -237,10 +243,191 @@ export default function UsersManagement() {
     }
   });
 
+  // Create user mutation
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      return apiRequest('/api/admin/users', 'POST', userData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Пользователь создан",
+        description: "Новый пользователь успешно создан"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      setShowCreateDialog(false);
+    }
+  });
+
+  // Edit user mutation
+  const editUserMutation = useMutation({
+    mutationFn: async ({ userId, userData }: { userId: string; userData: any }) => {
+      return apiRequest(`/api/admin/users/${userId}`, 'PATCH', userData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Пользователь обновлен",
+        description: "Данные пользователя успешно обновлены"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      setShowEditDialog(false);
+    }
+  });
+
+  // Bulk actions mutation
+  const bulkActionMutation = useMutation({
+    mutationFn: async ({ action, userIds, reason }: { action: string; userIds: string[]; reason?: string }) => {
+      return apiRequest('/api/admin/users/bulk', 'POST', { action, userIds, reason });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Массовая операция выполнена",
+        description: "Операция успешно применена к выбранным пользователям"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      setShowBulkDialog(false);
+      setSelectedUsers([]);
+    }
+  });
+
+  // Helper functions
+  const handleSearch = useCallback((value: string) => {
+    setFilters(prev => ({ ...prev, search: value, page: 1 }));
+  }, []);
+
+  const handleFilterChange = useCallback((key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+  }, []);
+
+  const handleBlockUser = (userId: string) => {
+    setUserToBlock(userId);
+    setShowBlockDialog(true);
+  };
+
   const confirmBlockUser = () => {
     if (userToBlock && blockReason.trim()) {
       blockUserMutation.mutate({ userId: userToBlock, reason: blockReason });
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'dd.MM.yyyy HH:mm', {
+      locale: language === 'ru' ? ru : enUS
+    });
+  };
+
+  // Edit user mutation
+  const editUserMutation = useMutation({
+    mutationFn: async ({ userId, userData }: { userId: string; userData: any }) => {
+      return apiRequest(`/api/admin/users/${userId}`, 'PATCH', userData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Пользователь обновлен", 
+        description: "Пользователь успешно обновлен"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      setShowEditDialog(false);
+    }
+  });
+
+  // Reset password mutation
+  const resetPasswordMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return apiRequest(`/api/admin/users/${userId}/reset-password`, 'POST');
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Пароль сброшен",
+        description: `Новый пароль: ${data.newPassword}`
+      });
+    }
+  });
+
+  // Bulk operations mutation
+  const bulkOperationMutation = useMutation({
+    mutationFn: async ({ action, userIds, reason }: { action: string; userIds: string[]; reason?: string }) => {
+      switch (action) {
+        case 'block':
+          return apiRequest('/api/admin/users/bulk-block', 'POST', { userIds, reason });
+        case 'unblock':
+          return apiRequest('/api/admin/users/bulk-unblock', 'POST', { userIds });
+        case 'delete':
+          return apiRequest('/api/admin/users/bulk-delete', 'POST', { userIds, hardDelete: false });
+        default:
+          throw new Error('Unknown bulk action');
+      }
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Массовая операция завершена",
+        description: `Успешно: ${data.success}, Ошибок: ${data.failed}`
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      setSelectedUsers([]);
+      setShowBulkDialog(false);
+    }
+  });
+
+  const handleFilterChange = (key: keyof UserFilters, value: string | number) => {
+    setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+  };
+
+  const handleSearch = (value: string) => {
+    setFilters(prev => ({ ...prev, search: value, page: 1 }));
+  };
+
+  const handleBlockUser = (userId: string) => {
+    setUserToBlock(userId);
+    setShowBlockDialog(true);
+  };
+
+  const confirmBlockUser = () => {
+    if (userToBlock && blockReason.trim()) {
+      blockUserMutation.mutate({ userId: userToBlock, reason: blockReason });
+    }
+  };
+
+  const getStatusBadge = (user: User) => {
+    // Use isActive field since isBlocked might not exist yet
+    if (!user.isActive) {
+      return <Badge variant="destructive" className="flex items-center gap-1">
+        <Ban className="w-3 h-3" />
+        Заблокирован
+      </Badge>;
+    }
+    
+    return <Badge variant="default" className="bg-green-500">
+      Активен
+    </Badge>;
+  };
+
+  const getRoleBadge = (role: string) => {
+    const roleColors: Record<string, string> = {
+      super_admin: "bg-purple-500",
+      advertiser: "bg-blue-500", 
+      affiliate: "bg-green-500",
+      staff: "bg-orange-500"
+    };
+    
+    const roleNames: Record<string, string> = {
+      super_admin: "Супер-админ",
+      advertiser: "Рекламодатель",
+      affiliate: "Партнер",
+      staff: "Сотрудник"
+    };
+    
+    return (
+      <Badge className={roleColors[role] || "bg-gray-500"}>
+        <Shield className="w-3 h-3 mr-1" />
+        {roleNames[role] || role}
+      </Badge>
+    );
+  };
+
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'dd.MM.yyyy HH:mm', {
+      locale: language === 'ru' ? ru : enUS
+    });
   };
 
   return (
@@ -263,9 +450,26 @@ export default function UsersManagement() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button>
+          <Button onClick={() => setShowCreateDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Создать пользователя
+            Добавить пользователя
+          </Button>
+          
+          {selectedUsers.length > 0 && (
+            <Button variant="outline" onClick={() => setShowBulkDialog(true)}>
+              Массовые операции ({selectedUsers.length})
+            </Button>
+          )}
+          
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              const params = new URLSearchParams(filters as any);
+              window.open(`/api/admin/users/export?${params.toString()}&format=csv`, '_blank');
+            }}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Экспорт
           </Button>
         </div>
       </div>
@@ -280,22 +484,20 @@ export default function UsersManagement() {
             <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {Array.isArray(usersData?.data) ? usersData.data.length : 0}
-            </div>
+            <div className="text-2xl font-bold">{Array.isArray(usersData) ? usersData.length : 0}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Активных
+              Активных пользователей
             </CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {Array.isArray(usersData?.data) ? usersData.data.filter((u: User) => u.isActive).length : 0}
+              {Array.isArray(usersData) ? usersData.filter((u: User) => u.isActive).length : 0}
             </div>
           </CardContent>
         </Card>
@@ -309,7 +511,7 @@ export default function UsersManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {Array.isArray(usersData?.data) ? usersData.data.filter((u: User) => !u.isActive).length : 0}
+              {Array.isArray(usersData) ? usersData.filter((u: User) => !u.isActive).length : 0}
             </div>
           </CardContent>
         </Card>
@@ -323,7 +525,7 @@ export default function UsersManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              {Array.isArray(usersData?.data) ? usersData.data.filter((u: User) => {
+              {Array.isArray(usersData) ? usersData.filter((u: User) => {
                 const today = new Date().toDateString();
                 return new Date(u.createdAt).toDateString() === today;
               }).length : 0}
@@ -603,77 +805,97 @@ export default function UsersManagement() {
                       }>
                         {user.userType === 'advertiser' ? 'Рекламодатель' :
                          user.userType === 'affiliate' ? 'Партнёр' :
-                         user.userType === 'staff' ? 'Сотрудник' : 'Админ'}
+                         user.userType === 'staff' ? 'Сотрудник' :
+                         user.userType === 'admin' ? 'Админ' : user.userType || 'Партнёр'}
                       </Badge>
                     </TableCell>
                     
-                    {/* Название аккаунта */}
+                    {/* Название аккаунта / Имя */}
+                    <TableCell className="font-medium">
+                      {user.company || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username}
+                    </TableCell>
+                    
+                    {/* Email / Telegram */}
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{user.username}</div>
-                        {(user.firstName || user.lastName) && (
-                          <div className="text-sm text-muted-foreground">
-                            {user.firstName} {user.lastName}
+                      <div className="space-y-1">
+                        <div className="text-sm">{user.email}</div>
+                        {user.telegram && (
+                          <div className="text-xs text-muted-foreground">
+                            TG: {user.telegram}
                           </div>
                         )}
                       </div>
                     </TableCell>
                     
-                    {/* Email */}
-                    <TableCell>
-                      <div className="text-sm">{user.email}</div>
-                    </TableCell>
-                    
                     {/* Роль */}
                     <TableCell>
-                      <Badge variant="outline">
+                      <Badge variant={
+                        user.role === 'super_admin' ? 'destructive' :
+                        user.role === 'advertiser' ? 'default' :
+                        user.role === 'affiliate' ? 'secondary' :
+                        'outline'
+                      }>
                         {user.role === 'super_admin' ? 'Супер-админ' :
                          user.role === 'advertiser' ? 'Рекламодатель' :
-                         user.role === 'affiliate' ? 'Партнёр' :
+                         user.role === 'affiliate' ? 'Партнер' :
                          user.role === 'staff' ? 'Сотрудник' : user.role}
                       </Badge>
                     </TableCell>
                     
                     {/* Статус */}
                     <TableCell>
-                      <Badge variant={user.isActive ? 'default' : 'destructive'}>
-                        {user.isActive ? 'Активен' : 'Заблокирован'}
-                      </Badge>
+                      <div className="space-y-1">
+                        <Badge variant={user.isActive ? 'default' : 'destructive'}>
+                          {user.isBlocked ? 'Заблокирован' : 
+                           user.isActive ? 'Активен' : 'Неактивен'}
+                        </Badge>
+                        {user.kycStatus && (
+                          <div className="text-xs text-muted-foreground">
+                            KYC: {user.kycStatus === 'approved' ? 'Одобрен' :
+                                  user.kycStatus === 'rejected' ? 'Отклонен' : 'Ожидает'}
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
                     
                     {/* Дата регистрации */}
                     <TableCell>
-                      <div className="text-sm">
-                        {formatDate(user.createdAt)}
-                      </div>
+                      {format(new Date(user.createdAt), 'dd.MM.yyyy', { 
+                        locale: language === 'ru' ? ru : enUS 
+                      })}
                     </TableCell>
                     
-                    {/* Последний вход */}
+                    {/* Последний вход (IP) */}
                     <TableCell>
-                      <div className="text-sm">
-                        {user.lastLoginAt ? (
-                          <>
-                            <div>{formatDate(user.lastLoginAt)}</div>
-                            {user.lastLoginIP && (
-                              <div className="text-xs text-muted-foreground font-mono">
-                                {user.lastLoginIP}
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <span className="text-muted-foreground">Никогда</span>
+                      <div className="space-y-1">
+                        <div className="text-sm">
+                          {user.lastLoginAt ? 
+                            format(new Date(user.lastLoginAt), 'dd.MM.yyyy HH:mm', { 
+                              locale: language === 'ru' ? ru : enUS 
+                            }) : 
+                            'Никогда'
+                          }
+                        </div>
+                        {user.lastIpAddress && (
+                          <div className="text-xs text-muted-foreground font-mono">
+                            {user.lastIpAddress}
+                          </div>
                         )}
                       </div>
                     </TableCell>
                     
                     {/* Привязанный рекламодатель */}
                     <TableCell>
-                      <div className="text-sm">
-                        {user.advertiserName || '-'}
-                      </div>
+                      {user.advertiserName ? (
+                        <span className="text-sm">{user.advertiserName}</span>
+                      ) : user.advertiserId ? (
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {user.advertiserId.substring(0, 8)}...
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
                     </TableCell>
-
-                    {/* Действия */}
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -682,11 +904,24 @@ export default function UsersManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedUser(user);
+                            setShowViewDialog(true);
+                          }}>
                             <Eye className="mr-2 h-4 w-4" />
                             Просмотр
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedUser(user);
+                            setEditForm({
+                              firstName: user.firstName || '',
+                              lastName: user.lastName || '',
+                              role: user.role,
+                              country: user.country || '',
+                              isActive: user.isActive
+                            });
+                            setShowEditDialog(true);
+                          }}>
                             <Edit className="mr-2 h-4 w-4" />
                             Редактировать
                           </DropdownMenuItem>
@@ -756,14 +991,293 @@ export default function UsersManagement() {
                 {blockUserMutation.isPending ? (
                   <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  "Заблокировать"
+                  <Ban className="mr-2 h-4 w-4" />
                 )}
+                {t.block || "Заблокировать"}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+
+      {/* Create User Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t.createUser || "Создать пользователя"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>{t.username || "Имя пользователя"}</Label>
+                <Input id="username" placeholder="john_doe" />
+              </div>
+              <div>
+                <Label>{t.email || "Email"}</Label>
+                <Input id="email" type="email" placeholder="user@example.com" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>{t.firstName || "Имя"}</Label>
+                <Input id="firstName" placeholder="Иван" />
+              </div>
+              <div>
+                <Label>{t.lastName || "Фамилия"}</Label>
+                <Input id="lastName" placeholder="Иванов" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>{t.role || "Роль"}</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите роль" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="affiliate">Партнер</SelectItem>
+                    <SelectItem value="advertiser">Рекламодатель</SelectItem>
+                    <SelectItem value="staff">Сотрудник</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>{t.country || "Страна"}</Label>
+                <Input id="country" placeholder="RU" />
+              </div>
+            </div>
+            <div>
+              <Label>{t.password || "Пароль"}</Label>
+              <Input id="password" type="password" placeholder="••••••••" />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              {t.cancel || "Отмена"}
+            </Button>
+            <Button onClick={() => {
+              const formData = {
+                username: (document.getElementById('username') as HTMLInputElement)?.value,
+                email: (document.getElementById('email') as HTMLInputElement)?.value,
+                firstName: (document.getElementById('firstName') as HTMLInputElement)?.value,
+                lastName: (document.getElementById('lastName') as HTMLInputElement)?.value,
+                password: (document.getElementById('password') as HTMLInputElement)?.value,
+                country: (document.getElementById('country') as HTMLInputElement)?.value,
+                role: 'affiliate'
+              };
+              createUserMutation.mutate(formData);
+            }}>
+              {createUserMutation.isPending ? (
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="mr-2 h-4 w-4" />
+              )}
+              {t.create || "Создать"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View User Dialog */}
+      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t.userProfile || "Профиль пользователя"}</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">ID</Label>
+                  <p className="text-sm">{selectedUser.id}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.username || "Имя пользователя"}</Label>
+                  <p className="text-sm">{selectedUser.username}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.email || "Email"}</Label>
+                  <p className="text-sm">{selectedUser.email}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.role || "Роль"}</Label>
+                  <div className="mt-1">{getRoleBadge(selectedUser.role)}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.status || "Статус"}</Label>
+                  <div className="mt-1">{getStatusBadge(selectedUser)}</div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.country || "Страна"}</Label>
+                  <p className="text-sm">{selectedUser.country || 'Не указано'}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.registered || "Зарегистрирован"}</Label>
+                  <p className="text-sm">{formatDate(selectedUser.createdAt)}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.lastActivity || "Последняя активность"}</Label>
+                  <p className="text-sm">{selectedUser.lastLoginAt ? formatDate(selectedUser.lastLoginAt) : 'Никогда'}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t.editUser || "Редактировать пользователя"}</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>{t.firstName || "Имя"}</Label>
+                  <Input 
+                    value={editForm.firstName}
+                    onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
+                    placeholder="Иван" 
+                  />
+                </div>
+                <div>
+                  <Label>{t.lastName || "Фамилия"}</Label>
+                  <Input 
+                    value={editForm.lastName}
+                    onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
+                    placeholder="Иванов" 
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>{t.role || "Роль"}</Label>
+                  <Select 
+                    value={editForm.role} 
+                    onValueChange={(value) => setEditForm({...editForm, role: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="affiliate">Партнер</SelectItem>
+                      <SelectItem value="advertiser">Рекламодатель</SelectItem>
+                      <SelectItem value="staff">Сотрудник</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>{t.country || "Страна"}</Label>
+                  <Input 
+                    value={editForm.country}
+                    onChange={(e) => setEditForm({...editForm, country: e.target.value})}
+                    placeholder="RU" 
+                  />
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="checkbox" 
+                  checked={editForm.isActive}
+                  onChange={(e) => setEditForm({...editForm, isActive: e.target.checked})}
+                  className="rounded"
+                />
+                <Label>{t.activeUser || "Активный пользователь"}</Label>
+              </div>
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              {t.cancel || "Отмена"}
+            </Button>
+            <Button onClick={() => {
+              if (!selectedUser) return;
+              
+              editUserMutation.mutate({ 
+                userId: selectedUser.id, 
+                userData: editForm 
+              });
+            }}>
+              {editUserMutation.isPending ? (
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              {t.save || "Сохранить"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Actions Dialog */}
+      <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t.bulkActions || "Массовые операции"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Выбрано пользователей: {selectedUsers.length}
+            </p>
+            
+            <div>
+              <Label>{t.selectAction || "Выберите действие"}</Label>
+              <Select value={bulkAction} onValueChange={(value: any) => setBulkAction(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="block">Заблокировать</SelectItem>
+                  <SelectItem value="unblock">Разблокировать</SelectItem>
+                  <SelectItem value="delete">Удалить</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {bulkAction === 'block' && (
+              <div>
+                <Label>{t.reason || "Причина"}</Label>
+                <Textarea
+                  placeholder="Укажите причину..."
+                  value={blockReason}
+                  onChange={(e) => setBlockReason(e.target.value)}
+                />
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowBulkDialog(false)}>
+                {t.cancel || "Отмена"}
+              </Button>
+              <Button 
+                variant="destructive"
+                onClick={() => {
+                  bulkOperationMutation.mutate({
+                    action: bulkAction,
+                    userIds: selectedUsers,
+                    reason: bulkAction === 'block' ? blockReason : undefined
+                  });
+                }}
+                disabled={bulkOperationMutation.isPending || (bulkAction === 'block' && !blockReason.trim())}
+              >
+                {bulkOperationMutation.isPending ? (
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                {t.execute || "Выполнить"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+          </div>
         </main>
       </div>
     </div>
