@@ -280,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate role creation permissions
       if (authUser.role === 'advertiser') {
         // Advertisers can only create staff and affiliates
-        if (!['staff', 'affiliate'].includes(userData.role)) {
+        if (!['staff', 'affiliate'].includes(userData.role as string)) {
           return res.status(403).json({ error: "Advertisers can only create staff and affiliate users" });
         }
         // Set owner to current advertiser

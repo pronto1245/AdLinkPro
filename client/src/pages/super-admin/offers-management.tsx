@@ -972,9 +972,24 @@ export default function OffersManagement() {
                               };
                               const flag = countryFlags[landing.geo?.toLowerCase() || ''] || '🌍';
                               const geo = (landing.geo || 'XX').toUpperCase();
+                              const currencySymbols: {[key: string]: string} = {
+                                'USD': '$',
+                                'EUR': '€',
+                                'GBP': '£',
+                                'RUB': '₽',
+                                'JPY': '¥',
+                                'CNY': '¥',
+                                'KRW': '₩',
+                                'INR': '₹',
+                                'CAD': 'C$',
+                                'AUD': 'A$',
+                                'BRL': 'R$',
+                                'MXN': '$'
+                              };
+                              const currencySymbol = currencySymbols[landing.currency] || landing.currency;
                               return (
                                 <span key={index} className="inline-block mr-1 text-xs">
-                                  {flag}{geo}-{landing.payoutAmount}
+                                  {flag}{geo}-{landing.payoutAmount}{currencySymbol}
                                 </span>
                               );
                             })}
@@ -1124,6 +1139,21 @@ export default function OffersManagement() {
                         };
                         const flag = countryFlags[landing.geo?.toLowerCase() || ''] || '🌍';
                         const geo = (landing.geo || 'XX').toUpperCase();
+                        const currencySymbols: {[key: string]: string} = {
+                          'USD': '$',
+                          'EUR': '€',
+                          'GBP': '£',
+                          'RUB': '₽',
+                          'JPY': '¥',
+                          'CNY': '¥',
+                          'KRW': '₩',
+                          'INR': '₹',
+                          'CAD': 'C$',
+                          'AUD': 'A$',
+                          'BRL': 'R$',
+                          'MXN': '$'
+                        };
+                        const currencySymbol = currencySymbols[landing.currency] || landing.currency;
                         
                         return (
                           <div key={index} className="border rounded p-3">
@@ -1136,7 +1166,7 @@ export default function OffersManagement() {
                                 <div className="text-sm text-muted-foreground break-all">{landing.url}</div>
                               </div>
                               <div className="text-right">
-                                <div className="font-medium text-lg">{flag}{geo}-{landing.payoutAmount}</div>
+                                <div className="font-medium text-lg">{flag}{geo}-{landing.payoutAmount}{currencySymbol}</div>
                                 <div className="text-sm text-muted-foreground">{landing.currency}</div>
                               </div>
                             </div>
