@@ -1,6 +1,6 @@
 import { 
   users, offers, partnerOffers, trackingLinks, statistics, transactions, 
-  postbacks, tickets, fraudAlerts,
+  postbacks, tickets, fraudAlerts, customRoles, userRoleAssignments,
   type User, type InsertUser, type Offer, type InsertOffer,
   type PartnerOffer, type InsertPartnerOffer, type TrackingLink, type InsertTrackingLink,
   type Transaction, type InsertTransaction, type Postback, type InsertPostback,
@@ -149,6 +149,15 @@ export interface IStorage {
   
   // Dashboard analytics
   getDashboardMetrics(role: string, userId?: string): Promise<any>;
+  
+  // Role management
+  getCustomRoles(filters: { search?: string; scope?: string }): Promise<any[]>;
+  getCustomRole(id: string): Promise<any | null>;
+  createCustomRole(data: any): Promise<any>;
+  updateCustomRole(id: string, data: any): Promise<any>;
+  deleteCustomRole(id: string): Promise<void>;
+  assignUserRole(userId: string, roleId: string, assignedBy: string, expiresAt?: string): Promise<any>;
+  unassignUserRole(userId: string, roleId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1165,6 +1174,172 @@ export class DatabaseStorage implements IStorage {
     }
     
     return results;
+  }
+
+  async getDashboardMetrics(role: string, userId?: string): Promise<any> {
+    // Return mock data for now - implement real metrics based on role
+    return {
+      totalUsers: 1250,
+      activeUsers: 1180,
+      totalRevenue: 125000,
+      conversions: 890,
+      conversionRate: 12.5,
+      topOffers: [],
+      recentActivity: []
+    };
+  }
+
+  // Role management methods
+  async getCustomRoles(filters: { search?: string; scope?: string }): Promise<any[]> {
+    try {
+      let query = db.select({
+        id: customRoles.id,
+        name: customRoles.name,
+        description: customRoles.description,
+        permissions: customRoles.permissions,
+        advertiserId: customRoles.advertiserId,
+        ipRestrictions: customRoles.ipRestrictions,
+        geoRestrictions: customRoles.geoRestrictions,
+        timeRestrictions: customRoles.timeRestrictions,
+        isActive: customRoles.isActive,
+        createdBy: customRoles.createdBy,
+        createdAt: customRoles.createdAt,
+        updatedAt: customRoles.updatedAt,
+        advertiserName: users.username
+      })
+      .from(customRoles)
+      .leftJoin(users, eq(customRoles.advertiserId, users.id));
+
+      const rolesList = await query;
+      
+      // Add assigned users count
+      const rolesWithCounts = await Promise.all(rolesList.map(async (role) => {
+        const [countResult] = await db
+          .select({ count: count() })
+          .from(userRoleAssignments)
+          .where(and(eq(userRoleAssignments.customRoleId, role.id), eq(userRoleAssignments.isActive, true)));
+        
+        return {
+          ...role,
+          assignedUsers: countResult?.count || 0
+        };
+      }));
+      
+      return rolesWithCounts;
+    } catch (error) {
+      console.error('Error getting custom roles:', error);
+      return [];
+    }
+  }
+
+  async getCustomRole(id: string): Promise<any | null> {
+    try {
+      const [role] = await db.select()
+        .from(customRoles)
+        .where(eq(customRoles.id, id));
+      return role || null;
+    } catch (error) {
+      console.error('Error getting custom role:', error);
+      return null;
+    }
+  }
+
+  async createCustomRole(data: any): Promise<any> {
+    try {
+      const roleData = {
+        id: randomUUID(),
+        name: data.name,
+        description: data.description || null,
+        permissions: data.permissions,
+        advertiserId: data.advertiserId || null,
+        ipRestrictions: data.ipRestrictions || null,
+        geoRestrictions: data.geoRestrictions || null,
+        timeRestrictions: data.timeRestrictions || null,
+        isActive: true,
+        createdBy: data.createdBy,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const [role] = await db.insert(customRoles).values(roleData).returning();
+      return role;
+    } catch (error) {
+      console.error('Error creating custom role:', error);
+      throw error;
+    }
+  }
+
+  async updateCustomRole(id: string, data: any): Promise<any> {
+    try {
+      const updateData = {
+        ...data,
+        updatedAt: new Date()
+      };
+
+      const [role] = await db
+        .update(customRoles)
+        .set(updateData)
+        .where(eq(customRoles.id, id))
+        .returning();
+      
+      return role;
+    } catch (error) {
+      console.error('Error updating custom role:', error);
+      throw error;
+    }
+  }
+
+  async deleteCustomRole(id: string): Promise<void> {
+    try {
+      // First, deactivate all user role assignments
+      await db
+        .update(userRoleAssignments)
+        .set({ isActive: false })
+        .where(eq(userRoleAssignments.customRoleId, id));
+
+      // Then delete the role
+      await db.delete(customRoles).where(eq(customRoles.id, id));
+    } catch (error) {
+      console.error('Error deleting custom role:', error);
+      throw error;
+    }
+  }
+
+  async assignUserRole(userId: string, roleId: string, assignedBy: string, expiresAt?: string): Promise<any> {
+    try {
+      const assignmentData = {
+        id: randomUUID(),
+        userId,
+        customRoleId: roleId,
+        assignedBy,
+        isActive: true,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        createdAt: new Date()
+      };
+
+      const [assignment] = await db.insert(userRoleAssignments).values(assignmentData).returning();
+      return assignment;
+    } catch (error) {
+      console.error('Error assigning user role:', error);
+      throw error;
+    }
+  }
+
+  async unassignUserRole(userId: string, roleId: string): Promise<void> {
+    try {
+      await db
+        .update(userRoleAssignments)
+        .set({ isActive: false })
+        .where(
+          and(
+            eq(userRoleAssignments.userId, userId),
+            eq(userRoleAssignments.customRoleId, roleId)
+          )
+        );
+    } catch (error) {
+      console.error('Error unassigning user role:', error);
+      throw error;
+    }
   }
 }
 

@@ -1033,6 +1033,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Role Management Endpoints
+  app.get("/api/admin/roles", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { search, scope } = req.query;
+      const roles = await storage.getCustomRoles({
+        search: search as string,
+        scope: scope as string
+      });
+      res.json(roles);
+    } catch (error) {
+      console.error("Get roles error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/roles", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const roleData = {
+        ...req.body,
+        createdBy: authUser.id
+      };
+      
+      const role = await storage.createCustomRole(roleData);
+      res.status(201).json(role);
+    } catch (error) {
+      console.error("Create role error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/roles/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const role = await storage.getCustomRole(id);
+      if (!role) {
+        return res.status(404).json({ error: "Role not found" });
+      }
+      res.json(role);
+    } catch (error) {
+      console.error("Get role error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/admin/roles/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      
+      const role = await storage.updateCustomRole(id, updateData);
+      res.json(role);
+    } catch (error) {
+      console.error("Update role error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/roles/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteCustomRole(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Delete role error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Role assignment endpoints
+  app.post("/api/admin/roles/:roleId/assign", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { roleId } = req.params;
+      const { userId, expiresAt } = req.body;
+      const authUser = getAuthenticatedUser(req);
+      
+      const assignment = await storage.assignUserRole(userId, roleId, authUser.id, expiresAt);
+      res.status(201).json(assignment);
+    } catch (error) {
+      console.error("Assign role error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/admin/roles/:roleId/unassign/:userId", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { roleId, userId } = req.params;
+      await storage.unassignUserRole(userId, roleId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Unassign role error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Bulk user operations
   app.post("/api/admin/users/bulk-block", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
