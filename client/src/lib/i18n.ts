@@ -185,6 +185,8 @@ export const translations = {
     'add': 'Add',
     'cancel': 'Cancel',
     'creating': 'Creating...',
+    'choose_file': 'Choose file',
+    'file_selected': 'File selected',
     
     // Categories
     'gambling': 'Gambling',
@@ -414,6 +416,8 @@ export const translations = {
     'add': 'Добавить',
     'cancel': 'Отмена',
     'creating': 'Создание...',
+    'choose_file': 'Выбрать файл',
+    'file_selected': 'Файл выбран',
     
     // Categories
     'gambling': 'Гемблинг',

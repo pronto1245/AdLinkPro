@@ -213,26 +213,39 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
               <FormLabel>{t('offer_logo')}</FormLabel>
               <FormControl>
                 <div className="space-y-3">
-                  <Input 
-                    type="file" 
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        // Проверяем размер файла (максимум 2MB)
-                        if (file.size > 2 * 1024 * 1024) {
-                          alert(t('file_size_too_large'));
-                          return;
-                        }
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                          field.onChange(reader.result as string);
+                  <div className="flex items-center gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = (e) => {
+                          const file = (e.target as HTMLInputElement).files?.[0];
+                          if (file) {
+                            // Проверяем размер файла (максимум 2MB)
+                            if (file.size > 2 * 1024 * 1024) {
+                              alert(t('file_size_too_large'));
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              field.onChange(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
                         };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    data-testid="input-logo" 
-                  />
+                        input.click();
+                      }}
+                      data-testid="button-choose-logo"
+                    >
+                      {t('choose_file')}
+                    </Button>
+                    {field.value && (
+                      <span className="text-sm text-muted-foreground">{t('file_selected')}</span>
+                    )}
+                  </div>
                   {field.value && (
                     <div className="flex items-center gap-3">
                       <img src={field.value} alt={t('logo')} className="h-16 w-16 object-cover rounded border" />
