@@ -2258,6 +2258,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Fraud Detection Routes
+  app.get("/api/admin/fraud-reports", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { type, severity, status, search, page = 1, limit = 50 } = req.query;
+      const reports = await storage.getFraudReports({
+        type: type as string,
+        severity: severity as string,
+        status: status as string,
+        search: search as string,
+        page: parseInt(page as string),
+        limit: parseInt(limit as string)
+      });
+      res.json(reports);
+    } catch (error) {
+      console.error("Get fraud reports error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/fraud-stats", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const stats = await storage.getFraudStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Get fraud stats error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/ip-analysis", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { page = 1, limit = 50, riskScore } = req.query;
+      const analysis = await storage.getIpAnalysis({
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        riskScore: riskScore ? parseInt(riskScore as string) : undefined
+      });
+      res.json(analysis);
+    } catch (error) {
+      console.error("Get IP analysis error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/fraud-rules", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { type, scope, isActive } = req.query;
+      const rules = await storage.getFraudRules({
+        type: type as string,
+        scope: scope as string,
+        isActive: isActive ? isActive === 'true' : undefined
+      });
+      res.json(rules);
+    } catch (error) {
+      console.error("Get fraud rules error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/fraud-reports/review", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { reportId, status, notes, resolution } = req.body;
+      const userId = (req as any).user.id;
+      
+      const updatedReport = await storage.reviewFraudReport(reportId, {
+        status,
+        reviewedBy: userId,
+        reviewNotes: notes,
+        resolution
+      });
+      
+      auditLog(req, 'FRAUD_REPORT_REVIEWED', reportId, true, { status, notes });
+      res.json(updatedReport);
+    } catch (error) {
+      console.error("Review fraud report error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/fraud-blocks", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { type, targetId, reason, reportId } = req.body;
+      const userId = (req as any).user.id;
+      
+      const block = await storage.createFraudBlock({
+        type,
+        targetId,
+        reason,
+        reportId,
+        blockedBy: userId
+      });
+      
+      auditLog(req, 'FRAUD_BLOCK_CREATED', block.id, true, { type, targetId, reason });
+      res.json(block);
+    } catch (error) {
+      console.error("Create fraud block error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/fraud-rules", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const ruleData = req.body;
+      const userId = (req as any).user.id;
+      
+      const rule = await storage.createFraudRule({
+        ...ruleData,
+        createdBy: userId
+      });
+      
+      auditLog(req, 'FRAUD_RULE_CREATED', rule.id, true, { name: rule.name, type: rule.type });
+      res.json(rule);
+    } catch (error) {
+      console.error("Create fraud rule error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

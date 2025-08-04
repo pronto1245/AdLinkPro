@@ -1,12 +1,16 @@
 import { 
   users, offers, partnerOffers, trackingLinks, statistics, transactions, 
   postbacks, tickets, fraudAlerts, customRoles, userRoleAssignments,
-  cryptoWallets, cryptoTransactions,
+  cryptoWallets, cryptoTransactions, fraudReports, fraudRules, 
+  deviceTracking, ipAnalysis, fraudBlocks,
   type User, type InsertUser, type Offer, type InsertOffer,
   type PartnerOffer, type InsertPartnerOffer, type TrackingLink, type InsertTrackingLink,
   type Transaction, type InsertTransaction, type Postback, type InsertPostback,
   type Ticket, type InsertTicket, type FraudAlert, type InsertFraudAlert,
-  type CryptoWallet, type InsertCryptoWallet, type CryptoTransaction, type InsertCryptoTransaction
+  type CryptoWallet, type InsertCryptoWallet, type CryptoTransaction, type InsertCryptoTransaction,
+  type FraudReport, type InsertFraudReport, type FraudRule, type InsertFraudRule,
+  type DeviceTracking, type InsertDeviceTracking, type IpAnalysis, type InsertIpAnalysis,
+  type FraudBlock, type InsertFraudBlock
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, count, sum, sql } from "drizzle-orm";
@@ -188,6 +192,31 @@ export interface IStorage {
     page?: number;
     limit?: number;
   }): Promise<{ data: CryptoTransaction[]; total: number }>;
+
+  // Fraud Detection Methods
+  getFraudReports(filters: {
+    type?: string;
+    severity?: string;
+    status?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<FraudReport[]>;
+  getFraudReport(id: string): Promise<FraudReport | undefined>;
+  createFraudReport(report: InsertFraudReport): Promise<FraudReport>;
+  updateFraudReport(id: string, data: Partial<InsertFraudReport>): Promise<FraudReport>;
+  reviewFraudReport(id: string, data: { status: string; reviewedBy: string; reviewNotes?: string; resolution?: string }): Promise<FraudReport>;
+  getFraudStats(): Promise<any>;
+  getFraudRules(filters: { type?: string; scope?: string; isActive?: boolean }): Promise<FraudRule[]>;
+  createFraudRule(rule: InsertFraudRule): Promise<FraudRule>;
+  updateFraudRule(id: string, data: Partial<InsertFraudRule>): Promise<FraudRule>;
+  getIpAnalysis(filters: { page?: number; limit?: number; riskScore?: number }): Promise<IpAnalysis[]>;
+  createIpAnalysis(analysis: InsertIpAnalysis): Promise<IpAnalysis>;
+  updateIpAnalysis(id: string, data: Partial<InsertIpAnalysis>): Promise<IpAnalysis>;
+  getFraudBlocks(filters: { type?: string; isActive?: boolean }): Promise<FraudBlock[]>;
+  createFraudBlock(block: InsertFraudBlock): Promise<FraudBlock>;
+  updateFraudBlock(id: string, data: Partial<InsertFraudBlock>): Promise<FraudBlock>;
+  createDeviceTracking(tracking: InsertDeviceTracking): Promise<DeviceTracking>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1786,6 +1815,301 @@ export class DatabaseStorage implements IStorage {
       return { data, total };
     } catch (error) {
       console.error('Error getting crypto transactions:', error);
+      throw error;
+    }
+  }
+
+  // Fraud Detection Methods
+  async getFraudReports(filters: {
+    type?: string;
+    severity?: string;
+    status?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<FraudReport[]> {
+    try {
+      const page = filters.page || 1;
+      const limit = Math.min(filters.limit || 50, 100);
+      const offset = (page - 1) * limit;
+
+      let query = db.select().from(fraudReports);
+      
+      const conditions = [];
+      if (filters.type) conditions.push(eq(fraudReports.type, filters.type as any));
+      if (filters.severity) conditions.push(eq(fraudReports.severity, filters.severity as any));
+      if (filters.status) conditions.push(eq(fraudReports.status, filters.status as any));
+      if (filters.search) {
+        conditions.push(
+          sql`(${fraudReports.ipAddress} ILIKE ${'%' + filters.search + '%'} OR 
+               ${fraudReports.description} ILIKE ${'%' + filters.search + '%'})`
+        );
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+      
+      return await query
+        .orderBy(desc(fraudReports.createdAt))
+        .limit(limit)
+        .offset(offset);
+    } catch (error) {
+      console.error('Error getting fraud reports:', error);
+      throw error;
+    }
+  }
+
+  async getFraudReport(id: string): Promise<FraudReport | undefined> {
+    try {
+      const [report] = await db
+        .select()
+        .from(fraudReports)
+        .where(eq(fraudReports.id, id));
+      return report;
+    } catch (error) {
+      console.error('Error getting fraud report:', error);
+      throw error;
+    }
+  }
+
+  async createFraudReport(report: InsertFraudReport): Promise<FraudReport> {
+    try {
+      const [newReport] = await db
+        .insert(fraudReports)
+        .values(report)
+        .returning();
+      return newReport;
+    } catch (error) {
+      console.error('Error creating fraud report:', error);
+      throw error;
+    }
+  }
+
+  async updateFraudReport(id: string, data: Partial<InsertFraudReport>): Promise<FraudReport> {
+    try {
+      const [updatedReport] = await db
+        .update(fraudReports)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(fraudReports.id, id))
+        .returning();
+      return updatedReport;
+    } catch (error) {
+      console.error('Error updating fraud report:', error);
+      throw error;
+    }
+  }
+
+  async reviewFraudReport(id: string, data: { 
+    status: string; 
+    reviewedBy: string; 
+    reviewNotes?: string; 
+    resolution?: string 
+  }): Promise<FraudReport> {
+    try {
+      const [updatedReport] = await db
+        .update(fraudReports)
+        .set({
+          status: data.status as any,
+          reviewedBy: data.reviewedBy,
+          reviewedAt: new Date(),
+          reviewNotes: data.reviewNotes,
+          resolution: data.resolution,
+          updatedAt: new Date()
+        })
+        .where(eq(fraudReports.id, id))
+        .returning();
+      return updatedReport;
+    } catch (error) {
+      console.error('Error reviewing fraud report:', error);
+      throw error;
+    }
+  }
+
+  async getFraudStats(): Promise<any> {
+    try {
+      // Mock fraud statistics for demo
+      return {
+        totalReports: 145,
+        reportsGrowth: 12,
+        fraudRate: '3.24',
+        fraudRateChange: 8,
+        blockedIps: 67,
+        savedAmount: '15234.56'
+      };
+    } catch (error) {
+      console.error('Error getting fraud stats:', error);
+      throw error;
+    }
+  }
+
+  async getFraudRules(filters: { 
+    type?: string; 
+    scope?: string; 
+    isActive?: boolean 
+  }): Promise<FraudRule[]> {
+    try {
+      let query = db.select().from(fraudRules);
+      
+      const conditions = [];
+      if (filters.type) conditions.push(eq(fraudRules.type, filters.type as any));
+      if (filters.scope) conditions.push(eq(fraudRules.scope, filters.scope as any));
+      if (filters.isActive !== undefined) conditions.push(eq(fraudRules.isActive, filters.isActive));
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+      
+      return await query.orderBy(desc(fraudRules.createdAt));
+    } catch (error) {
+      console.error('Error getting fraud rules:', error);
+      throw error;
+    }
+  }
+
+  async createFraudRule(rule: InsertFraudRule): Promise<FraudRule> {
+    try {
+      const [newRule] = await db
+        .insert(fraudRules)
+        .values(rule)
+        .returning();
+      return newRule;
+    } catch (error) {
+      console.error('Error creating fraud rule:', error);
+      throw error;
+    }
+  }
+
+  async updateFraudRule(id: string, data: Partial<InsertFraudRule>): Promise<FraudRule> {
+    try {
+      const [updatedRule] = await db
+        .update(fraudRules)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(fraudRules.id, id))
+        .returning();
+      return updatedRule;
+    } catch (error) {
+      console.error('Error updating fraud rule:', error);
+      throw error;
+    }
+  }
+
+  async getIpAnalysis(filters: { 
+    page?: number; 
+    limit?: number; 
+    riskScore?: number 
+  }): Promise<IpAnalysis[]> {
+    try {
+      const page = filters.page || 1;
+      const limit = Math.min(filters.limit || 50, 100);
+      const offset = (page - 1) * limit;
+
+      let query = db.select().from(ipAnalysis);
+      
+      const conditions = [];
+      if (filters.riskScore !== undefined) {
+        conditions.push(sql`${ipAnalysis.riskScore} >= ${filters.riskScore}`);
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+      
+      return await query
+        .orderBy(desc(ipAnalysis.riskScore))
+        .limit(limit)
+        .offset(offset);
+    } catch (error) {
+      console.error('Error getting IP analysis:', error);
+      throw error;
+    }
+  }
+
+  async createIpAnalysis(analysis: InsertIpAnalysis): Promise<IpAnalysis> {
+    try {
+      const [newAnalysis] = await db
+        .insert(ipAnalysis)
+        .values(analysis)
+        .returning();
+      return newAnalysis;
+    } catch (error) {
+      console.error('Error creating IP analysis:', error);
+      throw error;
+    }
+  }
+
+  async updateIpAnalysis(id: string, data: Partial<InsertIpAnalysis>): Promise<IpAnalysis> {
+    try {
+      const [updatedAnalysis] = await db
+        .update(ipAnalysis)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(ipAnalysis.id, id))
+        .returning();
+      return updatedAnalysis;
+    } catch (error) {
+      console.error('Error updating IP analysis:', error);
+      throw error;
+    }
+  }
+
+  async getFraudBlocks(filters: { 
+    type?: string; 
+    isActive?: boolean 
+  }): Promise<FraudBlock[]> {
+    try {
+      let query = db.select().from(fraudBlocks);
+      
+      const conditions = [];
+      if (filters.type) conditions.push(eq(fraudBlocks.type, filters.type as any));
+      if (filters.isActive !== undefined) conditions.push(eq(fraudBlocks.isActive, filters.isActive));
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+      
+      return await query.orderBy(desc(fraudBlocks.createdAt));
+    } catch (error) {
+      console.error('Error getting fraud blocks:', error);
+      throw error;
+    }
+  }
+
+  async createFraudBlock(block: InsertFraudBlock): Promise<FraudBlock> {
+    try {
+      const [newBlock] = await db
+        .insert(fraudBlocks)
+        .values(block)
+        .returning();
+      return newBlock;
+    } catch (error) {
+      console.error('Error creating fraud block:', error);
+      throw error;
+    }
+  }
+
+  async updateFraudBlock(id: string, data: Partial<InsertFraudBlock>): Promise<FraudBlock> {
+    try {
+      const [updatedBlock] = await db
+        .update(fraudBlocks)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(fraudBlocks.id, id))
+        .returning();
+      return updatedBlock;
+    } catch (error) {
+      console.error('Error updating fraud block:', error);
+      throw error;
+    }
+  }
+
+  async createDeviceTracking(tracking: InsertDeviceTracking): Promise<DeviceTracking> {
+    try {
+      const [newTracking] = await db
+        .insert(deviceTracking)
+        .values(tracking)
+        .returning();
+      return newTracking;
+    } catch (error) {
+      console.error('Error creating device tracking:', error);
       throw error;
     }
   }
