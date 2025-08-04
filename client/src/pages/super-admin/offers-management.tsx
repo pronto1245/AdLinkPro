@@ -881,8 +881,14 @@ export default function OffersManagement() {
     mutationFn: async ({ offerId, status }: { offerId: string; status: string }) => {
       return await apiRequest('PUT', `/api/admin/offers/${offerId}`, { status });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
+    onSuccess: (updatedOffer) => {
+      // Update the cache directly instead of invalidating to preserve order
+      queryClient.setQueryData(['/api/admin/offers'], (oldOffers: any[]) => {
+        if (!oldOffers) return oldOffers;
+        return oldOffers.map(offer => 
+          offer.id === updatedOffer.id ? { ...offer, status: updatedOffer.status } : offer
+        );
+      });
       setIsStatusDialogOpen(false);
       setStatusChangeOffer(null);
       toast({

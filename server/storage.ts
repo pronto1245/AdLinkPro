@@ -195,9 +195,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOffer(id: string, data: Partial<InsertOffer>): Promise<Offer> {
+    // Don't update updatedAt for status-only changes to preserve order
+    const updateData = { ...data };
+    if (Object.keys(data).length === 1 && data.status) {
+      // Only status change, don't update timestamp
+    } else {
+      updateData.updatedAt = new Date();
+    }
+    
     const [offer] = await db
       .update(offers)
-      .set({ ...data, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(offers.id, id))
       .returning();
     return offer;
@@ -450,7 +458,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(offers)
       .leftJoin(users, eq(offers.advertiserId, users.id))
-      .orderBy(desc(offers.createdAt));
+      .orderBy(offers.createdAt);
     
     return offersWithAdvertisers;
   }
