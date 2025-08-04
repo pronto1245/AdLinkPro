@@ -84,13 +84,13 @@ export default function PostbacksPage() {
   const [selectedPostback, setSelectedPostback] = useState<PostbackTemplate | null>(null);
   const [selectedLog, setSelectedLog] = useState<PostbackLog | null>(null);
   const [postbackFilters, setPostbackFilters] = useState({
-    level: '',
-    status: '',
+    level: 'all',
+    status: 'all',
     search: ''
   });
   const [logFilters, setLogFilters] = useState({
-    status: '',
-    offerId: '',
+    status: 'all',
+    offerId: 'all',
     dateFrom: '',
     dateTo: '',
     search: ''
@@ -101,9 +101,9 @@ export default function PostbacksPage() {
     queryKey: ['/api/admin/postback-templates', postbackFilters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      Object.entries(postbackFilters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
-      });
+      if (postbackFilters.level !== 'all') params.append('level', postbackFilters.level);
+      if (postbackFilters.status !== 'all') params.append('status', postbackFilters.status);
+      if (postbackFilters.search) params.append('search', postbackFilters.search);
       
       const response = await fetch(`/api/admin/postback-templates?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -118,9 +118,11 @@ export default function PostbacksPage() {
     queryKey: ['/api/admin/postback-logs', logFilters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      Object.entries(logFilters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
-      });
+      if (logFilters.status !== 'all') params.append('status', logFilters.status);
+      if (logFilters.offerId !== 'all') params.append('offerId', logFilters.offerId);
+      if (logFilters.dateFrom) params.append('dateFrom', logFilters.dateFrom);
+      if (logFilters.dateTo) params.append('dateTo', logFilters.dateTo);
+      if (logFilters.search) params.append('search', logFilters.search);
       
       const response = await fetch(`/api/admin/postback-logs?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -325,7 +327,7 @@ export default function PostbacksPage() {
                         <SelectValue placeholder="Уровень" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Все уровни</SelectItem>
+                        <SelectItem value="all">Все уровни</SelectItem>
                         <SelectItem value="global">Глобальный</SelectItem>
                         <SelectItem value="offer">Оффер</SelectItem>
                       </SelectContent>
@@ -338,7 +340,7 @@ export default function PostbacksPage() {
                         <SelectValue placeholder="Статус" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Все статусы</SelectItem>
+                        <SelectItem value="all">Все статусы</SelectItem>
                         <SelectItem value="active">Активный</SelectItem>
                         <SelectItem value="inactive">Неактивный</SelectItem>
                       </SelectContent>
@@ -530,7 +532,7 @@ export default function PostbacksPage() {
                         <SelectValue placeholder="Статус" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Все статусы</SelectItem>
+                        <SelectItem value="all">Все статусы</SelectItem>
                         <SelectItem value="success">Успешно</SelectItem>
                         <SelectItem value="failed">Ошибка</SelectItem>
                         <SelectItem value="pending">Ожидание</SelectItem>
@@ -545,7 +547,7 @@ export default function PostbacksPage() {
                         <SelectValue placeholder="Оффер" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Все офферы</SelectItem>
+                        <SelectItem value="all">Все офферы</SelectItem>
                         {offers.map((offer: any) => (
                           <SelectItem key={offer.id} value={offer.id}>
                             {offer.name}
