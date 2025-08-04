@@ -585,6 +585,7 @@ interface Offer {
   id: string;
   name: string;
   description: string;
+  logo?: string;
   category: string;
   vertical: string;
   goals: string;
@@ -594,6 +595,18 @@ interface Offer {
   payoutType: string;
   currency: string;
   countries: string[];
+  landingPages?: Array<{
+    name: string;
+    url: string;
+    payoutAmount: number;
+    currency: string;
+    geo?: string;
+  }>;
+  geoPricing?: Array<{
+    geo: string;
+    payout: number;
+    currency: string;
+  }>;
   trafficSources: string[];
   status: string;
   moderationStatus: string;
@@ -903,10 +916,22 @@ export default function OffersManagement() {
                 {offers.map((offer) => (
                   <TableRow key={offer.id}>
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{offer.name}</div>
-                        <div className="text-sm text-muted-foreground truncate max-w-48">
-                          {offer.description}
+                      <div className="flex items-center gap-3">
+                        {offer.logo && (
+                          <img 
+                            src={offer.logo} 
+                            alt={offer.name}
+                            className="w-8 h-8 rounded object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        )}
+                        <div>
+                          <div className="font-medium">{offer.name}</div>
+                          <div className="text-sm text-muted-foreground truncate max-w-48">
+                            {offer.description}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
@@ -925,6 +950,11 @@ export default function OffersManagement() {
                     <TableCell>
                       <div className="font-medium">${offer.payout}</div>
                       <div className="text-sm text-muted-foreground">{offer.payoutType}</div>
+                      {offer.landingPages && offer.landingPages.length > 0 && (
+                        <div className="text-xs text-blue-600 mt-1">
+                          {offer.landingPages.length} гео-цен
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
@@ -1001,6 +1031,19 @@ export default function OffersManagement() {
               </TabsList>
               
               <TabsContent value="details" className="space-y-4">
+                {selectedOffer.logo && (
+                  <div>
+                    <Label>Логотип</Label>
+                    <div className="mt-2">
+                      <img 
+                        src={selectedOffer.logo} 
+                        alt={selectedOffer.name}
+                        className="w-16 h-16 rounded object-cover border"
+                      />
+                    </div>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>{t('category')}</Label>
@@ -1023,10 +1066,34 @@ export default function OffersManagement() {
                     </div>
                   </div>
                 </div>
+
+                {selectedOffer.landingPages && selectedOffer.landingPages.length > 0 && (
+                  <div>
+                    <Label>Лендинги и цены по гео</Label>
+                    <div className="mt-2 space-y-2">
+                      {selectedOffer.landingPages.map((landing, index) => (
+                        <div key={index} className="border rounded p-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-medium">{landing.name}</div>
+                              <div className="text-sm text-muted-foreground break-all">{landing.url}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-medium">${landing.payoutAmount} {landing.currency}</div>
+                              {landing.geo && (
+                                <div className="text-sm text-muted-foreground uppercase">{landing.geo}</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 <div>
                   <Label>{t('landing_page')}</Label>
-                  <div className="font-medium break-all">{selectedOffer.landingPageUrl}</div>
+                  <div className="font-medium break-all">{selectedOffer.landingPageUrl || 'Не указано'}</div>
                 </div>
                 
                 <div>

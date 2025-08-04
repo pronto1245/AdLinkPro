@@ -91,7 +91,7 @@ const requireUserAccess = async (req: Request, res: Response, next: NextFunction
   
   if (!canAccessUser(req.user!, targetUserId)) {
     // Additional check: see if target user is owned by current user
-    const targetUser = await storage.getUser(targetUserId);
+    const targetUser = targetUserId ? await storage.getUser(targetUserId) : null;
     if (!targetUser || (targetUser.ownerId !== req.user!.id && req.user!.role !== 'super_admin')) {
       return res.sendStatus(403);
     }
@@ -136,7 +136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       // Update last login
-      await storage.updateUser(user.id, { lastLoginAt: new Date() });
+      // lastLoginAt field removed from schema - skipping update
 
       res.json({ 
         token, 
@@ -284,11 +284,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(403).json({ error: "Advertisers can only create staff and affiliate users" });
         }
         // Set owner to current advertiser
-        userData.ownerId = authUser.id;
+        userData.ownerId = authUser.id || null;
       } else if (authUser.role === 'super_admin') {
         // Super admin can create anyone but set proper ownership
         if (userData.role === 'advertiser') {
-          userData.ownerId = authUser.id; // Owner is super admin
+          userData.ownerId = authUser.id || null; // Owner is super admin
         }
       }
 
@@ -671,7 +671,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(newOffer);
     } catch (error) {
       console.error("Create offer error:", error);
-      res.status(500).json({ error: "Failed to create offer", details: error.message });
+      res.status(500).json({ error: "Failed to create offer", details: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
