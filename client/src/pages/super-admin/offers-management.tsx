@@ -793,17 +793,7 @@ export default function OffersManagement() {
       })
   });
 
-  // Обработка URL-параметра для автоматического открытия оффера
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const offerId = urlParams.get('offer');
-    if (offerId && offers.length > 0) {
-      const offer = offers.find(o => o.id === offerId);
-      if (offer) {
-        setSelectedOffer(offer);
-      }
-    }
-  }, [offers]);
+
 
   // Fetch offer logs
   const { data: offerLogs = [] } = useQuery({
@@ -1119,18 +1109,9 @@ export default function OffersManagement() {
                         <div>
                           <div 
                             className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors"
-                            onClick={(e) => {
-                              if (e.ctrlKey || e.metaKey) {
-                                // Если зажат Ctrl/Cmd - открываем в новой вкладке
-                                const url = `/admin/offers?offer=${offer.id}`;
-                                window.open(url, '_blank');
-                              } else {
-                                // Обычный клик - открываем модальное окно
-                                setSelectedOffer(offer);
-                              }
-                            }}
+                            onClick={() => setSelectedOffer(offer)}
                             data-testid={`link-offer-name-${offer.id}`}
-                            title="Клик - открыть детали, Ctrl+Клик - открыть в новой вкладке"
+                            title="Открыть детали оффера"
                           >
                             {offer.name}
                           </div>
@@ -1395,21 +1376,6 @@ export default function OffersManagement() {
                           title="Открыть детали"
                         >
                           <Eye className="w-4 h-4 text-blue-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            const url = `/admin/offers?offer=${offer.id}`;
-                            window.open(url, '_blank');
-                          }}
-                          className="h-8 w-8 p-0 hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                          data-testid={`button-open-new-tab-${offer.id}`}
-                          title="Открыть в новой вкладке"
-                        >
-                          <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
                         </Button>
                         <Button
                           variant="ghost"
