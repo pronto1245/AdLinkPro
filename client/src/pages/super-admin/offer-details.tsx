@@ -69,6 +69,17 @@ export default function OfferDetails() {
     );
   }
 
+  // Отладочная информация для понимания структуры данных
+  console.log('Offer data:', {
+    id: offer.id,
+    name: offer.name,
+    payout: offer.payout,
+    currency: offer.currency,
+    geoPricing: offer.geoPricing,
+    countries: offer.countries,
+    landingPages: offer.landingPages
+  });
+
   // Category colors
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
