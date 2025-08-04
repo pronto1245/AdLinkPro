@@ -1241,7 +1241,7 @@ export default function OffersManagement() {
                 <SelectValue placeholder={t('status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Все статусы</SelectItem>
+                <SelectItem value="all">Все офферы</SelectItem>
                 <SelectItem value="active">{t('active')}</SelectItem>
                 <SelectItem value="paused">Остановлен</SelectItem>
                 <SelectItem value="pending">Ожидает</SelectItem>
