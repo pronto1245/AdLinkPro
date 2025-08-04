@@ -1200,14 +1200,14 @@ export default function OffersManagement() {
           <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">OFFER-MANAGEMENT</h1>
+          <h1 className="text-3xl font-bold">{t('offer_management')}</h1>
         </div>
         <div className="flex gap-2">
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button data-testid="button-create-offer" title="Создать новый оффер">
+              <Button data-testid="button-create-offer" title={t('create_offer_button')}>
                 <Plus className="w-4 h-4 mr-2" />
-                Создать оффер
+                {t('create_offer_button')}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -1228,7 +1228,7 @@ export default function OffersManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="w-5 h-5" />
-            Filters
+{t('filters')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -1245,11 +1245,11 @@ export default function OffersManagement() {
             </div>
             
             <Select value={offerNameSearch} onValueChange={setOfferNameSearch}>
-              <SelectTrigger data-testid="select-offer-name" title="Выбор оффера по названию">
-                <SelectValue placeholder="Все офферы" />
+              <SelectTrigger data-testid="select-offer-name" title={t('offer_name_filter_tooltip')}>
+                <SelectValue placeholder={t('all_offers')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Все офферы</SelectItem>
+                <SelectItem value="all">{t('all_offers')}</SelectItem>
                 {allOffers?.map((offer: Offer) => (
                   <SelectItem key={offer.id} value={offer.name}>
                     {offer.name}
@@ -1259,45 +1259,45 @@ export default function OffersManagement() {
             </Select>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger data-testid="select-status-filter" title="Фильтр по статусу оффера">
-                <SelectValue placeholder="Статус" />
+              <SelectTrigger data-testid="select-status-filter" title={t('status_filter_tooltip')}>
+                <SelectValue placeholder={t('status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Все статусы</SelectItem>
-                <SelectItem value="active">Активен</SelectItem>
-                <SelectItem value="paused">Остановлен</SelectItem>
-                <SelectItem value="pending">Ожидает</SelectItem>
-                <SelectItem value="draft">Черновик</SelectItem>
+                <SelectItem value="all">{t('all_statuses_filter')}</SelectItem>
+                <SelectItem value="active">{t('active')}</SelectItem>
+                <SelectItem value="paused">{t('paused')}</SelectItem>
+                <SelectItem value="pending">{t('waiting')}</SelectItem>
+                <SelectItem value="draft">{t('draft')}</SelectItem>
               </SelectContent>
             </Select>
 
 
 
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger data-testid="select-category-filter" title="Фильтр по категории оффера">
-                <SelectValue placeholder="Категория" />
+              <SelectTrigger data-testid="select-category-filter" title={t('category_filter_tooltip')}>
+                <SelectValue placeholder={t('category')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Все категории</SelectItem>
-                <SelectItem value="gambling">Gambling</SelectItem>
-                <SelectItem value="finance">Finance</SelectItem>
-                <SelectItem value="nutra">Nutra</SelectItem>
-                <SelectItem value="dating">Dating</SelectItem>
-                <SelectItem value="sweepstakes">Sweepstakes</SelectItem>
-                <SelectItem value="crypto">Crypto</SelectItem>
-                <SelectItem value="e-commerce">E-commerce</SelectItem>
-                <SelectItem value="mobile">Mobile</SelectItem>
-                <SelectItem value="games">Games</SelectItem>
-                <SelectItem value="software">Software</SelectItem>
+                <SelectItem value="all">{t('all_categories_filter')}</SelectItem>
+                <SelectItem value="gambling">{t('gambling')}</SelectItem>
+                <SelectItem value="finance">{t('finance')}</SelectItem>
+                <SelectItem value="nutra">{t('nutra')}</SelectItem>
+                <SelectItem value="dating">{t('dating')}</SelectItem>
+                <SelectItem value="sweepstakes">{t('sweepstakes')}</SelectItem>
+                <SelectItem value="crypto">{t('crypto')}</SelectItem>
+                <SelectItem value="e-commerce">{t('e_commerce')}</SelectItem>
+                <SelectItem value="mobile">{t('mobile')}</SelectItem>
+                <SelectItem value="games">{t('games')}</SelectItem>
+                <SelectItem value="software">{t('software')}</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={advertiserFilter} onValueChange={setAdvertiserFilter}>
-              <SelectTrigger data-testid="select-advertiser-filter" title="Фильтр по рекламодателю">
+              <SelectTrigger data-testid="select-advertiser-filter" title={t('advertiser_filter_tooltip')}>
                 <SelectValue placeholder={t('advertiser')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Все рекламодатели</SelectItem>
+                <SelectItem value="all">{t('all_advertisers_filter')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1317,10 +1317,10 @@ export default function OffersManagement() {
                 className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
                 data-testid="button-export-offers"
                 disabled={offers.length === 0}
-                title="Экспортировать офферы в CSV файл"
+                title={t('export_csv_tooltip')}
               >
                 <Download className="w-4 h-4 mr-2" />
-                {selectedOffers.length > 0 ? `Экспорт (${selectedOffers.length})` : 'Экспорт'}
+                {selectedOffers.length > 0 ? `${t('export')} (${selectedOffers.length})` : t('export')}
               </Button>
               <Button
                 size="sm"
@@ -1328,10 +1328,10 @@ export default function OffersManagement() {
                 onClick={() => setIsImportDialogOpen(true)}
                 className="border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                 data-testid="button-import-offers"
-                title="Импортировать офферы из CSV файла"
+                title={t('import_csv_tooltip')}
               >
                 <Upload className="w-4 h-4 mr-2" />
-                Импорт
+                {t('import')}
               </Button>
 
             </div>
@@ -1345,7 +1345,7 @@ export default function OffersManagement() {
                 <div className="flex items-center gap-2">
                   <Check className="w-5 h-5 text-blue-600" />
                   <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                    Выбрано офферов: {selectedOffers.length}
+                    {t('selected_offers')}: {selectedOffers.length}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -1355,10 +1355,10 @@ export default function OffersManagement() {
                     onClick={() => bulkActivateMutation.mutate(selectedOffers)}
                     disabled={bulkActivateMutation.isPending}
                     className="border-green-600 text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
-                    title="Активировать выбранные офферы"
+                    title={t('activate_selected_tooltip')}
                   >
                     <Play className="w-4 h-4 mr-1" />
-                    Активировать
+                    {t('activate')}
                   </Button>
                   <Button
                     size="sm"
@@ -1366,10 +1366,10 @@ export default function OffersManagement() {
                     onClick={() => bulkPauseMutation.mutate(selectedOffers)}
                     disabled={bulkPauseMutation.isPending}
                     className="border-yellow-600 text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-                    title="Остановить выбранные офферы"
+                    title={t('pause_selected_tooltip')}
                   >
                     <Pause className="w-4 h-4 mr-1" />
-                    Остановить
+                    {t('pause')}
                   </Button>
                   <Button
                     size="sm"
@@ -1377,10 +1377,10 @@ export default function OffersManagement() {
                     onClick={() => bulkDeleteMutation.mutate(selectedOffers)}
                     disabled={bulkDeleteMutation.isPending}
                     className="border-red-600 text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    title="Удалить выбранные офферы"
+                    title={t('delete_selected_tooltip')}
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
-                    Удалить
+                    {t('delete')}
                   </Button>
                   <Button
                     size="sm"
@@ -1390,10 +1390,10 @@ export default function OffersManagement() {
                       setShowBulkActions(false);
                     }}
                     className="text-gray-600 hover:text-gray-800"
-                    title="Отменить выбор"
+                    title={t('cancel_selection_tooltip')}
                   >
                     <XCircle className="w-4 h-4 mr-1" />
-                    Отменить
+                    {t('cancel')}
                   </Button>
                 </div>
               </div>
@@ -1421,8 +1421,8 @@ export default function OffersManagement() {
                   <TableHead>{t('advertiser')}</TableHead>
                   <TableHead>{t('category')}</TableHead>
                   <TableHead>{t('payout')}</TableHead>
-                  <TableHead>Источники трафика</TableHead>
-                  <TableHead>Разрешенные приложения</TableHead>
+                  <TableHead>{t('traffic_sources_column')}</TableHead>
+                  <TableHead>{t('allowed_apps_column')}</TableHead>
                   <TableHead>{t('status')}</TableHead>
                   <TableHead>{t('created')}</TableHead>
                   <TableHead>{t('actions')}</TableHead>
@@ -1491,16 +1491,16 @@ export default function OffersManagement() {
                         };
                         const categoryColor = getCategoryColor(offer.category);
                         const categoryLabels: {[key: string]: string} = {
-                          'gambling': 'Гемблинг',
-                          'finance': 'Финансы',
-                          'nutra': 'Нутра',
-                          'dating': 'Знакомства',
-                          'sweepstakes': 'Лотереи',
-                          'crypto': 'Криптовалюты',
-                          'e-commerce': 'E-commerce',
-                          'mobile': 'Мобильные',
-                          'games': 'Игры',
-                          'software': 'ПО'
+                          'gambling': t('gambling'),
+                          'finance': t('finance'),
+                          'nutra': t('nutra'),
+                          'dating': t('dating'),
+                          'sweepstakes': t('sweepstakes'),
+                          'crypto': t('crypto'),
+                          'e-commerce': t('e_commerce'),
+                          'mobile': t('mobile'),
+                          'games': t('games'),
+                          'software': t('software')
                         };
                         const categoryLabel = categoryLabels[offer.category] || offer.category;
                         return (
@@ -1643,11 +1643,11 @@ export default function OffersManagement() {
                               </div>
                             ))}
                             {offer.trafficSources.length > 4 && (
-                              <div className="text-muted-foreground text-xs">+{offer.trafficSources.length - 4} еще</div>
+                              <div className="text-muted-foreground text-xs">+{offer.trafficSources.length - 4} {t('more')}</div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-muted-foreground">Не указано</span>
+                          <span className="text-muted-foreground">{t('not_specified')}</span>
                         )}
                       </div>
                     </TableCell>
@@ -1685,11 +1685,11 @@ export default function OffersManagement() {
                               </div>
                             ))}
                             {(offer.allowedApps?.length || 0) > 4 && (
-                              <div className="text-muted-foreground text-xs">+{(offer.allowedApps?.length || 0) - 4} еще</div>
+                              <div className="text-muted-foreground text-xs">+{(offer.allowedApps?.length || 0) - 4} {t('more')}</div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-muted-foreground">Не указано</span>
+                          <span className="text-muted-foreground">{t('not_specified')}</span>
                         )}
                       </div>
                     </TableCell>
@@ -1717,7 +1717,7 @@ export default function OffersManagement() {
                           onClick={() => setLocation(`/admin/offers/${offer.id}`)}
                           className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                           data-testid={`button-view-offer-${offer.id}`}
-                          title="Открыть детали"
+                          title={t('view_details')}
                         >
                           <Eye className="w-4 h-4 text-blue-600" />
                         </Button>
@@ -1730,7 +1730,7 @@ export default function OffersManagement() {
                           }}
                           className="h-8 w-8 p-0 hover:bg-green-50 dark:hover:bg-green-900/20"
                           data-testid={`button-edit-offer-${offer.id}`}
-                          title="Редактировать оффер"
+                          title={t('edit_offer_action')}
                         >
                           <Edit className="w-4 h-4 text-green-600" />
                         </Button>
@@ -1738,14 +1738,14 @@ export default function OffersManagement() {
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            if (confirm('Вы уверены, что хотите удалить этот оффер?')) {
+                            if (confirm(t('confirm_delete_offer'))) {
                               deleteOfferMutation.mutate(offer.id);
                             }
                           }}
                           className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
                           data-testid={`button-delete-offer-${offer.id}`}
                           disabled={deleteOfferMutation.isPending}
-                          title="Удалить оффер"
+                          title={t('delete_offer')}
                         >
                           <Trash2 className="w-4 h-4 text-red-600" />
                         </Button>
@@ -1779,7 +1779,7 @@ export default function OffersManagement() {
               <TabsContent value="details" className="space-y-4">
                 {selectedOffer.logo && (
                   <div>
-                    <Label>Логотип</Label>
+                    <Label>{t('logo')}</Label>
                     <div className="mt-2">
                       <img 
                         src={selectedOffer.logo} 
@@ -1813,16 +1813,16 @@ export default function OffersManagement() {
                         };
                         const categoryColor = getCategoryColor(selectedOffer.category);
                         const categoryLabels: {[key: string]: string} = {
-                          'gambling': 'Гемблинг',
-                          'finance': 'Финансы',
-                          'nutra': 'Нутра',
-                          'dating': 'Знакомства',
-                          'sweepstakes': 'Лотереи',
-                          'crypto': 'Криптовалюты',
-                          'e-commerce': 'E-commerce',
-                          'mobile': 'Мобильные',
-                          'games': 'Игры',
-                          'software': 'ПО'
+                          'gambling': t('gambling'),
+                          'finance': t('finance'),
+                          'nutra': t('nutra'),
+                          'dating': t('dating'),
+                          'sweepstakes': t('sweepstakes'),
+                          'crypto': t('crypto'),
+                          'e-commerce': t('e_commerce'),
+                          'mobile': t('mobile'),
+                          'games': t('games'),
+                          'software': t('software')
                         };
                         const categoryLabel = categoryLabels[selectedOffer.category] || selectedOffer.category;
                         return (
