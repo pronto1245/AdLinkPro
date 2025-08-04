@@ -782,63 +782,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       console.log("Updating offer:", id);
       
-      // Clean data by filtering out undefined and problematic fields
-      const cleanData: any = {};
+      // Filter out system fields and undefined values
+      const updateData: any = {};
+      const allowedFields = [
+        'name', 'description', 'logo', 'category', 'status', 'payoutType', 'currency',
+        'kpiConditions', 'restrictions', 'moderationComment', 'antifraudEnabled',
+        'autoApprovePartners', 'kycRequired', 'isPrivate', 'smartlinkEnabled',
+        'dailyLimit', 'monthlyLimit', 'landingPages', 'allowedApps'
+      ];
       
-      if (req.body.name !== undefined) cleanData.name = req.body.name;
-      if (req.body.description !== undefined) cleanData.description = req.body.description;
-      if (req.body.logo !== undefined) cleanData.logo = req.body.logo;
-      if (req.body.category !== undefined) cleanData.category = req.body.category;
-      if (req.body.status !== undefined) cleanData.status = req.body.status;
-      if (req.body.payoutType !== undefined) cleanData.payoutType = req.body.payoutType;
-      if (req.body.currency !== undefined) cleanData.currency = req.body.currency;
-      if (req.body.kpiConditions !== undefined) cleanData.kpiConditions = req.body.kpiConditions;
-      if (req.body.restrictions !== undefined) cleanData.restrictions = req.body.restrictions;
-      if (req.body.moderationComment !== undefined) cleanData.moderationComment = req.body.moderationComment;
-      if (req.body.antifraudEnabled !== undefined) cleanData.antifraudEnabled = req.body.antifraudEnabled;
-      if (req.body.autoApprovePartners !== undefined) cleanData.autoApprovePartners = req.body.autoApprovePartners;
-      if (req.body.kycRequired !== undefined) cleanData.kycRequired = req.body.kycRequired;
-      if (req.body.isPrivate !== undefined) cleanData.isPrivate = req.body.isPrivate;
-      if (req.body.smartlinkEnabled !== undefined) cleanData.smartlinkEnabled = req.body.smartlinkEnabled;
-      if (req.body.dailyLimit !== undefined) cleanData.dailyLimit = req.body.dailyLimit;
-      if (req.body.monthlyLimit !== undefined) cleanData.monthlyLimit = req.body.monthlyLimit;
-      if (req.body.landingPages !== undefined) cleanData.landingPages = req.body.landingPages;
-      if (req.body.allowedApps !== undefined) cleanData.allowedApps = req.body.allowedApps;
-      if (req.body.allowedTrafficSources !== undefined) cleanData.trafficSources = req.body.allowedTrafficSources;
-      if (req.body.trafficSources !== undefined) cleanData.trafficSources = req.body.trafficSources;
-      
-      console.log("Clean data for update:", Object.keys(cleanData));
-      
-      // Use storage interface instead to avoid SQL complexity
-      const offer = await storage.updateOffer(id, {
-        name: req.body.name,
-        description: req.body.description,
-        logo: req.body.logo,
-        category: req.body.category,
-        status: req.body.status,
-        payoutType: req.body.payoutType,
-        currency: req.body.currency,
-        kpiConditions: req.body.kpiConditions,
-        restrictions: req.body.restrictions,
-        moderationComment: req.body.moderationComment,
-        antifraudEnabled: req.body.antifraudEnabled,
-        autoApprovePartners: req.body.autoApprovePartners,
-        kycRequired: req.body.kycRequired,
-        isPrivate: req.body.isPrivate,
-        smartlinkEnabled: req.body.smartlinkEnabled,
-        dailyLimit: req.body.dailyLimit,
-        monthlyLimit: req.body.monthlyLimit,
-        landingPages: req.body.landingPages,
-        allowedApps: req.body.allowedApps,
-        trafficSources: req.body.allowedTrafficSources || req.body.trafficSources
+      allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) {
+          updateData[field] = req.body[field];
+        }
       });
+      
+      // Handle special field mapping
+      if (req.body.allowedTrafficSources !== undefined) {
+        updateData.trafficSources = req.body.allowedTrafficSources;
+      }
+      
+      console.log("Updating fields:", Object.keys(updateData));
+      
+      const offer = await storage.updateOffer(id, updateData);
       
       if (!offer) {
         return res.status(404).json({ error: "Оффер не найден" });
       }
       
       res.json(offer);
-
     } catch (error) {
       console.error("Update offer error:", error);
       res.status(500).json({ error: "Не удалось обновить оффер", details: error instanceof Error ? error.message : 'Unknown error' });

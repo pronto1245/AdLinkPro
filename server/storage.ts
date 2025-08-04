@@ -195,13 +195,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOffer(id: string, data: Partial<InsertOffer>): Promise<Offer> {
-    // Don't update updatedAt for status-only changes to preserve order
+    // Don't add updatedAt manually - let database handle it with default
     const updateData = { ...data };
-    if (Object.keys(data).length === 1 && data.status) {
-      // Only status change, don't update timestamp
-    } else {
-      updateData.updatedAt = new Date();
-    }
+    // Remove any timestamp fields that might cause issues
+    delete updateData.createdAt;
+    delete updateData.updatedAt;
     
     const [offer] = await db
       .update(offers)
