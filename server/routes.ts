@@ -784,24 +784,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Updating offer:", id, "for user:", authUser.id, authUser.username);
       console.log("Update data:", JSON.stringify(req.body, null, 2));
       
-      // Prepare update data - exclude timestamp and system fields
-      const excludedFields = ['id', 'createdAt', 'updatedAt', 'advertiserId', 'advertiserName'];
+      // Define all allowed fields based on the schema
+      const allowedFields = [
+        'name', 'description', 'logo', 'category', 'vertical', 'goals',
+        'payout', 'payoutType', 'currency', 'countries', 'geoTargeting',
+        'landingPages', 'geoPricing', 'kpiConditions', 'trafficSources',
+        'allowedApps', 'dailyLimit', 'monthlyLimit', 'antifraudEnabled',
+        'autoApprovePartners', 'status', 'moderationStatus', 'moderationComment',
+        'trackingUrl', 'landingPageUrl', 'previewUrl', 'restrictions',
+        'fraudRestrictions', 'macros', 'kycRequired', 'isPrivate',
+        'smartlinkEnabled', 'isBlocked', 'blockedReason', 'isArchived',
+        'regionVisibility'
+      ];
+      
       const updateData: any = {};
       
-      // Only include defined fields, excluding system fields
-      Object.keys(req.body).forEach(key => {
-        if (req.body[key] !== undefined && !excludedFields.includes(key)) {
-          // Special handling for specific fields that might cause issues
-          if (key === 'allowedTrafficSources') {
-            updateData.trafficSources = req.body[key];
-          } else {
-            updateData[key] = req.body[key];
-          }
+      // Only include allowed fields that have values
+      allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) {
+          updateData[field] = req.body[field];
         }
       });
       
+      // Handle special field mapping
+      if (req.body.allowedTrafficSources !== undefined) {
+        updateData.trafficSources = req.body.allowedTrafficSources;
+      }
+      
       console.log("Final update data:", JSON.stringify(updateData, null, 2));
-      console.log("Excluded fields from body:", excludedFields.filter(field => req.body[field] !== undefined));
+      
+      // Check for any timestamp fields that might be causing issues
+      Object.keys(updateData).forEach(key => {
+        const value = updateData[key];
+        if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) {
+          console.log(`WARNING: Found potential timestamp string in field '${key}':`, value);
+          delete updateData[key]; // Remove problematic timestamp fields
+        }
+      });
       
       // Update offer directly in database
       const [updatedOffer] = await db
