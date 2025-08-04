@@ -3,27 +3,43 @@ import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { 
+  LayoutDashboard, 
+  Users, 
+  Target, 
+  DollarSign, 
+  Shield, 
+  Webhook, 
+  Ban, 
+  History, 
+  Settings, 
+  BarChart3, 
+  HeadphonesIcon,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
+import { useState } from 'react';
 
 interface MenuItem {
   label: string;
   href: string;
-  icon: string;
+  icon: React.ElementType;
   roles: string[];
   badge?: string | number;
 }
 
 const menuItems: MenuItem[] = [
-  { label: 'dashboard', href: '/admin', icon: 'fas fa-tachometer-alt', roles: ['super_admin'] },
-  { label: 'users', href: '/admin/users', icon: 'fas fa-users', roles: ['super_admin'], badge: 3 },
-  { label: 'offers', href: '/admin/offers', icon: 'fas fa-bullseye', roles: ['super_admin', 'advertiser'] },
-  { label: 'finances', href: '/admin/finances', icon: 'fas fa-dollar-sign', roles: ['super_admin', 'advertiser'] },
-  { label: 'fraud_alerts', href: '/admin/fraud-alerts', icon: 'fas fa-shield-alt', roles: ['super_admin'] },
-  { label: 'postbacks', href: '/admin/postbacks', icon: 'fas fa-link', roles: ['super_admin', 'advertiser', 'affiliate'] },
-  { label: 'blacklist', href: '/admin/blacklist', icon: 'fas fa-ban', roles: ['super_admin'] },
-  { label: 'audit_logs', href: '/admin/audit-logs', icon: 'fas fa-history', roles: ['super_admin'] },
-  { label: 'system_settings', href: '/admin/system-settings', icon: 'fas fa-cogs', roles: ['super_admin'] },
-  { label: 'analytics', href: '/admin/analytics', icon: 'fas fa-chart-bar', roles: ['super_admin', 'advertiser', 'affiliate'] },
-  { label: 'support', href: '/admin/support', icon: 'fas fa-ticket-alt', roles: ['super_admin', 'advertiser', 'affiliate'] },
+  { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['super_admin'] },
+  { label: 'Users', href: '/admin/users', icon: Users, roles: ['super_admin'], badge: 3 },
+  { label: 'Offers', href: '/admin/offers', icon: Target, roles: ['super_admin', 'advertiser'] },
+  { label: 'Finances', href: '/admin/finances', icon: DollarSign, roles: ['super_admin', 'advertiser'] },
+  { label: 'Fraud Alerts', href: '/admin/fraud-alerts', icon: Shield, roles: ['super_admin'] },
+  { label: 'Postbacks', href: '/admin/postbacks', icon: Webhook, roles: ['super_admin', 'advertiser', 'affiliate'] },
+  { label: 'Blacklist', href: '/admin/blacklist', icon: Ban, roles: ['super_admin'] },
+  { label: 'Audit Logs', href: '/admin/audit-logs', icon: History, roles: ['super_admin'] },
+  { label: 'System Settings', href: '/admin/system-settings', icon: Settings, roles: ['super_admin'] },
+  { label: 'Analytics', href: '/admin/analytics', icon: BarChart3, roles: ['super_admin', 'advertiser', 'affiliate'] },
+  { label: 'Support', href: '/admin/support', icon: HeadphonesIcon, roles: ['super_admin', 'advertiser', 'affiliate'] },
 ];
 
 interface SidebarProps {
@@ -31,9 +47,10 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ className }: SidebarProps) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { t } = useLanguage();
   const [location] = useLocation();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!user) return null;
 
@@ -66,69 +83,80 @@ export default function Sidebar({ className }: SidebarProps) {
 
   return (
     <aside className={cn(
-      "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 lg:translate-x-0",
+      "fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200 transform transition-all duration-300 lg:translate-x-0",
+      isCollapsed ? "w-16" : "w-64",
       className
     )}>
       <div className="flex flex-col h-full">
-        {/* Logo */}
-        <div className="flex items-center px-6 py-4 border-b border-slate-200">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <i className="fas fa-chart-network text-white text-sm"></i>
+        {/* Header with Toggle */}
+        <div className={cn(
+          "flex items-center border-b border-slate-200",
+          isCollapsed ? "px-4 py-4 justify-center" : "px-6 py-4 justify-between"
+        )}>
+          {!isCollapsed && (
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Target className="text-white w-4 h-4" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-slate-900">AffiliateHub</h1>
+                <p className="text-xs text-slate-500">{getRoleLabel()}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg font-bold text-slate-900">AffiliateHub</h1>
-              <p className="text-xs text-slate-500">{getRoleLabel()}</p>
-            </div>
-          </div>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="text-slate-400 hover:text-slate-600"
+            data-testid="button-toggle-sidebar"
+          >
+            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          </Button>
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-          {filteredMenuItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center px-3 py-2 text-sm font-medium rounded-lg group transition-colors",
-                location === item.href
-                  ? "text-white bg-primary-500"
-                  : "text-slate-700 hover:bg-slate-100"
-              )}
-              data-testid={`nav-${item.label}`}
-            >
-              <i className={cn(item.icon, "w-5 h-5 mr-3", location === item.href ? "" : "text-slate-400")}></i>
-              {t(item.label)}
-              {item.badge && (
-                <span className="ml-auto bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full">
-                  {item.badge}
-                </span>
-              )}
-            </Link>
-          ))}
+        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+          {filteredMenuItems.map((item) => {
+            const IconComponent = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center px-3 py-2 text-sm font-medium rounded-lg group transition-colors relative",
+                  location === item.href
+                    ? "text-white bg-blue-600"
+                    : "text-slate-700 hover:bg-slate-100",
+                  isCollapsed ? "justify-center" : ""
+                )}
+                data-testid={`nav-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                title={isCollapsed ? item.label : undefined}
+              >
+                <IconComponent className={cn(
+                  "w-5 h-5",
+                  isCollapsed ? "" : "mr-3",
+                  location === item.href ? "text-white" : "text-slate-400"
+                )} />
+                {!isCollapsed && (
+                  <>
+                    {item.label}
+                    {item.badge && (
+                      <span className="ml-auto bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full">
+                        {item.badge}
+                      </span>
+                    )}
+                  </>
+                )}
+                {isCollapsed && item.badge && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-medium w-5 h-5 rounded-full flex items-center justify-center">
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
         </nav>
-
-        {/* User Profile */}
-        <div className="p-4 border-t border-slate-200">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-medium">{getUserInitials()}</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-900 truncate">{getUserDisplayName()}</p>
-              <p className="text-xs text-slate-500 truncate">{user.email}</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={logout}
-              className="text-slate-400 hover:text-slate-600"
-              data-testid="button-logout"
-            >
-              <i className="fas fa-sign-out-alt w-4 h-4"></i>
-            </Button>
-          </div>
-        </div>
       </div>
     </aside>
   );

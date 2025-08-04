@@ -206,8 +206,8 @@ export default function OffersManagement() {
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <Header />
+      <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+        <Header title="offers_management" subtitle="manage_and_moderate_offers" />
         <main className="flex-1 p-6">
           <div className="space-y-6">
       <div className="flex items-center justify-between">
