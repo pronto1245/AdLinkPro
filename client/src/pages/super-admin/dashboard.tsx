@@ -18,10 +18,12 @@ import {
   Clock,
   Activity
 } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 export default function SuperAdminDashboard() {
   const { token } = useAuth();
   const { t } = useLanguage();
+  const [, setLocation] = useLocation();
 
   const { data: metrics, isLoading } = useQuery({
     queryKey: ['/api/dashboard/metrics'],
@@ -262,9 +264,14 @@ export default function SuperAdminDashboard() {
                     <Activity className="w-6 h-6" />
                     <span className="text-sm">{t('view_reports')}</span>
                   </Button>
-                  <Button variant="outline" className="h-20 flex flex-col gap-2" data-testid="button-system-settings">
+                  <Button 
+                    variant="outline" 
+                    className="h-20 flex flex-col gap-2" 
+                    data-testid="button-system-settings"
+                    onClick={() => setLocation('/admin/fraud')}
+                  >
                     <Shield className="w-6 h-6" />
-                    <span className="text-sm">{t('system_settings')}</span>
+                    <span className="text-sm">Антифрод</span>
                   </Button>
                 </div>
               </CardContent>

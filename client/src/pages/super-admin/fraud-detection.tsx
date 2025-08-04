@@ -78,12 +78,18 @@ const FraudDetectionPage = () => {
   const { isCollapsed } = useSidebar();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // URL параметры для фильтрации
+  const urlParams = new URLSearchParams(window.location.search);
+  const offerParam = urlParams.get('offer');
+  const userParam = urlParams.get('user');
+  
   const [selectedTab, setSelectedTab] = useState('reports');
   const [reportFilters, setReportFilters] = useState({
     type: '',
     severity: '',
     status: '',
-    search: ''
+    search: offerParam || userParam || ''
   });
   const [selectedReport, setSelectedReport] = useState<FraudReport | null>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
@@ -441,6 +447,27 @@ const FraudDetectionPage = () => {
 
             {/* Fraud Reports Tab */}
             <TabsContent value="reports" className="space-y-6">
+              {/* Context Alert for External Navigation */}
+              {(offerParam || userParam) && (
+                <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                        <Shield className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                          {offerParam ? 'Фрод-анализ по офферу' : 'Фрод-анализ по пользователю'}
+                        </p>
+                        <p className="text-xs text-blue-700 dark:text-blue-300">
+                          Показана вся фрод-информация, связанная с {offerParam ? `оффером ${offerParam}` : `пользователем ${userParam}`}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
               <Card>
                 <CardHeader>
                   <div className="flex justify-between items-center">

@@ -19,11 +19,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { insertOfferSchema } from '@shared/schema';
 import { z } from 'zod';
-import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play, Shield } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 export default function OffersManagement() {
   const { token } = useAuth();
   const { t, language } = useLanguage();
+  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -359,6 +361,7 @@ export default function OffersManagement() {
                         <TableHead>{t('advertiser')}</TableHead>
                         <TableHead>{t('payout')}</TableHead>
                         <TableHead>{t('status')}</TableHead>
+                        <TableHead>Фрод-статус</TableHead>
                         <TableHead>{t('created_at')}</TableHead>
                         <TableHead>{t('actions')}</TableHead>
                       </TableRow>
@@ -404,6 +407,23 @@ export default function OffersManagement() {
                               {getStatusIcon(offer.status)}
                               {t(offer.status)}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Badge className="bg-green-100 text-green-800 flex items-center gap-1">
+                                <Shield className="w-3 h-3" />
+                                Безопасно
+                              </Badge>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setLocation(`/admin/fraud?offer=${offer.id}`)}
+                                title="Фрод-анализ оффера"
+                                className="p-1"
+                              >
+                                <Eye className="w-4 h-4 text-blue-600" />
+                              </Button>
+                            </div>
                           </TableCell>
                           <TableCell data-testid={`text-created-${offer.id}`}>
                             {new Date(offer.createdAt).toLocaleDateString()}

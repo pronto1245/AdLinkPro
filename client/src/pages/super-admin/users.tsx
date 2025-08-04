@@ -17,11 +17,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { insertUserSchema } from '@shared/schema';
 import { z } from 'zod';
-import { Plus, Search, Edit, Trash2, Shield, Users, DollarSign } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Shield, Users, DollarSign, Eye, Flag } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 export default function UsersManagement() {
   const { token } = useAuth();
   const { t } = useLanguage();
+  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -299,6 +301,7 @@ export default function UsersManagement() {
                         <TableHead>{t('role')}</TableHead>
                         <TableHead>{t('status')}</TableHead>
                         <TableHead>{t('kyc_status')}</TableHead>
+                        <TableHead>Фрод-риск</TableHead>
                         <TableHead>{t('created_at')}</TableHead>
                         <TableHead>{t('actions')}</TableHead>
                       </TableRow>
@@ -345,6 +348,23 @@ export default function UsersManagement() {
                               {t(user.kycStatus)}
                             </Badge>
                           </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Badge className="bg-green-100 text-green-800 flex items-center gap-1">
+                                <Shield className="w-3 h-3" />
+                                Низкий
+                              </Badge>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setLocation(`/admin/fraud?user=${user.id}`)}
+                                title="Фрод-анализ пользователя"
+                                className="p-1"
+                              >
+                                <Eye className="w-4 h-4 text-blue-600" />
+                              </Button>
+                            </div>
+                          </TableCell>
                           <TableCell data-testid={`text-created-${user.id}`}>
                             {new Date(user.createdAt).toLocaleDateString()}
                           </TableCell>
@@ -362,6 +382,15 @@ export default function UsersManagement() {
                                 title="Удалить пользователя"
                               >
                                 <Trash2 className="w-4 h-4 text-red-500" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setLocation(`/admin/fraud?user=${user.id}`)}
+                                title="Пометить как подозрительного"
+                                className="p-1"
+                              >
+                                <Flag className="w-4 h-4 text-orange-600" />
                               </Button>
                             </div>
                           </TableCell>
