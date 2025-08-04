@@ -929,6 +929,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk operations
+  app.post("/api/admin/users/bulk-block", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { userIds, reason } = req.body;
+      const authUser = getAuthenticatedUser(req);
+      
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ error: "User IDs array is required" });
+      }
+
+      let successCount = 0;
+      let failedCount = 0;
+      
+      for (const userId of userIds) {
+        try {
+          await storage.blockUser(userId, reason, authUser.id);
+          successCount++;
+        } catch (error) {
+          failedCount++;
+          console.error(`Failed to block user ${userId}:`, error);
+        }
+      }
+      
+      res.json({ 
+        success: successCount,
+        failed: failedCount,
+        total: userIds.length
+      });
+    } catch (error) {
+      console.error("Bulk block error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/users/bulk-unblock", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { userIds } = req.body;
+      
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ error: "User IDs array is required" });
+      }
+
+      let successCount = 0;
+      let failedCount = 0;
+      
+      for (const userId of userIds) {
+        try {
+          await storage.unblockUser(userId);
+          successCount++;
+        } catch (error) {
+          failedCount++;
+          console.error(`Failed to unblock user ${userId}:`, error);
+        }
+      }
+      
+      res.json({ 
+        success: successCount,
+        failed: failedCount,
+        total: userIds.length
+      });
+    } catch (error) {
+      console.error("Bulk unblock error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/users/bulk-delete", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { userIds, deleteType = 'soft' } = req.body;
+      const authUser = getAuthenticatedUser(req);
+      
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ error: "User IDs array is required" });
+      }
+
+      let successCount = 0;
+      let failedCount = 0;
+      
+      for (const userId of userIds) {
+        try {
+          if (deleteType === 'hard') {
+            await storage.deleteUser(userId);
+          } else {
+            await storage.softDeleteUser(userId, authUser.id);
+          }
+          successCount++;
+        } catch (error) {
+          failedCount++;
+          console.error(`Failed to delete user ${userId}:`, error);
+        }
+      }
+      
+      res.json({ 
+        success: successCount,
+        failed: failedCount,
+        total: userIds.length,
+        deleteType
+      });
+    } catch (error) {
+      console.error("Bulk delete error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Bulk user operations
   app.post("/api/admin/users/bulk-block", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {

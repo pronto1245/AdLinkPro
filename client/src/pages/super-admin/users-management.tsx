@@ -119,8 +119,12 @@ export default function UsersManagement() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [deleteType, setDeleteType] = useState<'soft' | 'hard'>('soft');
+  const [bulkAction, setBulkAction] = useState<'block' | 'unblock' | 'delete'>('block');
+  const [bulkReason, setBulkReason] = useState('');
   const [editForm, setEditForm] = useState({
     firstName: '',
     lastName: '',
@@ -131,6 +135,17 @@ export default function UsersManagement() {
     twoFactorEnabled: false,
     ipRestrictions: '',
     geoRestrictions: '',
+    advertiserName: ''
+  });
+  const [createForm, setCreateForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: '',
+    role: 'affiliate',
+    userType: 'affiliate',
+    country: '',
     advertiserName: ''
   });
 
@@ -341,6 +356,72 @@ export default function UsersManagement() {
     }
   };
 
+  const handleCreateUser = () => {
+    createUserMutation.mutate(createForm);
+  };
+
+  const handleBulkAction = () => {
+    if (selectedUsers.length === 0) return;
+    
+    bulkOperationMutation.mutate({
+      action: bulkAction,
+      userIds: selectedUsers,
+      reason: bulkReason
+    });
+  };
+
+  // Create user mutation
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      return apiRequest('/api/admin/users', 'POST', userData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Пользователь создан",
+        description: "Новый пользователь успешно создан"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      setShowCreateDialog(false);
+      setCreateForm({
+        username: '',
+        email: '',
+        password: '',
+        firstName: '',
+        lastName: '',
+        role: 'affiliate',
+        userType: 'affiliate',
+        country: '',
+        advertiserName: ''
+      });
+    }
+  });
+
+  // Bulk operations mutation
+  const bulkOperationMutation = useMutation({
+    mutationFn: async ({ action, userIds, reason }: { action: string; userIds: string[]; reason?: string }) => {
+      switch (action) {
+        case 'block':
+          return apiRequest('/api/admin/users/bulk-block', 'POST', { userIds, reason });
+        case 'unblock':
+          return apiRequest('/api/admin/users/bulk-unblock', 'POST', { userIds });
+        case 'delete':
+          return apiRequest('/api/admin/users/bulk-delete', 'POST', { userIds, deleteType: 'soft' });
+        default:
+          throw new Error('Unknown bulk action');
+      }
+    },
+    onSuccess: () => {
+      toast({
+        title: "Массовая операция завершена",
+        description: `Операция выполнена для ${selectedUsers.length} пользователей`
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      setSelectedUsers([]);
+      setShowBulkDialog(false);
+      setBulkReason('');
+    }
+  });
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
@@ -361,10 +442,20 @@ export default function UsersManagement() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button>
+          <Button onClick={() => setShowCreateDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Создать пользователя
           </Button>
+          {selectedUsers.length > 0 && (
+            <Button 
+              variant="outline" 
+              onClick={() => setShowBulkDialog(true)}
+              className="border-orange-200 text-orange-700 hover:bg-orange-50"
+            >
+              <Shield className="mr-2 h-4 w-4" />
+              Массовые действия ({selectedUsers.length})
+            </Button>
+          )}
         </div>
       </div>
 
@@ -1131,6 +1222,199 @@ export default function UsersManagement() {
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
               {deleteType === 'soft' ? 'В архив' : 'Удалить навсегда'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Создать нового пользователя</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Имя пользователя *</Label>
+                <Input
+                  value={createForm.username}
+                  onChange={(e) => setCreateForm({...createForm, username: e.target.value})}
+                  placeholder="username"
+                  required
+                />
+              </div>
+              <div>
+                <Label>Email *</Label>
+                <Input
+                  type="email"
+                  value={createForm.email}
+                  onChange={(e) => setCreateForm({...createForm, email: e.target.value})}
+                  placeholder="email@example.com"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>Пароль *</Label>
+              <Input
+                type="password"
+                value={createForm.password}
+                onChange={(e) => setCreateForm({...createForm, password: e.target.value})}
+                placeholder="Введите пароль"
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Имя</Label>
+                <Input
+                  value={createForm.firstName}
+                  onChange={(e) => setCreateForm({...createForm, firstName: e.target.value})}
+                  placeholder="Введите имя"
+                />
+              </div>
+              <div>
+                <Label>Фамилия</Label>
+                <Input
+                  value={createForm.lastName}
+                  onChange={(e) => setCreateForm({...createForm, lastName: e.target.value})}
+                  placeholder="Введите фамилию"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Роль</Label>
+                <Select value={createForm.role} onValueChange={(value) => setCreateForm({...createForm, role: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="super_admin">Супер-админ</SelectItem>
+                    <SelectItem value="advertiser">Рекламодатель</SelectItem>
+                    <SelectItem value="affiliate">Партнер</SelectItem>
+                    <SelectItem value="staff">Сотрудник</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Тип пользователя</Label>
+                <Select value={createForm.userType} onValueChange={(value) => setCreateForm({...createForm, userType: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="advertiser">Рекламодатель</SelectItem>
+                    <SelectItem value="affiliate">Партнер</SelectItem>
+                    <SelectItem value="staff">Сотрудник</SelectItem>
+                    <SelectItem value="admin">Администратор</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Страна</Label>
+                <Input
+                  value={createForm.country}
+                  onChange={(e) => setCreateForm({...createForm, country: e.target.value})}
+                  placeholder="Россия"
+                />
+              </div>
+              <div>
+                <Label>Привязанный рекламодатель</Label>
+                <Input
+                  value={createForm.advertiserName}
+                  onChange={(e) => setCreateForm({...createForm, advertiserName: e.target.value})}
+                  placeholder="Название рекламодателя"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Отмена
+            </Button>
+            <Button 
+              onClick={handleCreateUser} 
+              disabled={createUserMutation.isPending || !createForm.username || !createForm.email || !createForm.password}
+            >
+              {createUserMutation.isPending ? (
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Создать пользователя
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Actions Dialog */}
+      <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Массовые действия</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              Выбрано пользователей: <strong>{selectedUsers.length}</strong>
+            </div>
+            
+            <div>
+              <Label>Выберите действие</Label>
+              <Select value={bulkAction} onValueChange={(value: 'block' | 'unblock' | 'delete') => setBulkAction(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="block">Заблокировать пользователей</SelectItem>
+                  <SelectItem value="unblock">Разблокировать пользователей</SelectItem>
+                  <SelectItem value="delete">Удалить пользователей (в архив)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(bulkAction === 'block' || bulkAction === 'delete') && (
+              <div>
+                <Label>Причина</Label>
+                <Textarea
+                  value={bulkReason}
+                  onChange={(e) => setBulkReason(e.target.value)}
+                  placeholder="Укажите причину..."
+                  required={bulkAction === 'block'}
+                />
+              </div>
+            )}
+
+            {bulkAction === 'delete' && (
+              <div className="bg-yellow-50 border border-yellow-200 p-3 rounded">
+                <div className="text-sm text-yellow-800">
+                  ⚠️ Пользователи будут перемещены в архив (мягкое удаление)
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowBulkDialog(false)}>
+              Отмена
+            </Button>
+            <Button 
+              variant={bulkAction === 'delete' ? 'destructive' : 'default'}
+              onClick={handleBulkAction}
+              disabled={bulkOperationMutation.isPending || (bulkAction === 'block' && !bulkReason.trim())}
+            >
+              {bulkOperationMutation.isPending ? (
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              {bulkAction === 'block' ? 'Заблокировать' : 
+               bulkAction === 'unblock' ? 'Разблокировать' : 
+               'Удалить в архив'}
             </Button>
           </div>
         </DialogContent>
