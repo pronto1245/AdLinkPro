@@ -648,6 +648,8 @@ export default function OffersManagement() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isModerationDialogOpen, setIsModerationDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const [statusChangeOffer, setStatusChangeOffer] = useState<Offer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [moderationFilter, setModerationFilter] = useState('all');
@@ -735,19 +737,43 @@ export default function OffersManagement() {
     if (isArchived) return <Badge variant="secondary">{t('archived')}</Badge>;
     if (isBlocked) return <Badge variant="destructive">{t('blocked')}</Badge>;
     
-    switch (moderationStatus) {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-green-500 hover:bg-green-600 text-white">Активен</Badge>;
+      case 'paused':
+        return <Badge className="bg-red-500 hover:bg-red-600 text-white">Остановлен</Badge>;
       case 'pending':
-        return <Badge variant="outline">{t('pending')}</Badge>;
-      case 'approved':
-        return <Badge variant="default">{status === 'active' ? t('active') : t('inactive')}</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive">{t('rejected')}</Badge>;
-      case 'needs_revision':
-        return <Badge variant="secondary">{t('needs_revision')}</Badge>;
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">Ожидает</Badge>;
+      case 'draft':
+        return <Badge variant="outline">Черновик</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  // Change status mutation
+  const changeStatusMutation = useMutation({
+    mutationFn: async ({ offerId, status }: { offerId: string; status: string }) => {
+      const response = await apiRequest('PUT', `/api/admin/offers/${offerId}`, { status });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
+      setIsStatusDialogOpen(false);
+      setStatusChangeOffer(null);
+      toast({
+        title: 'Успешно',
+        description: 'Статус оффера изменен',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Ошибка',
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
 
   const handleModerationAction = (action: string, comment?: string) => {
     if (!selectedOffer) return;
@@ -1057,7 +1083,15 @@ export default function OffersManagement() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {getStatusBadge(offer.status, offer.moderationStatus, offer.isBlocked, offer.isArchived)}
+                      <div 
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setStatusChangeOffer(offer);
+                          setIsStatusDialogOpen(true);
+                        }}
+                      >
+                        {getStatusBadge(offer.status, offer.moderationStatus, offer.isBlocked, offer.isArchived)}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
@@ -1443,6 +1477,79 @@ export default function OffersManagement() {
                   />
                 </div>
               )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Status Change Modal */}
+      {statusChangeOffer && (
+        <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Изменить статус оффера</DialogTitle>
+              <DialogDescription>
+                Выберите новый статус для оффера "{statusChangeOffer.name}"
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  variant={statusChangeOffer.status === 'active' ? 'default' : 'outline'}
+                  className={statusChangeOffer.status === 'active' ? 'bg-green-500 hover:bg-green-600' : 'border-green-500 text-green-600 hover:bg-green-50'}
+                  onClick={() => changeStatusMutation.mutate({ offerId: statusChangeOffer.id, status: 'active' })}
+                  disabled={changeStatusMutation.isPending}
+                  data-testid="button-status-active"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    Активен
+                  </div>
+                </Button>
+                
+                <Button
+                  variant={statusChangeOffer.status === 'paused' ? 'default' : 'outline'}
+                  className={statusChangeOffer.status === 'paused' ? 'bg-red-500 hover:bg-red-600' : 'border-red-500 text-red-600 hover:bg-red-50'}
+                  onClick={() => changeStatusMutation.mutate({ offerId: statusChangeOffer.id, status: 'paused' })}
+                  disabled={changeStatusMutation.isPending}
+                  data-testid="button-status-paused"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    Остановлен
+                  </div>
+                </Button>
+                
+                <Button
+                  variant={statusChangeOffer.status === 'pending' ? 'default' : 'outline'}
+                  className={statusChangeOffer.status === 'pending' ? 'bg-yellow-500 hover:bg-yellow-600' : 'border-yellow-500 text-yellow-600 hover:bg-yellow-50'}  
+                  onClick={() => changeStatusMutation.mutate({ offerId: statusChangeOffer.id, status: 'pending' })}
+                  disabled={changeStatusMutation.isPending}
+                  data-testid="button-status-pending"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    Ожидает
+                  </div>
+                </Button>
+                
+                <Button
+                  variant={statusChangeOffer.status === 'draft' ? 'default' : 'outline'}
+                  onClick={() => changeStatusMutation.mutate({ offerId: statusChangeOffer.id, status: 'draft' })}
+                  disabled={changeStatusMutation.isPending}
+                  data-testid="button-status-draft"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                    Черновик
+                  </div>
+                </Button>
+              </div>
+              
+              <div className="text-sm text-muted-foreground">
+                Текущий статус: <strong>{statusChangeOffer.status}</strong>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
