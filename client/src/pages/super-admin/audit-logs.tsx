@@ -44,33 +44,13 @@ export default function AuditLogs() {
   });
 
   // Fetch audit logs
+  const { data: auditLogs, isLoading, error } = useQuery({
     queryKey: ['/api/admin/audit-logs', searchTerm, actionFilter, resourceFilter, userFilter, dateRange],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      if (actionFilter !== 'all') params.append('action', actionFilter);
-      if (resourceFilter !== 'all') params.append('resourceType', resourceFilter);
-      if (userFilter !== 'all') params.append('userId', userFilter);
-      if (dateRange.from) params.append('startDate', dateRange.from.toISOString());
-      if (dateRange.to) params.append('endDate', dateRange.to.toISOString());
-      
-      const response = await fetch(`/api/admin/audit-logs?${params.toString()}`, {
-        headers: token,
-      });
-      if (!response.ok) throw new Error('Failed to fetch audit logs');
-      return response.json();
-    },
   });
 
   // Fetch users for filter
+  const { data: users } = useQuery({
     queryKey: ['/api/admin/users'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/users', {
-        headers: token,
-      });
-      if (!response.ok) throw new Error('Failed to fetch users');
-      return response.json();
-    },
   });
 
   const actions = [

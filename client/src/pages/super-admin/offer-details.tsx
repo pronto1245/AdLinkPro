@@ -61,7 +61,7 @@ export default function SuperAdminOfferDetails() {
       <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
         <Sidebar />
         <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
-          <Header />
+          <Header title="Offer Details" />
           <main className="p-6">
             <div className="flex items-center justify-center py-8">
               <div className="text-center">
@@ -104,7 +104,7 @@ export default function SuperAdminOfferDetails() {
   };
 
   const getCategoryColor = (category: string) => {
-    const colors = {
+    const colors: { [key: string]: string } = {
       'finance': 'bg-green-100 text-green-800',
       'gaming': 'bg-indigo-100 text-indigo-800',
       'ecommerce': 'bg-blue-100 text-blue-800',
