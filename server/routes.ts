@@ -664,6 +664,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const authUser = req.user!; // Middleware guarantees this exists
       console.log("Creating offer for user:", authUser.id, authUser.username);
+      console.log("Request body data:", JSON.stringify(req.body, null, 2));
       
       // Insert directly into database bypassing all validation
       const [newOffer] = await db
@@ -680,7 +681,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           advertiserId: authUser.id,
           landingPages: req.body.landingPages || null,
           kpiConditions: req.body.kpiConditions || null,
-          trafficSources: req.body.allowedTrafficSources || null,
+          trafficSources: req.body.trafficSources || req.body.allowedTrafficSources || null,
+          allowedApps: req.body.allowedApps || null,
           dailyLimit: req.body.dailyLimit || null,
           monthlyLimit: req.body.monthlyLimit || null,
           antifraudEnabled: req.body.antifraudEnabled !== false,
