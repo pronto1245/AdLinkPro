@@ -372,38 +372,46 @@ export default function OfferDetails() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                    <div className="flex justify-center">
+                <div className="flex justify-between items-start">
+                  {/* Левая часть - информация о типе и валюте */}
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Тип выплат</label>
+                      <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                        {offer.payoutType === 'cpa' ? 'CPA' :
+                         offer.payoutType === 'cps' ? 'CPS' :
+                         offer.payoutType === 'cpm' ? 'CPM' :
+                         offer.payoutType === 'cpc' ? 'CPC' :
+                         offer.payoutType === 'cpl' ? 'CPL' :
+                         offer.payoutType === 'revshare' ? 'RevShare' : 
+                         offer.payoutType ? offer.payoutType.toUpperCase() : 'Не указано'}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Валюта</label>
+                      <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                        {offer.currency || 'USD'}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Правая часть - фото и название оффера */}
+                  <div className="text-right">
+                    <div className="flex justify-end mb-2">
                       {offer.logoUrl ? (
                         <img 
                           src={offer.logoUrl} 
                           alt={offer.name}
-                          className="w-12 h-12 object-contain rounded"
+                          className="w-16 h-16 object-contain rounded"
                         />
                       ) : (
-                        <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-                          <Target className="w-6 h-6 text-gray-400" />
+                        <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                          <Target className="w-8 h-8 text-gray-400" />
                         </div>
                       )}
                     </div>
-                  </div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                    <label className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">Тип выплат</label>
-                    <div className="mt-1 text-lg font-bold text-blue-700 dark:text-blue-300">
-                      {offer.payoutType === 'cpa' ? 'CPA' :
-                       offer.payoutType === 'cps' ? 'CPS' :
-                       offer.payoutType === 'cpm' ? 'CPM' :
-                       offer.payoutType === 'cpc' ? 'CPC' :
-                       offer.payoutType === 'cpl' ? 'CPL' :
-                       offer.payoutType === 'revshare' ? 'RevShare' : 
-                       offer.payoutType ? offer.payoutType.toUpperCase() : 'Не указано'}
-                    </div>
-                  </div>
-                  <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
-                    <label className="text-xs font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wide">Валюта</label>
-                    <div className="mt-1 text-lg font-bold text-purple-700 dark:text-purple-300">
-                      {offer.currency || 'USD'}
+                    <div className="text-lg font-bold text-gray-900 dark:text-white">
+                      {offer.name}
                     </div>
                   </div>
                 </div>
