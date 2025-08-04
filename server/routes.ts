@@ -431,7 +431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             currency: offerData.currency || 'USD',
             landingPages: offerData.landingPages || [],
             kpiConditions: offerData.kpiConditions || '',
-            allowedTrafficSources: offerData.allowedTrafficSources || [],
+            trafficSources: offerData.allowedTrafficSources || offerData.trafficSources || [],
             allowedApps: offerData.allowedApps || [],
             dailyLimit: offerData.dailyLimit || null,
             monthlyLimit: offerData.monthlyLimit || null,
@@ -785,6 +785,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Delete offer error:", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Bulk operations
+  app.post("/api/admin/offers/bulk-activate", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { offerIds } = req.body;
+      if (!Array.isArray(offerIds)) {
+        return res.status(400).json({ error: "offerIds должен быть массивом" });
+      }
+
+      const updatedOffers = [];
+      for (const offerId of offerIds) {
+        try {
+          const offer = await storage.updateOffer(offerId, { status: 'active' });
+          updatedOffers.push(offer);
+        } catch (error) {
+          console.error(`Error activating offer ${offerId}:`, error);
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Активировано ${updatedOffers.length} из ${offerIds.length} офферов`,
+        updated: updatedOffers.length,
+        total: offerIds.length 
+      });
+    } catch (error) {
+      console.error("Bulk activate error:", error);
+      res.status(500).json({ error: "Ошибка массовой активации" });
+    }
+  });
+
+  app.post("/api/admin/offers/bulk-pause", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { offerIds } = req.body;
+      if (!Array.isArray(offerIds)) {
+        return res.status(400).json({ error: "offerIds должен быть массивом" });
+      }
+
+      const updatedOffers = [];
+      for (const offerId of offerIds) {
+        try {
+          const offer = await storage.updateOffer(offerId, { status: 'paused' });
+          updatedOffers.push(offer);
+        } catch (error) {
+          console.error(`Error pausing offer ${offerId}:`, error);
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Остановлено ${updatedOffers.length} из ${offerIds.length} офферов`,
+        updated: updatedOffers.length,
+        total: offerIds.length 
+      });
+    } catch (error) {
+      console.error("Bulk pause error:", error);
+      res.status(500).json({ error: "Ошибка массовой остановки" });
+    }
+  });
+
+  app.post("/api/admin/offers/bulk-delete", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { offerIds } = req.body;
+      if (!Array.isArray(offerIds)) {
+        return res.status(400).json({ error: "offerIds должен быть массивом" });
+      }
+
+      const deletedOffers = [];
+      for (const offerId of offerIds) {
+        try {
+          await storage.deleteOffer(offerId);
+          deletedOffers.push(offerId);
+        } catch (error) {
+          console.error(`Error deleting offer ${offerId}:`, error);
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Удалено ${deletedOffers.length} из ${offerIds.length} офферов`,
+        deleted: deletedOffers.length,
+        total: offerIds.length 
+      });
+    } catch (error) {
+      console.error("Bulk delete error:", error);
+      res.status(500).json({ error: "Ошибка массового удаления" });
     }
   });
 

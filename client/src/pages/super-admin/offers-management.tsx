@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/contexts/language-context';
 import { useLocation } from 'wouter';
@@ -16,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Search, Filter, Eye, Edit, Ban, Archive, CheckCircle, XCircle, AlertTriangle, Download, Upload, Plus, Trash2, PlusCircle } from 'lucide-react';
+import { Search, Filter, Eye, Edit, Ban, Archive, CheckCircle, XCircle, AlertTriangle, Download, Upload, Plus, Trash2, PlusCircle, Check, Play, Pause } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -771,6 +772,7 @@ export default function OffersManagement() {
   const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
   const [isModerationDialogOpen, setIsModerationDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [showBulkActions, setShowBulkActions] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [statusChangeOffer, setStatusChangeOffer] = useState<Offer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -838,6 +840,99 @@ export default function OffersManagement() {
       });
     }
   });
+
+  // Bulk actions mutations
+  const bulkActivateMutation = useMutation({
+    mutationFn: async (offerIds: string[]) => {
+      const response = await apiRequest('POST', '/api/admin/offers/bulk-activate', { offerIds });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
+      setSelectedOffers([]);
+      setShowBulkActions(false);
+      toast({
+        title: 'Успех',
+        description: `Активировано офферов: ${selectedOffers.length}`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Ошибка',
+        description: error.message || 'Не удалось активировать офферы',
+        variant: "destructive",
+      });
+    }
+  });
+
+  const bulkPauseMutation = useMutation({
+    mutationFn: async (offerIds: string[]) => {
+      const response = await apiRequest('POST', '/api/admin/offers/bulk-pause', { offerIds });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
+      setSelectedOffers([]);
+      setShowBulkActions(false);
+      toast({
+        title: 'Успех',
+        description: `Остановлено офферов: ${selectedOffers.length}`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Ошибка',
+        description: error.message || 'Не удалось остановить офферы',
+        variant: "destructive",
+      });
+    }
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (offerIds: string[]) => {
+      const response = await apiRequest('POST', '/api/admin/offers/bulk-delete', { offerIds });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
+      setSelectedOffers([]);
+      setShowBulkActions(false);
+      toast({
+        title: 'Успех',
+        description: `Удалено офферов: ${selectedOffers.length}`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Ошибка',
+        description: error.message || 'Не удалось удалить офферы',
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Handle offer selection
+  const handleOfferSelect = (offerId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedOffers(prev => [...prev, offerId]);
+    } else {
+      setSelectedOffers(prev => prev.filter(id => id !== offerId));
+    }
+  };
+
+  // Handle select all
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedOffers(offers.map(offer => offer.id));
+    } else {
+      setSelectedOffers([]);
+    }
+  };
+
+  // Update showBulkActions when selectedOffers changes
+  React.useEffect(() => {
+    setShowBulkActions(selectedOffers.length > 0);
+  }, [selectedOffers]);
 
   // Update offer mutation
   const updateOfferMutation = useMutation({
@@ -937,22 +1032,7 @@ export default function OffersManagement() {
     }
   };
 
-  // Функции для работы с выбором офферов
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedOffers(offers.map((offer: any) => offer.id));
-    } else {
-      setSelectedOffers([]);
-    }
-  };
 
-  const handleSelectOffer = (offerId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedOffers(prev => [...prev, offerId]);
-    } else {
-      setSelectedOffers(prev => prev.filter(id => id !== offerId));
-    }
-  };
 
   const isAllSelected = offers.length > 0 && selectedOffers.length === offers.length;
   const isIndeterminate = selectedOffers.length > 0 && selectedOffers.length < offers.length;
@@ -1231,6 +1311,64 @@ export default function OffersManagement() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Bulk Actions Bar */}
+          {showBulkActions && (
+            <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                    Выбрано офферов: {selectedOffers.length}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => bulkActivateMutation.mutate(selectedOffers)}
+                    disabled={bulkActivateMutation.isPending}
+                    className="border-green-600 text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                  >
+                    <Play className="w-4 h-4 mr-1" />
+                    Активировать
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => bulkPauseMutation.mutate(selectedOffers)}
+                    disabled={bulkPauseMutation.isPending}
+                    className="border-yellow-600 text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                  >
+                    <Pause className="w-4 h-4 mr-1" />
+                    Остановить
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => bulkDeleteMutation.mutate(selectedOffers)}
+                    disabled={bulkDeleteMutation.isPending}
+                    className="border-red-600 text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Удалить
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setSelectedOffers([]);
+                      setShowBulkActions(false);
+                    }}
+                    className="text-gray-600 hover:text-gray-800"
+                  >
+                    <XCircle className="w-4 h-4 mr-1" />
+                    Отменить
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -1265,7 +1403,7 @@ export default function OffersManagement() {
                     <TableCell>
                       <Checkbox
                         checked={selectedOffers.includes(offer.id)}
-                        onCheckedChange={(checked) => handleSelectOffer(offer.id, checked as boolean)}
+                        onCheckedChange={(checked) => handleOfferSelect(offer.id, checked as boolean)}
                         data-testid={`checkbox-select-${offer.id}`}
                       />
                     </TableCell>
