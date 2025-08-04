@@ -489,10 +489,10 @@ const FraudDetectionPage = () => {
 
           {/* Main Content Tabs */}
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-8 h-14 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+            <TabsList className="grid w-full grid-cols-8 h-14 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
               <TabsTrigger 
                 value="reports" 
-                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-red-600 dark:data-[state=active]:text-red-400"
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-600 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-600 data-[state=active]:text-red-600 dark:data-[state=active]:text-red-400"
                 title="Фрод-отчёты"
               >
                 <FileText className="w-4 h-4" />
@@ -501,7 +501,7 @@ const FraudDetectionPage = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="analytics" 
-                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-600 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-600 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
                 title="Аналитика"
               >
                 <BarChart3 className="w-4 h-4" />
@@ -510,7 +510,7 @@ const FraudDetectionPage = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="ip-analysis" 
-                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-green-600 dark:data-[state=active]:text-green-400"
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-600 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-600 data-[state=active]:text-green-600 dark:data-[state=active]:text-green-400"
                 title="IP Анализ"
               >
                 <Globe className="w-4 h-4" />
@@ -519,7 +519,7 @@ const FraudDetectionPage = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="rules" 
-                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-purple-600 dark:data-[state=active]:text-purple-400"
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-600 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-600 data-[state=active]:text-purple-600 dark:data-[state=active]:text-purple-400"
                 title="Правила"
               >
                 <Settings className="w-4 h-4" />
@@ -527,7 +527,7 @@ const FraudDetectionPage = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="integrations" 
-                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-orange-600 dark:data-[state=active]:text-orange-400"
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-600 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-600 data-[state=active]:text-orange-600 dark:data-[state=active]:text-orange-400"
                 title="Интеграции"
               >
                 <Zap className="w-4 h-4" />
@@ -536,7 +536,7 @@ const FraudDetectionPage = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="alerts" 
-                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-yellow-600 dark:data-[state=active]:text-yellow-400"
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-600 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-600 data-[state=active]:text-yellow-600 dark:data-[state=active]:text-yellow-400"
                 title="Smart-алерты"
               >
                 <AlertCircle className="w-4 h-4" />
@@ -545,7 +545,7 @@ const FraudDetectionPage = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="blocks" 
-                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400"
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-600 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-600 data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400"
                 title="Блокировки"
               >
                 <Ban className="w-4 h-4" />
@@ -554,7 +554,7 @@ const FraudDetectionPage = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="settings" 
-                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-600 dark:data-[state=active]:text-gray-400"
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-600 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-600 data-[state=active]:text-gray-600 dark:data-[state=active]:text-gray-400"
                 title="Настройки"
               >
                 <Settings className="w-4 h-4" />
