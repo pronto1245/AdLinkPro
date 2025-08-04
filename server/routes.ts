@@ -740,6 +740,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name: req.body.name || "Unnamed Offer",
           category: req.body.category || "other", 
           description: req.body.description || null,
+          goals: req.body.goals || null,
           logo: req.body.logo || null,
           status: req.body.status || 'draft',
           payout: "0.00",

@@ -2,6 +2,7 @@ import { useParams, useLocation } from 'wouter';
 import { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '../../contexts/language-context';
+import { getMultilingualText } from '../../lib/i18n';
 import Sidebar from '../../components/layout/sidebar';
 import { useSidebar } from '../../contexts/sidebar-context';
 import Header from '../../components/layout/header';
@@ -412,7 +413,7 @@ export default function OfferDetails() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-sm text-gray-600 dark:text-gray-400 break-words overflow-hidden">
-                    {offer.kpiConditions}
+                    {getMultilingualText(offer.kpiConditions, language, t('not_specified'))}
                   </div>
                 </CardContent>
               </Card>
@@ -729,7 +730,7 @@ export default function OfferDetails() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-sm text-gray-600 dark:text-gray-400 break-words overflow-hidden">
-                    {offer.goals}
+                    {getMultilingualText(offer.goals, language, t('not_specified'))}
                   </div>
                 </CardContent>
               </Card>
@@ -748,7 +749,7 @@ export default function OfferDetails() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-sm text-gray-600 dark:text-gray-400 break-words overflow-hidden max-h-32 overflow-y-auto">
-                    {offer.description}
+                    {getMultilingualText(offer.description, language, t('not_specified'))}
                   </div>
                 </CardContent>
               </Card>

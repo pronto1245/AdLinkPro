@@ -542,3 +542,27 @@ export function useTranslation(language: 'en' | 'ru') {
     return translations[language][key] || key;
   };
 }
+
+// Helper function to get multilingual text
+export const getMultilingualText = (
+  textObj: any, 
+  language: string, 
+  fallback: string = ''
+): string => {
+  if (!textObj || typeof textObj !== 'object') {
+    return fallback;
+  }
+  
+  // Try to get text in the requested language
+  if (textObj[language]) {
+    return textObj[language];
+  }
+  
+  // Fallback to other language if available
+  const availableLanguages = Object.keys(textObj);
+  if (availableLanguages.length > 0) {
+    return textObj[availableLanguages[0]] || fallback;
+  }
+  
+  return fallback;
+};

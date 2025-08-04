@@ -56,11 +56,11 @@ export const offers = pgTable("offers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   number: text("number"), // Offer number
   name: text("name").notNull(),
-  description: text("description"),
+  description: jsonb("description"), // Multilingual: { "en": "English text", "ru": "Russian text" }
   logo: text("logo"), // Logo URL
   category: text("category").notNull(),
   vertical: text("vertical"), // Industry vertical
-  goals: text("goals"), // Offer goals/objectives
+  goals: jsonb("goals"), // Offer goals/objectives - Multilingual
   advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
   payout: decimal("payout", { precision: 10, scale: 2 }).notNull().default("0.00"),
   payoutType: text("payout_type").notNull(), // 'cpa', 'cps', 'cpl', 'cpm', 'cpc', 'cpi', 'cro', 'revshare', 'hybrid', 'fixed'
@@ -69,7 +69,7 @@ export const offers = pgTable("offers", {
   geoTargeting: text("geo_targeting"), // Free text geo targeting
   landingPages: jsonb("landing_pages"), // Array of landing pages with different prices
   geoPricing: jsonb("geo_pricing"), // Array of geo-specific pricing
-  kpiConditions: text("kpi_conditions"), // KPI conditions
+  kpiConditions: jsonb("kpi_conditions"), // KPI conditions - Multilingual: { "en": "English text", "ru": "Russian text" }
   trafficSources: jsonb("traffic_sources"), // Allowed traffic sources
   allowedApps: jsonb("allowed_apps"), // Allowed applications
   dailyLimit: integer("daily_limit"), // Daily conversion limit

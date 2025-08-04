@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/contexts/language-context';
+import { getMultilingualText } from '@/lib/i18n';
 import { useLocation } from 'wouter';
 import Sidebar from '@/components/layout/sidebar';
 import { useSidebar } from '@/contexts/sidebar-context';
@@ -29,7 +30,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 const createOfferSchema = z.object({
   name: z.string().min(1, 'Название оффера обязательно'),
   category: z.string().min(1, 'Категория обязательна'),
-  description: z.string().optional(),
+  description_ru: z.string().optional(),
+  description_en: z.string().optional(),
+  goals_ru: z.string().optional(),
+  goals_en: z.string().optional(),
   logo: z.string().optional(),
   status: z.string().default('draft'),
   payoutType: z.string().default('cpa'),
@@ -41,7 +45,8 @@ const createOfferSchema = z.object({
     currency: z.string().default('USD'),
     geo: z.string().optional(),
   })).default([{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]),
-  kpiConditions: z.string().optional(),
+  kpiConditions_ru: z.string().optional(),
+  kpiConditions_en: z.string().optional(),
   allowedTrafficSources: z.array(z.string()).default([]),
   allowedApps: z.array(z.string()).default([]),
   dailyLimit: z.number().optional(),
@@ -66,13 +71,17 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
     defaultValues: {
       name: '',
       category: '',
-      description: '',
+      description_ru: '',
+      description_en: '',
+      goals_ru: '',
+      goals_en: '',
       logo: '',
       status: 'draft',
       landingPages: [{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }],
       payoutType: 'cpa',
       currency: 'USD',
-      kpiConditions: '',
+      kpiConditions_ru: '',
+      kpiConditions_en: '',
       allowedTrafficSources: [],
       allowedApps: [],
       antifraudEnabled: true,
@@ -85,6 +94,18 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
       // Transform the data to match the API schema
       const transformedData = {
         ...data,
+        description: {
+          ru: data.description_ru || '',
+          en: data.description_en || ''
+        },
+        goals: {
+          ru: data.goals_ru || '',
+          en: data.goals_en || ''
+        },
+        kpiConditions: {
+          ru: data.kpiConditions_ru || '',
+          en: data.kpiConditions_en || ''
+        },
         trafficSources: data.allowedTrafficSources || [],
         allowedApps: data.allowedApps || [],
       };
@@ -191,19 +212,37 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
 
         </div>
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('description')}</FormLabel>
-              <FormControl>
-                <Textarea {...field} placeholder={t('offer_description_placeholder')} rows={3} data-testid="textarea-description" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="space-y-4">
+          <Label className="text-base font-medium">{t('description')}</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="description_ru"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Описание (Русский)</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} placeholder="Описание оффера на русском языке" rows={3} data-testid="textarea-description-ru" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description_en"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (English)</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} placeholder="Offer description in English" rows={3} data-testid="textarea-description-en" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
         <FormField
           control={form.control}
@@ -464,24 +503,89 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
 
 
 
-        <FormField
-          control={form.control}
-          name="kpiConditions"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('kpi_conditions')}</FormLabel>
-              <FormControl>
-                <Textarea 
-                  {...field} 
-                  placeholder={t('kpi_conditions_placeholder')}
-                  rows={2}
-                  data-testid="textarea-kpi-conditions"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="space-y-4">
+          <Label className="text-base font-medium">{t('kpi_conditions')}</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="kpiConditions_ru"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>KPI условия (Русский)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      placeholder="Условия KPI на русском языке"
+                      rows={2}
+                      data-testid="textarea-kpi-conditions-ru"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="kpiConditions_en"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>KPI Conditions (English)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      placeholder="KPI conditions in English"
+                      rows={2}
+                      data-testid="textarea-kpi-conditions-en"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <Label className="text-base font-medium">{t('offer_goals')}</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="goals_ru"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Цели (Русский)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      placeholder="Цели оффера на русском языке"
+                      rows={2}
+                      data-testid="textarea-goals-ru"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="goals_en"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Goals (English)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      placeholder="Offer goals in English"
+                      rows={2}
+                      data-testid="textarea-goals-en"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
 
 
@@ -720,11 +824,11 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
 interface Offer {
   id: string;
   name: string;
-  description: string;
+  description: any; // Multilingual object: { ru: string, en: string }
   logo?: string;
   category: string;
   vertical: string;
-  goals: string;
+  goals: any; // Multilingual object: { ru: string, en: string }
   advertiserId: string;
   advertiserName?: string;
   payout: string;
@@ -760,7 +864,7 @@ interface Offer {
   isBlocked: boolean;
   blockedReason: string;
   isArchived: boolean;
-  kpiConditions?: string;
+  kpiConditions?: any; // Multilingual object: { ru: string, en: string }
   dailyLimit?: number;
   monthlyLimit?: number;
   antifraudEnabled?: boolean;
@@ -1474,7 +1578,7 @@ export default function OffersManagement() {
                             {offer.name}
                           </div>
                           <div className="text-sm text-muted-foreground truncate max-w-48">
-                            {offer.description}
+                            {getMultilingualText(offer.description, language, t('not_specified'))}
                           </div>
                         </div>
                       </div>
