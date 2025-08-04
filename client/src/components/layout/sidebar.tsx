@@ -35,7 +35,7 @@ const menuItems: MenuItem[] = [
   { label: 'Roles', href: '/admin/roles', icon: Shield, roles: ['super_admin'] },
   { label: 'Offers', href: '/admin/OffersManagement', icon: Target, roles: ['super_admin', 'advertiser'] },
   { label: 'Finances', href: '/admin/finances', icon: DollarSign, roles: ['super_admin', 'advertiser'] },
-  { label: 'Fraud Alerts', href: '/admin/fraud-alerts', icon: Shield, roles: ['super_admin'] },
+  { label: 'Антифрод-система', href: '/admin/fraud', icon: Shield, roles: ['super_admin'] },
   { label: 'Postbacks', href: '/admin/postbacks', icon: Webhook, roles: ['super_admin', 'advertiser', 'affiliate'] },
   { label: 'Blacklist', href: '/admin/blacklist', icon: Ban, roles: ['super_admin'] },
   { label: 'Audit Logs', href: '/admin/audit-logs', icon: History, roles: ['super_admin'] },
