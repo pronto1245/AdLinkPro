@@ -172,6 +172,9 @@ const FraudDetectionPage = () => {
   const [configureDialogOpen, setConfigureDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<FraudServiceIntegration | null>(null);
   const [testingService, setTestingService] = useState<string | null>(null);
+  const [newIpInput, setNewIpInput] = useState('');
+  const [blockedIps, setBlockedIps] = useState(['192.168.1.100', '10.0.0.50', '172.16.0.25', '203.0.113.15']);
+  const [blockedDevices, setBlockedDevices] = useState(['Device-ABC123', 'Device-XYZ789', 'Device-DEF456']);
 
   // Fetch fraud reports
   const { data: fraudReports = [], isLoading: reportsLoading } = useQuery<FraudReport[]>({
@@ -1438,30 +1441,57 @@ const FraudDetectionPage = () => {
                         <Input 
                           placeholder="IP адрес для блокировки"
                           className="flex-1"
+                          value={newIpInput}
+                          onChange={(e) => setNewIpInput(e.target.value)}
                           data-testid="block-ip-input"
                         />
                         <Button 
                           size="sm"
+                          onClick={() => {
+                            if (newIpInput.trim() && !blockedIps.includes(newIpInput.trim())) {
+                              setBlockedIps([...blockedIps, newIpInput.trim()]);
+                              setNewIpInput('');
+                              toast({
+                                title: "IP заблокирован",
+                                description: `IP адрес ${newIpInput.trim()} добавлен в чёрный список`,
+                              });
+                            } else if (blockedIps.includes(newIpInput.trim())) {
+                              toast({
+                                title: "Ошибка",
+                                description: "Этот IP уже заблокирован",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
                           data-testid="add-ip-block"
                           title="Заблокировать IP"
+                          className="hover:bg-red-50 hover:text-red-700 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                         >
                           <Plus className="w-3 h-3" />
                         </Button>
                       </div>
                       
                       <div className="text-sm text-gray-500">
-                        Активных блокировок: <span className="font-medium">45</span>
+                        Активных блокировок: <span className="font-medium">{blockedIps.length}</span>
                       </div>
                       
                       <div className="space-y-2 max-h-64 overflow-y-auto">
-                        {['192.168.1.100', '10.0.0.50', '172.16.0.25', '203.0.113.15'].map((ip, index) => (
+                        {blockedIps.map((ip, index) => (
                           <div key={ip} className="flex items-center justify-between p-2 border rounded">
                             <span className="font-mono text-sm">{ip}</span>
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => {
+                                setBlockedIps(blockedIps.filter(blockedIp => blockedIp !== ip));
+                                toast({
+                                  title: "IP разблокирован",
+                                  description: `IP адрес ${ip} удалён из чёрного списка`,
+                                });
+                              }}
                               data-testid={`unblock-ip-${index}`}
                               title="Разблокировать IP"
+                              className="hover:bg-green-50 hover:text-green-700 hover:border-green-300 dark:hover:bg-green-900/20 dark:hover:text-green-400"
                             >
                               <Unlock className="w-3 h-3" />
                             </Button>
@@ -1482,18 +1512,26 @@ const FraudDetectionPage = () => {
                   <CardContent>
                     <div className="space-y-3">
                       <div className="text-sm text-gray-500">
-                        Заблокированных устройств: <span className="font-medium">23</span>
+                        Заблокированных устройств: <span className="font-medium">{blockedDevices.length}</span>
                       </div>
                       
                       <div className="space-y-2 max-h-64 overflow-y-auto">
-                        {['Device-ABC123', 'Device-XYZ789', 'Device-DEF456'].map((device, index) => (
+                        {blockedDevices.map((device, index) => (
                           <div key={device} className="flex items-center justify-between p-2 border rounded">
                             <span className="text-sm">{device}</span>
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => {
+                                setBlockedDevices(blockedDevices.filter(blockedDevice => blockedDevice !== device));
+                                toast({
+                                  title: "Устройство разблокировано",
+                                  description: `Устройство ${device} удалено из чёрного списка`,
+                                });
+                              }}
                               data-testid={`unblock-device-${index}`}
                               title="Разблокировать устройство"
+                              className="hover:bg-green-50 hover:text-green-700 hover:border-green-300 dark:hover:bg-green-900/20 dark:hover:text-green-400"
                             >
                               <Unlock className="w-3 h-3" />
                             </Button>
@@ -1519,6 +1557,12 @@ const FraudDetectionPage = () => {
                         <span className="text-sm">{country}</span>
                         <Switch 
                           defaultChecked={index < 3}
+                          onCheckedChange={(checked) => {
+                            toast({
+                              title: checked ? "Геоблокировка активирована" : "Геоблокировка отключена",
+                              description: `${country} ${checked ? 'заблокирован' : 'разблокирован'} для доступа`,
+                            });
+                          }}
                           data-testid={`toggle-geo-${country}`}
                         />
                       </div>
