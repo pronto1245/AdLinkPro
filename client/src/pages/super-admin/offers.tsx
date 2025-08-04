@@ -190,7 +190,7 @@ export default function OffersManagement() {
                           <FormItem>
                             <FormLabel>{t('description')}</FormLabel>
                             <FormControl>
-                              <Textarea {...field} value={field.value || ''} data-testid="input-description" />
+                              <Textarea {...field} value={String(field.value || '')} data-testid="input-description" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
