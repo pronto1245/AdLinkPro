@@ -1166,6 +1166,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analytics endpoints
+  app.get("/api/admin/analytics/users", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { period = '30d', role } = req.query;
+      const analytics = await storage.getUserAnalyticsDetailed(period as string, role as string);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Get user analytics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/analytics/fraud", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { period = '30d' } = req.query;
+      const analytics = await storage.getFraudAnalytics(period as string);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Get fraud analytics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/analytics/export", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { format = 'csv', period = '30d', role } = req.query;
+      const data = await storage.exportAnalytics(format as string, period as string, role as string);
+      
+      const contentType = format === 'json' ? 'application/json' : 'text/csv';
+      const filename = `analytics_${period}.${format}`;
+      
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+      res.send(data);
+    } catch (error) {
+      console.error("Export analytics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const offers = await storage.getAllOffers();

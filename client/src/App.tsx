@@ -23,6 +23,7 @@ import SuperAdminPostbacks from "@/pages/super-admin/postbacks-management";
 import SuperAdminBlacklist from "@/pages/super-admin/blacklist-management";
 import SuperAdminAnalytics from "@/pages/super-admin/analytics";
 import SuperAdminSupport from "@/pages/super-admin/support";
+import UserAnalytics from "@/pages/super-admin/user-analytics";
 import AdvertiserDashboard from "@/pages/advertiser/dashboard";
 import AffiliateDashboard from "@/pages/affiliate/dashboard";
 import { useAuth } from "./contexts/auth-context";
@@ -76,6 +77,11 @@ function Router() {
       <Route path="/admin/roles">
         <ProtectedRoute allowedRoles={['super_admin']}>
           <RolesManagement />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/user-analytics">
+        <ProtectedRoute allowedRoles={['super_admin']}>
+          <UserAnalytics />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/OffersManagement">
