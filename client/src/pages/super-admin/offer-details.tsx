@@ -422,68 +422,109 @@ export default function OfferDetails() {
                   <div className="space-y-4">
                     {offer.landingPages.map((landing: any, index: number) => (
                       <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                          {/* Информация о лендинге */}
-                          <div className="lg:col-span-2">
-                            <div className="mb-3">
-                              <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                                {landing.name || `Лендинг ${index + 1}`}
-                              </h4>
-                              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <Globe className="w-4 h-4" />
-                                <span className="font-mono break-all">{landing.url}</span>
-                              </div>
+                        {/* Верхняя строка: Название + Ссылка + Кнопка */}
+                        <div className="flex items-center justify-between gap-4 mb-4">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <h4 className="font-semibold text-gray-900 dark:text-white">
+                              {landing.name || `Лендинг ${index + 1}`}
+                            </h4>
+                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 truncate">
+                              <Globe className="w-4 h-4 flex-shrink-0" />
+                              <span className="font-mono truncate">{landing.url}</span>
                             </div>
-                            
-                            {/* Гео и страны */}
-                            {landing.countries && landing.countries.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mb-2">
-                                {landing.countries.map((country: string, idx: number) => (
-                                  <Badge key={idx} variant="secondary" className="text-xs">
-                                    {country}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
                           </div>
-                          
-                          {/* Выплаты и действия */}
-                          <div className="space-y-3">
-                            {/* Сумма выплаты */}
-                            <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                              <div className="text-center">
-                                <div className="text-sm text-green-600 dark:text-green-400 font-medium">
-                                  Выплата
-                                </div>
-                                <div className="text-lg font-bold text-green-700 dark:text-green-300">
-                                  {formatGeoPricing(offer.geoPricing, offer.payout, offer.currency)}
-                                </div>
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={landing.url} target="_blank" rel="noopener noreferrer">
+                              <Eye className="w-4 h-4 mr-2" />
+                              Открыть лендинг
+                            </a>
+                          </Button>
+                        </div>
+                        
+                        {/* Зеленый прямоугольник с выплатой и информацией */}
+                        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                            {/* Выплата */}
+                            <div className="text-center">
+                              <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                                Выплата
+                              </div>
+                              <div className="text-xl font-bold text-green-700 dark:text-green-300">
+                                {offer.payout && offer.payout !== '0.00' 
+                                  ? `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}${offer.payout}`
+                                  : (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0 
+                                     ? `${offer.geoPricing[0].payout}` 
+                                     : '$0')}
                               </div>
                             </div>
                             
-                            {/* Валюта и тип */}
-                            <div className="grid grid-cols-2 gap-2">
-                              <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-center">
-                                <div className="text-xs text-blue-600 dark:text-blue-400">Валюта</div>
-                                <div className="font-semibold text-blue-700 dark:text-blue-300">
-                                  {offer.currency || 'USD'}
-                                </div>
+                            {/* Валюта */}
+                            <div className="text-center">
+                              <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                                Валюта
                               </div>
-                              <div className="bg-purple-50 dark:bg-purple-900/20 p-2 rounded text-center">
-                                <div className="text-xs text-purple-600 dark:text-purple-400">Тип</div>
-                                <div className="font-semibold text-purple-700 dark:text-purple-300">
-                                  {offer.payoutType?.toUpperCase() || 'CPA'}
-                                </div>
+                              <div className="text-lg font-semibold text-green-700 dark:text-green-300">
+                                {offer.currency || 'USD'}
                               </div>
                             </div>
                             
-                            {/* Кнопка открытия */}
-                            <Button variant="outline" size="sm" className="w-full" asChild>
-                              <a href={landing.url} target="_blank" rel="noopener noreferrer">
-                                <Eye className="w-4 h-4 mr-2" />
-                                Открыть лендинг
-                              </a>
-                            </Button>
+                            {/* Тип */}
+                            <div className="text-center">
+                              <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                                Тип
+                              </div>
+                              <div className="text-lg font-semibold text-green-700 dark:text-green-300">
+                                {offer.payoutType?.toUpperCase() || 'CPA'}
+                              </div>
+                            </div>
+                            
+                            {/* Гео с флагами */}
+                            <div className="text-center">
+                              <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                                Гео
+                              </div>
+                              <div className="text-lg font-semibold text-green-700 dark:text-green-300">
+                                {landing.countries && landing.countries.length > 0 ? (
+                                  <div className="flex flex-wrap justify-center gap-1">
+                                    {landing.countries.slice(0, 3).map((country: string, idx: number) => {
+                                      const countryFlags: { [key: string]: string } = {
+                                        'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
+                                        'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦'
+                                      };
+                                      return (
+                                        <span key={idx} className="text-sm">
+                                          {countryFlags[country] || '🌍'}{country}
+                                        </span>
+                                      );
+                                    })}
+                                    {landing.countries.length > 3 && (
+                                      <span className="text-sm">+{landing.countries.length - 3}</span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  offer.countries && Array.isArray(offer.countries) && offer.countries.length > 0 ? (
+                                    <div className="flex flex-wrap justify-center gap-1">
+                                      {offer.countries.slice(0, 3).map((country: string, idx: number) => {
+                                        const countryFlags: { [key: string]: string } = {
+                                          'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
+                                          'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦'
+                                        };
+                                        return (
+                                          <span key={idx} className="text-sm">
+                                            {countryFlags[country] || '🌍'}{country}
+                                          </span>
+                                        );
+                                      })}
+                                      {offer.countries.length > 3 && (
+                                        <span className="text-sm">+{offer.countries.length - 3}</span>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span>🌍 Все</span>
+                                  )
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -491,33 +532,69 @@ export default function OfferDetails() {
                   </div>
                 ) : (
                   /* Если лендингов нет - показываем основную информацию о выплатах */
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg text-center">
-                      <div className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">
-                        Сумма выплаты
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center text-center">
+                      {/* Выплата */}
+                      <div>
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                          Выплата
+                        </div>
+                        <div className="text-xl font-bold text-green-700 dark:text-green-300">
+                          {offer.payout && offer.payout !== '0.00' 
+                            ? `${offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : ''}${offer.payout}`
+                            : (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0 
+                               ? `${offer.geoPricing[0].payout}` 
+                               : '$0')}
+                        </div>
                       </div>
-                      <div className="text-xl font-bold text-green-700 dark:text-green-300">
-                        {formatGeoPricing(offer.geoPricing, offer.payout, offer.currency)}
+                      
+                      {/* Валюта */}
+                      <div>
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                          Валюта
+                        </div>
+                        <div className="text-lg font-semibold text-green-700 dark:text-green-300">
+                          {offer.currency || 'USD'}
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center">
-                      <div className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">
-                        Валюта выплаты
+                      
+                      {/* Тип */}
+                      <div>
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                          Тип
+                        </div>
+                        <div className="text-lg font-semibold text-green-700 dark:text-green-300">
+                          {offer.payoutType?.toUpperCase() || 'CPA'}
+                        </div>
                       </div>
-                      <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
-                        {offer.currency || 'USD'}
-                      </div>
-                    </div>
-                    
-                    <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg text-center">
-                      <div className="text-sm text-purple-600 dark:text-purple-400 font-medium mb-1">
-                        Гео-таргетинг
-                      </div>
-                      <div className="text-lg font-bold text-purple-700 dark:text-purple-300">
-                        {offer.countries && Array.isArray(offer.countries) && offer.countries.length > 0 
-                          ? offer.countries.slice(0, 3).join(', ') + (offer.countries.length > 3 ? '...' : '')
-                          : 'Не указано'}
+                      
+                      {/* Гео */}
+                      <div>
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                          Гео
+                        </div>
+                        <div className="text-lg font-semibold text-green-700 dark:text-green-300">
+                          {offer.countries && Array.isArray(offer.countries) && offer.countries.length > 0 ? (
+                            <div className="flex flex-wrap justify-center gap-1">
+                              {offer.countries.slice(0, 3).map((country: string, idx: number) => {
+                                const countryFlags: { [key: string]: string } = {
+                                  'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
+                                  'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦'
+                                };
+                                return (
+                                  <span key={idx} className="text-sm">
+                                    {countryFlags[country] || '🌍'}{country}
+                                  </span>
+                                );
+                              })}
+                              {offer.countries.length > 3 && (
+                                <span className="text-sm">+{offer.countries.length - 3}</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span>🌍 Все</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
