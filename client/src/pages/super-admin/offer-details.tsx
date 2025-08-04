@@ -1,4 +1,5 @@
 import { useParams, useLocation } from 'wouter';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '../../contexts/language-context';
 import Sidebar from '../../components/layout/sidebar';
@@ -7,14 +8,17 @@ import Header from '../../components/layout/header';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
-import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, MapPin, Shield } from 'lucide-react';
+import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, MapPin, Shield, Image, Activity, Clock } from 'lucide-react';
 import { Separator } from '../../components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 
 export default function OfferDetails() {
   const [, setLocation] = useLocation();
   const params = useParams();
   const { t, language } = useLanguage();
   const { isCollapsed } = useSidebar();
+  const [activeTab, setActiveTab] = useState('details');
   
   const offerId = params.id;
 
@@ -222,7 +226,42 @@ export default function OfferDetails() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Tabs Navigation */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+            <TabsTrigger 
+              value="details" 
+              className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+            >
+              <Target className="w-4 h-4" />
+              Детали
+            </TabsTrigger>
+            <TabsTrigger 
+              value="analytics" 
+              className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+            >
+              <BarChart3 className="w-4 h-4" />
+              Аналитика
+            </TabsTrigger>
+            <TabsTrigger 
+              value="creatives" 
+              className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+            >
+              <Image className="w-4 h-4" />
+              Креативы
+            </TabsTrigger>
+            <TabsTrigger 
+              value="history" 
+              className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+            >
+              <Clock className="w-4 h-4" />
+              История
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Details Tab */}
+          <TabsContent value="details" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
@@ -440,6 +479,142 @@ export default function OfferDetails() {
             )}
           </div>
         </div>
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                      <Eye className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Просмотры</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {statsData?.views || 0}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                      <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Конверсии</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {statsData?.conversions || 0}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                      <BarChart3 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">CR %</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {statsData?.conversionRate || '0.00'}%
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+                      <DollarSign className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Доход</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        ${statsData?.revenue || '0.00'}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Creatives Tab */}
+          <TabsContent value="creatives" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Image className="w-5 h-5" />
+                  Рекламные материалы
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Image className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    Креативы не загружены
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Здесь будут отображаться баннеры, изображения и другие рекламные материалы
+                  </p>
+                  <Button>
+                    <Image className="w-4 h-4 mr-2" />
+                    Загрузить креативы
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* History Tab */}
+          <TabsContent value="history" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="w-5 h-5" />
+                  История изменений
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-full">
+                      <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 dark:text-white">Оффер создан</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {new Date(offer.createdAt).toLocaleDateString('ru-RU', {
+                          year: 'numeric',
+                          month: 'long', 
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-center py-8">
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Дополнительная история изменений будет отображаться здесь
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
           </div>
         </main>
       </div>
