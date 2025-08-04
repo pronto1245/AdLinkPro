@@ -1132,15 +1132,15 @@ export default function OffersManagement() {
     
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500 hover:bg-green-600 text-white">Активен</Badge>;
+        return <Badge className="bg-green-500 hover:bg-green-600 text-white">{t('active')}</Badge>;
       case 'paused':
-        return <Badge className="bg-red-500 hover:bg-red-600 text-white">Остановлен</Badge>;
+        return <Badge className="bg-red-500 hover:bg-red-600 text-white">{t('paused')}</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">Ожидает</Badge>;
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">{t('pending')}</Badge>;
       case 'draft':
-        return <Badge variant="outline">Черновик</Badge>;
+        return <Badge variant="outline">{t('draft')}</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{t(status)}</Badge>;
     }
   };
 

@@ -194,6 +194,7 @@ export const translations = {
     'current_status': 'Current status',
     'status_changed_successfully': 'Status changed successfully',
     'failed_to_change_status': 'Failed to change status',
+    'offer_name': 'Offer name',
     
     // Categories
     'gambling': 'Gambling',
@@ -432,6 +433,7 @@ export const translations = {
     'current_status': 'Текущий статус',
     'status_changed_successfully': 'Статус оффера изменен',
     'failed_to_change_status': 'Не удалось изменить статус',
+    'offer_name': 'Название оффера',
     
     // Categories
     'gambling': 'Гемблинг',
