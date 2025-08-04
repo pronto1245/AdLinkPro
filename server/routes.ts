@@ -2976,12 +2976,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Service not found" });
       }
       
-      service.isActive = isActive;
-      service.lastSync = new Date().toISOString();
-      fraudServicesState.set(id, service);
+      // Update the service state
+      const updatedService = {
+        ...service,
+        isActive: isActive,
+        lastSync: new Date().toISOString()
+      };
+      fraudServicesState.set(id, updatedService);
       
       auditLog(req, 'FRAUD_SERVICE_UPDATED', id, true, { isActive });
-      res.json(service);
+      res.json(updatedService);
     } catch (error) {
       console.error("Update fraud service error:", error);
       res.status(500).json({ error: "Failed to update service" });

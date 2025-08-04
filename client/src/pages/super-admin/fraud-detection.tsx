@@ -350,9 +350,12 @@ const FraudDetectionPage = () => {
         title: isActive ? "Сервис активирован" : "Сервис деактивирован",
         description: `${service?.serviceName} ${isActive ? 'включен' : 'отключен'}`,
       });
-      // Force refetch the data to ensure UI updates
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/fraud-services'] });
-      queryClient.refetchQueries({ queryKey: ['/api/admin/fraud-services'] });
+      // Update cache with server response to ensure consistency
+      queryClient.setQueryData(['/api/admin/fraud-services'], (oldServices: FraudServiceIntegration[]) => {
+        return oldServices?.map(s => 
+          s.id === serviceId ? { ...s, ...data } : s
+        ) || [];
+      });
     },
     onError: (error: any, { serviceId, isActive }) => {
       // Revert optimistic update on error
