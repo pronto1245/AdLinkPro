@@ -132,7 +132,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             <FormItem>
               <FormLabel>{t('offer_name')} *</FormLabel>
               <FormControl>
-                <Input {...field} placeholder={t('enter_offer_name_placeholder')} data-testid="input-offer-name" />
+                <Input {...field} placeholder={t('offer_name_placeholder')} data-testid="input-offer-name" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -382,7 +382,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                           form.setValue('landingPages', current.filter((_, i) => i !== index));
                         }}
                         data-testid={`button-remove-landing-page-${index}`}
-                        title="Удалить лендинг страницу"
+                        title={t('remove_landing_page')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -400,7 +400,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             name="payoutType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Тип выплаты (по умолчанию)</FormLabel>
+                <FormLabel>{t('payout_type')} ({t('default')})</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-payout-type">
@@ -430,7 +430,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             name="currency"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Валюта по умолчанию</FormLabel>
+                <FormLabel>{t('default_currency')}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-currency">
@@ -456,11 +456,11 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           name="kpiConditions"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>KPI условия</FormLabel>
+              <FormLabel>{t('kpi_conditions')}</FormLabel>
               <FormControl>
                 <Textarea 
                   {...field} 
-                  placeholder="Условия KPI для данного оффера (например: минимальный депозит $100, активные игроки только)..."
+                  placeholder={t('kpi_conditions_placeholder')}
                   rows={2}
                   data-testid="textarea-kpi-conditions"
                 />
@@ -473,7 +473,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
 
 
         <div className="space-y-4">
-          <Label className="text-base font-medium">Разрешенные источники трафика</Label>
+          <Label className="text-base font-medium">{t('allowed_traffic_sources')}</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto border rounded-md p-3">
             {trafficSources.map((source) => (
               <div key={source} className="flex items-center space-x-2">
@@ -498,7 +498,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
         </div>
 
         <div className="space-y-4">
-          <Label className="text-base font-medium">Разрешенные приложения</Label>
+          <Label className="text-base font-medium">{t('allowed_apps')}</Label>
           <FormField
             control={form.control}
             name="allowedApps"
@@ -515,7 +515,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       }}
                     >
                       <SelectTrigger data-testid="select-allowed-apps">
-                        <SelectValue placeholder="Выберите приложение" />
+                        <SelectValue placeholder={t('select_app')} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="PWA apps">PWA приложения</SelectItem>
@@ -566,7 +566,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                         }}
                         data-testid="button-add-custom-app"
                       >
-                        Добавить
+                        {t('add')}
                       </Button>
                     </div>
                     
@@ -605,7 +605,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             name="dailyLimit"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Дневной лимит</FormLabel>
+                <FormLabel>{t('daily_limit')}</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
@@ -613,7 +613,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     value={field.value || ''}
                     onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                     onWheel={(e) => e.currentTarget.blur()}
-                    placeholder="Без ограничений" 
+                    placeholder={t('unlimited')} 
                     data-testid="input-daily-limit"
                     className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -628,7 +628,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             name="monthlyLimit"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Месячный лимит</FormLabel>
+                <FormLabel>{t('monthly_limit')}</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
@@ -636,7 +636,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     value={field.value || ''}
                     onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                     onWheel={(e) => e.currentTarget.blur()}
-                    placeholder="Без ограничений" 
+                    placeholder={t('unlimited')} 
                     data-testid="input-monthly-limit"
                     className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -654,7 +654,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">Антифрод включен</FormLabel>
+                  <FormLabel className="text-base">{t('antifraud_enabled')}</FormLabel>
                 </div>
                 <FormControl>
                   <Switch
@@ -673,7 +673,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">Автоодобрение партнеров</FormLabel>
+                  <FormLabel className="text-base">{t('auto_approve_partners')}</FormLabel>
                 </div>
                 <FormControl>
                   <Switch
@@ -689,14 +689,14 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
 
         <div className="flex justify-end gap-3 pt-6">
           <Button type="button" variant="outline" onClick={onSuccess}>
-            Отмена
+            {t('cancel')}
           </Button>
           <Button 
             type="submit" 
             disabled={createOfferMutation.isPending}
             data-testid="button-submit-offer"
           >
-            {createOfferMutation.isPending ? 'Создание...' : 'Создать оффер'}
+            {createOfferMutation.isPending ? t('creating') : t('create_offer')}
           </Button>
         </div>
       </form>
