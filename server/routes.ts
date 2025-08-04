@@ -666,14 +666,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const authUser = getAuthenticatedUser(req);
       
-      // Add default values for required fields
-      const offerData = insertOfferSchema.parse({
+      // Transform frontend data to match backend schema
+      const transformedData = {
         ...req.body,
-        payout: req.body.payout || 0, // Default payout to 0 if not provided
-        advertiserId: req.body.advertiserId || authUser.id, // Default to current user if not provided
+        payout: "0.00", // Default payout as string for decimal field
+        advertiserId: authUser.id, // Set to current admin user
         trafficSources: req.body.allowedTrafficSources || [], // Map allowedTrafficSources to trafficSources
-      });
+      };
       
+
+      const offerData = insertOfferSchema.parse(transformedData);
       const offer = await storage.createOffer(offerData);
       res.status(201).json(offer);
     } catch (error) {

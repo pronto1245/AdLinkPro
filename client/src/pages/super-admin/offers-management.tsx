@@ -24,14 +24,9 @@ import { z } from 'zod';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const createOfferSchema = z.object({
-  number: z.string().optional(),
   name: z.string().min(1, 'Название оффера обязательно'),
   category: z.string().min(1, 'Категория обязательна'),
-  status: z.string().default('draft'),
   description: z.string().optional(),
-  logo: z.string().optional(),
-  advertiserId: z.string().optional(), // Будет установлен на сервере
-
   payoutType: z.string().default('cpa'),
   currency: z.string().default('USD'),
   landingPages: z.array(z.object({
@@ -62,19 +57,13 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
   const form = useForm<CreateOfferFormData>({
     resolver: zodResolver(createOfferSchema),
     defaultValues: {
-      number: '',
       name: '',
       category: '',
-      status: 'draft',
       description: '',
-      logo: '',
       landingPages: [{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }],
       payoutType: 'cpa',
-
       currency: 'USD',
-      landingInfo: '',
       kpiConditions: '',
-
       allowedTrafficSources: [],
       antifraudEnabled: true,
       autoApprovePartners: false,
@@ -119,35 +108,19 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit((data) => createOfferMutation.mutate(data))} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="number"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Оффер №</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Введите номер оффера" data-testid="input-offer-number" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Название оффера *</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Введите название оффера (например: Pronto Casino)" data-testid="input-offer-name" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Название оффера *</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Введите название оффера (например: Pronto Casino)" data-testid="input-offer-name" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
@@ -175,28 +148,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             )}
           />
           
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Статус</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger data-testid="select-status">
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="draft">Черновик</SelectItem>
-                    <SelectItem value="active">Активный</SelectItem>
-                    <SelectItem value="inactive">Неактивный</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+
         </div>
 
         <FormField
@@ -213,48 +165,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="logo"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Логотип оффера</FormLabel>
-              <FormControl>
-                <div className="space-y-3">
-                  <Input 
-                    type="file" 
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                          field.onChange(reader.result as string);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    data-testid="input-logo" 
-                  />
-                  {field.value && (
-                    <div className="flex items-center gap-3">
-                      <img src={field.value} alt="Логотип" className="h-16 w-16 object-cover rounded border" />
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => field.onChange('')}
-                      >
-                        Удалить логотип
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
