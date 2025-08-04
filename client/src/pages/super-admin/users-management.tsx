@@ -665,6 +665,44 @@ export default function UsersManagement() {
         </CardContent>
       </Card>
 
+      {/* Color Legend */}
+      <Card>
+        <CardContent className="p-4">
+          <h3 className="text-sm font-medium mb-3">Цветовая схема</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+            <div>
+              <div className="font-medium mb-2">Роли пользователей:</div>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">
+                  Супер-админ
+                </Badge>
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
+                  Рекламодатель
+                </Badge>
+                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+                  Партнёр
+                </Badge>
+                <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
+                  Сотрудник
+                </Badge>
+              </div>
+            </div>
+            
+            <div>
+              <div className="font-medium mb-2">Привязанный рекламодатель:</div>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                  Привязан
+                </Badge>
+                <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200">
+                  Не привязан
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Users Table */}
       <Card>
         <CardContent className="p-0">
@@ -815,7 +853,16 @@ export default function UsersManagement() {
                     
                     {/* Роль */}
                     <TableCell>
-                      <Badge variant="outline">
+                      <Badge 
+                        variant="outline"
+                        className={
+                          user.role === 'super_admin' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+                          user.role === 'advertiser' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                          user.role === 'affiliate' ? 'bg-green-100 text-green-800 border-green-200' :
+                          user.role === 'staff' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                          'bg-gray-100 text-gray-800 border-gray-200'
+                        }
+                      >
                         {user.role === 'super_admin' ? 'Супер-админ' :
                          user.role === 'advertiser' ? 'Рекламодатель' :
                          user.role === 'affiliate' ? 'Партнёр' :
@@ -857,9 +904,21 @@ export default function UsersManagement() {
                     
                     {/* Привязанный рекламодатель */}
                     <TableCell>
-                      <div className="text-sm">
-                        {user.advertiserName || '-'}
-                      </div>
+                      {user.advertiserName ? (
+                        <Badge 
+                          variant="outline" 
+                          className="bg-indigo-100 text-indigo-800 border-indigo-200"
+                        >
+                          {user.advertiserName}
+                        </Badge>
+                      ) : (
+                        <Badge 
+                          variant="outline" 
+                          className="bg-gray-100 text-gray-500 border-gray-200"
+                        >
+                          Не привязан
+                        </Badge>
+                      )}
                     </TableCell>
 
                     {/* Действия */}
