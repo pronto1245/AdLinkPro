@@ -386,12 +386,11 @@ export default function OfferDetails() {
                 
                 <Separator />
                 
-                <div>
-                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Описание</label>
-                  <p className="mt-1 text-gray-900 dark:text-white">{offer.description || 'Не указано'}</p>
-                </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Описание</label>
+                    <p className="mt-1 text-gray-900 dark:text-white">{offer.description || 'Не указано'}</p>
+                  </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Дата создания</label>
                     <div className="mt-1 flex items-center gap-2">
@@ -399,13 +398,14 @@ export default function OfferDetails() {
                       {new Date(offer.createdAt).toLocaleDateString('ru-RU')}
                     </div>
                   </div>
-                  {offer.number && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Номер оффера</label>
-                      <div className="mt-1 font-mono text-sm">{offer.number}</div>
-                    </div>
-                  )}
                 </div>
+                
+                {offer.number && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Номер оффера</label>
+                    <div className="mt-1 font-mono text-sm">{offer.number}</div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
