@@ -8,7 +8,7 @@ import { LanguageProvider } from "./contexts/language-context";
 import { SidebarProvider } from "./contexts/sidebar-context";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/auth/login";
-import SuperAdminDashboard from "@/pages/super-admin/dashboard";
+import Dashboard from "@/pages/super-admin/dashboard";
 import SuperAdminUsers from "@/pages/super-admin/users";
 import SuperAdminUsersManagement from "@/pages/super-admin/users-management";
 import RolesManagement from "@/pages/super-admin/roles-management";
@@ -58,7 +58,7 @@ function Router() {
       {/* Super Admin Routes */}
       <Route path="/admin">
         <ProtectedRoute allowedRoles={['super_admin']}>
-          <SuperAdminDashboard />
+          <Dashboard />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/users">

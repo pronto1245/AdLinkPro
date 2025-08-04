@@ -2654,6 +2654,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Dashboard API endpoints
+  app.get('/api/admin/dashboard-metrics/:period', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const period = req.params.period; // 1d, 7d, 30d, 90d
+      
+      // Generate real-time metrics data
+      const metrics = {
+        activePartners: 1247,
+        activeOffers: 89,
+        todayClicks: 15420,
+        yesterdayClicks: 14250,
+        monthClicks: 425680,
+        leads: 3850,
+        conversions: 1205,
+        platformRevenue: 45789.50,
+        fraudRate: 2.3,
+        cr: 3.13,
+        epc: 2.97,
+        roi: 167
+      };
+      
+      res.json(metrics);
+    } catch (error) {
+      console.error('Dashboard metrics error:', error);
+      res.status(500).json({ error: 'Failed to fetch dashboard metrics' });
+    }
+  });
+
+  app.get('/api/admin/dashboard-chart/:period', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const period = req.params.period;
+      
+      // Generate chart data for the period
+      const chartData = [];
+      const days = period === '1d' ? 1 : period === '7d' ? 7 : period === '30d' ? 30 : 90;
+      
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        
+        chartData.push({
+          date: date.toISOString().split('T')[0],
+          clicks: Math.floor(Math.random() * 2000) + 8000,
+          leads: Math.floor(Math.random() * 300) + 200,
+          conversions: Math.floor(Math.random() * 80) + 50,
+          revenue: Math.floor(Math.random() * 3000) + 2000,
+          fraud: Math.floor(Math.random() * 50) + 10
+        });
+      }
+      
+      res.json(chartData);
+    } catch (error) {
+      console.error('Dashboard chart error:', error);
+      res.status(500).json({ error: 'Failed to fetch chart data' });
+    }
+  });
+
+  app.get('/api/admin/recent-activities', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const activities = [
+        {
+          id: '1',
+          type: 'registration',
+          title: 'Новая регистрация партнёра',
+          description: 'Партнёр "AffiliateProMax" зарегистрировался в системе',
+          timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+          priority: 'medium'
+        },
+        {
+          id: '2',
+          type: 'offer',
+          title: 'Новый оффер активирован',
+          description: 'Оффер "CasinoBonus2025" добавлен рекламодателем',
+          timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+          priority: 'low'
+        },
+        {
+          id: '3',
+          type: 'fraud',
+          title: 'Подозрительная активность',
+          description: 'Обнаружен фрод-трафик от партнёра ID: 15234',
+          timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+          priority: 'high'
+        },
+        {
+          id: '4',
+          type: 'ticket',
+          title: 'Новый тикет в поддержку',
+          description: 'Тикет #45892 от рекламодателя "GamingCorp"',
+          timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+          priority: 'medium'
+        },
+        {
+          id: '5',
+          type: 'registration',
+          title: 'Новый рекламодатель',
+          description: 'Рекламодатель "TechSolutions" зарегистрировался',
+          timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+          priority: 'low'
+        }
+      ];
+      
+      res.json(activities);
+    } catch (error) {
+      console.error('Recent activities error:', error);
+      res.status(500).json({ error: 'Failed to fetch recent activities' });
+    }
+  });
+
+  app.get('/api/admin/geo-distribution/:period', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const geoData = [
+        { name: 'RU', value: 35 },
+        { name: 'US', value: 25 },
+        { name: 'DE', value: 15 },
+        { name: 'UK', value: 12 },
+        { name: 'FR', value: 8 },
+        { name: 'CA', value: 5 }
+      ];
+      
+      res.json(geoData);
+    } catch (error) {
+      console.error('Geo distribution error:', error);
+      res.status(500).json({ error: 'Failed to fetch geo distribution' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
