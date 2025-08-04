@@ -48,7 +48,7 @@ interface SidebarProps {
 
 export default function Sidebar({ className }: SidebarProps) {
   const { user } = useAuth();
-
+  const { isCollapsed, toggleSidebar } = useSidebar();
   const [location] = useLocation();
 
   if (!user) return null;
