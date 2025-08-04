@@ -511,10 +511,17 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                         <SelectValue placeholder="Выберите приложение" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="PWA apps">PWA apps</SelectItem>
-                        <SelectItem value="WebView apps">WebView apps</SelectItem>
-                        <SelectItem value="Native Android (.apk) apps">Native Android (.apk) apps</SelectItem>
-                        <SelectItem value="iOS apps">iOS apps</SelectItem>
+                        <SelectItem value="PWA apps">PWA приложения</SelectItem>
+                        <SelectItem value="WebView apps">WebView приложения</SelectItem>
+                        <SelectItem value="Native Android (.apk) apps">Android приложения (.apk)</SelectItem>
+                        <SelectItem value="iOS apps">iOS приложения</SelectItem>
+                        <SelectItem value="Mobile apps">Мобильные приложения</SelectItem>
+                        <SelectItem value="Desktop apps">Настольные приложения</SelectItem>
+                        <SelectItem value="Web apps">Веб приложения</SelectItem>
+                        <SelectItem value="Telegram bots">Telegram боты</SelectItem>
+                        <SelectItem value="Browser extensions">Браузерные расширения</SelectItem>
+                        <SelectItem value="Chrome extensions">Расширения Chrome</SelectItem>
+                        <SelectItem value="Firefox extensions">Расширения Firefox</SelectItem>
                       </SelectContent>
                     </Select>
                     
@@ -1227,15 +1234,31 @@ export default function OffersManagement() {
                     <TableCell>
                       <div className="text-xs space-y-1">
                         {/* Allowed Apps */}
-                        {offer.allowedApps && offer.allowedApps.length > 0 ? (
-                          <div className={`${offer.allowedApps.length >= 3 ? 'grid grid-cols-2 gap-1' : 'flex flex-wrap gap-1'}`}>
-                            {offer.allowedApps.slice(0, 4).map((app: string, index: number) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                {app}
-                              </Badge>
-                            ))}
-                            {offer.allowedApps.length > 4 && (
-                              <div className="text-muted-foreground text-xs">+{offer.allowedApps.length - 4}</div>
+                        {offer.allowedApps && Array.isArray(offer.allowedApps) && offer.allowedApps.length > 0 ? (
+                          <div className={`${offer.allowedApps.length >= 3 ? 'grid grid-cols-1 gap-1' : 'flex flex-wrap gap-1'}`}>
+                            {offer.allowedApps.slice(0, 3).map((app: string, index: number) => {
+                              const appLabels: {[key: string]: string} = {
+                                'PWA apps': 'PWA',
+                                'WebView apps': 'WebView',
+                                'Native Android (.apk) apps': 'Android',
+                                'iOS apps': 'iOS',
+                                'Mobile apps': 'Mobile',
+                                'Desktop apps': 'Desktop',
+                                'Web apps': 'Web',
+                                'Telegram bots': 'Telegram',
+                                'Browser extensions': 'Extensions',
+                                'Chrome extensions': 'Chrome Ext',
+                                'Firefox extensions': 'Firefox Ext'
+                              };
+                              const appLabel = appLabels[app] || app;
+                              return (
+                                <Badge key={index} variant="secondary" className="text-xs whitespace-nowrap">
+                                  {appLabel}
+                                </Badge>
+                              );
+                            })}
+                            {offer.allowedApps.length > 3 && (
+                              <div className="text-muted-foreground text-xs">+{offer.allowedApps.length - 3}</div>
                             )}
                           </div>
                         ) : (
@@ -1466,6 +1489,35 @@ export default function OffersManagement() {
                               {sourceLabel}
                             </Badge>
                           </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                
+                {selectedOffer.allowedApps && Array.isArray(selectedOffer.allowedApps) && selectedOffer.allowedApps.length > 0 && (
+                  <div>
+                    <Label>Разрешенные приложения</Label>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {selectedOffer.allowedApps.map((app: string, index: number) => {
+                        const appLabels: {[key: string]: string} = {
+                          'PWA apps': 'PWA приложения',
+                          'WebView apps': 'WebView приложения',
+                          'Native Android (.apk) apps': 'Android приложения (.apk)',
+                          'iOS apps': 'iOS приложения',
+                          'Mobile apps': 'Мобильные приложения',
+                          'Desktop apps': 'Настольные приложения',
+                          'Web apps': 'Веб приложения',
+                          'Telegram bots': 'Telegram боты',
+                          'Browser extensions': 'Браузерные расширения',
+                          'Chrome extensions': 'Расширения Chrome',
+                          'Firefox extensions': 'Расширения Firefox'
+                        };
+                        const appLabel = appLabels[app] || app;
+                        return (
+                          <Badge key={index} variant="secondary" className="mb-2">
+                            {appLabel}
+                          </Badge>
                         );
                       })}
                     </div>

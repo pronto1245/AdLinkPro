@@ -28,6 +28,11 @@ The application features a multi-role dashboard system with role-based access co
   * Detailed offer analytics and history tracking
 - ✅ Increased Express limits to 50MB for large file uploads
 - ✅ Improved offer management UI with comprehensive filtering and moderation
+- ✅ Улучшено отображение разрешенных приложений в таблице офферов и детальном просмотре
+  * Добавлены новые типы приложений: Telegram боты, браузерные расширения
+  * Улучшены русские переводы названий приложений
+  * Оптимизирована компактность отображения в таблице с сокращенными названиями
+  * Добавлена проверка типов Array.isArray() для безопасного отображения данных
 
 # User Preferences
 
