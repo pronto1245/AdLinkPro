@@ -80,6 +80,14 @@ The application features a multi-role dashboard system with role-based access co
   * На странице offers_management убран Header с "offers_management" и "manage_and_moderate_offers" 
   * Остался только заголовок "OFFER-MANAGEMENT" заглавными буквами через дефис
   * На странице offer_details добавлен заголовок "OFFER-DETAILS" в том же стиле
+- ✅ Создана расширенная форма редактирования офферов:
+  * Добавлены все недостающие поля: kpiConditions, dailyLimit, monthlyLimit, antifraudEnabled, autoApprovePartners
+  * Чекбоксы для выбора источников трафика (Facebook, Google, TikTok и др.)
+  * Чекбоксы для разрешенных приложений (мобильные, веб, Telegram боты и др.)
+  * Управление landing pages с возможностью добавления/редактирования
+  * Поля для ограничений и комментариев модерации
+  * Переключатели для KYC, приватности и smartlink функций
+- ✅ Восстановлена кнопка "Создать оффер" после запроса пользователя
 
 # User Preferences
 

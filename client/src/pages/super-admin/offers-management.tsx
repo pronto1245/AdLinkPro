@@ -1167,7 +1167,23 @@ export default function OffersManagement() {
           <h1 className="text-3xl font-bold">OFFER-MANAGEMENT</h1>
         </div>
         <div className="flex gap-2">
-          {/* Buttons removed as requested */}
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button data-testid="button-create-offer">
+                <Plus className="w-4 h-4 mr-2" />
+                Создать оффер
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Создать новый оффер</DialogTitle>
+                <DialogDescription>
+                  Заполните информацию для создания нового оффера
+                </DialogDescription>
+              </DialogHeader>
+              <CreateOfferForm onSuccess={() => setIsCreateDialogOpen(false)} />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
