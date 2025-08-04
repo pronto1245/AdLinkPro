@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Search, Filter, Eye, Edit, Ban, Archive, CheckCircle, XCircle, AlertTriangle, Download, Upload, Plus } from 'lucide-react';
+import { Search, Filter, Eye, Edit, Ban, Archive, CheckCircle, XCircle, AlertTriangle, Download, Upload, Plus, Trash2, PlusCircle } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -31,9 +31,11 @@ const createOfferSchema = z.object({
   description: z.string().optional(),
   logo: z.string().optional(),
   landingPages: z.array(z.object({
-    name: z.string(),
+    name: z.string().min(1, 'Название обязательно'),
     url: z.string().url('Неверный URL'),
-  })).default([{ name: 'Основная страница', url: '' }]),
+    payoutAmount: z.number().min(0, 'Сумма должна быть положительной'),
+    currency: z.string().default('USD'),
+  })).default([{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD' }]),
   payoutType: z.string().default('cpa'),
   payoutAmount: z.number().min(0),
   currency: z.string().default('USD'),
@@ -66,7 +68,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
       status: 'draft',
       description: '',
       logo: '',
-      landingPages: [{ name: 'Основная страница', url: '' }],
+      landingPages: [{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD' }],
       payoutType: 'cpa',
       payoutAmount: 0,
       currency: 'USD',
@@ -211,13 +213,147 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <FormField
+          control={form.control}
+          name="logo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Логотип оффера</FormLabel>
+              <FormControl>
+                <div className="flex items-center gap-3">
+                  <Input {...field} placeholder="URL логотипа" data-testid="input-logo" />
+                  <Button type="button" variant="outline" size="sm">
+                    Загрузить логотип
+                  </Button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-medium">Посадочные страницы</Label>
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                const current = form.getValues('landingPages');
+                form.setValue('landingPages', [...current, { name: '', url: '', payoutAmount: 0, currency: 'USD' }]);
+              }}
+              data-testid="button-add-landing-page"
+            >
+              <PlusCircle className="w-4 h-4 mr-2" />
+              Добавить страницу
+            </Button>
+          </div>
+          
+          <div className="space-y-3">
+            {form.watch('landingPages').map((_, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                <FormField
+                  control={form.control}
+                  name={`landingPages.${index}.name`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Название</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Основная страница" data-testid={`input-landing-name-${index}`} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name={`landingPages.${index}.url`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">URL</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="https://example.com" data-testid={`input-landing-url-${index}`} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name={`landingPages.${index}.payoutAmount`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Сумма выплаты</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          type="number" 
+                          step="0.01"
+                          value={field.value || ''}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          placeholder="0.00" 
+                          data-testid={`input-landing-payout-${index}`} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name={`landingPages.${index}.currency`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Валюта</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid={`select-landing-currency-${index}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="USD">USD</SelectItem>
+                          <SelectItem value="EUR">EUR</SelectItem>
+                          <SelectItem value="GBP">GBP</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex items-end">
+                  {form.watch('landingPages').length > 1 && (
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        const current = form.getValues('landingPages');
+                        form.setValue('landingPages', current.filter((_, i) => i !== index));
+                      }}
+                      data-testid={`button-remove-landing-page-${index}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
             name="payoutType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Тип выплаты</FormLabel>
+                <FormLabel>Тип выплаты (по умолчанию)</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-payout-type">
@@ -244,32 +380,10 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           
           <FormField
             control={form.control}
-            name="payoutAmount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Сумма выплаты</FormLabel>
-                <FormControl>
-                  <Input 
-                    {...field} 
-                    type="number" 
-                    step="0.01"
-                    value={field.value || ''}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                    placeholder="0.00" 
-                    data-testid="input-payout-amount" 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
             name="currency"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Валюта</FormLabel>
+                <FormLabel>Валюта по умолчанию</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-currency">
@@ -629,7 +743,7 @@ export default function OffersManagement() {
       <div className="flex min-h-screen bg-background">
         <Sidebar />
         <div className="flex-1 flex flex-col">
-          <Header />
+          <Header title="Управление офферами" />
           <main className="flex-1 p-6">
             <div className="flex items-center justify-center p-8">{t('loading')}</div>
           </main>
