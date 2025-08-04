@@ -1,332 +1,138 @@
 import { sendEmail } from './email';
 
 export interface NotificationEvent {
-  type: 'user_registration' | 'user_blocked' | 'new_device_login' | 'password_reset' | 'fraud_alert' | 'role_assigned';
+  type: 'user_registration' | 'user_blocked' | 'new_device_login' | 'fraud_detected' | 'payment_received';
   userId: string;
   data: any;
-  metadata?: {
-    ipAddress?: string;
-    userAgent?: string;
-    location?: string;
-  };
+  timestamp: Date;
 }
 
-export interface NotificationSettings {
-  email: boolean;
-  telegram: boolean;
-  webhook: boolean;
-  channels: {
-    user_registration: string[];
-    user_blocked: string[];
-    new_device_login: string[];
-    fraud_alert: string[];
-  };
-}
+export class NotificationService {
+  private static instance: NotificationService;
+  private notifications: NotificationEvent[] = [];
 
-class NotificationService {
-  private settings: NotificationSettings = {
-    email: true,
-    telegram: false,
-    webhook: false,
-    channels: {
-      user_registration: ['email'],
-      user_blocked: ['email', 'telegram'],
-      new_device_login: ['email'],
-      fraud_alert: ['email', 'telegram']
+  static getInstance(): NotificationService {
+    if (!NotificationService.instance) {
+      NotificationService.instance = new NotificationService();
     }
-  };
+    return NotificationService.instance;
+  }
 
   async sendNotification(event: NotificationEvent): Promise<void> {
     try {
-      console.log(`Processing notification: ${event.type} for user ${event.userId}`);
-      
-      // Get notification channels for this event type
-      const channels = this.settings.channels[event.type as keyof typeof this.settings.channels] || [];
-      
-      // Send email notifications
-      if (channels.includes('email') && this.settings.email) {
-        await this.sendEmailNotification(event);
-      }
-      
-      // Send Telegram notifications
-      if (channels.includes('telegram') && this.settings.telegram) {
-        await this.sendTelegramNotification(event);
-      }
-      
-      // Send webhook notifications
-      if (channels.includes('webhook') && this.settings.webhook) {
-        await this.sendWebhookNotification(event);
-      }
-      
-      // Log the event
-      await this.logEvent(event);
-      
+      // Store notification
+      this.notifications.push(event);
+
+      // Send email notification based on event type
+      await this.sendEmailNotification(event);
+
+      // Log notification
+      console.log(`Notification sent: ${event.type} for user ${event.userId}`);
     } catch (error) {
-      console.error('Notification service error:', error);
+      console.error('Failed to send notification:', error);
     }
   }
 
   private async sendEmailNotification(event: NotificationEvent): Promise<void> {
-    try {
-      const emailContent = this.generateEmailContent(event);
-      
-      // Send to admin emails
-      const adminEmails = process.env.ADMIN_EMAILS?.split(',') || ['admin@example.com'];
-      
-      for (const email of adminEmails) {
-        await sendEmail({
-          to: email.trim(),
+    const emailConfig = this.getEmailConfig(event);
+    
+    if (emailConfig) {
+      await sendEmail(emailConfig);
+    }
+  }
+
+  private getEmailConfig(event: NotificationEvent): any {
+    const { type, data } = event;
+
+    switch (type) {
+      case 'user_registration':
+        return {
+          to: data.email,
           from: process.env.FROM_EMAIL || 'noreply@platform.com',
-          subject: emailContent.subject,
-          html: emailContent.html,
-          text: emailContent.text
-        });
-      }
-      
-    } catch (error) {
-      console.error('Email notification error:', error);
-    }
-  }
-
-  private async sendTelegramNotification(event: NotificationEvent): Promise<void> {
-    try {
-      const botToken = process.env.TELEGRAM_BOT_TOKEN;
-      const chatId = process.env.TELEGRAM_CHAT_ID;
-      
-      if (!botToken || !chatId) {
-        console.log('Telegram credentials not configured');
-        return;
-      }
-      
-      const message = this.generateTelegramMessage(event);
-      
-      const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: message,
-          parse_mode: 'HTML'
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Telegram API error: ${response.statusText}`);
-      }
-      
-    } catch (error) {
-      console.error('Telegram notification error:', error);
-    }
-  }
-
-  private async sendWebhookNotification(event: NotificationEvent): Promise<void> {
-    try {
-      const webhookUrl = process.env.WEBHOOK_URL;
-      
-      if (!webhookUrl) {
-        console.log('Webhook URL not configured');
-        return;
-      }
-      
-      const payload = {
-        event: event.type,
-        userId: event.userId,
-        data: event.data,
-        metadata: event.metadata,
-        timestamp: new Date().toISOString()
-      };
-      
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Webhook error: ${response.statusText}`);
-      }
-      
-    } catch (error) {
-      console.error('Webhook notification error:', error);
-    }
-  }
-
-  private generateEmailContent(event: NotificationEvent): { subject: string; html: string; text: string } {
-    const { type, data, metadata } = event;
-    
-    switch (type) {
-      case 'user_registration':
-        return {
-          subject: `Новая регистрация: ${data.username}`,
+          subject: 'Добро пожаловать в платформу!',
           html: `
-            <h2>Новый пользователь зарегистрировался</h2>
-            <p><strong>Имя пользователя:</strong> ${data.username}</p>
-            <p><strong>Email:</strong> ${data.email}</p>
-            <p><strong>Роль:</strong> ${data.role}</p>
-            <p><strong>IP адрес:</strong> ${metadata?.ipAddress || 'Неизвестно'}</p>
-            <p><strong>Время:</strong> ${new Date().toLocaleString()}</p>
+            <h2>Регистрация завершена</h2>
+            <p>Здравствуйте, ${data.firstName || data.username}!</p>
+            <p>Ваш аккаунт успешно создан. Добро пожаловать в нашу платформу!</p>
+            <p>Данные для входа:</p>
+            <ul>
+              <li>Email: ${data.email}</li>
+              <li>Роль: ${data.role}</li>
+            </ul>
           `,
-          text: `Новый пользователь зарегистрировался: ${data.username} (${data.email})`
+          text: `Регистрация завершена. Добро пожаловать, ${data.firstName || data.username}!`
         };
-        
+
       case 'user_blocked':
         return {
-          subject: `Пользователь заблокирован: ${data.username}`,
+          to: data.email,
+          from: process.env.FROM_EMAIL || 'noreply@platform.com',
+          subject: 'Ваш аккаунт заблокирован',
           html: `
-            <h2>Пользователь заблокирован</h2>
-            <p><strong>Имя пользователя:</strong> ${data.username}</p>
-            <p><strong>Email:</strong> ${data.email}</p>
-            <p><strong>Причина:</strong> ${data.reason}</p>
-            <p><strong>Заблокирован:</strong> ${data.blockedBy}</p>
-            <p><strong>Время:</strong> ${new Date().toLocaleString()}</p>
+            <h2>Аккаунт заблокирован</h2>
+            <p>Ваш аккаунт был заблокирован администратором.</p>
+            <p>Причина: ${data.reason || 'Не указана'}</p>
+            <p>Для получения дополнительной информации обратитесь в службу поддержки.</p>
           `,
-          text: `Пользователь заблокирован: ${data.username}. Причина: ${data.reason}`
+          text: `Ваш аккаунт заблокирован. Причина: ${data.reason || 'Не указана'}`
         };
-        
+
       case 'new_device_login':
         return {
-          subject: `Вход с нового устройства: ${data.username}`,
+          to: data.email,
+          from: process.env.FROM_EMAIL || 'noreply@platform.com',
+          subject: 'Вход с нового устройства',
           html: `
-            <h2>Вход с нового устройства</h2>
-            <p><strong>Пользователь:</strong> ${data.username}</p>
-            <p><strong>IP адрес:</strong> ${metadata?.ipAddress || 'Неизвестно'}</p>
-            <p><strong>User Agent:</strong> ${metadata?.userAgent || 'Неизвестно'}</p>
-            <p><strong>Время:</strong> ${new Date().toLocaleString()}</p>
+            <h2>Обнаружен вход с нового устройства</h2>
+            <p>Зафиксирован вход в ваш аккаунт с нового устройства:</p>
+            <ul>
+              <li>IP адрес: ${data.ip}</li>
+              <li>Время: ${new Date().toLocaleString('ru-RU')}</li>
+              <li>User Agent: ${data.userAgent || 'Неизвестно'}</li>
+            </ul>
+            <p>Если это были не вы, немедленно обратитесь в службу поддержки.</p>
           `,
-          text: `Вход с нового устройства: ${data.username} с IP ${metadata?.ipAddress}`
+          text: `Вход с нового устройства. IP: ${data.ip}, Время: ${new Date().toLocaleString('ru-RU')}`
         };
-        
-      case 'fraud_alert':
+
+      case 'fraud_detected':
         return {
-          subject: `🚨 Фрод-алерт: ${data.type}`,
+          to: process.env.ADMIN_EMAIL || 'admin@platform.com',
+          from: process.env.FROM_EMAIL || 'noreply@platform.com',
+          subject: 'Обнаружена подозрительная активность',
           html: `
-            <h2 style="color: red;">Обнаружена подозрительная активность</h2>
-            <p><strong>Тип алерта:</strong> ${data.type}</p>
-            <p><strong>Пользователь:</strong> ${data.username}</p>
-            <p><strong>Серьезность:</strong> ${data.severity}</p>
-            <p><strong>Описание:</strong> ${data.description}</p>
-            <p><strong>IP адрес:</strong> ${metadata?.ipAddress || 'Неизвестно'}</p>
-            <p><strong>Время:</strong> ${new Date().toLocaleString()}</p>
+            <h2>Fraud Alert</h2>
+            <p>Обнаружена подозрительная активность:</p>
+            <ul>
+              <li>Пользователь: ${data.userId}</li>
+              <li>Тип: ${data.fraudType}</li>
+              <li>Описание: ${data.description}</li>
+              <li>IP: ${data.ip}</li>
+              <li>Время: ${new Date().toLocaleString('ru-RU')}</li>
+            </ul>
           `,
-          text: `Фрод-алерт: ${data.type} для пользователя ${data.username}`
+          text: `Fraud Alert: ${data.fraudType} от пользователя ${data.userId}`
         };
-        
+
       default:
-        return {
-          subject: `Системное уведомление: ${type}`,
-          html: `<p>Системное событие: ${type}</p><pre>${JSON.stringify(data, null, 2)}</pre>`,
-          text: `Системное событие: ${type}`
-        };
+        return null;
     }
   }
 
-  private generateTelegramMessage(event: NotificationEvent): string {
-    const { type, data, metadata } = event;
-    
-    switch (type) {
-      case 'user_registration':
-        return `
-🆕 <b>Новая регистрация</b>
-👤 Пользователь: ${data.username}
-📧 Email: ${data.email}
-🎭 Роль: ${data.role}
-🌐 IP: ${metadata?.ipAddress || 'Неизвестно'}
-⏰ ${new Date().toLocaleString()}
-        `.trim();
-        
-      case 'user_blocked':
-        return `
-🚫 <b>Пользователь заблокирован</b>
-👤 Пользователь: ${data.username}
-📧 Email: ${data.email}
-⚠️ Причина: ${data.reason}
-👮 Заблокирован: ${data.blockedBy}
-⏰ ${new Date().toLocaleString()}
-        `.trim();
-        
-      case 'new_device_login':
-        return `
-🔐 <b>Вход с нового устройства</b>
-👤 Пользователь: ${data.username}
-🌐 IP: ${metadata?.ipAddress || 'Неизвестно'}
-💻 Устройство: ${metadata?.userAgent || 'Неизвестно'}
-⏰ ${new Date().toLocaleString()}
-        `.trim();
-        
-      case 'fraud_alert':
-        return `
-🚨 <b>ФРОД-АЛЕРТ</b>
-⚠️ Тип: ${data.type}
-👤 Пользователь: ${data.username}
-🔥 Серьезность: ${data.severity}
-📝 ${data.description}
-🌐 IP: ${metadata?.ipAddress || 'Неизвестно'}
-⏰ ${new Date().toLocaleString()}
-        `.trim();
-        
-      default:
-        return `📊 Системное событие: ${type}`;
+  getNotifications(userId?: string): NotificationEvent[] {
+    if (userId) {
+      return this.notifications.filter(n => n.userId === userId);
     }
+    return this.notifications;
   }
 
-  private async logEvent(event: NotificationEvent): Promise<void> {
-    try {
-      // Log to console for now - in production, save to database
-      console.log('Event logged:', {
-        type: event.type,
-        userId: event.userId,
-        timestamp: new Date().toISOString(),
-        data: event.data
-      });
-    } catch (error) {
-      console.error('Event logging error:', error);
+  clearNotifications(userId?: string): void {
+    if (userId) {
+      this.notifications = this.notifications.filter(n => n.userId !== userId);
+    } else {
+      this.notifications = [];
     }
-  }
-
-  updateSettings(newSettings: Partial<NotificationSettings>): void {
-    this.settings = { ...this.settings, ...newSettings };
-  }
-
-  getSettings(): NotificationSettings {
-    return this.settings;
   }
 }
 
-export const notificationService = new NotificationService();
-
-// Helper functions for common notifications
-export const notifyUserRegistration = (userData: any, metadata?: any) => {
-  return notificationService.sendNotification({
-    type: 'user_registration',
-    userId: userData.id,
-    data: userData,
-    metadata
-  });
-};
-
-export const notifyUserBlocked = (userData: any, reason: string, blockedBy: string, metadata?: any) => {
-  return notificationService.sendNotification({
-    type: 'user_blocked',
-    userId: userData.id,
-    data: { ...userData, reason, blockedBy },
-    metadata
-  });
-};
-
-export const notifyNewDeviceLogin = (userData: any, metadata?: any) => {
-  return notificationService.sendNotification({
-    type: 'new_device_login',
-    userId: userData.id,
-    data: userData,
-    metadata
-  });
-};
-
-export const notifyFraudAlert = (alertData: any, metadata?: any) => {
-  return notificationService.sendNotification({
-    type: 'fraud_alert',
-    userId: alertData.userId,
-    data: alertData,
-    metadata
-  });
-};
+export const notificationService = NotificationService.getInstance();

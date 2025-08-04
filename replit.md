@@ -1,6 +1,14 @@
 # Overview
 This platform is a comprehensive affiliate marketing system designed for three user types: super admins, advertisers, and affiliates. It offers white-label capabilities, allowing advertisers to brand the interface for their partners. Key features include a multi-role dashboard with role-based access control, real-time analytics, financial management, fraud detection, and robust tracking. The system supports multiple languages (English and Russian), KYC verification, postback handling, and detailed statistics. Enhanced analytics include comprehensive metrics tracking: Уники (Unique Users), CR$ (Conversion Revenue), EPC$ (Earnings Per Click), REG (Registrations), DEP (Deposits), GEO (Geographic breakdown), Фрод-Отклонение (Fraud Rejects), and Партнер (Partners). The project aims to provide a powerful, customizable, and efficient solution for managing affiliate marketing campaigns, enhancing business vision with strong market potential for scalable growth.
 
+## Security & Monitoring (Added Aug 4, 2025)
+- **Enhanced Security**: IP blacklisting, rate limiting, login attempt protection with automatic blocking
+- **2FA Integration**: Complete two-factor authentication system with email delivery
+- **Real-time Notifications**: Automated email notifications for registrations, security events, fraud detection
+- **Audit Logging**: Comprehensive audit trail with action tracking, IP logging, and success/failure recording
+- **Fraud Detection**: Pattern recognition for suspicious activities, device tracking, VPN detection
+- **Device Monitoring**: New device login notifications and device fingerprinting
+
 ## Performance Optimizations (Added Aug 4, 2025)
 - **Server-side**: Added compression middleware, helmet security, rate limiting, and connection pooling
 - **Database**: Implemented query caching system with TTL-based invalidation and optimized connection pooling

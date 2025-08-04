@@ -16,7 +16,8 @@ const twoFactorCodes = new Map<string, {
 // Clean expired codes
 setInterval(() => {
   const now = new Date();
-  for (const [key, value] of twoFactorCodes.entries()) {
+  const entries = Array.from(twoFactorCodes.entries());
+  for (const [key, value] of entries) {
     if (value.expiresAt < now) {
       twoFactorCodes.delete(key);
     }

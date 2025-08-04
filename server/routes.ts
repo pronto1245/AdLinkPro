@@ -8,6 +8,9 @@ import { eq } from "drizzle-orm";
 import { db, queryCache } from "./db";
 import { z } from "zod";
 import express from "express";
+import { randomUUID } from "crypto";
+import { notificationService } from "./services/notification";
+import { auditLog, checkIPBlacklist, rateLimiter, loginRateLimiter, recordFailedLogin, trackDevice, detectFraud, getAuditLogs } from "./middleware/security";
 
 // Extend Express Request to include user property
 declare global {
@@ -103,9 +106,17 @@ const requireUserAccess = async (req: Request, res: Response, next: NextFunction
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.use(express.json());
+  
+  // Security middleware (relaxed limits for development)
+  app.use(checkIPBlacklist);
+  app.use(rateLimiter(15 * 60 * 1000, 1000)); // 1000 requests per 15 minutes for development
+  
+  // Add 2FA auth routes
+  const authRoutes = await import('./routes/auth');
+  app.use('/api/auth', authRoutes.default);
 
   // Auth routes
-  app.post("/api/auth/login", async (req, res) => {
+  app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
     try {
       const { username, password } = req.body;
       
@@ -122,8 +133,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isValidPassword = await bcrypt.compare(password, user.password);
       
       if (!isValidPassword) {
+        recordFailedLogin(req);
+        auditLog(req, 'LOGIN_FAILED', undefined, false, { username });
         return res.status(401).json({ error: "Invalid credentials" });
       }
+      
+      // Track device and send notifications
+      await trackDevice(req, user.id);
+      auditLog(req, 'LOGIN_SUCCESS', undefined, true, { username, userId: user.id });
 
       const token = jwt.sign(
         { 
@@ -164,20 +181,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userData = insertUserSchema.parse(req.body);
       
       // Check if user already exists
-      const existingUser = await storage.getUserByUsername(userData.username) || 
-                          await storage.getUserByEmail(userData.email);
+      const existingUser = await storage.getUserByUsername(userData.username as string) || 
+                          await storage.getUserByEmail(userData.email as string);
       
       if (existingUser) {
         return res.status(400).json({ error: "User already exists" });
       }
 
       // Hash password
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      const hashedPassword = await bcrypt.hash(userData.password as string, 10);
       
       const user = await storage.createUser({
         ...userData,
         password: hashedPassword,
       });
+      
+      // Send registration notification
+      await notificationService.sendNotification({
+        type: 'user_registration',
+        userId: user.id,
+        data: {
+          email: user.email,
+          username: user.username,
+          firstName: user.firstName,
+          role: user.role
+        },
+        timestamp: new Date()
+      });
+      
+      // Detect fraud patterns
+      detectFraud(req, 'registration', { email: user.email, role: user.role });
+      auditLog(req, 'USER_REGISTRATION', undefined, true, { userId: user.id, username: user.username });
 
       const token = jwt.sign(
         { 
@@ -281,8 +315,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userData = insertUserSchema.parse(req.body);
       
       // Check if user already exists
-      const existingUser = await storage.getUserByUsername(userData.username) || 
-                          await storage.getUserByEmail(userData.email);
+      const existingUser = await storage.getUserByUsername(userData.username as string) || 
+                          await storage.getUserByEmail(userData.email as string);
       
       if (existingUser) {
         return res.status(400).json({ error: "User already exists" });
@@ -295,16 +329,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(403).json({ error: "Advertisers can only create staff and affiliate users" });
         }
         // Set owner to current advertiser
-        userData.ownerId = authUser.id || null;
+        userData.ownerId = authUser.id;
       } else if (authUser.role === 'super_admin') {
         // Super admin can create anyone but set proper ownership
         if (userData.role === 'advertiser') {
-          userData.ownerId = authUser.id || null; // Owner is super admin
+          userData.ownerId = authUser.id; // Owner is super admin
         }
       }
 
       // Hash password
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      const hashedPassword = await bcrypt.hash(userData.password as string, 10);
       
       const user = await storage.createUser({
         ...userData,
@@ -345,10 +379,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (offerIds.length > 0) {
             offers = await storage.getOffers();
-            offers = offers.filter(offer => offerIds.includes(offer.id) || !offer.isPrivate);
+            offers = offers.filter((offer: any) => offerIds.includes(offer.id) || !offer.isPrivate);
           } else {
             offers = await storage.getOffers();
-            offers = offers.filter(offer => !offer.isPrivate);
+            offers = offers.filter((offer: any) => !offer.isPrivate);
           }
         } else if (authUser.role === 'staff') {
           // Staff can see offers of their owner (the advertiser who created them)
@@ -739,14 +773,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userData = insertUserSchema.parse(req.body);
       
       // Check if user already exists
-      const existingUser = await storage.getUserByUsername(userData.username) || 
-                          await storage.getUserByEmail(userData.email);
+      const existingUser = await storage.getUserByUsername(userData.username as string) || 
+                          await storage.getUserByEmail(userData.email as string);
       
       if (existingUser) {
         return res.status(400).json({ error: "User already exists" });
       }
 
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      const hashedPassword = await bcrypt.hash(userData.password as string, 10);
       const user = await storage.createUser({
         ...userData,
         password: hashedPassword,
@@ -1698,47 +1732,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Enhanced user management routes
-  
-  // Create user
-  app.post('/api/admin/users', authenticateToken, requireRole(['super_admin']), async (req, res) => {
-    try {
-      const { username, email, password, role, firstName, lastName, country } = req.body;
-      
-      if (!username || !email || !password) {
-        return res.status(400).json({ error: "Username, email, and password are required" });
-      }
-
-      // Check if user already exists
-      const existingUser = await storage.getUserByUsername(username) || await storage.getUserByEmail(email);
-      if (existingUser) {
-        return res.status(400).json({ error: "User already exists" });
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-      
-      const userData = {
-        id: randomUUID(),
-        username,
-        email,
-        password: hashedPassword,
-        role: role || 'affiliate',
-        firstName,
-        lastName,
-        country,
-        isActive: true,
-        ownerId: req.user!.id,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      const user = await storage.createUser(userData as any);
-      res.status(201).json(user);
-    } catch (error: any) {
-      console.error("Create user error:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
+  // Enhanced user management routes (removed duplicate)
 
   // Update user
   app.patch('/api/admin/users/:id', authenticateToken, requireRole(['super_admin']), async (req, res) => {
@@ -1941,43 +1935,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Bulk block users
-  app.post('/api/admin/users/bulk-block', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+  // Security and monitoring endpoints
+  app.get('/api/admin/audit-logs', authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
-      const { userIds, reason } = req.body;
-      const blockedBy = getAuthenticatedUser(req).id;
+      const { userId, action, fromDate, toDate, limit } = req.query;
       
-      const result = await storage.bulkBlockUsers(userIds, reason, blockedBy);
-      res.json(result);
-    } catch (error: any) {
-      console.error("Bulk block users error:", error);
+      const filters: any = {};
+      if (userId) filters.userId = userId as string;
+      if (action) filters.action = action as string;
+      if (fromDate) filters.fromDate = new Date(fromDate as string);
+      if (toDate) filters.toDate = new Date(toDate as string);
+      if (limit) filters.limit = parseInt(limit as string);
+      
+      const logs = getAuditLogs(filters);
+      auditLog(req, 'AUDIT_LOGS_VIEWED', undefined, true, { filtersApplied: Object.keys(filters) });
+      res.json(logs);
+    } catch (error) {
+      console.error("Get audit logs error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
 
-  // Bulk unblock users
-  app.post('/api/admin/users/bulk-unblock', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+  app.get('/api/admin/notifications', authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
-      const { userIds } = req.body;
-      
-      const result = await storage.bulkUnblockUsers(userIds);
-      res.json(result);
-    } catch (error: any) {
-      console.error("Bulk unblock users error:", error);
+      const { userId } = req.query;
+      const notifications = notificationService.getNotifications(userId as string);
+      auditLog(req, 'NOTIFICATIONS_VIEWED', undefined, true, { targetUserId: userId });
+      res.json(notifications);
+    } catch (error) {
+      console.error("Get notifications error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
 
-  // Bulk delete users
-  app.post('/api/admin/users/bulk-delete', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+  app.delete('/api/admin/notifications', authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
-      const { userIds, hardDelete } = req.body;
-      const deletedBy = getAuthenticatedUser(req).id;
-      
-      const result = await storage.bulkDeleteUsers(userIds, hardDelete, deletedBy);
-      res.json(result);
-    } catch (error: any) {
-      console.error("Bulk delete users error:", error);
+      const { userId } = req.query;
+      notificationService.clearNotifications(userId as string);
+      auditLog(req, 'NOTIFICATIONS_CLEARED', undefined, true, { targetUserId: userId });
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Clear notifications error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
