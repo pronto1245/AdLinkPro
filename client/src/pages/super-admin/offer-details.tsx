@@ -612,43 +612,6 @@ export default function OfferDetails() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Statistics */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5" />
-                  Статистика
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {statsData?.clicks || 0}
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Клики</div>
-                  </div>
-                  <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      {statsData?.conversions || 0}
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Конверсии</div>
-                  </div>
-                </div>
-                <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    {statsData?.cr ? `${statsData.cr}%` : '0%'}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">CR</div>
-                </div>
-                <div className="text-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                    ${statsData?.revenue || 0}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Доход</div>
-                </div>
-              </CardContent>
-            </Card>
 
 
 
@@ -730,6 +693,44 @@ export default function OfferDetails() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Statistics Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5" />
+                  Статистика
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {statsData?.clicks || 0}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Клики</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {statsData?.conversions || 0}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Конверсии</div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      {statsData?.cr ? `${statsData.cr}%` : '0%'}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">CR</div>
+                  </div>
+                  <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      ${statsData?.revenue || 0}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Доход</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
           </TabsContent>
