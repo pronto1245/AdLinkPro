@@ -159,9 +159,13 @@ export default function UsersManagement() {
       Object.entries(filters).forEach(([key, value]) => {
         if (value && value !== 'all') params.append(key, value.toString());
       });
-      return apiRequest(`/api/admin/users?${params.toString()}`, {
-        method: 'GET'
+      const response = await fetch(`/api/admin/users?${params.toString()}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
       });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      return response.json();
     }
   });
 
