@@ -108,6 +108,19 @@ interface SmartAlert {
   resolvedBy?: string;
 }
 
+// Helper functions
+const getFraudTypeLabel = (type: string) => {
+  const labels = {
+    'ip_fraud': 'IP Фрод',
+    'device_fraud': 'Фрод устройств',
+    'geo_fraud': 'Геофрод',
+    'anomaly_ctr': 'Аномальный CTR',
+    'click_fraud': 'Фрод кликов',
+    'conversion_fraud': 'Фрод конверсий'
+  };
+  return labels[type as keyof typeof labels] || type;
+};
+
 const FraudDetectionPage = () => {
   const { user, token } = useAuth();
   const { isCollapsed } = useSidebar();
@@ -518,99 +531,908 @@ const FraudDetectionPage = () => {
               </TabsTrigger>
             </TabsList>
 
-            {/* Simple placeholder for all tabs */}
+            {/* Reports Tab */}
             <TabsContent value="reports" className="space-y-6">
+              {/* Context Alert for External Navigation */}
+              {(offerParam || userParam) && (
+                <Card className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-3">
+                      <AlertCircle className="w-5 h-5 text-blue-600" />
+                      <div>
+                        <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                          Фильтрация по {offerParam ? 'офферу' : 'пользователю'}
+                        </p>
+                        <p className="text-xs text-blue-600 dark:text-blue-300">
+                          Показаны отчёты для: {offerParam || userParam}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <Card>
                 <CardHeader>
-                  <CardTitle>Фрод-отчёты</CardTitle>
-                  <CardDescription>Анализ подозрительной активности</CardDescription>
+                  <CardTitle className="flex items-center space-x-2">
+                    <FileText className="w-5 h-5" />
+                    <span>Фрод-отчёты</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Анализ подозрительной активности и мошеннических действий
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p>Загрузка данных...</p>
+                  {/* Filters */}
+                  <div className="flex flex-wrap gap-4 mb-6">
+                    <div className="flex-1 min-w-[200px]">
+                      <Input
+                        placeholder="Поиск по IP, ID..."
+                        value={reportFilters.search}
+                        onChange={(e) => setReportFilters(prev => ({ ...prev, search: e.target.value }))}
+                        className="w-full"
+                        data-testid="search-reports"
+                      />
+                    </div>
+                    <Select value={reportFilters.type} onValueChange={(value) => setReportFilters(prev => ({ ...prev, type: value }))}>
+                      <SelectTrigger className="w-[150px]" data-testid="filter-type">
+                        <SelectValue placeholder="Тип" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Все типы</SelectItem>
+                        <SelectItem value="ip_fraud">IP Фрод</SelectItem>
+                        <SelectItem value="device_fraud">Фрод устройств</SelectItem>
+                        <SelectItem value="geo_fraud">Геофрод</SelectItem>
+                        <SelectItem value="anomaly_ctr">Аномальный CTR</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={reportFilters.severity} onValueChange={(value) => setReportFilters(prev => ({ ...prev, severity: value }))}>
+                      <SelectTrigger className="w-[150px]" data-testid="filter-severity">
+                        <SelectValue placeholder="Риск" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Все уровни</SelectItem>
+                        <SelectItem value="low">Низкий</SelectItem>
+                        <SelectItem value="medium">Средний</SelectItem>
+                        <SelectItem value="high">Высокий</SelectItem>
+                        <SelectItem value="critical">Критический</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={reportFilters.status} onValueChange={(value) => setReportFilters(prev => ({ ...prev, status: value }))}>
+                      <SelectTrigger className="w-[150px]" data-testid="filter-status">
+                        <SelectValue placeholder="Статус" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Все статусы</SelectItem>
+                        <SelectItem value="pending">На рассмотрении</SelectItem>
+                        <SelectItem value="reviewing">В обработке</SelectItem>
+                        <SelectItem value="confirmed">Подтверждён</SelectItem>
+                        <SelectItem value="rejected">Отклонён</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Reports Table */}
+                  <div className="border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Тип</TableHead>
+                          <TableHead>Серьёзность</TableHead>
+                          <TableHead>IP Адрес</TableHead>
+                          <TableHead>Страна</TableHead>
+                          <TableHead>Статус</TableHead>
+                          <TableHead>Дата</TableHead>
+                          <TableHead>Действия</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {fraudReports?.map((report) => (
+                          <TableRow key={report.id}>
+                            <TableCell className="font-medium">{report.id}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">
+                                {getFraudTypeLabel(report.type)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                report.severity === 'critical' ? 'destructive' :
+                                report.severity === 'high' ? 'destructive' :
+                                report.severity === 'medium' ? 'default' : 'secondary'
+                              } className="text-xs">
+                                {report.severity === 'low' && 'Низкий'}
+                                {report.severity === 'medium' && 'Средний'}
+                                {report.severity === 'high' && 'Высокий'}
+                                {report.severity === 'critical' && 'Критический'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-mono text-sm">{report.ipAddress}</TableCell>
+                            <TableCell>{report.country}</TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                report.status === 'confirmed' ? 'destructive' :
+                                report.status === 'rejected' ? 'secondary' :
+                                report.status === 'resolved' ? 'default' : 'outline'
+                              } className="text-xs">
+                                {report.status === 'pending' && 'Ожидает'}
+                                {report.status === 'reviewing' && 'Проверка'}
+                                {report.status === 'confirmed' && 'Подтверждён'}
+                                {report.status === 'rejected' && 'Отклонён'}
+                                {report.status === 'resolved' && 'Решён'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-gray-500">
+                              {new Date(report.createdAt).toLocaleDateString('ru-RU', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedReport(report);
+                                    setReviewDialogOpen(true);
+                                  }}
+                                  data-testid={`review-report-${report.id}`}
+                                  title="Рассмотреть отчёт"
+                                >
+                                  <Eye className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedReport(report);
+                                    setBlockIpDialogOpen(true);
+                                  }}
+                                  data-testid={`block-ip-${report.id}`}
+                                  title="Заблокировать IP"
+                                >
+                                  <Ban className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
+            {/* Analytics Tab */}
             <TabsContent value="analytics" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Аналитика</CardTitle>
-                  <CardDescription>Статистика и метрики</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p>Загрузка данных...</p>
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Блокировано сегодня</p>
+                        <p className="text-2xl font-bold">127</p>
+                      </div>
+                      <Shield className="w-8 h-8 text-red-600" />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">+12% за сутки</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Точность детекции</p>
+                        <p className="text-2xl font-bold">94.2%</p>
+                      </div>
+                      <Target className="w-8 h-8 text-green-600" />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">+0.3% за неделю</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Средний риск-скор</p>
+                        <p className="text-2xl font-bold">2.8</p>
+                      </div>
+                      <TrendingUp className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">-0.1 за сутки</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Активные правила</p>
+                        <p className="text-2xl font-bold">{fraudRules?.length || 0}</p>
+                      </div>
+                      <Settings className="w-8 h-8 text-purple-600" />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Всего правил</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Топ стран по фроду</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {['Россия', 'Украина', 'Беларусь', 'Казахстан', 'Германия'].map((country, index) => (
+                        <div key={country} className="flex items-center justify-between">
+                          <span className="text-sm">{country}</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-24 bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-red-600 h-2 rounded-full" 
+                                style={{ width: `${85 - index * 15}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-xs text-gray-500 w-8">{85 - index * 15}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Распределение по типам фрода</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {[
+                        { type: 'IP Фрод', count: 45, color: 'bg-red-500' },
+                        { type: 'Фрод устройств', count: 32, color: 'bg-orange-500' },
+                        { type: 'Геофрод', count: 28, color: 'bg-yellow-500' },
+                        { type: 'Аномальный CTR', count: 18, color: 'bg-blue-500' },
+                        { type: 'Фрод кликов', count: 12, color: 'bg-purple-500' }
+                      ].map((item) => (
+                        <div key={item.type} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
+                            <span className="text-sm">{item.type}</span>
+                          </div>
+                          <span className="text-sm font-medium">{item.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
+            {/* IP Analysis Tab */}
             <TabsContent value="ip-analysis" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>IP Анализ</CardTitle>
-                  <CardDescription>Анализ IP-адресов</CardDescription>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Globe className="w-5 h-5" />
+                    <span>IP Анализ</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Анализ IP-адресов и определение подозрительной активности
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p>Загрузка данных...</p>
+                  <div className="space-y-6">
+                    {/* IP Search */}
+                    <div className="flex space-x-4">
+                      <div className="flex-1">
+                        <Input
+                          placeholder="Введите IP адрес для анализа (например: 192.168.1.1)"
+                          className="w-full"
+                          data-testid="ip-search-input"
+                        />
+                      </div>
+                      <Button data-testid="analyze-ip-btn" title="Анализировать IP">
+                        <Search className="w-4 h-4 mr-2" />
+                        Анализировать
+                      </Button>
+                    </div>
+
+                    {/* IP Analysis Results */}
+                    <div className="border rounded-lg">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>IP Адрес</TableHead>
+                            <TableHead>Страна</TableHead>
+                            <TableHead>Провайдер</TableHead>
+                            <TableHead>Риск-скор</TableHead>
+                            <TableHead>Тип угрозы</TableHead>
+                            <TableHead>Последняя активность</TableHead>
+                            <TableHead>Действия</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {ipAnalysis?.map((ip) => (
+                            <TableRow key={ip.id}>
+                              <TableCell className="font-mono text-sm">{ip.ipAddress}</TableCell>
+                              <TableCell>{ip.country}</TableCell>
+                              <TableCell className="text-sm">{ip.provider}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center space-x-2">
+                                  <span className={`text-sm font-medium ${
+                                    ip.riskScore >= 8 ? 'text-red-600' :
+                                    ip.riskScore >= 6 ? 'text-orange-600' :
+                                    ip.riskScore >= 4 ? 'text-yellow-600' : 'text-green-600'
+                                  }`}>
+                                    {ip.riskScore}/10
+                                  </span>
+                                  <div className="w-16 bg-gray-200 rounded-full h-2">
+                                    <div 
+                                      className={`h-2 rounded-full ${
+                                        ip.riskScore >= 8 ? 'bg-red-600' :
+                                        ip.riskScore >= 6 ? 'bg-orange-600' :
+                                        ip.riskScore >= 4 ? 'bg-yellow-600' : 'bg-green-600'
+                                      }`}
+                                      style={{ width: `${ip.riskScore * 10}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={
+                                  ip.threatType === 'proxy' || ip.threatType === 'vpn' ? 'destructive' :
+                                  ip.threatType === 'suspicious' ? 'default' : 'secondary'
+                                } className="text-xs">
+                                  {ip.threatType === 'clean' && 'Чистый'}
+                                  {ip.threatType === 'proxy' && 'Прокси'}
+                                  {ip.threatType === 'vpn' && 'VPN'}
+                                  {ip.threatType === 'suspicious' && 'Подозрительный'}
+                                  {ip.threatType === 'datacenter' && 'Дата-центр'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-sm text-gray-500">
+                                {new Date(ip.lastSeen).toLocaleDateString('ru-RU', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    data-testid={`view-ip-${ip.id}`}
+                                    title="Подробности IP"
+                                  >
+                                    <Eye className="w-3 h-3" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    data-testid={`block-ip-${ip.id}`}
+                                    title="Заблокировать IP"
+                                  >
+                                    <Ban className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
+            {/* Rules Tab */}
             <TabsContent value="rules" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Правила</CardTitle>
-                  <CardDescription>Управление правилами антифрода</CardDescription>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Settings className="w-5 h-5" />
+                      <span>Правила антифрода</span>
+                    </div>
+                    <Button 
+                      onClick={() => setCreateRuleDialogOpen(true)}
+                      data-testid="create-rule-btn"
+                      title="Создать правило"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Создать правило
+                    </Button>
+                  </CardTitle>
+                  <CardDescription>
+                    Управление правилами автоматического определения и блокировки фрода
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p>Загрузка данных...</p>
+                  <div className="space-y-4">
+                    {fraudRules?.map((rule) => (
+                      <div key={rule.id} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3">
+                              <Switch 
+                                checked={rule.isActive}
+                                data-testid={`toggle-rule-${rule.id}`}
+                              />
+                              <div>
+                                <h4 className="font-medium">{rule.name}</h4>
+                                <p className="text-sm text-gray-500">{rule.description}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-4 mt-2">
+                              <Badge variant={rule.isActive ? 'default' : 'secondary'} className="text-xs">
+                                {rule.isActive ? 'Активно' : 'Неактивно'}
+                              </Badge>
+                              <Badge variant={
+                                rule.severity === 'critical' ? 'destructive' :
+                                rule.severity === 'high' ? 'destructive' :
+                                rule.severity === 'medium' ? 'default' : 'secondary'
+                              } className="text-xs">
+                                {rule.severity === 'low' && 'Низкий риск'}
+                                {rule.severity === 'medium' && 'Средний риск'}
+                                {rule.severity === 'high' && 'Высокий риск'}
+                                {rule.severity === 'critical' && 'Критический риск'}
+                              </Badge>
+                              {rule.autoBlock && (
+                                <Badge variant="destructive" className="text-xs">
+                                  Автоблокировка
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              data-testid={`edit-rule-${rule.id}`}
+                              title="Редактировать правило"
+                            >
+                              <Edit className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              data-testid={`delete-rule-${rule.id}`}
+                              title="Удалить правило"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
+            {/* Integrations Tab */}
             <TabsContent value="integrations" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Интеграции</CardTitle>
-                  <CardDescription>Внешние сервисы</CardDescription>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Zap className="w-5 h-5" />
+                    <span>Интеграции третьих сторон</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Управление внешними сервисами антифрод-детекции
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p>Загрузка данных...</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {fraudServices?.map((service) => (
+                      <div key={service.id} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-3 h-3 rounded-full ${service.isActive ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                            <h4 className="font-medium">{service.serviceName}</h4>
+                          </div>
+                          <Switch 
+                            checked={service.isActive}
+                            data-testid={`toggle-service-${service.id}`}
+                          />
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">Успешность:</span>
+                            <span className={`font-medium ${service.successRate >= 95 ? 'text-green-600' : 'text-orange-600'}`}>
+                              {service.successRate}%
+                            </span>
+                          </div>
+                          
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">Время отклика:</span>
+                            <span className={`font-medium ${service.averageResponseTime <= 1000 ? 'text-green-600' : 'text-orange-600'}`}>
+                              {service.averageResponseTime}ms
+                            </span>
+                          </div>
+                          
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">Лимит запросов:</span>
+                            <span className="font-medium">{service.rateLimit}/мин</span>
+                          </div>
+                          
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">Последняя синхронизация:</span>
+                            <span className="font-medium">
+                              {new Date(service.lastSync).toLocaleDateString('ru-RU', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex space-x-2 mt-4 pt-4 border-t">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            data-testid={`test-service-${service.id}`}
+                            title="Тестировать подключение"
+                          >
+                            <Zap className="w-3 h-3 mr-2" />
+                            Тест
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            data-testid={`configure-service-${service.id}`}
+                            title="Настроить сервис"
+                          >
+                            <Settings className="w-3 h-3 mr-2" />
+                            Настройка
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
+            {/* Smart Alerts Tab */}
             <TabsContent value="alerts" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Smart-алерты</CardTitle>
-                  <CardDescription>Умные уведомления</CardDescription>
+                  <CardTitle className="flex items-center space-x-2">
+                    <AlertCircle className="w-5 h-5" />
+                    <span>Smart-алерты</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Умные уведомления о подозрительной активности и аномалиях
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p>Загрузка данных...</p>
+                  <div className="space-y-4">
+                    {smartAlerts?.map((alert) => (
+                      <div key={alert.id} className={`border rounded-lg p-4 ${
+                        alert.severity === 'critical' ? 'border-red-200 bg-red-50 dark:bg-red-900/20' :
+                        alert.severity === 'high' ? 'border-orange-200 bg-orange-50 dark:bg-orange-900/20' :
+                        alert.severity === 'medium' ? 'border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20' :
+                        'border-blue-200 bg-blue-50 dark:bg-blue-900/20'
+                      }`}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <div className={`w-3 h-3 rounded-full ${
+                                alert.severity === 'critical' ? 'bg-red-500' :
+                                alert.severity === 'high' ? 'bg-orange-500' :
+                                alert.severity === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
+                              }`}></div>
+                              <h4 className="font-medium">{alert.title}</h4>
+                              <Badge variant={
+                                alert.severity === 'critical' ? 'destructive' :
+                                alert.severity === 'high' ? 'destructive' :
+                                alert.severity === 'medium' ? 'default' : 'secondary'
+                              } className="text-xs">
+                                {alert.severity === 'low' && 'Низкий'}
+                                {alert.severity === 'medium' && 'Средний'}
+                                {alert.severity === 'high' && 'Высокий'}
+                                {alert.severity === 'critical' && 'Критический'}
+                              </Badge>
+                              {!alert.isResolved && (
+                                <Badge variant="destructive" className="text-xs">
+                                  Активный
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                              {alert.description}
+                            </p>
+                            
+                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                              <span>Порог: {JSON.stringify(alert.threshold)}</span>
+                              <span>Текущее: {JSON.stringify(alert.currentValue)}</span>
+                              <span>
+                                {new Date(alert.triggeredAt).toLocaleDateString('ru-RU', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                            
+                            {alert.autoActions.length > 0 && (
+                              <div className="mt-2">
+                                <span className="text-xs text-gray-500">Автодействия: </span>
+                                {alert.autoActions.map((action, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs mr-1">
+                                    {action}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="flex space-x-2">
+                            {!alert.isResolved && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                data-testid={`resolve-alert-${alert.id}`}
+                                title="Отметить как решённый"
+                              >
+                                <CheckCircle className="w-3 h-3" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              data-testid={`view-alert-${alert.id}`}
+                              title="Подробности алерта"
+                            >
+                              <Eye className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
+            {/* Blocks Tab */}
             <TabsContent value="blocks" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Ban className="w-5 h-5" />
+                      <span>IP Блокировки</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex space-x-2">
+                        <Input 
+                          placeholder="IP адрес для блокировки"
+                          className="flex-1"
+                          data-testid="block-ip-input"
+                        />
+                        <Button 
+                          size="sm"
+                          data-testid="add-ip-block"
+                          title="Заблокировать IP"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      
+                      <div className="text-sm text-gray-500">
+                        Активных блокировок: <span className="font-medium">45</span>
+                      </div>
+                      
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {['192.168.1.100', '10.0.0.50', '172.16.0.25', '203.0.113.15'].map((ip, index) => (
+                          <div key={ip} className="flex items-center justify-between p-2 border rounded">
+                            <span className="font-mono text-sm">{ip}</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              data-testid={`unblock-ip-${index}`}
+                              title="Разблокировать IP"
+                            >
+                              <Unlock className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Smartphone className="w-5 h-5" />
+                      <span>Блокировки устройств</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="text-sm text-gray-500">
+                        Заблокированных устройств: <span className="font-medium">23</span>
+                      </div>
+                      
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {['Device-ABC123', 'Device-XYZ789', 'Device-DEF456'].map((device, index) => (
+                          <div key={device} className="flex items-center justify-between p-2 border rounded">
+                            <span className="text-sm">{device}</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              data-testid={`unblock-device-${index}`}
+                              title="Разблокировать устройство"
+                            >
+                              <Unlock className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
               <Card>
                 <CardHeader>
-                  <CardTitle>Блокировки</CardTitle>
-                  <CardDescription>Управление блокировками</CardDescription>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Flag className="w-5 h-5" />
+                    <span>Геоблокировки</span>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p>Загрузка данных...</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {['США', 'Германия', 'Китай', 'Иран', 'КНДР', 'Турция'].map((country, index) => (
+                      <div key={country} className="flex items-center justify-between p-3 border rounded">
+                        <span className="text-sm">{country}</span>
+                        <Switch 
+                          defaultChecked={index < 3}
+                          data-testid={`toggle-geo-${country}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
+            {/* Settings Tab */}
             <TabsContent value="settings" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Основные настройки</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Автоматические блокировки</Label>
+                        <p className="text-xs text-gray-500">Блокировать IP автоматически при высоком риске</p>
+                      </div>
+                      <Switch defaultChecked data-testid="auto-block-toggle" />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Email уведомления</Label>
+                        <p className="text-xs text-gray-500">Отправлять уведомления о фроде на email</p>
+                      </div>
+                      <Switch defaultChecked data-testid="email-notifications-toggle" />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Real-time мониторинг</Label>
+                        <p className="text-xs text-gray-500">Мониторинг в реальном времени</p>
+                      </div>
+                      <Switch defaultChecked data-testid="realtime-monitoring-toggle" />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Пороговый риск-скор</Label>
+                      <Input 
+                        type="number" 
+                        defaultValue="7" 
+                        min="1" 
+                        max="10"
+                        data-testid="risk-threshold-input"
+                      />
+                      <p className="text-xs text-gray-500">Автоблокировка при превышении этого значения</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Настройки интеграций</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Таймаут запросов (мс)</Label>
+                      <Input 
+                        type="number" 
+                        defaultValue="5000"
+                        data-testid="request-timeout-input"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Повторные попытки</Label>
+                      <Input 
+                        type="number" 
+                        defaultValue="3"
+                        data-testid="retry-attempts-input"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Интервал обновления (сек)</Label>
+                      <Input 
+                        type="number" 
+                        defaultValue="60"
+                        data-testid="refresh-interval-input"
+                      />
+                    </div>
+                    
+                    <div className="pt-4">
+                      <Button className="w-full" data-testid="save-settings-btn" title="Сохранить настройки">
+                        <Save className="w-4 h-4 mr-2" />
+                        Сохранить настройки
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
               <Card>
                 <CardHeader>
-                  <CardTitle>Настройки</CardTitle>
-                  <CardDescription>Конфигурация системы</CardDescription>
+                  <CardTitle>Экспорт данных</CardTitle>
+                  <CardDescription>Экспорт фрод-данных в различных форматах</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p>Загрузка данных...</p>
+                  <div className="flex flex-wrap gap-4">
+                    <Button variant="outline" data-testid="export-excel-btn" title="Экспорт в Excel">
+                      <Download className="w-4 h-4 mr-2" />
+                      Excel
+                    </Button>
+                    <Button variant="outline" data-testid="export-json-btn" title="Экспорт в JSON">
+                      <Download className="w-4 h-4 mr-2" />
+                      JSON
+                    </Button>
+                    <Button variant="outline" data-testid="export-csv-btn" title="Экспорт в CSV">
+                      <Download className="w-4 h-4 mr-2" />
+                      CSV
+                    </Button>
+                    <Button variant="outline" data-testid="api-docs-btn" title="API документация">
+                      <FileText className="w-4 h-4 mr-2" />
+                      API Docs
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
