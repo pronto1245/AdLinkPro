@@ -782,50 +782,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const authUser = req.user!;
       console.log("Updating offer:", id, "for user:", authUser.id, authUser.username);
-      console.log("Update data:", JSON.stringify(req.body, null, 2));
       
-      // Define all allowed fields based on the schema
-      const allowedFields = [
-        'name', 'description', 'logo', 'category', 'vertical', 'goals',
-        'payout', 'payoutType', 'currency', 'countries', 'geoTargeting',
-        'landingPages', 'geoPricing', 'kpiConditions', 'trafficSources',
-        'allowedApps', 'dailyLimit', 'monthlyLimit', 'antifraudEnabled',
-        'autoApprovePartners', 'status', 'moderationStatus', 'moderationComment',
-        'trackingUrl', 'landingPageUrl', 'previewUrl', 'restrictions',
-        'fraudRestrictions', 'macros', 'kycRequired', 'isPrivate',
-        'smartlinkEnabled', 'isBlocked', 'blockedReason', 'isArchived',
-        'regionVisibility'
-      ];
+      // Build update object field by field to avoid timestamp issues
+      const updates: any = {};
       
-      const updateData: any = {};
+      // Text fields
+      if (req.body.name !== undefined) updates.name = req.body.name;
+      if (req.body.description !== undefined) updates.description = req.body.description;
+      if (req.body.logo !== undefined) updates.logo = req.body.logo;
+      if (req.body.category !== undefined) updates.category = req.body.category;
+      if (req.body.kpiConditions !== undefined) updates.kpiConditions = req.body.kpiConditions;
+      if (req.body.restrictions !== undefined) updates.restrictions = req.body.restrictions;
+      if (req.body.moderationComment !== undefined) updates.moderationComment = req.body.moderationComment;
       
-      // Only include allowed fields that have values
-      allowedFields.forEach(field => {
-        if (req.body[field] !== undefined) {
-          updateData[field] = req.body[field];
-        }
-      });
+      // Status fields
+      if (req.body.status !== undefined) updates.status = req.body.status;
+      if (req.body.payoutType !== undefined) updates.payoutType = req.body.payoutType;
+      if (req.body.currency !== undefined) updates.currency = req.body.currency;
       
-      // Handle special field mapping
-      if (req.body.allowedTrafficSources !== undefined) {
-        updateData.trafficSources = req.body.allowedTrafficSources;
-      }
+      // Boolean fields
+      if (req.body.antifraudEnabled !== undefined) updates.antifraudEnabled = Boolean(req.body.antifraudEnabled);
+      if (req.body.autoApprovePartners !== undefined) updates.autoApprovePartners = Boolean(req.body.autoApprovePartners);
+      if (req.body.kycRequired !== undefined) updates.kycRequired = Boolean(req.body.kycRequired);
+      if (req.body.isPrivate !== undefined) updates.isPrivate = Boolean(req.body.isPrivate);
+      if (req.body.smartlinkEnabled !== undefined) updates.smartlinkEnabled = Boolean(req.body.smartlinkEnabled);
       
-      console.log("Final update data:", JSON.stringify(updateData, null, 2));
+      // Numeric fields
+      if (req.body.dailyLimit !== undefined) updates.dailyLimit = req.body.dailyLimit ? parseInt(req.body.dailyLimit) : null;
+      if (req.body.monthlyLimit !== undefined) updates.monthlyLimit = req.body.monthlyLimit ? parseInt(req.body.monthlyLimit) : null;
       
-      // Check for any timestamp fields that might be causing issues
-      Object.keys(updateData).forEach(key => {
-        const value = updateData[key];
-        if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) {
-          console.log(`WARNING: Found potential timestamp string in field '${key}':`, value);
-          delete updateData[key]; // Remove problematic timestamp fields
-        }
-      });
+      // JSON fields
+      if (req.body.landingPages !== undefined) updates.landingPages = req.body.landingPages;
+      if (req.body.allowedApps !== undefined) updates.allowedApps = req.body.allowedApps;
+      if (req.body.allowedTrafficSources !== undefined) updates.trafficSources = req.body.allowedTrafficSources;
+      if (req.body.trafficSources !== undefined) updates.trafficSources = req.body.trafficSources;
       
-      // Update offer directly in database
+      console.log("Updates to apply:", Object.keys(updates));
+      
+      // Update the offer
       const [updatedOffer] = await db
         .update(offers)
-        .set(updateData)
+        .set(updates)
         .where(eq(offers.id, id))
         .returning();
       
@@ -833,7 +830,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Оффер не найден" });
       }
       
-      console.log("Updated offer:", updatedOffer);
       res.json(updatedOffer);
     } catch (error) {
       console.error("Update offer error:", error);
