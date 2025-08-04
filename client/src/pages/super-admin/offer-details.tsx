@@ -54,14 +54,7 @@ export default function OfferDetails() {
   
   // Analytics pagination state
   const [analyticsPages, setAnalyticsPages] = useState({
-    uniques: 1,
-    cr_value: 1,
-    epc_value: 1,
-    registrations: 1,
-    deposits: 1,
-    geo: 1,
-    fraud_rejects: 1,
-    partners: 1
+    uniques: 1
   });
   
   // Edit offer state
@@ -1349,624 +1342,130 @@ export default function OfferDetails() {
               </Card>
             </div>
 
-            {/* Analytics Tables with Pagination */}
-            <div className="space-y-6">
-              {/* Уники (Unique Users) Table */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    {t('unique_users')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Дата</TableHead>
-                        <TableHead>Уники</TableHead>
-                        <TableHead>Источник</TableHead>
-                        <TableHead>Гео</TableHead>
-                        <TableHead>Устройство</TableHead>
-                        <TableHead>Конверсии</TableHead>
-                        <TableHead>CR%</TableHead>
-                        <TableHead>Доход</TableHead>
-                        <TableHead>EPC</TableHead>
-                        <TableHead>Статус</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {Array.from({ length: 10 }, (_, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{new Date(Date.now() - index * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU')}</TableCell>
-                          <TableCell className="font-medium">{Math.floor(Math.random() * 500) + 100}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
-                              Facebook
-                            </Badge>
-                          </TableCell>
-                          <TableCell>🇺🇸 US</TableCell>
-                          <TableCell>Desktop</TableCell>
-                          <TableCell>{Math.floor(Math.random() * 50) + 5}</TableCell>
-                          <TableCell>{(Math.random() * 10 + 2).toFixed(1)}%</TableCell>
-                          <TableCell>${(Math.random() * 1000 + 100).toFixed(2)}</TableCell>
-                          <TableCell>${(Math.random() * 5 + 0.5).toFixed(3)}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                              Активен
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  <div className="flex justify-center mt-4 gap-2">
-                    {analyticsPages.uniques > 1 && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setAnalyticsPages(prev => ({...prev, uniques: prev.uniques - 1}))}
-                      >
-                        ← Страница {analyticsPages.uniques - 1}
-                      </Button>
-                    )}
-                    <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
-                      Страница {analyticsPages.uniques}
-                    </span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setAnalyticsPages(prev => ({...prev, uniques: prev.uniques + 1}))}
-                    >
-                      Страница {analyticsPages.uniques + 1} →
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* CR$ (Conversion Revenue) Table */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
-                    {t('cr_value')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Дата</TableHead>
-                        <TableHead>Конверсии</TableHead>
-                        <TableHead>Доход</TableHead>
-                        <TableHead>CR$</TableHead>
-                        <TableHead>Партнер</TableHead>
-                        <TableHead>Гео</TableHead>
-                        <TableHead>Источник</TableHead>
-                        <TableHead>Модель</TableHead>
-                        <TableHead>Выплата</TableHead>
-                        <TableHead>Прибыль</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {Array.from({ length: 10 }, (_, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{new Date(Date.now() - index * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU')}</TableCell>
-                          <TableCell className="font-medium">{Math.floor(Math.random() * 30) + 5}</TableCell>
-                          <TableCell>${(Math.random() * 2000 + 500).toFixed(2)}</TableCell>
-                          <TableCell className="font-bold text-green-600 dark:text-green-400">
-                            ${(Math.random() * 100 + 20).toFixed(2)}
-                          </TableCell>
-                          <TableCell>Партнер {index + 1}</TableCell>
-                          <TableCell>🇺🇸 US</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">
-                              Native
-                            </Badge>
-                          </TableCell>
-                          <TableCell>CPA</TableCell>
-                          <TableCell>${(Math.random() * 50 + 10).toFixed(2)}</TableCell>
-                          <TableCell className="text-green-600 dark:text-green-400">
-                            +${(Math.random() * 200 + 50).toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  <div className="flex justify-center mt-4 gap-2">
-                    {analyticsPages.cr_value > 1 && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setAnalyticsPages(prev => ({...prev, cr_value: prev.cr_value - 1}))}
-                      >
-                        ← Страница {analyticsPages.cr_value - 1}
-                      </Button>
-                    )}
-                    <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
-                      Страница {analyticsPages.cr_value}
-                    </span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setAnalyticsPages(prev => ({...prev, cr_value: prev.cr_value + 1}))}
-                    >
-                      Страница {analyticsPages.cr_value + 1} →
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* EPC$ (Earnings Per Click) Table */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                    {t('epc_value')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Дата</TableHead>
-                        <TableHead>Клики</TableHead>
-                        <TableHead>Доход</TableHead>
-                        <TableHead>EPC$</TableHead>
-                        <TableHead>Источник</TableHead>
-                        <TableHead>Креатив</TableHead>
-                        <TableHead>Устройство</TableHead>
-                        <TableHead>Время</TableHead>
-                        <TableHead>CTR%</TableHead>
-                        <TableHead>Качество</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {Array.from({ length: 10 }, (_, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{new Date(Date.now() - index * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU')}</TableCell>
-                          <TableCell className="font-medium">{Math.floor(Math.random() * 1000) + 200}</TableCell>
-                          <TableCell>${(Math.random() * 800 + 100).toFixed(2)}</TableCell>
-                          <TableCell className="font-bold text-purple-600 dark:text-purple-400">
-                            ${(Math.random() * 2 + 0.1).toFixed(3)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
-                              Google
-                            </Badge>
-                          </TableCell>
-                          <TableCell>Banner #{index + 1}</TableCell>
-                          <TableCell>Mobile</TableCell>
-                          <TableCell>{Math.floor(Math.random() * 12) + 8}:00</TableCell>
-                          <TableCell>{(Math.random() * 5 + 1).toFixed(1)}%</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">
-                              Высокое
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  <div className="flex justify-center mt-4 gap-2">
-                    {analyticsPages.epc_value > 1 && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setAnalyticsPages(prev => ({...prev, epc_value: prev.epc_value - 1}))}
-                      >
-                        ← Страница {analyticsPages.epc_value - 1}
-                      </Button>
-                    )}
-                    <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
-                      Страница {analyticsPages.epc_value}
-                    </span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setAnalyticsPages(prev => ({...prev, epc_value: prev.epc_value + 1}))}
-                    >
-                      Страница {analyticsPages.epc_value + 1} →
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* REG (Registrations) Table */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <UserCheck className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-                    {t('registrations')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Дата</TableHead>
-                        <TableHead>Регистрации</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Телефон</TableHead>
-                        <TableHead>Источник</TableHead>
-                        <TableHead>Гео</TableHead>
-                        <TableHead>Время</TableHead>
-                        <TableHead>Устройство</TableHead>
-                        <TableHead>Подтверждены</TableHead>
-                        <TableHead>Активны</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {Array.from({ length: 10 }, (_, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{new Date(Date.now() - index * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU')}</TableCell>
-                          <TableCell className="font-medium">{Math.floor(Math.random() * 80) + 20}</TableCell>
-                          <TableCell>{Math.floor(Math.random() * 60) + 15}</TableCell>
-                          <TableCell>{Math.floor(Math.random() * 70) + 18}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                              Email
-                            </Badge>
-                          </TableCell>
-                          <TableCell>🇩🇪 DE</TableCell>
-                          <TableCell>{Math.floor(Math.random() * 12) + 8}:00-{Math.floor(Math.random() * 12) + 8}:59</TableCell>
-                          <TableCell>Desktop</TableCell>
-                          <TableCell>{Math.floor(Math.random() * 50) + 40}</TableCell>
-                          <TableCell className="text-green-600 dark:text-green-400">
-                            {Math.floor(Math.random() * 35) + 25}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  <div className="flex justify-center mt-4 gap-2">
-                    {analyticsPages.registrations > 1 && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setAnalyticsPages(prev => ({...prev, registrations: prev.registrations - 1}))}
-                      >
-                        ← Страница {analyticsPages.registrations - 1}
-                      </Button>
-                    )}
-                    <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
-                      Страница {analyticsPages.registrations}
-                    </span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setAnalyticsPages(prev => ({...prev, registrations: prev.registrations + 1}))}
-                    >
-                      Страница {analyticsPages.registrations + 1} →
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Фрод-Отклонение (Fraud Rejects) Table */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />
-                    {t('fraud_rejects')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Дата</TableHead>
-                        <TableHead>Тип фрода</TableHead>
-                        <TableHead>IP адрес</TableHead>
-                        <TableHead>Партнер</TableHead>
-                        <TableHead>Гео</TableHead>
-                        <TableHead>Количество</TableHead>
-                        <TableHead>Потери</TableHead>
-                        <TableHead>Действие</TableHead>
-                        <TableHead>Статус</TableHead>
-                        <TableHead>Риск</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {Array.from({ length: 10 }, (_, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{new Date(Date.now() - index * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU')}</TableCell>
-                          <TableCell>
-                            <Badge variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
-                              Дубликат IP
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="font-mono text-sm">192.168.{Math.floor(Math.random() * 255)}.{Math.floor(Math.random() * 255)}</TableCell>
-                          <TableCell>Партнер {index + 1}</TableCell>
-                          <TableCell>🇷🇺 RU</TableCell>
-                          <TableCell className="text-red-600 dark:text-red-400">{Math.floor(Math.random() * 20) + 1}</TableCell>
-                          <TableCell className="text-red-600 dark:text-red-400">-${(Math.random() * 500 + 50).toFixed(2)}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">
-                              Блокировка
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="destructive">
-                              Заблокирован
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400">
-                              Высокий
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  <div className="flex justify-center mt-4 gap-2">
-                    {analyticsPages.fraud_rejects > 1 && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setAnalyticsPages(prev => ({...prev, fraud_rejects: prev.fraud_rejects - 1}))}
-                      >
-                        ← Страница {analyticsPages.fraud_rejects - 1}
-                      </Button>
-                    )}
-                    <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
-                      Страница {analyticsPages.fraud_rejects}
-                    </span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setAnalyticsPages(prev => ({...prev, fraud_rejects: prev.fraud_rejects + 1}))}
-                    >
-                      Страница {analyticsPages.fraud_rejects + 1} →
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* DEP (Deposits) Table */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    {t('deposits')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Дата</TableHead>
-                        <TableHead>Депозиты</TableHead>
-                        <TableHead>Сумма</TableHead>
-                        <TableHead>Средний депозит</TableHead>
-                        <TableHead>Партнер</TableHead>
-                        <TableHead>Метод оплаты</TableHead>
-                        <TableHead>Валюта</TableHead>
-                        <TableHead>Статус</TableHead>
-                        <TableHead>Время</TableHead>
-                        <TableHead>Процент</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {Array.from({ length: 10 }, (_, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{new Date(Date.now() - index * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU')}</TableCell>
-                          <TableCell className="font-medium">{Math.floor(Math.random() * 25) + 8}</TableCell>
-                          <TableCell className="font-bold text-emerald-600 dark:text-emerald-400">
-                            ${(Math.random() * 5000 + 1000).toFixed(2)}
-                          </TableCell>
-                          <TableCell>${(Math.random() * 300 + 50).toFixed(2)}</TableCell>
-                          <TableCell>Партнер {index + 1}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
-                              Карта
-                            </Badge>
-                          </TableCell>
-                          <TableCell>USD</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                              Успешно
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{Math.floor(Math.random() * 12) + 8}:{Math.floor(Math.random() * 60).toString().padStart(2, '0')}</TableCell>
-                          <TableCell>{(Math.random() * 15 + 5).toFixed(1)}%</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  <div className="flex justify-center mt-4 gap-2">
-                    {analyticsPages.deposits > 1 && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setAnalyticsPages(prev => ({...prev, deposits: prev.deposits - 1}))}
-                      >
-                        ← Страница {analyticsPages.deposits - 1}
-                      </Button>
-                    )}
-                    <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
-                      Страница {analyticsPages.deposits}
-                    </span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setAnalyticsPages(prev => ({...prev, deposits: prev.deposits + 1}))}
-                    >
-                      Страница {analyticsPages.deposits + 1} →
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* GEO (Geographic) Table */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Globe className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                    {t('geo_breakdown')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Страна</TableHead>
-                        <TableHead>Клики</TableHead>
-                        <TableHead>Конверсии</TableHead>
-                        <TableHead>CR%</TableHead>
-                        <TableHead>Доход</TableHead>
-                        <TableHead>EPC</TableHead>
-                        <TableHead>Выплата</TableHead>
-                        <TableHead>ROI%</TableHead>
-                        <TableHead>Трафик</TableHead>
-                        <TableHead>Качество</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {[
-                        { country: '🇺🇸 США', code: 'US' },
-                        { country: '🇩🇪 Германия', code: 'DE' },
-                        { country: '🇬🇧 Великобритания', code: 'GB' },
-                        { country: '🇫🇷 Франция', code: 'FR' },
-                        { country: '🇮🇹 Италия', code: 'IT' },
-                        { country: '🇪🇸 Испания', code: 'ES' },
-                        { country: '🇨🇦 Канада', code: 'CA' },
-                        { country: '🇦🇺 Австралия', code: 'AU' },
-                        { country: '🇷🇺 Россия', code: 'RU' },
-                        { country: '🇧🇷 Бразилия', code: 'BR' }
-                      ].map((geo, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="font-medium">{geo.country}</TableCell>
-                          <TableCell>{Math.floor(Math.random() * 2000) + 500}</TableCell>
-                          <TableCell>{Math.floor(Math.random() * 100) + 20}</TableCell>
-                          <TableCell className="text-orange-600 dark:text-orange-400">
-                            {(Math.random() * 12 + 2).toFixed(1)}%
-                          </TableCell>
-                          <TableCell>${(Math.random() * 3000 + 800).toFixed(2)}</TableCell>
-                          <TableCell>${(Math.random() * 4 + 0.5).toFixed(3)}</TableCell>
-                          <TableCell>${(Math.random() * 80 + 15).toFixed(2)}</TableCell>
-                          <TableCell className="text-green-600 dark:text-green-400">
-                            {(Math.random() * 200 + 100).toFixed(0)}%
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">
-                              Social
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                              Высокое
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  <div className="flex justify-center mt-4 gap-2">
-                    {analyticsPages.geo > 1 && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setAnalyticsPages(prev => ({...prev, geo: prev.geo - 1}))}
-                      >
-                        ← Страница {analyticsPages.geo - 1}
-                      </Button>
-                    )}
-                    <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
-                      Страница {analyticsPages.geo}
-                    </span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setAnalyticsPages(prev => ({...prev, geo: prev.geo + 1}))}
-                    >
-                      Страница {analyticsPages.geo + 1} →
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Партнер (Partners) Table */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                    {t('partners')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Партнер</TableHead>
-                        <TableHead>Клики</TableHead>
-                        <TableHead>Конверсии</TableHead>
-                        <TableHead>Доход</TableHead>
-                        <TableHead>Выплачено</TableHead>
-                        <TableHead>CR%</TableHead>
-                        <TableHead>EPC</TableHead>
-                        <TableHead>Рейтинг</TableHead>
-                        <TableHead>Статус</TableHead>
-                        <TableHead>Активность</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {Array.from({ length: 10 }, (_, index) => (
-                        <TableRow key={index}>
+            {/* Unified Analytics Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5" />
+                  Детальная аналитика
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Дата</TableHead>
+                      <TableHead>
+                        <div className="flex items-center gap-1">
+                          <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          Уники
+                        </div>
+                      </TableHead>
+                      <TableHead>
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          CR$
+                        </div>
+                      </TableHead>
+                      <TableHead>
+                        <div className="flex items-center gap-1">
+                          <TrendingUp className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          EPC$
+                        </div>
+                      </TableHead>
+                      <TableHead>
+                        <div className="flex items-center gap-1">
+                          <UserCheck className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                          REG
+                        </div>
+                      </TableHead>
+                      <TableHead>
+                        <div className="flex items-center gap-1">
+                          <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                          DEP
+                        </div>
+                      </TableHead>
+                      <TableHead>
+                        <div className="flex items-center gap-1">
+                          <Globe className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                          GEO
+                        </div>
+                      </TableHead>
+                      <TableHead>
+                        <div className="flex items-center gap-1">
+                          <Shield className="w-4 h-4 text-red-600 dark:text-red-400" />
+                          Фрод-Отклонение
+                        </div>
+                      </TableHead>
+                      <TableHead>
+                        <div className="flex items-center gap-1">
+                          <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                          Партнер
+                        </div>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Array.from({ length: 10 }, (_, index) => {
+                      const currentPage = analyticsPages.uniques || 1;
+                      const rowIndex = (currentPage - 1) * 10 + index;
+                      return (
+                        <TableRow key={rowIndex}>
                           <TableCell className="font-medium">
-                            Партнер #{index + 1}
+                            {new Date(Date.now() - rowIndex * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU')}
                           </TableCell>
-                          <TableCell>{Math.floor(Math.random() * 5000) + 1000}</TableCell>
-                          <TableCell>{Math.floor(Math.random() * 200) + 50}</TableCell>
-                          <TableCell className="font-bold text-indigo-600 dark:text-indigo-400">
-                            ${(Math.random() * 8000 + 2000).toFixed(2)}
+                          <TableCell className="text-blue-600 dark:text-blue-400 font-medium">
+                            {Math.floor(Math.random() * 500) + 100 + rowIndex * 10}
                           </TableCell>
-                          <TableCell>${(Math.random() * 4000 + 1000).toFixed(2)}</TableCell>
-                          <TableCell>{(Math.random() * 8 + 4).toFixed(1)}%</TableCell>
-                          <TableCell>${(Math.random() * 3 + 1).toFixed(3)}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <span className="text-yellow-500">★</span>
-                              <span>{(Math.random() * 2 + 3).toFixed(1)}</span>
-                            </div>
+                          <TableCell className="text-green-600 dark:text-green-400 font-medium">
+                            ${(Math.random() * 100 + 20 + rowIndex * 2).toFixed(2)}
                           </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                              Активен
-                            </Badge>
+                          <TableCell className="text-purple-600 dark:text-purple-400 font-medium">
+                            ${(Math.random() * 2 + 0.1 + rowIndex * 0.05).toFixed(3)}
                           </TableCell>
-                          <TableCell className="text-green-600 dark:text-green-400">
-                            {Math.floor(Math.random() * 30) + 70}%
+                          <TableCell className="text-cyan-600 dark:text-cyan-400 font-medium">
+                            {Math.floor(Math.random() * 80) + 20 + rowIndex * 5}
+                          </TableCell>
+                          <TableCell className="text-emerald-600 dark:text-emerald-400 font-medium">
+                            {Math.floor(Math.random() * 25) + 8 + rowIndex * 2}
+                          </TableCell>
+                          <TableCell className="text-orange-600 dark:text-orange-400 font-medium">
+                            🇺🇸 US ({(Math.random() * 12 + 2).toFixed(1)}%)
+                          </TableCell>
+                          <TableCell className="text-red-600 dark:text-red-400 font-medium">
+                            {Math.floor(Math.random() * 20) + 1}
+                          </TableCell>
+                          <TableCell className="text-indigo-600 dark:text-indigo-400 font-medium">
+                            П#{rowIndex + 1}
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  <div className="flex justify-center mt-4 gap-2">
-                    {analyticsPages.partners > 1 && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setAnalyticsPages(prev => ({...prev, partners: prev.partners - 1}))}
-                      >
-                        ← Страница {analyticsPages.partners - 1}
-                      </Button>
-                    )}
-                    <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
-                      Страница {analyticsPages.partners}
-                    </span>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+                <div className="flex justify-center mt-4 gap-2">
+                  {analyticsPages.uniques > 1 && (
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => setAnalyticsPages(prev => ({...prev, partners: prev.partners + 1}))}
+                      onClick={() => setAnalyticsPages(prev => ({...prev, uniques: prev.uniques - 1}))}
                     >
-                      Страница {analyticsPages.partners + 1} →
+                      ← Страница {analyticsPages.uniques - 1}
                     </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  )}
+                  <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
+                    Страница {analyticsPages.uniques}
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setAnalyticsPages(prev => ({...prev, uniques: prev.uniques + 1}))}
+                  >
+                    Страница {analyticsPages.uniques + 1} →
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Creatives Tab */}
