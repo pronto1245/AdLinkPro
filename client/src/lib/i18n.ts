@@ -146,42 +146,31 @@ export const translations: Translations = {
     'priority': 'Priority',
     'assigned_to': 'Assigned To',
     'open': 'Open',
-    'in_progress': 'In Progress',
-    'resolved': 'Resolved',
     'closed': 'Closed',
+    'resolved': 'Resolved',
+
+    // Status messages
+    'success': 'Success',
+    'error': 'Error',
+    'warning': 'Warning',
+    'info': 'Information',
+    'operation_completed': 'Operation completed successfully',
+    'data_updated': 'Data updated successfully',
+    'data_deleted': 'Data deleted successfully',
+    'data_created': 'Data created successfully',
 
     // Time periods
     'today': 'Today',
     'yesterday': 'Yesterday',
     'last_7_days': 'Last 7 days',
     'last_30_days': 'Last 30 days',
-    'last_90_days': 'Last 90 days',
     'this_month': 'This month',
     'last_month': 'Last month',
     'this_year': 'This year',
-    'custom_range': 'Custom range',
-
-    // Status messages
-    'success': 'Success',
-    'error': 'Error',
-    'warning': 'Warning',
-    'info': 'Info',
-    'no_data': 'No data available',
-    'no_results': 'No results found',
-    'data_updated': 'Data updated successfully',
-    'operation_completed': 'Operation completed successfully',
-    'operation_failed': 'Operation failed',
+    'last_year': 'Last year',
+    'custom': 'Custom',
 
     // Admin specific
-    'admin_panel': 'Admin Panel',
-    'manage_users': 'Manage Users',
-    'manage_offers': 'Manage Offers',
-    'fraud_alerts': 'Fraud Alerts',
-    'system_alerts': 'System Alerts',
-    'user_management': 'User Management',
-    'offer_management': 'Offer Management',
-    'financial_overview': 'Financial Overview',
-    'fraud_detection': 'Fraud Detection',
     'super_admin': 'Super Admin',
     'advertiser': 'Advertiser',
     'affiliate': 'Affiliate',
@@ -209,19 +198,12 @@ export const translations: Translations = {
     'security_alerts': 'Security Alerts',
     
     // Offer management specific
-    'offer_name': 'Offer Name',
     'manage_all_offers_platform': 'Manage all offers across the platform',
-    'import': 'Import',
-    'export': 'Export',
     'all_statuses': 'All Statuses',
-    'inactive': 'Inactive',
     'draft': 'Draft',
     'moderation_status': 'Moderation Status',
-    'approved': 'Approved',
-    'rejected': 'Rejected',
     'needs_revision': 'Needs Revision',
     'all_categories': 'All Categories',
-    'finance': 'Finance',
     'dating': 'Dating',
     'gaming': 'Gaming',
     'health': 'Health',
@@ -229,17 +211,11 @@ export const translations: Translations = {
     'all_countries': 'All Countries',
     'archived': 'Archived',
     'blocked': 'Blocked',
-    'pending': 'Pending',
-    'created': 'Created',
     'actions': 'Actions',
     'details': 'Details',
-    'analytics': 'Analytics',
     'creatives': 'Creatives',
     'history': 'History',
-    'landing_page': 'Landing Page',
     'no_restrictions': 'No restrictions',
-    'cr': 'CR',
-    'epc': 'EPC',
     'no_creatives_available': 'No creatives available',
     'no_history_available': 'No history available',
     'edit_offer': 'Edit Offer',
@@ -288,11 +264,11 @@ export const translations: Translations = {
 
     // Authentication
     'login': 'Вход',
-    'logout': 'Выйти',
+    'logout': 'Выход',
     'register': 'Регистрация',
     'username': 'Имя пользователя',
     'password': 'Пароль',
-    'email': 'Email',
+    'email': 'Электронная почта',
     'sign_in': 'Войти',
     'sign_up': 'Зарегистрироваться',
     'forgot_password': 'Забыли пароль',
@@ -309,13 +285,13 @@ export const translations: Translations = {
     'currency': 'Валюта',
     'role': 'Роль',
     'status': 'Статус',
-    'active': 'Активный',
-    'inactive': 'Неактивный',
+    'active': 'Активен',
+    'inactive': 'Неактивен',
     'created': 'Создан',
     'updated': 'Обновлен',
 
     // Metrics
-    'total_revenue': 'Общий доход',
+    'total_revenue': 'Общая выручка',
     'active_partners': 'Активные партнеры',
     'active_offers': 'Активные офферы',
     'total_partners': 'Всего партнеров',
@@ -324,13 +300,13 @@ export const translations: Translations = {
     'total_clicks': 'Всего кликов',
     'total_conversions': 'Всего конверсий',
     'total_earnings': 'Общий заработок',
-    'average_cr': 'Средняя конверсия',
+    'average_cr': 'Средний CR',
     'total_payout': 'Общие выплаты',
 
     // Dashboard
     'revenue_overview': 'Обзор доходов',
     'recent_activity': 'Последняя активность',
-    'top_performers': 'Топ партнеры',
+    'top_performers': 'Лучшие партнеры',
     'recent_offers': 'Последние офферы',
     'system_status': 'Состояние системы и уведомления',
     'performance_overview': 'Обзор производительности',
@@ -394,43 +370,32 @@ export const translations: Translations = {
     'priority': 'Приоритет',
     'assigned_to': 'Назначен',
     'open': 'Открыт',
-    'in_progress': 'В работе',
-    'resolved': 'Решен',
     'closed': 'Закрыт',
+    'resolved': 'Решен',
+
+    // Status messages
+    'success': 'Успех',
+    'error': 'Ошибка',
+    'warning': 'Предупреждение',
+    'info': 'Информация',
+    'operation_completed': 'Операция выполнена успешно',
+    'data_updated': 'Данные обновлены успешно',
+    'data_deleted': 'Данные удалены успешно',
+    'data_created': 'Данные созданы успешно',
 
     // Time periods
     'today': 'Сегодня',
     'yesterday': 'Вчера',
     'last_7_days': 'Последние 7 дней',
     'last_30_days': 'Последние 30 дней',
-    'last_90_days': 'Последние 90 дней',
     'this_month': 'Этот месяц',
     'last_month': 'Прошлый месяц',
     'this_year': 'Этот год',
-    'custom_range': 'Произвольный период',
-
-    // Status messages
-    'success': 'Успешно',
-    'error': 'Ошибка',
-    'warning': 'Предупреждение',
-    'info': 'Информация',
-    'no_data': 'Нет данных',
-    'no_results': 'Результаты не найдены',
-    'data_updated': 'Данные успешно обновлены',
-    'operation_completed': 'Операция завершена успешно',
-    'operation_failed': 'Операция не удалась',
+    'last_year': 'Прошлый год',
+    'custom': 'Настраиваемый',
 
     // Admin specific
-    'admin_panel': 'Админ-панель',
-    'manage_users': 'Управление пользователями',
-    'manage_offers': 'Управление офферами',
-    'fraud_alerts': 'Фрод уведомления',
-    'system_alerts': 'Системные уведомления',
-    'user_management': 'Управление пользователями',
-    'offer_management': 'Управление офферами',
-    'financial_overview': 'Финансовый обзор',
-    'fraud_detection': 'Обнаружение мошенничества',
-    'super_admin': 'Супер-админ',
+    'super_admin': 'Супер Админ',
     'advertiser': 'Рекламодатель',
     'affiliate': 'Партнер',
     'staff': 'Сотрудник',
@@ -444,8 +409,8 @@ export const translations: Translations = {
     'no_offers_found': 'Офферы не найдены',
     'total_users': 'Всего пользователей',
     'pending_approvals': 'Ожидают одобрения',
-    'fraud_alerts_count': 'Фрод уведомлений',
-    'system_health': 'Состояние системы',
+    'fraud_alerts_count': 'Фрод уведомления',
+    'system_health': 'Здоровье системы',
     'overview': 'Обзор',
     'financial_management': 'Финансовое управление',
     'transaction_monitoring': 'Мониторинг транзакций',
@@ -457,19 +422,12 @@ export const translations: Translations = {
     'security_alerts': 'Уведомления безопасности',
     
     // Offer management specific
-    'offer_name': 'Название оффера',
     'manage_all_offers_platform': 'Управление всеми офферами на платформе',
-    'import': 'Импорт',
-    'export': 'Экспорт',
     'all_statuses': 'Все статусы',
-    'inactive': 'Неактивен',
     'draft': 'Черновик',
     'moderation_status': 'Статус модерации',
-    'approved': 'Одобрен',
-    'rejected': 'Отклонен',
     'needs_revision': 'Требует доработки',
     'all_categories': 'Все категории',
-    'finance': 'Финансы',
     'dating': 'Знакомства',
     'gaming': 'Игры',
     'health': 'Здоровье',
@@ -477,17 +435,11 @@ export const translations: Translations = {
     'all_countries': 'Все страны',
     'archived': 'Архивный',
     'blocked': 'Заблокирован',
-    'pending': 'Ожидает',
-    'created': 'Создан',
     'actions': 'Действия',
     'details': 'Детали',
-    'analytics': 'Аналитика',
     'creatives': 'Креативы',
     'history': 'История',
-    'landing_page': 'Посадочная страница',
     'no_restrictions': 'Нет ограничений',
-    'cr': 'CR',
-    'epc': 'EPC',
     'no_creatives_available': 'Креативы не доступны',
     'no_history_available': 'История не доступна',
     'edit_offer': 'Редактировать оффер',
@@ -529,65 +481,23 @@ export class I18nService {
 
   static translate(key: string, language?: string): string {
     const lang = language || this.currentLanguage;
-    const translation = translations[lang]?.[key];
-    
-    if (translation) {
-      return translation;
-    }
-
-    // Fallback to default language
-    const fallbackTranslation = translations[this.fallbackLanguage]?.[key];
-    if (fallbackTranslation) {
-      return fallbackTranslation;
-    }
-
-    // Return the key if no translation found
-    return key;
+    const translation = translations[lang]?.[key] || translations[this.fallbackLanguage]?.[key];
+    return translation || key;
   }
 
-  static getAvailableLanguages(): Array<{ code: string; name: string; flag: string }> {
-    return [
-      { code: 'en', name: 'English', flag: '🇺🇸' },
-      { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-    ];
+  static getAvailableLanguages(): string[] {
+    return Object.keys(translations);
   }
 
-  static interpolate(template: string, values: Record<string, string | number>): string {
-    return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
-      return values[key]?.toString() || match;
-    });
-  }
-
-  static pluralize(key: string, count: number, language?: string): string {
-    const lang = language || this.currentLanguage;
-    
-    // Simple pluralization for English
-    if (lang === 'en') {
-      const singular = this.translate(key, lang);
-      if (count === 1) {
-        return singular;
-      }
-      // Try to find plural form
-      const pluralKey = `${key}_plural`;
-      const plural = translations[lang]?.[pluralKey];
-      return plural || `${singular}s`;
-    }
-
-    // Russian pluralization is more complex and would need additional logic
-    // For now, just return the base translation
-    return this.translate(key, lang);
+  static getLanguageName(code: string): string {
+    const names: { [key: string]: string } = {
+      'en': 'English',
+      'ru': 'Русский'
+    };
+    return names[code] || code;
   }
 }
 
-// Utility function for React components
-export function useTranslation() {
-  return {
-    t: (key: string, values?: Record<string, string | number>) => {
-      const translation = I18nService.translate(key);
-      return values ? I18nService.interpolate(translation, values) : translation;
-    },
-    language: I18nService.getLanguage(),
-    setLanguage: I18nService.setLanguage.bind(I18nService),
-    availableLanguages: I18nService.getAvailableLanguages(),
-  };
-}
+export const t = (key: string, language?: string): string => {
+  return I18nService.translate(key, language);
+};
