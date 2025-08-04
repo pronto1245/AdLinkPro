@@ -28,6 +28,7 @@ const createOfferSchema = z.object({
   category: z.string().min(1, 'Категория обязательна'),
   description: z.string().optional(),
   logo: z.string().optional(),
+  status: z.string().default('draft'),
   payoutType: z.string().default('cpa'),
   currency: z.string().default('USD'),
   landingPages: z.array(z.object({
@@ -62,6 +63,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
       category: '',
       description: '',
       logo: '',
+      status: 'draft',
       landingPages: [{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }],
       payoutType: 'cpa',
       currency: 'USD',
@@ -150,6 +152,28 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             )}
           />
           
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Статус</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="draft">Черновик</SelectItem>
+                    <SelectItem value="active">Активный</SelectItem>
+                    <SelectItem value="inactive">Неактивный</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
         </div>
 

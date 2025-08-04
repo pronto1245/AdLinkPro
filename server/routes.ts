@@ -674,6 +674,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category: req.body.category,
         description: req.body.description || null,
         logo: req.body.logo || null,
+        status: req.body.status || 'draft',
         payout: "0.00", // Default payout as string for decimal field
         payoutType: req.body.payoutType || 'cpa',
         currency: req.body.currency || 'USD',
