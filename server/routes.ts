@@ -664,10 +664,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
-      const offerData = insertOfferSchema.parse(req.body);
+      const authUser = getAuthenticatedUser(req);
+      
+      // Add default values for required fields
+      const offerData = insertOfferSchema.parse({
+        ...req.body,
+        payout: req.body.payout || 0, // Default payout to 0 if not provided
+        advertiserId: req.body.advertiserId || authUser.id, // Default to current user if not provided
+        trafficSources: req.body.allowedTrafficSources || [], // Map allowedTrafficSources to trafficSources
+      });
+      
       const offer = await storage.createOffer(offerData);
       res.status(201).json(offer);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.error("Validation error:", error.errors);
+        return res.status(400).json({ error: error.errors });
+      }
       console.error("Create offer error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
