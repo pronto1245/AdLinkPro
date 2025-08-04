@@ -1119,7 +1119,43 @@ export default function OffersManagement() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{offer.category}</Badge>
+                      {(() => {
+                        // Цвета для категорий офферов
+                        const getCategoryColor = (category: string) => {
+                          switch (category?.toLowerCase()) {
+                            case 'gambling': return 'bg-red-100 text-red-800 border-red-200';
+                            case 'finance': return 'bg-green-100 text-green-800 border-green-200';
+                            case 'nutra': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                            case 'dating': return 'bg-pink-100 text-pink-800 border-pink-200';
+                            case 'sweepstakes': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                            case 'crypto': return 'bg-orange-100 text-orange-800 border-orange-200';
+                            case 'e-commerce': return 'bg-blue-100 text-blue-800 border-blue-200';
+                            case 'mobile': return 'bg-purple-100 text-purple-800 border-purple-200';
+                            case 'games': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+                            case 'software': return 'bg-gray-100 text-gray-800 border-gray-200';
+                            default: return 'bg-slate-100 text-slate-800 border-slate-200';
+                          }
+                        };
+                        const categoryColor = getCategoryColor(offer.category);
+                        const categoryLabels: {[key: string]: string} = {
+                          'gambling': 'Гемблинг',
+                          'finance': 'Финансы',
+                          'nutra': 'Нутра',
+                          'dating': 'Знакомства',
+                          'sweepstakes': 'Лотереи',
+                          'crypto': 'Криптовалюты',
+                          'e-commerce': 'E-commerce',
+                          'mobile': 'Мобильные',
+                          'games': 'Игры',
+                          'software': 'ПО'
+                        };
+                        const categoryLabel = categoryLabels[offer.category] || offer.category;
+                        return (
+                          <Badge className={`${categoryColor} border text-xs`}>
+                            {categoryLabel}
+                          </Badge>
+                        );
+                      })()}
                       {offer.vertical && (
                         <div className="text-xs text-muted-foreground mt-1">{offer.vertical}</div>
                       )}
@@ -1401,7 +1437,45 @@ export default function OffersManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>{t('category')}</Label>
-                    <div className="font-medium">{selectedOffer.category}</div>
+                    <div className="font-medium">
+                      {(() => {
+                        // Цвета для категорий офферов
+                        const getCategoryColor = (category: string) => {
+                          switch (category?.toLowerCase()) {
+                            case 'gambling': return 'bg-red-100 text-red-800 border-red-200';
+                            case 'finance': return 'bg-green-100 text-green-800 border-green-200';
+                            case 'nutra': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                            case 'dating': return 'bg-pink-100 text-pink-800 border-pink-200';
+                            case 'sweepstakes': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                            case 'crypto': return 'bg-orange-100 text-orange-800 border-orange-200';
+                            case 'e-commerce': return 'bg-blue-100 text-blue-800 border-blue-200';
+                            case 'mobile': return 'bg-purple-100 text-purple-800 border-purple-200';
+                            case 'games': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+                            case 'software': return 'bg-gray-100 text-gray-800 border-gray-200';
+                            default: return 'bg-slate-100 text-slate-800 border-slate-200';
+                          }
+                        };
+                        const categoryColor = getCategoryColor(selectedOffer.category);
+                        const categoryLabels: {[key: string]: string} = {
+                          'gambling': 'Гемблинг',
+                          'finance': 'Финансы',
+                          'nutra': 'Нутра',
+                          'dating': 'Знакомства',
+                          'sweepstakes': 'Лотереи',
+                          'crypto': 'Криптовалюты',
+                          'e-commerce': 'E-commerce',
+                          'mobile': 'Мобильные',
+                          'games': 'Игры',
+                          'software': 'ПО'
+                        };
+                        const categoryLabel = categoryLabels[selectedOffer.category] || selectedOffer.category;
+                        return (
+                          <Badge className={`${categoryColor} border inline-block`}>
+                            {categoryLabel}
+                          </Badge>
+                        );
+                      })()}
+                    </div>
                   </div>
                   <div>
                     <Label>{t('vertical')}</Label>
