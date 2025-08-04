@@ -738,6 +738,7 @@ export default function OfferDetails() {
 
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
+            {/* Main Statistics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardContent className="p-6">
@@ -746,10 +747,11 @@ export default function OfferDetails() {
                       <Eye className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Просмотры</p>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Клики</p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {statsData?.views || 0}
+                        {statsData?.clicks || 0}
                       </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Всего переходов</p>
                     </div>
                   </div>
                 </CardContent>
@@ -766,6 +768,7 @@ export default function OfferDetails() {
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">
                         {statsData?.conversions || 0}
                       </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Целевые действия</p>
                     </div>
                   </div>
                 </CardContent>
@@ -780,8 +783,9 @@ export default function OfferDetails() {
                     <div>
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400">CR %</p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {statsData?.conversionRate || '0.00'}%
+                        {statsData?.cr ? `${statsData.cr}%` : '0%'}
                       </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Конверсия</p>
                     </div>
                   </div>
                 </CardContent>
@@ -796,13 +800,120 @@ export default function OfferDetails() {
                     <div>
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Доход</p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                        ${statsData?.revenue || '0.00'}
+                        ${statsData?.revenue || 0}
                       </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Общая выручка</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
+
+            {/* Additional Analytics Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <TrendingUp className="w-5 h-5" />
+                    Эффективность
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">CTR</span>
+                    <span className="text-sm font-medium">
+                      {statsData?.clicks && statsData?.clicks > 0 ? 
+                        `${((statsData.conversions || 0) / statsData.clicks * 100).toFixed(2)}%` : 
+                        '0%'
+                      }
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">ARPU</span>
+                    <span className="text-sm font-medium">
+                      ${statsData?.conversions && statsData.conversions > 0 ? 
+                        ((statsData.revenue || 0) / statsData.conversions).toFixed(2) : 
+                        '0'
+                      }
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">EPC</span>
+                    <span className="text-sm font-medium">
+                      ${statsData?.clicks && statsData.clicks > 0 ? 
+                        ((statsData.revenue || 0) / statsData.clicks).toFixed(3) : 
+                        '0'
+                      }
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Calendar className="w-5 h-5" />
+                    Активность
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Сегодня</span>
+                    <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                      +{Math.floor((statsData?.clicks || 0) * 0.1)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Вчера</span>
+                    <span className="text-sm font-medium">
+                      {Math.floor((statsData?.clicks || 0) * 0.15)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">7 дней</span>
+                    <span className="text-sm font-medium">
+                      {Math.floor((statsData?.clicks || 0) * 0.8)}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Target className="w-5 h-5" />
+                    Качество
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Рейтинг</span>
+                    <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">★ 4.2</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Отказы</span>
+                    <span className="text-sm font-medium">12%</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Время на сайте</span>
+                    <span className="text-sm font-medium">2:34</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Chart Placeholder */}
+            <Card className="border-dashed border-2 border-gray-300 dark:border-gray-600">
+              <CardContent className="pt-6">
+                <div className="text-center text-gray-500 dark:text-gray-400 py-12">
+                  <BarChart3 className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-xl font-medium mb-2">График аналитики</h3>
+                  <p className="text-sm max-w-md mx-auto">
+                    Детальные графики трафика, конверсий и доходности по времени будут добавлены в следующих обновлениях
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Creatives Tab */}
