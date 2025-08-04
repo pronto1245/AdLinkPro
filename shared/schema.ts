@@ -62,7 +62,7 @@ export const offers = pgTable("offers", {
   vertical: text("vertical"), // Industry vertical
   goals: text("goals"), // Offer goals/objectives
   advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
-  payout: decimal("payout", { precision: 10, scale: 2 }).notNull(),
+  payout: decimal("payout", { precision: 10, scale: 2 }).notNull().default("0.00"),
   payoutType: text("payout_type").notNull(), // 'cpa', 'cps', 'cpl', 'cpm', 'cpc', 'cpi', 'cro', 'revshare', 'hybrid', 'fixed'
   currency: text("currency").default('USD'),
   countries: jsonb("countries"), // Array of country codes
@@ -737,7 +737,7 @@ export const insertPostbackLogSchema = createInsertSchema(postbackLogs).omit({
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-export type InsertOffer = z.infer<typeof insertOfferSchema>;
+export type InsertOffer = typeof offers.$inferInsert;
 export type Offer = typeof offers.$inferSelect;
 export type InsertPartnerOffer = z.infer<typeof insertPartnerOfferSchema>;
 export type PartnerOffer = typeof partnerOffers.$inferSelect;
