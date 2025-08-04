@@ -658,51 +658,7 @@ export default function OfferDetails() {
               </CardContent>
             </Card>
 
-            {/* Traffic Sources */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5" />
-                  Источники трафика
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {offer.trafficSources && Array.isArray(offer.trafficSources) && offer.trafficSources.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {formatTrafficSources(offer.trafficSources).map((source, index) => (
-                      <Badge key={index} className={source.color}>
-                        {source.name}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 dark:text-gray-400">Источники трафика не указаны</p>
-                )}
-              </CardContent>
-            </Card>
 
-            {/* Applications */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  Разрешенные приложения
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {offer.allowedApps && Array.isArray(offer.allowedApps) && offer.allowedApps.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    {formatApplications(offer.allowedApps).map((app, index) => (
-                      <Badge key={index} className={app.color}>
-                        {app.name}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 dark:text-gray-400">Разрешенные приложения не указаны</p>
-                )}
-              </CardContent>
-            </Card>
           </div>
 
           {/* Sidebar */}
@@ -810,6 +766,52 @@ export default function OfferDetails() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Traffic Sources */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5" />
+                  Источники трафика
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {offer.trafficSources && Array.isArray(offer.trafficSources) && offer.trafficSources.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {formatTrafficSources(offer.trafficSources).map((source, index) => (
+                      <Badge key={index} className={source.color}>
+                        {source.name}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">Источники трафика не указаны</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Applications */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Разрешенные приложения
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {offer.allowedApps && Array.isArray(offer.allowedApps) && offer.allowedApps.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    {formatApplications(offer.allowedApps).map((app, index) => (
+                      <Badge key={index} className={app.color}>
+                        {app.name}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">Разрешенные приложения не указаны</p>
+                )}
+              </CardContent>
+            </Card>
 
 
           </div>
