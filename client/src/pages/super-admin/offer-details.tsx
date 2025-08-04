@@ -273,9 +273,15 @@ export default function OfferDetails() {
           
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {offer.name}
-              </h1>
+              <div className="flex items-center gap-4 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {offer.name}
+                </h1>
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <Calendar className="w-4 h-4" />
+                  <span>{new Date(offer.createdAt).toLocaleDateString('ru-RU')}</span>
+                </div>
+              </div>
               <div className="flex items-center gap-3">
                 <Badge className={getStatusColor(offer.status)}>
                   {offer.status === 'active' ? 'Активен' :
@@ -386,18 +392,9 @@ export default function OfferDetails() {
                 
                 <Separator />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Описание</label>
-                    <p className="mt-1 text-gray-900 dark:text-white">{offer.description || 'Не указано'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Дата создания</label>
-                    <div className="mt-1 flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      {new Date(offer.createdAt).toLocaleDateString('ru-RU')}
-                    </div>
-                  </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Описание</label>
+                  <p className="mt-1 text-gray-900 dark:text-white">{offer.description || 'Не указано'}</p>
                 </div>
                 
                 {offer.number && (
