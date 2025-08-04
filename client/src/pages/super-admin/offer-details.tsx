@@ -439,21 +439,27 @@ export default function OfferDetails() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Button 
-                              variant="outline" 
+                              variant="ghost" 
                               size="sm"
+                              className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
                               onClick={() => copyToClipboard(landing.url, `landing-${index}`)}
+                              title="Копировать URL"
                             >
                               {copiedUrls[`landing-${index}`] ? (
-                                <Check className="w-4 h-4 mr-2 text-green-600" />
+                                <Check className="w-4 h-4 text-green-600" />
                               ) : (
-                                <Copy className="w-4 h-4 mr-2" />
+                                <Copy className="w-4 h-4 text-blue-600" />
                               )}
-                              {copiedUrls[`landing-${index}`] ? 'Скопировано' : 'Копировать URL'}
                             </Button>
-                            <Button variant="outline" size="sm" asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 hover:bg-purple-100 hover:text-purple-600"
+                              asChild
+                              title="Открыть лендинг"
+                            >
                               <a href={landing.url} target="_blank" rel="noopener noreferrer">
-                                <Eye className="w-4 h-4 mr-2" />
-                                Открыть лендинг
+                                <Eye className="w-4 h-4 text-purple-600" />
                               </a>
                             </Button>
                           </div>

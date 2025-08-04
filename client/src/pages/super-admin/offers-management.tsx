@@ -1876,14 +1876,16 @@ export default function OffersManagement() {
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                   <span className="break-all">{landing.url}</span>
                                   <Button 
-                                    variant="outline" 
+                                    variant="ghost" 
                                     size="sm"
+                                    className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
                                     onClick={() => copyToClipboard(landing.url, `modal-landing-${index}`)}
+                                    title="Копировать URL"
                                   >
                                     {copiedUrls[`modal-landing-${index}`] ? (
                                       <Check className="w-4 h-4 text-green-600" />
                                     ) : (
-                                      <Copy className="w-4 h-4" />
+                                      <Copy className="w-4 h-4 text-blue-600" />
                                     )}
                                   </Button>
                                 </div>
@@ -2335,14 +2337,16 @@ export default function OffersManagement() {
                           {lp.url && (
                             <Button 
                               type="button"
-                              variant="outline" 
+                              variant="ghost" 
                               size="sm"
+                              className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
                               onClick={() => copyToClipboard(lp.url, `edit-landing-${index}`)}
+                              title="Копировать URL"
                             >
                               {copiedUrls[`edit-landing-${index}`] ? (
                                 <Check className="w-4 h-4 text-green-600" />
                               ) : (
-                                <Copy className="w-4 h-4" />
+                                <Copy className="w-4 h-4 text-blue-600" />
                               )}
                             </Button>
                           )}
