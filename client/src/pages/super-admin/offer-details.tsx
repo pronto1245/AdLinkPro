@@ -30,10 +30,16 @@ export default function OfferDetails() {
   
   // Analytics filters state
   const [dateFilter, setDateFilter] = useState('7');
+  const [customDateFrom, setCustomDateFrom] = useState('');
+  const [customDateTo, setCustomDateTo] = useState('');
   const [geoFilter, setGeoFilter] = useState('all');
+  const [geoSearchTerm, setGeoSearchTerm] = useState('');
   const [deviceFilter, setDeviceFilter] = useState('all');
+  const [deviceSearchTerm, setDeviceSearchTerm] = useState('');
   const [advertiserFilter, setAdvertiserFilter] = useState('all');
+  const [advertiserSearchTerm, setAdvertiserSearchTerm] = useState('');
   const [partnerFilter, setPartnerFilter] = useState('all');
+  const [partnerSearchTerm, setPartnerSearchTerm] = useState('');
   
   const offerId = params.id;
 
@@ -774,8 +780,33 @@ export default function OfferDetails() {
                         <SelectItem value="90">90 дней</SelectItem>
                         <SelectItem value="365">Год</SelectItem>
                         <SelectItem value="all">Все время</SelectItem>
+                        <SelectItem value="custom">Пользовательский</SelectItem>
                       </SelectContent>
                     </Select>
+                    
+                    {/* Custom Date Range */}
+                    {dateFilter === 'custom' && (
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <div>
+                          <label className="text-xs text-gray-500">От</label>
+                          <Input
+                            type="date"
+                            value={customDateFrom}
+                            onChange={(e) => setCustomDateFrom(e.target.value)}
+                            className="text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500">До</label>
+                          <Input
+                            type="date"
+                            value={customDateTo}
+                            onChange={(e) => setCustomDateTo(e.target.value)}
+                            className="text-xs"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Geo Filter */}
@@ -784,22 +815,91 @@ export default function OfferDetails() {
                       <Globe className="w-4 h-4" />
                       География
                     </label>
-                    <Select value={geoFilter} onValueChange={setGeoFilter}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите страну" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Все страны</SelectItem>
-                        <SelectItem value="US">🇺🇸 США</SelectItem>
-                        <SelectItem value="GB">🇬🇧 Великобритания</SelectItem>
-                        <SelectItem value="DE">🇩🇪 Германия</SelectItem>
-                        <SelectItem value="FR">🇫🇷 Франция</SelectItem>
-                        <SelectItem value="CA">🇨🇦 Канада</SelectItem>
-                        <SelectItem value="AU">🇦🇺 Австралия</SelectItem>
-                        <SelectItem value="RU">🇷🇺 Россия</SelectItem>
-                        <SelectItem value="BR">🇧🇷 Бразилия</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-1">
+                      <Input
+                        placeholder="Поиск стран..."
+                        value={geoSearchTerm}
+                        onChange={(e) => setGeoSearchTerm(e.target.value)}
+                        className="text-sm"
+                      />
+                      <Select value={geoFilter} onValueChange={setGeoFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите страну" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Все страны</SelectItem>
+                          {(() => {
+                            const countries = [
+                              { code: 'US', name: 'США', flag: '🇺🇸' },
+                              { code: 'GB', name: 'Великобритания', flag: '🇬🇧' },
+                              { code: 'DE', name: 'Германия', flag: '🇩🇪' },
+                              { code: 'FR', name: 'Франция', flag: '🇫🇷' },
+                              { code: 'CA', name: 'Канада', flag: '🇨🇦' },
+                              { code: 'AU', name: 'Австралия', flag: '🇦🇺' },
+                              { code: 'RU', name: 'Россия', flag: '🇷🇺' },
+                              { code: 'BR', name: 'Бразилия', flag: '🇧🇷' },
+                              { code: 'IT', name: 'Италия', flag: '🇮🇹' },
+                              { code: 'ES', name: 'Испания', flag: '🇪🇸' },
+                              { code: 'PL', name: 'Польша', flag: '🇵🇱' },
+                              { code: 'NL', name: 'Нидерланды', flag: '🇳🇱' },
+                              { code: 'SE', name: 'Швеция', flag: '🇸🇪' },
+                              { code: 'NO', name: 'Норвегия', flag: '🇳🇴' },
+                              { code: 'DK', name: 'Дания', flag: '🇩🇰' },
+                              { code: 'FI', name: 'Финляндия', flag: '🇫🇮' },
+                              { code: 'CH', name: 'Швейцария', flag: '🇨🇭' },
+                              { code: 'AT', name: 'Австрия', flag: '🇦🇹' },
+                              { code: 'BE', name: 'Бельгия', flag: '🇧🇪' },
+                              { code: 'PT', name: 'Португалия', flag: '🇵🇹' },
+                              { code: 'IE', name: 'Ирландия', flag: '🇮🇪' },
+                              { code: 'CZ', name: 'Чехия', flag: '🇨🇿' },
+                              { code: 'HU', name: 'Венгрия', flag: '🇭🇺' },
+                              { code: 'GR', name: 'Греция', flag: '🇬🇷' },
+                              { code: 'JP', name: 'Япония', flag: '🇯🇵' },
+                              { code: 'KR', name: 'Корея', flag: '🇰🇷' },
+                              { code: 'CN', name: 'Китай', flag: '🇨🇳' },
+                              { code: 'IN', name: 'Индия', flag: '🇮🇳' },
+                              { code: 'SG', name: 'Сингапур', flag: '🇸🇬' },
+                              { code: 'HK', name: 'Гонконг', flag: '🇭🇰' },
+                              { code: 'TW', name: 'Тайвань', flag: '🇹🇼' },
+                              { code: 'TH', name: 'Таиланд', flag: '🇹🇭' },
+                              { code: 'MY', name: 'Малайзия', flag: '🇲🇾' },
+                              { code: 'ID', name: 'Индонезия', flag: '🇮🇩' },
+                              { code: 'PH', name: 'Филиппины', flag: '🇵🇭' },
+                              { code: 'VN', name: 'Вьетнам', flag: '🇻🇳' },
+                              { code: 'MX', name: 'Мексика', flag: '🇲🇽' },
+                              { code: 'AR', name: 'Аргентина', flag: '🇦🇷' },
+                              { code: 'CL', name: 'Чили', flag: '🇨🇱' },
+                              { code: 'CO', name: 'Колумбия', flag: '🇨🇴' },
+                              { code: 'PE', name: 'Перу', flag: '🇵🇪' },
+                              { code: 'ZA', name: 'ЮАР', flag: '🇿🇦' },
+                              { code: 'EG', name: 'Египет', flag: '🇪🇬' },
+                              { code: 'NG', name: 'Нигерия', flag: '🇳🇬' },
+                              { code: 'KE', name: 'Кения', flag: '🇰🇪' },
+                              { code: 'IL', name: 'Израиль', flag: '🇮🇱' },
+                              { code: 'AE', name: 'ОАЭ', flag: '🇦🇪' },
+                              { code: 'SA', name: 'Саудовская Аравия', flag: '🇸🇦' },
+                              { code: 'TR', name: 'Турция', flag: '🇹🇷' },
+                              { code: 'UA', name: 'Украина', flag: '🇺🇦' },
+                              { code: 'BY', name: 'Беларусь', flag: '🇧🇾' },
+                              { code: 'KZ', name: 'Казахстан', flag: '🇰🇿' },
+                              { code: 'UZ', name: 'Узбекистан', flag: '🇺🇿' }
+                            ];
+                            
+                            return countries
+                              .filter(country => 
+                                geoSearchTerm === '' || 
+                                country.name.toLowerCase().includes(geoSearchTerm.toLowerCase()) ||
+                                country.code.toLowerCase().includes(geoSearchTerm.toLowerCase())
+                              )
+                              .map(country => (
+                                <SelectItem key={country.code} value={country.code}>
+                                  {country.flag} {country.name}
+                                </SelectItem>
+                              ));
+                          })()}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   {/* Device Filter */}
@@ -808,19 +908,48 @@ export default function OfferDetails() {
                       <Smartphone className="w-4 h-4" />
                       Устройства
                     </label>
-                    <Select value={deviceFilter} onValueChange={setDeviceFilter}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите устройство" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Все устройства</SelectItem>
-                        <SelectItem value="desktop">🖥️ Десктоп</SelectItem>
-                        <SelectItem value="mobile">📱 Мобильные</SelectItem>
-                        <SelectItem value="tablet">📱 Планшеты</SelectItem>
-                        <SelectItem value="ios">🍎 iOS</SelectItem>
-                        <SelectItem value="android">🤖 Android</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-1">
+                      <Input
+                        placeholder="Поиск устройств..."
+                        value={deviceSearchTerm}
+                        onChange={(e) => setDeviceSearchTerm(e.target.value)}
+                        className="text-sm"
+                      />
+                      <Select value={deviceFilter} onValueChange={setDeviceFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите устройство" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Все устройства</SelectItem>
+                          {(() => {
+                            const devices = [
+                              { value: 'desktop', name: 'Десктоп', icon: '🖥️' },
+                              { value: 'mobile', name: 'Мобильные', icon: '📱' },
+                              { value: 'tablet', name: 'Планшеты', icon: '📲' },
+                              { value: 'ios', name: 'iOS', icon: '🍎' },
+                              { value: 'android', name: 'Android', icon: '🤖' },
+                              { value: 'windows', name: 'Windows', icon: '🪟' },
+                              { value: 'macos', name: 'macOS', icon: '🍎' },
+                              { value: 'linux', name: 'Linux', icon: '🐧' },
+                              { value: 'smart-tv', name: 'Smart TV', icon: '📺' },
+                              { value: 'console', name: 'Игровые консоли', icon: '🎮' }
+                            ];
+                            
+                            return devices
+                              .filter(device => 
+                                deviceSearchTerm === '' || 
+                                device.name.toLowerCase().includes(deviceSearchTerm.toLowerCase()) ||
+                                device.value.toLowerCase().includes(deviceSearchTerm.toLowerCase())
+                              )
+                              .map(device => (
+                                <SelectItem key={device.value} value={device.value}>
+                                  {device.icon} {device.name}
+                                </SelectItem>
+                              ));
+                          })()}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   {/* Advertiser Filter */}
@@ -829,18 +958,48 @@ export default function OfferDetails() {
                       <Building2 className="w-4 h-4" />
                       Рекламодатель
                     </label>
-                    <Select value={advertiserFilter} onValueChange={setAdvertiserFilter}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите рекламодателя" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Все рекламодатели</SelectItem>
-                        <SelectItem value="advertiser1">Advertiser Corp</SelectItem>
-                        <SelectItem value="advertiser2">Global Marketing Ltd</SelectItem>
-                        <SelectItem value="advertiser3">Digital Ads Inc</SelectItem>
-                        <SelectItem value="advertiser4">Performance Media</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-1">
+                      <Input
+                        placeholder="Поиск рекламодателей..."
+                        value={advertiserSearchTerm}
+                        onChange={(e) => setAdvertiserSearchTerm(e.target.value)}
+                        className="text-sm"
+                      />
+                      <Select value={advertiserFilter} onValueChange={setAdvertiserFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите рекламодателя" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Все рекламодатели</SelectItem>
+                          {(() => {
+                            const advertisers = [
+                              { id: 'advertiser1', name: 'Advertiser Corp' },
+                              { id: 'advertiser2', name: 'Global Marketing Ltd' },
+                              { id: 'advertiser3', name: 'Digital Ads Inc' },
+                              { id: 'advertiser4', name: 'Performance Media' },
+                              { id: 'advertiser5', name: 'MediaMax Solutions' },
+                              { id: 'advertiser6', name: 'AdTech Partners' },
+                              { id: 'advertiser7', name: 'Revenue Network' },
+                              { id: 'advertiser8', name: 'Conversion Masters' },
+                              { id: 'advertiser9', name: 'Traffic Universe' },
+                              { id: 'advertiser10', name: 'Lead Generation Pro' }
+                            ];
+                            
+                            return advertisers
+                              .filter(advertiser => 
+                                advertiserSearchTerm === '' || 
+                                advertiser.name.toLowerCase().includes(advertiserSearchTerm.toLowerCase()) ||
+                                advertiser.id.toLowerCase().includes(advertiserSearchTerm.toLowerCase())
+                              )
+                              .map(advertiser => (
+                                <SelectItem key={advertiser.id} value={advertiser.id}>
+                                  {advertiser.name}
+                                </SelectItem>
+                              ));
+                          })()}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   {/* Partner Filter */}
@@ -849,19 +1008,53 @@ export default function OfferDetails() {
                       <UserCheck className="w-4 h-4" />
                       Партнер
                     </label>
-                    <Select value={partnerFilter} onValueChange={setPartnerFilter}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите партнера" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Все партнеры</SelectItem>
-                        <SelectItem value="partner1">TopAffiliates Pro</SelectItem>
-                        <SelectItem value="partner2">Performance Partners</SelectItem>
-                        <SelectItem value="partner3">Digital Media Network</SelectItem>
-                        <SelectItem value="partner4">Elite Affiliates</SelectItem>
-                        <SelectItem value="partner5">Global Traffic Hub</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-1">
+                      <Input
+                        placeholder="Поиск партнеров..."
+                        value={partnerSearchTerm}
+                        onChange={(e) => setPartnerSearchTerm(e.target.value)}
+                        className="text-sm"
+                      />
+                      <Select value={partnerFilter} onValueChange={setPartnerFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите партнера" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Все партнеры</SelectItem>
+                          {(() => {
+                            const partners = [
+                              { id: 'partner1', name: 'TopAffiliates Pro' },
+                              { id: 'partner2', name: 'Performance Partners' },
+                              { id: 'partner3', name: 'Digital Media Network' },
+                              { id: 'partner4', name: 'Elite Affiliates' },
+                              { id: 'partner5', name: 'Global Traffic Hub' },
+                              { id: 'partner6', name: 'MediaBuyers United' },
+                              { id: 'partner7', name: 'Conversion Leaders' },
+                              { id: 'partner8', name: 'Traffic Masters' },
+                              { id: 'partner9', name: 'Revenue Rockets' },
+                              { id: 'partner10', name: 'Lead Champions' },
+                              { id: 'partner11', name: 'AdVantage Group' },
+                              { id: 'partner12', name: 'Performance Elite' },
+                              { id: 'partner13', name: 'Digital Success' },
+                              { id: 'partner14', name: 'Growth Partners' },
+                              { id: 'partner15', name: 'Media Professionals' }
+                            ];
+                            
+                            return partners
+                              .filter(partner => 
+                                partnerSearchTerm === '' || 
+                                partner.name.toLowerCase().includes(partnerSearchTerm.toLowerCase()) ||
+                                partner.id.toLowerCase().includes(partnerSearchTerm.toLowerCase())
+                              )
+                              .map(partner => (
+                                <SelectItem key={partner.id} value={partner.id}>
+                                  {partner.name}
+                                </SelectItem>
+                              ));
+                          })()}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
 
