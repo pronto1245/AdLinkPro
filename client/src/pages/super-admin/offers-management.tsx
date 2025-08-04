@@ -776,17 +776,21 @@ export default function OffersManagement() {
   // Fetch offers
   const { data: offers = [], isLoading: offersLoading } = useQuery({
     queryKey: ['/api/admin/offers'],
-    select: (data: Offer[]) => data.filter(offer => {
-      const matchesSearch = offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           offer.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           offer.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || offer.status === statusFilter;
-      const matchesModeration = moderationFilter === 'all' || offer.moderationStatus === moderationFilter;
-      const matchesCategory = categoryFilter === 'all' || offer.category === categoryFilter;
-      const matchesAdvertiser = advertiserFilter === 'all' || offer.advertiserId === advertiserFilter;
-      
-      return matchesSearch && matchesStatus && matchesModeration && matchesCategory && matchesAdvertiser;
-    })
+    select: (data: Offer[]) => data
+      // Сначала сортируем по дате создания (новые вверху)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      // Затем фильтруем
+      .filter(offer => {
+        const matchesSearch = offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             offer.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             offer.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || offer.status === statusFilter;
+        const matchesModeration = moderationFilter === 'all' || offer.moderationStatus === moderationFilter;
+        const matchesCategory = categoryFilter === 'all' || offer.category === categoryFilter;
+        const matchesAdvertiser = advertiserFilter === 'all' || offer.advertiserId === advertiserFilter;
+        
+        return matchesSearch && matchesStatus && matchesModeration && matchesCategory && matchesAdvertiser;
+      })
   });
 
   // Fetch offer logs
@@ -1235,30 +1239,37 @@ export default function OffersManagement() {
                       <div className="text-xs space-y-1">
                         {/* Allowed Apps */}
                         {offer.allowedApps && Array.isArray(offer.allowedApps) && offer.allowedApps.length > 0 ? (
-                          <div className={`${offer.allowedApps.length >= 3 ? 'grid grid-cols-1 gap-1' : 'flex flex-wrap gap-1'}`}>
-                            {offer.allowedApps.slice(0, 3).map((app: string, index: number) => {
-                              const appLabels: {[key: string]: string} = {
-                                'PWA apps': 'PWA',
-                                'WebView apps': 'WebView',
-                                'Native Android (.apk) apps': 'Android',
-                                'iOS apps': 'iOS',
-                                'Mobile apps': 'Mobile',
-                                'Desktop apps': 'Desktop',
-                                'Web apps': 'Web',
-                                'Telegram bots': 'Telegram',
-                                'Browser extensions': 'Extensions',
-                                'Chrome extensions': 'Chrome Ext',
-                                'Firefox extensions': 'Firefox Ext'
-                              };
-                              const appLabel = appLabels[app] || app;
-                              return (
-                                <Badge key={index} variant="secondary" className="text-xs whitespace-nowrap">
-                                  {appLabel}
-                                </Badge>
-                              );
-                            })}
-                            {offer.allowedApps.length > 3 && (
-                              <div className="text-muted-foreground text-xs">+{offer.allowedApps.length - 3}</div>
+                          <div className="space-y-1">
+                            {/* Группируем приложения по 2 в ряд */}
+                            {Array.from({ length: Math.ceil(Math.min(offer.allowedApps?.length || 0, 4) / 2) }, (_, rowIndex) => (
+                              <div key={rowIndex} className="flex gap-1">
+                                {(offer.allowedApps || []).slice(rowIndex * 2, (rowIndex + 1) * 2).map((app: string, index: number) => {
+                                  const appLabels: {[key: string]: string} = {
+                                    'PWA apps': 'PWA',
+                                    'WebView apps': 'WebView',
+                                    'Native Android (.apk) apps': 'Android',
+                                    'iOS apps': 'iOS',
+                                    'Mobile apps': 'Mobile',
+                                    'Desktop apps': 'Desktop',
+                                    'Web apps': 'Web',
+                                    'Telegram bots': 'Telegram',
+                                    'Browser extensions': 'Extensions',
+                                    'Chrome extensions': 'Chrome Ext',
+                                    'Firefox extensions': 'Firefox Ext'
+                                  };
+                                  const appLabel = appLabels[app] || app;
+                                  const colors = ['bg-blue-100 text-blue-800', 'bg-green-100 text-green-800', 'bg-purple-100 text-purple-800', 'bg-orange-100 text-orange-800'];
+                                  const colorClass = colors[(rowIndex * 2 + index) % colors.length];
+                                  return (
+                                    <Badge key={rowIndex * 2 + index} className={`text-xs whitespace-nowrap ${colorClass} border-0`}>
+                                      {appLabel}
+                                    </Badge>
+                                  );
+                                })}
+                              </div>
+                            ))}
+                            {(offer.allowedApps?.length || 0) > 4 && (
+                              <div className="text-muted-foreground text-xs">+{(offer.allowedApps?.length || 0) - 4} еще</div>
                             )}
                           </div>
                         ) : (
@@ -1498,28 +1509,35 @@ export default function OffersManagement() {
                 {selectedOffer.allowedApps && Array.isArray(selectedOffer.allowedApps) && selectedOffer.allowedApps.length > 0 && (
                   <div>
                     <Label>Разрешенные приложения</Label>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {selectedOffer.allowedApps.map((app: string, index: number) => {
-                        const appLabels: {[key: string]: string} = {
-                          'PWA apps': 'PWA приложения',
-                          'WebView apps': 'WebView приложения',
-                          'Native Android (.apk) apps': 'Android приложения (.apk)',
-                          'iOS apps': 'iOS приложения',
-                          'Mobile apps': 'Мобильные приложения',
-                          'Desktop apps': 'Настольные приложения',
-                          'Web apps': 'Веб приложения',
-                          'Telegram bots': 'Telegram боты',
-                          'Browser extensions': 'Браузерные расширения',
-                          'Chrome extensions': 'Расширения Chrome',
-                          'Firefox extensions': 'Расширения Firefox'
-                        };
-                        const appLabel = appLabels[app] || app;
-                        return (
-                          <Badge key={index} variant="secondary" className="mb-2">
-                            {appLabel}
-                          </Badge>
-                        );
-                      })}
+                    <div className="mt-2 space-y-2">
+                      {/* Группируем приложения по 2 в ряд */}
+                      {Array.from({ length: Math.ceil((selectedOffer.allowedApps?.length || 0) / 2) }, (_, rowIndex) => (
+                        <div key={rowIndex} className="flex gap-2">
+                          {(selectedOffer.allowedApps || []).slice(rowIndex * 2, (rowIndex + 1) * 2).map((app: string, index: number) => {
+                            const appLabels: {[key: string]: string} = {
+                              'PWA apps': 'PWA приложения',
+                              'WebView apps': 'WebView приложения',
+                              'Native Android (.apk) apps': 'Android приложения (.apk)',
+                              'iOS apps': 'iOS приложения',
+                              'Mobile apps': 'Мобильные приложения',
+                              'Desktop apps': 'Настольные приложения',
+                              'Web apps': 'Веб приложения',
+                              'Telegram bots': 'Telegram боты',
+                              'Browser extensions': 'Браузерные расширения',
+                              'Chrome extensions': 'Расширения Chrome',
+                              'Firefox extensions': 'Расширения Firefox'
+                            };
+                            const appLabel = appLabels[app] || app;
+                            const colors = ['bg-blue-100 text-blue-800 border-blue-200', 'bg-green-100 text-green-800 border-green-200', 'bg-purple-100 text-purple-800 border-purple-200', 'bg-orange-100 text-orange-800 border-orange-200', 'bg-red-100 text-red-800 border-red-200', 'bg-indigo-100 text-indigo-800 border-indigo-200'];
+                            const colorClass = colors[(rowIndex * 2 + index) % colors.length];
+                            return (
+                              <Badge key={rowIndex * 2 + index} className={`${colorClass} border`}>
+                                {appLabel}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
