@@ -319,7 +319,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                           value={field.value || ''}
                           onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                           placeholder="0.00" 
-                          data-testid={`input-landing-payout-${index}`} 
+                          data-testid={`input-landing-payout-${index}`}
+                          className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </FormControl>
                       <FormMessage />
@@ -455,7 +456,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                   value={field.value || ''}
                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                   placeholder="0.00" 
-                  data-testid="input-payout-amount" 
+                  data-testid="input-payout-amount"
+                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </FormControl>
               <FormMessage />
@@ -523,7 +525,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     value={field.value || ''}
                     onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                     placeholder="Без ограничений" 
-                    data-testid="input-daily-limit" 
+                    data-testid="input-daily-limit"
+                    className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </FormControl>
                 <FormMessage />
@@ -544,7 +547,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     value={field.value || ''}
                     onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                     placeholder="Без ограничений" 
-                    data-testid="input-monthly-limit" 
+                    data-testid="input-monthly-limit"
+                    className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </FormControl>
                 <FormMessage />
