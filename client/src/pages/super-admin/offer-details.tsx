@@ -363,22 +363,19 @@ export default function OfferDetails() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                    <label className="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide">Название оффера</label>
-                    <div className="mt-1 flex items-center gap-2">
+                    <label className="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide">Логотип</label>
+                    <div className="mt-1 flex justify-center">
                       {offer.logoUrl ? (
                         <img 
                           src={offer.logoUrl} 
                           alt={offer.name}
-                          className="w-8 h-8 object-contain rounded"
+                          className="w-12 h-12 object-contain rounded"
                         />
                       ) : (
-                        <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-                          <Target className="w-4 h-4 text-gray-400" />
+                        <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                          <Target className="w-6 h-6 text-gray-400" />
                         </div>
                       )}
-                      <div className="text-lg font-bold text-green-700 dark:text-green-300 truncate">
-                        {offer.name}
-                      </div>
                     </div>
                   </div>
                   <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
@@ -506,45 +503,42 @@ export default function OfferDetails() {
                                 Гео
                               </div>
                               <div className="text-lg font-semibold text-green-700 dark:text-green-300">
-                                {landing.countries && landing.countries.length > 0 ? (
-                                  <div className="flex flex-wrap justify-center gap-1">
-                                    {landing.countries.slice(0, 3).map((country: string, idx: number) => {
-                                      const countryFlags: { [key: string]: string } = {
-                                        'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
-                                        'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦'
-                                      };
-                                      return (
+                                {(() => {
+                                  // Приоритет: страны лендинга -> geo-pricing -> общие страны оффера
+                                  let countries = [];
+                                  
+                                  if (landing.countries && Array.isArray(landing.countries) && landing.countries.length > 0) {
+                                    countries = landing.countries;
+                                  } else if (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0) {
+                                    countries = offer.geoPricing.map((geo: any) => geo.country).filter(Boolean);
+                                  } else if (offer.countries && Array.isArray(offer.countries) && offer.countries.length > 0) {
+                                    countries = offer.countries;
+                                  }
+                                  
+                                  if (countries.length === 0) {
+                                    return <span className="text-sm">Не указано</span>;
+                                  }
+                                  
+                                  const countryFlags: { [key: string]: string } = {
+                                    'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
+                                    'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦',
+                                    'PL': '🇵🇱', 'NL': '🇳🇱', 'SE': '🇸🇪', 'NO': '🇳🇴', 'DK': '🇩🇰', 'FI': '🇫🇮',
+                                    'JP': '🇯🇵', 'KR': '🇰🇷', 'CN': '🇨🇳', 'IN': '🇮🇳', 'TH': '🇹🇭', 'VN': '🇻🇳'
+                                  };
+                                  
+                                  return (
+                                    <div className="flex flex-wrap justify-center gap-1">
+                                      {countries.slice(0, 3).map((country: string, idx: number) => (
                                         <span key={idx} className="text-sm">
                                           {countryFlags[country] || '🌍'}{country}
                                         </span>
-                                      );
-                                    })}
-                                    {landing.countries.length > 3 && (
-                                      <span className="text-sm">+{landing.countries.length - 3}</span>
-                                    )}
-                                  </div>
-                                ) : (
-                                  offer.countries && Array.isArray(offer.countries) && offer.countries.length > 0 ? (
-                                    <div className="flex flex-wrap justify-center gap-1">
-                                      {offer.countries.slice(0, 3).map((country: string, idx: number) => {
-                                        const countryFlags: { [key: string]: string } = {
-                                          'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
-                                          'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦'
-                                        };
-                                        return (
-                                          <span key={idx} className="text-sm">
-                                            {countryFlags[country] || '🌍'}{country}
-                                          </span>
-                                        );
-                                      })}
-                                      {offer.countries.length > 3 && (
-                                        <span className="text-sm">+{offer.countries.length - 3}</span>
+                                      ))}
+                                      {countries.length > 3 && (
+                                        <span className="text-sm">+{countries.length - 3}</span>
                                       )}
                                     </div>
-                                  ) : (
-                                    <span>🌍 Все</span>
-                                  )
-                                )}
+                                  );
+                                })()}
                               </div>
                             </div>
                           </div>
@@ -605,26 +599,40 @@ export default function OfferDetails() {
                           Гео
                         </div>
                         <div className="text-lg font-semibold text-green-700 dark:text-green-300">
-                          {offer.countries && Array.isArray(offer.countries) && offer.countries.length > 0 ? (
-                            <div className="flex flex-wrap justify-center gap-1">
-                              {offer.countries.slice(0, 3).map((country: string, idx: number) => {
-                                const countryFlags: { [key: string]: string } = {
-                                  'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
-                                  'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦'
-                                };
-                                return (
+                          {(() => {
+                            // Приоритет: geo-pricing -> общие страны оффера
+                            let countries = [];
+                            
+                            if (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0) {
+                              countries = offer.geoPricing.map((geo: any) => geo.country).filter(Boolean);
+                            } else if (offer.countries && Array.isArray(offer.countries) && offer.countries.length > 0) {
+                              countries = offer.countries;
+                            }
+                            
+                            if (countries.length === 0) {
+                              return <span className="text-sm">Не указано</span>;
+                            }
+                            
+                            const countryFlags: { [key: string]: string } = {
+                              'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
+                              'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦',
+                              'PL': '🇵🇱', 'NL': '🇳🇱', 'SE': '🇸🇪', 'NO': '🇳🇴', 'DK': '🇩🇰', 'FI': '🇫🇮',
+                              'JP': '🇯🇵', 'KR': '🇰🇷', 'CN': '🇨🇳', 'IN': '🇮🇳', 'TH': '🇹🇭', 'VN': '🇻🇳'
+                            };
+                            
+                            return (
+                              <div className="flex flex-wrap justify-center gap-1">
+                                {countries.slice(0, 3).map((country: string, idx: number) => (
                                   <span key={idx} className="text-sm">
                                     {countryFlags[country] || '🌍'}{country}
                                   </span>
-                                );
-                              })}
-                              {offer.countries.length > 3 && (
-                                <span className="text-sm">+{offer.countries.length - 3}</span>
-                              )}
-                            </div>
-                          ) : (
-                            <span>🌍 Все</span>
-                          )}
+                                ))}
+                                {countries.length > 3 && (
+                                  <span className="text-sm">+{countries.length - 3}</span>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
