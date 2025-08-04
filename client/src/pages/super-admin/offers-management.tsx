@@ -977,7 +977,10 @@ export default function OffersManagement() {
                     <TableCell>
                       {offer.landingPages && offer.landingPages.length > 0 ? (
                         <div>
-                          <div className="text-sm font-medium space-x-1">
+                          <div className="text-xs font-bold text-green-600 uppercase mb-1">
+                            {offer.payoutType}
+                          </div>
+                          <div className={`text-sm font-medium ${offer.landingPages.length >= 3 ? 'grid grid-cols-2 gap-1' : 'space-x-1'}`}>
                             {offer.landingPages.map((landing, index) => {
                               const countryFlags: {[key: string]: string} = {
                                 'us': '🇺🇸',
@@ -1015,18 +1018,19 @@ export default function OffersManagement() {
                               };
                               const currencySymbol = currencySymbols[landing.currency] || landing.currency;
                               return (
-                                <span key={index} className="inline-block mr-1 text-xs">
+                                <span key={index} className={`text-xs ${offer.landingPages.length >= 3 ? 'block' : 'inline-block mr-1'}`}>
                                   {flag}{geo}-{landing.payoutAmount}{currencySymbol}
                                 </span>
                               );
                             })}
                           </div>
-                          <div className="text-xs text-muted-foreground">{offer.payoutType}</div>
                         </div>
                       ) : (
                         <div>
+                          <div className="text-xs font-bold text-green-600 uppercase mb-1">
+                            {offer.payoutType}
+                          </div>
                           <div className="font-medium">${offer.payout}</div>
-                          <div className="text-sm text-muted-foreground">{offer.payoutType}</div>
                         </div>
                       )}
                     </TableCell>
