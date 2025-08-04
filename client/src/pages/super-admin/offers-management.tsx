@@ -108,7 +108,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
     'facebook_ads', 'google_ads', 'tiktok_ads', 'instagram_ads', 'snapchat_ads', 'twitter_ads', 'pinterest_ads', 'reddit_ads', 'linkedin_ads', 'mytarget',
     'push_traffic', 'inpage_push', 'calendar_push', 'sms_push',
     'outbrain', 'taboola', 'mgid', 'revcontent', 'adnow',
-    'pop_traffic', 'email_marketing', 'seo_organic', 'mobile_app', 'influencer', 'teaser_networks', 'other'
+    'pop_traffic', 'email_marketing', 'seo_organic', 'mobile_app', 'influencer', 'teaser_networks', 'uac', 'pps', 'kmc', 'other'
   ];
 
   return (
@@ -1167,6 +1167,9 @@ export default function OffersManagement() {
                                 'direct_traffic': 'Direct',
                                 'organic_search': 'Organic',
                                 'referral_traffic': 'Referral',
+                                'uac': 'UAC',
+                                'pps': 'PPS',
+                                'kmc': 'KMC',
                                 'other': 'Other'
                               };
                               const sourceLabel = trafficSourceLabels[source] || source;
