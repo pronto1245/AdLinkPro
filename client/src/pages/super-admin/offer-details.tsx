@@ -286,7 +286,7 @@ export default function OfferDetails() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
       <Sidebar />
       <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
-        <Header title="offer_details" subtitle="detailed_offer_information" />
+        <Header title="" subtitle="" />
         <main className="flex-1 p-6">
           <div className="container mx-auto px-6 py-8 max-w-6xl">
         {/* Header */}
