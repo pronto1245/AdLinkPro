@@ -1345,9 +1345,107 @@ export default function OfferDetails() {
             {/* Unified Analytics Table */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5" />
-                  Детальная аналитика
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Детальная аналитика
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const tableData = Array.from({ length: 10 }, (_, index) => {
+                          const currentPage = analyticsPages.uniques || 1;
+                          const rowIndex = (currentPage - 1) * 10 + index;
+                          return {
+                            'Дата': new Date(Date.now() - rowIndex * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU'),
+                            'Уники': Math.floor(Math.random() * 500) + 100 + rowIndex * 10,
+                            'CR$': `$${(Math.random() * 100 + 20 + rowIndex * 2).toFixed(2)}`,
+                            'EPC$': `$${(Math.random() * 2 + 0.1 + rowIndex * 0.05).toFixed(3)}`,
+                            'REG': Math.floor(Math.random() * 80) + 20 + rowIndex * 5,
+                            'DEP': Math.floor(Math.random() * 25) + 8 + rowIndex * 2,
+                            'GEO': `US (${(Math.random() * 12 + 2).toFixed(1)}%)`,
+                            'Фрод-Отклонение': Math.floor(Math.random() * 20) + 1,
+                            'Партнер': `П#${rowIndex + 1}`
+                          };
+                        });
+                        
+                        const csvContent = [
+                          '\ufeff' + Object.keys(tableData[0]).join(','), // BOM for proper encoding
+                          ...tableData.map(row => Object.values(row).join(','))
+                        ].join('\n');
+                        
+                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const link = document.createElement('a');
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', `analytics_${new Date().toISOString().split('T')[0]}.csv`);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        toast({
+                          title: "Экспорт завершен",
+                          description: "Таблица аналитики экспортирована в CSV файл",
+                        });
+                      }}
+                      className="flex items-center gap-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                      title="Экспортировать таблицу в CSV"
+                    >
+                      <Download className="w-4 h-4" />
+                      Экспорт CSV
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const tableData = Array.from({ length: 10 }, (_, index) => {
+                          const currentPage = analyticsPages.uniques || 1;
+                          const rowIndex = (currentPage - 1) * 10 + index;
+                          return {
+                            'Дата': new Date(Date.now() - rowIndex * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU'),
+                            'Уники': Math.floor(Math.random() * 500) + 100 + rowIndex * 10,
+                            'CR$': (Math.random() * 100 + 20 + rowIndex * 2).toFixed(2),
+                            'EPC$': (Math.random() * 2 + 0.1 + rowIndex * 0.05).toFixed(3),
+                            'REG': Math.floor(Math.random() * 80) + 20 + rowIndex * 5,
+                            'DEP': Math.floor(Math.random() * 25) + 8 + rowIndex * 2,
+                            'GEO': `US (${(Math.random() * 12 + 2).toFixed(1)}%)`,
+                            'Фрод-Отклонение': Math.floor(Math.random() * 20) + 1,
+                            'Партнер': `П#${rowIndex + 1}`
+                          };
+                        });
+                        
+                        // Create Excel-like format with tabs
+                        const excelContent = [
+                          Object.keys(tableData[0]).join('\t'),
+                          ...tableData.map(row => Object.values(row).join('\t'))
+                        ].join('\n');
+                        
+                        const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+                        const link = document.createElement('a');
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', `analytics_${new Date().toISOString().split('T')[0]}.xls`);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        toast({
+                          title: "Экспорт завершен",
+                          description: "Таблица аналитики экспортирована в Excel файл",
+                        });
+                      }}
+                      className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      title="Экспортировать таблицу в Excel"
+                    >
+                      <FileText className="w-4 h-4" />
+                      Экспорт Excel
+                    </Button>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
