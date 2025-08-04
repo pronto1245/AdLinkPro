@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import Sidebar from '@/components/layout/sidebar';
+import Header from '@/components/layout/header';
 
 interface Transaction {
   id: string;
@@ -62,6 +65,7 @@ interface PayoutRequest {
 
 export default function FinancesManagement() {
   const { toast } = useToast();
+  const { token } = useAuth();
   const queryClient = useQueryClient();
   
   const [selectedTab, setSelectedTab] = useState<'dashboard' | 'transactions' | 'payouts' | 'deposits' | 'commission' | 'reports'>('dashboard');
@@ -79,26 +83,68 @@ export default function FinancesManagement() {
   // Queries
   const { data: financialMetrics } = useQuery<any>({
     queryKey: ['/api/admin/financial-metrics', dateFilter],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/financial-metrics/${dateFilter}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch financial metrics');
+      return response.json();
+    },
   });
 
   const { data: transactions = [] } = useQuery<Transaction[]>({
     queryKey: ['/api/admin/finances'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/finances', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch transactions');
+      return response.json();
+    },
   });
 
   const { data: payoutRequests = [] } = useQuery<PayoutRequest[]>({
     queryKey: ['/api/admin/payout-requests'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/payout-requests', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch payout requests');
+      return response.json();
+    },
   });
 
   const { data: deposits = [] } = useQuery<any[]>({
     queryKey: ['/api/admin/deposits'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/deposits', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch deposits');
+      return response.json();
+    },
   });
 
   const { data: commissionData = [] } = useQuery<any[]>({
     queryKey: ['/api/admin/commission-data'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/commission-data', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch commission data');
+      return response.json();
+    },
   });
 
   const { data: chartData = [] } = useQuery<any[]>({
     queryKey: ['/api/admin/financial-chart', dateFilter],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/financial-chart/${dateFilter}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch chart data');
+      return response.json();
+    },
   });
 
   // Mutations
@@ -272,82 +318,84 @@ export default function FinancesManagement() {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="w-full bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="w-full px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                💰 Финансы
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Управление финансами платформы и выплатами
-              </p>
-            </div>
-            
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => exportData(selectedTab)}
-                data-testid="button-export"
-                title="Экспорт данных"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Экспорт
-              </Button>
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <Sidebar />
+      <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+        <Header title="Финансы" />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
+          {/* Header Section */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  💰 Финансы
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Управление финансами платформы и выплатами
+                </p>
+              </div>
               
-              <Select value={dateFilter} onValueChange={setDateFilter}>
-                <SelectTrigger className="w-32" title="Период">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7d">7 дней</SelectItem>
-                  <SelectItem value="30d">30 дней</SelectItem>
-                  <SelectItem value="90d">90 дней</SelectItem>
-                  <SelectItem value="1y">1 год</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => exportData(selectedTab)}
+                  data-testid="button-export"
+                  title="Экспорт данных"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Экспорт
+                </Button>
+                
+                <Select value={dateFilter} onValueChange={setDateFilter}>
+                  <SelectTrigger className="w-32" title="Период">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7d">7 дней</SelectItem>
+                    <SelectItem value="30d">30 дней</SelectItem>
+                    <SelectItem value="90d">90 дней</SelectItem>
+                    <SelectItem value="1y">1 год</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Navigation Tabs */}
-      <div className="w-full bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="w-full px-6">
-          <div className="flex space-x-8 overflow-x-auto">
-            {[
-              { id: 'dashboard', label: '📊 Дашборд', icon: BarChart3 },
-              { id: 'transactions', label: '🧾 Транзакции', icon: CreditCard },
-              { id: 'payouts', label: '💳 Выплаты', icon: Send },
-              { id: 'deposits', label: '🧮 Пополнения', icon: ArrowUpRight },
-              { id: 'commission', label: '📦 Комиссия', icon: DollarSign },
-              { id: 'reports', label: '📁 Отчёты', icon: FileText },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setSelectedTab(tab.id as any)}
-                  className={`flex items-center space-x-2 py-4 px-2 border-b-2 transition-colors ${
-                    selectedTab === tab.id
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                  data-testid={`tab-${tab.id}`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="whitespace-nowrap">{tab.label}</span>
-                </button>
-              );
-            })}
+          {/* Navigation Tabs */}
+          <div className="mb-6">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-1">
+              <div className="flex space-x-1 overflow-x-auto">
+                {[
+                  { id: 'dashboard', label: '📊 Дашборд', icon: BarChart3 },
+                  { id: 'transactions', label: '🧾 Транзакции', icon: CreditCard },
+                  { id: 'payouts', label: '💳 Выплаты', icon: Send },
+                  { id: 'deposits', label: '🧮 Пополнения', icon: ArrowUpRight },
+                  { id: 'commission', label: '📦 Комиссия', icon: DollarSign },
+                  { id: 'reports', label: '📁 Отчёты', icon: FileText },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setSelectedTab(tab.id as any)}
+                      className={`flex items-center space-x-2 py-3 px-4 rounded-md transition-all ${
+                        selectedTab === tab.id
+                          ? 'bg-blue-500 text-white shadow-sm'
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                      data-testid={`tab-${tab.id}`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span className="whitespace-nowrap text-sm font-medium">{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Content */}
-      <div className="w-full p-6">
+          {/* Content */}
+          <div className="space-y-6">
         {selectedTab === 'dashboard' && (
           <div className="space-y-6">
             {/* Platform Balance Cards */}
@@ -1394,6 +1442,8 @@ export default function FinancesManagement() {
             </Card>
           </div>
         )}
+          </div>
+        </main>
       </div>
     </div>
   );
