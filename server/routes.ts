@@ -2875,6 +2875,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Fraud services endpoints
+  app.get("/api/admin/fraud-services", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const fraudServices = [
+        {
+          id: "service-1",
+          serviceName: "FraudScore",
+          apiKey: "fs_live_xxxxxxxxxxxxxxxx",
+          isActive: true,
+          endpoint: "https://api.fraudscore.io/v1",
+          rateLimit: 1000,
+          lastSync: new Date(Date.now() - 300000).toISOString(),
+          successRate: 99.2,
+          averageResponseTime: 250
+        },
+        {
+          id: "service-2",
+          serviceName: "Forensiq",
+          apiKey: "fq_prod_xxxxxxxxxxxxxxxx",
+          isActive: false,
+          endpoint: "https://api.forensiq.com/v2",
+          rateLimit: 500,
+          lastSync: new Date(Date.now() - 86400000).toISOString(),
+          successRate: 97.8,
+          averageResponseTime: 180
+        },
+        {
+          id: "service-3",
+          serviceName: "Anura",
+          apiKey: "an_key_xxxxxxxxxxxxxxxx",
+          isActive: true,
+          endpoint: "https://api.anura.io/direct",
+          rateLimit: 2000,
+          lastSync: new Date(Date.now() - 150000).toISOString(),
+          successRate: 98.5,
+          averageResponseTime: 320
+        },
+        {
+          id: "service-4",
+          serviceName: "Botbox",
+          apiKey: "bb_api_xxxxxxxxxxxxxxxx",
+          isActive: false,
+          endpoint: "https://api.botbox.io/v1",
+          rateLimit: 800,
+          lastSync: new Date(Date.now() - 3600000).toISOString(),
+          successRate: 96.1,
+          averageResponseTime: 450
+        }
+      ];
+      res.json(fraudServices);
+    } catch (error) {
+      console.error("Get fraud services error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Test fraud service connection
+  app.post("/api/admin/fraud-services/:id/test", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Simulate testing API connection
+      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+      
+      const isSuccess = Math.random() > 0.2; // 80% success rate for demo
+      
+      if (isSuccess) {
+        res.json({
+          success: true,
+          responseTime: Math.floor(200 + Math.random() * 500),
+          message: "Connection successful"
+        });
+        auditLog(req, 'FRAUD_SERVICE_TEST', id, true, { result: 'success' });
+      } else {
+        res.status(500).json({
+          success: false,
+          error: "Connection timeout or API key invalid"
+        });
+        auditLog(req, 'FRAUD_SERVICE_TEST', id, false, { result: 'failed' });
+      }
+    } catch (error) {
+      console.error("Test fraud service error:", error);
+      res.status(500).json({ error: "Test failed" });
+    }
+  });
+
+  // Update fraud service status
+  app.patch("/api/admin/fraud-services/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { isActive } = req.body;
+      
+      // In a real app, this would update the database
+      const updatedService = {
+        id,
+        isActive,
+        lastSync: new Date().toISOString()
+      };
+      
+      auditLog(req, 'FRAUD_SERVICE_UPDATED', id, true, { isActive });
+      res.json(updatedService);
+    } catch (error) {
+      console.error("Update fraud service error:", error);
+      res.status(500).json({ error: "Failed to update service" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
