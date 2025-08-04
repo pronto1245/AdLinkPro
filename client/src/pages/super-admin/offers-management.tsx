@@ -78,7 +78,14 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
 
   const createOfferMutation = useMutation({
     mutationFn: async (data: CreateOfferFormData) => {
-      return await apiRequest('POST', '/api/admin/offers', data);
+      // Transform the data to match the API schema
+      const transformedData = {
+        ...data,
+        trafficSources: data.allowedTrafficSources || [],
+        allowedApps: data.allowedApps || [],
+      };
+      console.log('Sending offer data:', transformedData);
+      return await apiRequest('POST', '/api/admin/offers', transformedData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
