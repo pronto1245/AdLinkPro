@@ -59,7 +59,7 @@ function Router() {
       </Route>
       <Route path="/admin/users">
         <ProtectedRoute allowedRoles={['super_admin']}>
-          <SuperAdminUsers />
+          <SuperAdminUsersManagement />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/users-management">
