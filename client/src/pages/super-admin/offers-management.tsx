@@ -886,8 +886,8 @@ export default function OffersManagement() {
   const handleExportOffers = () => {
     try {
       const offersToExport = selectedOffers.length > 0 
-        ? filteredOffers.filter(offer => selectedOffers.includes(offer.id))
-        : filteredOffers;
+        ? offers.filter((offer: any) => selectedOffers.includes(offer.id))
+        : offers;
         
       const dataToExport = offersToExport.map(offer => ({
         id: offer.id,
@@ -938,7 +938,7 @@ export default function OffersManagement() {
   // Функции для работы с выбором офферов
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedOffers(filteredOffers.map(offer => offer.id));
+      setSelectedOffers(offers.map((offer: any) => offer.id));
     } else {
       setSelectedOffers([]);
     }
@@ -952,8 +952,8 @@ export default function OffersManagement() {
     }
   };
 
-  const isAllSelected = filteredOffers.length > 0 && selectedOffers.length === filteredOffers.length;
-  const isIndeterminate = selectedOffers.length > 0 && selectedOffers.length < filteredOffers.length;
+  const isAllSelected = offers.length > 0 && selectedOffers.length === offers.length;
+  const isIndeterminate = selectedOffers.length > 0 && selectedOffers.length < offers.length;
 
   // Импорт офферов
   const handleImportOffers = async (file: File) => {
@@ -1201,7 +1201,7 @@ export default function OffersManagement() {
                 onClick={handleExportOffers}
                 className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
                 data-testid="button-export-offers"
-                disabled={filteredOffers.length === 0}
+                disabled={offers.length === 0}
               >
                 <Download className="w-4 h-4 mr-2" />
                 {selectedOffers.length > 0 ? `Экспорт (${selectedOffers.length})` : 'Экспорт'}
@@ -1241,7 +1241,7 @@ export default function OffersManagement() {
                       className={isIndeterminate ? "data-[state=checked]:bg-blue-600" : ""}
                       ref={(el) => {
                         if (el) {
-                          el.indeterminate = isIndeterminate;
+                          (el as any).indeterminate = isIndeterminate;
                         }
                       }}
                     />
