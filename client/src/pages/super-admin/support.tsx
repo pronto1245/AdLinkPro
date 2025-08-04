@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,7 +49,6 @@ type TicketFormData = z.infer<typeof ticketSchema>;
 
 export default function Support() {
   const { token } = useAuth();
-  const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   

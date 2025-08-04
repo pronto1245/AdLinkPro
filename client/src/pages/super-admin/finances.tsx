@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
 import { queryClient } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
@@ -28,7 +27,6 @@ import {
 
 export default function FinancesManagement() {
   const { token } = useAuth();
-  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');

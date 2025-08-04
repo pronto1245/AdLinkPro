@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/contexts/language-context';
 
 interface Activity {
   id: string;
@@ -56,7 +55,6 @@ const defaultActivities: Activity[] = [
 ];
 
 export default function RecentActivity({ activities = defaultActivities }: RecentActivityProps) {
-  const { t } = useLanguage();
 
   const getIconColor = (iconBg: string) => {
     if (iconBg.includes('green')) return 'text-green-600';

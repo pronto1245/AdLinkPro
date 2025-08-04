@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -43,7 +42,6 @@ import {
 
 export default function Analytics() {
   const { token } = useAuth();
-  const { t } = useLanguage();
   const [timeRange, setTimeRange] = useState('30d');
   const [selectedMetric, setSelectedMetric] = useState('revenue');
   const [searchTerm, setSearchTerm] = useState('');

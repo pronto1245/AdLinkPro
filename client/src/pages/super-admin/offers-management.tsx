@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLanguage } from '@/contexts/language-context';
-import { getMultilingualText } from '@/lib/i18n';
+
 import { useLocation } from 'wouter';
 import Sidebar from '@/components/layout/sidebar';
 import { useSidebar } from '@/contexts/sidebar-context';
@@ -62,7 +61,6 @@ interface CreateOfferFormProps {
 }
 
 function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
-  const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -886,7 +884,6 @@ interface OfferLog {
 }
 
 export default function OffersManagement() {
-  const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const { t, language, setLanguage } = useLanguage();
+
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
@@ -52,18 +52,7 @@ export default function Login() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-center">{t('login')}</CardTitle>
-            <div className="flex justify-center">
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="text-sm border border-slate-200 rounded px-3 py-1"
-                data-testid="language-select"
-              >
-                <option value="en">🇺🇸 English</option>
-                <option value="ru">🇷🇺 Русский</option>
-              </select>
-            </div>
+            <CardTitle className="text-center">Login</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
@@ -75,7 +64,7 @@ export default function Login() {
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="username">{t('username')} / {t('email')}</Label>
+                <Label htmlFor="username">Username / Email</Label>
                 <Input
                   id="username"
                   type="text"
@@ -86,7 +75,7 @@ export default function Login() {
                 />
               </div>
               <div>
-                <Label htmlFor="password">{t('password')}</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -102,7 +91,7 @@ export default function Login() {
                 disabled={loading}
                 data-testid="button-sign-in"
               >
-                {loading ? 'Loading...' : t('sign_in')}
+                {loading ? 'Loading...' : 'Sign In'}
               </Button>
             </form>
           </CardContent>

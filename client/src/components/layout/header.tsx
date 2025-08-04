@@ -1,4 +1,4 @@
-import { useLanguage } from '@/contexts/language-context';
+
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,7 +12,7 @@ interface HeaderProps {
 }
 
 export default function Header({ title, subtitle, children }: HeaderProps) {
-  const { language, setLanguage, t } = useLanguage();
+
   const { user, logout } = useAuth();
 
   const getUserDisplayName = () => {
@@ -37,24 +37,15 @@ export default function Header({ title, subtitle, children }: HeaderProps) {
             <i className="fas fa-bars w-6 h-6"></i>
           </Button>
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">{t(title)}</h2>
+            <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
             {subtitle && (
-              <p className="text-sm text-slate-600">{t(subtitle)}</p>
+              <p className="text-sm text-slate-600">{subtitle}</p>
             )}
           </div>
         </div>
         
         <div className="flex items-center space-x-4">
-          {/* Language Switcher */}
-          <Select value={language} onValueChange={setLanguage}>
-            <SelectTrigger className="w-[120px] text-sm border-0 bg-transparent" data-testid="language-switcher">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="en">🇺🇸 English</SelectItem>
-              <SelectItem value="ru">🇷🇺 Русский</SelectItem>
-            </SelectContent>
-          </Select>
+
           
           {/* Notifications */}
           <Button variant="ghost" size="sm" className="relative text-slate-600 hover:text-slate-900" data-testid="button-notifications">

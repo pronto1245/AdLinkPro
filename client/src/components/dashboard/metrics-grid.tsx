@@ -1,5 +1,4 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { useLanguage } from '@/contexts/language-context';
 
 interface Metric {
   label: string;
@@ -15,7 +14,6 @@ interface MetricsGridProps {
 }
 
 export default function MetricsGrid({ metrics }: MetricsGridProps) {
-  const { t } = useLanguage();
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

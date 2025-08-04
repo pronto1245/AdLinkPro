@@ -15,7 +15,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
@@ -51,7 +50,6 @@ type GlobalPostbackFormData = z.infer<typeof globalPostbackSchema>;
 
 export default function PostbacksManagement() {
   const { token } = useAuth();
-  const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   

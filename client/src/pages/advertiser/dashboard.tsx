@@ -6,12 +6,10 @@ import RevenueChart from '@/components/dashboard/revenue-chart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useLanguage } from '@/contexts/language-context';
 import { useAuth } from '@/contexts/auth-context';
 import { Link } from 'wouter';
 
 export default function AdvertiserDashboard() {
-  const { t } = useLanguage();
   const { token, user } = useAuth();
 
   const { data: metrics, isLoading: metricsLoading } = useQuery({

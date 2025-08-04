@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
+
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { 
@@ -48,7 +48,7 @@ interface SidebarProps {
 
 export default function Sidebar({ className }: SidebarProps) {
   const { user } = useAuth();
-  const { t } = useLanguage();
+
   const [location] = useLocation();
   const { isCollapsed, toggleSidebar } = useSidebar();
 

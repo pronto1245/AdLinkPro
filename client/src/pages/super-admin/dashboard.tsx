@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
+
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +21,7 @@ import {
 
 export default function SuperAdminDashboard() {
   const { token } = useAuth();
-  const { t } = useLanguage();
+
 
   const { data: metrics, isLoading } = useQuery({
     queryKey: ['/api/dashboard/metrics'],
@@ -58,7 +58,7 @@ export default function SuperAdminDashboard() {
 
   const dashboardMetrics = [
     {
-      title: 'total_users',
+      title: 'Total Users',
       value: metrics?.totalUsers?.toString() || '0',
       change: '+5.2%',
       changeType: 'increase' as const,
@@ -67,7 +67,7 @@ export default function SuperAdminDashboard() {
       iconColor: 'text-blue-600',
     },
     {
-      title: 'active_offers',
+      title: 'Active Offers',
       value: metrics?.activeOffers?.toString() || '0',
       change: '+2.1%',
       changeType: 'increase' as const,
@@ -76,7 +76,7 @@ export default function SuperAdminDashboard() {
       iconColor: 'text-green-600',
     },
     {
-      title: 'total_revenue',
+      title: 'Total Revenue',
       value: `$${metrics?.totalRevenue || '0'}`,
       change: '+12.5%',
       changeType: 'increase' as const,
@@ -85,7 +85,7 @@ export default function SuperAdminDashboard() {
       iconColor: 'text-purple-600',
     },
     {
-      title: 'fraud_alerts',
+      title: 'Fraud Alerts',
       value: metrics?.fraudAlerts?.toString() || '0',
       change: '-15.3%',
       changeType: 'decrease' as const,
@@ -100,7 +100,7 @@ export default function SuperAdminDashboard() {
       <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         <Sidebar />
         <div className="flex-1 overflow-hidden">
-          <Header title={t('dashboard')} />
+          <Header title="Dashboard" />
           <main className="flex-1 flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </main>
@@ -113,16 +113,16 @@ export default function SuperAdminDashboard() {
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
-        <Header title={t('dashboard')} />
+        <Header title="Dashboard" />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
           <div className="max-w-7xl mx-auto">
             {/* Welcome Section */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {t('welcome_back')}
+                Welcome back
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                {t('super_admin_dashboard_subtitle')}
+                Manage your affiliate network and monitor performance
               </p>
             </div>
 
@@ -134,7 +134,7 @@ export default function SuperAdminDashboard() {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                          {t(metric.title)}
+                          {metric.title}
                         </p>
                         <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2" data-testid={`metric-value-${metric.title}`}>
                           {metric.value}
@@ -169,7 +169,7 @@ export default function SuperAdminDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Activity className="w-5 h-5" />
-                    {t('recent_activity')}
+                    Recent Activity
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -188,7 +188,7 @@ export default function SuperAdminDashboard() {
                       </div>
                     )) || (
                       <div className="text-center py-8 text-gray-500">
-                        {t('no_recent_activity')}
+                        No recent activity
                       </div>
                     )}
                   </div>
@@ -200,7 +200,7 @@ export default function SuperAdminDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5" />
-                    {t('system_alerts')}
+                    System Alerts
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -222,7 +222,7 @@ export default function SuperAdminDashboard() {
                               {alert.title}
                             </p>
                             <Badge variant={alert.resolved ? 'default' : 'destructive'}>
-                              {alert.resolved ? t('resolved') : t('active')}
+                              {alert.resolved ? 'Resolved' : 'Active'}
                             </Badge>
                           </div>
                           <p className="text-xs text-gray-500 mt-1">
@@ -235,7 +235,7 @@ export default function SuperAdminDashboard() {
                       </div>
                     )) || (
                       <div className="text-center py-8 text-gray-500">
-                        {t('no_system_alerts')}
+                        No system alerts
                       </div>
                     )}
                   </div>
@@ -246,25 +246,25 @@ export default function SuperAdminDashboard() {
             {/* Quick Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>{t('quick_actions')}</CardTitle>
+                <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <Button variant="outline" className="h-20 flex flex-col gap-2" data-testid="button-create-user">
                     <Users className="w-6 h-6" />
-                    <span className="text-sm">{t('create_user')}</span>
+                    <span className="text-sm">Create User</span>
                   </Button>
                   <Button variant="outline" className="h-20 flex flex-col gap-2" data-testid="button-create-offer">
                     <Target className="w-6 h-6" />
-                    <span className="text-sm">{t('create_offer')}</span>
+                    <span className="text-sm">Create Offer</span>
                   </Button>
                   <Button variant="outline" className="h-20 flex flex-col gap-2" data-testid="button-view-reports">
                     <Activity className="w-6 h-6" />
-                    <span className="text-sm">{t('view_reports')}</span>
+                    <span className="text-sm">View Reports</span>
                   </Button>
                   <Button variant="outline" className="h-20 flex flex-col gap-2" data-testid="button-system-settings">
                     <Shield className="w-6 h-6" />
-                    <span className="text-sm">{t('system_settings')}</span>
+                    <span className="text-sm">System Settings</span>
                   </Button>
                 </div>
               </CardContent>

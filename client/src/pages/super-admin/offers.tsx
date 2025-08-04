@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
-import { getMultilingualText } from '@/lib/i18n';
+
 import { queryClient } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
@@ -23,7 +22,7 @@ import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play
 
 export default function OffersManagement() {
   const { token } = useAuth();
-  const { t, language } = useLanguage();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);

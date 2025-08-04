@@ -1,8 +1,6 @@
 import { useParams, useLocation } from 'wouter';
 import { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useLanguage } from '../../contexts/language-context';
-import { getMultilingualText } from '../../lib/i18n';
 import Sidebar from '../../components/layout/sidebar';
 import { useSidebar } from '../../contexts/sidebar-context';
 import Header from '../../components/layout/header';
@@ -31,7 +29,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../componen
 export default function OfferDetails() {
   const [, setLocation] = useLocation();
   const params = useParams();
-  const { t, language } = useLanguage();
   const { isCollapsed } = useSidebar();
   const [activeTab, setActiveTab] = useState('details');
   const [uploadedCreatives, setUploadedCreatives] = useState<any[]>([]);
