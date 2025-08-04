@@ -1374,8 +1374,21 @@ const FraudDetectionPage = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => {
+                                  // Mark alert as resolved
+                                  queryClient.setQueryData(['/api/admin/smart-alerts'], (oldAlerts: any[]) => {
+                                    return oldAlerts?.map(a => 
+                                      a.id === alert.id ? { ...a, isResolved: true, resolvedAt: new Date().toISOString() } : a
+                                    ) || [];
+                                  });
+                                  toast({
+                                    title: "Алерт решён",
+                                    description: `Алерт "${alert.title}" отмечен как решённый`,
+                                  });
+                                }}
                                 data-testid={`resolve-alert-${alert.id}`}
                                 title="Отметить как решённый"
+                                className="hover:bg-green-50 hover:text-green-700 hover:border-green-300 dark:hover:bg-green-900/20 dark:hover:text-green-400"
                               >
                                 <CheckCircle className="w-3 h-3" />
                               </Button>
@@ -1383,8 +1396,20 @@ const FraudDetectionPage = () => {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => {
+                                // Show alert details
+                                toast({
+                                  title: alert.title,
+                                  description: `${alert.description}\n\nВремя: ${new Date(alert.createdAt).toLocaleString('ru-RU')}\nСерьёзность: ${
+                                    alert.severity === 'critical' ? 'Критический' :
+                                    alert.severity === 'high' ? 'Высокий' :
+                                    alert.severity === 'medium' ? 'Средний' : 'Низкий'
+                                  }${alert.affectedCount ? `\nЗатронуто: ${alert.affectedCount}` : ''}`,
+                                });
+                              }}
                               data-testid={`view-alert-${alert.id}`}
                               title="Подробности алерта"
+                              className="hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
                             >
                               <Eye className="w-3 h-3" />
                             </Button>
