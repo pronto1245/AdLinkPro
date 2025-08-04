@@ -489,43 +489,75 @@ const FraudDetectionPage = () => {
 
           {/* Main Content Tabs */}
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-8 h-12">
-              <TabsTrigger value="reports" className="flex items-center justify-center space-x-1 text-xs">
-                <FileText className="w-3 h-3" />
+            <TabsList className="grid w-full grid-cols-8 h-14 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+              <TabsTrigger 
+                value="reports" 
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-red-600 dark:data-[state=active]:text-red-400"
+                title="Фрод-отчёты"
+              >
+                <FileText className="w-4 h-4" />
                 <span className="hidden sm:inline">Фрод-отчёты</span>
                 <span className="sm:hidden">Отчёты</span>
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center justify-center space-x-1 text-xs">
-                <BarChart3 className="w-3 h-3" />
+              <TabsTrigger 
+                value="analytics" 
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+                title="Аналитика"
+              >
+                <BarChart3 className="w-4 h-4" />
                 <span className="hidden sm:inline">Аналитика</span>
                 <span className="sm:hidden">Данные</span>
               </TabsTrigger>
-              <TabsTrigger value="ip-analysis" className="flex items-center justify-center space-x-1 text-xs">
-                <Globe className="w-3 h-3" />
+              <TabsTrigger 
+                value="ip-analysis" 
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-green-600 dark:data-[state=active]:text-green-400"
+                title="IP Анализ"
+              >
+                <Globe className="w-4 h-4" />
                 <span className="hidden sm:inline">IP Анализ</span>
                 <span className="sm:hidden">IP</span>
               </TabsTrigger>
-              <TabsTrigger value="rules" className="flex items-center justify-center space-x-1 text-xs">
-                <Settings className="w-3 h-3" />
+              <TabsTrigger 
+                value="rules" 
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-purple-600 dark:data-[state=active]:text-purple-400"
+                title="Правила"
+              >
+                <Settings className="w-4 h-4" />
                 <span>Правила</span>
               </TabsTrigger>
-              <TabsTrigger value="integrations" className="flex items-center justify-center space-x-1 text-xs">
-                <Zap className="w-3 h-3" />
+              <TabsTrigger 
+                value="integrations" 
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-orange-600 dark:data-[state=active]:text-orange-400"
+                title="Интеграции"
+              >
+                <Zap className="w-4 h-4" />
                 <span className="hidden sm:inline">Интеграции</span>
                 <span className="sm:hidden">API</span>
               </TabsTrigger>
-              <TabsTrigger value="alerts" className="flex items-center justify-center space-x-1 text-xs">
-                <AlertCircle className="w-3 h-3" />
+              <TabsTrigger 
+                value="alerts" 
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-yellow-600 dark:data-[state=active]:text-yellow-400"
+                title="Smart-алерты"
+              >
+                <AlertCircle className="w-4 h-4" />
                 <span className="hidden sm:inline">Smart-алерты</span>
                 <span className="sm:hidden">Алерты</span>
               </TabsTrigger>
-              <TabsTrigger value="blocks" className="flex items-center justify-center space-x-1 text-xs">
-                <Ban className="w-3 h-3" />
+              <TabsTrigger 
+                value="blocks" 
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400"
+                title="Блокировки"
+              >
+                <Ban className="w-4 h-4" />
                 <span className="hidden sm:inline">Блокировки</span>
                 <span className="sm:hidden">Блоки</span>
               </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center justify-center space-x-1 text-xs">
-                <Settings className="w-3 h-3" />
+              <TabsTrigger 
+                value="settings" 
+                className="flex items-center justify-center space-x-2 text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-600 dark:data-[state=active]:text-gray-400"
+                title="Настройки"
+              >
+                <Settings className="w-4 h-4" />
                 <span className="hidden sm:inline">Настройки</span>
                 <span className="sm:hidden">Опции</span>
               </TabsTrigger>
