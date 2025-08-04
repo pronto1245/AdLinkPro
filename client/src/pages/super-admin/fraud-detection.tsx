@@ -175,6 +175,8 @@ const FraudDetectionPage = () => {
   const [newIpInput, setNewIpInput] = useState('');
   const [blockedIps, setBlockedIps] = useState(['192.168.1.100', '10.0.0.50', '172.16.0.25', '203.0.113.15']);
   const [blockedDevices, setBlockedDevices] = useState(['Device-ABC123', 'Device-XYZ789', 'Device-DEF456']);
+  const [analyzeIpInput, setAnalyzeIpInput] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Fetch fraud reports
   const { data: fraudReports = [], isLoading: reportsLoading } = useQuery<FraudReport[]>({
@@ -974,12 +976,44 @@ const FraudDetectionPage = () => {
                         <Input
                           placeholder="Введите IP адрес для анализа (например: 192.168.1.1)"
                           className="w-full"
+                          value={analyzeIpInput}
+                          onChange={(e) => setAnalyzeIpInput(e.target.value)}
                           data-testid="ip-search-input"
                         />
                       </div>
-                      <Button data-testid="analyze-ip-btn" title="Анализировать IP">
+                      <Button 
+                        onClick={async () => {
+                          if (!analyzeIpInput.trim()) {
+                            toast({
+                              title: "Ошибка",
+                              description: "Пожалуйста, введите IP адрес для анализа",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+
+                          setIsAnalyzing(true);
+                          toast({
+                            title: "Анализ IP начат",
+                            description: `Анализируется IP адрес ${analyzeIpInput.trim()}...`,
+                          });
+
+                          // Симуляция анализа с задержкой
+                          setTimeout(() => {
+                            setIsAnalyzing(false);
+                            toast({
+                              title: "Анализ завершён",
+                              description: `IP ${analyzeIpInput.trim()}: Риск-скор 3.2/10, Геолокация: Россия, Статус: Чистый`,
+                            });
+                          }, 3000);
+                        }}
+                        disabled={isAnalyzing}
+                        data-testid="analyze-ip-btn" 
+                        title="Анализировать IP"
+                        className="hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
+                      >
                         <Search className="w-4 h-4 mr-2" />
-                        Анализировать
+                        {isAnalyzing ? 'Анализируем...' : 'Анализировать'}
                       </Button>
                     </div>
 
