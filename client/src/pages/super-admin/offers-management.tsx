@@ -743,6 +743,11 @@ interface Offer {
   isBlocked: boolean;
   blockedReason: string;
   isArchived: boolean;
+  kpiConditions?: string;
+  dailyLimit?: number;
+  monthlyLimit?: number;
+  antifraudEnabled?: boolean;
+  autoApprovePartners?: boolean;
   regionVisibility: string[];
   createdAt: string;
   updatedAt: string;
@@ -1130,7 +1135,7 @@ export default function OffersManagement() {
 
   const handleOfferUpdate = (updates: Partial<Offer>) => {
     if (!selectedOffer) return;
-    updateOfferMutation.mutate({
+    setSelectedOffer({
       ...selectedOffer,
       ...updates
     });
@@ -2184,7 +2189,7 @@ export default function OffersManagement() {
                   <Label>Дневной лимит</Label>
                   <Input
                     type="number"
-                    defaultValue={selectedOffer.dailyLimit || ''}
+                    defaultValue={selectedOffer.dailyLimit?.toString() || ''}
                     onChange={(e) => handleOfferUpdate({ dailyLimit: e.target.value ? parseInt(e.target.value) : undefined })}
                     placeholder="Без ограничений"
                   />
@@ -2194,9 +2199,146 @@ export default function OffersManagement() {
                   <Label>Месячный лимит</Label>
                   <Input
                     type="number"
-                    defaultValue={selectedOffer.monthlyLimit || ''}
+                    defaultValue={selectedOffer.monthlyLimit?.toString() || ''}
                     onChange={(e) => handleOfferUpdate({ monthlyLimit: e.target.value ? parseInt(e.target.value) : undefined })}
                     placeholder="Без ограничений"
+                  />
+                </div>
+              </div>
+
+              {/* Источники трафика */}
+              <div>
+                <Label>Разрешенные источники трафика</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                  {['Facebook', 'Google', 'TikTok', 'Instagram', 'YouTube', 'Twitter', 'LinkedIn', 'Snapchat', 'Pinterest'].map((source) => (
+                    <div key={source} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`traffic-${source}`}
+                        checked={selectedOffer.trafficSources?.includes(source) || false}
+                        onChange={(e) => {
+                          const current = selectedOffer.trafficSources || [];
+                          const updated = e.target.checked 
+                            ? [...current, source]
+                            : current.filter(s => s !== source);
+                          handleOfferUpdate({ trafficSources: updated });
+                        }}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor={`traffic-${source}`} className="text-sm">{source}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Разрешенные приложения */}
+              <div>
+                <Label>Разрешенные приложения</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                  {['Мобильные приложения', 'Веб-приложения', 'Telegram боты', 'Браузерные расширения', 'Desktop приложения', 'PWA'].map((app) => (
+                    <div key={app} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`app-${app}`}
+                        checked={selectedOffer.allowedApps?.includes(app) || false}
+                        onChange={(e) => {
+                          const current = selectedOffer.allowedApps || [];
+                          const updated = e.target.checked 
+                            ? [...current, app]
+                            : current.filter(a => a !== app);
+                          handleOfferUpdate({ allowedApps: updated });
+                        }}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor={`app-${app}`} className="text-sm">{app}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Landing Pages */}
+              <div>
+                <Label>Landing Pages</Label>
+                <div className="space-y-3 mt-2">
+                  {(selectedOffer.landingPages || []).map((lp, index) => (
+                    <div key={index} className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 border rounded">
+                      <Input
+                        placeholder="Название"
+                        defaultValue={lp.name}
+                        onChange={(e) => {
+                          const updated = [...(selectedOffer.landingPages || [])];
+                          updated[index] = { ...lp, name: e.target.value };
+                          handleOfferUpdate({ landingPages: updated });
+                        }}
+                      />
+                      <Input
+                        placeholder="URL"
+                        defaultValue={lp.url}
+                        onChange={(e) => {
+                          const updated = [...(selectedOffer.landingPages || [])];
+                          updated[index] = { ...lp, url: e.target.value };
+                          handleOfferUpdate({ landingPages: updated });
+                        }}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Сумма"
+                        defaultValue={lp.payoutAmount.toString()}
+                        onChange={(e) => {
+                          const updated = [...(selectedOffer.landingPages || [])];
+                          updated[index] = { ...lp, payoutAmount: parseFloat(e.target.value) || 0 };
+                          handleOfferUpdate({ landingPages: updated });
+                        }}
+                      />
+                      <Input
+                        placeholder="GEO"
+                        defaultValue={lp.geo}
+                        onChange={(e) => {
+                          const updated = [...(selectedOffer.landingPages || [])];
+                          updated[index] = { ...lp, geo: e.target.value };
+                          handleOfferUpdate({ landingPages: updated });
+                        }}
+                      />
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const updated = [...(selectedOffer.landingPages || []), {
+                        name: '',
+                        url: '',
+                        payoutAmount: 0,
+                        currency: selectedOffer.currency,
+                        geo: ''
+                      }];
+                      handleOfferUpdate({ landingPages: updated });
+                    }}
+                  >
+                    Добавить Landing Page
+                  </Button>
+                </div>
+              </div>
+
+              {/* Дополнительные поля */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label>Ограничения</Label>
+                  <Textarea
+                    defaultValue={selectedOffer.restrictions || ''}
+                    onChange={(e) => handleOfferUpdate({ restrictions: e.target.value })}
+                    placeholder="Ограничения по траффику"
+                    rows={2}
+                  />
+                </div>
+                
+                <div>
+                  <Label>Комментарий модерации</Label>
+                  <Textarea
+                    defaultValue={selectedOffer.moderationComment || ''}
+                    onChange={(e) => handleOfferUpdate({ moderationComment: e.target.value })}
+                    placeholder="Комментарий модератора"
+                    rows={2}
                   />
                 </div>
               </div>
@@ -2210,7 +2352,7 @@ export default function OffersManagement() {
                     </div>
                   </div>
                   <Switch
-                    defaultChecked={selectedOffer.antifraudEnabled}
+                    defaultChecked={selectedOffer.antifraudEnabled || false}
                     onCheckedChange={(checked) => handleOfferUpdate({ antifraudEnabled: checked })}
                   />
                 </div>
@@ -2223,8 +2365,49 @@ export default function OffersManagement() {
                     </div>
                   </div>
                   <Switch
-                    defaultChecked={selectedOffer.autoApprovePartners}
+                    defaultChecked={selectedOffer.autoApprovePartners || false}
                     onCheckedChange={(checked) => handleOfferUpdate({ autoApprovePartners: checked })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="text-base">KYC обязателен</Label>
+                    <div className="text-sm text-muted-foreground">
+                      Требовать верификацию партнеров
+                    </div>
+                  </div>
+                  <Switch
+                    defaultChecked={selectedOffer.kycRequired || false}
+                    onCheckedChange={(checked) => handleOfferUpdate({ kycRequired: checked })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="text-base">Приватный оффер</Label>
+                    <div className="text-sm text-muted-foreground">
+                      Скрыть от публичного просмотра
+                    </div>
+                  </div>
+                  <Switch
+                    defaultChecked={selectedOffer.isPrivate || false}
+                    onCheckedChange={(checked) => handleOfferUpdate({ isPrivate: checked })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="text-base">Smartlink</Label>
+                    <div className="text-sm text-muted-foreground">
+                      Включить умную маршрутизацию
+                    </div>
+                  </div>
+                  <Switch
+                    defaultChecked={selectedOffer.smartlinkEnabled || false}
+                    onCheckedChange={(checked) => handleOfferUpdate({ smartlinkEnabled: checked })}
                   />
                 </div>
               </div>
@@ -2237,7 +2420,11 @@ export default function OffersManagement() {
                   Отмена
                 </Button>
                 <Button 
-                  onClick={() => updateOfferMutation.mutate(selectedOffer)}
+                  onClick={() => {
+                    if (selectedOffer) {
+                      updateOfferMutation.mutate(selectedOffer);
+                    }
+                  }}
                   disabled={updateOfferMutation.isPending}
                 >
                   {updateOfferMutation.isPending ? 'Сохранение...' : 'Сохранить изменения'}
