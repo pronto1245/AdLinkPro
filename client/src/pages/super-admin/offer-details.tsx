@@ -8,7 +8,15 @@ import Header from '../../components/layout/header';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
-import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, MapPin, Shield, Image, Activity, Clock, FileText, TrendingUp, Filter, Smartphone, Building2, UserCheck } from 'lucide-react';
+import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, MapPin, Shield, Image, Activity, Clock, FileText, TrendingUp, Filter, Smartphone, Building2, UserCheck, Edit } from 'lucide-react';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../components/ui/form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '../../lib/queryClient';
+import { Switch } from '../../components/ui/switch';
+import { Textarea } from '../../components/ui/textarea';
+import { z } from 'zod';
 import { Separator } from '../../components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
@@ -16,6 +24,7 @@ import { useToast } from '../../hooks/use-toast';
 import { Upload, X, Download } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Input } from '../../components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 
 export default function OfferDetails() {
   const [, setLocation] = useLocation();
@@ -40,6 +49,9 @@ export default function OfferDetails() {
   const [advertiserSearchTerm, setAdvertiserSearchTerm] = useState('');
   const [partnerFilter, setPartnerFilter] = useState('all');
   const [partnerSearchTerm, setPartnerSearchTerm] = useState('');
+  
+  // Edit offer state
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   const offerId = params.id;
 
@@ -321,13 +333,23 @@ export default function OfferDetails() {
                 </div>
               </div>
             </div>
-            {offer.logo && (
-              <img 
-                src={offer.logo} 
-                alt={offer.name}
-                className="w-20 h-20 object-contain rounded-lg border border-gray-200 dark:border-gray-700"
-              />
-            )}
+            
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={() => setIsEditDialogOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Редактировать оффер
+              </Button>
+              {offer.logo && (
+                <img 
+                  src={offer.logo} 
+                  alt={offer.name}
+                  className="w-20 h-20 object-contain rounded-lg border border-gray-200 dark:border-gray-700"
+                />
+              )}
+            </div>
           </div>
         </div>
 
@@ -1468,6 +1490,366 @@ export default function OfferDetails() {
           </div>
         </main>
       </div>
+      
+      {/* Edit Offer Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Редактировать оффер: {offer.name}</DialogTitle>
+          </DialogHeader>
+          <EditOfferForm 
+            offer={offer} 
+            onSuccess={() => setIsEditDialogOpen(false)} 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+// Edit Offer Form Component
+function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Schema для редактирования оффера (упрощенная версия)
+  const editOfferSchema = z.object({
+    name: z.string().min(1, 'Название обязательно'),
+    description: z.string().min(1, 'Описание обязательно'),
+    category: z.string().min(1, 'Категория обязательна'),
+    status: z.string().min(1, 'Статус обязателен'),
+    payoutType: z.string().min(1, 'Тип выплаты обязателен'),
+    currency: z.string().min(1, 'Валюта обязательна'),
+    logo: z.string().optional(),
+    kpiConditions: z.string().optional(),
+    allowedTrafficSources: z.array(z.string()).optional(),
+    allowedApps: z.array(z.string()).optional(),
+    antifraudEnabled: z.boolean().optional(),
+    autoApprovePartners: z.boolean().optional(),
+    dailyLimit: z.number().optional(),
+    monthlyLimit: z.number().optional(),
+    landingPages: z.array(z.object({
+      name: z.string(),
+      url: z.string(),
+      payoutAmount: z.number(),
+      currency: z.string(),
+      geo: z.string().optional()
+    })).optional()
+  });
+
+  type EditOfferFormData = z.infer<typeof editOfferSchema>;
+
+  const form = useForm<EditOfferFormData>({
+    resolver: zodResolver(editOfferSchema),
+    defaultValues: {
+      name: offer.name || '',
+      description: offer.description || '',
+      category: offer.category || '',
+      status: offer.status || 'draft',
+      payoutType: offer.payoutType || 'cpa',
+      currency: offer.currency || 'USD',
+      logo: offer.logo || '',
+      kpiConditions: offer.kpiConditions || '',
+      allowedTrafficSources: offer.trafficSources || [],
+      allowedApps: offer.allowedApps || [],
+      antifraudEnabled: offer.antifraudEnabled || true,
+      autoApprovePartners: offer.autoApprovePartners || false,
+      dailyLimit: offer.dailyLimit || undefined,
+      monthlyLimit: offer.monthlyLimit || undefined,
+      landingPages: offer.landingPages || [{ name: 'Основная страница', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]
+    },
+  });
+
+  const updateOfferMutation = useMutation({
+    mutationFn: async (data: EditOfferFormData) => {
+      const transformedData = {
+        ...data,
+        trafficSources: data.allowedTrafficSources || [],
+        allowedApps: data.allowedApps || [],
+      };
+      return await apiRequest('PUT', `/api/admin/offers/${offer.id}`, transformedData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/admin/offer-stats/${offer.id}`] });
+      toast({
+        title: "Успех",
+        description: "Оффер успешно обновлен",
+      });
+      onSuccess();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось обновить оффер",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = (data: EditOfferFormData) => {
+    updateOfferMutation.mutate(data);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        
+        {/* Основная информация */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Название оффера</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Введите название оффера" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Категория</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите категорию" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="gambling">Гемблинг</SelectItem>
+                    <SelectItem value="finance">Финансы</SelectItem>
+                    <SelectItem value="nutra">Нутра</SelectItem>
+                    <SelectItem value="dating">Знакомства</SelectItem>
+                    <SelectItem value="lottery">Лотереи</SelectItem>
+                    <SelectItem value="crypto">Криптовалюты</SelectItem>
+                    <SelectItem value="ecommerce">E-commerce</SelectItem>
+                    <SelectItem value="mobile">Мобильные</SelectItem>
+                    <SelectItem value="gaming">Игры</SelectItem>
+                    <SelectItem value="software">ПО</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Описание</FormLabel>
+              <FormControl>
+                <Textarea {...field} placeholder="Подробное описание оффера" rows={3} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Статус</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите статус" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="draft">Черновик</SelectItem>
+                    <SelectItem value="active">Активен</SelectItem>
+                    <SelectItem value="pending">Ожидает</SelectItem>
+                    <SelectItem value="blocked">Заблокирован</SelectItem>
+                    <SelectItem value="archived">Архивный</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="payoutType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Тип выплаты</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите тип" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="cpa">CPA (за действие)</SelectItem>
+                    <SelectItem value="cps">CPS (от продажи)</SelectItem>
+                    <SelectItem value="crl">CRL (RevShare)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="currency"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Валюта</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите валюту" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="RUB">RUB</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="logo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Логотип (URL)</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="https://example.com/logo.png" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="kpiConditions"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>KPI условия</FormLabel>
+              <FormControl>
+                <Textarea {...field} placeholder="Условия достижения KPI" rows={2} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="dailyLimit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Дневной лимит</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    type="number"
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                    placeholder="Без ограничений" 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="monthlyLimit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Месячный лимит</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    type="number"
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                    placeholder="Без ограничений" 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="antifraudEnabled"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Антифрод включен</FormLabel>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="autoApprovePartners"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Автоодобрение партнеров</FormLabel>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="flex justify-end gap-3 pt-6">
+          <Button type="button" variant="outline" onClick={onSuccess}>
+            Отмена
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={updateOfferMutation.isPending}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {updateOfferMutation.isPending ? 'Сохранение...' : 'Сохранить изменения'}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

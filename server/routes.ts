@@ -777,6 +777,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/admin/offers/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const authUser = req.user!;
+      console.log("Updating offer:", id, "for user:", authUser.id, authUser.username);
+      console.log("Update data:", JSON.stringify(req.body, null, 2));
+      
+      // Update offer directly in database
+      const [updatedOffer] = await db
+        .update(offers)
+        .set({
+          name: req.body.name || undefined,
+          category: req.body.category || undefined,
+          description: req.body.description || undefined,
+          logo: req.body.logo || undefined,
+          status: req.body.status || undefined,
+          payoutType: req.body.payoutType || undefined,
+          currency: req.body.currency || undefined,
+          landingPages: req.body.landingPages || undefined,
+          kpiConditions: req.body.kpiConditions || undefined,
+          trafficSources: req.body.trafficSources || req.body.allowedTrafficSources || undefined,
+          allowedApps: req.body.allowedApps || undefined,
+          dailyLimit: req.body.dailyLimit || undefined,
+          monthlyLimit: req.body.monthlyLimit || undefined,
+          antifraudEnabled: req.body.antifraudEnabled !== undefined ? req.body.antifraudEnabled : undefined,
+          autoApprovePartners: req.body.autoApprovePartners !== undefined ? req.body.autoApprovePartners : undefined,
+          updatedAt: new Date(),
+        })
+        .where(eq(offers.id, id))
+        .returning();
+      
+      if (!updatedOffer) {
+        return res.status(404).json({ error: "Оффер не найден" });
+      }
+      
+      console.log("Updated offer:", updatedOffer);
+      res.json(updatedOffer);
+    } catch (error) {
+      console.error("Update offer error:", error);
+      res.status(500).json({ error: "Не удалось обновить оффер", details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
   app.delete("/api/admin/offers/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const { id } = req.params;
