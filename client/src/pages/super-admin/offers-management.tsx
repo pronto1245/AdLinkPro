@@ -765,6 +765,7 @@ export default function OffersManagement() {
   
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isModerationDialogOpen, setIsModerationDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
@@ -880,6 +881,86 @@ export default function OffersManagement() {
     },
   });
 
+  // Экспорт офферов
+  const handleExportOffers = () => {
+    try {
+      const dataToExport = filteredOffers.map(offer => ({
+        id: offer.id,
+        name: offer.name,
+        category: offer.category,
+        description: offer.description,
+        status: offer.status,
+        payoutType: offer.payoutType,
+        geoPricing: offer.geoPricing,
+        landingPages: offer.landingPages,
+        allowedTrafficSources: offer.allowedTrafficSources,
+        allowedApplications: offer.allowedApplications,
+        kycRequired: offer.kycRequired,
+        isPrivate: offer.isPrivate,
+        restrictions: offer.restrictions,
+        createdAt: offer.createdAt,
+        advertiserId: offer.advertiserId
+      }));
+
+      const dataStr = JSON.stringify(dataToExport, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `offers_export_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Успех",
+        description: `Экспортировано ${dataToExport.length} офферов`,
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось экспортировать офферы",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Импорт офферов
+  const handleImportOffers = async (file: File) => {
+    try {
+      const text = await file.text();
+      const importedOffers = JSON.parse(text);
+      
+      if (!Array.isArray(importedOffers)) {
+        throw new Error('Файл должен содержать массив офферов');
+      }
+
+      // Отправляем данные на сервер для импорта
+      const response = await apiRequest('POST', '/api/admin/offers/import', {
+        offers: importedOffers
+      });
+
+      if (response.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
+        setIsImportDialogOpen(false);
+        toast({
+          title: "Успех",
+          description: `Импортировано ${importedOffers.length} офферов`,
+        });
+      } else {
+        throw new Error('Ошибка импорта на сервере');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось импортировать офферы",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStatusBadge = (status: string, moderationStatus: string, isBlocked: boolean, isArchived: boolean) => {
     if (isArchived) return <Badge variant="secondary">{t('archived')}</Badge>;
     if (isBlocked) return <Badge variant="destructive">{t('blocked')}</Badge>;
@@ -989,11 +1070,19 @@ export default function OffersManagement() {
               <CreateOfferForm onSuccess={() => setIsCreateDialogOpen(false)} />
             </DialogContent>
           </Dialog>
-          <Button variant="outline">
+          <Button 
+            variant="outline"
+            onClick={() => setIsImportDialogOpen(true)}
+            className="border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+          >
             <Upload className="w-4 h-4 mr-2" />
             {t('import')}
           </Button>
-          <Button variant="outline">
+          <Button 
+            variant="outline"
+            onClick={handleExportOffers}
+            className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+          >
             <Download className="w-4 h-4 mr-2" />
             {t('export')}
           </Button>
@@ -1075,7 +1164,40 @@ export default function OffersManagement() {
       {/* Offers Table */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('offers')} ({offers.length})</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>{t('offers')} ({offers.length})</CardTitle>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleExportOffers}
+                className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                data-testid="button-export-offers"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Экспорт
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsImportDialogOpen(true)}
+                className="border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                data-testid="button-import-offers"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Импорт
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setIsCreateDialogOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                data-testid="button-create-offer"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {t('create_offer')}
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -2003,6 +2125,39 @@ export default function OffersManagement() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Import Dialog */}
+      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Импорт офферов</DialogTitle>
+            <DialogDescription>
+              Выберите JSON файл с офферами для импорта
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="importFile">Файл офферов (JSON)</Label>
+              <Input
+                id="importFile"
+                type="file"
+                accept=".json"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleImportOffers(file);
+                  }
+                }}
+                data-testid="input-import-file"
+              />
+            </div>
+            <div className="text-sm text-muted-foreground">
+              <p>Файл должен содержать массив объектов офферов в формате JSON.</p>
+              <p>Поддерживаемые поля: name, category, description, status, payoutType, geoPricing, и другие.</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
           </div>
         </main>
       </div>

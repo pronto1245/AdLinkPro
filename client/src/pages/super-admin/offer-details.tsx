@@ -20,7 +20,7 @@ export default function OfferDetails() {
     enabled: !!offerId
   });
 
-  const offer = allOffers.find((o: any) => o.id === offerId);
+  const offer = (allOffers as any[]).find((o: any) => o.id === offerId);
 
   // Fetch offer stats  
   const { data: stats } = useQuery({

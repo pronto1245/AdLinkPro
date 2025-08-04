@@ -396,6 +396,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import offers
+  app.post("/api/admin/offers/import", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { offers } = req.body;
+      
+      if (!Array.isArray(offers)) {
+        return res.status(400).json({ error: "Offers должен быть массивом" });
+      }
+
+      const importedOffers = [];
+      
+      for (const offerData of offers) {
+        try {
+          // Удаляем поля, которые будут автоматически сгенерированы
+          delete offerData.id;
+          delete offerData.createdAt;
+          delete offerData.updatedAt;
+          
+          // Устанавливаем создателя как текущего пользователя, если не указан advertiserId
+          if (!offerData.advertiserId) {
+            offerData.advertiserId = authUser.id;
+          }
+          
+          // Создаем оффер с базовыми полями без строгой валидации
+          const offer = await storage.createOffer({
+            name: offerData.name || 'Импортированный оффер',
+            category: offerData.category || 'other',
+            description: offerData.description || '',
+            logo: offerData.logo || '',
+            status: offerData.status || 'draft',
+            payoutType: offerData.payoutType || 'cpa',
+            currency: offerData.currency || 'USD',
+            landingPages: offerData.landingPages || [],
+            kpiConditions: offerData.kpiConditions || '',
+            allowedTrafficSources: offerData.allowedTrafficSources || [],
+            allowedApps: offerData.allowedApps || [],
+            dailyLimit: offerData.dailyLimit || null,
+            monthlyLimit: offerData.monthlyLimit || null,
+            totalLimit: offerData.totalLimit || null,
+            restrictions: offerData.restrictions || '',
+            geoPricing: offerData.geoPricing || [],
+            kycRequired: offerData.kycRequired || false,
+            isPrivate: offerData.isPrivate || false,
+            smartlinkEnabled: offerData.smartlinkEnabled || false,
+            advertiserId: offerData.advertiserId || authUser.id,
+          });
+          
+          importedOffers.push(offer);
+        } catch (offerError) {
+          console.error("Ошибка импорта оффера:", offerError);
+          // Продолжаем импорт остальных офферов
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Импортировано ${importedOffers.length} из ${offers.length} офферов`,
+        imported: importedOffers.length,
+        total: offers.length 
+      });
+    } catch (error) {
+      console.error("Import offers error:", error);
+      res.status(500).json({ error: "Ошибка импорта офферов" });
+    }
+  });
+
   // Tracking links
   app.get("/api/tracking-links", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
