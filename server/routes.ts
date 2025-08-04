@@ -3,14 +3,15 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { insertUserSchema, insertOfferSchema, insertTicketSchema, type User, offers } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, type User, offers, postbacks, postbackLogs } from "@shared/schema";
+import { eq, and } from "drizzle-orm";
 import { db, queryCache } from "./db";
 import { z } from "zod";
 import express from "express";
 import { randomUUID } from "crypto";
 import { notificationService } from "./services/notification";
 import { auditLog, checkIPBlacklist, rateLimiter, loginRateLimiter, recordFailedLogin, trackDevice, detectFraud, getAuditLogs } from "./middleware/security";
+import PostbackService from "./services/postback";
 
 // Extend Express Request to include user property
 declare global {
@@ -1931,6 +1932,181 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(results);
     } catch (error: any) {
       console.error("Bulk delete users error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Postback endpoints
+  app.get('/api/postbacks', authenticateToken, async (req, res) => {
+    try {
+      const postbacksData = await db.select()
+        .from(postbacks)
+        .leftJoin(offers, eq(postbacks.offerId, offers.id))
+        .where(eq(postbacks.userId, req.user.id));
+      
+      const formattedPostbacks = postbacksData.map(({ postbacks: pb, offers: offer }) => ({
+        ...pb,
+        offerName: offer?.name || null,
+      }));
+      
+      res.json(formattedPostbacks);
+    } catch (error) {
+      console.error("Get postbacks error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post('/api/postbacks', authenticateToken, async (req, res) => {
+    try {
+      const postbackData = insertPostbackSchema.parse(req.body);
+      const [newPostback] = await db.insert(postbacks).values({
+        ...postbackData,
+        userId: req.user.id,
+      }).returning();
+      
+      auditLog(req, 'CREATE', 'postbacks', true, { postbackId: newPostback.id });
+      res.json(newPostback);
+    } catch (error) {
+      console.error("Create postback error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put('/api/postbacks/:id', authenticateToken, async (req, res) => {
+    try {
+      const postbackData = insertPostbackSchema.parse(req.body);
+      const [updatedPostback] = await db.update(postbacks)
+        .set(postbackData)
+        .where(and(eq(postbacks.id, req.params.id), eq(postbacks.userId, req.user.id)))
+        .returning();
+      
+      if (!updatedPostback) {
+        return res.status(404).json({ error: "Postback not found" });
+      }
+      
+      auditLog(req, 'UPDATE', 'postbacks', true, { postbackId: updatedPostback.id });
+      res.json(updatedPostback);
+    } catch (error) {
+      console.error("Update postback error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete('/api/postbacks/:id', authenticateToken, async (req, res) => {
+    try {
+      const [deletedPostback] = await db.delete(postbacks)
+        .where(and(eq(postbacks.id, req.params.id), eq(postbacks.userId, req.user.id)))
+        .returning();
+      
+      if (!deletedPostback) {
+        return res.status(404).json({ error: "Postback not found" });
+      }
+      
+      auditLog(req, 'DELETE', 'postbacks', true, { postbackId: deletedPostback.id });
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete postback error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post('/api/postbacks/:id/test', authenticateToken, async (req, res) => {
+    try {
+      const testMacros = {
+        clickid: 'test_' + Date.now(),
+        status: 'test',
+        offer_id: 'test-offer',
+        partner_id: req.user.id,
+        payout: '10.00',
+        currency: 'USD',
+        timestamp: new Date().toISOString(),
+      };
+      
+      const result = await PostbackService.sendPostback(
+        req.params.id,
+        'test',
+        testMacros
+      );
+      
+      auditLog(req, 'TEST', 'postbacks', result.success, { postbackId: req.params.id });
+      res.json(result);
+    } catch (error) {
+      console.error("Test postback error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get('/api/postback-logs', authenticateToken, async (req, res) => {
+    try {
+      const { limit = 50, offset = 0 } = req.query;
+      const logs = await PostbackService.getPostbackLogs({
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string),
+      });
+      
+      res.json(logs);
+    } catch (error) {
+      console.error("Get postback logs error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Click tracking endpoint
+  app.get('/click', async (req, res) => {
+    try {
+      const { partner_id, offer_id, clickid, sub1, sub2, sub3, sub4, sub5, landing_url } = req.query;
+      
+      if (!partner_id || !offer_id) {
+        return res.status(400).json({ error: "Missing required parameters" });
+      }
+      
+      // Store click
+      const clickData = await PostbackService.storeClick({
+        partnerId: partner_id as string,
+        offerId: offer_id as string,
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        referer: req.get('Referer'),
+        subId1: sub1 as string,
+        subId2: sub2 as string,
+        subId3: sub3 as string,
+        subId4: sub4 as string,
+        subId5: sub5 as string,
+        landingUrl: landing_url as string,
+      });
+      
+      // Trigger click postbacks
+      await PostbackService.triggerPostbacks({
+        type: 'click',
+        clickId: clickData.clickId,
+        data: {
+          clickid: clickData.clickId,
+          partner_id: partner_id as string,
+          offer_id: offer_id as string,
+          sub1: sub1 as string,
+          sub2: sub2 as string,
+          sub3: sub3 as string,
+          sub4: sub4 as string,
+          sub5: sub5 as string,
+          ip: req.ip,
+          timestamp: new Date().toISOString(),
+        },
+      });
+      
+      // Redirect to landing page
+      const [offer] = await db.select()
+        .from(offers)
+        .where(eq(offers.id, offer_id as string));
+      
+      if (offer && offer.landingPages) {
+        const landingPages = offer.landingPages as any[];
+        const targetUrl = landingPages[0]?.url || landing_url || 'https://example.com';
+        res.redirect(302, targetUrl);
+      } else {
+        res.redirect(302, landing_url as string || 'https://example.com');
+      }
+    } catch (error) {
+      console.error("Click tracking error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

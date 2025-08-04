@@ -136,6 +136,32 @@ export const trackingLinks = pgTable("tracking_links", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Tracking clicks for postback system
+export const trackingClicks = pgTable("tracking_clicks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clickId: text("click_id").notNull().unique(), // Generated clickid for macros
+  partnerId: varchar("partner_id").notNull().references(() => users.id),
+  offerId: varchar("offer_id").notNull().references(() => offers.id),
+  trackingLinkId: varchar("tracking_link_id").references(() => trackingLinks.id),
+  ip: text("ip"),
+  userAgent: text("user_agent"),
+  referer: text("referer"),
+  country: text("country"),
+  device: text("device"),
+  browser: text("browser"),
+  os: text("os"),
+  subId1: text("sub_id_1"),
+  subId2: text("sub_id_2"),
+  subId3: text("sub_id_3"),
+  subId4: text("sub_id_4"),
+  subId5: text("sub_id_5"),
+  landingUrl: text("landing_url"),
+  isUnique: boolean("is_unique").default(true),
+  status: text("status").default('active'), // 'active', 'converted', 'rejected'
+  conversionData: jsonb("conversion_data"), // Additional conversion details
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Statistics
 export const statistics = pgTable("statistics", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -177,12 +203,21 @@ export const transactions = pgTable("transactions", {
 export const postbacks = pgTable("postbacks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
+  offerId: varchar("offer_id").references(() => offers.id), // Specific offer or null for global
   name: text("name").notNull(),
   url: text("url").notNull(),
   method: text("method").default('GET'),
-  events: jsonb("events"), // Array of events to trigger on
+  events: jsonb("events"), // ['click', 'lead', 'ftd', 'deposit', 'approve', 'reject', 'hold']
+  macros: jsonb("macros"), // Custom macro mappings
+  signatureKey: text("signature_key"), // For HMAC protection
+  ipWhitelist: jsonb("ip_whitelist"), // Array of allowed IPs
   isActive: boolean("is_active").default(true),
+  retryEnabled: boolean("retry_enabled").default(true),
+  maxRetries: integer("max_retries").default(3),
+  retryDelay: integer("retry_delay").default(60), // seconds
+  timeout: integer("timeout").default(30), // seconds
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Support tickets
@@ -364,15 +399,22 @@ export const apiKeys = pgTable("api_keys", {
 // Postback logs
 export const postbackLogs = pgTable("postback_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  postbackId: varchar("postback_id").notNull().references(() => postbacks.id),
+  postbackId: varchar("postback_id").references(() => postbacks.id),
+  clickId: varchar("click_id").references(() => trackingClicks.id),
+  eventType: text("event_type").notNull(), // 'click', 'lead', 'deposit', etc.
   url: text("url").notNull(),
   method: text("method").notNull(),
+  headers: jsonb("headers"),
   payload: jsonb("payload"),
   responseStatus: integer("response_status"),
   responseBody: text("response_body"),
+  responseTime: integer("response_time"), // ms
   retryCount: integer("retry_count").default(0),
-  status: text("status").default('pending'), // 'pending', 'sent', 'failed'
+  status: postbackStatusEnum("status").default('pending'),
+  errorMessage: text("error_message"),
+  signature: text("signature"), // HMAC signature sent
   sentAt: timestamp("sent_at"),
+  nextRetryAt: timestamp("next_retry_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -838,6 +880,11 @@ export const insertPostbackLogSchema = createInsertSchema(postbackLogs).omit({
   createdAt: true,
 });
 
+export const insertTrackingClickSchema = createInsertSchema(trackingClicks).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -873,6 +920,8 @@ export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertPostbackLog = z.infer<typeof insertPostbackLogSchema>;
 export type PostbackLog = typeof postbackLogs.$inferSelect;
+export type InsertTrackingClick = z.infer<typeof insertTrackingClickSchema>;
+export type TrackingClick = typeof trackingClicks.$inferSelect;
 
 export const insertCustomRoleSchema = createInsertSchema(customRoles).omit({
   id: true,
