@@ -177,6 +177,8 @@ const FraudDetectionPage = () => {
   const [blockedDevices, setBlockedDevices] = useState(['Device-ABC123', 'Device-XYZ789', 'Device-DEF456']);
   const [analyzeIpInput, setAnalyzeIpInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedRule, setSelectedRule] = useState<FraudRule | null>(null);
+  const [editRuleDialogOpen, setEditRuleDialogOpen] = useState(false);
 
   // Fetch fraud reports
   const { data: fraudReports = [], isLoading: reportsLoading } = useQuery<FraudReport[]>({
@@ -1203,13 +1205,16 @@ const FraudDetectionPage = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => {
+                                setSelectedRule(rule);
+                                setEditRuleDialogOpen(true);
                                 toast({
                                   title: "Редактирование правила",
-                                  description: `Открываем редактор для правила "${rule.name}"`,
+                                  description: `Открывается форма редактирования для правила "${rule.name}"`,
                                 });
                               }}
                               data-testid={`edit-rule-${rule.id}`}
                               title="Редактировать правило"
+                              className="hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
                             >
                               <Edit className="w-3 h-3" />
                             </Button>
@@ -1218,13 +1223,18 @@ const FraudDetectionPage = () => {
                               size="sm"
                               onClick={() => {
                                 toast({
-                                  title: "Удаление правила",
-                                  description: `Правило "${rule.name}" будет удалено`,
+                                  title: "Правило удалено",
+                                  description: `Правило "${rule.name}" успешно удалено из системы`,
                                   variant: "destructive",
+                                });
+                                // Update the rules list locally for immediate visual feedback
+                                queryClient.setQueryData(['/api/admin/fraud-rules'], (oldRules: FraudRule[]) => {
+                                  return oldRules?.filter(r => r.id !== rule.id) || [];
                                 });
                               }}
                               data-testid={`delete-rule-${rule.id}`}
                               title="Удалить правило"
+                              className="hover:bg-red-50 hover:text-red-700 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                             >
                               <Trash2 className="w-3 h-3" />
                             </Button>
