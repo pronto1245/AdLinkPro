@@ -1430,13 +1430,43 @@ export default function OfferDetails() {
                             {Math.floor(Math.random() * 25) + 8 + rowIndex * 2}
                           </TableCell>
                           <TableCell className="text-orange-600 dark:text-orange-400 font-medium">
-                            🇺🇸 US ({(Math.random() * 12 + 2).toFixed(1)}%)
+                            <button
+                              onClick={() => {
+                                setLocation(`/super-admin/analytics?geo=US&date=${dateFilter}`);
+                              }}
+                              className="flex items-center gap-1 hover:underline hover:bg-orange-50 dark:hover:bg-orange-900/20 px-2 py-1 rounded transition-all duration-200 cursor-pointer group"
+                              title="Перейти к аналитике по гео"
+                            >
+                              <Globe className="w-3 h-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+                              🇺🇸 US ({(Math.random() * 12 + 2).toFixed(1)}%)
+                              <BarChart3 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
+                            </button>
                           </TableCell>
                           <TableCell className="text-red-600 dark:text-red-400 font-medium">
-                            {Math.floor(Math.random() * 20) + 1}
+                            <button
+                              onClick={() => {
+                                setLocation(`/super-admin/fraud-alerts?offer=${params.id}&date=${dateFilter}`);
+                              }}
+                              className="flex items-center gap-1 hover:underline hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition-all duration-200 cursor-pointer group"
+                              title="Перейти к управлению фродом"
+                            >
+                              <Shield className="w-3 h-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+                              {Math.floor(Math.random() * 20) + 1}
+                              <Eye className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
+                            </button>
                           </TableCell>
                           <TableCell className="text-indigo-600 dark:text-indigo-400 font-medium">
-                            П#{rowIndex + 1}
+                            <button
+                              onClick={() => {
+                                setLocation(`/super-admin/users?filter=affiliate&search=Партнер ${rowIndex + 1}`);
+                              }}
+                              className="flex items-center gap-1 hover:underline hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-2 py-1 rounded transition-all duration-200 cursor-pointer group"
+                              title="Перейти к управлению партнером"
+                            >
+                              <Users className="w-3 h-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+                              П#{rowIndex + 1}
+                              <Eye className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
+                            </button>
                           </TableCell>
                         </TableRow>
                       );
