@@ -8,7 +8,7 @@ import Header from '../../components/layout/header';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
-import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, MapPin, Shield, Image, Activity, Clock } from 'lucide-react';
+import { ArrowLeft, Globe, Eye, DollarSign, Target, Users, BarChart3, Calendar, MapPin, Shield, Image, Activity, Clock, FileText } from 'lucide-react';
 import { Separator } from '../../components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
@@ -354,54 +354,7 @@ export default function OfferDetails() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Info */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Basic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5" />
-                  Основная информация
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-end">
-                  {/* Фото и название оффера в правом углу */}
-                  <div className="text-right">
-                    <div className="flex justify-end mb-2">
-                      {offer.logo ? (
-                        <img 
-                          src={offer.logo} 
-                          alt={offer.name}
-                          className="w-16 h-16 object-contain rounded"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-                          <Target className="w-8 h-8 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-lg font-bold text-gray-900 dark:text-white">
-                      {offer.name}
-                    </div>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div>
-                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Описание</label>
-                  <div className="mt-1 text-gray-900 dark:text-white break-words overflow-hidden max-h-24 overflow-y-auto text-sm">
-                    {offer.description || 'Не указано'}
-                  </div>
-                </div>
-                
-                {offer.number && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Номер оффера</label>
-                    <div className="mt-1 font-mono text-sm">{offer.number}</div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+
 
             {/* Landing Pages */}
             <Card>
@@ -844,6 +797,23 @@ export default function OfferDetails() {
                 <CardContent>
                   <div className="text-sm text-gray-600 dark:text-gray-400 break-words overflow-hidden max-h-32 overflow-y-auto">
                     {offer.kpiConditions}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Description */}
+            {offer.description && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    Описание
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 break-words overflow-hidden max-h-32 overflow-y-auto">
+                    {offer.description}
                   </div>
                 </CardContent>
               </Card>
