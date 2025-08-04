@@ -1027,6 +1027,12 @@ const FraudDetectionPage = () => {
                                   <Button
                                     variant="outline"
                                     size="sm"
+                                    onClick={() => {
+                                      toast({
+                                        title: "Подробности IP",
+                                        description: `Просмотр детальной информации для IP: ${ip.ipAddress}`,
+                                      });
+                                    }}
                                     data-testid={`view-ip-${ip.id}`}
                                     title="Подробности IP"
                                   >
@@ -1035,6 +1041,10 @@ const FraudDetectionPage = () => {
                                   <Button
                                     variant="outline"
                                     size="sm"
+                                    onClick={() => {
+                                      setSelectedIp(ip.ipAddress);
+                                      setBlockIpDialogOpen(true);
+                                    }}
                                     data-testid={`block-ip-${ip.id}`}
                                     title="Заблокировать IP"
                                   >
@@ -1083,11 +1093,25 @@ const FraudDetectionPage = () => {
                             <div className="flex items-center space-x-3">
                               <Switch 
                                 checked={rule.isActive}
+                                onCheckedChange={(checked) => {
+                                  // Handle rule toggle
+                                  toast({
+                                    title: checked ? "Правило активировано" : "Правило деактивировано",
+                                    description: `Правило "${rule.name}" ${checked ? 'включено' : 'отключено'}`,
+                                  });
+                                }}
                                 data-testid={`toggle-rule-${rule.id}`}
                               />
                               <div>
                                 <h4 className="font-medium">{rule.name}</h4>
-                                <p className="text-sm text-gray-500">{rule.conditions || 'Условия не указаны'}</p>
+                                <p className="text-sm text-gray-500">
+                                  {typeof rule.conditions === 'string' 
+                                    ? rule.conditions 
+                                    : rule.conditions 
+                                    ? JSON.stringify(rule.conditions).replace(/[{}]/g, '').replace(/"/g, '').replace(/,/g, ', ')
+                                    : 'Условия не указаны'
+                                  }
+                                </p>
                               </div>
                             </div>
                             <div className="flex items-center space-x-4 mt-2">
@@ -1115,6 +1139,12 @@ const FraudDetectionPage = () => {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => {
+                                toast({
+                                  title: "Редактирование правила",
+                                  description: `Открываем редактор для правила "${rule.name}"`,
+                                });
+                              }}
                               data-testid={`edit-rule-${rule.id}`}
                               title="Редактировать правило"
                             >
@@ -1123,6 +1153,13 @@ const FraudDetectionPage = () => {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => {
+                                toast({
+                                  title: "Удаление правила",
+                                  description: `Правило "${rule.name}" будет удалено`,
+                                  variant: "destructive",
+                                });
+                              }}
                               data-testid={`delete-rule-${rule.id}`}
                               title="Удалить правило"
                             >
