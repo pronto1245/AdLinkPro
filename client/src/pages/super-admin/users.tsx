@@ -73,18 +73,18 @@ export default function UsersManagement() {
   });
 
   const form = useForm<z.infer<typeof insertUserSchema>>({
-    resolver: zodResolver(insertUserSchema),
+    resolver: zodResolver(insertUserSchema.omit({ id: true, createdAt: true, updatedAt: true })),
     defaultValues: {
       username: '',
       email: '',
       password: '',
-      role: 'affiliate',
+      role: 'affiliate' as const,
       firstName: '',
       lastName: '',
       company: '',
       phone: '',
       country: '',
-      language: 'en',
+      language: 'en' as const,
       timezone: 'UTC',
       currency: 'USD',
       isActive: true,

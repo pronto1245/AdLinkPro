@@ -2101,6 +2101,29 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async deleteFraudRule(id: string): Promise<void> {
+    try {
+      await db
+        .delete(fraudRules)
+        .where(eq(fraudRules.id, id));
+    } catch (error) {
+      console.error('Error deleting fraud rule:', error);
+      throw error;
+    }
+  }
+
+  async removeFraudBlock(id: string): Promise<void> {
+    try {
+      await db
+        .update(fraudBlocks)
+        .set({ isActive: false, updatedAt: new Date() })
+        .where(eq(fraudBlocks.id, id));
+    } catch (error) {
+      console.error('Error removing fraud block:', error);
+      throw error;
+    }
+  }
+
   async createDeviceTracking(tracking: InsertDeviceTracking): Promise<DeviceTracking> {
     try {
       const [newTracking] = await db

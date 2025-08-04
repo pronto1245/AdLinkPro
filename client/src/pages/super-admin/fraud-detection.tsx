@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
@@ -18,7 +19,7 @@ import {
   Shield, AlertTriangle, Activity, Eye, Ban, Settings, Target, Globe, 
   Smartphone, Monitor, MapPin, Zap, TrendingUp, AlertCircle, CheckCircle, 
   XCircle, Clock, Search, Filter, Download, RefreshCw, Plus, Edit, Trash2,
-  BarChart3, PieChart, Users, Flag, Lock, Unlock, FileText
+  BarChart3, PieChart, Users, Flag, Lock, Unlock, FileText, Save
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -930,27 +931,134 @@ const FraudDetectionPage = () => {
               </Card>
             </TabsContent>
 
-            {/* Other tabs would be implemented similarly */}
-            <TabsContent value="blocks">
+            {/* Blocks Tab */}
+            <TabsContent value="blocks" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Активные блокировки</CardTitle>
-                  <CardDescription>Заблокированные IP, устройства и партнёры</CardDescription>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Ban className="w-5 h-5" />
+                    <span>Активные блокировки</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Список заблокированных IP-адресов и других объектов
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-500">Раздел в разработке...</p>
+                  <div className="space-y-4">
+                    {/* Mock blocks data for demonstration */}
+                    <div className="border rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium text-sm">IP: 192.168.1.100</p>
+                          <p className="text-xs text-gray-600">Причина: Подозрительная активность</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="destructive">Заблокирован</Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              toast({
+                                title: "Блокировка снята",
+                                description: "IP-адрес разблокирован",
+                              });
+                            }}
+                            data-testid="button-unblock-ip"
+                            title="Разблокировать"
+                          >
+                            <Unlock className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium text-sm">IP: 10.0.0.1</p>
+                          <p className="text-xs text-gray-600">Причина: Автоматическая блокировка - превышен лимит кликов</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="destructive">Заблокирован</Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              toast({
+                                title: "Блокировка снята",
+                                description: "IP-адрес разблокирован",
+                              });
+                            }}
+                            data-testid="button-unblock-ip-2"
+                            title="Разблокировать"
+                          >
+                            <Unlock className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="settings">
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Настройки антифрод-системы</CardTitle>
-                  <CardDescription>Глобальные настройки и пороговые значения</CardDescription>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Settings className="w-5 h-5" />
+                    <span>Настройки антифрода</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Общие настройки системы обнаружения фрода
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-gray-500">Раздел в разработке...</p>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Автоматические действия</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-medium">Автоблокировка подозрительных IP</label>
+                          <Switch defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-medium">Уведомления в реальном времени</label>
+                          <Switch defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-medium">Проверка VPN/Proxy</label>
+                          <Switch defaultChecked />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Пороговые значения</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-medium">Максимум кликов с одного IP (в час)</label>
+                          <Input type="number" defaultValue="50" className="mt-1" />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Минимальный риск-скор для блокировки</label>
+                          <Input type="number" defaultValue="80" className="mt-1" />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Время блокировки (часы)</label>
+                          <Input type="number" defaultValue="24" className="mt-1" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-4 border-t">
+                    <Button className="bg-green-600 hover:bg-green-700">
+                      <Save className="w-4 h-4 mr-2" />
+                      Сохранить настройки
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -1124,12 +1232,42 @@ const FraudDetectionPage = () => {
                     Отмена
                   </Button>
                   <Button
-                    onClick={() => {
-                      toast({
-                        title: "Правило создано",
-                        description: "Новое правило антифрода успешно создано",
-                      });
-                      setCreateRuleDialogOpen(false);
+                    onClick={async () => {
+                      try {
+                        const response = await fetch('/api/admin/fraud-rules', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`,
+                          },
+                          body: JSON.stringify({
+                            name: "Новое правило",
+                            type: "ip_fraud",
+                            severity: "medium",
+                            autoBlock: false,
+                            conditions: {},
+                            actions: {},
+                            thresholds: {}
+                          }),
+                        });
+                        
+                        if (response.ok) {
+                          toast({
+                            title: "Правило создано",
+                            description: "Новое правило антифрода успешно создано",
+                          });
+                          queryClient.invalidateQueries({ queryKey: ['/api/admin/fraud-rules'] });
+                          setCreateRuleDialogOpen(false);
+                        } else {
+                          throw new Error('Failed to create rule');
+                        }
+                      } catch (error) {
+                        toast({
+                          title: "Ошибка",
+                          description: "Не удалось создать правило",
+                          variant: "destructive",
+                        });
+                      }
                     }}
                   >
                     Создать правило

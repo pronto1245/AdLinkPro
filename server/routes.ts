@@ -2370,9 +2370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create fraud block entry
-      const blockId = nanoid();
       await storage.createFraudBlock({
-        id: blockId,
         type: 'ip',
         targetId: ipAddress,
         reason: reason || 'Manual block',
@@ -2408,6 +2406,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(block);
     } catch (error) {
       console.error("Create fraud block error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create fraud rule
+  app.post("/api/admin/fraud-rules", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { name, type, scope, severity, autoBlock, conditions, actions, thresholds } = req.body;
+      const userId = (req as any).user.id;
+      
+      const rule = await storage.createFraudRule({
+        name,
+        type,
+        scope: scope || 'platform',
+        severity,
+        isActive: true,
+        autoBlock: autoBlock || false,
+        conditions: conditions || {},
+        actions: actions || {},
+        thresholds: thresholds || {},
+        createdBy: userId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      
+      auditLog(req, 'FRAUD_RULE_CREATED', ruleId, true, { name, type, severity });
+      res.json(rule);
+    } catch (error) {
+      console.error("Create fraud rule error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update fraud rule
+  app.put("/api/admin/fraud-rules/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      const userId = (req as any).user.id;
+      
+      const rule = await storage.updateFraudRule(id, {
+        ...updateData,
+        updatedBy: userId,
+        updatedAt: new Date().toISOString()
+      });
+      
+      auditLog(req, 'FRAUD_RULE_UPDATED', id, true, updateData);
+      res.json(rule);
+    } catch (error) {
+      console.error("Update fraud rule error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Delete fraud rule
+  app.delete("/api/admin/fraud-rules/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      await storage.deleteFraudRule(id);
+      
+      auditLog(req, 'FRAUD_RULE_DELETED', id, true, {});
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete fraud rule error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get fraud blocks
+  app.get("/api/admin/fraud-blocks", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { type, isActive, page = 1, limit = 50 } = req.query;
+      const blocks = await storage.getFraudBlocks({
+        type: type as string,
+        isActive: isActive ? isActive === 'true' : undefined
+      });
+      res.json(blocks);
+    } catch (error) {
+      console.error("Get fraud blocks error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Remove fraud block
+  app.delete("/api/admin/fraud-blocks/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      await storage.removeFraudBlock(id);
+      
+      auditLog(req, 'FRAUD_BLOCK_REMOVED', id, true, {});
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Remove fraud block error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

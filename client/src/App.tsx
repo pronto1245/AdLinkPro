@@ -111,6 +111,11 @@ function Router() {
           <FraudDetectionPage />
         </ProtectedRoute>
       </Route>
+      <Route path="/admin/fraud-detection">
+        <ProtectedRoute allowedRoles={['super_admin']}>
+          <FraudDetectionPage />
+        </ProtectedRoute>
+      </Route>
       <Route path="/admin/system-settings">
         <ProtectedRoute allowedRoles={['super_admin']}>
           <SuperAdminSystemSettings />
