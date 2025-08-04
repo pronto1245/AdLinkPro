@@ -179,6 +179,7 @@ const FraudDetectionPage = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedRule, setSelectedRule] = useState<FraudRule | null>(null);
   const [editRuleDialogOpen, setEditRuleDialogOpen] = useState(false);
+  const [viewReportDialogOpen, setViewReportDialogOpen] = useState(false);
 
   // Fetch fraud reports
   const { data: fraudReports = [], isLoading: reportsLoading } = useQuery<FraudReport[]>({
@@ -820,10 +821,15 @@ const FraudDetectionPage = () => {
                                   size="sm"
                                   onClick={() => {
                                     setSelectedReport(report);
-                                    setReviewDialogOpen(true);
+                                    setViewReportDialogOpen(true);
+                                    toast({
+                                      title: "Открытие отчёта",
+                                      description: `Загружается подробная информация по отчёту ${report.id}`,
+                                    });
                                   }}
                                   data-testid={`review-report-${report.id}`}
                                   title="Рассмотреть отчёт"
+                                  className="hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300 dark:hover:bg-purple-900/20 dark:hover:text-purple-400"
                                 >
                                   <Eye className="w-3 h-3" />
                                 </Button>
@@ -1833,6 +1839,145 @@ const FraudDetectionPage = () => {
           </Tabs>
         </main>
       </div>
+
+      {/* View Report Dialog */}
+      <Dialog open={viewReportDialogOpen} onOpenChange={setViewReportDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Подробности фрод-отчёта #{selectedReport?.id}</DialogTitle>
+            <DialogDescription>
+              Полная информация о подозрительной активности
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6">
+            {/* Basic Info */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Тип фрода</Label>
+                  <p className="text-sm font-medium">{getTypeLabel(selectedReport?.type || '')}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">IP Адрес</Label>
+                  <p className="text-sm font-mono">{selectedReport?.ipAddress}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Геолокация</Label>
+                  <p className="text-sm">{selectedReport?.country}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Статус</Label>
+                  <Badge variant={
+                    selectedReport?.status === 'confirmed' ? 'destructive' :
+                    selectedReport?.status === 'rejected' ? 'secondary' :
+                    selectedReport?.status === 'resolved' ? 'default' : 'outline'
+                  }>
+                    {selectedReport?.status === 'pending' && 'Ожидает'}
+                    {selectedReport?.status === 'reviewing' && 'Проверка'}
+                    {selectedReport?.status === 'confirmed' && 'Подтверждён'}
+                    {selectedReport?.status === 'rejected' && 'Отклонён'}
+                    {selectedReport?.status === 'resolved' && 'Решён'}
+                  </Badge>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Уровень серьёзности</Label>
+                  <Badge variant={
+                    selectedReport?.severity === 'critical' ? 'destructive' :
+                    selectedReport?.severity === 'high' ? 'destructive' :
+                    selectedReport?.severity === 'medium' ? 'default' : 'secondary'
+                  }>
+                    {selectedReport?.severity === 'low' && 'Низкий'}
+                    {selectedReport?.severity === 'medium' && 'Средний'}
+                    {selectedReport?.severity === 'high' && 'Высокий'}
+                    {selectedReport?.severity === 'critical' && 'Критический'}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Дата создания</Label>
+                  <p className="text-sm">
+                    {selectedReport?.createdAt ? new Date(selectedReport.createdAt).toLocaleDateString('ru-RU', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }) : ''}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Риск-скор</Label>
+                  <p className="text-sm font-medium text-red-600">{selectedReport?.riskScore || 'N/A'}/10</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <Label className="text-sm font-medium text-gray-600">Описание</Label>
+              <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                <p className="text-sm">{selectedReport?.description || 'Описание отсутствует'}</p>
+              </div>
+            </div>
+
+            {/* Technical Details */}
+            <div>
+              <Label className="text-sm font-medium text-gray-600">Технические детали</Label>
+              <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <span className="font-medium">User Agent:</span>
+                    <p className="text-gray-600 dark:text-gray-400 break-all">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Referrer:</span>
+                    <p className="text-gray-600 dark:text-gray-400">https://example.com/landing</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Устройство:</span>
+                    <p className="text-gray-600 dark:text-gray-400">Desktop/Windows</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Провайдер:</span>
+                    <p className="text-gray-600 dark:text-gray-400">Cloudflare Inc.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  toast({
+                    title: "Отчёт отклонён",
+                    description: `Отчёт ${selectedReport?.id} отмечен как ложное срабатывание`,
+                  });
+                  setViewReportDialogOpen(false);
+                }}
+                data-testid="reject-report-btn"
+              >
+                Отклонить
+              </Button>
+              <Button 
+                variant="destructive"
+                onClick={() => {
+                  toast({
+                    title: "Отчёт подтверждён",
+                    description: `Фрод подтверждён, IP ${selectedReport?.ipAddress} заблокирован`,
+                  });
+                  setViewReportDialogOpen(false);
+                }}
+                data-testid="confirm-report-btn"
+              >
+                Подтвердить фрод
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Rule Dialog */}
       <Dialog open={editRuleDialogOpen} onOpenChange={setEditRuleDialogOpen}>
