@@ -144,8 +144,12 @@ const FraudDetectionPage = () => {
   // Review fraud report mutation
   const reviewReportMutation = useMutation({
     mutationFn: async (data: { reportId: string; status: string; notes: string; resolution?: string }) => {
-      return apiRequest('/api/admin/fraud-reports/review', {
+      return await fetch('/api/admin/fraud-reports/review', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(data),
       });
     },
@@ -236,7 +240,7 @@ const FraudDetectionPage = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className={`transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
-        <Header />
+        <Header title="Антифрод-система" />
         <main className="p-6">
           <div className="mb-8">
             <div className="flex items-center justify-between">
@@ -412,7 +416,7 @@ const FraudDetectionPage = () => {
                         <SelectValue placeholder="Тип фрода" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Все типы</SelectItem>
+                        <SelectItem value="all">Все типы</SelectItem>
                         <SelectItem value="ip_fraud">IP Фрод</SelectItem>
                         <SelectItem value="device_fraud">Фрод устройств</SelectItem>
                         <SelectItem value="geo_fraud">Геофрод</SelectItem>
@@ -425,7 +429,7 @@ const FraudDetectionPage = () => {
                         <SelectValue placeholder="Критичность" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Все уровни</SelectItem>
+                        <SelectItem value="all">Все уровни</SelectItem>
                         <SelectItem value="critical">Критичный</SelectItem>
                         <SelectItem value="high">Высокий</SelectItem>
                         <SelectItem value="medium">Средний</SelectItem>
@@ -437,7 +441,7 @@ const FraudDetectionPage = () => {
                         <SelectValue placeholder="Статус" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Все статусы</SelectItem>
+                        <SelectItem value="all">Все статусы</SelectItem>
                         <SelectItem value="pending">В ожидании</SelectItem>
                         <SelectItem value="reviewing">На рассмотрении</SelectItem>
                         <SelectItem value="confirmed">Подтверждён</SelectItem>

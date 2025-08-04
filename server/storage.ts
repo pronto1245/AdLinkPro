@@ -1836,9 +1836,9 @@ export class DatabaseStorage implements IStorage {
       let query = db.select().from(fraudReports);
       
       const conditions = [];
-      if (filters.type) conditions.push(eq(fraudReports.type, filters.type as any));
-      if (filters.severity) conditions.push(eq(fraudReports.severity, filters.severity as any));
-      if (filters.status) conditions.push(eq(fraudReports.status, filters.status as any));
+      if (filters.type && filters.type !== 'all') conditions.push(eq(fraudReports.type, filters.type as any));
+      if (filters.severity && filters.severity !== 'all') conditions.push(eq(fraudReports.severity, filters.severity as any));
+      if (filters.status && filters.status !== 'all') conditions.push(eq(fraudReports.status, filters.status as any));
       if (filters.search) {
         conditions.push(
           sql`(${fraudReports.ipAddress} ILIKE ${'%' + filters.search + '%'} OR 
