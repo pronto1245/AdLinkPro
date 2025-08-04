@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react';
-import * as React from 'react';
-import { useQuery, useMutation, useQueryClientt } from '@tanstack/react-query';
-
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import Sidebar from '@/components/layout/sidebar';
 import { useSidebar } from '@/contexts/sidebar-context';
@@ -13,44 +11,24 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Search, Filter, Eye, Edit, Ban, Archive, CheckCircle, XCircle, AlertTriangle, Download, Upload, Plus, Trash2, PlusCircle, Check, Play, Pause, Copy } from 'lucide-react';
+import { Search, Filter, Eye, Edit, Plus, Trash2 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
-import { useToastt } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Checkbox } from '@/components/ui/checkbox';
+import type { Offer } from '@shared/schema';
 
 const createOfferSchema = z.object({
-  name: z.string().min(1, 'Название оффера обязательно'),
-  category: z.string().min(1, 'Категория обязательна'),
-  description_ru: z.string().optional(),
-  description_en: z.string().optional(),
-  goals_ru: z.string().optional(),
-  goals_en: z.string().optional(),
-  logo: z.string().optional(),
+  name: z.string().min(1, 'Name is required'),
+  category: z.string().min(1, 'Category is required'),
+  description: z.string().optional(),
   status: z.string().default('draft'),
   payoutType: z.string().default('cpa'),
   currency: z.string().default('USD'),
-  landingPages: z.array(z.object({
-    name: z.string().min(1, 'Name is required'),
-    url: z.string().url('Invalid URL'),
-    payoutAmount: z.number().min(0, 'Amount must be positive'),
-    currency: z.string().default('USD'),
-    geo: z.string().optional(),
-  })).default([{ name: 'Main Page', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]),
-  kpiConditions_ru: z.string().optional(),
-  kpiConditions_en: z.string().optional(),
-  allowedTrafficSources: z.array(z.string()).default([]),
-  allowedApps: z.array(z.string()).default([]),
-  dailyLimit: z.number().optional(),
-  monthlyLimit: z.number().optional(),
-  antifraudEnabled: z.boolean().default(true),
-  autoApprovePartners: z.boolean().default(false),
 });
 
 type CreateOfferFormData = z.infer<typeof createOfferSchema>;
@@ -60,963 +38,157 @@ interface CreateOfferFormProps {
 }
 
 function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
-  const queryClient = useQueryClient;
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   const form = useForm<CreateOfferFormData>({
     resolver: zodResolver(createOfferSchema),
     defaultValues: {
       name: '',
       category: '',
-      description_ru: '',
-      description_en: '',
-      goals_ru: '',
-      goals_en: '',
-      logo: '',
+      description: '',
       status: 'draft',
-      landingPages: [{ name: 'Main Page', url: '', payoutAmount: 0, currency: 'USD', geo: '' }],
       payoutType: 'cpa',
       currency: 'USD',
-      kpiConditions_ru: '',
-      kpiConditions_en: '',
-      allowedTrafficSources: [],
-      allowedApps: [],
-      antifraudEnabled: true,
-      autoApprovePartners: false,
     },
   });
 
   const createOfferMutation = useMutation({
     mutationFn: async (data: CreateOfferFormData) => {
-      // Transform the data to match the API schema
-      const transformedData = {
-        ...data,
-        description: {
-          ru: data.description_ru || '',
-          en: data.description_en || ''
-        },
-        goals: {
-          ru: data.goals_ru || '',
-          en: data.goals_en || ''
-        },
-        kpiConditions: {
-          ru: data.kpiConditions_ru || '',
-          en: data.kpiConditions_en || ''
-        },
-        trafficSources: data.allowedTrafficSources || [],
-        allowedApps: data.allowedApps || [],
-      };
-      console.log('Sending offer data:', transformedData);
-      return await apiRequest('POST', '/api/admin/offers', transformedData);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
-      toast({
-        title: 'Success',
-        description: 'Text',
-      });
-      onSuccess();
-      form.reset()
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create offer',
-        variant: "destructive",
-      });
-    },
-  });
-
-  const categories = [
-    'gambling', 'finance', 'nutra', 'dating', 'sweepstakes', 'crypto', 'e-commerce', 'mobile', 'games', 'software'
-  ];
-
-
-
-  const trafficSources = [
-    'facebook_ads', 'google_ads', 'tiktok_ads', 'instagram_ads', 'snapchat_ads', 'twitter_ads', 'pinterest_ads', 'reddit_ads', 'linkedin_ads', 'mytarget',
-    'push_traffic', 'inpage_push', 'calendar_push', 'sms_push',
-    'outbrain', 'taboola', 'mgid', 'revcontent', 'adnow',
-    'pop_traffic', 'email_marketing', 'seo_organic', 'mobile_app', 'influencer', 'teaser_networks', 'uac', 'pps', 'kmc', 'other'
-  ];
-
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(data => createOfferMutation.mutate(data))} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Offer Name *</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Enter offer name" data-testid="input-offer-name" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger data-testid="select-category">
-                      <SelectValue placeholder="Select option" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {categories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {category.charA0.toUpperCase() + category.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger data-testid="select-status">
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-        </div>
-
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="description_ru"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Описание (Русский)</FormLabel>
-                  <FormControl>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description_en"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description (English)</FormLabel>
-                  <FormControl>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-        <FormField
-          control={form.control}
-          name="logo"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.accept = 'image/*';
-                        input.onchange = (e) => {
-                          const file = (e.target as HTMLInputElement).files?.[0];
-                          if (file) {
-                            // Check file size (максимум 2MB)
-                            if (file.size > 2 * 1024 * 1024) {
-                              alert('File size too large');
-                              return;
-                            }
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                              field.onChange(reader.result as string);
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        };
-                        input.click();
-                      }}
-                      data-testid="button-choose-logo"
-                    >
-                    </Button>
-                    {field.value && (
-                      <div className="mt-2">
-                        <img src={field.value} alt="Logo preview" className="w-20 h-20 object-cover rounded" />
-                      </div>
-                    )}
-                  </div>
-                  {field.value && (
-                    <div className="flex items-center gap-3">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => field.onChange('')}
-                      >
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                const current = form.getValues('landingPages');
-                form.setValue('landingPages', [...current, { name: '', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]);
-              }}
-              data-testid="button-add-landing-page"
-            >
-              <PlusCircle className="w-4 h-4 mr-2" />
-            </Button>
-          </div>
-          
-          <div className="space-y-3">
-            {form.watch('landingPages').map((_, index) => (
-              <div key={index} className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                  <FormField
-                    control={form.control}
-                    name={`landingPages.${index}.name`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} placeholder="Select option" data-testid={`input-landing-name-${index}`} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name={`landingPages.${index}.url`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm">URL</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Select option" data-testid={`input-landing-url-${index}`} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-                  <FormField
-                    control={form.control}
-                    name={`landingPages.${index}.payoutAmount`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            type="number" 
-                            step="0.01"
-                            value={field.value || ''}
-                            onChange={(e) => field.onChange(parseFloae.target.value || 0)}
-                            onWheel={(e) => e.currentTarget.blur()}
-                            placeholder="0.00" 
-                            data-testid={`input-landing-payout-${index}`}
-                            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name={`landingPages.${index}.currency`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid={`select-landing-currency-${index}`}>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="USD">USD</SelectItem>
-                            <SelectItem value="EUR">EUR</SelectItem>
-                            <SelectItem value="GBP">GBP</SelectItem>
-                            <SelectItem value="RUB">RUB</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name={`landingPages.${index}.geo`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} placeholder="Select option" data-testid={`input-landing-geo-${index}`} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="flex justify-end">
-                    {form.watch('landingPages').length > 1 && (
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => {
-                          const current = form.getValues('landingPages');
-                          form.setValue('landingPages', current.filter((_, i) => i !== index));
-                        }}
-                        data-testid={`button-remove-landing-page-${index}`}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="payoutType"
-            render={({ field }) => (
-              <FormItem>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger data-testid="select-payout-type">
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="cpa">CPA - Cost Per Action</SelectItem>
-                    <SelectItem value="cps">CPS - Cost Per Sale</SelectItem>
-                    <SelectItem value="cpl">CPL - Cost Per Lead</SelectItem>
-                    <SelectItem value="cpm">CPM - Cost Per Mile</SelectItem>
-                    <SelectItem value="cpc">CPC - Cost Per Click</SelectItem>
-                    <SelectItem value="cpi">CPI - Cost Per Install</SelectItem>
-                    <SelectItem value="cro">CRO - Cost Per Registration</SelectItem>
-                    <SelectItem value="revshare">RevShare - Revenue Share</SelectItem>
-                    <SelectItem value="hybrid">Hybrid</SelectItem>
-                    <SelectItem value="fixed">Fixed</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="currency"
-            render={({ field }) => (
-              <FormItem>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger data-testid="select-currency">
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                    <SelectItem value="GBP">GBP</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-
-
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="kpiConditions_ru"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>KPI условия (Русский)</FormLabel>
-                  <FormControl>
-                      {...field} 
-                      placeholder="Условия KPI на русском языке"
-                      rows={2}
-                      data-testid="textarea-kpi-conditions-ru"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="kpiConditions_en"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>KPI Conditions (English)</FormLabel>
-                  <FormControl>
-                      {...field} 
-                      placeholder="KPI conditions in English"
-                      rows={2}
-                      data-testid="textarea-kpi-conditions-en"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="goals_ru"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Цели (Русский)</FormLabel>
-                  <FormControl>
-                      {...field} 
-                      placeholder="Цели оффера на русском языке"
-                      rows={2}
-                      data-testid="textarea-goals-ru"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="goals_en"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Goals (English)</FormLabel>
-                  <FormControl>
-                      {...field} 
-                      placeholder="Offer goals in English"
-                      rows={2}
-                      data-testid="textarea-goals-en"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-
-
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto border rounded-md p-3">
-            {trafficSources.map((source) => (
-              <div key={source} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`source-${source}`}
-                  checked={form.watch('allowedTrafficSources').includes(source)}
-                  onCheckedChange={(checked) => {
-                    const current = form.getValues('allowedTrafficSources');
-                    if (checked) {
-                      form.setValue('allowedTrafficSources', [...current, source]);
-                    } else {
-                      form.setValue('allowedTrafficSources', current.filter(s => s !== source));
-                    }
-                  }}
-                />
-                <Label htmlFor={`source-${source}`} className="text-sm">
-                  {source.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </Label>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="allowedApps"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <div className="space-y-3">
-                    <Select 
-                      onValueChange={(value) => {
-                        const current = (field.value as string[]) || [];
-                        if (!current.includes(value)) {
-                          field.onChange([...current, value]);
-                        }
-                      }}
-                    >
-                      <SelectTrigger data-testid="select-allowed-apps">
-                          <SelectTrigger><SelectValue placeholder="Select option" /></SelectTrigger>
-                      </SelectTrigger>
-                      <SelectContent>
-                      </SelectContent>
-                    </Select>
-                    
-                    <div className="flex gap-2">
-                      <Input 
-                        placeholder="Select option"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefaul;
-                            const value = e.currentTarget.value.trim();
-                            if (value) {
-                              const current = field.value || [];
-                              if (!current.includes(value)) {
-                                field.onChange([...current, value]);
-                              }
-                              e.currentTarget.value = '';
-                            }
-                          }
-                        }}
-                        data-testid="input-custom-app"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={(e) => {
-                          const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                          const value = input.value.trim();
-                          if (value) {
-                            const current = (field.value as string[]) || [];
-                            if (!current.includes(value)) {
-                              field.onChange([...current, value]);
-                            }
-                            input.value = '';
-                          }
-                        }}
-                        data-testid="button-add-custom-app"
-                      >
-                      </Button>
-                    </div>
-                    
-                    {field.value && (field.value as string[]).length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {(field.value as string[]).map((app: string, index: number) => (
-                          <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                            {app}
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="h-4 w-4 p-0 hover:bg-transparent"
-                              onClick={() => {
-                                const current = (field.value as string[]) || [];
-                                field.onChange(current.filter((_: string, i: number) => i !== index));
-                              }}
-                            >
-                              ×
-                            </Button>
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="dailyLimit"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input 
-                    {...field} 
-                    type="number"
-                    value={field.value || ''}
-                    onChange={(e) => field.onChange(e.target.value ? parseIne.target.value : undefined)}
-                    onWheel={(e) => e.currentTarget.blur()}
-                    placeholder="Select option" 
-                    data-testid="input-daily-limit"
-                    className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="monthlyLimit"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input 
-                    {...field} 
-                    type="number"
-                    value={field.value || ''}
-                    onChange={(e) => field.onChange(e.target.value ? parseIne.target.value : undefined)}
-                    onWheel={(e) => e.currentTarget.blur()}
-                    placeholder="Select option" 
-                    data-testid="input-monthly-limit"
-                    className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="antifraudEnabled"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    data-testid="switch-antifraud"
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="autoApprovePartners"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    data-testid="switch-auto-approve"
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="flex justify-end gap-3 pt-6">
-          <Button type="button" variant="outline" onClick={onSuccess}>
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={createOfferMutation.isPending}
-            data-testid="button-submit-offer"
-          >
-            {createOfferMutation.isPending ? 'creating' : 'create_offer'}
-          </Button>
-        </div>
-      </form>
-    </Form>
-  );
-}
-
-interface Offer {
-  id: string;
-  name: string;
-  description: any; // Multilingual object: { ru: string, en: string }
-  logo?: string;
-  category: string;
-  vertical: string;
-  goals: any; // Multilingual object: { ru: string, en: string }
-  advertiserId: string;
-  advertiserName?: string;
-  payout: string;
-  payoutType: string;
-  currency: string;
-  countries: string[];
-  landingPages?: Array<{
-    name: string;
-    url: string;
-    payoutAmount: number;
-    currency: string;
-    geo?: string;
-  }>;
-  geoPricing?: Array<{
-    geo: string;
-    payout: number;
-    currency: string;
-  }>;
-  trafficSources: string[];
-  allowedApps?: string[];
-  status: string;
-  moderationStatus: string;
-  moderationComment: string;
-  landingPageUrl: string;
-  trackingUrl: string;
-  previewUrl: string;
-  restrictions: string;
-  fraudRestrictions: string;
-  macros: string;
-  kycRequired: boolean;
-  isPrivate: boolean;
-  smartlinkEnabled: boolean;
-  isBlocked: boolean;
-  blockedReason: string;
-  isArchived: boolean;
-  kpiConditions?: any; // Multilingual object: { ru: string, en: string }
-  dailyLimit?: number;
-  monthlyLimit?: number;
-  antifraudEnabled?: boolean;
-  autoApprovePartners?: boolean;
-  regionVisibility: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface OfferLog {
-  id: string;
-  action: string;
-  fieldChanged: string;
-  oldValue: string;
-  newValue: string;
-  comment: string;
-  userName: string;
-  createdAt: string;
-}
-
-export default function UsersManagement() {
-  const queryClient = useQueryClien;
-  const [, setLocation] = useLocation();
-  const { isCollapsed } = useSidebar();
-  
-  const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
-  
-  // Copy URL state
-  const [copiedUrls, setCopiedUrls] = useState<{[key: string]: boolean}>({});
-  
-  // Copy URL function
-  const copyToClipboard = async (text: string, id: string) => {
-    try {
-      setCopiedUrls(prev => ({ ...prev, [id]: true }));
-      toast({
-        title: "URL скопирован",
-        description: "URL успешно скопирован в буфер обмена",
-      });
-      setTimeout(() => {
-        setCopiedUrls(prev => ({ ...prev, [id]: false }));
-      }, 2000);
-    } catch (err) {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось скопировать URL",
-        variant: "destructive"
-      });
-    }
-  };
-  const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
-  const [isModerationDialogOpen, setIsModerationDialogOpen] = useState(false);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [showBulkActions, setShowBulkActions] = useState(false);
-  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
-  const [statusChangeOffer, setStatusChangeOffer] = useState<Offer | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [advertiserFilter, setAdvertiserFilter] = useState('all');
-  const [offerNameSearch, setOfferNameSearch] = useState('all');
-
-  // Fetch all offers for dropdown
-    queryKey: ['/api/admin/offers'],
-  });
-
-  // Filter and sort offers
-  const offers = allOffers
-    // Сначала сортируем по дате создания (новые вверху)
-    .sor(a: Offer, b: Offer => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    // Затем фильтруем
-    .filter((offer: Offer) => {
-      const matchesGeneralSearch = !searchTerm || (
-        offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (typeof offer.description === 'object' ? 
-          (offer.description.en || '').toLowerCase().includes(searchTerm.toLowerCase()) :
-          offer.description?.toLowerCase().includes(searchTerm.toLowerCase())
-        ) ||
-        offer.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      const matchesOfferNameSearch = !offerNameSearch || offerNameSearch === 'all' || 
-        offer.name === offerNameSearch;
-      const matchesStatus = statusFilter === 'all' || offer.status === statusFilter;
-      const matchesCategory = categoryFilter === 'all' || offer.category === categoryFilter;
-      const matchesAdvertiser = advertiserFilter === 'all' || offer.advertiserId === advertiserFilter;
-      
-      return matchesGeneralSearch && matchesOfferNameSearch && matchesStatus && matchesCategory && matchesAdvertiser;
-    });
-
-  const isLoading = !allOffers.length;
-
-
-
-  // Fetch offer logs
-    queryKey: ['/api/admin/offer-logs', selectedOffer?.id],
-    enabled: !!selectedOffer?.id,
-  });
-
-  // Fetch statistics for selected offer
-    queryKey: ['/api/admin/offer-stats', selectedOffer?.id],
-    enabled: !!selectedOffer?.id,
-  });
-
-  // Moderate offer mutation
-  const moderateOfferMutation = useMutation({
-    mutationFn: async ({ offerId, action, comment }: { offerId: string; action: string; comment?: string }) => {
-      const response = await apiRequest('POST', `/api/admin/offers/${offerId}/moderate`, {
-        action,
-        comment
-      });
+      const response = await apiRequest('POST', '/api/admin/offers', data);
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
-      setIsModerationDialogOpen(false);
+      onSuccess();
       toast({
-        title: 'success',
-        description: 'Text',
+        title: 'Success',
+        description: 'Offer created successfully',
       });
     },
     onError: (error: any) => {
       toast({
-        title: 'error',
+        title: 'Error',
         description: error.message,
         variant: "destructive",
       });
     }
   });
 
-  // Bulk actions mutations
-  const bulkActivateMutation = useMutation({
-    mutationFn: async (offerIds: string[]) => {
-      const response = await apiRequest(POST', '/api/admin/offers/bulk-activate', { offerIds };
+  const onSubmit = (data: CreateOfferFormData) => {
+    createOfferMutation.mutate(data);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input {...field} data-testid="input-offer-name" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <FormControl>
+                <Input {...field} data-testid="input-offer-category" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Input {...field} data-testid="input-offer-description" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button 
+          type="submit" 
+          disabled={createOfferMutation.isPending}
+          data-testid="button-create-offer"
+        >
+          {createOfferMutation.isPending ? 'Creating...' : 'Create Offer'}
+        </Button>
+      </form>
+    </Form>
+  );
+}
+
+export default function SuperAdminOffersManagement() {
+  const [location, setLocation] = useLocation();
+  const { isCollapsed } = useSidebar();
+  const { toast } = useToast();
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  // Fetch all offers
+  const { data: allOffers = [], isLoading } = useQuery({
+    queryKey: ['/api/admin/offers'],
+  });
+
+  // Filter and sort offers
+  const offers = (allOffers as Offer[])
+    .sort((a: Offer, b: Offer) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .filter((offer: Offer) => {
+      const matchesSearch = !searchTerm || 
+        offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (typeof offer.description === 'string' && offer.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesStatus = statusFilter === 'all' || offer.status === statusFilter;
+      const matchesCategory = categoryFilter === 'all' || offer.category === categoryFilter;
+      
+      return matchesSearch && matchesStatus && matchesCategory;
+    });
+
+  // Delete offer mutation
+  const deleteOfferMutation = useMutation({
+    mutationFn: async (offerId: string) => {
+      const response = await apiRequest('DELETE', `/api/admin/offers/${offerId}`);
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
-      setSelectedOffers([]);
-      setShowBulkActions(false);
       toast({
-        title: 'Успех',
-        description: `Активировано офферов: ${selectedOffers.length}`,
+        title: 'Success',
+        description: 'Offer deleted successfully',
       });
     },
     onError: (error: any) => {
       toast({
-        title: 'Ошибка',
-        description: error.message || 'Не удалось активировать офферы',
+        title: 'Error',
+        description: error.message,
         variant: "destructive",
       });
     }
   });
 
-  const bulkPauseMutation = useMutation({
-    mutationFn: async (offerIds: string[]) => {
-      const response = await apiRequest(POST', '/api/admin/offers/bulk-pause', { offerIds };
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
-      setSelectedOffers([]);
-      setShowBulkActions(false);
-      toast({
-        title: 'Успех',
-        description: `Остановлено офферов: ${selectedOffers.length}`,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Ошибка',
-        description: error.message || 'Не удалось остановить офферы',
-        variant: "destructive",
-      });
-    }
-  });
-
-  const bulkDeleteMutation = useMutation({
-    mutationFn: async (offerIds: string[]) => {
-      const response = await apiRequest(POST', '/api/admin/offers/bulk-delete', { offerIds };
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
-      setSelectedOffers([]);
-      setShowBulkActions(false);
-      toast({
-        title: 'Успех',
-        description: `Удалено офферов: ${selectedOffers.length}`,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Ошибка',
-        description: error.message || 'Не удалось удалить офферы',
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Handle offer selection
   const handleOfferSelect = (offerId: string, checked: boolean) => {
     if (checked) {
       setSelectedOffers(prev => [...prev, offerId]);
@@ -1025,277 +197,32 @@ export default function UsersManagement() {
     }
   };
 
-  // Handle select all
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedOffers(offers.map(offer => offer.id));
-    } else {
-      setSelectedOffers([]);
-    }
-  };
-
-  // Update showBulkActions when selectedOffers changes
-  React.useEffect( => {
-    setShowBulkActions(selectedOffers.length > 0);
-  }, [selectedOffers]);
-
-  // Update offer mutation
-  const updateOfferMutation = useMutation({
-    mutationFn: async (offerData: Partial<Offer>) => {
-      const response = await apiRequest(PUT', `/api/admin/offers/${offerData.id}`, offerData;
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
-      setIsEditDialogOpen(false);
-      toast({
-        title: 'success',
-        description: 'Text',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'error',
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Delete offer mutation
-  const deleteOfferMutation = useMutation({
-    mutationFn: async (offerId: string) => {
-      const response = await apiRequest(DELETE', `/api/admin/offers/${offerId}`;
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
-      toast({
-        title: "Успех",
-        description: "Оффер успешно удален",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось удалить оффер",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Экспорт офферов
-  const handleExportOffers = () => {
-    try {
-      const offersToExport = selectedOffers.length > 0 
-        ? offers.filter((offer: any) => selectedOffers.includes(offer.id))
-        : offers;
-        
-      const dataToExport = offersToExport.map(offer => ({
-        id: offer.id,
-        name: offer.name,
-        category: offer.category,
-        description: typeof offer.description === 'object' ? 
-          (offer.description.en || offer.description.ru || '') :
-          offer.description,
-        status: offer.status,
-        payoutType: offer.payoutType,
-        geoPricing: offer.geoPricing,
-        landingPages: offer.landingPages,
-        allowedTrafficSources: offer.trafficSources,
-        allowedApplications: offer.allowedApps,
-        kycRequired: offer.kycRequired,
-        isPrivate: offer.isPrivate,
-        restrictions: offer.restrictions,
-        createdAt: offer.createdAt,
-        advertiserId: offer.advertiserId
-      }));
-
-      const dataStr = JSON.stringify(dataToExport, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a';
-      link.href = url;
-      link.download = `offers_export_${new Date().toISOString().spli'T'[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      toast({
-        title: "Успех",
-        description: `Экспортировано ${dataToExport.length} офферов`,
-      });
-      
-      // Сбрасываем выбор после экспорта
-      setSelectedOffers([]);
-    } catch (error) {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось экспортировать офферы",
-        variant: "destructive",
-      });
-    }
-  };
-
-
-
-  const isAllSelected = offers.length > 0 && selectedOffers.length === offers.length;
-  const isIndeterminate = selectedOffers.length > 0 && selectedOffers.length < offers.length;
-
-  // Импорт офферов
-  const handleImportOffers = async (file: File) => {
-    try {
-      const text = await file.tex;
-      const importedOffers = JSON.parse(text);
-      
-      if (!Array.isArray(importedOffers)) {
-        throw new Error('Файл должен содержать массив офферов');
-      }
-
-      // Отправляем данные на сервер для импорта
-      const response = await apiRequest('POST', '/api/admin/offers/import', {
-        offers: importedOffers
-      });
-
-      if (response.ok) {
-        queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
-        setIsImportDialogOpen(false);
-        toast({
-          title: "Успех",
-          description: `Импортировано ${importedOffers.length} офферов`,
-        });
-      } else {
-        throw new Error('Ошибка импорта на сервере');
-      }
-    } catch (error: any) {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось импортировать офферы",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getStatusBadge = (status: string, moderationStatus: string, isBlocked: boolean, isArchived: boolean) => {
-    
+  const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'active':
-      case 'paused':
-      case 'pending':
-      case 'draft':
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+      case 'active': return 'default';
+      case 'paused': return 'secondary';
+      case 'draft': return 'outline';
+      default: return 'outline';
     }
   };
-
-  // Change status mutation
-  const changeStatusMutation = useMutation({
-    mutationFn: async ({ offerId, status }: { offerId: string; status: string }) => {
-      const response = await apiRequest(PUT', `/api/admin/offers/${offerId}`, { status };
-      return await response.json();
-    },
-    onSuccess: (updatedOffer) => {
-      // Update the cache directly instead of invalidating to preserve order
-      queryClient.setQueryData(['/api/admin/offers'], (oldOffers: any[]) => {
-        if (!oldOffers) return oldOffers;
-        return oldOffers.map(offer => 
-          offer.id === updatedOffer.id ? { ...offer, status: updatedOffer.status } : offer
-        );
-      });
-      setIsStatusDialogOpen(false);
-      setStatusChangeOffer(null);
-      toast({
-        title: 'success',
-        description: 'Text',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'error',
-        description: 'Text',
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleModerationAction = (action: string, comment?: string) => {
-    if (!selectedOffer) return;
-    moderateOfferMutation.mutate({
-      offerId: selectedOffer.id,
-      action,
-      comment
-    });
-  };
-
-  const handleOfferUpdate = (updates: Partial<Offer>) => {
-    if (!editingOffer) return;
-    setEditingOffer({
-      ...editingOffer,
-      ...updates
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar />
-        <div className="flex-1 flex flex-col">
-          <Header title="" subtitle="" />
-          <main className="flex-1 p-6">
-            <div className="flex items-center justify-center p-8">Loading...</div>
-          </main>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
-        <Header title="" subtitle="" />
-        <main className="flex-1 p-6">
-          <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Offer Management</h1>
-        </div>
-        <div className="flex gap-2">
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button data-testid="button-create-offer" title="Create Offer">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Offer
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Create New Offer</DialogTitle>
-                <DialogDescription>
-                  Fill in the information to create a new offer
-                </DialogDescription>
-              </DialogHeader>
-              <CreateOfferForm onSuccess={() => setIsCreateDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+        <Header />
+        <main className="p-6">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Offers Management</h1>
+            <p className="text-gray-600 dark:text-gray-400">Manage and monitor all affiliate offers</p>
+          </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="w-5 h-5" />
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          {/* Controls */}
+          <div className="mb-6 flex flex-wrap items-center gap-4">
+            <div className="relative flex-1 min-w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Select option"
+                placeholder="Search offers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -1303,1379 +230,160 @@ export default function UsersManagement() {
               />
             </div>
             
-            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
-              <SelectTrigger>
-                <SelectValue placeholder="Select option" />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48" data-testid="select-status-filter">
+                <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                {allOffers?.map((offer: Offer) => (
-                  <SelectItem key={offer.id} value={offer.name}>
-                    {offer.name}
-                  </SelectItem>
-                ))}
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="paused">Paused</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
               </SelectContent>
             </Select>
 
-            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
-                  <SelectTrigger><SelectValue placeholder="Select option" /></SelectTrigger>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-48" data-testid="select-category-filter">
+                <SelectValue placeholder="Filter by category" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="finance">Finance</SelectItem>
+                <SelectItem value="gaming">Gaming</SelectItem>
+                <SelectItem value="ecommerce">E-commerce</SelectItem>
+                <SelectItem value="health">Health</SelectItem>
               </SelectContent>
             </Select>
 
-
-
-            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
-                <SelectValue placeholder="Select option" />
-              </SelectTrigger>
-              <SelectContent>
-              </SelectContent>
-            </Select>
-
-            <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
-                  <SelectTrigger><SelectValue placeholder="Select option" /></SelectTrigger>
-              </SelectTrigger>
-              <SelectContent>
-              </SelectContent>
-            </Select>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button data-testid="button-create-offer-dialog">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Offer
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Create New Offer</DialogTitle>
+                  <DialogDescription>
+                    Create a new affiliate offer
+                  </DialogDescription>
+                </DialogHeader>
+                <CreateOfferForm onSuccess={() => setIsCreateDialogOpen(false)} />
+              </DialogContent>
+            </Dialog>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Offers Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleExportOffers}
-                className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
-                data-testid="button-export-offers"
-                disabled={offers.length === 0}
-              >
-                <Download className="w-4 h-4 mr-2" />
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsImportDialogOpen(true)}
-                className="border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                data-testid="button-import-offers"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-              </Button>
-
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Bulk Actions Bar */}
-          {showBulkActions && (
-            <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                  </span>
+          {/* Main Content */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Offers ({offers.length})</CardTitle>
+              <CardDescription>
+                Manage all affiliate offers in the system
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                    <p className="mt-2 text-gray-600">Loading offers...</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => bulkActivateMutation.mutate(selectedOffers)}
-                    disabled={bulkActivateMutation.isPending}
-                    className="border-green-600 text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
-                  >
-                    <Play className="w-4 h-4 mr-1" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => bulkPauseMutation.mutate(selectedOffers)}
-                    disabled={bulkPauseMutation.isPending}
-                    className="border-yellow-600 text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-                  >
-                    <Pause className="w-4 h-4 mr-1" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => bulkDeleteMutation.mutate(selectedOffers)}
-                    disabled={bulkDeleteMutation.isPending}
-                    className="border-red-600 text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setSelectedOffers([]);
-                      setShowBulkActions(false);
-                    }}
-                    className="text-gray-600 hover:text-gray-800"
-                  >
-                    <XCircle className="w-4 h-4 mr-1" />
-                  </Button>
+              ) : offers.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No offers found</p>
                 </div>
-              </div>
-            </div>
-          )}
-          
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
-                    <Checkbox
-                      checked={isAllSelected}
-                      onCheckedChange={handleSelectAll}
-                      data-testid="checkbox-select-all"
-                      className={isIndeterminate ? "data-[state=checked]:bg-blue-600" : ""}
-                      ref={(el) => {
-                        if (el) {
-                          (el as any).indeterminate = isIndeterminate;
-                        }
-                      }}
-                    />
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {offers.map((offer) => (
-                  <TableRow key={offer.id}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedOffers.includes(offer.id)}
-                        onCheckedChange={(checked) => handleOfferSelecoffer.id, checked as boolean}
-                        data-testid={`checkbox-select-${offer.id}`}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        {offer.logo && (
-                          <img 
-                            src={offer.logo} 
-                            alt={offer.name}
-                            className="w-8 h-8 rounded object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        )}
-                        <div>
-                          <div 
-                            className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors"
-                            onClick={() => setLocation(`/admin/offers/${offer.id}`)}
-                            data-testid={`link-offer-name-${offer.id}`}
-                            title="Открыть детали оффера"
-                          >
-                            {offer.name}
-                          </div>
-                          <div className="text-sm text-muted-foreground truncate max-w-48">
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div>{offer.advertiserName || 'Unknown'}</div>
-                        <div className="text-muted-foreground text-xs">{offer.advertiserId.slice(0, 8)}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {(() => {
-                        // Цвета для категорий офферов
-                        const getCategoryColor = (category: string) => {
-    const colors = {
-                          switch (category?.toLowerCase()) {
-                            case 'gambling': return 'bg-red-100 text-red-800 border-red-200';
-                            case 'finance': return 'bg-green-100 text-green-800 border-green-200';
-                            case 'nutra': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                            case 'dating': return 'bg-pink-100 text-pink-800 border-pink-200';
-                            case 'sweepstakes': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-                            case 'crypto': return 'bg-orange-100 text-orange-800 border-orange-200';
-                            case 'e-commerce': return 'bg-blue-100 text-blue-800 border-blue-200';
-                            case 'mobile': return 'bg-purple-100 text-purple-800 border-purple-200';
-                            case 'games': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-                            case 'software': return 'bg-gray-100 text-gray-800 border-gray-200';
-                            default: return 'bg-slate-100 text-slate-800 border-slate-200';
-                          }
-                        };
-                        const categoryColor = getCategoryColor(offer.category);
-                          'gambling': 'gambling',
-                          'finance': 'finance',
-                          'nutra': 'nutra',
-                          'dating': 'dating',
-                          'sweepstakes': 'sweepstakes',
-                          'crypto': 'crypto',
-                          'e-commerce': 'e_commerce',
-                          'mobile': 'mobile',
-                          'games': 'games',
-                          'software': 'software'
-                        };
-                        const categoryLabel = categoryLabels[offer.category] || offer.category;
-                        return (
-                          <Badge className={`${categoryColor} border text-xs`}>
-                            {categoryLabel}
-                          </Badge>
-                        );
-                      })()}
-                      {offer.vertical && (
-                        <div className="text-xs text-muted-foreground mt-1">{offer.vertical}</div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {offer.landingPages && offer.landingPages.length > 0 ? (
-                        <div>
-                          <div className="text-xs font-bold text-green-600 uppercase mb-1">
-                            {offer.payoutType}
-                          </div>
-                          <div className={`text-sm font-medium ${offer.landingPages?.length >= 3 ? 'grid grid-cols-2 gap-1' : 'space-x-1'}`}>
-                            {offer.landingPages?.map((landing, index) => {
-                                'us': '🇺🇸',
-                                'gb': '🇬🇧', 
-                                'uk': '🇬🇧',
-                                'it': '🇮🇹',
-                                'de': '🇩🇪',
-                                'fr': '🇫🇷',
-                                'es': '🇪🇸',
-                                'ca': '🇨🇦',
-                                'au': '🇦🇺',
-                                'br': '🇧🇷',
-                                'mx': '🇲🇽',
-                                'jp': '🇯🇵',
-                                'kr': '🇰🇷',
-                                'in': '🇮🇳',
-                                'ru': '🇷🇺',
-                                'cn': '🇨🇳'
-                              };
-                              const flag = countryFlags[landing.geo?.toLowerCase() || ''] || '🌍';
-                              const geo = (landing.geo || 'XX').toUpperCase();
-                                'USD': '$',
-                                'EUR': '€',
-                                'GBP': '£',
-                                'RUB': '₽',
-                                'JPY': '¥',
-                                'CNY': '¥',
-                                'KRW': '₩',
-                                'INR': '₹',
-                                'CAD': 'C$',
-                                'AUD': 'A$',
-                                'BRL': 'R$',
-                                'MXN': '$'
-                              };
-                              const currencySymbol = currencySymbols[landing.currency] || landing.currency;
-                              return (
-                                <span key={index} className={`text-xs ${(offer.landingPages?.length || 0) >= 3 ? 'block' : 'inline-block mr-1'}`}>
-                                  {flag}{geo}-{landing.payoutAmount}{currencySymbol}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="text-xs font-bold text-green-600 uppercase mb-1">
-                            {offer.payoutType}
-                          </div>
-                          <div className="font-medium">${offer.payout}</div>
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-xs space-y-1">
-                        {/* Traffic Sources */}
-                        {offer.trafficSources && offer.trafficSources.length > 0 ? (
-                          <div className="space-y-1">
-                            {/* Группируем источники по 2 в ряд */}
-                            {Array.from({ length: Math.ceil(Math.min(offer.trafficSources.length, 4) / 2) }, (_, rowIndex) => (
-                              <div key={rowIndex} className="flex gap-1">
-                                {offer.trafficSources.slice(rowIndex * 2, (rowIndex + 1) * 2).map((source, index) => {
-                                    'facebook_ads': 'Facebook',
-                                    'google_ads': 'Google',
-                                    'instagram_ads': 'Instagram',
-                                    'tiktok_ads': 'TikTok',
-                                    'youtube_ads': 'YouTube',
-                                    'twitter_ads': 'Twitter',
-                                    'linkedin_ads': 'LinkedIn',
-                                    'pinterest_ads': 'Pinterest',
-                                    'snapchat_ads': 'Snapchat',
-                                    'reddit_ads': 'Reddit',
-                                    'mytarget': 'MyTarget',
-                                    'push_traffic': 'Push',
-                                    'inpage_push': 'InPage',
-                                    'calendar_push': 'Calendar',
-                                    'sms_push': 'SMS Push',
-                                    'outbrain': 'Outbrain',
-                                    'taboola': 'Taboola',
-                                    'mgid': 'MGID',
-                                    'revcontent': 'RevContent',
-                                    'adnow': 'AdNow',
-                                    'pop_traffic': 'Pop',
-                                    'email_marketing': 'Email',
-                                    'seo_organic': 'SEO',
-                                    'mobile_app': 'Mobile',
-                                    'influencer': 'Influencer',
-                                    'teaser_networks': 'Teaser',
-                                    'uac': 'UAC',
-                                    'pps': 'PPS',
-                                    'kmc': 'KMC',
-                                    'other': 'Other'
-                                  };
-                                  const sourceLabel = trafficSourceLabels[source] || source;
-                                  
-                                  // Цвета для разных типов источников трафика
-                                  const getTrafficSourceColor = (source: string) => {
-                                    if (source.includes('facebook') || source.includes('instagram')) return 'bg-blue-100 text-blue-800';
-                                    if (source.includes('google') || source.includes('youtube')) return 'bg-red-100 text-red-800';
-                                    if (source.includes('tiktok')) return 'bg-black text-white';
-                                    if (source.includes('twitter') || source.includes('linkedin')) return 'bg-cyan-100 text-cyan-800';
-                                    if (source.includes('pinterest')) return 'bg-red-100 text-red-800';
-                                    if (source.includes('snapchat')) return 'bg-yellow-100 text-yellow-800';
-                                    if (source.includes('push') || source.includes('pop')) return 'bg-orange-100 text-orange-800';
-                                    if (source.includes('email') || source.includes('sms')) return 'bg-green-100 text-green-800';
-                                    if (source.includes('outbrain') || source.includes('taboola') || source.includes('mgid') || source.includes('revcontent') || source.includes('adnow')) return 'bg-purple-100 text-purple-800';
-                                    if (source.includes('seo') || source.includes('organic')) return 'bg-emerald-100 text-emerald-800';
-                                    if (source.includes('influencer') || source.includes('teaser')) return 'bg-pink-100 text-pink-800';
-                                    return 'bg-gray-100 text-gray-800';
-                                  };
-                                  
-                                  const colorClass = getTrafficSourceColor(source);
-                                  
-                                  return (
-                                    <Badge key={rowIndex * 2 + index} className={`text-xs whitespace-nowrap ${colorClass} border-0`}>
-                                      {sourceLabel}
-                                    </Badge>
-                                  );
-                                })}
-                              </div>
-                            ))}
-                            {offer.trafficSources.length > 4 && (
-                            )}
-                          </div>
-                        ) : (
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-xs space-y-1">
-                        {/* Allowed Apps */}
-                        {offer.allowedApps && Array.isArray(offer.allowedApps) && offer.allowedApps.length > 0 ? (
-                          <div className="space-y-1">
-                            {/* Группируем приложения по 2 в ряд */}
-                            {Array.from({ length: Math.ceil(Math.min(offer.allowedApps?.length || 0, 4) / 2) }, (_, rowIndex) => (
-                              <div key={rowIndex} className="flex gap-1">
-                                {(offer.allowedApps || []).slice(rowIndex * 2, (rowIndex + 1) * 2).map((app: string, index: number) => {
-                                    'PWA apps': 'PWA',
-                                    'WebView apps': 'WebView',
-                                    'Native Android (.apk) apps': 'Android',
-                                    'iOS apps': 'iOS',
-                                    'Mobile apps': 'Mobile',
-                                    'Desktop apps': 'Desktop',
-                                    'Web apps': 'Web',
-                                    'Telegram bots': 'Telegram',
-                                    'Browser extensions': 'Extensions',
-                                    'Chrome extensions': 'Chrome Ext',
-                                    'Firefox extensions': 'Firefox Ext'
-                                  };
-                                  const appLabel = appLabels[app] || app;
-                                  const colors = ['bg-blue-100 text-blue-800', 'bg-green-100 text-green-800', 'bg-purple-100 text-purple-800', 'bg-orange-100 text-orange-800'];
-                                  const colorClass = colors[(rowIndex * 2 + index) % colors.length];
-                                  return (
-                                    <Badge key={rowIndex * 2 + index} className={`text-xs whitespace-nowrap ${colorClass} border-0`}>
-                                      {appLabel}
-                                    </Badge>
-                                  );
-                                })}
-                              </div>
-                            ))}
-                            {(offer.allowedApps?.length || 0) > 4 && (
-                            )}
-                          </div>
-                        ) : (
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div 
-                        className="cursor-pointer"
-                        onClick={() => {
-                          setStatusChangeOffer(offer);
-                          setIsStatusDialogOpen(true);
-                        }}
-                      >
-                        {getStatusBadge(offer.status, offer.moderationStatus, offer.isBlocked, offer.isArchived)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {new Date(offer.createdAt).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setLocation(`/admin/offers/${offer.id}`)}
-                          className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                          data-testid={`button-view-offer-${offer.id}`}
-                        >
-                          <Eye className="w-4 h-4 text-blue-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEditingOffer(offer);
-                            setIsEditDialogOpen(true);
-                          }}
-                          className="h-8 w-8 p-0 hover:bg-green-50 dark:hover:bg-green-900/20"
-                          data-testid={`button-edit-offer-${offer.id}`}
-                        >
-                          <Edit className="w-4 h-4 text-green-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            if (confirm('confirm_delete_offer')) {
-                              deleteOfferMutation.mutate(offer.id);
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox 
+                          checked={selectedOffers.length === offers.length}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedOffers(offers.map(offer => offer.id));
+                            } else {
+                              setSelectedOffers([]);
                             }
                           }}
-                          className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          data-testid={`button-delete-offer-${offer.id}`}
-                          disabled={deleteOfferMutation.isPending}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Offer Details Modal */}
-      {selectedOffer && (
-        <Dialog open={!!selectedOffer} onOpenChange={() => setSelectedOffer(null)}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{selectedOffer.name}</DialogTitle>
-              <DialogDescription>{selectedOffer.description}</DialogDescription>
-            </DialogHeader>
-            
-            <Tabs defaultValue="details" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-              </TabsList>
-              
-              <TabsContent value="details" className="space-y-4">
-                {selectedOffer.logo && (
-                  <div>
-                    <div className="mt-2">
-                      <img 
-                        src={selectedOffer.logo} 
-                        alt={selectedOffer.name}
-                        className="w-16 h-16 rounded object-cover border"
-                      />
-                    </div>
-                  </div>
-                )}
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="font-medium">
-                      {(() => {
-                        // Цвета для категорий офферов
-                        const getCategoryColor = (category: string) => {
-    const colors = {
-                          switch (category?.toLowerCase()) {
-                            case 'gambling': return 'bg-red-100 text-red-800 border-red-200';
-                            case 'finance': return 'bg-green-100 text-green-800 border-green-200';
-                            case 'nutra': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                            case 'dating': return 'bg-pink-100 text-pink-800 border-pink-200';
-                            case 'sweepstakes': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-                            case 'crypto': return 'bg-orange-100 text-orange-800 border-orange-200';
-                            case 'e-commerce': return 'bg-blue-100 text-blue-800 border-blue-200';
-                            case 'mobile': return 'bg-purple-100 text-purple-800 border-purple-200';
-                            case 'games': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-                            case 'software': return 'bg-gray-100 text-gray-800 border-gray-200';
-                            default: return 'bg-slate-100 text-slate-800 border-slate-200';
-                          }
-                        };
-                        const categoryColor = getCategoryColor(selectedOffer.category);
-                          'gambling': 'gambling',
-                          'finance': 'finance',
-                          'nutra': 'nutra',
-                          'dating': 'dating',
-                          'sweepstakes': 'sweepstakes',
-                          'crypto': 'crypto',
-                          'e-commerce': 'e_commerce',
-                          'mobile': 'mobile',
-                          'games': 'games',
-                          'software': 'software'
-                        };
-                        const categoryLabel = categoryLabels[selectedOffer.category] || selectedOffer.category;
-                        return (
-                          <Badge className={`${categoryColor} border inline-block`}>
-                            {categoryLabel}
-                          </Badge>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-medium">{selectedOffer.vertical || 'N/A'}</div>
-                  </div>
-                  <div>
-                    <div className="font-medium">${selectedOffer.payout} {selectedOffer.payoutType}</div>
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {Array.isArray(selectedOffer.countries) && selectedOffer.countries.length > 0 
-                        ? selectedOffer.countries.join(', ')
-                        : 'all_countries'}
-                    </div>
-                  </div>
-                </div>
-
-                {selectedOffer.landingPages && selectedOffer.landingPages.length > 0 && (
-                  <div>
-                    <Label>Лендинги и цены по гео</Label>
-                    <div className="mt-2 space-y-2">
-                      {selectedOffer.landingPages.map((landing, index) => {
-                          'us': '🇺🇸',
-                          'gb': '🇬🇧', 
-                          'uk': '🇬🇧',
-                          'it': '🇮🇹',
-                          'de': '🇩🇪',
-                          'fr': '🇫🇷',
-                          'es': '🇪🇸',
-                          'ca': '🇨🇦',
-                          'au': '🇦🇺',
-                          'br': '🇧🇷',
-                          'mx': '🇲🇽',
-                          'jp': '🇯🇵',
-                          'kr': '🇰🇷',
-                          'in': '🇮🇳',
-                          'ru': '🇷🇺',
-                          'cn': '🇨🇳'
-                        };
-                        const flag = countryFlags[landing.geo?.toLowerCase() || ''] || '🌍';
-                        const geo = (landing.geo || 'XX').toUpperCase();
-                          'USD': '$',
-                          'EUR': '€',
-                          'GBP': '£',
-                          'RUB': '₽',
-                          'JPY': '¥',
-                          'CNY': '¥',
-                          'KRW': '₩',
-                          'INR': '₹',
-                          'CAD': 'C$',
-                          'AUD': 'A$',
-                          'BRL': 'R$',
-                          'MXN': '$'
-                        };
-                        const currencySymbol = currencySymbols[landing.currency] || landing.currency;
-                        
-                        return (
-                          <div key={index} className="border rounded p-3">
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1 min-w-0">
-                                <div className="font-medium flex items-center gap-2">
-                                  <span>{flag} {geo}</span>
-                                  <span>{landing.name}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <span className="break-all">{landing.url}</span>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
-                                    onClick={() => copyToClipboard(landing.url, `modal-landing-${index}`)}
-                                    title="Копировать URL"
-                                  >
-                                    {copiedUrls[`modal-landing-${index}`] ? (
-                                      <Check className="w-4 h-4 text-green-600" />
-                                    ) : (
-                                      <Copy className="w-4 h-4 text-blue-600" />
-                                    )}
-                                  </Button>
-                                </div>
-                              </div>
-                              <div className="text-right ml-4">
-                                <div className="font-medium text-lg">{flag}{geo}-{landing.payoutAmount}{currencySymbol}</div>
-                                <div className="text-sm text-muted-foreground">{landing.currency}</div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                
-                <div>
-                  <div className="font-medium break-all">{selectedOffer.landingPageUrl || 'Не указано'}</div>
-                </div>
-                
-                {selectedOffer.trafficSources && selectedOffer.trafficSources.length > 0 && (
-                  <div>
-                    <Label>Разрешенные источники трафика</Label>
-                    <div className="mt-2 space-y-2">
-                      {/* Группируем источники по 2 в ряд */}
-                      {Array.from({ length: Math.ceil(selectedOffer.trafficSources.length / 2) }, (_, rowIndex) => (
-                        <div key={rowIndex} className="flex gap-2">
-                          {selectedOffer.trafficSources.slice(rowIndex * 2, (rowIndex + 1) * 2).map((source, index) => {
-                              'facebook_ads': 'Facebook Ads',
-                              'google_ads': 'Google Ads',
-                              'instagram_ads': 'Instagram Ads',
-                              'tiktok_ads': 'TikTok Ads',
-                              'youtube_ads': 'YouTube Ads',
-                              'twitter_ads': 'Twitter Ads',
-                              'linkedin_ads': 'LinkedIn Ads',
-                              'pinterest_ads': 'Pinterest Ads',
-                              'snapchat_ads': 'Snapchat Ads',
-                              'reddit_ads': 'Reddit Ads',
-                              'mytarget': 'MyTarget',
-                              'push_traffic': 'Push трафик',
-                              'inpage_push': 'InPage Push',
-                              'calendar_push': 'Calendar Push',
-                              'sms_push': 'SMS Push',
-                              'outbrain': 'Outbrain',
-                              'taboola': 'Taboola',
-                              'mgid': 'MGID',
-                              'revcontent': 'RevContent',
-                              'adnow': 'AdNow',
-                              'pop_traffic': 'Pop трафик',
-                              'email_marketing': 'Email маркетинг',
-                              'seo_organic': 'SEO органический',
-                              'mobile_app': 'Мобильные приложения',
-                              'influencer': 'Инфлюенсер маркетинг',
-                              'teaser_networks': 'Тизерные сети',
-                              'uac': 'UAC',
-                              'pps': 'PPS',
-                              'kmc': 'KMC',
-                              'other': 'Другое'
-                            };
-                            const sourceLabel = trafficSourceLabels[source] || source;
-                            
-                            // Цвета для разных типов источников трафика
-                            const getTrafficSourceColor = (source: string) => {
-                              if (source.includes('facebook') || source.includes('instagram')) return 'bg-blue-100 text-blue-800 border-blue-200';
-                              if (source.includes('google') || source.includes('youtube')) return 'bg-red-100 text-red-800 border-red-200';
-                              if (source.includes('tiktok')) return 'bg-gray-800 text-white border-gray-900';
-                              if (source.includes('twitter') || source.includes('linkedin')) return 'bg-cyan-100 text-cyan-800 border-cyan-200';
-                              if (source.includes('pinterest')) return 'bg-red-100 text-red-800 border-red-200';
-                              if (source.includes('snapchat')) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-                              if (source.includes('push') || source.includes('pop')) return 'bg-orange-100 text-orange-800 border-orange-200';
-                              if (source.includes('email') || source.includes('sms')) return 'bg-green-100 text-green-800 border-green-200';
-                              if (source.includes('outbrain') || source.includes('taboola') || source.includes('mgid') || source.includes('revcontent') || source.includes('adnow')) return 'bg-purple-100 text-purple-800 border-purple-200';
-                              if (source.includes('seo') || source.includes('organic')) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                              if (source.includes('influencer') || source.includes('teaser')) return 'bg-pink-100 text-pink-800 border-pink-200';
-                              if (source.includes('mytarget') || source.includes('reddit')) return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-                              return 'bg-gray-100 text-gray-800 border-gray-200';
-                            };
-                            
-                            const colorClass = getTrafficSourceColor(source);
-                            
-                            return (
-                              <Badge key={rowIndex * 2 + index} className={`${colorClass} border`}>
-                                {sourceLabel}
-                              </Badge>
-                            );
-                          })}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {selectedOffer.allowedApps && Array.isArray(selectedOffer.allowedApps) && selectedOffer.allowedApps.length > 0 && (
-                  <div>
-                    <Label>Разрешенные приложения</Label>
-                    <div className="mt-2 space-y-2">
-                      {/* Группируем приложения по 2 в ряд */}
-                      {Array.from({ length: Math.ceil((selectedOffer.allowedApps?.length || 0) / 2) }, (_, rowIndex) => (
-                        <div key={rowIndex} className="flex gap-2">
-                          {(selectedOffer.allowedApps || []).slice(rowIndex * 2, (rowIndex + 1) * 2).map((app: string, index: number) => {
-                              'PWA apps': 'PWA приложения',
-                              'WebView apps': 'WebView приложения',
-                              'Native Android (.apk) apps': 'Android приложения (.apk)',
-                              'iOS apps': 'iOS приложения',
-                              'Mobile apps': 'Мобильные приложения',
-                              'Desktop apps': 'Настольные приложения',
-                              'Web apps': 'Веб приложения',
-                              'Telegram bots': 'Telegram боты',
-                              'Browser extensions': 'Браузерные расширения',
-                              'Chrome extensions': 'Расширения Chrome',
-                              'Firefox extensions': 'Расширения Firefox'
-                            };
-                            const appLabel = appLabels[app] || app;
-                            const colors = ['bg-blue-100 text-blue-800 border-blue-200', 'bg-green-100 text-green-800 border-green-200', 'bg-purple-100 text-purple-800 border-purple-200', 'bg-orange-100 text-orange-800 border-orange-200', 'bg-red-100 text-red-800 border-red-200', 'bg-indigo-100 text-indigo-800 border-indigo-200'];
-                            const colorClass = colors[(rowIndex * 2 + index) % colors.length];
-                            return (
-                              <Badge key={rowIndex * 2 + index} className={`${colorClass} border`}>
-                                {appLabel}
-                              </Badge>
-                            );
-                          })}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                <div>
-                  <div className="font-medium">{selectedOffer.restrictions || 'no_restrictions'}</div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="analytics" className="space-y-4">
-                {offerStats ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <Card>
-                      <CardHeader className="pb-2">
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">{(offerStats as any)?.clicks || 0}</div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="pb-2">
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">{(offerStats as any)?.conversions || 0}</div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="pb-2">
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">{(offerStats as any)?.cr || '0.00'}%</div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="pb-2">
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">${(offerStats as any)?.epc || '0.00'}</div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                ) : (
-                )}
-              </TabsContent>
-              
-              <TabsContent value="creatives" className="space-y-4">
-              </TabsContent>
-              
-              <TabsContent value="history" className="space-y-4">
-                {Array.isArray(offerLogs) && offerLogs.length > 0 ? (
-                  <div className="space-y-2">
-                    {(offerLogs as OfferLog[]).map((log: OfferLog) => (
-                      <div key={log.id} className="border rounded p-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="font-medium">{log.action}</div>
-                            {log.fieldChanged && (
-                              <div className="text-sm text-muted-foreground">
-                                {log.fieldChanged}: {log.oldValue} → {log.newValue}
-                              </div>
-                            )}
-                            {log.comment && (
-                              <div className="text-sm mt-1">{log.comment}</div>
-                            )}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            <div>{log.userName}</div>
-                            <div>{new Date(log.createdAt).toLocaleString()}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                )}
-              </TabsContent>
-            </Tabs>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Edit Offer Modal */}
-      {editingOffer && (
-        <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
-          setIsEditDialogOpen(open);
-          if (!open) setEditingOffer(null);
-        }}>
-          <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Редактировать оффер: {editingOffer.name}</DialogTitle>
-              <DialogDescription>
-                Полное редактирование всех параметров оффера
-              </DialogDescription>
-            </DialogHeader>
-            {/* Полная форма редактирования оффера */}
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label>Название оффера</Label>
-                  <Input
-                    defaultValue={editingOffer.name}
-                    onChange={(e) => handleOfferUpdate({ name: e.target.value })}
-                    placeholder="Введите название оффера"
-                  />
-                </div>
-                
-                <div>
-                  <Label>Категория</Label>
-                  <Select 
-                    defaultValue={editingOffer.category}
-                    onValueChange={(value) => handleOfferUpdate({ category: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gambling">Гемблинг</SelectItem>
-                      <SelectItem value="finance">Финансы</SelectItem>
-                      <SelectItem value="nutra">Нутра</SelectItem>
-                      <SelectItem value="dating">Знакомства</SelectItem>
-                      <SelectItem value="sweepstakes">Лотереи</SelectItem>
-                      <SelectItem value="crypto">Криптовалюты</SelectItem>
-                      <SelectItem value="e-commerce">E-commerce</SelectItem>
-                      <SelectItem value="mobile">Мобильные</SelectItem>
-                      <SelectItem value="gaming">Игры</SelectItem>
-                      <SelectItem value="software">ПО</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label>Описание</Label>
-                  defaultValue={editingOffer.description}
-                  onChange={(e) => handleOfferUpdate({ description: e.target.value })}
-                  placeholder="Описание оффера"
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <Label>Статус</Label>
-                  <Select 
-                    defaultValue={editingOffer.status}
-                    onValueChange={(value) => handleOfferUpdate({ status: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Активен</SelectItem>
-                      <SelectItem value="paused">Остановлен</SelectItem>
-                      <SelectItem value="pending">Ожидает</SelectItem>
-                      <SelectItem value="draft">Черновик</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Тип выплаты</Label>
-                  <Select 
-                    defaultValue={editingOffer.payoutType}
-                    onValueChange={(value) => handleOfferUpdate({ payoutType: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="CPA">CPA</SelectItem>
-                      <SelectItem value="CPS">CPS</SelectItem>
-                      <SelectItem value="CPL">CPL</SelectItem>
-                      <SelectItem value="CRL">CRL</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Валюта</Label>
-                  <Select 
-                    defaultValue={editingOffer.currency}
-                    onValueChange={(value) => handleOfferUpdate({ currency: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="RUB">RUB</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label>URL логотипа</Label>
-                <Input
-                  defaultValue={editingOffer.logo || ''}
-                  onChange={(e) => handleOfferUpdate({ logo: e.target.value })}
-                  placeholder="https://example.com/logo.png"
-                />
-              </div>
-
-              <div>
-                <Label>KPI условия</Label>
-                  defaultValue={editingOffer.kpiConditions || ''}
-                  onChange={(e) => handleOfferUpdate({ kpiConditions: e.target.value })}
-                  placeholder="Условия достижения KPI"
-                  rows={2}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label>Дневной лимит</Label>
-                  <Input
-                    type="number"
-                    defaultValue={editingOffer.dailyLimit?.toString() || ''}
-                    onChange={(e) => handleOfferUpdate({ dailyLimit: e.target.value ? parseIne.target.value : undefined })}
-                    placeholder="Без ограничений"
-                  />
-                </div>
-                
-                <div>
-                  <Label>Месячный лимит</Label>
-                  <Input
-                    type="number"
-                    defaultValue={editingOffer.monthlyLimit?.toString() || ''}
-                    onChange={(e) => handleOfferUpdate({ monthlyLimit: e.target.value ? parseIne.target.value : undefined })}
-                    placeholder="Без ограничений"
-                  />
-                </div>
-              </div>
-
-              {/* Источники трафика */}
-              <div>
-                <Label>Разрешенные источники трафика</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                  {['Facebook', 'Google', 'TikTok', 'Instagram', 'YouTube', 'Twitter', 'LinkedIn', 'Snapchat', 'Pinterest'].map((source) => (
-                    <div key={source} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={`traffic-${source}`}
-                        checked={editingOffer.trafficSources?.includes(source) || false}
-                        onChange={(e) => {
-                          const current = editingOffer.trafficSources || [];
-                          const updated = e.target.checked 
-                            ? [...current, source]
-                            : current.filter(s => s !== source);
-                          handleOfferUpdate({ trafficSources: updated });
-                        }}
-                        className="rounded border-gray-300"
-                      />
-                      <label htmlFor={`traffic-${source}`} className="text-sm">{source}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Разрешенные приложения */}
-              <div>
-                <Label>Разрешенные приложения</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                  {['Мобильные приложения', 'Веб-приложения', 'Telegram боты', 'Браузерные расширения', 'Desktop приложения', 'PWA'].map((app) => (
-                    <div key={app} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={`app-${app}`}
-                        checked={editingOffer.allowedApps?.includes(app) || false}
-                        onChange={(e) => {
-                          const current = editingOffer.allowedApps || [];
-                          const updated = e.target.checked 
-                            ? [...current, app]
-                            : current.filter(a => a !== app);
-                          handleOfferUpdate({ allowedApps: updated });
-                        }}
-                        className="rounded border-gray-300"
-                      />
-                      <label htmlFor={`app-${app}`} className="text-sm">{app}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Landing Pages */}
-              <div>
-                <Label>Landing Pages</Label>
-                <div className="space-y-3 mt-2">
-                  {(editingOffer.landingPages || []).map((lp, index) => (
-                    <div key={index} className="space-y-3 p-3 border rounded">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <Input
-                          placeholder="Название"
-                          defaultValue={lp.name}
-                          onChange={(e) => {
-                            const updated = [...(editingOffer.landingPages || [])];
-                            updated[index] = { ...lp, name: e.target.value };
-                            handleOfferUpdate({ landingPages: updated });
-                          }}
+                          data-testid="checkbox-select-all"
                         />
-                        <div className="flex items-center gap-2">
-                          <Input
-                            placeholder="URL"
-                            defaultValue={lp.url}
-                            className="flex-1"
-                            onChange={(e) => {
-                              const updated = [...(editingOffer.landingPages || [])];
-                              updated[index] = { ...lp, url: e.target.value };
-                              handleOfferUpdate({ landingPages: updated });
-                            }}
+                      </TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Payout</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {offers.map((offer) => (
+                      <TableRow key={offer.id} data-testid={`row-offer-${offer.id}`}>
+                        <TableCell>
+                          <Checkbox 
+                            checked={selectedOffers.includes(offer.id)}
+                            onCheckedChange={(checked) => handleOfferSelect(offer.id, checked as boolean)}
+                            data-testid={`checkbox-select-offer-${offer.id}`}
                           />
-                          {lp.url && (
-                            <Button 
-                              type="button"
-                              variant="ghost" 
+                        </TableCell>
+                        <TableCell className="font-medium" data-testid={`text-offer-name-${offer.id}`}>
+                          {offer.name}
+                        </TableCell>
+                        <TableCell data-testid={`text-offer-category-${offer.id}`}>
+                          {offer.category}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getStatusBadgeVariant(offer.status)} data-testid={`badge-offer-status-${offer.id}`}>
+                            {offer.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell data-testid={`text-offer-payout-${offer.id}`}>
+                          ${offer.payout} {offer.currency}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
-                              onClick={() => copyToClipboard(lp.url, `edit-landing-${index}`)}
-                              title="Копировать URL"
+                              onClick={() => setLocation(`/admin/offers/${offer.id}`)}
+                              data-testid={`button-view-offer-${offer.id}`}
                             >
-                              {copiedUrls[`edit-landing-${index}`] ? (
-                                <Check className="w-4 h-4 text-green-600" />
-                              ) : (
-                                <Copy className="w-4 h-4 text-blue-600" />
-                              )}
+                              <Eye className="w-4 h-4" />
                             </Button>
-                          )}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <Input
-                          type="number"
-                          placeholder="Сумма"
-                          defaultValue={lp.payoutAmount.toString()}
-                          onChange={(e) => {
-                            const updated = [...(editingOffer.landingPages || [])];
-                            updated[index] = { ...lp, payoutAmount: parseFloae.target.value || 0 };
-                            handleOfferUpdate({ landingPages: updated });
-                          }}
-                        />
-                        <Input
-                          placeholder="GEO"
-                          defaultValue={lp.geo}
-                          onChange={(e) => {
-                            const updated = [...(editingOffer.landingPages || [])];
-                            updated[index] = { ...lp, geo: e.target.value };
-                            handleOfferUpdate({ landingPages: updated });
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      const updated = [...(editingOffer.landingPages || []), {
-                        name: '',
-                        url: '',
-                        payoutAmount: 0,
-                        currency: editingOffer.currency,
-                        geo: ''
-                      }];
-                      handleOfferUpdate({ landingPages: updated });
-                    }}
-                    title="Добавить новую лендинг страницу"
-                  >
-                    Добавить Landing Page
-                  </Button>
-                </div>
-              </div>
-
-              {/* Дополнительные поля */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label>Ограничения</Label>
-                    defaultValue={editingOffer.restrictions || ''}
-                    onChange={(e) => handleOfferUpdate({ restrictions: e.target.value })}
-                    placeholder="Ограничения по траффику"
-                    rows={2}
-                  />
-                </div>
-                
-                <div>
-                  <Label>Комментарий модерации</Label>
-                    defaultValue={editingOffer.moderationComment || ''}
-                    onChange={(e) => handleOfferUpdate({ moderationComment: e.target.value })}
-                    placeholder="Комментарий модератора"
-                    rows={2}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">Защита от фрода</Label>
-                    <div className="text-sm text-muted-foreground">
-                      Включить автоматическую защиту от мошенничества
-                    </div>
-                  </div>
-                  <Switch
-                    defaultChecked={editingOffer.antifraudEnabled || false}
-                    onCheckedChange={(checked) => handleOfferUpdate({ antifraudEnabled: checked })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">Автоодобрение партнеров</Label>
-                    <div className="text-sm text-muted-foreground">
-                      Автоматически одобрять новых партнеров
-                    </div>
-                  </div>
-                  <Switch
-                    defaultChecked={editingOffer.autoApprovePartners || false}
-                    onCheckedChange={(checked) => handleOfferUpdate({ autoApprovePartners: checked })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">KYC обязателен</Label>
-                    <div className="text-sm text-muted-foreground">
-                      Требовать верификацию партнеров
-                    </div>
-                  </div>
-                  <Switch
-                    defaultChecked={editingOffer.kycRequired || false}
-                    onCheckedChange={(checked) => handleOfferUpdate({ kycRequired: checked })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">Приватный оффер</Label>
-                    <div className="text-sm text-muted-foreground">
-                      Скрыть от публичного просмотра
-                    </div>
-                  </div>
-                  <Switch
-                    defaultChecked={editingOffer.isPrivate || false}
-                    onCheckedChange={(checked) => handleOfferUpdate({ isPrivate: checked })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
-                    <Label className="text-base">Smartlink</Label>
-                    <div className="text-sm text-muted-foreground">
-                      Включить умную маршрутизацию
-                    </div>
-                  </div>
-                  <Switch
-                    defaultChecked={editingOffer.smartlinkEnabled || false}
-                    onCheckedChange={(checked) => handleOfferUpdate({ smartlinkEnabled: checked })}
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsEditDialogOpen(false)}
-                >
-                  Отмена
-                </Button>
-                <Button 
-                  onClick={() => {
-                    if (editingOffer) {
-                      updateOfferMutation.mutate(editingOffer);
-                    }
-                  }}
-                  disabled={updateOfferMutation.isPending}
-                >
-                  {updateOfferMutation.isPending ? 'Сохранение...' : 'Сохранить изменения'}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Status Change Modal */}
-      {statusChangeOffer && (
-        <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogDescription>
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant={statusChangeOffer.status === 'active' ? 'default' : 'outline'}
-                  className={statusChangeOffer.status === 'active' ? 'bg-green-500 hover:bg-green-600' : 'border-green-500 text-green-600 hover:bg-green-50'}
-                  onClick={() => changeStatusMutation.mutate({ offerId: statusChangeOffer.id, status: 'active' })}
-                  disabled={changeStatusMutation.isPending}
-                  data-testid="button-status-active"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  </div>
-                </Button>
-                
-                <Button
-                  variant={statusChangeOffer.status === 'paused' ? 'default' : 'outline'}
-                  className={statusChangeOffer.status === 'paused' ? 'bg-red-500 hover:bg-red-600' : 'border-red-500 text-red-600 hover:bg-red-50'}
-                  onClick={() => changeStatusMutation.mutate({ offerId: statusChangeOffer.id, status: 'paused' })}
-                  disabled={changeStatusMutation.isPending}
-                  data-testid="button-status-paused"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  </div>
-                </Button>
-                
-                <Button
-                  variant={statusChangeOffer.status === 'pending' ? 'default' : 'outline'}
-                  className={statusChangeOffer.status === 'pending' ? 'bg-yellow-500 hover:bg-yellow-600' : 'border-yellow-500 text-yellow-600 hover:bg-yellow-50'}  
-                  onClick={() => changeStatusMutation.mutate({ offerId: statusChangeOffer.id, status: 'pending' })}
-                  disabled={changeStatusMutation.isPending}
-                  data-testid="button-status-pending"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  </div>
-                </Button>
-                
-                <Button
-                  variant={statusChangeOffer.status === 'draft' ? 'default' : 'outline'}
-                  onClick={() => changeStatusMutation.mutate({ offerId: statusChangeOffer.id, status: 'draft' })}
-                  disabled={changeStatusMutation.isPending}
-                  data-testid="button-status-draft"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                  </div>
-                </Button>
-              </div>
-              
-              <div className="text-sm text-muted-foreground">
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Moderation Modal */}
-      {selectedOffer && (
-        <Dialog open={isModerationDialogOpen} onOpenChange={setIsModerationDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogDescription>
-                {selectedOffer.name}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => handleModerationAction('approve')}
-                  className="flex-1"
-                  disabled={moderateOfferMutation.isPending}
-                  data-testid="button-approve-offer"
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => handleModerationAction('reject')}
-                  className="flex-1"
-                  disabled={moderateOfferMutation.isPending}
-                  data-testid="button-reject-offer"
-                >
-                  <XCircle className="w-4 h-4 mr-2" />
-                </Button>
-              </div>
-              
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => handleModerationAction('needs_revision')}
-                  className="flex-1"
-                  disabled={moderateOfferMutation.isPending}
-                  data-testid="button-needs-revision-offer"
-                >
-                  <AlertTriangle className="w-4 h-4 mr-2" />
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleModerationAction('archive')}
-                  className="flex-1"
-                  disabled={moderateOfferMutation.isPending}
-                  data-testid="button-archive-offer"
-                >
-                  <Archive className="w-4 h-4 mr-2" />
-                </Button>
-              </div>
-
-              <div>
-                  id="moderationComment"
-                  placeholder="Select option"
-                  data-testid="textarea-moderation-comment"
-                />
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Import Dialog */}
-      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Импорт офферов</DialogTitle>
-            <DialogDescription>
-              Выберите JSON файл с офферами для импорта
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="importFile">Файл офферов (JSON)</Label>
-              <Input
-                id="importFile"
-                type="file"
-                accept=".json"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    handleImportOffers(file);
-                  }
-                }}
-                data-testid="input-import-file"
-              />
-            </div>
-            <div className="text-sm text-muted-foreground">
-              <p>Файл должен содержать массив объектов офферов в формате JSON.</p>
-              <p>Поддерживаемые поля: name, category, description, status, payoutType, geoPricing, и другие.</p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-          </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                // Edit functionality would go here
+                                toast({
+                                  title: 'Info',
+                                  description: 'Edit functionality not yet implemented',
+                                });
+                              }}
+                              data-testid={`button-edit-offer-${offer.id}`}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteOfferMutation.mutate(offer.id)}
+                              disabled={deleteOfferMutation.isPending}
+                              data-testid={`button-delete-offer-${offer.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
         </main>
       </div>
     </div>

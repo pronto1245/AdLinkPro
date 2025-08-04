@@ -37,7 +37,9 @@ export default function UsersManagement() {
     queryKey: ['/api/admin/finances'],
     queryFn: async () => {
       const response = await fetch('/api/admin/finances', {
-        headers: token,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       if (!response.ok) throw new Error('Failed to fetch transactions');
       return response.json();
@@ -45,7 +47,7 @@ export default function UsersManagement() {
   });
 
   // Filter transactions based on search term and filters
-  const transactions = allTransactions?.filter((transaction: any) => {
+  const transactions = finances?.filter((transaction: any) => {
     const matchesSearch = searchTerm === '' || 
       transaction.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -63,10 +65,13 @@ export default function UsersManagement() {
     return matchesSearch && matchesStatus && matchesType && matchesStartDate && matchesEndDate;
   }) || [];
 
+  const { data: financialMetrics } = useQuery({
     queryKey: ['/api/admin/financial-metrics'],
     queryFn: async () => {
       const response = await fetch('/api/admin/financial-metrics', {
-        headers: token,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       if (!response.ok) throw new Error('Failed to fetch financial metrics');
       return response.json();
@@ -79,7 +84,7 @@ export default function UsersManagement() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer $token`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ status }),
       });
@@ -223,30 +228,30 @@ export default function UsersManagement() {
                     />
                   </div>
 
-                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger data-testid="select-filter-status" title="Фильтр по статусу">
-                      <SelectValue placeholder="Loading..." />
+                      <SelectValue placeholder="All Statuses" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Loading...</SelectItem>
-                      <SelectItem value="completed">Loading...</SelectItem>
-                      <SelectItem value="pending">Loading...</SelectItem>
-                      <SelectItem value="processing">Loading...</SelectItem>
-                      <SelectItem value="failed">Loading...</SelectItem>
-                      <SelectItem value="cancelled">Loading...</SelectItem>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="processing">Processing</SelectItem>
+                      <SelectItem value="failed">Failed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
 
-                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger>
+                  <Select value={filterType} onValueChange={setFilterType}>
                     <SelectTrigger data-testid="select-filter-type" title="Фильтр по типу">
-                      <SelectValue placeholder="Loading..." />
+                      <SelectValue placeholder="All Types" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Loading...</SelectItem>
-                      <SelectItem value="commission">Loading...</SelectItem>
-                      <SelectItem value="payout">Loading...</SelectItem>
-                      <SelectItem value="bonus">Loading...</SelectItem>
-                      <SelectItem value="penalty">Loading...</SelectItem>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="commission">Commission</SelectItem>
+                      <SelectItem value="payout">Payout</SelectItem>
+                      <SelectItem value="bonus">Bonus</SelectItem>
+                      <SelectItem value="penalty">Penalty</SelectItem>
                     </SelectContent>
                   </Select>
 
