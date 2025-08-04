@@ -60,12 +60,21 @@ interface User {
   email: string;
   firstName?: string;
   lastName?: string;
+  company?: string;
+  phone?: string;
+  telegram?: string;
   role: string;
   userType?: string;
   country?: string;
+  status?: string;
+  kycStatus?: string;
   isBlocked?: boolean;
   blockReason?: string;
   lastLoginAt?: string;
+  lastIpAddress?: string;
+  registrationIp?: string;
+  advertiserId?: string;
+  advertiserName?: string;
   createdAt: string;
   isActive: boolean;
 }
@@ -119,6 +128,17 @@ export default function UsersManagement() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [bulkAction, setBulkAction] = useState<'block' | 'unblock' | 'delete'>('block');
+
+  // Utility functions for sorting
+  const handleSort = (field: string) => {
+    const newOrder = filters.sortBy === field && filters.sortOrder === 'asc' ? 'desc' : 'asc';
+    setFilters({ ...filters, sortBy: field, sortOrder: newOrder });
+  };
+
+  const getSortIcon = (field: string) => {
+    if (filters.sortBy !== field) return '↕️';
+    return filters.sortOrder === 'asc' ? '↑' : '↓';
+  };
   
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -533,20 +553,67 @@ export default function UsersManagement() {
                     }}
                   />
                 </TableHead>
-                <TableHead>{t.username || "Имя пользователя"}</TableHead>
-                <TableHead>{t.email || "Email"}</TableHead>
-                <TableHead>{t.role || "Роль"}</TableHead>
-                <TableHead>{t.status || "Статус"}</TableHead>
-                <TableHead>{t.country || "Страна"}</TableHead>
-                <TableHead>{t.lastActivity || "Последняя активность"}</TableHead>
-                <TableHead>{t.registered || "Зарегистрирован"}</TableHead>
-                <TableHead className="text-right">{t.actions || "Действия"}</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                  onClick={() => handleSort('id')}
+                >
+                  ID {getSortIcon('id')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                  onClick={() => handleSort('userType')}
+                >
+                  Тип {getSortIcon('userType')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                  onClick={() => handleSort('username')}
+                >
+                  Название аккаунта / Имя {getSortIcon('username')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                  onClick={() => handleSort('email')}
+                >
+                  Email / Telegram {getSortIcon('email')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                  onClick={() => handleSort('role')}
+                >
+                  Роль {getSortIcon('role')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                  onClick={() => handleSort('status')}
+                >
+                  Статус {getSortIcon('status')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                  onClick={() => handleSort('createdAt')}
+                >
+                  Дата регистрации {getSortIcon('createdAt')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                  onClick={() => handleSort('lastLoginAt')}
+                >
+                  Последний вход (IP) {getSortIcon('lastLoginAt')}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                  onClick={() => handleSort('advertiserName')}
+                >
+                  Привязанный рекламодатель {getSortIcon('advertiserName')}
+                </TableHead>
+                <TableHead className="text-right">Действия</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8">
+                  <TableCell colSpan={11} className="text-center py-8">
                     <div className="flex items-center justify-center">
                       <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                       {t.loading || "Загрузка..."}
@@ -555,7 +622,7 @@ export default function UsersManagement() {
                 </TableRow>
               ) : usersData?.data?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8">
+                  <TableCell colSpan={11} className="text-center py-8">
                     {t.noUsers || "Пользователи не найдены"}
                   </TableCell>
                 </TableRow>
@@ -576,31 +643,113 @@ export default function UsersManagement() {
                         }}
                       />
                     </TableCell>
+                    
+                    {/* ID пользователя */}
+                    <TableCell className="font-mono text-xs">
+                      {user.id.substring(0, 8)}...
+                    </TableCell>
+                    
+                    {/* Тип пользователя */}
+                    <TableCell>
+                      <Badge variant={
+                        user.userType === 'advertiser' ? 'default' :
+                        user.userType === 'affiliate' ? 'secondary' :
+                        user.userType === 'staff' ? 'outline' :
+                        'destructive'
+                      }>
+                        {user.userType === 'advertiser' ? 'Рекламодатель' :
+                         user.userType === 'affiliate' ? 'Партнёр' :
+                         user.userType === 'staff' ? 'Сотрудник' :
+                         user.userType === 'admin' ? 'Админ' : user.userType || 'Партнёр'}
+                      </Badge>
+                    </TableCell>
+                    
+                    {/* Название аккаунта / Имя */}
                     <TableCell className="font-medium">
-                      <div>
-                        <div>{user.username}</div>
-                        {user.firstName && user.lastName && (
-                          <div className="text-sm text-muted-foreground">
-                            {user.firstName} {user.lastName}
+                      {user.company || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username}
+                    </TableCell>
+                    
+                    {/* Email / Telegram */}
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="text-sm">{user.email}</div>
+                        {user.telegram && (
+                          <div className="text-xs text-muted-foreground">
+                            TG: {user.telegram}
                           </div>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{getRoleBadge(user.role)}</TableCell>
-                    <TableCell>{getStatusBadge(user)}</TableCell>
+                    
+                    {/* Роль */}
                     <TableCell>
-                      {user.country && (
-                        <div className="flex items-center gap-1">
-                          <Globe className="w-3 h-3" />
-                          {user.country}
+                      <Badge variant={
+                        user.role === 'super_admin' ? 'destructive' :
+                        user.role === 'advertiser' ? 'default' :
+                        user.role === 'affiliate' ? 'secondary' :
+                        'outline'
+                      }>
+                        {user.role === 'super_admin' ? 'Супер-админ' :
+                         user.role === 'advertiser' ? 'Рекламодатель' :
+                         user.role === 'affiliate' ? 'Партнер' :
+                         user.role === 'staff' ? 'Сотрудник' : user.role}
+                      </Badge>
+                    </TableCell>
+                    
+                    {/* Статус */}
+                    <TableCell>
+                      <div className="space-y-1">
+                        <Badge variant={user.isActive ? 'default' : 'destructive'}>
+                          {user.isBlocked ? 'Заблокирован' : 
+                           user.isActive ? 'Активен' : 'Неактивен'}
+                        </Badge>
+                        {user.kycStatus && (
+                          <div className="text-xs text-muted-foreground">
+                            KYC: {user.kycStatus === 'approved' ? 'Одобрен' :
+                                  user.kycStatus === 'rejected' ? 'Отклонен' : 'Ожидает'}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    
+                    {/* Дата регистрации */}
+                    <TableCell>
+                      {format(new Date(user.createdAt), 'dd.MM.yyyy', { 
+                        locale: language === 'ru' ? ru : enUS 
+                      })}
+                    </TableCell>
+                    
+                    {/* Последний вход (IP) */}
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="text-sm">
+                          {user.lastLoginAt ? 
+                            format(new Date(user.lastLoginAt), 'dd.MM.yyyy HH:mm', { 
+                              locale: language === 'ru' ? ru : enUS 
+                            }) : 
+                            'Никогда'
+                          }
                         </div>
+                        {user.lastIpAddress && (
+                          <div className="text-xs text-muted-foreground font-mono">
+                            {user.lastIpAddress}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    
+                    {/* Привязанный рекламодатель */}
+                    <TableCell>
+                      {user.advertiserName ? (
+                        <span className="text-sm">{user.advertiserName}</span>
+                      ) : user.advertiserId ? (
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {user.advertiserId.substring(0, 8)}...
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
-                    <TableCell>
-                      {user.lastLoginAt ? formatDate(user.lastLoginAt) : t.never || "Никогда"}
-                    </TableCell>
-                    <TableCell>{formatDate(user.createdAt)}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

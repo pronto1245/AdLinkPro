@@ -32,6 +32,7 @@ export const users = pgTable("users", {
   lastName: text("last_name"),
   company: text("company"),
   phone: text("phone"),
+  telegram: text("telegram"),
   country: text("country"),
   language: text("language").default('en'),
   timezone: text("timezone").default('UTC'),

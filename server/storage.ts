@@ -942,12 +942,39 @@ export class DatabaseStorage implements IStorage {
       .from(users)
       .where(conditions.length > 0 ? and(...conditions) : undefined);
 
-    // Get paginated data
+    // Get paginated data with advertiser join for linked advertiser info
     const sortField = users[filters.sortBy as keyof typeof users] || users.createdAt;
     const orderBy = filters.sortOrder === 'asc' ? sortField : desc(sortField);
 
     const data = await db
-      .select()
+      .select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        company: users.company,
+        phone: users.phone,
+        telegram: users.telegram,
+        role: users.role,
+        userType: users.userType,
+        country: users.country,
+        status: users.status,
+        kycStatus: users.kycStatus,
+        isActive: users.isActive,
+        isBlocked: users.isBlocked,
+        blockReason: users.blockReason,
+        lastLoginAt: users.lastLoginAt,
+        lastIpAddress: users.lastIpAddress,
+        registrationIp: users.registrationIp,
+        advertiserId: users.advertiserId,
+        createdAt: users.createdAt,
+        advertiserName: sql`CASE 
+          WHEN ${users.advertiserId} IS NOT NULL 
+          THEN (SELECT username FROM ${users} advertiser WHERE advertiser.id = ${users.advertiserId})
+          ELSE NULL
+        END`.as('advertiserName')
+      })
       .from(users)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(orderBy)
