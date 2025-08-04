@@ -76,6 +76,11 @@ interface UserFilters {
   status: string;
   userType: string;
   country: string;
+  dateFrom: string;
+  dateTo: string;
+  lastActivityFrom: string;
+  lastActivityTo: string;
+  geoIP: string;
   page: number;
   limit: number;
   sortBy: string;
@@ -93,6 +98,11 @@ export default function UsersManagement() {
     status: '',
     userType: '',
     country: '',
+    dateFrom: '',
+    dateTo: '',
+    lastActivityFrom: '',
+    lastActivityTo: '',
+    geoIP: '',
     page: 1,
     limit: 20,
     sortBy: 'createdAt',
@@ -141,8 +151,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: t.userBlocked || "Пользователь заблокирован",
-        description: t.userBlockedSuccess || "Пользователь успешно заблокирован"
+        title: "Пользователь заблокирован",
+        description: "Пользователь успешно заблокирован"
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setShowBlockDialog(false);
@@ -159,8 +169,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: t.userUnblocked || "Пользователь разблокирован",
-        description: t.userUnblockedSuccess || "Пользователь успешно разблокирован"
+        title: "Пользователь разблокирован",
+        description: "Пользователь успешно разблокирован"
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     }
@@ -175,8 +185,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: t.userLoggedOut || "Сессии завершены",
-        description: t.userLoggedOutSuccess || "Все сессии пользователя завершены"
+        title: "Сессии завершены",
+        description: "Все сессии пользователя завершены"
       });
     }
   });
@@ -190,8 +200,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: t.userDeleted || "Пользователь удален",
-        description: t.userDeletedSuccess || "Пользователь успешно удален"
+        title: "Пользователь удален",
+        description: "Пользователь успешно удален"
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     }
@@ -207,8 +217,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: t.userCreated || "Пользователь создан",
-        description: t.userCreatedSuccess || "Пользователь успешно создан"
+        title: "Пользователь создан",
+        description: "Пользователь успешно создан"
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setShowCreateDialog(false);
@@ -225,8 +235,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: t.userUpdated || "Пользователь обновлен",
-        description: t.userUpdatedSuccess || "Пользователь успешно обновлен"
+        title: "Пользователь обновлен", 
+        description: "Пользователь успешно обновлен"
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setShowEditDialog(false);
@@ -240,9 +250,9 @@ export default function UsersManagement() {
         method: 'POST'
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
-        title: t.passwordReset || "Пароль сброшен",
+        title: "Пароль сброшен",
         description: `Новый пароль: ${data.newPassword}`
       });
     }
@@ -271,9 +281,9 @@ export default function UsersManagement() {
           throw new Error('Unknown bulk action');
       }
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
-        title: t.bulkOperationComplete || "Массовая операция завершена",
+        title: "Массовая операция завершена",
         description: `Успешно: ${data.success}, Ошибок: ${data.failed}`
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
