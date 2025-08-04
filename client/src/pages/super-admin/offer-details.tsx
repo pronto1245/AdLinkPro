@@ -372,30 +372,8 @@ export default function OfferDetails() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between items-start">
-                  {/* Левая часть - информация о типе и валюте */}
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Тип выплат</label>
-                      <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                        {offer.payoutType === 'cpa' ? 'CPA' :
-                         offer.payoutType === 'cps' ? 'CPS' :
-                         offer.payoutType === 'cpm' ? 'CPM' :
-                         offer.payoutType === 'cpc' ? 'CPC' :
-                         offer.payoutType === 'cpl' ? 'CPL' :
-                         offer.payoutType === 'revshare' ? 'RevShare' : 
-                         offer.payoutType ? offer.payoutType.toUpperCase() : 'Не указано'}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Валюта</label>
-                      <div className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                        {offer.currency || 'USD'}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Правая часть - фото и название оффера */}
+                <div className="flex justify-end">
+                  {/* Фото и название оффера в правом углу */}
                   <div className="text-right">
                     <div className="flex justify-end mb-2">
                       {offer.logoUrl ? (
