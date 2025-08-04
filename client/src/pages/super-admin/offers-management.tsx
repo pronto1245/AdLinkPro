@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/contexts/language-context';
+import { useLocation } from 'wouter';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -760,6 +761,7 @@ export default function OffersManagement() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -1109,7 +1111,7 @@ export default function OffersManagement() {
                         <div>
                           <div 
                             className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors"
-                            onClick={() => setSelectedOffer(offer)}
+                            onClick={() => setLocation(`/admin/offers/${offer.id}`)}
                             data-testid={`link-offer-name-${offer.id}`}
                             title="Открыть детали оффера"
                           >
@@ -1370,7 +1372,7 @@ export default function OffersManagement() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setSelectedOffer(offer)}
+                          onClick={() => setLocation(`/admin/offers/${offer.id}`)}
                           className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                           data-testid={`button-view-offer-${offer.id}`}
                           title="Открыть детали"
