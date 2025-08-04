@@ -14,9 +14,442 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Search, Filter, Eye, Edit, Ban, Archive, CheckCircle, XCircle, AlertTriangle, Download, Upload } from 'lucide-react';
+import { Search, Filter, Eye, Edit, Ban, Archive, CheckCircle, XCircle, AlertTriangle, Download, Upload, Plus } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Checkbox } from '@/components/ui/checkbox';
+
+const createOfferSchema = z.object({
+  number: z.string().optional(),
+  name: z.string().min(1, 'Название оффера обязательно'),
+  category: z.string().min(1, 'Категория обязательна'),
+  status: z.string().default('draft'),
+  description: z.string().optional(),
+  logo: z.string().optional(),
+  landingPages: z.array(z.object({
+    name: z.string(),
+    url: z.string().url('Неверный URL'),
+  })).default([{ name: 'Основная страница', url: '' }]),
+  payoutType: z.string().default('cpa'),
+  payoutAmount: z.number().min(0),
+  currency: z.string().default('USD'),
+  landingInfo: z.string().optional(),
+  kpiConditions: z.string().optional(),
+  geoTargeting: z.array(z.string()).default([]),
+  allowedTrafficSources: z.array(z.string()).default([]),
+  dailyLimit: z.number().optional(),
+  monthlyLimit: z.number().optional(),
+  antifraudEnabled: z.boolean().default(true),
+  autoApprovePartners: z.boolean().default(false),
+});
+
+type CreateOfferFormData = z.infer<typeof createOfferSchema>;
+
+interface CreateOfferFormProps {
+  onSuccess: () => void;
+}
+
+function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  const form = useForm<CreateOfferFormData>({
+    resolver: zodResolver(createOfferSchema),
+    defaultValues: {
+      number: '',
+      name: '',
+      category: '',
+      status: 'draft',
+      description: '',
+      logo: '',
+      landingPages: [{ name: 'Основная страница', url: '' }],
+      payoutType: 'cpa',
+      payoutAmount: 0,
+      currency: 'USD',
+      landingInfo: '',
+      kpiConditions: '',
+      geoTargeting: [],
+      allowedTrafficSources: [],
+      antifraudEnabled: true,
+      autoApprovePartners: false,
+    },
+  });
+
+  const createOfferMutation = useMutation({
+    mutationFn: async (data: CreateOfferFormData) => {
+      return await apiRequest('POST', '/api/admin/offers', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
+      toast({
+        title: "Успех",
+        description: "Оффер успешно создан",
+      });
+      onSuccess();
+      form.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось создать оффер",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const categories = [
+    'gambling', 'finance', 'nutra', 'dating', 'sweepstakes', 'crypto', 'e-commerce', 'mobile', 'games', 'software'
+  ];
+
+  const countries = [
+    'US', 'UK', 'CA', 'AU', 'DE', 'FR', 'IT', 'ES', 'NL', 'SE', 'NO', 'DK', 'FI', 'PL', 'CZ', 'HU', 'RO', 'BG', 'HR', 'SI', 'SK', 'LT', 'LV', 'EE', 'RU', 'UA', 'BY', 'KZ', 'JP', 'KR', 'CN', 'IN', 'BR', 'MX', 'AR', 'CL'
+  ];
+
+  const trafficSources = [
+    'facebook_ads', 'google_ads', 'tiktok_ads', 'instagram_ads', 'snapchat_ads', 'twitter_ads', 'pinterest_ads', 'reddit_ads', 'linkedin_ads', 'mytarget',
+    'push_traffic', 'inpage_push', 'calendar_push', 'sms_push',
+    'outbrain', 'taboola', 'mgid', 'revcontent', 'adnow',
+    'pop_traffic', 'email_marketing', 'seo_organic', 'mobile_app', 'influencer', 'teaser_networks', 'other'
+  ];
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit((data) => createOfferMutation.mutate(data))} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Оффер №</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Введите номер оффера" data-testid="input-offer-number" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Название оффера *</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Введите название оффера (например: Pronto Casino)" data-testid="input-offer-name" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Категория</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-category">
+                      <SelectValue placeholder="Выберите категорию" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {categories.map(category => (
+                      <SelectItem key={category} value={category}>
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Статус</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="draft">Черновик</SelectItem>
+                    <SelectItem value="active">Активный</SelectItem>
+                    <SelectItem value="inactive">Неактивный</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Описание</FormLabel>
+              <FormControl>
+                <Textarea {...field} placeholder="Описание оффера" rows={3} data-testid="textarea-description" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <FormField
+            control={form.control}
+            name="payoutType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Тип выплаты</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-payout-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="cpa">CPA - Cost Per Action</SelectItem>
+                    <SelectItem value="cps">CPS - Cost Per Sale</SelectItem>
+                    <SelectItem value="cpl">CPL - Cost Per Lead</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="payoutAmount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Сумма выплаты</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    type="number" 
+                    step="0.01"
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    placeholder="0.00" 
+                    data-testid="input-payout-amount" 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="currency"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Валюта</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-currency">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="GBP">GBP</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="kpiConditions"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>KPI условия</FormLabel>
+              <FormControl>
+                <Textarea 
+                  {...field} 
+                  placeholder="Условия KPI для данного оффера (например: минимальный депозит $100, активные игроки только)..."
+                  rows={2}
+                  data-testid="textarea-kpi-conditions"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="space-y-4">
+          <Label className="text-base font-medium">Гео-таргетинг (страны)</Label>
+          <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-40 overflow-y-auto border rounded-md p-3">
+            {countries.map((country) => (
+              <div key={country} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`country-${country}`}
+                  checked={form.watch('geoTargeting').includes(country)}
+                  onCheckedChange={(checked) => {
+                    const current = form.getValues('geoTargeting');
+                    if (checked) {
+                      form.setValue('geoTargeting', [...current, country]);
+                    } else {
+                      form.setValue('geoTargeting', current.filter(c => c !== country));
+                    }
+                  }}
+                />
+                <Label htmlFor={`country-${country}`} className="text-sm">{country}</Label>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <Label className="text-base font-medium">Разрешенные источники трафика</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto border rounded-md p-3">
+            {trafficSources.map((source) => (
+              <div key={source} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`source-${source}`}
+                  checked={form.watch('allowedTrafficSources').includes(source)}
+                  onCheckedChange={(checked) => {
+                    const current = form.getValues('allowedTrafficSources');
+                    if (checked) {
+                      form.setValue('allowedTrafficSources', [...current, source]);
+                    } else {
+                      form.setValue('allowedTrafficSources', current.filter(s => s !== source));
+                    }
+                  }}
+                />
+                <Label htmlFor={`source-${source}`} className="text-sm">
+                  {source.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="dailyLimit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Дневной лимит</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    type="number"
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                    placeholder="Без ограничений" 
+                    data-testid="input-daily-limit" 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="monthlyLimit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Месячный лимит</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    type="number"
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                    placeholder="Без ограничений" 
+                    data-testid="input-monthly-limit" 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="antifraudEnabled"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Антифрод включен</FormLabel>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    data-testid="switch-antifraud"
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="autoApprovePartners"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Автоодобрение партнеров</FormLabel>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    data-testid="switch-auto-approve"
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="flex justify-end gap-3 pt-6">
+          <Button type="button" variant="outline" onClick={onSuccess}>
+            Отмена
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={createOfferMutation.isPending}
+            data-testid="button-submit-offer"
+          >
+            {createOfferMutation.isPending ? 'Создание...' : 'Создать оффер'}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
 
 interface Offer {
   id: string;
@@ -71,6 +504,7 @@ export default function OffersManagement() {
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isModerationDialogOpen, setIsModerationDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [moderationFilter, setModerationFilter] = useState('all');
@@ -216,6 +650,23 @@ export default function OffersManagement() {
           <p className="text-muted-foreground">{t('manage_all_offers_platform')}</p>
         </div>
         <div className="flex gap-2">
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button data-testid="button-create-offer">
+                <Plus className="w-4 h-4 mr-2" />
+                Создать оффер
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Создать новый оффер</DialogTitle>
+                <DialogDescription>
+                  Заполните информацию для создания нового оффера
+                </DialogDescription>
+              </DialogHeader>
+              <CreateOfferForm onSuccess={() => setIsCreateDialogOpen(false)} />
+            </DialogContent>
+          </Dialog>
           <Button variant="outline">
             <Upload className="w-4 h-4 mr-2" />
             {t('import')}
