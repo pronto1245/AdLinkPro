@@ -779,6 +779,189 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === SYSTEM SETTINGS ROUTES ===
+  
+  // Get system settings
+  app.get('/api/admin/system-settings', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const settings = await storage.getSystemSettings();
+      res.json(settings);
+    } catch (error: any) {
+      console.error("Get system settings error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create system setting
+  app.post('/api/admin/system-settings', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const setting = await storage.createSystemSetting({
+        ...req.body,
+        updatedBy: req.user.id
+      });
+      res.status(201).json(setting);
+    } catch (error: any) {
+      console.error("Create system setting error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update system setting
+  app.patch('/api/admin/system-settings/:id', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const setting = await storage.updateSystemSetting(req.params.id, {
+        ...req.body,
+        updatedBy: req.user.id
+      });
+      res.json(setting);
+    } catch (error: any) {
+      console.error("Update system setting error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Delete system setting
+  app.delete('/api/admin/system-settings/:id', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      await storage.deleteSystemSetting(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Delete system setting error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // === AUDIT LOGS ROUTES ===
+  
+  // Get audit logs
+  app.get('/api/admin/audit-logs', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { search, action, resourceType, userId, startDate, endDate } = req.query;
+      const logs = await storage.getAuditLogs({
+        search: search as string,
+        action: action as string,
+        resourceType: resourceType as string,
+        userId: userId as string,
+        startDate: startDate ? new Date(startDate as string) : undefined,
+        endDate: endDate ? new Date(endDate as string) : undefined,
+      });
+      res.json(logs);
+    } catch (error: any) {
+      console.error("Get audit logs error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // === GLOBAL POSTBACKS ROUTES ===
+  
+  // Get global postbacks
+  app.get('/api/admin/global-postbacks', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const postbacks = await storage.getGlobalPostbacks();
+      res.json(postbacks);
+    } catch (error: any) {
+      console.error("Get global postbacks error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create global postback
+  app.post('/api/admin/global-postbacks', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const postback = await storage.createGlobalPostback(req.body);
+      res.status(201).json(postback);
+    } catch (error: any) {
+      console.error("Create global postback error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update global postback
+  app.patch('/api/admin/global-postbacks/:id', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const postback = await storage.updateGlobalPostback(req.params.id, req.body);
+      res.json(postback);
+    } catch (error: any) {
+      console.error("Update global postback error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Test global postback
+  app.post('/api/admin/global-postbacks/:id/test', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      await storage.testGlobalPostback(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Test global postback error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get postback logs
+  app.get('/api/admin/postback-logs', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const logs = await storage.getPostbackLogs();
+      res.json(logs);
+    } catch (error: any) {
+      console.error("Get postback logs error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // === BLACKLIST ROUTES ===
+  
+  // Get blacklist entries
+  app.get('/api/admin/blacklist', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { search, type } = req.query;
+      const entries = await storage.getBlacklistEntries({
+        search: search as string,
+        type: type as string,
+      });
+      res.json(entries);
+    } catch (error: any) {
+      console.error("Get blacklist entries error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Add blacklist entry
+  app.post('/api/admin/blacklist', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const entry = await storage.createBlacklistEntry({
+        ...req.body,
+        addedBy: req.user.id
+      });
+      res.status(201).json(entry);
+    } catch (error: any) {
+      console.error("Create blacklist entry error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update blacklist entry
+  app.patch('/api/admin/blacklist/:id', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const entry = await storage.updateBlacklistEntry(req.params.id, req.body);
+      res.json(entry);
+    } catch (error: any) {
+      console.error("Update blacklist entry error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Delete blacklist entry
+  app.delete('/api/admin/blacklist/:id', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      await storage.deleteBlacklistEntry(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Delete blacklist entry error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

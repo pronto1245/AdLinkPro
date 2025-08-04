@@ -5,10 +5,13 @@ import { z } from "zod";
 
 // Enums
 export const userRoleEnum = pgEnum('user_role', ['super_admin', 'advertiser', 'affiliate', 'staff']);
+export const adminRoleEnum = pgEnum('admin_role', ['super', 'financial', 'technical', 'moderator', 'analyst']);
 export const offerStatusEnum = pgEnum('offer_status', ['active', 'paused', 'draft', 'archived']);
 export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'completed', 'failed', 'cancelled']);
 export const ticketStatusEnum = pgEnum('ticket_status', ['open', 'in_progress', 'resolved', 'closed']);
 export const kycStatusEnum = pgEnum('kyc_status', ['pending', 'approved', 'rejected']);
+export const postbackStatusEnum = pgEnum('postback_status', ['pending', 'sent', 'failed', 'retry']);
+export const auditActionEnum = pgEnum('audit_action', ['create', 'update', 'delete', 'login', 'logout', 'view', 'approve', 'reject']);
 
 // Users table
 export const users = pgTable("users", {
@@ -17,6 +20,12 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   role: userRoleEnum("role").notNull().default('affiliate'),
+  adminRole: adminRoleEnum("admin_role"), // For super_admin users - defines their specific admin permissions
+  ipRestrictions: jsonb("ip_restrictions"), // Array of allowed IP addresses for admin access
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
+  twoFactorSecret: text("two_factor_secret"),
+  lastIpAddress: text("last_ip_address"),
+  sessionToken: text("session_token"),
   firstName: text("first_name"),
   lastName: text("last_name"),
   company: text("company"),
@@ -34,6 +43,10 @@ export const users = pgTable("users", {
   ownerId: varchar("owner_id"), // Who created this user (advertiser creates staff/affiliates)
   // Advertiser specific fields  
   advertiserId: varchar("advertiser_id"),
+  balance: decimal("balance", { precision: 15, scale: 2 }).default('0.00'),
+  holdAmount: decimal("hold_amount", { precision: 15, scale: 2 }).default('0.00'),
+  registrationApproved: boolean("registration_approved").default(false),
+  documentsVerified: boolean("documents_verified").default(false),
   // Settings
   settings: jsonb("settings"),
 });
@@ -335,6 +348,97 @@ export const postbackLogs = pgTable("postback_logs", {
   status: text("status").default('pending'), // 'pending', 'sent', 'failed'
   sentAt: timestamp("sent_at"),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Login logs table for security tracking
+export const loginLogs = pgTable("login_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  ipAddress: text("ip_address").notNull(),
+  userAgent: text("user_agent"),
+  loginTime: timestamp("login_time").defaultNow(),
+  success: boolean("success").notNull(),
+  failureReason: text("failure_reason"),
+  sessionId: text("session_id"),
+});
+
+// Audit logs table for tracking all admin actions
+export const auditLogs = pgTable("audit_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  action: auditActionEnum("action").notNull(),
+  resourceType: text("resource_type").notNull(), // users, offers, transactions, etc.
+  resourceId: varchar("resource_id"),
+  oldValues: jsonb("old_values"),
+  newValues: jsonb("new_values"),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  timestamp: timestamp("timestamp").defaultNow(),
+  description: text("description"),
+});
+
+// Global postbacks configuration
+export const globalPostbacks = pgTable("global_postbacks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  events: jsonb("events").notNull(), // Array of events to trigger postback
+  macros: jsonb("macros"), // Macro replacements
+  headers: jsonb("headers"), // Custom headers
+  isActive: boolean("is_active").default(true),
+  retryAttempts: integer("retry_attempts").default(3),
+  timeout: integer("timeout").default(30),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Webhooks configuration
+export const webhooks = pgTable("webhooks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  events: jsonb("events").notNull(), // Array of system events
+  secret: text("secret"), // For signature verification
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// System settings for global configuration
+export const systemSettings = pgTable("system_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: text("key").notNull().unique(),
+  value: jsonb("value").notNull(),
+  description: text("description"),
+  category: text("category").notNull(), // fraud, finance, general, etc.
+  isPublic: boolean("is_public").default(false), // Can non-admin users see this setting?
+  updatedBy: varchar("updated_by").references(() => users.id),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Blacklist for fraud prevention
+export const blacklist = pgTable("blacklist", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  type: text("type").notNull(), // ip, clickid, subid, device_id, etc.
+  value: text("value").notNull(),
+  reason: text("reason"),
+  addedBy: varchar("added_by").notNull().references(() => users.id),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at"), // Optional expiration
+});
+
+// Platform commissions
+export const platformCommissions = pgTable("platform_commissions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  advertiserId: varchar("advertiser_id").references(() => users.id),
+  offerId: varchar("offer_id").references(() => offers.id),
+  type: text("type").notNull(), // percentage, fixed, revenue_share
+  value: decimal("value", { precision: 10, scale: 4 }).notNull(),
+  currency: text("currency").default('USD'),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Relations

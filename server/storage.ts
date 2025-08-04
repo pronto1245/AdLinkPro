@@ -72,6 +72,38 @@ export interface IStorage {
   getAllOffers(): Promise<(Offer & { advertiserName?: string })[]>;
   getAdminAnalytics(): Promise<any>;
   
+  // System Settings
+  getSystemSettings(): Promise<any[]>;
+  createSystemSetting(setting: any): Promise<any>;
+  updateSystemSetting(id: string, data: any): Promise<any>;
+  deleteSystemSetting(id: string): Promise<void>;
+  
+  // Audit Logs
+  getAuditLogs(filters: {
+    search?: string;
+    action?: string;
+    resourceType?: string;
+    userId?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<any[]>;
+  
+  // Global Postbacks
+  getGlobalPostbacks(): Promise<any[]>;
+  createGlobalPostback(postback: any): Promise<any>;
+  updateGlobalPostback(id: string, data: any): Promise<any>;
+  testGlobalPostback(id: string): Promise<void>;
+  getPostbackLogs(): Promise<any[]>;
+  
+  // Blacklist Management
+  getBlacklistEntries(filters: {
+    search?: string;
+    type?: string;
+  }): Promise<any[]>;
+  createBlacklistEntry(entry: any): Promise<any>;
+  updateBlacklistEntry(id: string, data: any): Promise<any>;
+  deleteBlacklistEntry(id: string): Promise<void>;
+  
   // Admin offer management
   moderateOffer(id: string, action: string, moderatedBy: string, comment?: string): Promise<boolean>;
   getOfferLogs(offerId: string): Promise<any[]>;
@@ -564,6 +596,215 @@ export class DatabaseStorage implements IStorage {
     }
 
     return {};
+  }
+
+  // === SYSTEM SETTINGS METHODS ===
+  
+  async getSystemSettings(): Promise<any[]> {
+    // Mock implementation - replace with actual database queries
+    return [
+      { id: '1', key: 'platform_name', value: 'AffiliateHub', category: 'general', updatedBy: 'superadmin', updatedAt: new Date() },
+      { id: '2', key: 'default_currency', value: 'USD', category: 'financial', updatedBy: 'superadmin', updatedAt: new Date() },
+      { id: '3', key: 'max_payout_delay', value: '7', category: 'financial', updatedBy: 'superadmin', updatedAt: new Date() },
+      { id: '4', key: 'fraud_detection_enabled', value: 'true', category: 'security', updatedBy: 'superadmin', updatedAt: new Date() },
+    ];
+  }
+
+  async createSystemSetting(setting: any): Promise<any> {
+    const newSetting = {
+      id: randomUUID(),
+      ...setting,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return newSetting;
+  }
+
+  async updateSystemSetting(id: string, data: any): Promise<any> {
+    return {
+      id,
+      ...data,
+      updatedAt: new Date()
+    };
+  }
+
+  async deleteSystemSetting(id: string): Promise<void> {
+    // Mock implementation - replace with actual database deletion
+  }
+
+  // === AUDIT LOGS METHODS ===
+  
+  async getAuditLogs(filters: {
+    search?: string;
+    action?: string;
+    resourceType?: string;
+    userId?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<any[]> {
+    // Mock implementation - replace with actual database queries
+    return [
+      {
+        id: '1',
+        action: 'CREATE',
+        resourceType: 'User',
+        resourceId: '123',
+        userId: 'superadmin',
+        userName: 'Super Admin',
+        details: { newValues: { username: 'testuser', role: 'affiliate' } },
+        ipAddress: '192.168.1.1',
+        userAgent: 'Mozilla/5.0...',
+        timestamp: new Date()
+      },
+      {
+        id: '2',
+        action: 'UPDATE',
+        resourceType: 'Offer',
+        resourceId: '456',
+        userId: 'advertiser1',
+        userName: 'John Advertiser',
+        details: { oldValues: { status: 'draft' }, newValues: { status: 'active' } },
+        ipAddress: '192.168.1.2',
+        userAgent: 'Mozilla/5.0...',
+        timestamp: new Date(Date.now() - 3600000)
+      }
+    ];
+  }
+
+  // === GLOBAL POSTBACKS METHODS ===
+  
+  async getGlobalPostbacks(): Promise<any[]> {
+    return [
+      {
+        id: '1',
+        name: 'Global Conversion Tracker',
+        url: 'https://tracker.example.com/postback',
+        method: 'POST',
+        parameters: {
+          conversion_id: '{conversion_id}',
+          offer_id: '{offer_id}',
+          payout: '{payout}',
+          affiliate_id: '{affiliate_id}'
+        },
+        isActive: true,
+        retryCount: 3,
+        timeout: 30,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ];
+  }
+
+  async createGlobalPostback(postback: any): Promise<any> {
+    return {
+      id: randomUUID(),
+      ...postback,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+  }
+
+  async updateGlobalPostback(id: string, data: any): Promise<any> {
+    return {
+      id,
+      ...data,
+      updatedAt: new Date()
+    };
+  }
+
+  async testGlobalPostback(id: string): Promise<void> {
+    // Mock implementation - would send test postback
+    console.log(`Testing postback with ID: ${id}`);
+  }
+
+  async getPostbackLogs(): Promise<any[]> {
+    return [
+      {
+        id: '1',
+        postbackId: '1',
+        postbackName: 'Global Conversion Tracker',
+        url: 'https://tracker.example.com/postback',
+        status: 'SUCCESS',
+        responseCode: 200,
+        responseBody: 'OK',
+        sentAt: new Date(),
+        responseTime: 150,
+        retryCount: 0
+      },
+      {
+        id: '2',
+        postbackId: '1',
+        postbackName: 'Global Conversion Tracker',
+        url: 'https://tracker.example.com/postback',
+        status: 'FAILED',
+        responseCode: 500,
+        responseBody: 'Internal Server Error',
+        sentAt: new Date(Date.now() - 1800000),
+        responseTime: 5000,
+        retryCount: 2
+      }
+    ];
+  }
+
+  // === BLACKLIST METHODS ===
+  
+  async getBlacklistEntries(filters: {
+    search?: string;
+    type?: string;
+  }): Promise<any[]> {
+    return [
+      {
+        id: '1',
+        type: 'IP',
+        value: '192.168.1.100',
+        reason: 'Fraudulent activity detected',
+        addedBy: 'superadmin',
+        addedByName: 'Super Admin',
+        addedAt: new Date(),
+        isActive: true
+      },
+      {
+        id: '2',
+        type: 'EMAIL',
+        value: 'spam@example.com',
+        reason: 'Spam registration attempts',
+        addedBy: 'superadmin',
+        addedByName: 'Super Admin',
+        addedAt: new Date(Date.now() - 86400000),
+        isActive: true
+      },
+      {
+        id: '3',
+        type: 'DOMAIN',
+        value: 'fraud-site.com',
+        reason: 'Known fraud domain',
+        addedBy: 'superadmin',
+        addedByName: 'Super Admin',
+        addedAt: new Date(Date.now() - 172800000),
+        isActive: false
+      }
+    ];
+  }
+
+  async createBlacklistEntry(entry: any): Promise<any> {
+    return {
+      id: randomUUID(),
+      ...entry,
+      addedAt: new Date(),
+      isActive: true
+    };
+  }
+
+  async updateBlacklistEntry(id: string, data: any): Promise<any> {
+    return {
+      id,
+      ...data,
+      updatedAt: new Date()
+    };
+  }
+
+  async deleteBlacklistEntry(id: string): Promise<void> {
+    // Mock implementation - replace with actual database deletion
   }
 }
 

@@ -16,11 +16,14 @@ const menuItems: MenuItem[] = [
   { label: 'dashboard', href: '/admin', icon: 'fas fa-tachometer-alt', roles: ['super_admin'] },
   { label: 'users', href: '/admin/users', icon: 'fas fa-users', roles: ['super_admin'], badge: 3 },
   { label: 'offers', href: '/admin/offers', icon: 'fas fa-bullseye', roles: ['super_admin', 'advertiser'] },
-  { label: 'finance', href: '/admin/finance', icon: 'fas fa-dollar-sign', roles: ['super_admin', 'advertiser'] },
+  { label: 'finances', href: '/admin/finances', icon: 'fas fa-dollar-sign', roles: ['super_admin', 'advertiser'] },
+  { label: 'fraud_alerts', href: '/admin/fraud-alerts', icon: 'fas fa-shield-alt', roles: ['super_admin'] },
   { label: 'postbacks', href: '/admin/postbacks', icon: 'fas fa-link', roles: ['super_admin', 'advertiser', 'affiliate'] },
+  { label: 'blacklist', href: '/admin/blacklist', icon: 'fas fa-ban', roles: ['super_admin'] },
+  { label: 'audit_logs', href: '/admin/audit-logs', icon: 'fas fa-history', roles: ['super_admin'] },
+  { label: 'system_settings', href: '/admin/system-settings', icon: 'fas fa-cogs', roles: ['super_admin'] },
   { label: 'analytics', href: '/admin/analytics', icon: 'fas fa-chart-bar', roles: ['super_admin', 'advertiser', 'affiliate'] },
   { label: 'support', href: '/admin/support', icon: 'fas fa-ticket-alt', roles: ['super_admin', 'advertiser', 'affiliate'] },
-  { label: 'settings', href: '/admin/settings', icon: 'fas fa-cog', roles: ['super_admin', 'advertiser', 'affiliate'] },
 ];
 
 interface SidebarProps {

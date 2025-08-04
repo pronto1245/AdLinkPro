@@ -13,6 +13,10 @@ import SuperAdminOffers from "@/pages/super-admin/offers";
 import SuperAdminOffersManagement from "@/pages/super-admin/offers-management";
 import SuperAdminFinances from "@/pages/super-admin/finances";
 import SuperAdminFraudAlerts from "@/pages/super-admin/fraud-alerts";
+import SuperAdminSystemSettings from "@/pages/super-admin/system-settings";
+import SuperAdminAuditLogs from "@/pages/super-admin/audit-logs";
+import SuperAdminPostbacks from "@/pages/super-admin/postbacks-management";
+import SuperAdminBlacklist from "@/pages/super-admin/blacklist-management";
 import AdvertiserDashboard from "@/pages/advertiser/dashboard";
 import AffiliateDashboard from "@/pages/affiliate/dashboard";
 import { useAuth } from "./contexts/auth-context";
@@ -66,6 +70,26 @@ function Router() {
       <Route path="/admin/fraud-alerts">
         <ProtectedRoute allowedRoles={['super_admin']}>
           <SuperAdminFraudAlerts />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/system-settings">
+        <ProtectedRoute allowedRoles={['super_admin']}>
+          <SuperAdminSystemSettings />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/audit-logs">
+        <ProtectedRoute allowedRoles={['super_admin']}>
+          <SuperAdminAuditLogs />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/postbacks">
+        <ProtectedRoute allowedRoles={['super_admin']}>
+          <SuperAdminPostbacks />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/blacklist">
+        <ProtectedRoute allowedRoles={['super_admin']}>
+          <SuperAdminBlacklist />
         </ProtectedRoute>
       </Route>
       
