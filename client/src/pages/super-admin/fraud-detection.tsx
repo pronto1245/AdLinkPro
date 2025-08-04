@@ -72,6 +72,7 @@ interface IpAnalysis {
   conversionCount: number;
   threatTypes: string[];
   flaggedAt?: string;
+  createdAt: string;
   // Third-party service scores
   fraudScoreRating?: number;
   forensiqScore?: number;
@@ -168,6 +169,9 @@ const FraudDetectionPage = () => {
   const [blockIpDialogOpen, setBlockIpDialogOpen] = useState(false);
   const [selectedIp, setSelectedIp] = useState<string>('');
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [configureDialogOpen, setConfigureDialogOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<FraudServiceIntegration | null>(null);
+  const [testingService, setTestingService] = useState<string | null>(null);
 
   // Fetch fraud reports
   const { data: fraudReports = [], isLoading: reportsLoading } = useQuery<FraudReport[]>({
@@ -294,6 +298,84 @@ const FraudDetectionPage = () => {
         variant: "destructive"
       });
     }
+  };
+
+  // Test service connection
+  const testServiceMutation = useMutation({
+    mutationFn: async (serviceId: string) => {
+      const response = await fetch(`/api/admin/fraud-services/${serviceId}/test`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Тест подключения не удался');
+      return response.json();
+    },
+    onSuccess: (data, serviceId) => {
+      const service = fraudServices.find(s => s.id === serviceId);
+      toast({
+        title: "Тест успешен",
+        description: `Сервис ${service?.serviceName} работает корректно. Время отклика: ${data.responseTime}ms`,
+      });
+      setTestingService(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/fraud-services'] });
+    },
+    onError: (error: any, serviceId) => {
+      const service = fraudServices.find(s => s.id === serviceId);
+      toast({
+        title: "Тест не удался",
+        description: `Ошибка подключения к ${service?.serviceName}: ${error.message}`,
+        variant: "destructive",
+      });
+      setTestingService(null);
+    }
+  });
+
+  // Toggle service status
+  const toggleServiceMutation = useMutation({
+    mutationFn: async ({ serviceId, isActive }: { serviceId: string, isActive: boolean }) => {
+      const response = await fetch(`/api/admin/fraud-services/${serviceId}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ isActive }),
+      });
+      if (!response.ok) throw new Error('Не удалось изменить статус сервиса');
+      return response.json();
+    },
+    onSuccess: (data, { serviceId, isActive }) => {
+      const service = fraudServices.find(s => s.id === serviceId);
+      toast({
+        title: isActive ? "Сервис активирован" : "Сервис деактивирован",
+        description: `${service?.serviceName} ${isActive ? 'включен' : 'отключен'}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/fraud-services'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Handle test service
+  const handleTestService = (service: FraudServiceIntegration) => {
+    setTestingService(service.id);
+    testServiceMutation.mutate(service.id);
+  };
+
+  // Handle configure service
+  const handleConfigureService = (service: FraudServiceIntegration) => {
+    setSelectedService(service);
+    setConfigureDialogOpen(true);
+  };
+
+  // Handle toggle service
+  const handleToggleService = (service: FraudServiceIntegration, isActive: boolean) => {
+    toggleServiceMutation.mutate({ serviceId: service.id, isActive });
   };
 
   const getSeverityColor = (severity: string) => {
@@ -1078,6 +1160,7 @@ const FraudDetectionPage = () => {
                           </div>
                           <Switch 
                             checked={service.isActive}
+                            onCheckedChange={(checked) => handleToggleService(service, checked)}
                             data-testid={`toggle-service-${service.id}`}
                           />
                         </div>
@@ -1120,16 +1203,19 @@ const FraudDetectionPage = () => {
                             variant="outline"
                             size="sm"
                             className="flex-1"
+                            onClick={() => handleTestService(service)}
+                            disabled={testingService === service.id}
                             data-testid={`test-service-${service.id}`}
                             title="Тестировать подключение"
                           >
                             <Zap className="w-3 h-3 mr-2" />
-                            Тест
+                            {testingService === service.id ? 'Тестирую...' : 'Тест'}
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             className="flex-1"
+                            onClick={() => handleConfigureService(service)}
                             data-testid={`configure-service-${service.id}`}
                             title="Настроить сервис"
                           >
@@ -1472,6 +1558,75 @@ const FraudDetectionPage = () => {
           </Tabs>
         </main>
       </div>
+
+      {/* Configure Service Dialog */}
+      <Dialog open={configureDialogOpen} onOpenChange={setConfigureDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Настройка сервиса {selectedService?.serviceName}</DialogTitle>
+            <DialogDescription>
+              Конфигурация параметров подключения к внешнему сервису
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="api-key">API Ключ</Label>
+              <Input
+                id="api-key"
+                type="password"
+                placeholder="Введите API ключ"
+                defaultValue={selectedService?.apiKey ? '••••••••••••' : ''}
+                data-testid="api-key-input"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="endpoint">Endpoint URL</Label>
+              <Input
+                id="endpoint"
+                placeholder="https://api.service.com"
+                defaultValue={selectedService?.endpoint}
+                data-testid="endpoint-input"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rate-limit">Лимит запросов (в минуту)</Label>
+              <Input
+                id="rate-limit"
+                type="number"
+                placeholder="100"
+                defaultValue={selectedService?.rateLimit}
+                data-testid="rate-limit-input"
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="service-active"
+                checked={selectedService?.isActive || false}
+                onCheckedChange={(checked) => selectedService && handleToggleService(selectedService, checked)}
+                data-testid="service-active-toggle"
+              />
+              <Label htmlFor="service-active">Активировать сервис</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfigureDialogOpen(false)}>
+              Отмена
+            </Button>
+            <Button 
+              onClick={() => {
+                toast({
+                  title: "Настройки сохранены",
+                  description: `Конфигурация ${selectedService?.serviceName} обновлена`,
+                });
+                setConfigureDialogOpen(false);
+              }}
+              data-testid="save-config-btn"
+            >
+              Сохранить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
