@@ -98,22 +98,31 @@ export default function OfferDetails() {
     return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
   };
 
-  // Format geo pricing
-  const formatGeoPricing = (geoPricing: any) => {
-    if (!geoPricing || !Array.isArray(geoPricing)) return 'Не указано';
-    
-    const countryFlags: { [key: string]: string } = {
-      'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
-      'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦',
-      'PL': '🇵🇱', 'NL': '🇳🇱', 'SE': '🇸🇪', 'NO': '🇳🇴', 'DK': '🇩🇰', 'FI': '🇫🇮',
-      'JP': '🇯🇵', 'KR': '🇰🇷', 'CN': '🇨🇳', 'IN': '🇮🇳', 'TH': '🇹🇭', 'VN': '🇻🇳',
-      'SG': '🇸🇬', 'MY': '🇲🇾', 'ID': '🇮🇩', 'PH': '🇵🇭'
-    };
+  // Format geo pricing with fallback to basic payout
+  const formatGeoPricing = (geoPricing: any, fallbackPayout?: any, currency?: string) => {
+    // Сначала пробуем geoPricing
+    if (geoPricing && Array.isArray(geoPricing) && geoPricing.length > 0) {
+      const countryFlags: { [key: string]: string } = {
+        'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
+        'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦',
+        'PL': '🇵🇱', 'NL': '🇳🇱', 'SE': '🇸🇪', 'NO': '🇳🇴', 'DK': '🇩🇰', 'FI': '🇫🇮',
+        'JP': '🇯🇵', 'KR': '🇰🇷', 'CN': '🇨🇳', 'IN': '🇮🇳', 'TH': '🇹🇭', 'VN': '🇻🇳',
+        'SG': '🇸🇬', 'MY': '🇲🇾', 'ID': '🇮🇩', 'PH': '🇵🇭'
+      };
 
-    return geoPricing.map((geo: any) => {
-      const flag = countryFlags[geo.country] || '🌍';
-      return `${flag}${geo.country}-${geo.payout}`;
-    }).join(' ');
+      return geoPricing.map((geo: any) => {
+        const flag = countryFlags[geo.country] || '🌍';
+        return `${flag}${geo.country}-${geo.payout}`;
+      }).join(' ');
+    }
+    
+    // Резервный вариант - базовая выплата
+    if (fallbackPayout && fallbackPayout !== '0.00') {
+      const currencySymbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'RUB' ? '₽' : currency || '';
+      return `${currencySymbol}${fallbackPayout}`;
+    }
+    
+    return 'Не указано';
   };
 
   // Format traffic sources with colors
@@ -350,7 +359,7 @@ export default function OfferDetails() {
                   <div>
                     <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Выплата</label>
                     <div className="mt-1 text-lg font-semibold text-green-600 dark:text-green-400">
-                      {formatGeoPricing(offer.geoPricing)}
+                      {formatGeoPricing(offer.geoPricing, offer.payout, offer.currency)}
                     </div>
                   </div>
                   <div>
@@ -361,7 +370,8 @@ export default function OfferDetails() {
                        offer.payoutType === 'cpm' ? 'CPM - За показы' :
                        offer.payoutType === 'cpc' ? 'CPC - За клики' :
                        offer.payoutType === 'cpl' ? 'CPL - За лид' :
-                       offer.payoutType === 'revshare' ? 'RevShare - Доля прибыли' : offer.payoutType.toUpperCase()}
+                       offer.payoutType === 'revshare' ? 'RevShare - Доля прибыли' : 
+                       offer.payoutType ? offer.payoutType.toUpperCase() : 'Не указано'}
                     </div>
                   </div>
                 </div>
@@ -439,13 +449,17 @@ export default function OfferDetails() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {formatTrafficSources(offer.trafficSources).map((source, index) => (
-                    <Badge key={index} className={source.color}>
-                      {source.name}
-                    </Badge>
-                  ))}
-                </div>
+                {offer.trafficSources && Array.isArray(offer.trafficSources) && offer.trafficSources.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {formatTrafficSources(offer.trafficSources).map((source, index) => (
+                      <Badge key={index} className={source.color}>
+                        {source.name}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">Источники трафика не указаны</p>
+                )}
               </CardContent>
             </Card>
 
@@ -458,13 +472,17 @@ export default function OfferDetails() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-2">
-                  {formatApplications(offer.allowedApps).map((app, index) => (
-                    <Badge key={index} className={app.color}>
-                      {app.name}
-                    </Badge>
-                  ))}
-                </div>
+                {offer.allowedApps && Array.isArray(offer.allowedApps) && offer.allowedApps.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    {formatApplications(offer.allowedApps).map((app, index) => (
+                      <Badge key={index} className={app.color}>
+                        {app.name}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">Разрешенные приложения не указаны</p>
+                )}
               </CardContent>
             </Card>
           </div>
