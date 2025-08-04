@@ -109,6 +109,15 @@ export default function UsersManagement() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [bulkAction, setBulkAction] = useState<'block' | 'unblock' | 'delete'>('block');
+  
+  // Edit form state
+  const [editForm, setEditForm] = useState({
+    firstName: '',
+    lastName: '',
+    role: 'affiliate',
+    country: '',
+    isActive: true
+  });
 
   // Get users with filters
   const { data: usersData, isLoading, refetch } = useQuery({
@@ -599,6 +608,13 @@ export default function UsersManagement() {
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => {
                             setSelectedUser(user);
+                            setEditForm({
+                              firstName: user.firstName || '',
+                              lastName: user.lastName || '',
+                              role: user.role,
+                              country: user.country || '',
+                              isActive: user.isActive
+                            });
                             setShowEditDialog(true);
                           }}>
                             <Edit className="mr-2 h-4 w-4" />
@@ -821,16 +837,16 @@ export default function UsersManagement() {
                 <div>
                   <Label>{t.firstName || "Имя"}</Label>
                   <Input 
-                    id="editFirstName" 
-                    defaultValue={selectedUser.firstName || ''} 
+                    value={editForm.firstName}
+                    onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
                     placeholder="Иван" 
                   />
                 </div>
                 <div>
                   <Label>{t.lastName || "Фамилия"}</Label>
                   <Input 
-                    id="editLastName" 
-                    defaultValue={selectedUser.lastName || ''} 
+                    value={editForm.lastName}
+                    onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
                     placeholder="Иванов" 
                   />
                 </div>
@@ -838,7 +854,10 @@ export default function UsersManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>{t.role || "Роль"}</Label>
-                  <Select defaultValue={selectedUser.role}>
+                  <Select 
+                    value={editForm.role} 
+                    onValueChange={(value) => setEditForm({...editForm, role: value})}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -852,8 +871,8 @@ export default function UsersManagement() {
                 <div>
                   <Label>{t.country || "Страна"}</Label>
                   <Input 
-                    id="editCountry" 
-                    defaultValue={selectedUser.country || ''} 
+                    value={editForm.country}
+                    onChange={(e) => setEditForm({...editForm, country: e.target.value})}
                     placeholder="RU" 
                   />
                 </div>
@@ -861,11 +880,11 @@ export default function UsersManagement() {
               <div className="flex items-center space-x-2">
                 <input 
                   type="checkbox" 
-                  id="editIsActive" 
-                  defaultChecked={selectedUser.isActive}
+                  checked={editForm.isActive}
+                  onChange={(e) => setEditForm({...editForm, isActive: e.target.checked})}
                   className="rounded"
                 />
-                <Label htmlFor="editIsActive">{t.activeUser || "Активный пользователь"}</Label>
+                <Label>{t.activeUser || "Активный пользователь"}</Label>
               </div>
             </div>
           )}
@@ -876,14 +895,10 @@ export default function UsersManagement() {
             <Button onClick={() => {
               if (!selectedUser) return;
               
-              const formData = {
-                firstName: (document.getElementById('editFirstName') as HTMLInputElement)?.value,
-                lastName: (document.getElementById('editLastName') as HTMLInputElement)?.value,
-                country: (document.getElementById('editCountry') as HTMLInputElement)?.value,
-                isActive: (document.getElementById('editIsActive') as HTMLInputElement)?.checked
-              };
-              
-              editUserMutation.mutate({ userId: selectedUser.id, userData: formData });
+              editUserMutation.mutate({ 
+                userId: selectedUser.id, 
+                userData: editForm 
+              });
             }}>
               {editUserMutation.isPending ? (
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
