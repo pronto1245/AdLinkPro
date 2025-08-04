@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, type User, offers, postbacks, postbackLogs } from "@shared/schema";
+import { insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, type User, offers, postbacks, postbackLogs, trackingClicks } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 import { db, queryCache } from "./db";
 import { z } from "zod";
@@ -2047,6 +2047,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(logs);
     } catch (error) {
       console.error("Get postback logs error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // External conversion API endpoint for advertisers
+  app.post('/api/conversion', async (req, res) => {
+    try {
+      const { clickid, status, amount, currency, txid, sub1, sub2, sub3, sub4, sub5 } = req.body;
+      
+      if (!clickid || !status) {
+        return res.status(400).json({ error: "Missing required parameters: clickid and status" });
+      }
+
+      // Find the original click
+      const [click] = await db.select()
+        .from(trackingClicks)
+        .where(eq(trackingClicks.clickId, clickid));
+
+      if (!click) {
+        return res.status(404).json({ error: "Click not found" });
+      }
+
+      // Trigger conversion postbacks
+      await PostbackService.triggerPostbacks({
+        type: status,
+        clickId: clickid,
+        data: {
+          clickid,
+          status,
+          offer_id: click.offerId,
+          partner_id: click.partnerId,
+          amount: amount || '0.00',
+          currency: currency || 'USD',
+          txid: txid || '',
+          sub1: sub1 || click.subId1 || '',
+          sub2: sub2 || click.subId2 || '',
+          sub3: sub3 || click.subId3 || '',
+          sub4: sub4 || click.subId4 || '',
+          sub5: sub5 || click.subId5 || '',
+          geo: click.geo || '',
+          device: click.device || '',
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      res.json({ success: true, message: "Conversion processed" });
+    } catch (error) {
+      console.error("Conversion processing error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Generate tracking URL for partners
+  app.get('/api/tracking-url/:partnerId/:offerId', authenticateToken, async (req, res) => {
+    try {
+      const { partnerId, offerId } = req.params;
+      const { sub1, sub2, sub3, sub4, sub5, landing_url } = req.query;
+      
+      // Verify access to offer
+      const [offer] = await db.select()
+        .from(offers)
+        .where(eq(offers.id, offerId));
+      
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+
+      const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+      const trackingUrl = `${baseUrl}/click?partner_id=${partnerId}&offer_id=${offerId}&clickid={clickid}${sub1 ? `&sub1=${sub1}` : ''}${sub2 ? `&sub2=${sub2}` : ''}${sub3 ? `&sub3=${sub3}` : ''}${sub4 ? `&sub4=${sub4}` : ''}${sub5 ? `&sub5=${sub5}` : ''}${landing_url ? `&landing_url=${encodeURIComponent(landing_url as string)}` : ''}`;
+
+      res.json({ 
+        trackingUrl,
+        instructions: "Замените {clickid} на ваш уникальный идентификатор клика из трекера (Keitaro, Binom, Redtrack, Voluum и т.д.)"
+      });
+    } catch (error) {
+      console.error("Tracking URL generation error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

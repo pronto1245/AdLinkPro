@@ -59,6 +59,29 @@ export class PostbackService {
     return createHmac('sha256', secretKey).update(data).digest('hex');
   }
 
+  // Validate IP whitelist
+  static isIpWhitelisted(ip: string, whitelist: string): boolean {
+    if (!whitelist.trim()) return true; // No whitelist = allow all
+    
+    const allowedIps = whitelist.split(',').map(ip => ip.trim());
+    return allowedIps.includes(ip) || allowedIps.includes('*');
+  }
+
+  // Check for duplicate events (anti-deduplication)
+  static async isDuplicateEvent(clickId: string, eventType: string, postbackId: string): Promise<boolean> {
+    const existingLog = await db.select()
+      .from(postbackLogs)
+      .where(and(
+        eq(postbackLogs.clickId, clickId),
+        eq(postbackLogs.eventType, eventType),
+        eq(postbackLogs.postbackId, postbackId),
+        eq(postbackLogs.status, 'success')
+      ))
+      .limit(1);
+    
+    return existingLog.length > 0;
+  }
+
   // Store click for tracking
   static async storeClick(clickData: {
     partnerId: string;
@@ -111,6 +134,12 @@ export class PostbackService {
         return { success: true }; // Skip if event not configured
       }
 
+      // Check for duplicate events (anti-deduplication)
+      if (clickId && await this.isDuplicateEvent(clickId, eventType, postbackId)) {
+        console.log(`Duplicate event detected: ${eventType} for click ${clickId}`);
+        return { success: true }; // Skip duplicate
+      }
+
       // Replace macros in URL
       const processedUrl = this.replaceMacros(postback.url, macros);
       
@@ -125,10 +154,10 @@ export class PostbackService {
       };
 
       // Add signature if secret key is configured
-      let signature = '';
       if (postback.signatureKey) {
-        signature = this.generateSignature(processedUrl, macros, postback.signatureKey);
+        const signature = this.generateSignature(processedUrl, macros, postback.signatureKey);
         requestOptions.headers['X-Signature'] = signature;
+        requestOptions.headers['X-Timestamp'] = Date.now().toString();
       }
 
       // Add payload for POST requests

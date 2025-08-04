@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { apiRequest } from '@/lib/queryClient';
+import TrackingUrlGenerator from './TrackingUrlGenerator';
 
 interface Postback {
   id: string;
@@ -85,7 +86,7 @@ export default function PostbackManager() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPostback, setEditingPostback] = useState<Postback | null>(null);
-  const [selectedTab, setSelectedTab] = useState<'postbacks' | 'logs'>('postbacks');
+  const [selectedTab, setSelectedTab] = useState<'postbacks' | 'logs' | 'tracking'>('postbacks');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -293,7 +294,14 @@ export default function PostbackManager() {
             onClick={() => setSelectedTab('logs')}
             data-testid="tab-logs"
           >
-            Журнал
+            Логи
+          </Button>
+          <Button
+            variant={selectedTab === 'tracking' ? 'default' : 'outline'}
+            onClick={() => setSelectedTab('tracking')}
+            data-testid="tab-tracking"
+          >
+            Tracking URL
           </Button>
         </div>
       </div>
@@ -703,6 +711,10 @@ export default function PostbackManager() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {selectedTab === 'tracking' && (
+        <TrackingUrlGenerator />
       )}
     </div>
   );
