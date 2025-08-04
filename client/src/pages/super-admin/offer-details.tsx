@@ -348,19 +348,20 @@ export default function OfferDetails() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Цель (Сумма выплат)</label>
+                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Выплата</label>
                     <div className="mt-1 text-lg font-semibold text-green-600 dark:text-green-400">
                       {formatGeoPricing(offer.geoPricing)}
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Dep (Тип выплат)</label>
+                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Тип выплат</label>
                     <div className="mt-1 text-lg font-semibold text-blue-600 dark:text-blue-400">
                       {offer.payoutType === 'cpa' ? 'CPA - За действие' :
                        offer.payoutType === 'cps' ? 'CPS - От продаж' :
                        offer.payoutType === 'cpm' ? 'CPM - За показы' :
                        offer.payoutType === 'cpc' ? 'CPC - За клики' :
-                       offer.payoutType === 'crl' ? 'CRL - За регистрации' : offer.payoutType}
+                       offer.payoutType === 'cpl' ? 'CPL - За лид' :
+                       offer.payoutType === 'revshare' ? 'RevShare - Доля прибыли' : offer.payoutType.toUpperCase()}
                     </div>
                   </div>
                 </div>
@@ -380,10 +381,12 @@ export default function OfferDetails() {
                       {new Date(offer.createdAt).toLocaleDateString('ru-RU')}
                     </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">ID Рекламодателя</label>
-                    <div className="mt-1">{offer.advertiserId}</div>
-                  </div>
+                  {offer.number && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Номер оффера</label>
+                      <div className="mt-1 font-mono text-sm">{offer.number}</div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -437,7 +440,7 @@ export default function OfferDetails() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {formatTrafficSources(offer.allowedTrafficSources).map((source, index) => (
+                  {formatTrafficSources(offer.trafficSources).map((source, index) => (
                     <Badge key={index} className={source.color}>
                       {source.name}
                     </Badge>
@@ -456,7 +459,7 @@ export default function OfferDetails() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-2">
-                  {formatApplications(offer.allowedApplications).map((app, index) => (
+                  {formatApplications(offer.allowedApps).map((app, index) => (
                     <Badge key={index} className={app.color}>
                       {app.name}
                     </Badge>
@@ -515,38 +518,59 @@ export default function OfferDetails() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">KYC обязателен</span>
-                  <Badge variant={offer.kycRequired ? "destructive" : "secondary"}>
-                    {offer.kycRequired ? 'Да' : 'Нет'}
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Приватный оффер</span>
-                  <Badge variant={offer.isPrivate ? "destructive" : "secondary"}>
-                    {offer.isPrivate ? 'Да' : 'Нет'}
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">SmartLink</span>
-                  <Badge variant={offer.smartlinkEnabled ? "default" : "secondary"}>
-                    {offer.smartlinkEnabled ? 'Включен' : 'Отключен'}
-                  </Badge>
-                </div>
+                {offer.dailyLimit && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Дневной лимит</span>
+                    <Badge variant="secondary">
+                      {offer.dailyLimit} конверсий
+                    </Badge>
+                  </div>
+                )}
+                {offer.currency && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Валюта</span>
+                    <Badge variant="secondary">
+                      {offer.currency}
+                    </Badge>
+                  </div>
+                )}
+                {offer.vertical && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Вертикаль</span>
+                    <Badge variant="secondary">
+                      {offer.vertical}
+                    </Badge>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* Restrictions */}
-            {offer.restrictions && (
+            {/* Goals */}
+            {offer.goals && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Shield className="w-5 h-5" />
-                    Ограничения
+                    <Target className="w-5 h-5" />
+                    Цели оффера
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{offer.restrictions}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{offer.goals}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* KPI Conditions */}
+            {offer.kpiConditions && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    KPI условия
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{offer.kpiConditions}</p>
                 </CardContent>
               </Card>
             )}
