@@ -40,7 +40,7 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-// Role-based access control
+// Role-based access control with hierarchy
 const requireRole = (roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
@@ -48,6 +48,47 @@ const requireRole = (roles: string[]) => {
     }
     next();
   };
+};
+
+// Check if user can access another user based on hierarchy
+const canAccessUser = (currentUser: User, targetUserId: string): boolean => {
+  // Super admin can access everyone
+  if (currentUser.role === 'super_admin') {
+    return true;
+  }
+  
+  // User can always access themselves
+  if (currentUser.id === targetUserId) {
+    return true;
+  }
+  
+  // Advertiser can access their staff and affiliates (users they own)
+  if (currentUser.role === 'advertiser') {
+    // This will be checked in storage layer
+    return true; 
+  }
+  
+  // Staff and affiliates cannot access other users
+  return false;
+};
+
+// Middleware to check user hierarchy access
+const requireUserAccess = async (req: Request, res: Response, next: NextFunction) => {
+  const targetUserId = req.params.id || req.body.userId;
+  
+  if (!targetUserId) {
+    return next(); // No specific user target
+  }
+  
+  if (!canAccessUser(req.user!, targetUserId)) {
+    // Additional check: see if target user is owned by current user
+    const targetUser = await storage.getUser(targetUserId);
+    if (!targetUser || (targetUser.ownerId !== req.user!.id && req.user!.role !== 'super_admin')) {
+      return res.sendStatus(403);
+    }
+  }
+  
+  next();
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -186,11 +227,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User management (Super Admin only)
-  app.get("/api/users", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+  // User management with hierarchy
+  app.get("/api/users", authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
     try {
       const { role } = req.query;
-      const users = await storage.getUsers(role as string);
+      let users;
+      
+      if (req.user.role === 'super_admin') {
+        // Super admin sees all users
+        users = await storage.getUsers(role as string);
+      } else if (req.user.role === 'advertiser') {
+        // Advertiser sees only their owned users (staff and affiliates)
+        users = await storage.getUsersByOwner(req.user.id, role as string);
+      } else {
+        return res.status(403).json({ error: "Access denied" });
+      }
       
       // Remove passwords from response
       const safeUsers = users.map(({ password, ...user }) => user);
@@ -201,7 +252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/users", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+  app.post("/api/users", authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
       
@@ -211,6 +262,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (existingUser) {
         return res.status(400).json({ error: "User already exists" });
+      }
+
+      // Validate role creation permissions
+      if (req.user.role === 'advertiser') {
+        // Advertisers can only create staff and affiliates
+        if (!['staff', 'affiliate'].includes(userData.role)) {
+          return res.status(403).json({ error: "Advertisers can only create staff and affiliate users" });
+        }
+        // Set owner to current advertiser
+        userData.ownerId = req.user.id;
+      } else if (req.user.role === 'super_admin') {
+        // Super admin can create anyone but set proper ownership
+        if (userData.role === 'advertiser') {
+          userData.ownerId = req.user.id; // Owner is super admin
+        }
       }
 
       // Hash password
@@ -232,17 +298,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Offer management
+  // Offer management with hierarchy
   app.get("/api/offers", authenticateToken, async (req, res) => {
     try {
       let offers;
       
       if (req.user.role === 'super_admin') {
+        // Super admin sees all offers
         offers = await storage.getOffers();
       } else if (req.user.role === 'advertiser') {
+        // Advertiser sees only their own offers
         offers = await storage.getOffers(req.user.id);
       } else if (req.user.role === 'affiliate') {
-        // Get offers available to this affiliate
+        // Affiliate sees only offers they're approved for or public offers from their owner's advertisers
         const partnerOffers = await storage.getPartnerOffers(req.user.id);
         const offerIds = partnerOffers.map(po => po.offerId);
         
@@ -252,6 +320,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           offers = await storage.getOffers();
           offers = offers.filter(offer => !offer.isPrivate);
+        }
+      } else if (req.user.role === 'staff') {
+        // Staff can see offers of their owner (the advertiser who created them)
+        if (req.user.ownerId) {
+          offers = await storage.getOffers(req.user.ownerId);
+        } else {
+          offers = [];
         }
       }
       

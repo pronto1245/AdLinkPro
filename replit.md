@@ -14,6 +14,11 @@ The application features a multi-role dashboard system with role-based access co
 - ✅ Fixed offers management page layout issue - properly integrated Sidebar and Header components
 - ✅ Resolved TypeScript type errors in offer analytics and logging functionality
 - ✅ Confirmed Super Admin access control - only owner has super_admin role access
+- ✅ Implemented hierarchical role-based access control system according to schema:
+  * Super Admin (Owner) controls all users and has global platform access
+  * Advertisers manage only their own staff and affiliates 
+  * Staff and Affiliates have isolated access within their advertiser's scope
+  * Added ownerId field to track user ownership hierarchy
 
 # User Preferences
 

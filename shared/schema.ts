@@ -30,7 +30,9 @@ export const users = pgTable("users", {
   lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-  // Advertiser specific fields
+  // Hierarchy fields - who created/owns this user
+  ownerId: varchar("owner_id"), // Who created this user (advertiser creates staff/affiliates)
+  // Advertiser specific fields  
   advertiserId: varchar("advertiser_id"),
   // Settings
   settings: jsonb("settings"),

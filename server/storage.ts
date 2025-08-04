@@ -18,6 +18,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, data: Partial<InsertUser>): Promise<User>;
   getUsers(role?: string): Promise<User[]>;
+  getUsersByOwner(ownerId: string, role?: string): Promise<User[]>;
   
   // Offer management
   getOffer(id: string): Promise<Offer | undefined>;
@@ -129,6 +130,16 @@ export class DatabaseStorage implements IStorage {
       return await db.select().from(users).where(eq(users.role, role as any));
     }
     return await db.select().from(users);
+  }
+
+  // Get users with hierarchy filtering
+  async getUsersByOwner(ownerId: string, role?: string): Promise<User[]> {
+    if (role) {
+      return await db.select().from(users).where(
+        and(eq(users.ownerId, ownerId), eq(users.role, role as any))
+      );
+    }
+    return await db.select().from(users).where(eq(users.ownerId, ownerId));
   }
 
   async getOffer(id: string): Promise<Offer | undefined> {
