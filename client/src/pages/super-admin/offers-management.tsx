@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import * as React from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/contexts/language-context';
 import { getMultilingualText } from '@/lib/i18n';
@@ -927,6 +928,7 @@ export default function OffersManagement() {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [statusChangeOffer, setStatusChangeOffer] = useState<Offer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300); // 300мс задержка для поиска
   const [statusFilter, setStatusFilter] = useState('all');
 
   const [categoryFilter, setCategoryFilter] = useState('all');

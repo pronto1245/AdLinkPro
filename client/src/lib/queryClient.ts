@@ -62,11 +62,34 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      staleTime: 5 * 60 * 1000, // 5 минут кеширования
+      gcTime: 10 * 60 * 1000, // 10 минут в кеше (новый API)
+      retry: (failureCount, error: any) => {
+        // Не повторяем при 4xx ошибках
+        if (error?.message?.includes('4')) return false;
+        return failureCount < 2;
+      },
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
     mutations: {
-      retry: false,
+      retry: (failureCount, error: any) => {
+        if (error?.message?.includes('4')) return false;
+        return failureCount < 1;
+      },
     },
   },
 });
+
+// Предварительная загрузка критических данных
+export const prefetchCriticalData = async () => {
+  await Promise.allSettled([
+    queryClient.prefetchQuery({
+      queryKey: ['/api/auth/me'],
+      staleTime: 2 * 60 * 1000, // 2 минуты для данных пользователя
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ['/api/admin/offers'],
+      staleTime: 5 * 60 * 1000, // 5 минут для списка офферов
+    }),
+  ]);
+};

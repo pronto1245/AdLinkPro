@@ -1,6 +1,13 @@
 # Overview
 This platform is a comprehensive affiliate marketing system designed for three user types: super admins, advertisers, and affiliates. It offers white-label capabilities, allowing advertisers to brand the interface for their partners. Key features include a multi-role dashboard with role-based access control, real-time analytics, financial management, fraud detection, and robust tracking. The system supports multiple languages (English and Russian), KYC verification, postback handling, and detailed statistics. Enhanced analytics include comprehensive metrics tracking: Уники (Unique Users), CR$ (Conversion Revenue), EPC$ (Earnings Per Click), REG (Registrations), DEP (Deposits), GEO (Geographic breakdown), Фрод-Отклонение (Fraud Rejects), and Партнер (Partners). The project aims to provide a powerful, customizable, and efficient solution for managing affiliate marketing campaigns, enhancing business vision with strong market potential for scalable growth.
 
+## Performance Optimizations (Added Aug 4, 2025)
+- **Server-side**: Added compression middleware, helmet security, rate limiting, and connection pooling
+- **Database**: Implemented query caching system with TTL-based invalidation and optimized connection pooling
+- **Client-side**: Added debouncing for search inputs, memoization for expensive calculations, lazy loading for large data sets
+- **React Components**: Created optimized analytics table with virtualization support and smart re-rendering
+- **Query Management**: Enhanced React Query configuration with intelligent retry logic and extended caching
+
 # User Preferences
 Preferred communication style: Simple, everyday language.
 

@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { insertUserSchema, insertOfferSchema, insertTicketSchema, type User, offers } from "@shared/schema";
 import { eq } from "drizzle-orm";
-import { db } from "./db";
+import { db, queryCache } from "./db";
 import { z } from "zod";
 import express from "express";
 
@@ -227,11 +227,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Dashboard metrics
+  // Dashboard metrics (с кешированием)
   app.get("/api/dashboard/metrics", authenticateToken, async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
-      const metrics = await storage.getDashboardMetrics(authUser.role, authUser.id);
+      const cacheKey = `dashboard_metrics_${authUser.id}`;
+      
+      // Проверяем кеш
+      let metrics = queryCache.get(cacheKey);
+      
+      if (!metrics) {
+        metrics = await storage.getDashboardMetrics(authUser.role, authUser.id);
+        // Кешируем метрики на 1 минуту (частые обновления)
+        queryCache.set(cacheKey, metrics, 60 * 1000);
+      }
+      
       res.json(metrics);
     } catch (error) {
       console.error("Dashboard metrics error:", error);
@@ -312,37 +322,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Offer management with hierarchy
+  // Offer management with hierarchy (с кешированием)
   app.get("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
-      let offers;
+      const cacheKey = `offers_${authUser.role}_${authUser.id}`;
       
-      if (authUser.role === 'super_admin') {
-        // Super admin sees all offers
-        offers = await storage.getOffers();
-      } else if (authUser.role === 'advertiser') {
-        // Advertiser sees only their own offers
-        offers = await storage.getOffers(authUser.id);
-      } else if (authUser.role === 'affiliate') {
-        // Affiliate sees only offers they're approved for or public offers from their owner's advertisers
-        const partnerOffers = await storage.getPartnerOffers(authUser.id);
-        const offerIds = partnerOffers.map(po => po.offerId);
+      // Проверяем кеш
+      let offers = queryCache.get(cacheKey);
+      
+      if (!offers) {
+        if (authUser.role === 'super_admin') {
+          // Super admin sees all offers
+          offers = await storage.getOffers();
+        } else if (authUser.role === 'advertiser') {
+          // Advertiser sees only their own offers
+          offers = await storage.getOffers(authUser.id);
+        } else if (authUser.role === 'affiliate') {
+          // Affiliate sees only offers they're approved for or public offers from their owner's advertisers
+          const partnerOffers = await storage.getPartnerOffers(authUser.id);
+          const offerIds = partnerOffers.map(po => po.offerId);
+          
+          if (offerIds.length > 0) {
+            offers = await storage.getOffers();
+            offers = offers.filter(offer => offerIds.includes(offer.id) || !offer.isPrivate);
+          } else {
+            offers = await storage.getOffers();
+            offers = offers.filter(offer => !offer.isPrivate);
+          }
+        } else if (authUser.role === 'staff') {
+          // Staff can see offers of their owner (the advertiser who created them)
+          if (authUser.ownerId) {
+            offers = await storage.getOffers(authUser.ownerId);
+          } else {
+            offers = [];
+          }
+        }
         
-        if (offerIds.length > 0) {
-          offers = await storage.getOffers();
-          offers = offers.filter(offer => offerIds.includes(offer.id) || !offer.isPrivate);
-        } else {
-          offers = await storage.getOffers();
-          offers = offers.filter(offer => !offer.isPrivate);
-        }
-      } else if (authUser.role === 'staff') {
-        // Staff can see offers of their owner (the advertiser who created them)
-        if (authUser.ownerId) {
-          offers = await storage.getOffers(authUser.ownerId);
-        } else {
-          offers = [];
-        }
+        // Кешируем на 2 минуты
+        queryCache.set(cacheKey, offers, 2 * 60 * 1000);
       }
       
       res.json(offers);
