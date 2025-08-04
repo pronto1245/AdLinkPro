@@ -780,57 +780,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/offers/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const { id } = req.params;
-      const authUser = req.user!;
-      console.log("Updating offer:", id, "for user:", authUser.id, authUser.username);
+      console.log("Updating offer:", id);
       
-      // Build update object field by field to avoid timestamp issues
-      const updates: any = {};
+      // Clean data by filtering out undefined and problematic fields
+      const cleanData: any = {};
       
-      // Text fields
-      if (req.body.name !== undefined) updates.name = req.body.name;
-      if (req.body.description !== undefined) updates.description = req.body.description;
-      if (req.body.logo !== undefined) updates.logo = req.body.logo;
-      if (req.body.category !== undefined) updates.category = req.body.category;
-      if (req.body.kpiConditions !== undefined) updates.kpiConditions = req.body.kpiConditions;
-      if (req.body.restrictions !== undefined) updates.restrictions = req.body.restrictions;
-      if (req.body.moderationComment !== undefined) updates.moderationComment = req.body.moderationComment;
+      if (req.body.name !== undefined) cleanData.name = req.body.name;
+      if (req.body.description !== undefined) cleanData.description = req.body.description;
+      if (req.body.logo !== undefined) cleanData.logo = req.body.logo;
+      if (req.body.category !== undefined) cleanData.category = req.body.category;
+      if (req.body.status !== undefined) cleanData.status = req.body.status;
+      if (req.body.payoutType !== undefined) cleanData.payoutType = req.body.payoutType;
+      if (req.body.currency !== undefined) cleanData.currency = req.body.currency;
+      if (req.body.kpiConditions !== undefined) cleanData.kpiConditions = req.body.kpiConditions;
+      if (req.body.restrictions !== undefined) cleanData.restrictions = req.body.restrictions;
+      if (req.body.moderationComment !== undefined) cleanData.moderationComment = req.body.moderationComment;
+      if (req.body.antifraudEnabled !== undefined) cleanData.antifraudEnabled = req.body.antifraudEnabled;
+      if (req.body.autoApprovePartners !== undefined) cleanData.autoApprovePartners = req.body.autoApprovePartners;
+      if (req.body.kycRequired !== undefined) cleanData.kycRequired = req.body.kycRequired;
+      if (req.body.isPrivate !== undefined) cleanData.isPrivate = req.body.isPrivate;
+      if (req.body.smartlinkEnabled !== undefined) cleanData.smartlinkEnabled = req.body.smartlinkEnabled;
+      if (req.body.dailyLimit !== undefined) cleanData.dailyLimit = req.body.dailyLimit;
+      if (req.body.monthlyLimit !== undefined) cleanData.monthlyLimit = req.body.monthlyLimit;
+      if (req.body.landingPages !== undefined) cleanData.landingPages = req.body.landingPages;
+      if (req.body.allowedApps !== undefined) cleanData.allowedApps = req.body.allowedApps;
+      if (req.body.allowedTrafficSources !== undefined) cleanData.trafficSources = req.body.allowedTrafficSources;
+      if (req.body.trafficSources !== undefined) cleanData.trafficSources = req.body.trafficSources;
       
-      // Status fields
-      if (req.body.status !== undefined) updates.status = req.body.status;
-      if (req.body.payoutType !== undefined) updates.payoutType = req.body.payoutType;
-      if (req.body.currency !== undefined) updates.currency = req.body.currency;
+      console.log("Clean data for update:", Object.keys(cleanData));
       
-      // Boolean fields
-      if (req.body.antifraudEnabled !== undefined) updates.antifraudEnabled = Boolean(req.body.antifraudEnabled);
-      if (req.body.autoApprovePartners !== undefined) updates.autoApprovePartners = Boolean(req.body.autoApprovePartners);
-      if (req.body.kycRequired !== undefined) updates.kycRequired = Boolean(req.body.kycRequired);
-      if (req.body.isPrivate !== undefined) updates.isPrivate = Boolean(req.body.isPrivate);
-      if (req.body.smartlinkEnabled !== undefined) updates.smartlinkEnabled = Boolean(req.body.smartlinkEnabled);
+      // Use storage interface instead to avoid SQL complexity
+      const offer = await storage.updateOffer(id, {
+        name: req.body.name,
+        description: req.body.description,
+        logo: req.body.logo,
+        category: req.body.category,
+        status: req.body.status,
+        payoutType: req.body.payoutType,
+        currency: req.body.currency,
+        kpiConditions: req.body.kpiConditions,
+        restrictions: req.body.restrictions,
+        moderationComment: req.body.moderationComment,
+        antifraudEnabled: req.body.antifraudEnabled,
+        autoApprovePartners: req.body.autoApprovePartners,
+        kycRequired: req.body.kycRequired,
+        isPrivate: req.body.isPrivate,
+        smartlinkEnabled: req.body.smartlinkEnabled,
+        dailyLimit: req.body.dailyLimit,
+        monthlyLimit: req.body.monthlyLimit,
+        landingPages: req.body.landingPages,
+        allowedApps: req.body.allowedApps,
+        trafficSources: req.body.allowedTrafficSources || req.body.trafficSources
+      });
       
-      // Numeric fields
-      if (req.body.dailyLimit !== undefined) updates.dailyLimit = req.body.dailyLimit ? parseInt(req.body.dailyLimit) : null;
-      if (req.body.monthlyLimit !== undefined) updates.monthlyLimit = req.body.monthlyLimit ? parseInt(req.body.monthlyLimit) : null;
-      
-      // JSON fields
-      if (req.body.landingPages !== undefined) updates.landingPages = req.body.landingPages;
-      if (req.body.allowedApps !== undefined) updates.allowedApps = req.body.allowedApps;
-      if (req.body.allowedTrafficSources !== undefined) updates.trafficSources = req.body.allowedTrafficSources;
-      if (req.body.trafficSources !== undefined) updates.trafficSources = req.body.trafficSources;
-      
-      console.log("Updates to apply:", Object.keys(updates));
-      
-      // Update the offer
-      const [updatedOffer] = await db
-        .update(offers)
-        .set(updates)
-        .where(eq(offers.id, id))
-        .returning();
-      
-      if (!updatedOffer) {
+      if (!offer) {
         return res.status(404).json({ error: "Оффер не найден" });
       }
       
-      res.json(updatedOffer);
+      res.json(offer);
+
     } catch (error) {
       console.error("Update offer error:", error);
       res.status(500).json({ error: "Не удалось обновить оффер", details: error instanceof Error ? error.message : 'Unknown error' });
