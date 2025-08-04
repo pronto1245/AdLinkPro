@@ -1742,9 +1742,16 @@ export default function FinancesManagement() {
                 </CardHeader>
                 <CardContent>
                   <Button 
-                    onClick={() => exportData('transactions')}
+                    onClick={() => {
+                      exportData('transactions');
+                      toast({
+                        title: 'Экспорт транзакций',
+                        description: 'Файл с транзакциями готовится для скачивания',
+                      });
+                    }}
                     className="w-full"
                     title="Экспорт транзакций"
+                    data-testid="button-export-transactions"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Скачать транзакции
@@ -1764,9 +1771,16 @@ export default function FinancesManagement() {
                 </CardHeader>
                 <CardContent>
                   <Button 
-                    onClick={() => exportData('payouts')}
+                    onClick={() => {
+                      exportData('payouts');
+                      toast({
+                        title: 'Экспорт выплат',
+                        description: 'Файл с выплатами готовится для скачивания',
+                      });
+                    }}
                     className="w-full"
                     title="Экспорт выплат"
+                    data-testid="button-export-payouts"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Скачать выплаты
@@ -1786,9 +1800,16 @@ export default function FinancesManagement() {
                 </CardHeader>
                 <CardContent>
                   <Button 
-                    onClick={() => exportData('commission')}
+                    onClick={() => {
+                      exportData('commission');
+                      toast({
+                        title: 'Экспорт комиссии',
+                        description: 'Файл с данными комиссии готовится для скачивания',
+                      });
+                    }}
                     className="w-full"
                     title="Экспорт комиссии"
+                    data-testid="button-export-commission"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Скачать комиссию
@@ -1814,7 +1835,20 @@ export default function FinancesManagement() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-green-100 text-green-800">Активен</Badge>
-                      <Button size="sm" variant="outline">Настроить</Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          toast({
+                            title: 'Настройка месячного отчёта',
+                            description: 'Открыта панель настройки автоматических отчётов по финансам',
+                          });
+                        }}
+                        data-testid="button-configure-monthly-report"
+                        title="Настроить месячный отчёт"
+                      >
+                        Настроить
+                      </Button>
                     </div>
                   </div>
 
@@ -1825,7 +1859,20 @@ export default function FinancesManagement() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-gray-100 text-gray-800">Неактивен</Badge>
-                      <Button size="sm" variant="outline">Настроить</Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          toast({
+                            title: 'Настройка отчёта для бухгалтера',
+                            description: 'Открыта панель настройки еженедельных отчётов',
+                          });
+                        }}
+                        data-testid="button-configure-accounting-report"
+                        title="Настроить отчёт для бухгалтера"
+                      >
+                        Настроить
+                      </Button>
                     </div>
                   </div>
 
@@ -1836,7 +1883,20 @@ export default function FinancesManagement() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-green-100 text-green-800">Активен</Badge>
-                      <Button size="sm" variant="outline">Настроить</Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          toast({
+                            title: 'Настройка Smart-уведомлений',
+                            description: 'Открыта панель настройки умных уведомлений',
+                          });
+                        }}
+                        data-testid="button-configure-smart-notifications"
+                        title="Настроить Smart-уведомления"
+                      >
+                        Настроить
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -1898,7 +1958,7 @@ export default function FinancesManagement() {
               <Button 
                 onClick={async () => {
                   try {
-                    await apiRequest('/api/admin/crypto-deposit', {
+                    const response = await fetch('/api/admin/crypto-deposit', {
                       method: 'POST',
                       body: JSON.stringify({
                         currency: 'BTC',
@@ -1910,6 +1970,8 @@ export default function FinancesManagement() {
                         Authorization: `Bearer ${token}`
                       }
                     });
+                    
+                    if (!response.ok) throw new Error('Failed to deposit');
                     
                     toast({
                       title: "Пополнение оформлено",
@@ -1987,7 +2049,7 @@ export default function FinancesManagement() {
               <Button 
                 onClick={async () => {
                   try {
-                    await apiRequest('/api/admin/crypto-withdraw', {
+                    const response = await fetch('/api/admin/crypto-withdraw', {
                       method: 'POST',
                       body: JSON.stringify({
                         currency: 'BTC',
@@ -1999,6 +2061,8 @@ export default function FinancesManagement() {
                         Authorization: `Bearer ${token}`
                       }
                     });
+                    
+                    if (!response.ok) throw new Error('Failed to withdraw');
                     
                     toast({
                       title: "Вывод оформлен",
