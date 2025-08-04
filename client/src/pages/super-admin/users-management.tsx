@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/language-context";
+import Sidebar from "@/components/layout/sidebar";
+import Header from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -166,10 +168,7 @@ export default function UsersManagement() {
   // Block user mutation
   const blockUserMutation = useMutation({
     mutationFn: async ({ userId, reason }: { userId: string; reason: string }) => {
-      return apiRequest(`/api/admin/users/${userId}/block`, {
-        method: 'POST',
-        body: { reason }
-      });
+      return apiRequest(`/api/admin/users/${userId}/block`, 'POST', { reason });
     },
     onSuccess: () => {
       toast({
@@ -185,9 +184,7 @@ export default function UsersManagement() {
   // Unblock user mutation
   const unblockUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return apiRequest(`/api/admin/users/${userId}/unblock`, {
-        method: 'POST'
-      });
+      return apiRequest(`/api/admin/users/${userId}/unblock`, 'POST');
     },
     onSuccess: () => {
       toast({
@@ -201,9 +198,7 @@ export default function UsersManagement() {
   // Force logout mutation
   const forceLogoutMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return apiRequest(`/api/admin/users/${userId}/force-logout`, {
-        method: 'POST'
-      });
+      return apiRequest(`/api/admin/users/${userId}/force-logout`, 'POST');
     },
     onSuccess: () => {
       toast({
@@ -216,9 +211,7 @@ export default function UsersManagement() {
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return apiRequest(`/api/admin/users/${userId}`, {
-        method: 'DELETE'
-      });
+      return apiRequest(`/api/admin/users/${userId}`, 'DELETE');
     },
     onSuccess: () => {
       toast({
@@ -232,10 +225,7 @@ export default function UsersManagement() {
   // Create user mutation
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
-      return apiRequest('/api/admin/users', {
-        method: 'POST',
-        body: userData
-      });
+      return apiRequest('/api/admin/users', 'POST', userData);
     },
     onSuccess: () => {
       toast({
@@ -250,10 +240,7 @@ export default function UsersManagement() {
   // Edit user mutation
   const editUserMutation = useMutation({
     mutationFn: async ({ userId, userData }: { userId: string; userData: any }) => {
-      return apiRequest(`/api/admin/users/${userId}`, {
-        method: 'PATCH',
-        body: userData
-      });
+      return apiRequest(`/api/admin/users/${userId}`, 'PATCH', userData);
     },
     onSuccess: () => {
       toast({
@@ -268,9 +255,7 @@ export default function UsersManagement() {
   // Reset password mutation
   const resetPasswordMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return apiRequest(`/api/admin/users/${userId}/reset-password`, {
-        method: 'POST'
-      });
+      return apiRequest(`/api/admin/users/${userId}/reset-password`, 'POST');
     },
     onSuccess: (data: any) => {
       toast({
@@ -285,20 +270,11 @@ export default function UsersManagement() {
     mutationFn: async ({ action, userIds, reason }: { action: string; userIds: string[]; reason?: string }) => {
       switch (action) {
         case 'block':
-          return apiRequest('/api/admin/users/bulk-block', {
-            method: 'POST',
-            body: { userIds, reason }
-          });
+          return apiRequest('/api/admin/users/bulk-block', 'POST', { userIds, reason });
         case 'unblock':
-          return apiRequest('/api/admin/users/bulk-unblock', {
-            method: 'POST',
-            body: { userIds }
-          });
+          return apiRequest('/api/admin/users/bulk-unblock', 'POST', { userIds });
         case 'delete':
-          return apiRequest('/api/admin/users/bulk-delete', {
-            method: 'POST',
-            body: { userIds, hardDelete: false }
-          });
+          return apiRequest('/api/admin/users/bulk-delete', 'POST', { userIds, hardDelete: false });
         default:
           throw new Error('Unknown bulk action');
       }
@@ -338,12 +314,12 @@ export default function UsersManagement() {
     if (!user.isActive) {
       return <Badge variant="destructive" className="flex items-center gap-1">
         <Ban className="w-3 h-3" />
-        {t.blocked || "Заблокирован"}
+        Заблокирован
       </Badge>;
     }
     
     return <Badge variant="default" className="bg-green-500">
-      {t.active || "Активен"}
+      Активен
     </Badge>;
   };
 
@@ -355,10 +331,17 @@ export default function UsersManagement() {
       staff: "bg-orange-500"
     };
     
+    const roleNames: Record<string, string> = {
+      super_admin: "Супер-админ",
+      advertiser: "Рекламодатель",
+      affiliate: "Партнер",
+      staff: "Сотрудник"
+    };
+    
     return (
       <Badge className={roleColors[role] || "bg-gray-500"}>
         <Shield className="w-3 h-3 mr-1" />
-        {t[role] || role}
+        {roleNames[role] || role}
       </Badge>
     );
   };
@@ -370,26 +353,31 @@ export default function UsersManagement() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+    <div className="flex h-screen">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header title="Управление пользователями" />
+        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+          <div className="space-y-6 p-6">
+            {/* Header */}
+            <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {t.usersManagement || "Управление пользователями"}
+            Управление пользователями
           </h1>
           <p className="text-muted-foreground">
-            {t.usersManagementDescription || "Управляйте пользователями системы"}
+            Управляйте пользователями системы, их ролями и настройками
           </p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setShowCreateDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            {t.addUser || "Добавить пользователя"}
+            Добавить пользователя
           </Button>
           
           {selectedUsers.length > 0 && (
             <Button variant="outline" onClick={() => setShowBulkDialog(true)}>
-              {t.bulkActions || "Массовые операции"} ({selectedUsers.length})
+              Массовые операции ({selectedUsers.length})
             </Button>
           )}
           
@@ -401,7 +389,7 @@ export default function UsersManagement() {
             }}
           >
             <Download className="mr-2 h-4 w-4" />
-            {t.export || "Экспорт"}
+            Экспорт
           </Button>
         </div>
       </div>
@@ -411,25 +399,25 @@ export default function UsersManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {t.totalUsers || "Всего пользователей"}
+              Всего пользователей
             </CardTitle>
             <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{usersData?.total || 0}</div>
+            <div className="text-2xl font-bold">{Array.isArray(usersData) ? usersData.length : 0}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {t.activeUsers || "Активных пользователей"}
+              Активных пользователей
             </CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {usersData?.data?.filter((u: User) => u.isActive).length || 0}
+              {Array.isArray(usersData) ? usersData.filter((u: User) => u.isActive).length : 0}
             </div>
           </CardContent>
         </Card>
@@ -437,13 +425,13 @@ export default function UsersManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {t.blockedUsers || "Заблокированных"}
+              Заблокированных
             </CardTitle>
             <Ban className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {usersData?.data?.filter((u: User) => !u.isActive).length || 0}
+              {Array.isArray(usersData) ? usersData.filter((u: User) => !u.isActive).length : 0}
             </div>
           </CardContent>
         </Card>
@@ -451,16 +439,16 @@ export default function UsersManagement() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {t.newUsersToday || "Новых сегодня"}
+              Новых сегодня
             </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              {usersData?.data?.filter((u: User) => {
+              {Array.isArray(usersData) ? usersData.filter((u: User) => {
                 const today = new Date().toDateString();
                 return new Date(u.createdAt).toDateString() === today;
-              }).length || 0}
+              }).length : 0}
             </div>
           </CardContent>
         </Card>
@@ -473,7 +461,7 @@ export default function UsersManagement() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder={t.searchUsers || "Поиск пользователей..."}
+                placeholder="Поиск пользователей..."
                 value={filters.search}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="pl-10"
@@ -482,7 +470,7 @@ export default function UsersManagement() {
 
             <Select value={filters.role} onValueChange={(value) => handleFilterChange('role', value)}>
               <SelectTrigger>
-                <SelectValue placeholder={t.selectRole || "Выберите роль"} />
+                <SelectValue placeholder="Выберите роль" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Все роли</SelectItem>
@@ -495,7 +483,7 @@ export default function UsersManagement() {
 
             <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
               <SelectTrigger>
-                <SelectValue placeholder={t.selectStatus || "Выберите статус"} />
+                <SelectValue placeholder="Выберите статус" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Все статусы</SelectItem>
@@ -507,7 +495,7 @@ export default function UsersManagement() {
 
             <Select value={filters.userType} onValueChange={(value) => handleFilterChange('userType', value)}>
               <SelectTrigger>
-                <SelectValue placeholder={t.selectUserType || "Тип пользователя"} />
+                <SelectValue placeholder="Тип пользователя" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Все типы</SelectItem>
@@ -518,7 +506,7 @@ export default function UsersManagement() {
             </Select>
 
             <Input
-              placeholder={t.country || "Страна"}
+              placeholder="Страна"
               value={filters.country}
               onChange={(e) => handleFilterChange('country', e.target.value)}
             />
@@ -1132,6 +1120,9 @@ export default function UsersManagement() {
           </div>
         </DialogContent>
       </Dialog>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
