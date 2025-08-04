@@ -1596,6 +1596,178 @@ const FraudDetectionPage = () => {
         </main>
       </div>
 
+      {/* Create Rule Dialog */}
+      <Dialog open={createRuleDialogOpen} onOpenChange={setCreateRuleDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Создать новое правило антифрода</DialogTitle>
+            <DialogDescription>
+              Настройте параметры автоматического обнаружения и блокировки мошенничества
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="rule-name">Название правила</Label>
+                <Input
+                  id="rule-name"
+                  placeholder="Например: Блокировка VPN трафика"
+                  data-testid="rule-name-input"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rule-type">Тип правила</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите тип" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ip_blocking">Блокировка IP</SelectItem>
+                    <SelectItem value="device_fingerprint">Отпечаток устройства</SelectItem>
+                    <SelectItem value="geo_blocking">Гео-блокировка</SelectItem>
+                    <SelectItem value="rate_limiting">Ограничение частоты</SelectItem>
+                    <SelectItem value="pattern_detection">Обнаружение паттернов</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rule-conditions">Условия срабатывания</Label>
+              <Textarea
+                id="rule-conditions"
+                placeholder="Опишите условия, при которых должно срабатывать правило..."
+                className="min-h-[100px]"
+                data-testid="rule-conditions-input"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="rule-severity">Уровень угрозы</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите уровень" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Низкий</SelectItem>
+                    <SelectItem value="medium">Средний</SelectItem>
+                    <SelectItem value="high">Высокий</SelectItem>
+                    <SelectItem value="critical">Критический</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rule-action">Действие</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите действие" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="flag">Пометить для проверки</SelectItem>
+                    <SelectItem value="block">Заблокировать</SelectItem>
+                    <SelectItem value="redirect">Перенаправить</SelectItem>
+                    <SelectItem value="rate_limit">Ограничить</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch id="auto-block" data-testid="auto-block-toggle" />
+              <Label htmlFor="auto-block">Автоматическая блокировка</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateRuleDialogOpen(false)}>
+              Отмена
+            </Button>
+            <Button 
+              onClick={() => {
+                toast({
+                  title: "Правило создано",
+                  description: "Новое правило антифрода успешно добавлено",
+                });
+                setCreateRuleDialogOpen(false);
+              }}
+              data-testid="save-rule-btn"
+            >
+              Создать правило
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Block IP Dialog */}
+      <Dialog open={blockIpDialogOpen} onOpenChange={setBlockIpDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Заблокировать IP адрес</DialogTitle>
+            <DialogDescription>
+              Блокировка IP адреса {selectedIp} для предотвращения мошенничества
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="block-reason">Причина блокировки</Label>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите причину" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fraud_detected">Обнаружено мошенничество</SelectItem>
+                  <SelectItem value="suspicious_activity">Подозрительная активность</SelectItem>
+                  <SelectItem value="proxy_vpn">Прокси/VPN</SelectItem>
+                  <SelectItem value="bot_activity">Активность ботов</SelectItem>
+                  <SelectItem value="manual_review">Ручная проверка</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="block-duration">Длительность блокировки</Label>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите период" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1h">1 час</SelectItem>
+                  <SelectItem value="24h">24 часа</SelectItem>
+                  <SelectItem value="7d">7 дней</SelectItem>
+                  <SelectItem value="30d">30 дней</SelectItem>
+                  <SelectItem value="permanent">Навсегда</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="block-notes">Дополнительные заметки</Label>
+              <Textarea
+                id="block-notes"
+                placeholder="Дополнительная информация о блокировке..."
+                className="min-h-[80px]"
+                data-testid="block-notes-input"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBlockIpDialogOpen(false)}>
+              Отмена
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => {
+                toast({
+                  title: "IP заблокирован",
+                  description: `IP адрес ${selectedIp} успешно заблокирован`,
+                  variant: "destructive",
+                });
+                setBlockIpDialogOpen(false);
+                setSelectedIp('');
+              }}
+              data-testid="confirm-block-btn"
+            >
+              Заблокировать
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Configure Service Dialog */}
       <Dialog open={configureDialogOpen} onOpenChange={setConfigureDialogOpen}>
         <DialogContent className="max-w-md">
