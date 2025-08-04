@@ -407,7 +407,7 @@ export default function OfferDetails() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5" />
-                    KPI {t('offer_description')}
+                    {t('kpi_description')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -580,7 +580,7 @@ export default function OfferDetails() {
                       {/* Валюта */}
                       <div>
                         <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
-                          Валюта
+                          {t('currency')}
                         </div>
                         <div className="text-lg font-semibold text-green-700 dark:text-green-300">
                           {offer.currency || 'USD'}
@@ -590,7 +590,7 @@ export default function OfferDetails() {
                       {/* Тип */}
                       <div>
                         <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
-                          Тип
+                          {t('type')}
                         </div>
                         <div className="text-lg font-semibold text-green-700 dark:text-green-300">
                           {offer.payoutType?.toUpperCase() || 'CPA'}
@@ -600,7 +600,7 @@ export default function OfferDetails() {
                       {/* Гео */}
                       <div>
                         <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
-                          Гео
+                          {t('geo')}
                         </div>
                         <div className="text-lg font-semibold text-green-700 dark:text-green-300">
                           {(() => {
@@ -614,7 +614,7 @@ export default function OfferDetails() {
                             }
                             
                             if (countries.length === 0) {
-                              return <span className="text-sm">Не указано</span>;
+                              return <span className="text-sm">{t('not_specified')}</span>;
                             }
                             
                             const countryFlags: { [key: string]: string } = {
@@ -695,21 +695,21 @@ export default function OfferDetails() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="w-5 h-5" />
-                  Дополнительно
+                  {t('additional_info')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {offer.dailyLimit && (
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Дневной лимит</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('daily_limit')}</span>
                     <Badge variant="secondary">
-                      {offer.dailyLimit} конверсий
+                      {offer.dailyLimit} {t('conversions')}
                     </Badge>
                   </div>
                 )}
                 {offer.vertical && (
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Вертикаль</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('vertical')}</span>
                     <Badge variant="secondary">
                       {offer.vertical}
                     </Badge>
@@ -743,7 +743,7 @@ export default function OfferDetails() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="w-5 h-5" />
-                    Описание
+                    {t('description')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -759,7 +759,7 @@ export default function OfferDetails() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="w-5 h-5" />
-                  Источники трафика
+                  {t('traffic_sources')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -772,7 +772,7 @@ export default function OfferDetails() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400">Источники трафика не указаны</p>
+                  <p className="text-gray-500 dark:text-gray-400">{t('traffic_sources_not_specified')}</p>
                 )}
               </CardContent>
             </Card>
@@ -782,7 +782,7 @@ export default function OfferDetails() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="w-5 h-5" />
-                  Разрешенные приложения
+                  {t('allowed_applications')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -795,7 +795,7 @@ export default function OfferDetails() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400">Разрешенные приложения не указаны</p>
+                  <p className="text-gray-500 dark:text-gray-400">{t('allowed_apps_not_specified')}</p>
                 )}
               </CardContent>
             </Card>
