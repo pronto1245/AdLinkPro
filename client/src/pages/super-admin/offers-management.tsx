@@ -313,7 +313,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       <FormItem>
                         <FormLabel className="text-sm">URL</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="https://example.com" data-testid={`input-landing-url-${index}`} />
+                          <Input {...field} placeholder={t('url_placeholder')} data-testid={`input-landing-url-${index}`} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -377,7 +377,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       <FormItem>
                         <FormLabel className="text-sm">{t('geo')}</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="US, GB, DE" data-testid={`input-landing-geo-${index}`} />
+                          <Input {...field} placeholder={t('geo_placeholder')} data-testid={`input-landing-geo-${index}`} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -531,23 +531,23 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                         <SelectValue placeholder={t('select_app')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="PWA apps">PWA приложения</SelectItem>
-                        <SelectItem value="WebView apps">WebView приложения</SelectItem>
-                        <SelectItem value="Native Android (.apk) apps">Android приложения (.apk)</SelectItem>
-                        <SelectItem value="iOS apps">iOS приложения</SelectItem>
-                        <SelectItem value="Mobile apps">Мобильные приложения</SelectItem>
-                        <SelectItem value="Desktop apps">Настольные приложения</SelectItem>
-                        <SelectItem value="Web apps">Веб приложения</SelectItem>
-                        <SelectItem value="Telegram bots">Telegram боты</SelectItem>
-                        <SelectItem value="Browser extensions">Браузерные расширения</SelectItem>
-                        <SelectItem value="Chrome extensions">Расширения Chrome</SelectItem>
-                        <SelectItem value="Firefox extensions">Расширения Firefox</SelectItem>
+                        <SelectItem value="PWA apps">{t('pwa_apps')}</SelectItem>
+                        <SelectItem value="WebView apps">{t('webview_apps')}</SelectItem>
+                        <SelectItem value="Native Android (.apk) apps">{t('android_apps')}</SelectItem>
+                        <SelectItem value="iOS apps">{t('ios_apps')}</SelectItem>
+                        <SelectItem value="Mobile apps">{t('mobile_apps')}</SelectItem>
+                        <SelectItem value="Desktop apps">{t('desktop_apps')}</SelectItem>
+                        <SelectItem value="Web apps">{t('web_apps')}</SelectItem>
+                        <SelectItem value="Telegram bots">{t('telegram_bots')}</SelectItem>
+                        <SelectItem value="Browser extensions">{t('browser_extensions')}</SelectItem>
+                        <SelectItem value="Chrome extensions">{t('chrome_extensions')}</SelectItem>
+                        <SelectItem value="Firefox extensions">{t('firefox_extensions')}</SelectItem>
                       </SelectContent>
                     </Select>
                     
                     <div className="flex gap-2">
                       <Input 
-                        placeholder="Введите своё приложение"
+                        placeholder={t('custom_app_placeholder')}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
