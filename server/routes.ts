@@ -3530,34 +3530,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Smart alerts endpoints
   app.get("/api/admin/smart-alerts", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
-      const alerts = [
-        {
-          id: "alert-1",
-          type: "fraud_spike",
-          title: "Пик фрода",
-          description: "Уведомление при резком увеличении фрод-трафика",
-          severity: "high",
-          triggeredAt: new Date(Date.now() - 7200000).toISOString(),
-          threshold: { value: 20, period: 15, unit: "minutes" },
-          currentValue: { fraudRate: 25.3, period: "last_15_min" },
-          affectedMetrics: ["fraud_rate", "blocked_ips"],
-          autoActions: ["block_suspicious_ips", "alert_admins"],
-          isResolved: false
-        },
-        {
-          id: "alert-2", 
-          type: "cr_anomaly",
-          title: "Аномалия CR",
-          description: "Увеличение конверсии в 3-5 раз за короткое время",
-          severity: "critical",
-          triggeredAt: new Date(Date.now() - 1800000).toISOString(),
-          threshold: { multiplier: 3, period: 30, unit: "minutes" },
-          currentValue: { crIncrease: 4.2, baseline: 2.1, current: 8.8 },
-          affectedMetrics: ["conversion_rate", "revenue"],
-          autoActions: ["flag_traffic", "manual_review"],
-          isResolved: false
-        }
-      ];
+      const alerts = await storage.getSmartAlerts();
       res.json(alerts);
     } catch (error) {
       console.error("Get smart alerts error:", error);
