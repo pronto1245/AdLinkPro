@@ -44,8 +44,8 @@ export default function Login() {
               <i className="fas fa-chart-network text-white"></i>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">AffiliateHub</h1>
-              <p className="text-sm text-slate-600">Marketing Platform</p>
+              <h1 className="text-2xl font-bold text-slate-900">FraudGuard</h1>
+              <p className="text-sm text-slate-600">Anti-Fraud Platform</p>
             </div>
           </div>
         </div>
@@ -69,7 +69,7 @@ export default function Login() {
             <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
               <div className="font-medium text-blue-800 mb-2">Данные для входа:</div>
               <div className="text-blue-700">
-                <div><strong>Администратор:</strong> admin / admin</div>
+                <div><strong>Администратор:</strong> superadmin / admin</div>
               </div>
             </div>
             

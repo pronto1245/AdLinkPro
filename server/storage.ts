@@ -2796,7 +2796,7 @@ class MemStorage implements IStorage {
   private users: User[] = [
     {
       id: '1',
-      username: 'admin',
+      username: 'superadmin',
       email: 'admin@example.com', 
       password: 'admin',
       role: 'super_admin',

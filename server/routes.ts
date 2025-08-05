@@ -135,7 +135,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Support both plain text (for demo) and hashed passwords
-      const isValidPassword = (user.password === password) || await bcrypt.compare(password, user.password);
+      const plainTextMatch = user.password === password;
+      const hashMatch = await bcrypt.compare(password, user.password).catch(() => false);
+      const isValidPassword = plainTextMatch || hashMatch;
       
       if (!isValidPassword) {
         recordFailedLogin(req);
