@@ -422,9 +422,45 @@ export default function AnalyticsNew() {
     ));
   };
 
+  // Country flag component
+  const CountryFlag = ({ countryCode }: { countryCode: string }) => {
+    if (!countryCode || countryCode === '-') return <span>-</span>;
+    
+    const getFlag = (code: string) => {
+      const flags: { [key: string]: string } = {
+        'RU': '🇷🇺', 'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷',
+        'IT': '🇮🇹', 'ES': '🇪🇸', 'PL': '🇵🇱', 'UA': '🇺🇦', 'BY': '🇧🇾',
+        'KZ': '🇰🇿', 'UZ': '🇺🇿', 'KG': '🇰🇬', 'TJ': '🇹🇯', 'TM': '🇹🇲',
+        'CN': '🇨🇳', 'JP': '🇯🇵', 'KR': '🇰🇷', 'IN': '🇮🇳', 'TH': '🇹🇭',
+        'VN': '🇻🇳', 'PH': '🇵🇭', 'ID': '🇮🇩', 'MY': '🇲🇾', 'SG': '🇸🇬',
+        'AU': '🇦🇺', 'NZ': '🇳🇿', 'CA': '🇨🇦', 'MX': '🇲🇽', 'BR': '🇧🇷',
+        'AR': '🇦🇷', 'CL': '🇨🇱', 'CO': '🇨🇴', 'PE': '🇵🇪', 'VE': '🇻🇪',
+        'TR': '🇹🇷', 'AE': '🇦🇪', 'SA': '🇸🇦', 'IL': '🇮🇱', 'EG': '🇪🇬',
+        'ZA': '🇿🇦', 'NG': '🇳🇬', 'KE': '🇰🇪', 'GH': '🇬🇭', 'MA': '🇲🇦',
+        'NO': '🇳🇴', 'SE': '🇸🇪', 'DK': '🇩🇰', 'FI': '🇫🇮', 'NL': '🇳🇱',
+        'BE': '🇧🇪', 'CH': '🇨🇭', 'AT': '🇦🇹', 'CZ': '🇨🇿', 'HU': '🇭🇺',
+        'RO': '🇷🇴', 'BG': '🇧🇬', 'HR': '🇭🇷', 'RS': '🇷🇸', 'SI': '🇸🇮',
+        'SK': '🇸🇰', 'LT': '🇱🇹', 'LV': '🇱🇻', 'EE': '🇪🇪', 'IE': '🇮🇪',
+        'PT': '🇵🇹', 'GR': '🇬🇷', 'CY': '🇨🇾', 'MT': '🇲🇹', 'IS': '🇮🇸'
+      };
+      return flags[code.toUpperCase()] || `🏳️ ${code}`;
+    };
+
+    return (
+      <span className="inline-flex items-center gap-1 text-base" title={countryCode}>
+        {getFlag(countryCode)}
+      </span>
+    );
+  };
+
   // Format cell value based on type
-  const formatCellValue = (value: any, type: ColumnConfig['type']) => {
+  const formatCellValue = (value: any, type: ColumnConfig['type'], columnKey?: string) => {
     if (value === null || value === undefined) return '-';
+    
+    // Special handling for country flag
+    if (columnKey === 'countryFlag' || columnKey === 'country') {
+      return <CountryFlag countryCode={value} />;
+    }
     
     switch (type) {
       case 'currency':
@@ -712,7 +748,7 @@ export default function AnalyticsNew() {
                             <tr key={row.id || index} className="border-b hover:bg-muted/50">
                               {visibleColumns.map((column) => (
                                 <td key={column.key} className="p-2 text-sm whitespace-nowrap">
-                                  {formatCellValue(row[column.key], column.type)}
+                                  {formatCellValue(row[column.key], column.type, column.key)}
                                 </td>
                               ))}
                             </tr>
