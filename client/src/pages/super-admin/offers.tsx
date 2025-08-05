@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import OfferFormSimple from '@/components/offer-form-simple';
 import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play, Shield } from 'lucide-react';
 import { useLocation } from 'wouter';
@@ -60,8 +61,6 @@ export default function OffersManagement() {
     },
   });
 
-  // Removed React Query mutation - using direct fetch instead
-
   const updateOfferStatusMutation = useMutation({
     mutationFn: async ({ offerId, status }: { offerId: string; status: string }) => {
       const response = await fetch(`/api/admin/offers/${offerId}`, {
@@ -93,19 +92,7 @@ export default function OffersManagement() {
     },
   });
 
-  const form = useForm<z.infer<typeof createOfferFrontendSchema>>({
-    resolver: zodResolver(createOfferFrontendSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      category: '',
-      payoutType: 'cpa',
-      currency: 'USD',
-      status: 'draft',
-      antifraudEnabled: true,
-      autoApprovePartners: false,
-    },
-  });
+  // Form removed - using OfferFormSimple component instead
 
   const filteredOffers = offers?.filter((offer: any) => {
     const matchesSearch = offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
