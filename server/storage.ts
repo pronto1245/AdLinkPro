@@ -13,7 +13,7 @@ import {
   type FraudBlock, type InsertFraudBlock
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte, count, sum, sql } from "drizzle-orm";
+import { eq, desc, and, gte, lte, count, sum, sql, isNotNull } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -1598,27 +1598,76 @@ export class DatabaseStorage implements IStorage {
 
   async getFraudAnalytics(period: string): Promise<any> {
     try {
-      // Mock fraud analytics data
+      const now = new Date();
+      let startDate: Date;
+      
+      switch (period) {
+        case '24h':
+          startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          break;
+        case '7d':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '30d':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case '90d':
+          startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      }
+
+      // Real fraud analytics from fraud_alerts table
+      const [totalAlerts] = await db
+        .select({ count: count() })
+        .from(fraudAlerts);
+        
+      const [recentAlerts] = await db
+        .select({ count: count() })
+        .from(fraudAlerts)
+        .where(gte(fraudAlerts.createdAt, startDate));
+
+      const [blockedUsers] = await db
+        .select({ count: count() })
+        .from(users)
+        .where(eq(users.isBlocked, true));
+
+      const [suspiciousIPs] = await db
+        .select({ count: count() })
+        .from(ipAnalysis)
+        .where(gte(ipAnalysis.riskScore, 70));
+
+      // Calculate fraud rate
+      const [totalUsers] = await db.select({ count: count() }).from(users);
+      const fraudRate = totalUsers.count > 0 ? 
+        ((blockedUsers.count / totalUsers.count) * 100).toFixed(1) : '0.0';
+
+      // Get recent security events from fraud_alerts
+      const securityEvents = await db
+        .select({
+          type: fraudAlerts.alertType,
+          description: fraudAlerts.description,
+          severity: fraudAlerts.severity,
+          timestamp: fraudAlerts.createdAt
+        })
+        .from(fraudAlerts)
+        .where(gte(fraudAlerts.createdAt, new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)))
+        .orderBy(desc(fraudAlerts.createdAt))
+        .limit(10);
+
       return {
-        totalAlerts: 15,
-        alertsChange: '-8.5%',
-        blockedUsers: 8,
-        suspiciousIPs: 12,
-        fraudRate: 2.3,
-        securityEvents: [
-          {
-            type: 'Suspicious Login',
-            description: 'Множественные попытки входа с разных IP',
-            severity: 'High',
-            timestamp: new Date()
-          },
-          {
-            type: 'Duplicate Conversion',
-            description: 'Подозрение на дублирование конверсий',
-            severity: 'Medium',
-            timestamp: new Date(Date.now() - 60000)
-          }
-        ]
+        totalAlerts: totalAlerts.count,
+        alertsChange: recentAlerts.count > 0 ? '+' + Math.round((recentAlerts.count / Math.max(totalAlerts.count - recentAlerts.count, 1)) * 100) + '%' : '0%',
+        blockedUsers: blockedUsers.count,
+        suspiciousIPs: suspiciousIPs.count,
+        fraudRate: parseFloat(fraudRate),
+        securityEvents: securityEvents.map(event => ({
+          type: event.type || 'Security Alert',
+          description: event.description || 'Обнаружена подозрительная активность',
+          severity: event.severity || 'medium',
+          timestamp: event.timestamp
+        }))
       };
     } catch (error) {
       console.error('Error getting fraud analytics:', error);
