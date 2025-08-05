@@ -424,12 +424,12 @@ export default function AnalyticsNew() {
   const visibleColumns = columns.filter(col => col.visible);
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+      <div className={`h-full flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
         <Header title="Аналитика" />
         <main className="flex-1 overflow-auto p-4">
-          <div className="space-y-4 w-full max-w-none">
+          <div className="space-y-4 max-w-full">
             {/* Header with title and controls */}
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border">
               <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3">
