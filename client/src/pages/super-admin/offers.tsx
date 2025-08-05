@@ -13,13 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { createOfferFrontendSchema } from '@shared/schema';
-import { z } from 'zod';
+// Removed unused form imports
 import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play, Shield } from 'lucide-react';
 import { useLocation } from 'wouter';
 
@@ -66,43 +60,7 @@ export default function OffersManagement() {
     },
   });
 
-  const createOfferMutation = useMutation({
-    mutationKey: ['createOffer'],
-    mutationFn: async (offerData: any) => {
-      console.log('Creating offer with data:', offerData);
-      
-      // Use standard fetch with explicit configuration
-      const fetchOptions = {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(offerData),
-      };
-      
-      const response = await window.fetch('/api/admin/offers', fetchOptions);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
-      }
-      
-      const result = await response.json();
-      console.log('Offer created successfully:', result);
-      return result;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
-      alert('Оффер успешно создан!');
-      setIsCreateDialogOpen(false);
-    },
-    onError: (error) => {
-      console.error('Create offer error:', error);
-      alert('Ошибка создания оффера: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'));
-    },
-  });
+  // Removed React Query mutation - using direct fetch instead
 
   const updateOfferStatusMutation = useMutation({
     mutationFn: async ({ offerId, status }: { offerId: string; status: string }) => {
@@ -200,9 +158,8 @@ export default function OffersManagement() {
                   <DialogHeader>
                     <DialogTitle>{t('create_new_offer')}</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={(e) => {
+                  <form onSubmit={async (e) => {
                       e.preventDefault();
-                      if (createOfferMutation.isPending) return;
                       
                       const formData = new FormData(e.target as HTMLFormElement);
                       const data = {
@@ -231,8 +188,33 @@ export default function OffersManagement() {
                         }] : []
                       };
                       
-                      console.log('Form data:', data);
-                      createOfferMutation.mutate(data);
+                      console.log('Submitting form data:', data);
+                      
+                      // Direct fetch call bypassing React Query
+                      try {
+                        const response = await fetch('/api/admin/offers', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`,
+                          },
+                          body: JSON.stringify(data),
+                        });
+                        
+                        if (!response.ok) {
+                          const errorText = await response.text();
+                          throw new Error(`HTTP ${response.status}: ${errorText}`);
+                        }
+                        
+                        const result = await response.json();
+                        console.log('Direct fetch success:', result);
+                        alert('Оффер успешно создан: ' + result.name);
+                        setIsCreateDialogOpen(false);
+                        queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
+                      } catch (error) {
+                        console.error('Direct fetch error:', error);
+                        alert('Ошибка: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'));
+                      }
                     }} className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium mb-1">Название оффера *</label>
@@ -352,8 +334,8 @@ export default function OffersManagement() {
                         <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                           {t('cancel')}
                         </Button>
-                        <Button type="submit" disabled={createOfferMutation.isPending} data-testid="button-submit-offer">
-                          {createOfferMutation.isPending ? 'Создание...' : 'Создать оффер'}
+                        <Button type="submit" data-testid="button-submit-offer">
+                          Создать оффер
                         </Button>
                       </div>
                   </form>

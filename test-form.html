@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Form</title>
+    <script>
+        async function testForm() {
+            const token = localStorage.getItem('auth_token');
+            const data = {
+                name: "Тест HTML формы",
+                category: "gambling",
+                status: "active",
+                payoutType: "cpa",
+                currency: "USD",
+                description_ru: "Тест описание",
+                description_en: "Test description",
+                antifraudEnabled: true,
+                autoApprovePartners: false
+            };
+            
+            try {
+                const response = await fetch('/api/admin/offers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(data),
+                });
+                
+                const result = await response.json();
+                console.log('Result:', result);
+                alert('Success: ' + JSON.stringify(result, null, 2));
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</head>
+<body>
+    <button onclick="testForm()">Test API</button>
+</body>
+</html>
