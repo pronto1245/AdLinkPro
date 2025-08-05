@@ -1,6 +1,6 @@
 import { 
   users, offers, partnerOffers, trackingLinks, trackingClicks, statistics, transactions, 
-  postbacks, postbackLogs, tickets, fraudAlerts, customRoles, userRoleAssignments,
+  postbacks, postbackLogs, postbackTemplates, tickets, fraudAlerts, customRoles, userRoleAssignments,
   cryptoWallets, cryptoTransactions, fraudReports, fraudRules, 
   deviceTracking, ipAnalysis, fraudBlocks,
   type User, type InsertUser, type Offer, type InsertOffer,
@@ -2778,6 +2778,8 @@ export class DatabaseStorage implements IStorage {
 
   async deletePostbackTemplate(id: string): Promise<void> {
     console.log(`DatabaseStorage: deleting postback template: ${id}`);
+    await db.delete(postbackTemplates).where(eq(postbackTemplates.id, id));
+    console.log(`DatabaseStorage: successfully deleted postback template: ${id}`);
   }
 
   // End of DatabaseStorage class
