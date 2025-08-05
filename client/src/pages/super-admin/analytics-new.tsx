@@ -185,6 +185,7 @@ const allColumns: ColumnConfig[] = [
   { key: 'ip', label: 'IP', visible: true, sortable: true, type: 'text', width: 120 },
   { key: 'offer', label: 'Оффер', visible: true, sortable: true, type: 'text', width: 150 },
   { key: 'countryFlag', label: 'Флаг страны', visible: true, sortable: true, type: 'text', width: 80 },
+  { key: 'country', label: 'Страна', visible: true, sortable: true, type: 'text', width: 100 },
   { key: 'region', label: 'Регион', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'city', label: 'Город', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'osLogo', label: 'Логотип ОС', visible: false, sortable: true, type: 'text', width: 80 },
@@ -537,9 +538,19 @@ export default function AnalyticsNew() {
   const formatCellValue = (value: any, type: ColumnConfig['type'], columnKey?: string) => {
     if (value === null || value === undefined) return '-';
     
-    // Special handling for country flag
-    if (columnKey === 'countryFlag' || columnKey === 'country') {
+    // Special handling for country flag - only show flag in countryFlag column
+    if (columnKey === 'countryFlag') {
       return <CountryFlag countryCode={value} />;
+    }
+    
+    // Special handling for country name - show full country name in country column
+    if (columnKey === 'country') {
+      const countryNames: { [key: string]: string } = {
+        'RU': 'Россия', 'US': 'США', 'DE': 'Германия', 'UA': 'Украина', 
+        'BY': 'Беларусь', 'KZ': 'Казахстан', 'GB': 'Великобритания', 
+        'FR': 'Франция', 'IT': 'Италия', 'ES': 'Испания'
+      };
+      return <span className="text-sm font-medium">{countryNames[value] || value}</span>;
     }
     
     // Special handling for OS logo

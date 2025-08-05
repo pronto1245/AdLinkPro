@@ -3100,8 +3100,8 @@ class MemStorage implements IStorage {
           ip: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
           ipMasked12: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.xxx.xxx`,
           ipMasked123: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.xxx`,
-          country: countries[Math.floor(Math.random() * countries.length)],
-          countryFlag: countries[Math.floor(Math.random() * countries.length)],
+          country: countries[Math.floor(Math.random() * countries.length)], // Country code for flag display
+          countryFlag: countries[Math.floor(Math.random() * countries.length)], // Same country code for flag
           region: `Region ${Math.floor(Math.random() * 20) + 1}`,
           city: `City ${Math.floor(Math.random() * 50) + 1}`,
           language: ['en', 'ru', 'de', 'fr', 'es'][Math.floor(Math.random() * 5)],
