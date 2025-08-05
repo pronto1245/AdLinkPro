@@ -39,6 +39,10 @@ export default function AdvertiserDashboard() {
     enabled: !!user
   });
 
+  // Типизированные данные с безопасными значениями по умолчанию
+  const dashboard = dashboardData as any || {};
+  const financial = financialData as any || {};
+
   if (isLoading) {
     return <div className="flex items-center justify-center h-64">Загрузка данных...</div>;
   }
@@ -75,7 +79,7 @@ export default function AdvertiserDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" data-testid="balance-amount">
-              ${financialData?.balance?.toFixed(2) || '0.00'}
+              ${financial.balance?.toFixed(2) || '0.00'}
             </div>
             <p className="text-xs text-muted-foreground">
               Доступно для выплат
@@ -90,10 +94,10 @@ export default function AdvertiserDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" data-testid="offers-count">
-              {dashboardData?.offersCount || 0}
+              {dashboard.offersCount || 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              {dashboardData?.activeOffers || 0} активных
+              {dashboard.activeOffers || 0} активных
             </p>
           </CardContent>
         </Card>
@@ -105,10 +109,10 @@ export default function AdvertiserDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" data-testid="partners-count">
-              {dashboardData?.partnersCount || 0}
+              {dashboard.partnersCount || 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              {dashboardData?.pendingApplications || 0} новых заявок
+              {dashboard.pendingApplications || 0} новых заявок
             </p>
           </CardContent>
         </Card>
@@ -120,16 +124,16 @@ export default function AdvertiserDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" data-testid="monthly-revenue">
-              ${dashboardData?.monthlyRevenue?.toFixed(2) || '0.00'}
+              ${dashboard.monthlyRevenue?.toFixed(2) || '0.00'}
             </div>
             <div className="flex items-center text-xs">
-              {dashboardData?.revenueGrowth >= 0 ? (
+              {dashboard.revenueGrowth >= 0 ? (
                 <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
               ) : (
                 <TrendingUp className="h-3 w-3 text-red-600 mr-1 rotate-180" />
               )}
-              <span className={dashboardData?.revenueGrowth >= 0 ? "text-green-600" : "text-red-600"}>
-                {Math.abs(dashboardData?.revenueGrowth || 0).toFixed(1)}%
+              <span className={dashboard.revenueGrowth >= 0 ? "text-green-600" : "text-red-600"}>
+                {Math.abs(dashboard.revenueGrowth || 0).toFixed(1)}%
               </span>
             </div>
           </CardContent>
@@ -197,7 +201,7 @@ export default function AdvertiserDashboard() {
                 <span className="text-sm">Новые заявки</span>
               </div>
               <Badge variant="destructive">
-                {dashboardData?.pendingApplications || 0}
+                {dashboard.pendingApplications || 0}
               </Badge>
             </div>
             <Link href="/advertiser/postbacks">
@@ -240,7 +244,7 @@ export default function AdvertiserDashboard() {
                 <span className="text-sm">Текущий баланс</span>
               </div>
               <span className="font-semibold text-green-600">
-                ${financialData?.balance?.toFixed(2) || '0.00'}
+                ${financial.balance?.toFixed(2) || '0.00'}
               </span>
             </div>
           </CardContent>
@@ -258,9 +262,9 @@ export default function AdvertiserDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {dashboardData?.recentOffers?.length > 0 ? (
+            {dashboard.recentOffers?.length > 0 ? (
               <div className="space-y-3">
-                {dashboardData.recentOffers.slice(0, 5).map((offer: any) => (
+                {dashboard.recentOffers.slice(0, 5).map((offer: any) => (
                   <div key={offer.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex-1">
                       <div className="font-medium text-sm">{offer.name}</div>
@@ -307,9 +311,9 @@ export default function AdvertiserDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {dashboardData?.recentActivity?.length > 0 ? (
+            {dashboard.recentActivity?.length > 0 ? (
               <div className="space-y-3">
-                {dashboardData.recentActivity.slice(0, 5).map((activity: any, index: number) => (
+                {dashboard.recentActivity.slice(0, 5).map((activity: any, index: number) => (
                   <div key={index} className="flex items-start space-x-3">
                     <div className="flex-shrink-0 mt-1">
                       {activity.type === 'offer_created' && <Plus className="h-4 w-4 text-green-600" />}
@@ -335,10 +339,8 @@ export default function AdvertiserDashboard() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
-}
 
+      {/* Быстрые действия */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
