@@ -6,8 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "./contexts/auth-context";
 import { LanguageProvider } from "./contexts/language-context";
 import { SidebarProvider } from "./contexts/sidebar-context";
-import NotFound from "@/pages/not-found";
-import Login from "@/pages/auth/login";
+import NotFound from "./pages/NotFound";
 import Dashboard from "@/pages/super-admin/dashboard";
 import SuperAdminUsers from "@/pages/super-admin/users";
 import SuperAdminUsersManagement from "@/pages/super-admin/users-management";
@@ -41,6 +40,8 @@ import PostbackManagementAffiliate from "@/pages/affiliate/PostbackManagement";
 import AdvertiserDashboardNew from "@/pages/advertiser/AdvertiserDashboard";
 import OfferManagement from "@/pages/advertiser/OfferManagement";
 import { useAuth } from "./contexts/auth-context";
+import Login from "@/pages/auth/login";
+
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
   const { user, loading } = useAuth();
