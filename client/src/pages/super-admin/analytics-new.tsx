@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format, subDays } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +14,7 @@ import { useSidebar } from '@/contexts/sidebar-context';
 import { useToast } from '@/hooks/use-toast';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
-import { Search, Download, Settings, Filter, RefreshCw, Eye, EyeOff, RotateCcw, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Download, Settings, Filter, RefreshCw, Eye, EyeOff, RotateCcw, Check, X, ChevronLeft, ChevronRight, GripVertical } from 'lucide-react';
 import OsLogo from '@/components/ui/os-logo';
 
 // Comprehensive analytics data interface with 100+ fields
@@ -343,6 +343,11 @@ export default function AnalyticsNew() {
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
+  
+  // Drag and drop state for column reordering
+  const [draggedColumn, setDraggedColumn] = useState<number | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<number | null>(null);
+  const dragCounterRef = useRef(0);
 
   // Quick filters
   const quickFilters = [
@@ -583,6 +588,91 @@ export default function AnalyticsNew() {
   };
 
   const visibleColumns = columns.filter(col => col.visible);
+
+  // Drag and drop handlers for column reordering
+  const handleColumnDragStart = (e: React.DragEvent, columnIndex: number) => {
+    setDraggedColumn(columnIndex);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.currentTarget.outerHTML);
+    dragCounterRef.current = 0;
+  };
+
+  const handleColumnDragOver = (e: React.DragEvent, columnIndex: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedColumn !== null && draggedColumn !== columnIndex) {
+      setDragOverColumn(columnIndex);
+    }
+  };
+
+  const handleColumnDragEnter = (e: React.DragEvent, columnIndex: number) => {
+    e.preventDefault();
+    dragCounterRef.current++;
+    if (draggedColumn !== null && draggedColumn !== columnIndex) {
+      setDragOverColumn(columnIndex);
+    }
+  };
+
+  const handleColumnDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounterRef.current--;
+    if (dragCounterRef.current === 0) {
+      setDragOverColumn(null);
+    }
+  };
+
+  const handleColumnDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    
+    if (draggedColumn === null || draggedColumn === dropIndex) {
+      setDraggedColumn(null);
+      setDragOverColumn(null);
+      dragCounterRef.current = 0;
+      return;
+    }
+
+    // Reorder visible columns
+    const newVisibleColumns = [...visibleColumns];
+    const draggedItem = newVisibleColumns[draggedColumn];
+    newVisibleColumns.splice(draggedColumn, 1);
+    newVisibleColumns.splice(dropIndex, 0, draggedItem);
+
+    // Update all columns maintaining visibility state
+    const newAllColumns = [...columns];
+    const visibleKeys = newVisibleColumns.map(col => col.key);
+    
+    // Reorder all columns based on new visible order
+    const reorderedColumns: ColumnConfig[] = [];
+    
+    // First add visible columns in their new order
+    visibleKeys.forEach(key => {
+      const column = newAllColumns.find(col => col.key === key);
+      if (column) reorderedColumns.push(column);
+    });
+    
+    // Then add hidden columns at the end
+    newAllColumns.forEach(col => {
+      if (!col.visible && !reorderedColumns.find(rc => rc.key === col.key)) {
+        reorderedColumns.push(col);
+      }
+    });
+
+    setColumns(reorderedColumns);
+    setDraggedColumn(null);
+    setDragOverColumn(null);
+    dragCounterRef.current = 0;
+
+    toast({
+      title: 'Колонки переупорядочены',
+      description: `Колонка "${draggedItem.label}" перемещена`,
+    });
+  };
+
+  const handleColumnDragEnd = () => {
+    setDraggedColumn(null);
+    setDragOverColumn(null);
+    dragCounterRef.current = 0;
+  };
 
   // Pagination helpers
   const goToPage = (page: number) => {
@@ -917,13 +1007,30 @@ export default function AnalyticsNew() {
                       <table className="w-full border-collapse">
                         <thead>
                           <tr className="border-b">
-                            {visibleColumns.map((column) => (
+                            {visibleColumns.map((column, columnIndex) => (
                               <th
                                 key={column.key}
-                                className="text-left p-2 font-medium text-sm whitespace-nowrap"
+                                draggable
+                                onDragStart={(e) => handleColumnDragStart(e, columnIndex)}
+                                onDragOver={(e) => handleColumnDragOver(e, columnIndex)}
+                                onDragEnter={(e) => handleColumnDragEnter(e, columnIndex)}
+                                onDragLeave={handleColumnDragLeave}
+                                onDrop={(e) => handleColumnDrop(e, columnIndex)}
+                                onDragEnd={handleColumnDragEnd}
+                                className={`text-left p-2 font-medium text-sm whitespace-nowrap cursor-grab active:cursor-grabbing transition-colors duration-200 ${
+                                  draggedColumn === columnIndex 
+                                    ? 'opacity-50 bg-blue-50 dark:bg-blue-900/20' 
+                                    : dragOverColumn === columnIndex 
+                                      ? 'bg-blue-100 dark:bg-blue-800/30 border-l-2 border-blue-500' 
+                                      : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                                }`}
                                 style={{ width: column.width }}
+                                title="Перетащите колонку для изменения порядка"
                               >
-                                {column.label}
+                                <div className="flex items-center gap-2">
+                                  <GripVertical className="w-3 h-3 text-gray-400 opacity-60" />
+                                  <span>{column.label}</span>
+                                </div>
                               </th>
                             ))}
                           </tr>
