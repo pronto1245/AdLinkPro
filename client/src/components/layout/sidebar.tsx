@@ -41,7 +41,7 @@ const menuItems: MenuItem[] = [
   { labelKey: 'sidebar.blacklist', href: '/admin/blacklist', icon: Ban, roles: ['super_admin'] },
   { labelKey: 'sidebar.auditLogs', href: '/admin/audit-logs', icon: History, roles: ['super_admin'] },
   { labelKey: 'sidebar.systemSettings', href: '/admin/system-settings', icon: Settings, roles: ['super_admin'] },
-  { labelKey: 'sidebar.analytics', href: '/admin/analytics', icon: BarChart3, roles: ['super_admin', 'advertiser', 'affiliate'] },
+  { labelKey: 'sidebar.analytics', href: '/super-admin/analytics', icon: BarChart3, roles: ['super_admin', 'advertiser', 'affiliate'] },
   { labelKey: 'sidebar.support', href: '/admin/support', icon: HeadphonesIcon, roles: ['super_admin', 'advertiser', 'affiliate'] },
 ];
 
