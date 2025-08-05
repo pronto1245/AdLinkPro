@@ -631,33 +631,35 @@ export default function AnalyticsNew() {
       return;
     }
 
-    // Reorder visible columns
+    // Get the dragged column data
+    const draggedItem = visibleColumns[draggedColumn];
+    
+    // Create new order of visible columns
     const newVisibleColumns = [...visibleColumns];
-    const draggedItem = newVisibleColumns[draggedColumn];
     newVisibleColumns.splice(draggedColumn, 1);
     newVisibleColumns.splice(dropIndex, 0, draggedItem);
 
-    // Update all columns maintaining visibility state
-    const newAllColumns = [...columns];
-    const visibleKeys = newVisibleColumns.map(col => col.key);
+    // Update the main columns array to reflect new order
+    const newColumns = [...columns];
     
-    // Reorder all columns based on new visible order
-    const reorderedColumns: ColumnConfig[] = [];
+    // Find current positions of visible columns in main array
+    const visiblePositions = visibleColumns.map(visCol => 
+      newColumns.findIndex(col => col.key === visCol.key)
+    );
     
-    // First add visible columns in their new order
-    visibleKeys.forEach(key => {
-      const column = newAllColumns.find(col => col.key === key);
-      if (column) reorderedColumns.push(column);
-    });
+    // Rearrange only the visible columns in their new order
+    const reorderedVisibleColumns = newVisibleColumns.map(visCol => 
+      newColumns.find(col => col.key === visCol.key)!
+    );
     
-    // Then add hidden columns at the end
-    newAllColumns.forEach(col => {
-      if (!col.visible && !reorderedColumns.find(rc => rc.key === col.key)) {
-        reorderedColumns.push(col);
+    // Replace visible columns in their original positions with reordered ones
+    visiblePositions.forEach((pos, index) => {
+      if (reorderedVisibleColumns[index]) {
+        newColumns[pos] = reorderedVisibleColumns[index];
       }
     });
 
-    setColumns(reorderedColumns);
+    setColumns(newColumns);
     setDraggedColumn(null);
     setDragOverColumn(null);
     dragCounterRef.current = 0;
@@ -1009,7 +1011,7 @@ export default function AnalyticsNew() {
                           <tr className="border-b">
                             {visibleColumns.map((column, columnIndex) => (
                               <th
-                                key={column.key}
+                                key={`${column.key}-${columnIndex}`}
                                 draggable
                                 onDragStart={(e) => handleColumnDragStart(e, columnIndex)}
                                 onDragOver={(e) => handleColumnDragOver(e, columnIndex)}
@@ -1038,8 +1040,8 @@ export default function AnalyticsNew() {
                         <tbody>
                           {analyticsData.map((row: any, index: number) => (
                             <tr key={row.id || index} className="border-b hover:bg-muted/50">
-                              {visibleColumns.map((column) => (
-                                <td key={column.key} className="p-2 text-sm whitespace-nowrap">
+                              {visibleColumns.map((column, colIndex) => (
+                                <td key={`${column.key}-${colIndex}-${row.id || index}`} className="p-2 text-sm whitespace-nowrap">
                                   {formatCellValue(row[column.key], column.type, column.key)}
                                 </td>
                               ))}
