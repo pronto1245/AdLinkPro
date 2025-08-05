@@ -234,11 +234,11 @@ export default function OfferDetails() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Info */}
                 <div className="lg:col-span-2">
-                  <Card className="border-l-4 border-l-blue-500 shadow-lg hover:shadow-xl transition-shadow">
-                    <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
-                      <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
                         <Eye className="h-5 w-5" />
-                        📋 Описание оффера
+                        Описание оффера
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -353,13 +353,13 @@ export default function OfferDetails() {
 
             {/* Links Tab */}
             <TabsContent value="links" className="space-y-6">
-              <Card className="border-l-4 border-l-green-500 shadow-lg hover:shadow-xl transition-shadow">
-                <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
-                  <CardTitle className="flex items-center gap-2 text-green-800 dark:text-green-200">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
                     <ExternalLink className="h-5 w-5" />
-                    🔗 Готовые трек-ссылки
+                    Готовые трек-ссылки
                   </CardTitle>
-                  <CardDescription className="text-green-700 dark:text-green-300">
+                  <CardDescription>
                     Готовые ссылки для каждого лендинга. Просто скопируйте и используйте.
                   </CardDescription>
                 </CardHeader>
@@ -468,35 +468,35 @@ export default function OfferDetails() {
             {/* Info Tab */}
             <TabsContent value="info" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="border-l-4 border-l-purple-500 shadow-lg hover:shadow-xl transition-shadow">
-                  <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
-                    <CardTitle className="flex items-center gap-2 text-purple-800 dark:text-purple-200">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
                       <Activity className="h-5 w-5" />
-                      📊 Статистика
+                      Статистика
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
-                        <p className="text-sm text-purple-700 dark:text-purple-300">Статистика недоступна</p>
-                        <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">Данные появятся после первых переходов</p>
+                      <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Статистика недоступна</p>
+                        <p className="text-xs text-gray-500 mt-1">Данные появятся после первых переходов</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-purple-500 shadow-lg hover:shadow-xl transition-shadow">
-                  <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
-                    <CardTitle className="flex items-center gap-2 text-purple-800 dark:text-purple-200">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
                       <TrendingUp className="h-5 w-5" />
-                      📈 Производительность
+                      Производительность
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
-                        <p className="text-sm text-purple-700 dark:text-purple-300">Данные о производительности</p>
-                        <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">Аналитика будет доступна после активности</p>
+                      <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Данные о производительности</p>
+                        <p className="text-xs text-gray-500 mt-1">Аналитика будет доступна после активности</p>
                       </div>
                     </div>
                   </CardContent>
