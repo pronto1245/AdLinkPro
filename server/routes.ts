@@ -1470,10 +1470,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           await storage.deleteOffer(offerId);
           deletedOffers.push(offerId);
+          console.log(`Successfully deleted offer: ${offerId}`);
         } catch (error) {
           console.error(`Error deleting offer ${offerId}:`, error);
         }
       }
+
+      // Очищаем кеш после массового удаления
+      queryCache.clear();
 
       res.json({ 
         success: true, 
