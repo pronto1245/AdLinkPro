@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Copy, ExternalLink, Settings, Eye, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/auth-context";
 import { apiRequest } from "@/lib/queryClient";
 import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
 
@@ -25,6 +26,7 @@ interface PartnerOffer {
   baseUrl: string;
   kpiConditions: any;
   countries: any;
+  landingPages: any[];
   createdAt: string;
 }
 
@@ -39,6 +41,7 @@ export default function PartnerOffers() {
   const [customSubId, setCustomSubId] = useState("");
   const [selectedOffer, setSelectedOffer] = useState<string>("");
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   // Fetch partner offers with auto-generated links
@@ -50,10 +53,7 @@ export default function PartnerOffers() {
   // Generate custom partner link
   const generateLinkMutation = useMutation({
     mutationFn: async ({ offerId, subId }: { offerId: string; subId?: string }) => {
-      return apiRequest("/api/partner/generate-link", {
-        method: "POST",
-        body: { offerId, subId },
-      });
+      return apiRequest("/api/partner/generate-link", "POST", { offerId, subId });
     },
     onSuccess: (data) => {
       toast({
@@ -293,9 +293,77 @@ function OfferCard({ offer, copyToClipboard }: OfferCardProps) {
           </span>
         </div>
 
-        {offer.partnerLink && (
+        {/* Лендинги с готовыми трек-ссылками */}
+        {offer.landingPages && Array.isArray(offer.landingPages) && offer.landingPages.length > 0 && (
+          <div className="space-y-3">
+            <label className="text-sm font-medium flex items-center gap-2">
+              <ExternalLink className="h-4 w-4" />
+              Лендинги с готовыми трек-ссылками:
+            </label>
+            <div className="space-y-3">
+              {offer.landingPages.map((landing: any, index: number) => (
+                <div key={index} className="border rounded-lg p-3 space-y-2 bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{landing.name || `Лендинг ${index + 1}`}</span>
+                    {landing.payout && (
+                      <Badge variant="secondary" className="text-xs">
+                        {landing.payout} {offer.currency}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {landing.description && (
+                    <p className="text-xs text-muted-foreground">{landing.description}</p>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <div className="text-xs text-muted-foreground">Готовая трек-ссылка:</div>
+                    <div className="flex gap-2">
+                      <Input
+                        value={`https://track.platform.com/click/${offer.id}/${index}?partner=${user?.id || 'PARTNER_ID'}&subid=YOUR_SUBID`}
+                        readOnly
+                        className="text-xs"
+                        data-testid={`input-landing-link-${offer.id}-${index}`}
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyToClipboard(
+                          `https://track.platform.com/click/${offer.id}/${index}?partner=${user?.id || 'PARTNER_ID'}&subid=YOUR_SUBID`,
+                          "Трек-ссылка"
+                        )}
+                        data-testid={`button-copy-landing-link-${offer.id}-${index}`}
+                        title="Копировать трек-ссылку"
+                      >
+                        <Copy className="h-4 w-4 text-blue-600" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.open(landing.url || `https://track.platform.com/click/${offer.id}/${index}?partner=${user?.id || 'PARTNER_ID'}`, '_blank')}
+                        data-testid={`button-open-landing-${offer.id}-${index}`}
+                        title="Открыть лендинг"
+                      >
+                        <ExternalLink className="h-4 w-4 text-green-600" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {landing.geo && (
+                    <div className="text-xs text-muted-foreground">
+                      <strong>Гео:</strong> {Array.isArray(landing.geo) ? landing.geo.join(', ') : landing.geo}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Альтернативная основная ссылка если нет лендингов */}
+        {(!offer.landingPages || !Array.isArray(offer.landingPages) || offer.landingPages.length === 0) && offer.partnerLink && (
           <div className="space-y-2">
-            <label className="text-sm font-medium">Автоматическая партнерская ссылка:</label>
+            <label className="text-sm font-medium">Основная трек-ссылка:</label>
             <div className="flex gap-2">
               <Input
                 value={offer.partnerLink}
