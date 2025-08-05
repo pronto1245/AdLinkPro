@@ -268,7 +268,6 @@ const allColumns: ColumnConfig[] = [
   // Network and device
   { key: 'operator', label: 'Оператор', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'provider', label: 'Провайдер', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'country', label: 'Страна', visible: true, sortable: true, type: 'text', width: 80 },
   { key: 'language', label: 'Язык', visible: false, sortable: true, type: 'text', width: 80 },
   { key: 'userAgent', label: 'User Agent', visible: false, sortable: true, type: 'text', width: 200 },
   { key: 'os', label: 'Операционная система', visible: false, sortable: true, type: 'text', width: 150 },
@@ -330,13 +329,18 @@ export default function AnalyticsNew() {
   const { isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
 
+  // Remove duplicate columns by key
+  const uniqueColumns = allColumns.filter((column, index, self) => 
+    index === self.findIndex(c => c.key === column.key)
+  );
+
   // State management
   const [selectedTab, setSelectedTab] = useState('table');
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 7), 'yyyy-MM-dd'));
   const [dateTo, setDateTo] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [quickFilter, setQuickFilter] = useState('all');
-  const [columns, setColumns] = useState<ColumnConfig[]>(allColumns);
+  const [columns, setColumns] = useState<ColumnConfig[]>(uniqueColumns);
   const [sortConfig, setSortConfig] = useState<{ key: keyof AnalyticsData; direction: 'asc' | 'desc' } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
