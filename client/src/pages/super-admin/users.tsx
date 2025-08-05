@@ -103,25 +103,25 @@ export default function UsersManagement() {
     telegram: true
   });
 
-  const form = useForm<z.infer<typeof createUserSchema>>({
+  const form = useForm({
     resolver: zodResolver(createUserSchema),
     defaultValues: {
       username: '',
       email: '',
       password: '',
-      role: 'affiliate',
+      role: 'affiliate' as const,
       firstName: '',
       lastName: '',
       company: '',
       phone: '',
       country: '',
-      language: 'en',
+      language: 'en' as const,
       timezone: 'UTC',
       currency: 'USD',
-      kycStatus: 'pending',
+      kycStatus: 'pending' as const,
       isActive: true,
-      status: 'active',
-      userType: 'affiliate'
+      status: 'active' as const,
+      userType: 'affiliate' as const
     },
   });
 
