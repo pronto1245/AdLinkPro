@@ -55,6 +55,142 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+// Translations for the roles management page
+const translations = {
+  ru: {
+    rolesManagement: "Управление ролями",
+    rolesDescription: "Создание и настройка пользовательских ролей с правами доступа",
+    createRole: "Создать роль",
+    totalRoles: "Всего ролей",
+    globalRoles: "Глобальные роли",
+    advertiserRoles: "Роли рекламодателей",
+    activeRoles: "Активные роли",
+    searchPlaceholder: "Поиск ролей...",
+    allRoles: "Все роли",
+    global: "Глобальные",
+    advertiser: "Рекламодателей",
+    name: "Название",
+    description: "Описание",
+    scope: "Область действия",
+    permissions: "Права доступа",
+    restrictions: "Ограничения",
+    assignedUsers: "Назначенные пользователи",
+    status: "Статус",
+    actions: "Действия",
+    view: "Просмотр",
+    edit: "Редактировать",
+    delete: "Удалить",
+    active: "Активна",
+    inactive: "Неактивна",
+    globalRole: "Глобальная",
+    advertiserRole: "Рекламодателя",
+    ipRestrictions: "IP ограничения",
+    geoRestrictions: "Гео ограничения",
+    timeRestrictions: "Временные ограничения",
+    noRoles: "Роли не найдены",
+    noRolesDescription: "Роли, соответствующие критериям поиска, не найдены.",
+    roleCreated: "Роль создана",
+    roleCreatedDescription: "Новая роль успешно создана",
+    roleUpdated: "Роль обновлена",
+    roleUpdatedDescription: "Роль успешно обновлена",
+    roleDeleted: "Роль удалена",
+    roleDeletedDescription: "Роль успешно удалена",
+    permissionCategories: {
+      analytics: "Аналитика",
+      offers: "Офферы",
+      users: "Пользователи",
+      finances: "Финансы",
+      api: "API",
+      security: "Безопасность",
+      system: "Система"
+    },
+    permissionNames: {
+      view_statistics: "Просмотр статистики",
+      manage_offers: "Управление офферами",
+      manage_users: "Управление пользователями",
+      access_finances: "Доступ к финансам",
+      manage_postbacks: "Управление постбеками / API",
+      view_fraud_alerts: "Просмотр фрод-алертов",
+      manage_system: "Управление системой"
+    },
+    permissionDescriptions: {
+      view_statistics: "Доступ к просмотру аналитики и отчетов",
+      manage_offers: "Создание, редактирование и удаление офферов",
+      manage_users: "Создание, редактирование и управление пользователями",
+      access_finances: "Просмотр и управление финансовыми операциями",
+      manage_postbacks: "Настройка постбеков и API интеграций",
+      view_fraud_alerts: "Доступ к системе обнаружения мошенничества",
+      manage_system: "Доступ к системным настройкам"
+    }
+  },
+  en: {
+    rolesManagement: "Roles Management",
+    rolesDescription: "Create and configure user roles with access permissions",
+    createRole: "Create Role",
+    totalRoles: "Total Roles",
+    globalRoles: "Global Roles",
+    advertiserRoles: "Advertiser Roles",
+    activeRoles: "Active Roles",
+    searchPlaceholder: "Search roles...",
+    allRoles: "All Roles",
+    global: "Global",
+    advertiser: "Advertiser",
+    name: "Name",
+    description: "Description",
+    scope: "Scope",
+    permissions: "Permissions",
+    restrictions: "Restrictions",
+    assignedUsers: "Assigned Users",
+    status: "Status",
+    actions: "Actions",
+    view: "View",
+    edit: "Edit",
+    delete: "Delete",
+    active: "Active",
+    inactive: "Inactive",
+    globalRole: "Global",
+    advertiserRole: "Advertiser",
+    ipRestrictions: "IP Restrictions",
+    geoRestrictions: "Geo Restrictions",
+    timeRestrictions: "Time Restrictions",
+    noRoles: "No roles found",
+    noRolesDescription: "No roles matching the search criteria were found.",
+    roleCreated: "Role Created",
+    roleCreatedDescription: "New role successfully created",
+    roleUpdated: "Role Updated",
+    roleUpdatedDescription: "Role successfully updated",
+    roleDeleted: "Role Deleted",
+    roleDeletedDescription: "Role successfully deleted",
+    permissionCategories: {
+      analytics: "Analytics",
+      offers: "Offers",
+      users: "Users",
+      finances: "Finances",
+      api: "API",
+      security: "Security",
+      system: "System"
+    },
+    permissionNames: {
+      view_statistics: "View Statistics",
+      manage_offers: "Manage Offers",
+      manage_users: "Manage Users",
+      access_finances: "Access Finances",
+      manage_postbacks: "Manage Postbacks / API",
+      view_fraud_alerts: "View Fraud Alerts",
+      manage_system: "Manage System"
+    },
+    permissionDescriptions: {
+      view_statistics: "Access to view analytics and reports",
+      manage_offers: "Create, edit and delete offers",
+      manage_users: "Create, edit and manage users",
+      access_finances: "View and manage financial operations",
+      manage_postbacks: "Configure postbacks and API integrations",
+      view_fraud_alerts: "Access to fraud detection system",
+      manage_system: "Access to system settings"
+    }
+  }
+};
+
 interface CustomRole {
   id: string;
   name: string;
@@ -137,6 +273,7 @@ export default function RolesManagement() {
   const { toast } = useToast();
   const { isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
+  const tr = translations[language as keyof typeof translations];
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterScope, setFilterScope] = useState('all'); // all, global, advertiser
@@ -198,8 +335,8 @@ export default function RolesManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Роль создана",
-        description: "Новая роль успешно создана"
+        title: tr.roleCreated,
+        description: tr.roleCreatedDescription
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/roles'] });
       setShowCreateDialog(false);
@@ -214,8 +351,8 @@ export default function RolesManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Роль обновлена",
-        description: "Роль успешно обновлена"
+        title: tr.roleUpdated,
+        description: tr.roleUpdatedDescription
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/roles'] });
       setShowEditDialog(false);
@@ -229,8 +366,8 @@ export default function RolesManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Роль удалена",
-        description: "Роль успешно удалена"
+        title: tr.roleDeleted,
+        description: tr.roleDeletedDescription
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/roles'] });
     }
@@ -313,23 +450,23 @@ export default function RolesManagement() {
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
         isCollapsed ? 'ml-0 lg:ml-16' : 'ml-0 lg:ml-64'
       }`}>
-        <Header title="Управление ролями" />
+        <Header title={tr.rolesManagement} />
         <main className="flex-1 overflow-auto">
           <div className="space-y-6 p-4 sm:p-6 max-w-full">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  Управление ролями
+                  {tr.rolesManagement}
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-base">
-                  Создание и настройка пользовательских ролей с правами доступа
+                  {tr.rolesDescription}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button onClick={() => setShowCreateDialog(true)}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Создать роль
+                  {tr.createRole}
                 </Button>
               </div>
             </div>
@@ -339,7 +476,7 @@ export default function RolesManagement() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Всего ролей
+                    {tr.totalRoles}
                   </CardTitle>
                   <Shield className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
@@ -353,7 +490,7 @@ export default function RolesManagement() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Глобальные роли
+                    {tr.globalRoles}
                   </CardTitle>
                   <Globe className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
@@ -367,7 +504,7 @@ export default function RolesManagement() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Роли рекламодателей
+                    {tr.advertiserRoles}
                   </CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
@@ -381,7 +518,7 @@ export default function RolesManagement() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Активные роли
+                    {tr.activeRoles}
                   </CardTitle>
                   <Shield className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
@@ -400,7 +537,7 @@ export default function RolesManagement() {
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                     <Input
-                      placeholder="Поиск ролей..."
+                      placeholder={tr.searchPlaceholder}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -412,15 +549,15 @@ export default function RolesManagement() {
                       <SelectValue placeholder="Область действия" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Все роли</SelectItem>
-                      <SelectItem value="global">Глобальные</SelectItem>
-                      <SelectItem value="advertiser">Рекламодатели</SelectItem>
+                      <SelectItem value="all">{tr.allRoles}</SelectItem>
+                      <SelectItem value="global">{tr.global}</SelectItem>
+                      <SelectItem value="advertiser">{tr.advertiser}</SelectItem>
                     </SelectContent>
                   </Select>
 
                   <Button variant="outline" onClick={() => refetch()}>
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Обновить
+                    {language === 'ru' ? 'Обновить' : 'Refresh'}
                   </Button>
                 </div>
               </CardContent>
@@ -433,14 +570,14 @@ export default function RolesManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Название роли</TableHead>
-                        <TableHead>Описание</TableHead>
-                        <TableHead>Область действия</TableHead>
-                        <TableHead>Права доступа</TableHead>
-                        <TableHead>Ограничения</TableHead>
-                        <TableHead>Пользователи</TableHead>
-                        <TableHead>Статус</TableHead>
-                        <TableHead className="text-right">Действия</TableHead>
+                        <TableHead>{tr.name}</TableHead>
+                        <TableHead>{tr.description}</TableHead>
+                        <TableHead>{tr.scope}</TableHead>
+                        <TableHead>{tr.permissions}</TableHead>
+                        <TableHead>{tr.restrictions}</TableHead>
+                        <TableHead>{tr.assignedUsers}</TableHead>
+                        <TableHead>{tr.status}</TableHead>
+                        <TableHead className="text-right">{tr.actions}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -449,14 +586,14 @@ export default function RolesManagement() {
                           <TableCell colSpan={8} className="text-center py-8">
                             <div className="flex items-center justify-center">
                               <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                              Загрузка...
+                              {language === 'ru' ? 'Загрузка...' : 'Loading...'}
                             </div>
                           </TableCell>
                         </TableRow>
                       ) : rolesData?.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={8} className="text-center py-8">
-                            Роли не найдены
+                            {tr.noRoles}
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -482,7 +619,7 @@ export default function RolesManagement() {
                                 variant={role.advertiserId ? 'secondary' : 'default'}
                                 className={role.advertiserId ? 'bg-orange-100 text-orange-800 border-orange-200' : 'bg-blue-100 text-blue-800 border-blue-200'}
                               >
-                                {role.advertiserId ? 'Рекламодатель' : 'Глобальная'}
+                                {role.advertiserId ? tr.advertiserRole : tr.globalRole}
                               </Badge>
                               {role.advertiserName && (
                                 <div className="text-xs text-muted-foreground mt-1">
@@ -568,7 +705,7 @@ export default function RolesManagement() {
                                   role.isActive ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'
                                 }`}
                               >
-                                {role.isActive ? 'Активна' : 'Неактивна'}
+                                {role.isActive ? tr.active : tr.inactive}
                               </Badge>
                             </TableCell>
 
@@ -585,18 +722,18 @@ export default function RolesManagement() {
                                     setShowViewDialog(true);
                                   }}>
                                     <Eye className="mr-2 h-4 w-4" />
-                                    Просмотр
+                                    {tr.view}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleEditRole(role)}>
                                     <Edit className="mr-2 h-4 w-4" />
-                                    Редактировать
+                                    {tr.edit}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     onClick={() => deleteRoleMutation.mutate(role.id)}
                                     className="text-red-600"
                                   >
                                     <Trash2 className="mr-2 h-4 w-4" />
-                                    Удалить
+                                    {tr.delete}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -614,7 +751,7 @@ export default function RolesManagement() {
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
               <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Создать новую роль</DialogTitle>
+                  <DialogTitle>{tr.createRole}</DialogTitle>
                 </DialogHeader>
                 
                 <div className="space-y-6">
