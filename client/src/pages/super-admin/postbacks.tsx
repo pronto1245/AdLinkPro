@@ -147,10 +147,7 @@ export default function PostbacksPage() {
   // Create postback mutation
   const createPostbackMutation = useMutation({
     mutationFn: async (data: Partial<PostbackTemplate>) => {
-      return apiRequest('/api/admin/postback-templates', {
-        method: 'POST',
-        body: JSON.stringify(data)
-      });
+      return apiRequest('/api/admin/postback-templates', 'POST', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ predicate: (query) => 
@@ -167,10 +164,7 @@ export default function PostbacksPage() {
   // Update postback mutation
   const updatePostbackMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string, data: Partial<PostbackTemplate> }) => {
-      return apiRequest(`/api/admin/postback-templates/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data)
-      });
+      return apiRequest(`/api/admin/postback-templates/${id}`, 'PATCH', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ predicate: (query) => 
@@ -187,9 +181,7 @@ export default function PostbacksPage() {
   // Delete postback mutation
   const deletePostbackMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest(`/api/admin/postback-templates/${id}`, {
-        method: 'DELETE'
-      });
+      return apiRequest(`/api/admin/postback-templates/${id}`, 'DELETE');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ predicate: (query) => 
@@ -206,9 +198,7 @@ export default function PostbacksPage() {
   // Retry postback mutation
   const retryPostbackMutation = useMutation({
     mutationFn: async (logId: string) => {
-      return apiRequest(`/api/admin/postback-logs/${logId}/retry`, {
-        method: 'POST'
-      });
+      return apiRequest(`/api/admin/postback-logs/${logId}/retry`, 'POST');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/postback-logs'] });
@@ -283,7 +273,7 @@ export default function PostbacksPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className={`transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
-        <Header />
+        <Header title="Постбеки" breadcrumbs={[]} />
         <main className="p-6">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Постбеки</h1>
@@ -926,7 +916,7 @@ function PostbackForm({
           <Label htmlFor="postback-level">Уровень</Label>
           <Select 
             value={formData.level} 
-            onValueChange={(value) => setFormData(prev => ({ ...prev, level: value }))}
+            onValueChange={(value: 'global' | 'offer') => setFormData(prev => ({ ...prev, level: value }))}
           >
             <SelectTrigger id="postback-level" data-testid="postback-level-select">
               <SelectValue placeholder="Выберите уровень" />
