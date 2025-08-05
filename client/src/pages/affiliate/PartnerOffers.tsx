@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, ExternalLink, Settings, Eye, CheckCircle } from "lucide-react";
+import { Copy, ExternalLink, Eye, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
-import { apiRequest } from "@/lib/queryClient";
 import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
 
 interface PartnerOffer {
@@ -30,46 +29,14 @@ interface PartnerOffer {
   createdAt: string;
 }
 
-interface GeneratedLink {
-  offerId: string;
-  partnerLink: string;
-  baseUrl: string;
-  generatedAt: string;
-}
-
 export default function PartnerOffers() {
-  const [customSubId, setCustomSubId] = useState("");
-  const [selectedOffer, setSelectedOffer] = useState<string>("");
   const { toast } = useToast();
   const { user } = useAuth();
-  const queryClient = useQueryClient();
 
   // Fetch partner offers with auto-generated links
   const { data: offers = [], isLoading } = useQuery({
     queryKey: ["/api/partner/offers"],
     staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  // Generate custom partner link
-  const generateLinkMutation = useMutation({
-    mutationFn: async ({ offerId, subId }: { offerId: string; subId?: string }) => {
-      return apiRequest("/api/partner/generate-link", "POST", { offerId, subId });
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Ссылка сгенерирована",
-        description: "Партнерская ссылка успешно создана",
-      });
-      // Copy to clipboard
-      navigator.clipboard.writeText((data as any).partnerLink);
-    },
-    onError: (error) => {
-      toast({
-        title: "Ошибка",
-        description: error instanceof Error ? error.message : "Не удалось сгенерировать ссылку",
-        variant: "destructive",
-      });
-    },
   });
 
   const copyToClipboard = (text: string, label: string) => {
@@ -80,42 +47,41 @@ export default function PartnerOffers() {
     });
   };
 
-  const handleGenerateLink = () => {
-    if (!selectedOffer) {
-      toast({
-        title: "Ошибка",
-        description: "Выберите оффер для генерации ссылки",
-        variant: "destructive",
-      });
-      return;
-    }
-    generateLinkMutation.mutate({ 
-      offerId: selectedOffer, 
-      subId: customSubId || undefined 
-    });
-  };
-
-  const approvedOffers = Array.isArray(offers) ? offers.filter((offer: PartnerOffer) => offer.isApproved) : [];
-  const publicOffers = Array.isArray(offers) ? offers.filter((offer: PartnerOffer) => !offer.isApproved) : [];
-
   if (isLoading) {
     return (
       <RoleBasedLayout>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 rounded"></div>
-                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="space-y-6">
+          <div className="flex items-center space-x-4">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary"></div>
+            <p>Загрузка офферов...</p>
+          </div>
+        </div>
+      </RoleBasedLayout>
+    );
+  }
+
+  const approvedOffers = offers.filter((offer: PartnerOffer) => offer.isApproved);
+  const publicOffers = offers.filter((offer: PartnerOffer) => !offer.isApproved);
+
+  if (!offers || offers.length === 0) {
+    return (
+      <RoleBasedLayout>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold">Партнерские офферы</h1>
+              <p className="text-muted-foreground">
+                Готовые трек-ссылки для каждого лендинга
+              </p>
+            </div>
+          </div>
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-muted-foreground">
+                Пока нет доступных офферов. Обратитесь к рекламодателю для получения доступа.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </RoleBasedLayout>
     );
@@ -124,106 +90,74 @@ export default function PartnerOffers() {
   return (
     <RoleBasedLayout>
       <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Партнерские офферы</h1>
-          <p className="text-muted-foreground">
-            Автоматическая генерация персональных ссылок для каждого оффера
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold">Партнерские офферы</h1>
+            <p className="text-muted-foreground">
+              Готовые трек-ссылки под каждым лендингом оффера
+            </p>
+          </div>
+          <Badge variant="outline">{offers.length} доступных офферов</Badge>
         </div>
-        <Badge variant="outline">{Array.isArray(offers) ? offers.length : 0} доступных офферов</Badge>
-      </div>
 
-      {/* Custom Link Generator */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Генератор персональных ссылок
-          </CardTitle>
-          <CardDescription>
-            Создавайте кастомные ссылки с собственными SubID для отслеживания кампаний
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-4">
-            <select
-              className="flex-1 p-2 border rounded-md"
-              value={selectedOffer}
-              onChange={(e) => setSelectedOffer(e.target.value)}
-              data-testid="select-offer"
-            >
-              <option value="">Выберите оффер</option>
-              {Array.isArray(offers) ? offers.map((offer: PartnerOffer) => (
-                <option key={offer.id} value={offer.id}>
-                  {offer.name} ({offer.payout} {offer.currency})
-                </option>
-              )) : null}
-            </select>
-            <Input
-              placeholder="Кастомный SubID (опционально)"
-              value={customSubId}
-              onChange={(e) => setCustomSubId(e.target.value)}
-              className="flex-1"
-              data-testid="input-subid"
-            />
-            <Button 
-              onClick={handleGenerateLink}
-              disabled={generateLinkMutation.isPending || !selectedOffer}
-              data-testid="button-generate-link"
-            >
-              {generateLinkMutation.isPending ? "Генерация..." : "Создать ссылку"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ExternalLink className="h-5 w-5" />
+              Готовые трек-ссылки
+            </CardTitle>
+            <CardDescription>
+              Все ссылки уже сгенерированы под каждым лендингом. Просто скопируйте нужную ссылку.
+            </CardDescription>
+          </CardHeader>
+        </Card>
 
-      <Tabs defaultValue="approved" className="w-full">
-        <TabsList>
-          <TabsTrigger value="approved" className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4" />
-            Одобренные ({approvedOffers.length})
-          </TabsTrigger>
-          <TabsTrigger value="public" className="flex items-center gap-2">
-            <Eye className="h-4 w-4" />
-            Публичные ({publicOffers.length})
-          </TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="approved" className="w-full">
+          <TabsList>
+            <TabsTrigger value="approved" className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Одобренные ({approvedOffers.length})
+            </TabsTrigger>
+            <TabsTrigger value="public" className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              Публичные ({publicOffers.length})
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="approved" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {approvedOffers.map((offer: PartnerOffer) => (
-              <OfferCard key={offer.id} offer={offer} copyToClipboard={copyToClipboard} />
-            ))}
-          </div>
-          {approvedOffers.length === 0 && (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">
-                  У вас пока нет одобренных офферов. Обратитесь к рекламодателю для получения доступа.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
+          <TabsContent value="approved" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {approvedOffers.map((offer: PartnerOffer) => (
+                <OfferCard key={offer.id} offer={offer} copyToClipboard={copyToClipboard} user={user} />
+              ))}
+            </div>
+            {approvedOffers.length === 0 && (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <p className="text-muted-foreground">
+                    У вас пока нет одобренных офферов. Обратитесь к рекламодателю для получения доступа.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
-        <TabsContent value="public" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {publicOffers.map((offer: PartnerOffer) => (
-              <OfferCard key={offer.id} offer={offer} copyToClipboard={copyToClipboard} />
-            ))}
-          </div>
-          {publicOffers.length === 0 && (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">
-                  Публичные офферы недоступны.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="public" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {publicOffers.map((offer: PartnerOffer) => (
+                <OfferCard key={offer.id} offer={offer} copyToClipboard={copyToClipboard} user={user} />
+              ))}
+            </div>
+            {publicOffers.length === 0 && (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <p className="text-muted-foreground">
+                    Публичные офферы недоступны.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </RoleBasedLayout>
   );
@@ -232,9 +166,10 @@ export default function PartnerOffers() {
 interface OfferCardProps {
   offer: PartnerOffer;
   copyToClipboard: (text: string, label: string) => void;
+  user: any;
 }
 
-function OfferCard({ offer, copyToClipboard }: OfferCardProps) {
+function OfferCard({ offer, copyToClipboard, user }: OfferCardProps) {
   const getPayoutTypeLabel = (type: string) => {
     const types: Record<string, string> = {
       cpa: "CPA",
@@ -294,10 +229,10 @@ function OfferCard({ offer, copyToClipboard }: OfferCardProps) {
         </div>
 
         {/* Лендинги с готовыми трек-ссылками */}
-        {offer.landingPages && Array.isArray(offer.landingPages) && offer.landingPages.length > 0 && (
+        {offer.landingPages && Array.isArray(offer.landingPages) && offer.landingPages.length > 0 ? (
           <div className="space-y-3">
             <label className="text-sm font-medium flex items-center gap-2">
-              <ExternalLink className="h-4 w-4" />
+              <ExternalLink className="h-4 w-4 text-blue-600" />
               Лендинги с готовыми трек-ссылками:
             </label>
             <div className="space-y-3">
@@ -358,36 +293,40 @@ function OfferCard({ offer, copyToClipboard }: OfferCardProps) {
               ))}
             </div>
           </div>
-        )}
-
-        {/* Альтернативная основная ссылка если нет лендингов */}
-        {(!offer.landingPages || !Array.isArray(offer.landingPages) || offer.landingPages.length === 0) && offer.partnerLink && (
+        ) : (
+          /* Основная трек-ссылка если нет лендингов */
           <div className="space-y-2">
-            <label className="text-sm font-medium">Основная трек-ссылка:</label>
+            <label className="text-sm font-medium flex items-center gap-2">
+              <ExternalLink className="h-4 w-4 text-blue-600" />
+              Основная трек-ссылка:
+            </label>
             <div className="flex gap-2">
               <Input
-                value={offer.partnerLink}
+                value={`https://track.platform.com/click/${offer.id}?partner=${user?.id || 'PARTNER_ID'}&subid=YOUR_SUBID`}
                 readOnly
                 className="text-xs"
-                data-testid={`input-partner-link-${offer.id}`}
+                data-testid={`input-main-link-${offer.id}`}
               />
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => copyToClipboard(offer.partnerLink, "Партнерская ссылка")}
-                data-testid={`button-copy-link-${offer.id}`}
+                onClick={() => copyToClipboard(
+                  `https://track.platform.com/click/${offer.id}?partner=${user?.id || 'PARTNER_ID'}&subid=YOUR_SUBID`,
+                  "Основная ссылка"
+                )}
+                data-testid={`button-copy-main-link-${offer.id}`}
                 title="Копировать ссылку"
               >
-                <Copy className="h-4 w-4" />
+                <Copy className="h-4 w-4 text-blue-600" />
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => window.open(offer.partnerLink, '_blank')}
-                data-testid={`button-open-link-${offer.id}`}
+                onClick={() => window.open(`https://track.platform.com/click/${offer.id}?partner=${user?.id || 'PARTNER_ID'}`, '_blank')}
+                data-testid={`button-open-main-link-${offer.id}`}
                 title="Открыть ссылку"
               >
-                <ExternalLink className="h-4 w-4" />
+                <ExternalLink className="h-4 w-4 text-green-600" />
               </Button>
             </div>
           </div>
@@ -408,4 +347,3 @@ function OfferCard({ offer, copyToClipboard }: OfferCardProps) {
     </Card>
   );
 }
-
