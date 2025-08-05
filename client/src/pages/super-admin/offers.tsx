@@ -214,137 +214,155 @@ export default function OffersManagement() {
                   <DialogHeader>
                     <DialogTitle>{t('create_new_offer')}</DialogTitle>
                   </DialogHeader>
-                  <Form {...form}>
+                  <div>
                     <form onSubmit={(e) => {
                       e.preventDefault();
-                      const data = form.getValues();
-                      console.log('Form submitted with data:', data);
-                      console.log('Form validation errors:', form.formState.errors);
+                      if (createOfferMutation.isPending) return;
                       
-                      if (createOfferMutation.isPending) {
-                        console.log('Mutation already pending, skipping');
-                        return;
-                      }
+                      const formData = new FormData(e.target as HTMLFormElement);
+                      const data = {
+                        name: formData.get('name') as string,
+                        category: formData.get('category') as string,
+                        description_ru: formData.get('description_ru') as string || '',
+                        description_en: formData.get('description_en') as string || '',
+                        goals_ru: formData.get('goals_ru') as string || '',
+                        goals_en: formData.get('goals_en') as string || '',
+                        logo: formData.get('logo') as string || '',
+                        status: formData.get('status') as string,
+                        payoutType: formData.get('payoutType') as string,
+                        currency: formData.get('currency') as string,
+                        kpiConditions_ru: formData.get('kpiConditions_ru') as string || '',
+                        kpiConditions_en: formData.get('kpiConditions_en') as string || '',
+                        allowedTrafficSources: [formData.get('trafficSource') as string].filter(Boolean),
+                        allowedApps: [formData.get('allowedApp') as string].filter(Boolean),
+                        antifraudEnabled: formData.get('antifraudEnabled') === 'on',
+                        autoApprovePartners: formData.get('autoApprovePartners') === 'on',
+                        landingPages: formData.get('landingPageUrl') ? [{
+                          name: formData.get('landingPageName') as string || 'Основная страница',
+                          url: formData.get('landingPageUrl') as string,
+                          payoutAmount: Number(formData.get('landingPagePayout')) || 0,
+                          currency: formData.get('currency') as string,
+                          geo: formData.get('landingPageGeo') as string || ''
+                        }] : []
+                      };
                       
-                      // Validate manually
-                      const validation = createOfferFrontendSchema.safeParse(data);
-                      if (!validation.success) {
-                        console.error('Validation failed:', validation.error);
-                        alert('Ошибка валидации: ' + validation.error.errors.map(e => e.message).join(', '));
-                        return;
-                      }
-                      
-                      createOfferMutation.mutate(validation.data);
+                      console.log('Simple form data:', data);
+                      createOfferMutation.mutate(data);
                     }} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t('offer_name')}</FormLabel>
-                            <FormControl>
-                              <Input {...field} data-testid="input-offer-name" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t('description')}</FormLabel>
-                            <FormControl>
-                              <Textarea {...field} value={field.value || ''} data-testid="input-description" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="category"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('category')}</FormLabel>
-                              <FormControl>
-                                <Input {...field} data-testid="input-category" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="status"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('status')}</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger data-testid="select-status">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="draft">Draft</SelectItem>
-                                  <SelectItem value="active">Active</SelectItem>
-                                  <SelectItem value="paused">Paused</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Название оффера *</label>
+                        <input name="name" type="text" required className="w-full p-2 border rounded" placeholder="Введите название оффера" />
                       </div>
+                      
                       <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="payoutType"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('payout_type')}</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger data-testid="select-payout-type">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="cpa">CPA</SelectItem>
-                                  <SelectItem value="cps">CPS</SelectItem>
-                                  <SelectItem value="cpl">CPL</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="currency"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('currency')}</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
-                                <FormControl>
-                                  <SelectTrigger data-testid="select-currency">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="USD">USD</SelectItem>
-                                  <SelectItem value="EUR">EUR</SelectItem>
-                                  <SelectItem value="RUB">RUB</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Описание (RU)</label>
+                          <textarea name="description_ru" className="w-full p-2 border rounded" placeholder="Описание на русском"></textarea>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Описание (EN)</label>
+                          <textarea name="description_en" className="w-full p-2 border rounded" placeholder="Description in English"></textarea>
+                        </div>
                       </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Цели (RU)</label>
+                          <textarea name="goals_ru" className="w-full p-2 border rounded" placeholder="Цели на русском"></textarea>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Цели (EN)</label>
+                          <textarea name="goals_en" className="w-full p-2 border rounded" placeholder="Goals in English"></textarea>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Категория *</label>
+                          <select name="category" required className="w-full p-2 border rounded">
+                            <option value="gambling">Gambling</option>
+                            <option value="finance">Finance</option>
+                            <option value="dating">Dating</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Логотип URL</label>
+                          <input name="logo" type="url" className="w-full p-2 border rounded" placeholder="https://example.com/logo.png" />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Тип выплаты</label>
+                          <select name="payoutType" className="w-full p-2 border rounded">
+                            <option value="cpa">CPA</option>
+                            <option value="cps">CPS</option>
+                            <option value="cpl">CPL</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Валюта</label>
+                          <select name="currency" className="w-full p-2 border rounded">
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="RUB">RUB</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Статус</label>
+                          <select name="status" className="w-full p-2 border rounded">
+                            <option value="draft">Черновик</option>
+                            <option value="active">Активный</option>
+                            <option value="paused">Приостановлен</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Landing Page</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input name="landingPageName" type="text" className="p-2 border rounded" placeholder="Название" />
+                          <input name="landingPageUrl" type="url" className="p-2 border rounded" placeholder="URL" />
+                          <input name="landingPagePayout" type="number" className="p-2 border rounded" placeholder="Выплата" />
+                          <input name="landingPageGeo" type="text" className="p-2 border rounded" placeholder="GEO" />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Источник трафика</label>
+                          <select name="trafficSource" className="w-full p-2 border rounded">
+                            <option value="">Выберите источник</option>
+                            <option value="facebook_ads">Facebook Ads</option>
+                            <option value="google_ads">Google Ads</option>
+                            <option value="native">Native</option>
+                            <option value="push">Push</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Разрешенные приложения</label>
+                          <select name="allowedApp" className="w-full p-2 border rounded">
+                            <option value="">Выберите приложение</option>
+                            <option value="PWA apps">PWA apps</option>
+                            <option value="Mobile apps">Mobile apps</option>
+                            <option value="Desktop">Desktop</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4">
+                        <label className="flex items-center">
+                          <input name="antifraudEnabled" type="checkbox" className="mr-2" defaultChecked />
+                          Анти-фрод включен
+                        </label>
+                        <label className="flex items-center">
+                          <input name="autoApprovePartners" type="checkbox" className="mr-2" />
+                          Автоматическое одобрение партнеров
+                        </label>
+                      </div>
+                      
+
                       <div className="flex justify-end gap-2">
                         <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                           {t('cancel')}
@@ -354,7 +372,7 @@ export default function OffersManagement() {
                         </Button>
                       </div>
                     </form>
-                  </Form>
+                  </div>
                 </DialogContent>
               </Dialog>
             </div>
