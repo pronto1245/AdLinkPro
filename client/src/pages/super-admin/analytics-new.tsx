@@ -192,24 +192,29 @@ const allColumns: ColumnConfig[] = [
   { key: 'sale', label: 'Продажа', visible: true, sortable: true, type: 'boolean', width: 80 },
   { key: 'revenue', label: 'Доход', visible: true, sortable: true, type: 'currency', width: 100 },
   
-  // SubIDs 4-30
-  { key: 'subId4', label: 'Sub ID 4', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId5', label: 'Sub ID 5', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId6', label: 'Sub ID 6', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId7', label: 'Sub ID 7', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId8', label: 'Sub ID 8', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId9', label: 'Sub ID 9', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId10', label: 'Sub ID 10', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId11', label: 'Sub ID 11', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId12', label: 'Sub ID 12', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId13', label: 'Sub ID 13', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId14', label: 'Sub ID 14', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId15', label: 'Sub ID 15', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId16', label: 'Sub ID 16', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId17', label: 'Sub ID 17', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId18', label: 'Sub ID 18', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId19', label: 'Sub ID 19', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId20', label: 'Sub ID 20', visible: false, sortable: true, type: 'text', width: 100 },
+  // SubIDs 1-20 (все видимы по умолчанию)
+  { key: 'subId1', label: 'Sub ID 1', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId2', label: 'Sub ID 2', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId3', label: 'Sub ID 3', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId4', label: 'Sub ID 4', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId5', label: 'Sub ID 5', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId6', label: 'Sub ID 6', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId7', label: 'Sub ID 7', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId8', label: 'Sub ID 8', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId9', label: 'Sub ID 9', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId10', label: 'Sub ID 10', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId11', label: 'Sub ID 11', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId12', label: 'Sub ID 12', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId13', label: 'Sub ID 13', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId14', label: 'Sub ID 14', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId15', label: 'Sub ID 15', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId16', label: 'Sub ID 16', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId17', label: 'Sub ID 17', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId18', label: 'Sub ID 18', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId19', label: 'Sub ID 19', visible: true, sortable: true, type: 'text', width: 100 },
+  { key: 'subId20', label: 'Sub ID 20', visible: true, sortable: true, type: 'text', width: 100 },
+  
+  // SubIDs 21-30 (скрыты по умолчанию)
   { key: 'subId21', label: 'Sub ID 21', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'subId22', label: 'Sub ID 22', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'subId23', label: 'Sub ID 23', visible: false, sortable: true, type: 'text', width: 100 },
@@ -253,10 +258,7 @@ const allColumns: ColumnConfig[] = [
   { key: 'externalId', label: 'External ID', visible: false, sortable: true, type: 'text', width: 120 },
   { key: 'creativeId', label: 'Creative ID', visible: false, sortable: true, type: 'text', width: 120 },
   
-  // SubIDs 1-3 (additional)
-  { key: 'subId1', label: 'Sub ID 1', visible: true, sortable: true, type: 'text', width: 100 },
-  { key: 'subId2', label: 'Sub ID 2', visible: false, sortable: true, type: 'text', width: 100 },
-  { key: 'subId3', label: 'Sub ID 3', visible: false, sortable: true, type: 'text', width: 100 },
+
   
   // Network and device
   { key: 'operator', label: 'Оператор', visible: false, sortable: true, type: 'text', width: 100 },

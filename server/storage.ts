@@ -3054,21 +3054,31 @@ class MemStorage implements IStorage {
         campaignGroupId: `group_${Math.floor(Math.random() * 100)}`,
         campaignGroup: `Group ${Math.floor(Math.random() * 10) + 1}`,
         
-        // SubIDs (1-30)
+        // SubIDs (1-30) - Sub ID 1-20 более активны
         subid: `sub_${Math.floor(Math.random() * 1000)}`,
-        subId1: Math.random() > 0.3 ? `sub1_${Math.floor(Math.random() * 100)}` : null,
-        subId2: Math.random() > 0.5 ? `sub2_${Math.floor(Math.random() * 100)}` : null,
-        subId3: Math.random() > 0.7 ? `sub3_${Math.floor(Math.random() * 100)}` : null,
-        subId4: Math.random() > 0.8 ? `sub4_${Math.floor(Math.random() * 100)}` : null,
-        subId5: Math.random() > 0.8 ? `sub5_${Math.floor(Math.random() * 100)}` : null,
-        subId6: Math.random() > 0.9 ? `sub6_${Math.floor(Math.random() * 100)}` : null,
-        subId7: Math.random() > 0.9 ? `sub7_${Math.floor(Math.random() * 100)}` : null,
-        subId8: Math.random() > 0.9 ? `sub8_${Math.floor(Math.random() * 100)}` : null,
-        subId9: Math.random() > 0.9 ? `sub9_${Math.floor(Math.random() * 100)}` : null,
-        subId10: Math.random() > 0.9 ? `sub10_${Math.floor(Math.random() * 100)}` : null,
-        // Continue pattern for subId11-30
-        ...Array.from({ length: 20 }, (_, j) => ({
-          [`subId${j + 11}`]: Math.random() > 0.95 ? `sub${j + 11}_${Math.floor(Math.random() * 100)}` : null
+        subId1: Math.random() > 0.2 ? `sub1_${Math.floor(Math.random() * 1000)}` : null,
+        subId2: Math.random() > 0.2 ? `sub2_${Math.floor(Math.random() * 1000)}` : null,
+        subId3: Math.random() > 0.3 ? `sub3_${Math.floor(Math.random() * 1000)}` : null,
+        subId4: Math.random() > 0.3 ? `sub4_${Math.floor(Math.random() * 1000)}` : null,
+        subId5: Math.random() > 0.4 ? `sub5_${Math.floor(Math.random() * 1000)}` : null,
+        subId6: Math.random() > 0.4 ? `sub6_${Math.floor(Math.random() * 1000)}` : null,
+        subId7: Math.random() > 0.5 ? `sub7_${Math.floor(Math.random() * 1000)}` : null,
+        subId8: Math.random() > 0.5 ? `sub8_${Math.floor(Math.random() * 1000)}` : null,
+        subId9: Math.random() > 0.6 ? `sub9_${Math.floor(Math.random() * 1000)}` : null,
+        subId10: Math.random() > 0.6 ? `sub10_${Math.floor(Math.random() * 1000)}` : null,
+        subId11: Math.random() > 0.7 ? `sub11_${Math.floor(Math.random() * 1000)}` : null,
+        subId12: Math.random() > 0.7 ? `sub12_${Math.floor(Math.random() * 1000)}` : null,
+        subId13: Math.random() > 0.8 ? `sub13_${Math.floor(Math.random() * 1000)}` : null,
+        subId14: Math.random() > 0.8 ? `sub14_${Math.floor(Math.random() * 1000)}` : null,
+        subId15: Math.random() > 0.8 ? `sub15_${Math.floor(Math.random() * 1000)}` : null,
+        subId16: Math.random() > 0.9 ? `sub16_${Math.floor(Math.random() * 1000)}` : null,
+        subId17: Math.random() > 0.9 ? `sub17_${Math.floor(Math.random() * 1000)}` : null,
+        subId18: Math.random() > 0.9 ? `sub18_${Math.floor(Math.random() * 1000)}` : null,
+        subId19: Math.random() > 0.9 ? `sub19_${Math.floor(Math.random() * 1000)}` : null,
+        subId20: Math.random() > 0.9 ? `sub20_${Math.floor(Math.random() * 1000)}` : null,
+        // Continue pattern for subId21-30 (реже используются)
+        ...Array.from({ length: 10 }, (_, j) => ({
+          [`subId${j + 21}`]: Math.random() > 0.95 ? `sub${j + 21}_${Math.floor(Math.random() * 100)}` : null
         })).reduce((acc, curr) => ({ ...acc, ...curr }), {}),
         
         // Geographic data
