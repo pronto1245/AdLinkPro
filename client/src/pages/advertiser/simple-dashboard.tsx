@@ -27,27 +27,28 @@ import {
 
 export default function AdvertiserDashboard() {
   const { user } = useAuth();
-
-  // Получаем данные дашборда
-  const { data: dashboardData, isLoading } = useQuery({
-    queryKey: ['/api/advertiser/dashboard'],
-    enabled: !!user
-  });
-
-  // Получаем финансовые данные
-  const { data: financialData } = useQuery({
-    queryKey: ['/api/advertiser/financial-overview'],
-    enabled: !!user
-  });
-
-  // Типизированные данные с безопасными значениями по умолчанию
-  const dashboard = dashboardData as any || {};
-  const financial = financialData as any || {};
-
-  if (isLoading) {
-    return <div className="flex items-center justify-center h-64">Загрузка данных...</div>;
+  
+  console.log('AdvertiserDashboard: Starting render with user:', user);
+  
+  if (!user) {
+    console.log('AdvertiserDashboard: No user, showing loading...');
+    return <div>Загрузка...</div>;
   }
 
+  // Временно отключаем React Query для диагностики
+  const dashboard = {
+    offersCount: 0,
+    activeOffers: 0, 
+    partnersCount: 0,
+    pendingApplications: 0,
+    monthlyRevenue: 0,
+    revenueGrowth: 0,
+    recentOffers: [],
+    recentActivity: []
+  };
+  const financial = { balance: 0 };
+
+  console.log('AdvertiserDashboard: Rendering main content');
   return (
     <RoleBasedLayout>
       <div className="container mx-auto p-6 space-y-6">
@@ -246,7 +247,7 @@ export default function AdvertiserDashboard() {
                 <span className="text-sm">Текущий баланс</span>
               </div>
               <span className="font-semibold text-green-600">
-                ${financial.balance?.toFixed(2) || '0.00'}
+                $0.00
               </span>
             </div>
           </CardContent>

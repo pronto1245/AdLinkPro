@@ -8,6 +8,13 @@ interface RoleBasedLayoutProps {
 
 export default function RoleBasedLayout({ children }: RoleBasedLayoutProps) {
   const { user } = useAuth();
+  
+  console.log('RoleBasedLayout: Rendering with user:', user?.role);
+  
+  if (!user) {
+    console.log('RoleBasedLayout: No user found');
+    return <div>Загрузка...</div>;
+  }
 
   const renderSidebar = () => {
     if (!user) return null;
