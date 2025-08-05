@@ -368,46 +368,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Offer management with hierarchy (с кешированием)
+  // Offer management with hierarchy (без кеширования для отладки)
   app.get("/api/admin/offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
-      const cacheKey = `offers_${authUser.role}_${authUser.id}`;
       
-      // Проверяем кеш
-      let offers = queryCache.get(cacheKey);
+      // Отключаем HTTP кеширование
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
       
-      if (!offers) {
-        if (authUser.role === 'super_admin') {
-          // Super admin sees all offers with advertiser names
-          offers = await storage.getAllOffers();
-        } else if (authUser.role === 'advertiser') {
-          // Advertiser sees only their own offers with advertiser names
-          const allOffers = await storage.getAllOffers();
-          offers = allOffers.filter((offer: any) => offer.advertiserId === authUser.id);
-        } else if (authUser.role === 'affiliate') {
-          // Affiliate sees only offers they're approved for or public offers from their owner's advertisers
-          const partnerOffers = await storage.getPartnerOffers(authUser.id);
-          const offerIds = partnerOffers.map(po => po.offerId);
-          
-          const allOffers = await storage.getAllOffers();
-          if (offerIds.length > 0) {
-            offers = allOffers.filter((offer: any) => offerIds.includes(offer.id) || !offer.isPrivate);
-          } else {
-            offers = allOffers.filter((offer: any) => !offer.isPrivate);
-          }
-        } else if (authUser.role === 'staff') {
-          // Staff can see offers of their owner (the advertiser who created them)
-          if (authUser.ownerId) {
-            const allOffers = await storage.getAllOffers();
-            offers = allOffers.filter((offer: any) => offer.advertiserId === authUser.ownerId);
-          } else {
-            offers = [];
-          }
-        }
+      let offers;
+      if (authUser.role === 'super_admin') {
+        // Super admin sees all offers with advertiser names
+        offers = await storage.getAllOffers();
+      } else if (authUser.role === 'advertiser') {
+        // Advertiser sees only their own offers with advertiser names
+        const allOffers = await storage.getAllOffers();
+        offers = allOffers.filter((offer: any) => offer.advertiserId === authUser.id);
+      } else if (authUser.role === 'affiliate') {
+        // Affiliate sees only offers they're approved for or public offers from their owner's advertisers
+        const partnerOffers = await storage.getPartnerOffers(authUser.id);
+        const offerIds = partnerOffers.map(po => po.offerId);
         
-        // Кешируем на 2 минуты
-        queryCache.set(cacheKey, offers, 2 * 60 * 1000);
+        const allOffers = await storage.getAllOffers();
+        if (offerIds.length > 0) {
+          offers = allOffers.filter((offer: any) => offerIds.includes(offer.id) || !offer.isPrivate);
+        } else {
+          offers = allOffers.filter((offer: any) => !offer.isPrivate);
+        }
+      } else if (authUser.role === 'staff') {
+        // Staff can see offers of their owner (the advertiser who created them)
+        if (authUser.ownerId) {
+          const allOffers = await storage.getAllOffers();
+          offers = allOffers.filter((offer: any) => offer.advertiserId === authUser.ownerId);
+        } else {
+          offers = [];
+        }
       }
       
       res.json(offers);
