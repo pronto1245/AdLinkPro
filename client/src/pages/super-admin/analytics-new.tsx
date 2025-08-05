@@ -14,7 +14,7 @@ import { useSidebar } from '@/contexts/sidebar-context';
 import { useToast } from '@/hooks/use-toast';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
-import { Search, Download, Settings, Filter, RefreshCw, Eye, EyeOff, RotateCcw } from 'lucide-react';
+import { Search, Download, Settings, Filter, RefreshCw, Eye, EyeOff, RotateCcw, Check, X } from 'lucide-react';
 
 // Comprehensive analytics data interface with 100+ fields
 interface AnalyticsData {
@@ -403,7 +403,15 @@ export default function AnalyticsNew() {
       case 'percentage':
         return `${Number(value).toFixed(1)}%`;
       case 'boolean':
-        return value ? '✓' : '✗';
+        return value ? (
+          <div className="flex items-center justify-center">
+            <Check className="w-4 h-4 text-green-600" />
+          </div>
+        ) : (
+          <div className="flex items-center justify-center">
+            <X className="w-4 h-4 text-red-600" />
+          </div>
+        );
       case 'datetime':
         return new Date(value).toLocaleString();
       case 'date':
