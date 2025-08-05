@@ -64,6 +64,7 @@ export interface IStorage {
   getPartnerOffers(partnerId?: string, offerId?: string): Promise<PartnerOffer[]>;
   createPartnerOffer(partnerOffer: InsertPartnerOffer): Promise<PartnerOffer>;
   updatePartnerOffer(id: string, data: Partial<InsertPartnerOffer>): Promise<PartnerOffer>;
+  getAdvertiserPartners(advertiserId: string): Promise<User[]>;
   
   // Tracking links
   getTrackingLinks(partnerId?: string): Promise<TrackingLink[]>;
@@ -518,6 +519,30 @@ export class DatabaseStorage implements IStorage {
       .where(eq(partnerOffers.id, id))
       .returning();
     return partnerOffer;
+  }
+
+  async getAdvertiserPartners(advertiserId: string): Promise<User[]> {
+    // Get partners who have access to this advertiser's offers
+    const partners = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        status: users.status,
+        isActive: users.isActive
+      })
+      .from(users)
+      .innerJoin(partnerOffers, eq(users.id, partnerOffers.partnerId))
+      .innerJoin(offers, eq(partnerOffers.offerId, offers.id))
+      .where(and(
+        eq(offers.advertiserId, advertiserId),
+        eq(users.role, 'affiliate')
+      ))
+      .groupBy(users.id, users.username, users.firstName, users.lastName, users.email, users.status, users.isActive);
+
+    return partners as User[];
   }
 
   async getTrackingLinks(partnerId?: string): Promise<TrackingLink[]> {

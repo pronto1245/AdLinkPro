@@ -25,6 +25,7 @@ import SuperAdminBlacklist from "@/pages/super-admin/blacklist-management";
 import SuperAdminAnalytics from "@/pages/super-admin/analytics";
 import AnalyticsNew from "@/pages/super-admin/analytics-new";
 import PartnerOffers from '@/pages/affiliate/PartnerOffers';
+import AffiliateOffers from '@/pages/affiliate/AffiliateOffers';
 import OfferDetails from '@/pages/affiliate/OfferDetails';
 import AdvertiserOfferDetails from '@/pages/advertiser/OfferDetails';
 import SuperAdminSupport from "@/pages/super-admin/support";
@@ -274,7 +275,7 @@ function Router() {
       
       <Route path="/affiliate/offers">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <PartnerOffers />
+          <AffiliateOffers />
         </ProtectedRoute>
       </Route>
       
