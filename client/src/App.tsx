@@ -24,6 +24,7 @@ import SuperAdminAuditLogs from "@/pages/super-admin/audit-logs";
 import SuperAdminPostbacks from "@/pages/super-admin/postbacks-management";
 import SuperAdminBlacklist from "@/pages/super-admin/blacklist-management";
 import SuperAdminAnalytics from "@/pages/super-admin/analytics";
+import AnalyticsNew from "@/pages/super-admin/analytics-new";
 import SuperAdminSupport from "@/pages/super-admin/support";
 import UserAnalytics from "@/pages/super-admin/user-analytics";
 import PostbackManagement from "@/pages/super-admin/postback-management";
@@ -154,7 +155,7 @@ function Router() {
       </Route>
       <Route path="/super-admin/analytics">
         <ProtectedRoute allowedRoles={['super_admin']}>
-          <SuperAdminAnalytics />
+          <AnalyticsNew />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/postbacks">
