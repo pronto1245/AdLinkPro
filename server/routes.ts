@@ -14,7 +14,8 @@ import express from "express";
 import { randomUUID } from "crypto";
 import { notificationService } from "./services/notification";
 import { auditLog, checkIPBlacklist, rateLimiter, loginRateLimiter, recordFailedLogin, trackDevice, detectFraud, getAuditLogs } from "./middleware/security";
-import PostbackService from "./services/postback";
+import { PostbackService } from "./services/postback";
+import conversionRoutes from "./routes/conversion";
 
 // Extend Express Request to include user property
 declare global {
@@ -118,6 +119,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add 2FA auth routes
   const authRoutes = await import('./routes/auth');
   app.use('/api/auth', authRoutes.default);
+  
+  // Add conversion routes
+  app.use('/api/conversion', conversionRoutes);
 
   // Auth routes
   app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
@@ -3739,6 +3743,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Analytics export error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
+  });
+
+  // Test postback endpoint for demonstrations
+  app.get('/test-postback', (req, res) => {
+    console.log('Test postback received:', req.query);
+    res.json({ 
+      success: true, 
+      message: 'Test postback received successfully',
+      timestamp: new Date().toISOString(),
+      params: req.query 
+    });
   });
 
   const httpServer = createServer(app);

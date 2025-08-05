@@ -1,7 +1,7 @@
 import { createHmac, randomBytes } from 'crypto';
 import { eq, and, or, desc, asc, gte, lte } from 'drizzle-orm';
 import { db } from '../db';
-import { postbacks, postbackLogs, trackingClicks, users, offers } from '../../shared/schema';
+import { postbacks, postbackLogs, postbackTemplates, trackingClicks, users, offers } from '../../shared/schema';
 
 export interface PostbackMacros {
   clickid?: string;
@@ -75,7 +75,7 @@ export class PostbackService {
         eq(postbackLogs.clickId, clickId),
         eq(postbackLogs.eventType, eventType),
         eq(postbackLogs.postbackId, postbackId),
-        eq(postbackLogs.status, 'success')
+        eq(postbackLogs.status, 'sent')  // Fixed: changed from 'success' to 'sent'
       ))
       .limit(1);
     
@@ -119,18 +119,20 @@ export class PostbackService {
     clickId?: string
   ): Promise<{ success: boolean; response?: any; error?: string }> {
     try {
-      // Get postback configuration
+      // Get postback template configuration
       const [postback] = await db.select()
-        .from(postbacks)
-        .where(eq(postbacks.id, postbackId));
+        .from(postbackTemplates)
+        .where(eq(postbackTemplates.id, postbackId));
 
       if (!postback || !postback.isActive) {
         throw new Error('Postback not found or inactive');
       }
 
       // Check if event is enabled for this postback
-      const events = postback.events as string[];
+      const events = Array.isArray(postback.events) ? postback.events : [];
+      console.log(`Postback ${postback.id} events:`, events, `checking for:`, eventType);
       if (!events.includes(eventType)) {
+        console.log(`Skipping postback ${postback.id} - event ${eventType} not in configured events`);
         return { success: true }; // Skip if event not configured
       }
 
@@ -140,8 +142,11 @@ export class PostbackService {
         return { success: true }; // Skip duplicate
       }
 
-      // Replace macros in URL
+      // Replace macros in URL  
+      console.log(`Original URL template: ${postback.url}`);
+      console.log(`Macros to replace:`, macros);
       const processedUrl = this.replaceMacros(postback.url, macros);
+      console.log(`Processed URL: ${processedUrl}`);
       
       // Prepare request options
       const requestOptions: any = {
@@ -153,38 +158,46 @@ export class PostbackService {
         },
       };
 
-      // Add signature if secret key is configured
-      if (postback.signatureKey) {
-        const signature = this.generateSignature(processedUrl, macros, postback.signatureKey);
-        requestOptions.headers['X-Signature'] = signature;
-        requestOptions.headers['X-Timestamp'] = Date.now().toString();
-      }
+      // Add signature if secret key is configured (disabled for now as template doesn't have this field)
+      let signature = '';
+      // if (postback.signatureKey) {
+      //   signature = this.generateSignature(processedUrl, macros, postback.signatureKey);
+      //   requestOptions.headers['X-Signature'] = signature;
+      //   requestOptions.headers['X-Timestamp'] = Date.now().toString();
+      // }
 
-      // Add payload for POST requests
-      if (postback.method === 'POST') {
+      // Add payload for POST requests (defaulting to GET for templates)
+      const method = 'GET'; // postback templates use GET by default
+      requestOptions.method = method;
+      if (method === 'POST') {
         requestOptions.body = JSON.stringify(macros);
       }
 
       // Send request
+      console.log(`Sending postback request to: ${processedUrl}`);
       const startTime = Date.now();
       const response = await fetch(processedUrl, requestOptions);
       const responseTime = Date.now() - startTime;
       const responseBody = await response.text();
+      console.log(`Postback response: ${response.status} ${response.statusText}`);
 
       // Log the attempt
+      const logStatus = response.ok ? 'sent' : 'failed';
+      console.log(`Postback ${postbackId} completed with status: ${logStatus} (HTTP ${response.status})`);
+      
       await db.insert(postbackLogs).values({
         postbackId,
         clickId,
         eventType,
         url: processedUrl,
-        method: postback.method || 'GET',
+        method: method,
         headers: requestOptions.headers,
-        payload: postback.method === 'POST' ? macros : null,
+        payload: method === 'POST' ? macros : null,
         responseStatus: response.status,
         responseBody: responseBody.substring(0, 1000), // Limit response body size
         responseTime,
         retryCount: 0,
-        status: response.ok ? 'sent' : 'failed',
+        status: logStatus,
         signature,
         sentAt: new Date(),
       });
@@ -200,6 +213,7 @@ export class PostbackService {
       };
 
     } catch (error: any) {
+      console.error('Postback sending failed:', error);
       // Log failed attempt
       await db.insert(postbackLogs).values({
         postbackId,
@@ -222,6 +236,8 @@ export class PostbackService {
   // Trigger postbacks for an event
   static async triggerPostbacks(event: PostbackEvent) {
     try {
+      console.log(`Triggering postbacks for event: ${event.type}, clickId: ${event.clickId}`);
+      
       // Get click data if available
       let clickData = null;
       if (event.clickId) {
@@ -229,21 +245,31 @@ export class PostbackService {
           .from(trackingClicks)
           .where(eq(trackingClicks.clickId, event.clickId));
         clickData = click;
+        console.log(`Found click data:`, clickData ? 'yes' : 'no');
       }
 
-      // Find all active postbacks for this event
+      // Find all active postback templates for this event
       const relevantPostbacks = await db.select()
-        .from(postbacks)
-        .leftJoin(users, eq(postbacks.userId, users.id))
-        .where(eq(postbacks.isActive, true));
+        .from(postbackTemplates)
+        .leftJoin(users, eq(postbackTemplates.advertiserId, users.id))
+        .where(eq(postbackTemplates.isActive, true));
+
+      console.log(`Found ${relevantPostbacks.length} active postback templates`);
+      
+      if (relevantPostbacks.length === 0) {
+        console.log('No active postback templates found');
+        return [];
+      }
 
       // Send postbacks concurrently
       const results = await Promise.allSettled(
-        relevantPostbacks.map(({ postbacks: pb }) =>
-          this.sendPostback(pb.id, event.type, event.data, event.clickId)
-        )
+        relevantPostbacks.map(({ postback_templates: pb }) => {
+          console.log(`Triggering postback ${pb.id} for event ${event.type}`);
+          return this.sendPostback(pb.id, event.type, event.data, event.clickId);
+        })
       );
 
+      console.log(`Postback results:`, results.map(r => r.status));
       return results;
     } catch (error) {
       console.error('Error triggering postbacks:', error);
@@ -257,24 +283,24 @@ export class PostbackService {
       // Get failed postbacks that need retry
       const failedLogs = await db.select()
         .from(postbackLogs)
-        .leftJoin(postbacks, eq(postbackLogs.postbackId, postbacks.id))
+        .leftJoin(postbackTemplates, eq(postbackLogs.postbackId, postbackTemplates.id))
         .where(
           and(
             eq(postbackLogs.status, 'failed'),
-            eq(postbacks.retryEnabled, true)
+            eq(postbackTemplates.isActive, true)
           )
         )
         .orderBy(asc(postbackLogs.createdAt));
 
       const retryPromises = failedLogs
-        .filter(({ postback_logs: logs, postbacks: pb }) => 
-          (logs.retryCount || 0) < (pb?.maxRetries || 3)
+        .filter(({ postback_logs: logs, postback_templates: pb }) => 
+          (logs.retryCount || 0) < (pb?.retryAttempts || 3)
         )
-        .map(async ({ postback_logs: logs, postbacks: pb }) => {
+        .map(async ({ postback_logs: logs, postback_templates: pb }) => {
           if (!pb) return;
 
-          // Calculate retry delay with exponential backoff
-          const retryDelay = (pb.retryDelay || 60) * Math.pow(2, logs.retryCount || 0);
+          // Calculate retry delay with exponential backoff (60 seconds default)
+          const retryDelay = 60 * Math.pow(2, logs.retryCount || 0);
           const shouldRetry = !logs.nextRetryAt || 
             new Date() >= logs.nextRetryAt;
 

@@ -485,7 +485,7 @@ export const apiKeys = pgTable("api_keys", {
 // Postback logs
 export const postbackLogs = pgTable("postback_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  postbackId: varchar("postback_id").references(() => postbacks.id),
+  postbackId: varchar("postback_id").references(() => postbackTemplates.id),
   clickId: varchar("click_id").references(() => trackingClicks.id),
   eventType: text("event_type").notNull(), // 'click', 'lead', 'deposit', etc.
   url: text("url").notNull(),
