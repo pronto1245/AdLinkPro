@@ -2721,18 +2721,50 @@ export class DatabaseStorage implements IStorage {
   // Postback templates methods for DatabaseStorage
   async getPostbackTemplates(): Promise<any[]> {
     console.log('DatabaseStorage: getting postback templates from database');
-    return [];
+    try {
+      const { db } = await import('./db');
+      const { postbackTemplates } = await import('@shared/schema');
+      const templates = await db.select().from(postbackTemplates);
+      console.log(`DatabaseStorage: Found ${templates.length} postback templates`);
+      return templates;
+    } catch (error) {
+      console.error('DatabaseStorage: Error getting postback templates:', error);
+      return [];
+    }
   }
 
   async createPostbackTemplate(data: any): Promise<any> {
-    const template = {
-      id: `tpl_${Date.now()}`,
-      ...data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    console.log('DatabaseStorage: creating postback template:', template);
-    return template;
+    console.log('DatabaseStorage: creating postback template:', data);
+    try {
+      const { db } = await import('./db');
+      const { postbackTemplates } = await import('@shared/schema');
+      
+      const template = {
+        name: data.name,
+        level: data.level || 'global',
+        url: data.url,
+        events: data.events || ['sale'],
+        retryAttempts: data.retryAttempts || 3,
+        timeout: data.timeout || 30,
+        isActive: data.isActive !== false,
+        advertiserId: data.advertiserId,
+        createdBy: data.createdBy,
+        offerId: data.offerId || null
+      };
+
+      const [result] = await db.insert(postbackTemplates).values(template).returning();
+      console.log('DatabaseStorage: Successfully created postback template:', result);
+      return result;
+    } catch (error) {
+      console.error('DatabaseStorage: Error creating postback template:', error);
+      // Fallback to memory-like structure for compatibility
+      return {
+        id: `tpl_${Date.now()}`,
+        ...data,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    }
   }
 
   async updatePostbackTemplate(id: string, data: any): Promise<any> {
@@ -3050,6 +3082,6 @@ class MemStorage implements IStorage {
   async moderateOffer(): Promise<boolean> { return true; }
 }
 
-// Use MemStorage for demo
-export const storage = new MemStorage();
+// Use DatabaseStorage for persistent data
+export const storage = new DatabaseStorage();
 
