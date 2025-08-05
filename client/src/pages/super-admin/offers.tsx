@@ -54,6 +54,7 @@ export default function OffersManagement() {
 
   const createOfferMutation = useMutation({
     mutationFn: async (offerData: z.infer<typeof createOfferFrontendSchema>) => {
+      console.log('Frontend - Creating offer with data:', offerData);
       const response = await fetch('/api/admin/offers', {
         method: 'POST',
         headers: {
@@ -62,19 +63,25 @@ export default function OffersManagement() {
         },
         body: JSON.stringify(offerData),
       });
+      console.log('Frontend - Response status:', response.status, response.statusText);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('Frontend - Error response:', errorData);
         throw new Error(errorData.details || errorData.error || 'Failed to create offer');
       }
-      return response.json();
+      const result = await response.json();
+      console.log('Frontend - Success response:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Frontend - Offer created successfully:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
       setIsCreateDialogOpen(false);
       form.reset();
     },
     onError: (error) => {
-      console.error('Create offer error:', error);
+      console.error('Frontend - Create offer mutation error:', error);
+      alert('Ошибка создания оффера: ' + error.message);
     },
   });
 
@@ -175,7 +182,10 @@ export default function OffersManagement() {
                     <DialogTitle>{t('create_new_offer')}</DialogTitle>
                   </DialogHeader>
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit((data) => createOfferMutation.mutate(data))} className="space-y-4">
+                    <form onSubmit={form.handleSubmit((data) => {
+                      console.log('Form submitted with data:', data);
+                      createOfferMutation.mutate(data);
+                    })} className="space-y-4">
                       <FormField
                         control={form.control}
                         name="name"
