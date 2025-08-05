@@ -434,6 +434,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const offer = await storage.updateOffer(id, offerData);
+      
+      // Очищаем кеш офферов после обновления
+      queryCache.clear();
+      
       res.json(offer);
     } catch (error) {
       console.error("Update offer error:", error);
@@ -455,6 +459,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       await storage.deleteOffer(id);
+      
+      // Очищаем кеш офферов после удаления
+      queryCache.clear();
+      
       res.json({ success: true, message: "Offer deleted successfully" });
     } catch (error) {
       console.error("Delete offer error:", error);
@@ -1319,7 +1327,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .returning();
       
-      console.log("Created offer:", newOffer);      
+      console.log("Created offer:", newOffer);
+      
+      // Очищаем кеш офферов после создания
+      queryCache.clear();
+      
       res.status(201).json(newOffer);
     } catch (error) {
       console.error("Create offer error:", error);

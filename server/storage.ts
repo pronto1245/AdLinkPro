@@ -546,6 +546,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllOffers(): Promise<(Offer & { advertiserName?: string })[]> {
+    console.log("getAllOffers called - getting from database");
     const offersWithAdvertisers = await db
       .select({
         id: offers.id,
@@ -566,6 +567,7 @@ export class DatabaseStorage implements IStorage {
         geoPricing: offers.geoPricing,
         kpiConditions: offers.kpiConditions,
         trafficSources: offers.trafficSources,
+        allowedApps: offers.allowedApps,
         dailyLimit: offers.dailyLimit,
         monthlyLimit: offers.monthlyLimit,
         antifraudEnabled: offers.antifraudEnabled,
