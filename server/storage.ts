@@ -327,7 +327,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteOffer(id: string): Promise<void> {
-    await db.delete(offers).where(eq(offers.id, id));
+    // First delete all related data to avoid foreign key constraint violations
+    try {
+      // Delete statistics (using correct column name)
+      await db.delete(statistics).where(eq(statistics.offerId, id));
+      
+      // Delete tracking clicks (using correct column name)
+      await db.delete(trackingClicks).where(eq(trackingClicks.offerId, id));
+      
+      // Delete partner offers (using correct column name) 
+      await db.delete(partnerOffers).where(eq(partnerOffers.offerId, id));
+      
+      // Delete postback logs related to this offer 
+      // Note: postbackLogs doesn't have offerId field, so skip this
+      // await db.delete(postbackLogs).where(eq(postbackLogs.offerId, id));
+      
+      // Finally delete the offer itself
+      await db.delete(offers).where(eq(offers.id, id));
+    } catch (error) {
+      console.error('Error deleting offer:', error);
+      throw error;
+    }
   }
 
   async getPartnerOffers(partnerId?: string, offerId?: string): Promise<PartnerOffer[]> {
