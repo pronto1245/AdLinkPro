@@ -189,11 +189,6 @@ function Router() {
           <PartnerOffers />
         </ProtectedRoute>
       </Route>
-      <Route path="/affiliate/offers">
-        <ProtectedRoute allowedRoles={['affiliate']}>
-          <PartnerOffers />
-        </ProtectedRoute>
-      </Route>
       
       {/* Default redirect based on role */}
       <Route path="/">
