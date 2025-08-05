@@ -630,6 +630,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get specific advertiser offer by ID
+  app.get("/api/advertiser/offers/:id", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerId = req.params.id;
+      
+      // Get the offer and check ownership
+      const offer = await storage.getOffer(offerId);
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+
+      // Check if advertiser owns this offer
+      if (offer.advertiserId !== authUser.id) {
+        return res.status(403).json({ error: "Access denied to this offer" });
+      }
+
+      res.json(offer);
+    } catch (error) {
+      console.error("Get advertiser offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Generate partner link for specific offer
   app.post("/api/partner/generate-link", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {

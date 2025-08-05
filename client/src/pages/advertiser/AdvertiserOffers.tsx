@@ -295,7 +295,9 @@ export default function AdvertiserOffers() {
                       </Badge>
                     </div>
                     <CardTitle className="text-lg line-clamp-2" data-testid="offer-name">
-                      {offer.name}
+                      <Link href={`/advertiser/offers/${offer.id}`} className="hover:text-blue-600 transition-colors">
+                        {offer.name}
+                      </Link>
                     </CardTitle>
                     <CardDescription className="line-clamp-2">
                       {offer.description}

@@ -43,7 +43,7 @@ export default function AdvertiserOfferDetails() {
 
   // Fetch specific offer details
   const { data: offer, isLoading } = useQuery({
-    queryKey: [`/api/admin/offers/${offerId}`],
+    queryKey: [`/api/advertiser/offers/${offerId}`],
     enabled: !!offerId,
     staleTime: 5 * 60 * 1000,
   });
