@@ -153,7 +153,9 @@ export default function PostbacksPage() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/postback-templates'] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0] === '/api/admin/postback-templates'
+      });
       setAddPostbackDialogOpen(false);
       toast({
         title: "Постбек создан",
@@ -171,7 +173,9 @@ export default function PostbacksPage() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/postback-templates'] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0] === '/api/admin/postback-templates'
+      });
       setEditPostbackDialogOpen(false);
       toast({
         title: "Постбек обновлён",
@@ -188,7 +192,9 @@ export default function PostbacksPage() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/postback-templates'] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0] === '/api/admin/postback-templates'
+      });
       toast({
         title: "Постбек удалён",
         description: "Постбек успешно удалён из системы",
