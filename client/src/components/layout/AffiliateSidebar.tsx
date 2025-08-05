@@ -110,7 +110,7 @@ export default function AffiliateSidebar() {
 
           return (
             <Link key={item.href} href={item.href}>
-              <a
+              <div
                 className={cn(
                   'flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors group',
                   isActive
@@ -125,7 +125,7 @@ export default function AffiliateSidebar() {
                   isActive ? 'text-green-600 dark:text-green-400' : ''
                 )} />
                 <span className="font-medium">{item.title}</span>
-              </a>
+              </div>
             </Link>
           );
         })}

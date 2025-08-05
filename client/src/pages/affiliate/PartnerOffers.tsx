@@ -50,7 +50,7 @@ export default function PartnerOffers() {
   // Generate custom partner link
   const generateLinkMutation = useMutation({
     mutationFn: async ({ offerId, subId }: { offerId: string; subId?: string }) => {
-      return apiRequest<GeneratedLink>("/api/partner/generate-link", {
+      return apiRequest("/api/partner/generate-link", {
         method: "POST",
         body: { offerId, subId },
       });
@@ -61,7 +61,7 @@ export default function PartnerOffers() {
         description: "Партнерская ссылка успешно создана",
       });
       // Copy to clipboard
-      navigator.clipboard.writeText(data.partnerLink);
+      navigator.clipboard.writeText((data as any).partnerLink);
     },
     onError: (error) => {
       toast({
@@ -95,8 +95,8 @@ export default function PartnerOffers() {
     });
   };
 
-  const approvedOffers = offers.filter((offer: PartnerOffer) => offer.isApproved);
-  const publicOffers = offers.filter((offer: PartnerOffer) => !offer.isApproved);
+  const approvedOffers = Array.isArray(offers) ? offers.filter((offer: PartnerOffer) => offer.isApproved) : [];
+  const publicOffers = Array.isArray(offers) ? offers.filter((offer: PartnerOffer) => !offer.isApproved) : [];
 
   if (isLoading) {
     return (
@@ -131,7 +131,7 @@ export default function PartnerOffers() {
             Автоматическая генерация персональных ссылок для каждого оффера
           </p>
         </div>
-        <Badge variant="outline">{offers.length} доступных офферов</Badge>
+        <Badge variant="outline">{Array.isArray(offers) ? offers.length : 0} доступных офферов</Badge>
       </div>
 
       {/* Custom Link Generator */}
@@ -154,11 +154,11 @@ export default function PartnerOffers() {
               data-testid="select-offer"
             >
               <option value="">Выберите оффер</option>
-              {offers.map((offer: PartnerOffer) => (
+              {Array.isArray(offers) ? offers.map((offer: PartnerOffer) => (
                 <option key={offer.id} value={offer.id}>
                   {offer.name} ({offer.payout} {offer.currency})
                 </option>
-              ))}
+              )) : null}
             </select>
             <Input
               placeholder="Кастомный SubID (опционально)"
