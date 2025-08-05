@@ -2843,10 +2843,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fraudResult = { count: 12 };
       }
 
-      const totalClicks = Number(clicksResult[0]?.totalClicks || 0);
-      const totalConversions = Number(clicksResult[0]?.totalConversions || 0);
-      const totalRevenue = Number(clicksResult[0]?.totalRevenue || 0);
-      const fraudCount = Number(fraudResult[0]?.count || 0);
+      const firstResult = Array.isArray(clicksResult) ? clicksResult[0] : clicksResult;
+      const firstFraudResult = Array.isArray(fraudResult) ? fraudResult[0] : fraudResult;
+      
+      const totalClicks = Number(firstResult?.totalClicks || 0);
+      const totalConversions = Number(firstResult?.totalConversions || 0);
+      const totalRevenue = Number(firstResult?.totalRevenue || 0);
+      const fraudCount = Number(firstFraudResult?.count || 0);
 
       const metrics = {
         activePartners: Number(activePartnersResult?.count || 0),
@@ -2854,7 +2857,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         todayClicks: totalClicks,
         yesterdayClicks: Math.floor(totalClicks * 0.92), // Approximate yesterday
         monthClicks: totalClicks,
-        leads: Number(clicksResult[0]?.totalLeads || 0),
+        leads: Number(firstResult?.totalLeads || 0),
         conversions: totalConversions,
         platformRevenue: totalRevenue,
         fraudRate: totalClicks > 0 ? (fraudCount / totalClicks) * 100 : 0,
@@ -2897,8 +2900,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           })
           .from(statistics)
           .where(and(
-            gte(statistics.createdAt, dayStart),
-            lte(statistics.createdAt, dayEnd)
+            gte(statistics.date, dayStart),
+            lte(statistics.date, dayEnd)
           ));
 
         const [fraudCount] = await db
@@ -3069,8 +3072,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .from(statistics)
         .where(and(
-          gte(statistics.createdAt, startDate),
-          lte(statistics.createdAt, endDate)
+          gte(statistics.date, startDate),
+          lte(statistics.date, endDate)
         ))
         .groupBy(statistics.country)
         .orderBy(desc(sum(statistics.clicks)))
