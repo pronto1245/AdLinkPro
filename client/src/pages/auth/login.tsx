@@ -23,7 +23,11 @@ export default function Login() {
 
     try {
       await login(username, password);
-      setLocation('/');
+      
+      // Small delay to ensure user data is set before redirect
+      setTimeout(() => {
+        setLocation('/');
+      }, 100);
     } catch (error: any) {
       toast({
         title: "Login Failed",
