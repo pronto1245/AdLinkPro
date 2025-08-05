@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import RoleBasedLayout from "@/components/layout/RoleBasedLayout";
 import { 
   Target, 
   Users, 
@@ -48,7 +49,8 @@ export default function AdvertiserDashboard() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <RoleBasedLayout>
+      <div className="container mx-auto p-6 space-y-6">
       {/* Заголовок и приветствие */}
       <div className="flex items-center justify-between">
         <div>
@@ -418,6 +420,7 @@ export default function AdvertiserDashboard() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </RoleBasedLayout>
   );
 }

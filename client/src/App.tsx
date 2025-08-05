@@ -190,7 +190,7 @@ function Router() {
       </Route>
       
       {/* Advertiser Routes - ТЗ2 Implementation */}
-      <Route path="/advertiser">
+      <Route path="/advertiser" nest>
         <ProtectedRoute allowedRoles={['advertiser']}>
           <AdvertiserDashboard />
         </ProtectedRoute>
