@@ -422,18 +422,61 @@ export default function AnalyticsNew() {
         <Header />
         <main className="flex-1 overflow-auto p-6">
           <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Аналитика (Полная версия)</h1>
-          <p className="text-muted-foreground">
-            Комплексная аналитика с 100+ полями данных из трекера и постбеков
-          </p>
-        </div>
-        <Button onClick={() => setShowColumnSettings(!showColumnSettings)} variant="outline">
-          <Settings className="w-4 h-4 mr-2" />
-          Столбцы ({visibleColumns.length})
-        </Button>
-      </div>
+            {/* Header with title and controls */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold">Аналитика (Полная версия)</h1>
+                  <p className="text-muted-foreground">
+                    Комплексная аналитика с 100+ полями данных из трекера и постбеков
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={() => setShowColumnSettings(!showColumnSettings)} variant="outline" size="lg">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Столбцы ({visibleColumns.length})
+                  </Button>
+                  <Button variant="outline" size="lg">
+                    <Download className="w-4 h-4 mr-2" />
+                    Экспорт
+                  </Button>
+                  <Button variant="outline" size="lg">
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Обновить
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Statistics blocks - moved to top */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{analyticsData.length}</div>
+                  <p className="text-blue-100">Всего записей</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{visibleColumns.length}</div>
+                  <p className="text-green-100">Видимых столбцов</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{allColumns.length}</div>
+                  <p className="text-purple-100">Всего полей</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-r from-red-500 to-red-600 text-white">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">
+                    {analyticsData.filter(item => item.isBot).length}
+                  </div>
+                  <p className="text-red-100">Ботов обнаружено</p>
+                </CardContent>
+              </Card>
+            </div>
 
       {/* Column Settings Panel */}
       {showColumnSettings && (
