@@ -128,6 +128,16 @@ export interface IStorage {
   testGlobalPostback(id: string): Promise<void>;
   getPostbackLogs(): Promise<any[]>;
   
+  // Postback Templates
+  getPostbackTemplates(filters: {
+    level?: string;
+    status?: string;
+    search?: string;
+  }): Promise<any[]>;
+  createPostbackTemplate(data: any): Promise<any>;
+  updatePostbackTemplate(id: string, data: any): Promise<any>;
+  deletePostbackTemplate(id: string): Promise<void>;
+  
   // Blacklist Management
   getBlacklistEntries(filters: {
     search?: string;
@@ -2985,14 +2995,24 @@ class MemStorage implements IStorage {
   
   // Add missing methods to match IStorage interface
   async getPostbacksWithFilters(): Promise<any> { return { data: [], total: 0 }; }
-  async createPostbackTemplate(): Promise<any> { return {}; }
-  async updatePostbackTemplate(): Promise<any> { return {}; }
-  async deletePostbackTemplate(): Promise<void> {}
-  async getGlobalPostbacks(): Promise<any[]> { return []; }
-  async createGlobalPostback(): Promise<any> { return {}; }
-  async updateGlobalPostback(): Promise<any> { return {}; }
-  async testGlobalPostback(): Promise<void> {}
-  async getPostbackLogs(): Promise<any[]> { return []; }
+  async retryPostback(id: string): Promise<void> {
+    console.log(`Retrying postback ${id}`);
+    // Mock implementation - would queue for retry
+  }
+  async getSystemSettings(): Promise<any[]> {
+    return [
+      {
+        id: 'smtp_config',
+        key: 'smtp_host',
+        value: 'smtp.gmail.com',
+        category: 'email',
+        description: 'SMTP host for email delivery'
+      }
+    ];
+  }
+  async getSmartAlerts(): Promise<any[]> {
+    return this.generateSmartAlerts();
+  }
   async getBlacklistEntries(): Promise<any[]> { return []; }
   async createBlacklistEntry(): Promise<any> { return {}; }
   async updateBlacklistEntry(): Promise<any> { return {}; }
