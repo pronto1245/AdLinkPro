@@ -67,9 +67,9 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
-              <div className="font-medium text-blue-800 mb-2">Тестовые данные для входа:</div>
+              <div className="font-medium text-blue-800 mb-2">Данные для входа:</div>
               <div className="text-blue-700">
-                <div><strong>Супер-админ:</strong> superadmin / admin123</div>
+                <div><strong>Администратор:</strong> admin / admin</div>
               </div>
             </div>
             
