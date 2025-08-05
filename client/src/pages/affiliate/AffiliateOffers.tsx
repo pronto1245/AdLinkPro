@@ -147,7 +147,7 @@ export default function AffiliateOffers() {
   return (
     <RoleBasedLayout>
       <div className="space-y-6">
-        {/* Header with Create Button (Partners can't create offers) */}
+        {/* Header without Create Button (Partners can't create offers) */}
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Доступные офферы</h1>
@@ -155,10 +155,6 @@ export default function AffiliateOffers() {
               Готовые трек-ссылки под каждым лендингом оффера
             </p>
           </div>
-          <Button disabled className="flex items-center gap-2" data-testid="button-create-offer" title="Партнеры не могут создавать офферы">
-            <Plus className="h-4 w-4" />
-            Создать оффер
-          </Button>
         </div>
 
         {/* Filters */}
