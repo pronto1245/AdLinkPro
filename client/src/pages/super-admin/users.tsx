@@ -72,22 +72,56 @@ export default function UsersManagement() {
     },
   });
 
-  const form = useForm<z.infer<typeof insertUserSchema>>({
-    resolver: zodResolver(insertUserSchema.omit({ id: true, createdAt: true, updatedAt: true })),
+  const createUserSchema = insertUserSchema.omit({ 
+    id: true, 
+    createdAt: true, 
+    updatedAt: true,
+    lastLoginAt: true,
+    registrationIp: true,
+    geoRestrictions: true,
+    timeRestrictions: true,
+    isBlocked: true,
+    blockReason: true,
+    blockedAt: true,
+    blockedBy: true,
+    isDeleted: true,
+    deletedAt: true,
+    deletedBy: true,
+    ownerId: true,
+    advertiserId: true,
+    balance: true,
+    holdAmount: true,
+    registrationApproved: true,
+    documentsVerified: true,
+    settings: true,
+    adminRole: true,
+    ipRestrictions: true,
+    twoFactorEnabled: true,
+    twoFactorSecret: true,
+    lastIpAddress: true,
+    sessionToken: true,
+    telegram: true
+  });
+
+  const form = useForm<z.infer<typeof createUserSchema>>({
+    resolver: zodResolver(createUserSchema),
     defaultValues: {
       username: '',
       email: '',
       password: '',
-      role: 'affiliate' as const,
+      role: 'affiliate',
       firstName: '',
       lastName: '',
       company: '',
       phone: '',
       country: '',
-      language: 'en' as const,
+      language: 'en',
       timezone: 'UTC',
       currency: 'USD',
+      kycStatus: 'pending',
       isActive: true,
+      status: 'active',
+      userType: 'affiliate'
     },
   });
 
