@@ -54,20 +54,9 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
     return <Redirect to="/login" />;
   }
   
-  // Debug logging
-  console.log('ProtectedRoute check:', { 
-    userRole: user.role, 
-    allowedRoles, 
-    hasAccess: allowedRoles.includes(user.role),
-    currentPath: window.location.pathname 
-  });
-  
   if (!allowedRoles.includes(user.role)) {
-    console.log('Access denied for user:', user, 'attempting to access:', window.location.pathname);
     return <Redirect to="/unauthorized" />;
   }
-  
-  console.log('ProtectedRoute: Access granted, rendering children for path:', window.location.pathname);
   return <>{children}</>;
 }
 
@@ -309,6 +298,12 @@ function Router() {
           <div className="text-center">
             <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
             <p className="text-gray-600 mt-2">You don't have permission to access this page.</p>
+            <div className="mt-4 p-4 bg-gray-100 rounded">
+              <h3 className="font-bold">Debug Info:</h3>
+              <p>Current URL: {window.location.href}</p>
+              <p>Pathname: {window.location.pathname}</p>
+              <p>This page should not be displayed if you have proper access.</p>
+            </div>
           </div>
         </div>
       </Route>
