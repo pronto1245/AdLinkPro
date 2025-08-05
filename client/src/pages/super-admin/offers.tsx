@@ -22,7 +22,7 @@ import { createOfferFrontendSchema } from '@shared/schema';
 import { z } from 'zod';
 import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play, Shield } from 'lucide-react';
 import { useLocation } from 'wouter';
-import SimpleOfferForm from '@/components/simple-offer-form';
+
 
 export default function OffersManagement() {
   const { token } = useAuth();
@@ -67,46 +67,54 @@ export default function OffersManagement() {
 
   const createOfferMutation = useMutation({
     mutationFn: async (offerData: z.infer<typeof createOfferFrontendSchema>) => {
-      console.log('Frontend - Creating offer with data:', offerData);
-      
-      const response = await fetch('/api/admin/offers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(offerData),
-      });
-      
-      console.log('Frontend - Response status:', response.status, response.statusText);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Frontend - Error response text:', errorText);
-        let errorData;
+      return new Promise(async (resolve, reject) => {
         try {
-          errorData = JSON.parse(errorText);
-        } catch {
-          errorData = { error: errorText };
+          console.log('Frontend - Creating offer with data:', offerData);
+          
+          const response = await fetch('/api/admin/offers', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(offerData),
+          });
+          
+          console.log('Frontend - Response status:', response.status, response.statusText);
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Frontend - Error response text:', errorText);
+            let errorData;
+            try {
+              errorData = JSON.parse(errorText);
+            } catch {
+              errorData = { error: errorText };
+            }
+            console.error('Frontend - Error response data:', errorData);
+            reject(new Error(errorData.details || errorData.error || `HTTP ${response.status}: ${response.statusText}`));
+            return;
+          }
+          
+          const result = await response.json();
+          console.log('Frontend - Success response:', result);
+          resolve(result);
+        } catch (error) {
+          console.error('Frontend - Fetch error:', error);
+          reject(error);
         }
-        console.error('Frontend - Error response data:', errorData);
-        throw new Error(errorData.details || errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const result = await response.json();
-      console.log('Frontend - Success response:', result);
-      return result;
+      });
     },
     onSuccess: (data) => {
       console.log('Frontend - Offer created successfully:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
+      alert('Оффер успешно создан!');
       setIsCreateDialogOpen(false);
       form.reset();
     },
     onError: (error) => {
       console.error('Frontend - Create offer mutation error:', error);
-      console.error('Frontend - Error stack:', error.stack);
-      alert('Ошибка создания оффера: ' + error.message);
+      alert('Ошибка создания оффера: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'));
     },
   });
 
@@ -195,39 +203,21 @@ export default function OffersManagement() {
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('offers_management')}</h1>
                 <p className="text-gray-600 dark:text-gray-400">{t('manage_platform_offers')}</p>
               </div>
-              <div className="flex gap-2">
-                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" data-testid="button-create-offer-simple">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Простая форма
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Создать оффер (простая форма)</DialogTitle>
-                    </DialogHeader>
-                    <SimpleOfferForm onSuccess={() => {
-                      setIsCreateDialogOpen(false);
-                      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
-                    }} />
-                  </DialogContent>
-                </Dialog>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button data-testid="button-create-offer">
-                      <Plus className="w-4 h-4 mr-2" />
-                      {t('create_offer')}
-                    </Button>
-                  </DialogTrigger>
-                </Dialog>
-              </div>
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button data-testid="button-create-offer">
+                    <Plus className="w-4 h-4 mr-2" />
+                    {t('create_offer')}
+                  </Button>
+                </DialogTrigger>
                 <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>{t('create_new_offer')}</DialogTitle>
                   </DialogHeader>
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit(async (data) => {
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const data = form.getValues();
                       console.log('Form submitted with data:', data);
                       console.log('Form validation errors:', form.formState.errors);
                       
@@ -236,12 +226,16 @@ export default function OffersManagement() {
                         return;
                       }
                       
-                      try {
-                        await createOfferMutation.mutateAsync(data);
-                      } catch (error) {
-                        console.error('Mutation error:', error);
+                      // Validate manually
+                      const validation = createOfferFrontendSchema.safeParse(data);
+                      if (!validation.success) {
+                        console.error('Validation failed:', validation.error);
+                        alert('Ошибка валидации: ' + validation.error.errors.map(e => e.message).join(', '));
+                        return;
                       }
-                    })} className="space-y-4">
+                      
+                      createOfferMutation.mutate(validation.data);
+                    }} className="space-y-4">
                       <FormField
                         control={form.control}
                         name="name"
@@ -356,7 +350,7 @@ export default function OffersManagement() {
                           {t('cancel')}
                         </Button>
                         <Button type="submit" disabled={createOfferMutation.isPending} data-testid="button-submit-offer">
-                          {createOfferMutation.isPending ? t('creating') : t('create')}
+                          {createOfferMutation.isPending ? 'Создание...' : 'Создать оффер'}
                         </Button>
                       </div>
                     </form>
