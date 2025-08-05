@@ -3879,6 +3879,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // ТЗ2: Enhanced Financial Management APIs
+  app.get("/api/admin/financial-metrics-enhanced/:period", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { period } = req.params;
+      
+      // Calculate date range based on period
+      const now = new Date();
+      let startDate = new Date();
+      
+      switch (period) {
+        case '7d':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case '30d':
+          startDate.setDate(now.getDate() - 30);
+          break;
+        case '90d':
+          startDate.setDate(now.getDate() - 90);
+          break;
+        default:
+          startDate.setDate(now.getDate() - 30);
+      }
+      
+      try {
+        // Real financial calculations from database
+        const [platformBalance] = await db.select({
+          totalDeposits: sql<number>`COALESCE(SUM(CASE WHEN type = 'deposit' AND status = 'completed' THEN amount ELSE 0 END), 0)`,
+          totalPayouts: sql<number>`COALESCE(SUM(CASE WHEN type = 'payout' AND status = 'completed' THEN amount ELSE 0 END), 0)`
+        }).from(transactions)
+          .where(
+            and(
+              gte(transactions.createdAt, startDate),
+              eq(transactions.status, 'completed')
+            )
+          );
+        
+        const balance = (platformBalance.totalDeposits || 0) - (platformBalance.totalPayouts || 0);
+        
+        res.json({
+          platformBalance: balance,
+          totalDeposits: platformBalance.totalDeposits || 0,
+          totalPayouts: platformBalance.totalPayouts || 0,
+          period: period
+        });
+      } catch (dbError) {
+        console.error("Database error in enhanced financial metrics:", dbError);
+        res.status(500).json({ error: "Database connection failed" });
+      }
+    } catch (error) {
+      console.error("Enhanced financial metrics error:", error);
+      res.status(500).json({ error: "Failed to fetch enhanced financial metrics" });
+    }
+  });
+
+  // ТЗ3: Real-time Anti-fraud Statistics
+  app.get("/api/admin/fraud-stats-realtime", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { period = '30d' } = req.query;
+      
+      const now = new Date();
+      let startDate = new Date();
+      
+      switch (period) {
+        case '7d':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case '30d':
+          startDate.setDate(now.getDate() - 30);
+          break;
+        case '90d':
+          startDate.setDate(now.getDate() - 90);
+          break;
+        default:
+          startDate.setDate(now.getDate() - 30);
+      }
+      
+      try {
+        // Real fraud statistics from database
+        const [fraudStats] = await db.select({
+          totalReports: sql<number>`COUNT(*)`
+        }).from(fraudReports)
+          .where(gte(fraudReports.createdAt, startDate));
+        
+        const [totalClicks] = await db.select({
+          clicks: sql<number>`COUNT(*)`
+        }).from(trackingClicks)
+          .where(gte(trackingClicks.createdAt, startDate));
+        
+        const [blockedIps] = await db.select({
+          blocked: sql<number>`COUNT(*)`
+        }).from(fraudBlocks)
+          .where(
+            and(
+              eq(fraudBlocks.type, 'ip'),
+              eq(fraudBlocks.isActive, true),
+              gte(fraudBlocks.createdAt, startDate)
+            )
+          );
+        
+        // Calculate fraud rate
+        const fraudRate = totalClicks.clicks > 0 ? 
+          ((fraudStats.totalReports / totalClicks.clicks) * 100).toFixed(2) : '0.00';
+        
+        res.json({
+          totalReports: fraudStats.totalReports || 0,
+          totalClicks: totalClicks.clicks || 0,
+          blockedIps: blockedIps.blocked || 0,
+          fraudRate: fraudRate,
+          period: period
+        });
+      } catch (dbError) {
+        console.error("Database error in fraud stats:", dbError);
+        res.status(500).json({ error: "Database connection failed" });
+      }
+    } catch (error) {
+      console.error("Real-time fraud stats error:", error);
+      res.status(500).json({ error: "Failed to fetch fraud statistics" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

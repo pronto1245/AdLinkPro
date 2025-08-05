@@ -30,6 +30,10 @@ import SuperAdminSupport from "@/pages/super-admin/support";
 import UserAnalytics from "@/pages/super-admin/user-analytics";
 import PostbackManagement from "@/pages/super-admin/postback-management";
 import AdvertiserDashboard from "@/pages/advertiser/simple-dashboard";
+import AdvertiserProfile from '@/pages/advertiser/AdvertiserProfile';
+import AdvertiserFinances from '@/pages/advertiser/AdvertiserFinances';
+import AdvertiserOffers from '@/pages/advertiser/AdvertiserOffers';
+import AdvertiserPartners from '@/pages/advertiser/AdvertiserPartners';
 import AffiliateDashboard from "@/pages/affiliate/simple-dashboard";
 import { useAuth } from "./contexts/auth-context";
 
@@ -171,16 +175,28 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
-      {/* Advertiser Routes */}
+      {/* Advertiser Routes - ТЗ2 Implementation */}
       <Route path="/advertiser">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <AdvertiserDashboard />
         </ProtectedRoute>
       </Route>
       
+      <Route path="/advertiser/profile">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <AdvertiserProfile />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/finances">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <AdvertiserFinances />
+        </ProtectedRoute>
+      </Route>
+      
       <Route path="/advertiser/offers">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <SuperAdminOffers />
+          <AdvertiserOffers />
         </ProtectedRoute>
       </Route>
       
@@ -190,21 +206,27 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
-      <Route path="/advertiser/offers/:id">
+      <Route path="/advertiser/offers/:id/edit">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <SuperAdminOfferDetails />
         </ProtectedRoute>
       </Route>
       
-      <Route path="/advertiser/users">
+      <Route path="/advertiser/partners">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <SuperAdminUsersManagement />
+          <AdvertiserPartners />
         </ProtectedRoute>
       </Route>
       
       <Route path="/advertiser/analytics">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <SuperAdminAnalytics />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/postbacks">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <PostbackManagement />
         </ProtectedRoute>
       </Route>
       
