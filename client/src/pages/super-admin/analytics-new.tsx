@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format, subDays } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -336,7 +336,7 @@ export default function AnalyticsNew() {
   const [columns, setColumns] = useState<ColumnConfig[]>(allColumns);
   const [sortConfig, setSortConfig] = useState<{ key: keyof AnalyticsData; direction: 'asc' | 'desc' } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize, setPageSize] = useState(10);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -388,22 +388,32 @@ export default function AnalyticsNew() {
       
       // Handle both array response (current) and paginated response (future)
       if (Array.isArray(result)) {
+        const total = result.length;
+        const totalPages = Math.ceil(total / pageSize);
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedData = result.slice(startIndex, endIndex);
+        
         return {
-          data: result,
-          total: result.length,
-          totalPages: Math.ceil(result.length / pageSize)
+          data: paginatedData,
+          total: total,
+          totalPages: totalPages
         };
       }
       
       return result;
-    },
-    onSuccess: (data) => {
-      setTotalRecords(data.total);
-      setTotalPages(data.totalPages);
     }
   });
 
   const analyticsData = analyticsResponse?.data || [];
+  
+  // Update pagination info when data changes
+  useEffect(() => {
+    if (analyticsResponse) {
+      setTotalRecords(analyticsResponse.total);
+      setTotalPages(analyticsResponse.totalPages);
+    }
+  }, [analyticsResponse]);
 
   // Column visibility toggle
   const toggleColumnVisibility = (key: keyof AnalyticsData) => {
@@ -606,7 +616,7 @@ export default function AnalyticsNew() {
                         <SelectValue placeholder="Быстрые фильтры" />
                       </SelectTrigger>
                       <SelectContent>
-                        {quickFilters.map(filter => (
+                        {quickFilters.map((filter: any) => (
                           <SelectItem key={filter.value} value={filter.value}>
                             {filter.label}
                           </SelectItem>
@@ -698,7 +708,7 @@ export default function AnalyticsNew() {
                           </tr>
                         </thead>
                         <tbody>
-                          {analyticsData.map((row, index) => (
+                          {analyticsData.map((row: any, index: number) => (
                             <tr key={row.id || index} className="border-b hover:bg-muted/50">
                               {visibleColumns.map((column) => (
                                 <td key={column.key} className="p-2 text-sm whitespace-nowrap">
