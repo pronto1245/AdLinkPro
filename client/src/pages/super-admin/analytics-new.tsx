@@ -14,7 +14,7 @@ import { useSidebar } from '@/contexts/sidebar-context';
 import { useToast } from '@/hooks/use-toast';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
-import { Search, Download, Settings, Filter, RefreshCw, Eye, EyeOff, RotateCcw, Check, X } from 'lucide-react';
+import { Search, Download, Settings, Filter, RefreshCw, Eye, EyeOff, RotateCcw, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Comprehensive analytics data interface with 100+ fields
 interface AnalyticsData {
@@ -338,6 +338,8 @@ export default function AnalyticsNew() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
 
   // Quick filters
   const quickFilters = [
@@ -354,7 +356,7 @@ export default function AnalyticsNew() {
   ];
 
   // Fetch analytics data
-  const { data: analyticsData = [], isLoading } = useQuery<AnalyticsData[]>({
+  const { data: analyticsResponse, isLoading } = useQuery<{data: AnalyticsData[], total: number, totalPages: number}>({
     queryKey: ['/api/admin/analytics', { 
       search: searchTerm,
       dateFrom,
@@ -382,9 +384,26 @@ export default function AnalyticsNew() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch analytics data');
-      return response.json();
+      const result = await response.json();
+      
+      // Handle both array response (current) and paginated response (future)
+      if (Array.isArray(result)) {
+        return {
+          data: result,
+          total: result.length,
+          totalPages: Math.ceil(result.length / pageSize)
+        };
+      }
+      
+      return result;
     },
+    onSuccess: (data) => {
+      setTotalRecords(data.total);
+      setTotalPages(data.totalPages);
+    }
   });
+
+  const analyticsData = analyticsResponse?.data || [];
 
   // Column visibility toggle
   const toggleColumnVisibility = (key: keyof AnalyticsData) => {
@@ -422,6 +441,39 @@ export default function AnalyticsNew() {
   };
 
   const visibleColumns = columns.filter(col => col.visible);
+
+  // Pagination helpers
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const getPageNumbers = () => {
+    const delta = 2;
+    const range = [];
+    const rangeWithDots = [];
+    
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i);
+    }
+
+    if (currentPage - delta > 2) {
+      rangeWithDots.push(1, '...');
+    } else {
+      rangeWithDots.push(1);
+    }
+
+    rangeWithDots.push(...range);
+
+    if (currentPage + delta < totalPages - 1) {
+      rangeWithDots.push('...', totalPages);
+    } else if (totalPages > 1) {
+      rangeWithDots.push(totalPages);
+    }
+
+    return rangeWithDots;
+  };
 
   return (
     <div className="h-screen bg-background overflow-hidden">
@@ -576,7 +628,51 @@ export default function AnalyticsNew() {
             <Card className="bg-white dark:bg-gray-800 border shadow-sm">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                  <CardTitle className="text-xl">Данные аналитики ({analyticsData.length} записей)</CardTitle>
+                  <CardTitle className="text-xl">
+                    Данные аналитики ({totalRecords > 0 ? totalRecords : analyticsData.length} записей)
+                  </CardTitle>
+                  {totalPages > 1 && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => goToPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="p-1 h-8 w-8"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      
+                      <div className="flex items-center gap-1">
+                        {getPageNumbers().map((page, index) => (
+                          <Button
+                            key={index}
+                            variant={page === currentPage ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => typeof page === 'number' && goToPage(page)}
+                            disabled={page === '...'}
+                            className="h-8 w-8 p-0 text-sm"
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => goToPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="p-1 h-8 w-8"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                      
+                      <span className="text-sm text-muted-foreground ml-2">
+                        Стр. {currentPage} из {totalPages}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
