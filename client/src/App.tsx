@@ -25,6 +25,7 @@ import SuperAdminPostbacks from "@/pages/super-admin/postbacks-management";
 import SuperAdminBlacklist from "@/pages/super-admin/blacklist-management";
 import SuperAdminAnalytics from "@/pages/super-admin/analytics";
 import AnalyticsNew from "@/pages/super-admin/analytics-new";
+import PartnerOffers from '@/pages/affiliate/PartnerOffers';
 import SuperAdminSupport from "@/pages/super-admin/support";
 import UserAnalytics from "@/pages/super-admin/user-analytics";
 import PostbackManagement from "@/pages/super-admin/postback-management";
@@ -180,6 +181,11 @@ function Router() {
       <Route path="/affiliate">
         <ProtectedRoute allowedRoles={['affiliate']}>
           <AffiliateDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/affiliate/offers">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PartnerOffers />
         </ProtectedRoute>
       </Route>
       

@@ -98,7 +98,8 @@ export const offers = pgTable("offers", {
   moderationStatus: text("moderation_status").default('pending'), // pending, approved, rejected, needs_revision
   moderationComment: text("moderation_comment"), // Admin comment for moderation
   trackingUrl: text("tracking_url"),
-  landingPageUrl: text("landing_page_url"),
+  landingPageUrl: text("landing_page_url"), 
+  baseUrl: text("base_url"), // Base URL for automatic partner link generation
   previewUrl: text("preview_url"), // Preview link for partners
   restrictions: text("restrictions"),
   fraudRestrictions: text("fraud_restrictions"), // Global fraud restrictions set by admin

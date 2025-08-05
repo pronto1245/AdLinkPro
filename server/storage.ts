@@ -367,6 +367,142 @@ export class DatabaseStorage implements IStorage {
     return await query;
   }
 
+  // Generate automatic partner link for an offer based on its base_url
+  generatePartnerLink(baseUrl: string, partnerId: string, offerId: string, subId?: string): string {
+    if (!baseUrl) {
+      return '';
+    }
+
+    try {
+      const url = new URL(baseUrl);
+      const partnerSubId = subId || `partner_${partnerId.slice(0, 8)}`;
+      
+      // Add tracking parameters
+      url.searchParams.set('subid', partnerSubId);
+      url.searchParams.set('partner_id', partnerId);
+      url.searchParams.set('offer_id', offerId);
+      url.searchParams.set('click_id', `${partnerId.slice(0, 8)}_${offerId.slice(0, 8)}_${Date.now().toString(36)}`);
+      
+      return url.toString();
+    } catch (error) {
+      console.error('Error generating partner link:', error);
+      return baseUrl; // Return original URL if parsing fails
+    }
+  }
+
+  // Get partner's available offers with auto-generated links
+  async getPartnerOffersWithLinks(partnerId: string): Promise<any[]> {
+    try {
+      // Get partner-specific approved offers
+      const partnerOffersList = await db
+        .select({
+          partnerOfferId: partnerOffers.id,
+          partnerId: partnerOffers.partnerId,
+          offerId: partnerOffers.offerId,
+          isApproved: partnerOffers.isApproved,
+          customPayout: partnerOffers.customPayout,
+          partnerCreatedAt: partnerOffers.createdAt,
+          // Offer details
+          id: offers.id,
+          name: offers.name,
+          description: offers.description,
+          logo: offers.logo,
+          category: offers.category,
+          payout: offers.payout,
+          payoutType: offers.payoutType,
+          currency: offers.currency,
+          status: offers.status,
+          landingPages: offers.landingPages,
+          baseUrl: offers.baseUrl,
+          landingPageUrl: offers.landingPageUrl,
+          previewUrl: offers.previewUrl,
+          kpiConditions: offers.kpiConditions,
+          countries: offers.countries,
+          isPrivate: offers.isPrivate,
+          createdAt: offers.createdAt,
+        })
+        .from(partnerOffers)
+        .leftJoin(offers, eq(partnerOffers.offerId, offers.id))
+        .where(eq(partnerOffers.partnerId, partnerId));
+
+      // Get all public offers (not private)
+      const publicOffers = await db
+        .select({
+          id: offers.id,
+          name: offers.name,
+          description: offers.description,
+          logo: offers.logo,
+          category: offers.category,
+          payout: offers.payout,
+          payoutType: offers.payoutType,
+          currency: offers.currency,
+          status: offers.status,
+          landingPages: offers.landingPages,
+          baseUrl: offers.baseUrl,
+          landingPageUrl: offers.landingPageUrl,
+          previewUrl: offers.previewUrl,
+          kpiConditions: offers.kpiConditions,
+          countries: offers.countries,
+          isPrivate: offers.isPrivate,
+          createdAt: offers.createdAt,
+        })
+        .from(offers)
+        .where(
+          and(
+            eq(offers.status, 'active'),
+            eq(offers.isPrivate, false)
+          )
+        );
+
+      // Combine and process offers
+      const allOffers = new Map();
+      
+      // Add partner-specific approved offers
+      partnerOffersList.forEach(po => {
+        if (po.id && po.isApproved) {
+          const baseUrl = po.baseUrl || po.landingPageUrl || (po.landingPages as any)?.[0]?.url;
+          allOffers.set(po.id, {
+            id: po.id,
+            name: po.name,
+            description: po.description,
+            logo: po.logo,
+            category: po.category,
+            payout: po.customPayout || po.payout,
+            payoutType: po.payoutType,
+            currency: po.currency,
+            status: po.status,
+            landingPages: po.landingPages,
+            baseUrl: po.baseUrl,
+            previewUrl: po.previewUrl,
+            kpiConditions: po.kpiConditions,
+            countries: po.countries,
+            isPrivate: po.isPrivate,
+            isApproved: true,
+            partnerLink: baseUrl ? this.generatePartnerLink(baseUrl, partnerId, po.id) : '',
+            createdAt: po.createdAt,
+          });
+        }
+      });
+      
+      // Add public offers if not already added
+      publicOffers.forEach(offer => {
+        if (!allOffers.has(offer.id)) {
+          const baseUrl = offer.baseUrl || offer.landingPageUrl || (offer.landingPages as any)?.[0]?.url;
+          allOffers.set(offer.id, {
+            ...offer,
+            isApproved: false,
+            partnerLink: baseUrl ? this.generatePartnerLink(baseUrl, partnerId, offer.id) : '',
+          });
+        }
+      });
+
+      return Array.from(allOffers.values());
+    } catch (error) {
+      console.error("Error getting partner offers with links:", error);
+      return [];
+    }
+  }
+
   async createPartnerOffer(partnerOffer: InsertPartnerOffer): Promise<PartnerOffer> {
     const [newPartnerOffer] = await db
       .insert(partnerOffers)

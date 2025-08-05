@@ -584,6 +584,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get partner's available offers with auto-generated links
+  app.get("/api/partner/offers", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offersWithLinks = await storage.getPartnerOffersWithLinks(authUser.id);
+      res.json(offersWithLinks);
+    } catch (error) {
+      console.error("Get partner offers with links error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Generate partner link for specific offer
+  app.post("/api/partner/generate-link", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { offerId, subId } = req.body;
+      
+      if (!offerId) {
+        return res.status(400).json({ error: "Offer ID is required" });
+      }
+
+      // Get the offer
+      const offer = await storage.getOffer(offerId);
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+
+      // Check if partner has access to this offer
+      const partnerOffers = await storage.getPartnerOffers(authUser.id, offerId);
+      
+      // For private offers, partner must be approved
+      if (offer.isPrivate && partnerOffers.length === 0) {
+        return res.status(403).json({ error: "Access denied to this offer" });
+      }
+
+      // Generate the partner link
+      const baseUrl = offer.baseUrl || offer.landingPageUrl || (offer.landingPages as any)?.[0]?.url;
+      if (!baseUrl) {
+        return res.status(400).json({ error: "No base URL configured for this offer" });
+      }
+
+      const partnerLink = storage.generatePartnerLink(baseUrl, authUser.id, offerId, subId);
+      
+      res.json({
+        offerId,
+        partnerLink,
+        baseUrl,
+        generatedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Generate partner link error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Statistics
   app.get("/api/statistics", authenticateToken, async (req, res) => {
     try {
@@ -950,6 +1006,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Delete user error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create partner-offer association  
+  app.post("/api/admin/partner-offers", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { partnerId, offerId, isApproved = false, customPayout } = req.body;
+      
+      if (!partnerId || !offerId) {
+        return res.status(400).json({ error: "Partner ID and Offer ID are required" });
+      }
+
+      // Check if association already exists
+      const existing = await storage.getPartnerOffers(partnerId, offerId);
+      if (existing.length > 0) {
+        return res.status(409).json({ error: "Partner-offer association already exists" });
+      }
+
+      const association = await storage.createPartnerOffer({
+        partnerId,
+        offerId,
+        isApproved,
+        customPayout: customPayout ? parseFloat(customPayout) : null,
+      });
+
+      res.status(201).json(association);
+    } catch (error) {
+      console.error("Create partner-offer association error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

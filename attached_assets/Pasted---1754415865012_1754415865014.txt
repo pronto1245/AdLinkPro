@@ -1,0 +1,111 @@
+Раздел: Автоматическая генерация уникальных ссылок для партнёров по одному офферу
+
+🎯 Цель
+Обеспечить, чтобы каждый партнёр автоматически получал уникальную ссылку на оффер при его создании рекламодателем. Рекламодатель указывает базовую ссылку, а система на лету формирует персонализированную ссылку для каждого партнёра.
+
+🧱 Функциональные требования
+1. Создание оффера
+Рекламодатель в админке создаёт оффер с полем base_url.
+
+Пример:
+
+ini
+Copy
+Edit
+base_url = https://example.com/landing
+2. Генерация ссылок для партнёров
+Каждому партнёру формируется персональная ссылка:
+
+bash
+Copy
+Edit
+https://example.com/landing?subid=partner_{id}
+3. Отображение партнёрской ссылки
+Во фронтенде (в кабинете партнёра) отображается сформированная ссылка.
+
+Ссылка не сохраняется в БД — формируется динамически на основе:
+
+offer.base_url
+
+partner.id или partner.subid
+
+4. Поддержка трекинга
+При переходе по ссылке параметр subid логируется в системе:
+
+для аналитики
+
+для начисления прибыли
+
+5. Безопасность (опционально)
+Возможность хешировать subid для защиты от подмен:
+
+ruby
+Copy
+Edit
+?subid=47-abc123def
+где abc123def — HMAC или UUID
+
+🧰 Дополнительные опции
+Возможность смены формата ссылки:
+?aff_id=xxx или ?click_id=xxx
+
+Возможность скрыть параметры через редирект:
+
+arduino
+Copy
+Edit
+https://trk.example.com/click/abc123
+🗃️ SQL-схема базы данных
+1. Таблица partners
+sql
+Copy
+Edit
+CREATE TABLE partners (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE,
+  subid VARCHAR(64) UNIQUE, -- можно использовать для ссылок
+  created_at TIMESTAMP DEFAULT NOW()
+);
+2. Таблица offers
+sql
+Copy
+Edit
+CREATE TABLE offers (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  base_url TEXT NOT NULL,
+  description TEXT,
+  payout DECIMAL(10, 2),
+  currency VARCHAR(10) DEFAULT 'USD',
+  status VARCHAR(20) DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+3. (опционально) Таблица clicks — для трекинга
+sql
+Copy
+Edit
+CREATE TABLE clicks (
+  id SERIAL PRIMARY KEY,
+  offer_id INT REFERENCES offers(id),
+  partner_id INT REFERENCES partners(id),
+  subid VARCHAR(255),
+  click_time TIMESTAMP DEFAULT NOW(),
+  ip VARCHAR(45),
+  user_agent TEXT,
+  click_id UUID DEFAULT gen_random_uuid()
+);
+🧠 Пример генерации ссылки на бэкенде (Node.js / Express / TypeORM)
+ts
+Copy
+Edit
+const generatePartnerLink = (offerBaseUrl: string, partnerId: number) => {
+  return `${offerBaseUrl}?subid=partner_${partnerId}`;
+}
+🧩 Пример для React / Next.js
+tsx
+Copy
+Edit
+<Link href={`${offer.base_url}?subid=partner_${partner.id}`}>
+  {offer.name}
+</Link>
