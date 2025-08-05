@@ -424,85 +424,84 @@ export default function AnalyticsNew() {
   const visibleColumns = columns.filter(col => col.visible);
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+      <div className="flex-1 flex flex-col min-w-0">
         <Header title="Аналитика" />
-        <main className="flex-1 overflow-auto p-2">
-          <div className="space-y-3 max-w-full">
-            {/* Header with title and controls - compact */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm border max-w-6xl">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <main className="flex-1 overflow-auto p-4">
+          <div className="space-y-4 w-full max-w-none">
+            {/* Header with title and controls */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border">
+              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3">
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-lg font-bold truncate">Аналитика</h1>
-                  <p className="text-muted-foreground text-xs truncate">
-                    100+ полей данных
+                  <h1 className="text-2xl font-bold">Аналитика (Полная версия)</h1>
+                  <p className="text-muted-foreground text-sm">
+                    Комплексная аналитика с 100+ полями данных
                   </p>
                 </div>
-                <div className="flex gap-1 shrink-0">
-                  <Button onClick={() => setShowColumnSettings(!showColumnSettings)} variant="outline" size="sm" className="text-xs px-1.5 py-0.5 h-6">
-                    <Settings className="w-3 h-3" />
-                    <span className="ml-1 hidden sm:inline">Столбцы</span>
+                <div className="flex flex-wrap gap-2 shrink-0">
+                  <Button onClick={() => setShowColumnSettings(!showColumnSettings)} variant="outline" size="sm">
+                    <Settings className="w-4 h-4 mr-1" />
+                    Столбцы ({visibleColumns.length})
                   </Button>
-                  <Button variant="outline" size="sm" className="text-xs px-1.5 py-0.5 h-6">
-                    <Download className="w-3 h-3" />
-                    <span className="ml-1 hidden sm:inline">Экспорт</span>
+                  <Button variant="outline" size="sm">
+                    <Download className="w-4 h-4 mr-1" />
+                    Экспорт
                   </Button>
-                  <Button variant="outline" size="sm" className="text-xs px-1.5 py-0.5 h-6">
-                    <RefreshCw className="w-3 h-3" />
-                    <span className="ml-1 hidden sm:inline">Обновить</span>
+                  <Button variant="outline" size="sm">
+                    <RefreshCw className="w-4 h-4 mr-1" />
+                    Обновить
                   </Button>
                 </div>
               </div>
             </div>
 
-            {/* Statistics blocks - very compact */}
-            <div className="grid grid-cols-4 gap-1 max-w-3xl">
+            {/* Statistics blocks */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-                <CardContent className="p-1.5">
-                  <div className="text-xs font-bold">{analyticsData.length}</div>
-                  <p className="text-blue-100 text-[10px]">Записей</p>
+                <CardContent className="pt-3 pb-3 px-4">
+                  <div className="text-lg font-bold">{analyticsData.length}</div>
+                  <p className="text-blue-100 text-xs">Всего записей</p>
                 </CardContent>
               </Card>
               <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-                <CardContent className="p-1.5">
-                  <div className="text-xs font-bold">{visibleColumns.length}</div>
-                  <p className="text-green-100 text-[10px]">Столбцов</p>
+                <CardContent className="pt-3 pb-3 px-4">
+                  <div className="text-lg font-bold">{visibleColumns.length}</div>
+                  <p className="text-green-100 text-xs">Видимых столбцов</p>
                 </CardContent>
               </Card>
               <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-                <CardContent className="p-1.5">
-                  <div className="text-xs font-bold">{allColumns.length}</div>
-                  <p className="text-purple-100 text-[10px]">Полей</p>
+                <CardContent className="pt-3 pb-3 px-4">
+                  <div className="text-lg font-bold">{allColumns.length}</div>
+                  <p className="text-purple-100 text-xs">Всего полей</p>
                 </CardContent>
               </Card>
               <Card className="bg-gradient-to-r from-red-500 to-red-600 text-white">
-                <CardContent className="p-1.5">
-                  <div className="text-xs font-bold">
+                <CardContent className="pt-3 pb-3 px-4">
+                  <div className="text-lg font-bold">
                     {analyticsData.filter(item => item.isBot).length}
                   </div>
-                  <p className="text-red-100 text-[10px]">Ботов</p>
+                  <p className="text-red-100 text-xs">Ботов обнаружено</p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Column Settings Panel - Very compact */}
+            {/* Column Settings Panel */}
             {showColumnSettings && (
-              <Card className="bg-white dark:bg-gray-800 border shadow-sm max-w-4xl">
-                <CardHeader className="pb-1">
-                  <CardTitle className="text-xs">Настройка столбцов</CardTitle>
+              <Card className="bg-white dark:bg-gray-800 border shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Настройка столбцов</CardTitle>
                 </CardHeader>
-                <CardContent className="p-2">
-                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1 max-h-60 overflow-y-auto">
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-80 overflow-y-auto">
                     {columns.map((column) => (
-                      <div key={column.key} className="flex items-center space-x-1">
+                      <div key={column.key} className="flex items-center space-x-2">
                         <Checkbox
                           id={column.key}
                           checked={column.visible}
                           onCheckedChange={() => toggleColumnVisibility(column.key)}
-                          className="h-3 w-3"
                         />
-                        <label htmlFor={column.key} className="text-[10px] cursor-pointer truncate">
+                        <label htmlFor={column.key} className="text-xs cursor-pointer">
                           {column.label}
                         </label>
                       </div>
@@ -512,23 +511,23 @@ export default function AnalyticsNew() {
               </Card>
             )}
 
-            {/* Filters - Ultra compact */}
-            <Card className="bg-white dark:bg-gray-800 border shadow-sm max-w-4xl">
-              <CardHeader className="pb-0">
-                <CardTitle className="flex items-center gap-1 text-xs">
-                  <Filter className="w-3 h-3" />
-                  Фильтры
+            {/* Filters */}
+            <Card className="bg-white dark:bg-gray-800 border shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Filter className="w-4 h-4" />
+                  Фильтрация данных
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-2">
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
                   <div className="relative">
-                    <Search className="absolute left-1.5 top-1 h-3 w-3 text-muted-foreground" />
+                    <Search className="absolute left-3 top-2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Поиск..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-6 h-6 text-[10px]"
+                      className="pl-9 h-8 text-sm"
                     />
                   </div>
                   <div>
@@ -536,7 +535,7 @@ export default function AnalyticsNew() {
                       type="date"
                       value={dateFrom}
                       onChange={(e) => setDateFrom(e.target.value)}
-                      className="h-6 text-[10px]"
+                      className="h-8 text-sm"
                       title="От даты"
                     />
                   </div>
@@ -545,14 +544,14 @@ export default function AnalyticsNew() {
                       type="date"
                       value={dateTo}
                       onChange={(e) => setDateTo(e.target.value)}
-                      className="h-6 text-[10px]"
+                      className="h-8 text-sm"
                       title="До даты"
                     />
                   </div>
                   <div>
                     <Select value={quickFilter} onValueChange={setQuickFilter}>
-                      <SelectTrigger className="h-6 text-[10px]">
-                        <SelectValue placeholder="Фильтры" />
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Быстрые фильтры" />
                       </SelectTrigger>
                       <SelectContent>
                         {quickFilters.map(filter => (
@@ -564,8 +563,8 @@ export default function AnalyticsNew() {
                     </Select>
                   </div>
                   <div>
-                    <Button variant="outline" className="h-6 w-full text-[10px]" size="sm">
-                      <RotateCcw className="w-2 h-2 mr-0.5" />
+                    <Button variant="outline" className="h-8 w-full text-sm" size="sm">
+                      <RotateCcw className="w-3 h-3 mr-1" />
                       Сбросить
                     </Button>
                   </div>
@@ -573,63 +572,51 @@ export default function AnalyticsNew() {
               </CardContent>
             </Card>
 
-            {/* Data Table - Maximum compactness */}
+            {/* Data Table - with proper container */}
             <Card className="bg-white dark:bg-gray-800 border shadow-sm">
-              <CardHeader className="pb-1">
-                <CardTitle className="text-xs">Данные ({analyticsData.length})</CardTitle>
+              <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                  <CardTitle className="text-xl">Данные аналитики ({analyticsData.length} записей)</CardTitle>
+                </div>
               </CardHeader>
-              <CardContent className="p-1">
+              <CardContent>
                 {isLoading ? (
-                  <div className="flex justify-center p-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  <div className="flex justify-center p-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                   </div>
                 ) : (
-                  <div className="w-full overflow-x-auto overflow-y-auto max-h-96">
-                    <table className="w-full border-collapse table-fixed text-[10px]">
-                      <thead className="sticky top-0 bg-white dark:bg-gray-800">
-                        <tr className="border-b bg-muted/50">
-                          {visibleColumns.map((column, index) => (
-                            <th
-                              key={column.key}
-                              className="text-left p-1 font-medium bg-muted/30 border-r last:border-r-0"
-                              style={{ 
-                                width: '120px',
-                                minWidth: '60px',
-                                maxWidth: '150px'
-                              }}
-                            >
-                              <div className="truncate text-[9px]" title={column.label}>
-                                {column.label}
-                              </div>
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {analyticsData.map((row, index) => (
-                          <tr key={row.id || index} className="border-b hover:bg-muted/20 even:bg-muted/5">
+                  <div className="overflow-x-auto">
+                    <div className="min-w-max">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="border-b">
                             {visibleColumns.map((column) => (
-                              <td 
-                                key={column.key} 
-                                className="p-1 border-r last:border-r-0"
-                                style={{ 
-                                  width: '120px',
-                                  minWidth: '60px',
-                                  maxWidth: '150px'
-                                }}
+                              <th
+                                key={column.key}
+                                className="text-left p-2 font-medium text-sm whitespace-nowrap"
+                                style={{ width: column.width }}
                               >
-                                <div className="truncate text-[9px]" title={String(row[column.key])}>
-                                  {formatCellValue(row[column.key], column.type)}
-                                </div>
-                              </td>
+                                {column.label}
+                              </th>
                             ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {analyticsData.map((row, index) => (
+                            <tr key={row.id || index} className="border-b hover:bg-muted/50">
+                              {visibleColumns.map((column) => (
+                                <td key={column.key} className="p-2 text-sm whitespace-nowrap">
+                                  {formatCellValue(row[column.key], column.type)}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                     
                     {analyticsData.length === 0 && (
-                      <div className="text-center py-4 text-muted-foreground text-xs">
+                      <div className="text-center py-8 text-muted-foreground">
                         Нет данных для отображения
                       </div>
                     )}
