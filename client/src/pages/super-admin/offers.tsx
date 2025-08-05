@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import OfferFormSimple from '@/components/offer-form-simple';
+
 import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play, Shield } from 'lucide-react';
 import { useLocation } from 'wouter';
 
@@ -145,7 +145,15 @@ export default function OffersManagement() {
                   <DialogHeader>
                     <DialogTitle>Создать оффер</DialogTitle>
                   </DialogHeader>
-                  <OfferFormSimple onClose={() => setIsCreateDialogOpen(false)} />
+                  <div className="text-center p-8">
+                  <p className="text-gray-500">Форма создания офферов доступна в разделе Управление офферами</p>
+                  <Button 
+                    onClick={() => setLocation('/super-admin/offers-management')} 
+                    className="mt-4"
+                  >
+                    Перейти к созданию офферов
+                  </Button>
+                </div>
                 </DialogContent>
               </Dialog>
             </div>

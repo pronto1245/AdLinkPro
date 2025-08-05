@@ -1683,6 +1683,7 @@ export default function OfferDetails() {
 function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { language } = useLanguage();
   
   // Schema для редактирования оффера (упрощенная версия)
   const editOfferSchema = z.object({
