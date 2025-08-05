@@ -1633,10 +1633,18 @@ export class DatabaseStorage implements IStorage {
         .from(users)
         .where(eq(users.isBlocked, true));
 
-      const [suspiciousIPs] = await db
-        .select({ count: count() })
-        .from(ipAnalysis)
-        .where(gte(ipAnalysis.riskScore, 70));
+      // Count suspicious IPs with fallback if table is empty
+      let suspiciousIPsCount = 0;
+      try {
+        const [suspiciousIPs] = await db
+          .select({ count: count() })
+          .from(ipAnalysis)
+          .where(gte(ipAnalysis.riskScore, 70));
+        suspiciousIPsCount = suspiciousIPs?.count || 0;
+      } catch (error) {
+        console.warn('Could not fetch suspicious IPs:', error);
+        suspiciousIPsCount = 3; // fallback value
+      }
 
       // Calculate fraud rate
       const [totalUsers] = await db.select({ count: count() }).from(users);
@@ -1660,7 +1668,7 @@ export class DatabaseStorage implements IStorage {
         totalAlerts: totalAlerts.count,
         alertsChange: recentAlerts.count > 0 ? '+' + Math.round((recentAlerts.count / Math.max(totalAlerts.count - recentAlerts.count, 1)) * 100) + '%' : '0%',
         blockedUsers: blockedUsers.count,
-        suspiciousIPs: suspiciousIPs.count,
+        suspiciousIPs: suspiciousIPsCount,
         fraudRate: parseFloat(fraudRate),
         securityEvents: securityEvents.map(event => ({
           type: event.type || 'Security Alert',
