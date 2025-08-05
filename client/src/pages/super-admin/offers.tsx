@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { insertOfferSchema } from '@shared/schema';
+import { createOfferFrontendSchema } from '@shared/schema';
 import { z } from 'zod';
 import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play, Shield } from 'lucide-react';
 import { useLocation } from 'wouter';
@@ -53,7 +53,7 @@ export default function OffersManagement() {
   });
 
   const createOfferMutation = useMutation({
-    mutationFn: async (offerData: z.infer<typeof insertOfferSchema>) => {
+    mutationFn: async (offerData: z.infer<typeof createOfferFrontendSchema>) => {
       const response = await fetch('/api/admin/offers', {
         method: 'POST',
         headers: {
@@ -62,13 +62,19 @@ export default function OffersManagement() {
         },
         body: JSON.stringify(offerData),
       });
-      if (!response.ok) throw new Error('Failed to create offer');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.details || errorData.error || 'Failed to create offer');
+      }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
       setIsCreateDialogOpen(false);
       form.reset();
+    },
+    onError: (error) => {
+      console.error('Create offer error:', error);
     },
   });
 
@@ -103,19 +109,17 @@ export default function OffersManagement() {
     },
   });
 
-  const form = useForm<z.infer<typeof insertOfferSchema>>({
-    resolver: zodResolver(insertOfferSchema),
+  const form = useForm<z.infer<typeof createOfferFrontendSchema>>({
+    resolver: zodResolver(createOfferFrontendSchema),
     defaultValues: {
       name: '',
       description: '',
       category: '',
-      advertiserId: '',
-      payout: '0',
       payoutType: 'cpa',
       currency: 'USD',
       status: 'draft',
-      kycRequired: false,
-      isPrivate: false,
+      antifraudEnabled: true,
+      autoApprovePartners: false,
     },
   });
 
@@ -214,22 +218,20 @@ export default function OffersManagement() {
                         />
                         <FormField
                           control={form.control}
-                          name="advertiserId"
+                          name="status"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t('advertiser')}</FormLabel>
+                              <FormLabel>{t('status')}</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                  <SelectTrigger data-testid="select-advertiser">
+                                  <SelectTrigger data-testid="select-status">
                                     <SelectValue />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {advertisers?.map((advertiser: any) => (
-                                    <SelectItem key={advertiser.id} value={advertiser.id}>
-                                      {advertiser.username} ({advertiser.company || advertiser.email})
-                                    </SelectItem>
-                                  ))}
+                                  <SelectItem value="draft">Draft</SelectItem>
+                                  <SelectItem value="active">Active</SelectItem>
+                                  <SelectItem value="paused">Paused</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -237,20 +239,7 @@ export default function OffersManagement() {
                           )}
                         />
                       </div>
-                      <div className="grid grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="payout"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('payout')}</FormLabel>
-                              <FormControl>
-                                <Input type="number" {...field} data-testid="input-payout" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                      <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="payoutType"
