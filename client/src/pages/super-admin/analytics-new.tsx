@@ -675,7 +675,7 @@ export default function AnalyticsNew() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                   <CardTitle className="text-xl">
-                    Данные аналитики ({totalRecords > 0 ? totalRecords : analyticsData.length} записей)
+                    Данные аналитики
                   </CardTitle>
                   {totalPages > 1 && (
                     <div className="flex items-center gap-2">
