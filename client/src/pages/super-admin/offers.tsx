@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-// Removed unused form imports
+import OfferFormSimple from '@/components/offer-form-simple';
 import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play, Shield } from 'lucide-react';
 import { useLocation } from 'wouter';
 
@@ -154,195 +154,12 @@ export default function OffersManagement() {
                     {t('create_offer')}
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>{t('create_new_offer')}</DialogTitle>
+                    <DialogTitle>Создать оффер</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={async (e) => {
-                      e.preventDefault();
-                      
-                      const formData = new FormData(e.target as HTMLFormElement);
-                      const data = {
-                        name: formData.get('name') as string,
-                        category: formData.get('category') as string,
-                        description_ru: formData.get('description_ru') as string || '',
-                        description_en: formData.get('description_en') as string || '',
-                        goals_ru: formData.get('goals_ru') as string || '',
-                        goals_en: formData.get('goals_en') as string || '',
-                        logo: formData.get('logo') as string || '',
-                        status: formData.get('status') as string,
-                        payoutType: formData.get('payoutType') as string,
-                        currency: formData.get('currency') as string,
-                        kpiConditions_ru: formData.get('kpiConditions_ru') as string || '',
-                        kpiConditions_en: formData.get('kpiConditions_en') as string || '',
-                        allowedTrafficSources: [formData.get('trafficSource') as string].filter(Boolean),
-                        allowedApps: [formData.get('allowedApp') as string].filter(Boolean),
-                        antifraudEnabled: formData.get('antifraudEnabled') === 'on',
-                        autoApprovePartners: formData.get('autoApprovePartners') === 'on',
-                        landingPages: formData.get('landingPageUrl') ? [{
-                          name: formData.get('landingPageName') as string || 'Основная страница',
-                          url: formData.get('landingPageUrl') as string,
-                          payoutAmount: Number(formData.get('landingPagePayout')) || 0,
-                          currency: formData.get('currency') as string,
-                          geo: formData.get('landingPageGeo') as string || ''
-                        }] : []
-                      };
-                      
-                      console.log('Submitting form data:', data);
-                      
-                      // Direct fetch call bypassing React Query
-                      try {
-                        const response = await fetch('/api/admin/offers', {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`,
-                          },
-                          body: JSON.stringify(data),
-                        });
-                        
-                        if (!response.ok) {
-                          const errorText = await response.text();
-                          throw new Error(`HTTP ${response.status}: ${errorText}`);
-                        }
-                        
-                        const result = await response.json();
-                        console.log('Direct fetch success:', result);
-                        alert('Оффер успешно создан: ' + result.name);
-                        setIsCreateDialogOpen(false);
-                        queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
-                      } catch (error) {
-                        console.error('Direct fetch error:', error);
-                        alert('Ошибка: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'));
-                      }
-                    }} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Название оффера *</label>
-                        <input name="name" type="text" required className="w-full p-2 border rounded" placeholder="Введите название оффера" />
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Описание (RU)</label>
-                          <textarea name="description_ru" className="w-full p-2 border rounded" placeholder="Описание на русском"></textarea>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Описание (EN)</label>
-                          <textarea name="description_en" className="w-full p-2 border rounded" placeholder="Description in English"></textarea>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Цели (RU)</label>
-                          <textarea name="goals_ru" className="w-full p-2 border rounded" placeholder="Цели на русском"></textarea>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Цели (EN)</label>
-                          <textarea name="goals_en" className="w-full p-2 border rounded" placeholder="Goals in English"></textarea>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Категория *</label>
-                          <select name="category" required className="w-full p-2 border rounded">
-                            <option value="gambling">Gambling</option>
-                            <option value="finance">Finance</option>
-                            <option value="dating">Dating</option>
-                            <option value="other">Other</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Логотип URL</label>
-                          <input name="logo" type="url" className="w-full p-2 border rounded" placeholder="https://example.com/logo.png" />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Тип выплаты</label>
-                          <select name="payoutType" className="w-full p-2 border rounded">
-                            <option value="cpa">CPA</option>
-                            <option value="cps">CPS</option>
-                            <option value="cpl">CPL</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Валюта</label>
-                          <select name="currency" className="w-full p-2 border rounded">
-                            <option value="USD">USD</option>
-                            <option value="EUR">EUR</option>
-                            <option value="RUB">RUB</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Статус</label>
-                          <select name="status" className="w-full p-2 border rounded">
-                            <option value="draft">Черновик</option>
-                            <option value="active">Активный</option>
-                            <option value="paused">Приостановлен</option>
-                          </select>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Landing Page</label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <input name="landingPageName" type="text" className="p-2 border rounded" placeholder="Название" />
-                          <input name="landingPageUrl" type="url" className="p-2 border rounded" placeholder="URL" />
-                          <input name="landingPagePayout" type="number" className="p-2 border rounded" placeholder="Выплата" />
-                          <input name="landingPageGeo" type="text" className="p-2 border rounded" placeholder="GEO" />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Источник трафика</label>
-                          <select name="trafficSource" className="w-full p-2 border rounded">
-                            <option value="">Выберите источник</option>
-                            <option value="facebook_ads">Facebook Ads</option>
-                            <option value="google_ads">Google Ads</option>
-                            <option value="native">Native</option>
-                            <option value="push">Push</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Разрешенные приложения</label>
-                          <select name="allowedApp" className="w-full p-2 border rounded">
-                            <option value="">Выберите приложение</option>
-                            <option value="PWA apps">PWA apps</option>
-                            <option value="Mobile apps">Mobile apps</option>
-                            <option value="Desktop">Desktop</option>
-                          </select>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-4">
-                        <label className="flex items-center">
-                          <input name="antifraudEnabled" type="checkbox" className="mr-2" defaultChecked />
-                          Анти-фрод включен
-                        </label>
-                        <label className="flex items-center">
-                          <input name="autoApprovePartners" type="checkbox" className="mr-2" />
-                          Автоматическое одобрение партнеров
-                        </label>
-                      </div>
-                      
-
-                      <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                          {t('cancel')}
-                        </Button>
-                        <Button type="submit" data-testid="button-submit-offer">
-                          Создать оффер
-                        </Button>
-                      </div>
-                  </form>
+                  <OfferFormSimple onClose={() => setIsCreateDialogOpen(false)} />
                 </DialogContent>
-              </Dialog>
-            </div>
-
             {/* Filters */}
             <Card className="mb-6">
               <CardContent className="p-6">
