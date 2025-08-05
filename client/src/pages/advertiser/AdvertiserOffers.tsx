@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -30,35 +31,27 @@ import {
   Eye,
   PlayCircle,
   PauseCircle,
-  Target
+  Target,
+  Filter,
+  Calendar,
+  DollarSign,
+  Users
 } from 'lucide-react';
+import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
 
 interface Offer {
   id: string;
-  number: string;
   name: string;
   description: string;
   category: string;
-  vertical: string;
   status: 'active' | 'paused' | 'draft' | 'pending' | 'archived';
   payout: string;
-  payoutType: 'fixed' | 'percent';
+  payoutType: 'cpa' | 'cps' | 'cpl' | 'cpm' | 'cpc' | 'revshare';
   currency: string;
-  goals: any[];
-  geoTargeting: string[];
-  devices: string[];
-  trafficTypes: string[];
-  restrictions: string[];
-  cookieLifetime: number;
+  trafficSources: string[];
+  allowedApplications: string[];
   createdAt: string;
   updatedAt: string;
-  stats: {
-    clicks: number;
-    conversions: number;
-    cr: number;
-    epc: number;
-    revenue: number;
-  };
 }
 
 const OFFER_CATEGORIES = [
@@ -70,12 +63,23 @@ const OFFER_CATEGORIES = [
   'Education',
   'Travel',
   'Technology',
-  'Entertainment'
+  'Entertainment',
+  'Cryptocurrency',
+  'Sports',
+  'Fashion'
 ];
 
-const TRAFFIC_TYPES = [
+const OFFER_STATUSES = [
+  { value: 'active', label: 'Активный', color: 'bg-green-100 text-green-800' },
+  { value: 'paused', label: 'Приостановлен', color: 'bg-yellow-100 text-yellow-800' },
+  { value: 'draft', label: 'Черновик', color: 'bg-gray-100 text-gray-800' },
+  { value: 'pending', label: 'На проверке', color: 'bg-blue-100 text-blue-800' },
+  { value: 'archived', label: 'Архивирован', color: 'bg-red-100 text-red-800' }
+];
+
+const TRAFFIC_SOURCES = [
   'SEO',
-  'PPC',
+  'PPC', 
   'Social Media',
   'Push Notifications',
   'Email',
@@ -84,19 +88,23 @@ const TRAFFIC_TYPES = [
   'YouTube',
   'TikTok',
   'Facebook',
-  'Google Ads'
+  'Google Ads',
+  'Instagram',
+  'Telegram'
 ];
 
 export default function AdvertiserOffers() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Фильтры
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   // Получаем офферы рекламодателя
-  const { data: offers, isLoading } = useQuery({
+  const { data: offers = [], isLoading } = useQuery({
     queryKey: ['/api/advertiser/offers'],
     enabled: !!user
   });
@@ -104,7 +112,7 @@ export default function AdvertiserOffers() {
   // Мутация для изменения статуса оффера
   const updateOfferStatusMutation = useMutation({
     mutationFn: ({ offerId, status }: { offerId: string; status: string }) =>
-      apiRequest(`/api/admin/offers/${offerId}`, {
+      apiRequest(`/api/advertiser/offers/${offerId}`, {
         method: 'PATCH',
         body: JSON.stringify({ status })
       }),
@@ -124,334 +132,356 @@ export default function AdvertiserOffers() {
     }
   });
 
-  // Мутация для клонирования оффера
-  const cloneOfferMutation = useMutation({
-    mutationFn: (offerId: string) =>
-      apiRequest(`/api/admin/offers/${offerId}/clone`, {
-        method: 'POST'
-      }),
-    onSuccess: () => {
-      toast({
-        title: "Оффер клонирован",
-        description: "Создана копия оффера."
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось клонировать оффер.",
-        variant: "destructive"
-      });
-    }
+  // Фильтрация офферов
+  const filteredOffers = offers.filter((offer: Offer) => {
+    const matchesSearch = offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         offer.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = selectedStatus === 'all' || offer.status === selectedStatus;
+    const matchesCategory = selectedCategory === 'all' || offer.category === selectedCategory;
+    
+    return matchesSearch && matchesStatus && matchesCategory;
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'paused': return 'bg-yellow-100 text-yellow-800';
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'pending': return 'bg-blue-100 text-blue-800';
-      case 'archived': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const getStatusBadge = (status: string) => {
+    const statusConfig = OFFER_STATUSES.find(s => s.value === status);
+    return statusConfig || { value: status, label: status, color: 'bg-gray-100 text-gray-800' };
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active': return <PlayCircle className="h-4 w-4" />;
-      case 'paused': return <PauseCircle className="h-4 w-4" />;
-      case 'draft': return <Edit className="h-4 w-4" />;
-      case 'pending': return <Eye className="h-4 w-4" />;
-      case 'archived': return <Trash2 className="h-4 w-4" />;
-      default: return <Settings className="h-4 w-4" />;
-    }
+  const getPayoutTypeLabel = (type: string) => {
+    const types: Record<string, string> = {
+      cpa: "CPA",
+      cps: "CPS", 
+      cpl: "CPL",
+      cpm: "CPM",
+      cpc: "CPC",
+      revshare: "RevShare",
+    };
+    return types[type] || type.toUpperCase();
   };
 
-  const filteredOffers = offers?.filter((offer: Offer) => {
-    const matchesSearch = offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         offer.number.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || offer.category === selectedCategory;
-    const matchesStatus = selectedStatus === 'all' || offer.status === selectedStatus;
-    
-    return matchesSearch && matchesCategory && matchesStatus;
-  }) || [];
+  const handleStatusChange = (offerId: string, newStatus: string) => {
+    updateOfferStatusMutation.mutate({ offerId, status: newStatus });
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Скопировано",
+      description: "Данные скопированы в буфер обмена",
+    });
+  };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-64">Загрузка офферов...</div>;
+    return (
+      <RoleBasedLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Загрузка офферов...</p>
+          </div>
+        </div>
+      </RoleBasedLayout>
+    );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="page-title">Мои офферы</h1>
-          <p className="text-muted-foreground">
-            Управление офферами и условиями для партнёров
-          </p>
+    <RoleBasedLayout>
+      <div className="space-y-6">
+        {/* Header with Create Button */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Мои офферы</h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Управление офферами и настройка условий
+            </p>
+          </div>
+          <Link href="/advertiser/offers/new">
+            <Button className="flex items-center gap-2" data-testid="button-create-offer">
+              <Plus className="h-4 w-4" />
+              Создать оффер
+            </Button>
+          </Link>
         </div>
-        <Link href="/advertiser/offers/new">
-          <Button data-testid="button-create-offer">
-            <Plus className="h-4 w-4 mr-2" />
-            Создать оффер
-          </Button>
-        </Link>
-      </div>
 
-      {/* Фильтры и поиск */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Поиск по названию или номеру оффера..."
-                  className="pl-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  data-testid="input-search"
-                />
+        {/* Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Фильтрация
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Free Form Search */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Поиск</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Поиск по названию или описанию..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                    data-testid="input-search-offers"
+                  />
+                </div>
+              </div>
+
+              {/* All Offers Filter - Always shows all */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Все офферы</label>
+                <Select value="all" disabled>
+                  <SelectTrigger data-testid="select-all-offers">
+                    <SelectValue placeholder="Все офферы" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все офферы ({filteredOffers.length})</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Status Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Статус</label>
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger data-testid="select-status-filter">
+                    <SelectValue placeholder="Все статусы" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все статусы</SelectItem>
+                    {OFFER_STATUSES.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {status.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Category Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Категория</label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger data-testid="select-category-filter">
+                    <SelectValue placeholder="Все категории" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все категории</SelectItem>
+                    {OFFER_CATEGORIES.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[180px]" data-testid="select-category">
-                <SelectValue placeholder="Категория" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все категории</SelectItem>
-                {OFFER_CATEGORIES.map(category => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-[180px]" data-testid="select-status">
-                <SelectValue placeholder="Статус" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все статусы</SelectItem>
-                <SelectItem value="active">Активные</SelectItem>
-                <SelectItem value="paused">Приостановленные</SelectItem>
-                <SelectItem value="draft">Черновики</SelectItem>
-                <SelectItem value="pending">На модерации</SelectItem>
-                <SelectItem value="archived">Архивированные</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Список офферов */}
-      {filteredOffers.length === 0 ? (
+        {/* Offers Table */}
         <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-12">
-              <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">
-                {searchTerm || selectedCategory !== 'all' || selectedStatus !== 'all' 
-                  ? 'Офферы не найдены' 
-                  : 'У вас пока нет офферов'
-                }
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm || selectedCategory !== 'all' || selectedStatus !== 'all'
-                  ? 'Попробуйте изменить фильтры поиска'
-                  : 'Создайте первый оффер для привлечения партнёров'
-                }
-              </p>
-              {!searchTerm && selectedCategory === 'all' && selectedStatus === 'all' && (
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Офферы ({filteredOffers.length})
+            </CardTitle>
+            <CardDescription>
+              Список всех ваших офферов с возможностью управления
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {filteredOffers.length === 0 ? (
+              <div className="text-center py-8">
+                <Target className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  {searchTerm || selectedStatus !== 'all' || selectedCategory !== 'all' 
+                    ? 'Нет офферов, соответствующих фильтрам'
+                    : 'У вас пока нет офферов'
+                  }
+                </p>
                 <Link href="/advertiser/offers/new">
-                  <Button data-testid="button-create-first-offer">
+                  <Button>
                     <Plus className="h-4 w-4 mr-2" />
                     Создать первый оффер
                   </Button>
                 </Link>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Название оффера</TableHead>
+                      <TableHead>Категория</TableHead>
+                      <TableHead>Выплата</TableHead>
+                      <TableHead>Источники трафика</TableHead>
+                      <TableHead>Разрешенные приложения</TableHead>
+                      <TableHead>Статус</TableHead>
+                      <TableHead>Создан</TableHead>
+                      <TableHead className="text-right">Действия</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredOffers.map((offer: Offer) => (
+                      <TableRow key={offer.id} data-testid={`row-offer-${offer.id}`}>
+                        {/* Название оффера */}
+                        <TableCell>
+                          <div>
+                            <Link href={`/advertiser/offers/${offer.id}`} className="font-medium text-blue-600 hover:text-blue-800 transition-colors">
+                              {offer.name}
+                            </Link>
+                            <p className="text-sm text-gray-500 line-clamp-1">
+                              {offer.description}
+                            </p>
+                          </div>
+                        </TableCell>
+
+                        {/* Категория */}
+                        <TableCell>
+                          <Badge variant="outline" className="font-medium">
+                            {offer.category}
+                          </Badge>
+                        </TableCell>
+
+                        {/* Выплата */}
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <DollarSign className="h-4 w-4 text-green-600" />
+                            <span className="font-medium">{offer.payout} {offer.currency}</span>
+                          </div>
+                          <p className="text-sm text-gray-500">{getPayoutTypeLabel(offer.payoutType)}</p>
+                        </TableCell>
+
+                        {/* Источники трафика */}
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1 max-w-48">
+                            {offer.trafficSources && offer.trafficSources.length > 0 ? (
+                              <>
+                                {offer.trafficSources.slice(0, 2).map((source, index) => (
+                                  <Badge key={index} variant="secondary" className="text-xs">
+                                    {source}
+                                  </Badge>
+                                ))}
+                                {offer.trafficSources.length > 2 && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    +{offer.trafficSources.length - 2}
+                                  </Badge>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-sm text-gray-500">Не указано</span>
+                            )}
+                          </div>
+                        </TableCell>
+
+                        {/* Разрешенные приложения */}
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1 max-w-48">
+                            {offer.allowedApplications && offer.allowedApplications.length > 0 ? (
+                              <>
+                                {offer.allowedApplications.slice(0, 2).map((app, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {app}
+                                  </Badge>
+                                ))}
+                                {offer.allowedApplications.length > 2 && (
+                                  <Badge variant="outline" className="text-xs">
+                                    +{offer.allowedApplications.length - 2}
+                                  </Badge>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-sm text-gray-500">Все разрешены</span>
+                            )}
+                          </div>
+                        </TableCell>
+
+                        {/* Статус */}
+                        <TableCell>
+                          <Badge className={getStatusBadge(offer.status).color}>
+                            {getStatusBadge(offer.status).label}
+                          </Badge>
+                        </TableCell>
+
+                        {/* Дата создания */}
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm">
+                              {new Date(offer.createdAt).toLocaleDateString('ru-RU')}
+                            </span>
+                          </div>
+                        </TableCell>
+
+                        {/* Действия */}
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0" data-testid={`button-actions-${offer.id}`}>
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/advertiser/offers/${offer.id}`} className="flex items-center w-full">
+                                  <Eye className="h-4 w-4 mr-2 text-blue-600" />
+                                  Просмотр
+                                </Link>
+                              </DropdownMenuItem>
+                              
+                              <DropdownMenuItem asChild>
+                                <Link href={`/advertiser/offers/${offer.id}/edit`} className="flex items-center w-full">
+                                  <Edit className="h-4 w-4 mr-2 text-green-600" />
+                                  Редактировать
+                                </Link>
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem onClick={() => copyToClipboard(offer.id)}>
+                                <Copy className="h-4 w-4 mr-2 text-purple-600" />
+                                Копировать ID
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem asChild>
+                                <Link href={`/advertiser/offers/${offer.id}/analytics`} className="flex items-center w-full">
+                                  <BarChart3 className="h-4 w-4 mr-2 text-indigo-600" />
+                                  Аналитика
+                                </Link>
+                              </DropdownMenuItem>
+
+                              {/* Status Change Actions */}
+                              {offer.status === 'active' ? (
+                                <DropdownMenuItem onClick={() => handleStatusChange(offer.id, 'paused')}>
+                                  <PauseCircle className="h-4 w-4 mr-2 text-yellow-600" />
+                                  Приостановить
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem onClick={() => handleStatusChange(offer.id, 'active')}>
+                                  <PlayCircle className="h-4 w-4 mr-2 text-green-600" />
+                                  Активировать
+                                </DropdownMenuItem>
+                              )}
+
+                              <DropdownMenuItem 
+                                onClick={() => handleStatusChange(offer.id, 'archived')}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Архивировать
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredOffers.map((offer: Offer) => (
-            <Card key={offer.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Badge variant="outline" className="text-xs">
-                        #{offer.number}
-                      </Badge>
-                      <Badge 
-                        className={`${getStatusColor(offer.status)} text-xs`}
-                        data-testid={`status-${offer.status}`}
-                      >
-                        <div className="flex items-center space-x-1">
-                          {getStatusIcon(offer.status)}
-                          <span>{offer.status}</span>
-                        </div>
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg line-clamp-2" data-testid="offer-name">
-                      <Link href={`/advertiser/offers/${offer.id}`} className="hover:text-blue-600 transition-colors">
-                        {offer.name}
-                      </Link>
-                    </CardTitle>
-                    <CardDescription className="line-clamp-2">
-                      {offer.description}
-                    </CardDescription>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        title="Действия с оффером"
-                        data-testid="button-offer-actions"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link href={`/advertiser/offers/${offer.id}/edit`}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Редактировать
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => cloneOfferMutation.mutate(offer.id)}
-                        data-testid="action-clone"
-                      >
-                        <Copy className="h-4 w-4 mr-2" />
-                        Клонировать
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href={`/advertiser/analytics?offer=${offer.id}`}>
-                          <BarChart3 className="h-4 w-4 mr-2" />
-                          Статистика
-                        </Link>
-                      </DropdownMenuItem>
-                      {offer.status === 'active' ? (
-                        <DropdownMenuItem 
-                          onClick={() => updateOfferStatusMutation.mutate({ offerId: offer.id, status: 'paused' })}
-                          data-testid="action-pause"
-                        >
-                          <PauseCircle className="h-4 w-4 mr-2" />
-                          Приостановить
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem 
-                          onClick={() => updateOfferStatusMutation.mutate({ offerId: offer.id, status: 'active' })}
-                          data-testid="action-activate"
-                        >
-                          <PlayCircle className="h-4 w-4 mr-2" />
-                          Активировать
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem 
-                        onClick={() => updateOfferStatusMutation.mutate({ offerId: offer.id, status: 'archived' })}
-                        className="text-red-600"
-                        data-testid="action-archive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Архивировать
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Основная информация */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="text-muted-foreground">Категория</div>
-                    <div className="font-medium">{offer.category}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Вертикаль</div>
-                    <div className="font-medium">{offer.vertical}</div>
-                  </div>
-                </div>
-
-                {/* Выплата */}
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">Выплата</div>
-                    <div className="font-semibold text-lg" data-testid="offer-payout">
-                      {offer.payoutType === 'percent' ? `${offer.payout}%` : `${offer.payout} ${offer.currency}`}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Таргетинг */}
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Globe className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">GEO:</span>
-                    <span className="font-medium">
-                      {offer.geoTargeting?.length > 0 
-                        ? offer.geoTargeting.slice(0, 3).join(', ') + (offer.geoTargeting.length > 3 ? '...' : '')
-                        : 'Все страны'
-                      }
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Smartphone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Устройства:</span>
-                    <span className="font-medium">
-                      {offer.devices?.length > 0 
-                        ? offer.devices.join(', ')
-                        : 'Все'
-                      }
-                    </span>
-                  </div>
-                </div>
-
-                {/* Статистика */}
-                {offer.stats && (
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t text-sm">
-                    <div className="text-center">
-                      <div className="font-semibold" data-testid="offer-clicks">{offer.stats.clicks || 0}</div>
-                      <div className="text-muted-foreground">Клики</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-semibold" data-testid="offer-conversions">{offer.stats.conversions || 0}</div>
-                      <div className="text-muted-foreground">Конверсии</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-semibold" data-testid="offer-cr">{(offer.stats.cr || 0).toFixed(2)}%</div>
-                      <div className="text-muted-foreground">CR</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-semibold" data-testid="offer-epc">${(offer.stats.epc || 0).toFixed(2)}</div>
-                      <div className="text-muted-foreground">EPC</div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Действия */}
-                <div className="flex space-x-2 pt-2">
-                  <Link href={`/advertiser/offers/${offer.id}/edit`} className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full" data-testid="button-edit">
-                      <Edit className="h-4 w-4 mr-2" />
-                      Редактировать
-                    </Button>
-                  </Link>
-                  <Link href={`/advertiser/analytics?offer=${offer.id}`} className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full" data-testid="button-stats">
-                      <BarChart3 className="h-4 w-4 mr-2" />
-                      Статистика
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+      </div>
+    </RoleBasedLayout>
   );
 }
