@@ -48,7 +48,7 @@ export class AuthService {
   }
 
   static async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await apiRequest('POST', '/api/auth/login', credentials);
+    const response = await apiRequest('/api/auth/login', 'POST', credentials);
     const data = await response.json();
     
     this.setToken(data.token);
@@ -56,7 +56,7 @@ export class AuthService {
   }
 
   static async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await apiRequest('POST', '/api/auth/register', data);
+    const response = await apiRequest('/api/auth/register', 'POST', data);
     const authData = await response.json();
     
     this.setToken(authData.token);

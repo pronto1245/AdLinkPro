@@ -85,7 +85,7 @@ export default function PostbacksManagement() {
 
   const createPostbackMutation = useMutation({
     mutationFn: async (data: GlobalPostbackFormData) => {
-      return await apiRequest('POST', '/api/admin/global-postbacks', data);
+      return await apiRequest('/api/admin/global-postbacks', 'POST', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/global-postbacks'] });

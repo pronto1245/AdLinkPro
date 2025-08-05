@@ -73,7 +73,7 @@ export default function BlacklistManagement() {
 
   const createEntryMutation = useMutation({
     mutationFn: async (data: BlacklistEntryFormData) => {
-      return await apiRequest('POST', '/api/admin/blacklist', data);
+      return await apiRequest('/api/admin/blacklist', 'POST', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/blacklist'] });
@@ -95,7 +95,7 @@ export default function BlacklistManagement() {
 
   const deleteEntryMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest('DELETE', `/api/admin/blacklist/${id}`);
+      return await apiRequest(`/api/admin/blacklist/${id}`, 'DELETE');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/blacklist'] });
@@ -108,7 +108,7 @@ export default function BlacklistManagement() {
 
   const toggleEntryMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      return await apiRequest('PATCH', `/api/admin/blacklist/${id}`, { isActive });
+      return await apiRequest(`/api/admin/blacklist/${id}`, 'PATCH', { isActive });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/blacklist'] });

@@ -123,11 +123,7 @@ export default function PostbackManager() {
     mutationFn: async (data: any) => {
       const url = editingPostback ? `/api/postbacks/${editingPostback.id}` : '/api/postbacks';
       const method = editingPostback ? 'PUT' : 'POST';
-      return apiRequest(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
+      return apiRequest(url, method, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postbacks'] });
@@ -149,10 +145,7 @@ export default function PostbackManager() {
 
   // Delete postback mutation
   const deletePostbackMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/postbacks/${id}`, { 
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' }
-    }),
+    mutationFn: (id: string) => apiRequest(`/api/postbacks/${id}`, 'DELETE'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postbacks'] });
       toast({
@@ -171,10 +164,7 @@ export default function PostbackManager() {
 
   // Test postback mutation
   const testPostbackMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/postbacks/${id}/test`, { 
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    }),
+    mutationFn: (id: string) => apiRequest(`/api/postbacks/${id}/test`, 'POST'),
     onSuccess: () => {
       toast({
         title: 'Тест отправлен',
