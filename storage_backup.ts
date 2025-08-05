@@ -3029,145 +3029,287 @@ class MemStorage implements IStorage {
   async updateIpAnalysis(): Promise<any> { return {}; }
   async updateFraudBlock(): Promise<any> { return {}; }
   
-  // Admin analytics method with comprehensive data including OS logos
+  // Admin analytics method for comprehensive data - REAL DATABASE IMPLEMENTATION
   async getAdminAnalytics(filters: any): Promise<any[]> {
     try {
-      // Generate comprehensive analytics data with all 100+ required fields
-      return Array.from({ length: 100 }, (_, i) => {
-        const timestamp = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
-        const countries = ['RU', 'US', 'DE', 'UA', 'BY', 'KZ', 'GB', 'FR', 'IT', 'ES'];  
-        const browsers = ['Chrome', 'Firefox', 'Safari', 'Edge', 'Opera'];
-        const osOptions = ['Windows', 'macOS', 'Linux', 'iOS', 'Android'];
-        const devices = ['Desktop', 'Mobile', 'Tablet'];
-        const operators = ['MTS', 'Beeline', 'Megafon', 'Tele2', 'Vodafone', 'T-Mobile'];
-        const sources = ['Facebook', 'Google', 'TikTok', 'Native', 'Push', 'Email'];
+      // Build the main query with JOINs to get real data
+      const query = db
+        .select({
+          // Core tracking
+          id: trackingClicks.id,
+          timestamp: trackingClicks.createdAt,
+          clickId: trackingClicks.clickId,
+          
+          // Campaign data
+          offerId: trackingClicks.offerId,
+          offerName: offers.name,
+          campaignId: trackingClicks.trackingLinkId,
+          campaign: sql<string>`COALESCE(${offers.name}, 'Unknown Campaign')`,
+          campaignGroup: sql<string>`COALESCE(${offers.category}, 'Default Group')`,
+          campaignGroupId: offers.categoryId,
+          
+          // Partner data
+          partnerId: trackingClicks.partnerId,
+          partnerName: sql<string>`COALESCE(${users.firstName} || ' ' || ${users.lastName}, ${users.username})`,
+          partnerUsername: users.username,
+          
+          // SubIDs (1-30)
+          subid: trackingClicks.subId1,
+          subId1: trackingClicks.subId1,
+          subId2: trackingClicks.subId2,
+          subId3: trackingClicks.subId3,
+          subId4: trackingClicks.subId4,
+          subId5: trackingClicks.subId5,
+          subId6: trackingClicks.subId6,
+          subId7: trackingClicks.subId7,
+          subId8: trackingClicks.subId8,
+          subId9: trackingClicks.subId9,
+          subId10: trackingClicks.subId10,
+          subId11: trackingClicks.subId11,
+          subId12: trackingClicks.subId12,
+          subId13: trackingClicks.subId13,
+          subId14: trackingClicks.subId14,
+          subId15: trackingClicks.subId15,
+          subId16: trackingClicks.subId16,
+          subId17: trackingClicks.subId17,
+          subId18: trackingClicks.subId18,
+          subId19: trackingClicks.subId19,
+          subId20: trackingClicks.subId20,
+          subId21: trackingClicks.subId21,
+          subId22: trackingClicks.subId22,
+          subId23: trackingClicks.subId23,
+          subId24: trackingClicks.subId24,
+          subId25: trackingClicks.subId25,
+          subId26: trackingClicks.subId26,
+          subId27: trackingClicks.subId27,
+          subId28: trackingClicks.subId28,
+          subId29: trackingClicks.subId29,
+          subId30: trackingClicks.subId30,
+          
+          // Geographic data
+          ip: trackingClicks.ip,
+          country: trackingClicks.country,
+          
+          // Device/Browser data
+          device: trackingClicks.device,
+          browser: trackingClicks.browser,
+          os: trackingClicks.os,
+          userAgent: trackingClicks.userAgent,
+          referer: trackingClicks.referer,
+          
+          // Fraud Detection fields
+          fraudScore: trackingClicks.fraudScore,
+          isBot: trackingClicks.isBot,
+          vpnDetected: trackingClicks.vpnDetected,
+          riskLevel: trackingClicks.riskLevel,
+          
+          // Landing and conversion data
+          landingUrl: trackingClicks.landingUrl,
+          isUnique: trackingClicks.isUnique,
+          status: trackingClicks.status,
+          conversionData: trackingClicks.conversionData,
+          
+          // Postback data
+          postbackStatus: postbackLogs.responseStatus,
+          postbackEventType: postbackLogs.eventType,
+          postbackReceived: sql<boolean>`CASE WHEN ${postbackLogs.id} IS NOT NULL THEN true ELSE false END`,
+          
+          // Additional analytics fields
+          mobileCarrier: trackingClicks.mobileCarrier,
+          connectionType: trackingClicks.connectionType,
+          timeOnLanding: trackingClicks.timeOnLanding,
+        })
+        .from(trackingClicks)
+        .leftJoin(offers, eq(trackingClicks.offerId, offers.id))
+        .leftJoin(users, eq(trackingClicks.partnerId, users.id))
+        .leftJoin(postbackLogs, eq(trackingClicks.clickId, postbackLogs.clickId));
+
+      // Apply filters
+      if (filters.dateFrom && filters.dateTo) {
+        query.where(
+          and(
+            gte(trackingClicks.createdAt, new Date(filters.dateFrom)),
+            lte(trackingClicks.createdAt, new Date(filters.dateTo))
+          )
+        );
+      }
+
+      if (filters.search) {
+        query.where(
+          or(
+            ilike(trackingClicks.clickId, `%${filters.search}%`),
+            ilike(trackingClicks.ip, `%${filters.search}%`),
+            ilike(offers.name, `%${filters.search}%`),
+            ilike(users.username, `%${filters.search}%`)
+          )
+        );
+      }
+
+      if (filters.quickFilter) {
+        switch (filters.quickFilter) {
+          case 'bots':
+            query.where(eq(trackingClicks.isBot, true));
+            break;
+          case 'fraud':
+            query.where(gte(trackingClicks.fraudScore, 50));
+            break;
+          case 'conversions':
+            query.where(eq(trackingClicks.status, 'converted'));
+            break;
+          case 'today':
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            query.where(gte(trackingClicks.createdAt, today));
+            break;
+          case 'yesterday':
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setHours(0, 0, 0, 0);
+            const yesterdayEnd = new Date(yesterday);
+            yesterdayEnd.setHours(23, 59, 59, 999);
+            query.where(
+              and(
+                gte(trackingClicks.createdAt, yesterday),
+                lte(trackingClicks.createdAt, yesterdayEnd)
+              )
+            );
+            break;
+        }
+      }
+
+      // Execute query
+      const rawResults = await query.limit(filters.limit || 100);
+
+      // Transform results to match frontend interface
+      const transformedResults = rawResults.map((row, index) => {
+        const timestamp = new Date(row.timestamp || new Date());
         
         return {
           // Core tracking
-          id: `analytics_${i + 1}`,
+          id: row.id || `analytics_${index + 1}`,
           timestamp: timestamp.toISOString(),
           date: timestamp.toISOString().split('T')[0],
           time: timestamp.toTimeString().split(' ')[0],
-          clickId: `click_${Date.now()}_${i}`,
+          clickId: row.clickId,
           
           // Campaign data
-          campaign: `Campaign ${Math.floor(Math.random() * 20) + 1}`,
-          campaignId: `camp_${Math.floor(Math.random() * 1000)}`,
-          campaignGroupId: `group_${Math.floor(Math.random() * 100)}`,
-          campaignGroup: `Group ${Math.floor(Math.random() * 10) + 1}`,
-          offerId: `offer_${Math.floor(Math.random() * 50)}`,
-          offerName: `Offer ${Math.floor(Math.random() * 50) + 1}`,
+          campaign: row.campaign || 'Unknown Campaign',
+          campaignId: row.campaignId || 'unknown',
+          campaignGroupId: row.campaignGroupId || 'default',
+          campaignGroup: row.campaignGroup || 'Default Group',
+          offerId: row.offerId,
+          offerName: row.offerName || 'Unknown Offer',
           
-          // Partner data  
-          partnerId: `partner_${Math.floor(Math.random() * 20)}`,
-          partnerName: `Partner ${Math.floor(Math.random() * 20) + 1}`,
-          partnerUsername: `partner${Math.floor(Math.random() * 20) + 1}`,
+          // Partner data
+          partnerId: row.partnerId,
+          partnerName: row.partnerName || 'Unknown Partner',
+          partnerUsername: row.partnerUsername || 'unknown',
           
-          // SubIDs (1-30) with realistic probability distribution
-          subid: `sub_${Math.floor(Math.random() * 1000)}`,
-          subId1: Math.random() > 0.2 ? `sub1_${Math.floor(Math.random() * 1000)}` : '',
-          subId2: Math.random() > 0.2 ? `sub2_${Math.floor(Math.random() * 1000)}` : '',
-          subId3: Math.random() > 0.3 ? `sub3_${Math.floor(Math.random() * 1000)}` : '',
-          subId4: Math.random() > 0.3 ? `sub4_${Math.floor(Math.random() * 1000)}` : '',
-          subId5: Math.random() > 0.4 ? `sub5_${Math.floor(Math.random() * 1000)}` : '',
-          subId6: Math.random() > 0.4 ? `sub6_${Math.floor(Math.random() * 1000)}` : '',
-          subId7: Math.random() > 0.5 ? `sub7_${Math.floor(Math.random() * 1000)}` : '',
-          subId8: Math.random() > 0.5 ? `sub8_${Math.floor(Math.random() * 1000)}` : '',
-          subId9: Math.random() > 0.6 ? `sub9_${Math.floor(Math.random() * 1000)}` : '',
-          subId10: Math.random() > 0.6 ? `sub10_${Math.floor(Math.random() * 1000)}` : '',
-          subId11: Math.random() > 0.7 ? `sub11_${Math.floor(Math.random() * 1000)}` : '',
-          subId12: Math.random() > 0.7 ? `sub12_${Math.floor(Math.random() * 1000)}` : '',
-          subId13: Math.random() > 0.8 ? `sub13_${Math.floor(Math.random() * 1000)}` : '',
-          subId14: Math.random() > 0.8 ? `sub14_${Math.floor(Math.random() * 1000)}` : '',
-          subId15: Math.random() > 0.8 ? `sub15_${Math.floor(Math.random() * 1000)}` : '',
-          subId16: Math.random() > 0.9 ? `sub16_${Math.floor(Math.random() * 1000)}` : '',
-          subId17: Math.random() > 0.9 ? `sub17_${Math.floor(Math.random() * 1000)}` : '',
-          subId18: Math.random() > 0.9 ? `sub18_${Math.floor(Math.random() * 1000)}` : '',
-          subId19: Math.random() > 0.9 ? `sub19_${Math.floor(Math.random() * 1000)}` : '',
-          subId20: Math.random() > 0.9 ? `sub20_${Math.floor(Math.random() * 1000)}` : '',
-          subId21: Math.random() > 0.95 ? `sub21_${Math.floor(Math.random() * 1000)}` : '',
-          subId22: Math.random() > 0.95 ? `sub22_${Math.floor(Math.random() * 1000)}` : '',
-          subId23: Math.random() > 0.95 ? `sub23_${Math.floor(Math.random() * 1000)}` : '',
-          subId24: Math.random() > 0.95 ? `sub24_${Math.floor(Math.random() * 1000)}` : '',
-          subId25: Math.random() > 0.95 ? `sub25_${Math.floor(Math.random() * 1000)}` : '',
-          subId26: Math.random() > 0.98 ? `sub26_${Math.floor(Math.random() * 1000)}` : '',
-          subId27: Math.random() > 0.98 ? `sub27_${Math.floor(Math.random() * 1000)}` : '',
-          subId28: Math.random() > 0.98 ? `sub28_${Math.floor(Math.random() * 1000)}` : '',
-          subId29: Math.random() > 0.98 ? `sub29_${Math.floor(Math.random() * 1000)}` : '',
-          subId30: Math.random() > 0.99 ? `sub30_${Math.floor(Math.random() * 1000)}` : '',
+          // SubIDs (1-30) - Real data from database
+          subid: row.subid || '',
+          subId1: row.subId1 || '',
+          subId2: row.subId2 || '',
+          subId3: row.subId3 || '',
+          subId4: row.subId4 || '',
+          subId5: row.subId5 || '',
+          subId6: row.subId6 || '',
+          subId7: row.subId7 || '',
+          subId8: row.subId8 || '',
+          subId9: row.subId9 || '',
+          subId10: row.subId10 || '',
+          subId11: row.subId11 || '',
+          subId12: row.subId12 || '',
+          subId13: row.subId13 || '',
+          subId14: row.subId14 || '',
+          subId15: row.subId15 || '',
+          subId16: row.subId16 || '',
+          subId17: row.subId17 || '',
+          subId18: row.subId18 || '',
+          subId19: row.subId19 || '',
+          subId20: row.subId20 || '',
+          subId21: row.subId21 || '',
+          subId22: row.subId22 || '',
+          subId23: row.subId23 || '',
+          subId24: row.subId24 || '',
+          subId25: row.subId25 || '',
+          subId26: row.subId26 || '',
+          subId27: row.subId27 || '',
+          subId28: row.subId28 || '',
+          subId29: row.subId29 || '',
+          subId30: row.subId30 || '',
           
-          // Geographic data
-          ip: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-          ipMasked12: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.xxx.xxx`,
-          ipMasked123: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.xxx`,
-          country: countries[Math.floor(Math.random() * countries.length)],
-          countryFlag: countries[Math.floor(Math.random() * countries.length)],
-          region: `Region ${Math.floor(Math.random() * 20) + 1}`,
-          city: `City ${Math.floor(Math.random() * 50) + 1}`,
-          language: ['en', 'ru', 'de', 'fr', 'es'][Math.floor(Math.random() * 5)],
+          // Geographic data - Real from DB or enhanced with GeoService
+          ip: row.ip || '0.0.0.0',
+          ipMasked12: row.ip ? row.ip.split('.').slice(0, 2).join('.') + '.xxx.xxx' : 'xxx.xxx.xxx.xxx',
+          ipMasked123: row.ip ? row.ip.split('.').slice(0, 3).join('.') + '.xxx' : 'xxx.xxx.xxx.xxx',
+          country: row.country || 'Unknown',
+          countryFlag: row.country || 'XX',
+          region: 'Unknown', // Will be enhanced with GeoService
+          city: 'Unknown', // Will be enhanced with GeoService
+          language: 'Unknown', // Can be extracted from user agent
           
-          // Device/Browser data with OS logo integration
-          device: devices[Math.floor(Math.random() * devices.length)],
-          browser: browsers[Math.floor(Math.random() * browsers.length)],
-          os: osOptions[Math.floor(Math.random() * osOptions.length)],
-          osLogo: osOptions[Math.floor(Math.random() * osOptions.length)], // For OsLogo component
-          osVersion: `${Math.floor(Math.random() * 15) + 1}.${Math.floor(Math.random() * 10)}`,
-          userAgent: `Mozilla/5.0 (${osOptions[Math.floor(Math.random() * osOptions.length)]}) Browser/${Math.floor(Math.random() * 100)}`,
-          referer: Math.random() > 0.3 ? `https://${sources[Math.floor(Math.random() * sources.length)].toLowerCase()}.com` : '',
-          screen: `${[1920, 1366, 1280, 768, 414][Math.floor(Math.random() * 5)]}x${[1080, 768, 720, 1024, 896][Math.floor(Math.random() * 5)]}`,
-          timezone: ['UTC', 'GMT+3', 'GMT+1', 'GMT-5', 'GMT+8'][Math.floor(Math.random() * 5)],
+          // Device/Browser data - Real from DB
+          device: row.device || 'Unknown',
+          browser: row.browser || 'Unknown',
+          os: row.os || 'Unknown',
+          osLogo: row.os || 'Unknown',  // Will use OsLogo component
+          osVersion: 'Unknown', // Can be extracted from user agent
+          userAgent: row.userAgent || '',
+          referer: row.referer || '',
+          screen: 'Unknown', // Would need client-side JS
+          timezone: 'UTC', // Will be enhanced with GeoService
           
-          // Fraud Detection
-          isBot: Math.random() > 0.85,
-          isFraud: Math.random() > 0.9,
-          isUnique: Math.random() > 0.1,
-          vpnDetected: Math.random() > 0.8,
-          riskScore: Math.floor(Math.random() * 100),
-          fraudScore: Math.floor(Math.random() * 100),
-          riskLevel: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
+          // Fraud Detection - Real from DB
+          isBot: row.isBot || false,
+          isFraud: (row.fraudScore || 0) > 50,
+          isUnique: row.isUnique || true,
+          vpnDetected: row.vpnDetected || false,
+          riskScore: row.fraudScore || 0,
+          fraudScore: row.fraudScore || 0,
+          riskLevel: row.riskLevel || 'low',
           
-          // Traffic source data
-          trafficSource: sources[Math.floor(Math.random() * sources.length)],
-          utm_source: sources[Math.floor(Math.random() * sources.length)].toLowerCase(),
-          utm_medium: ['cpc', 'banner', 'email', 'social'][Math.floor(Math.random() * 4)],
-          utm_campaign: `campaign${Math.floor(Math.random() * 20) + 1}`,
-          utm_content: `content${Math.floor(Math.random() * 10) + 1}`,
-          utm_term: `term${Math.floor(Math.random() * 50) + 1}`,
+          // Traffic source data - Enhanced from referer
+          trafficSource: this.extractTrafficSource(row.referer),
+          utm_source: '',  // Would need URL parameter parsing
+          utm_medium: '',  // Would need URL parameter parsing
+          utm_campaign: '', // Would need URL parameter parsing
+          utm_content: '',  // Would need URL parameter parsing
+          utm_term: '',     // Would need URL parameter parsing
           
-          // Postback integration 
-          postbackReceived: Math.random() > 0.3,
-          postbackStatus: ['success', 'pending', 'failed'][Math.floor(Math.random() * 3)],
-          postbackEventType: ['click', 'lead', 'sale', 'deposit'][Math.floor(Math.random() * 4)],
-          integrationSource: ['Direct', 'HasOffers', 'CakeMarketing', 'Everflow'][Math.floor(Math.random() * 4)],
+          // Postback integration - Real from DB
+          postbackReceived: row.postbackReceived || false,
+          postbackStatus: row.postbackStatus || 'pending',
+          postbackEventType: row.postbackEventType || 'click',
+          integrationSource: 'Direct', // Based on postback source
           
-          // Financial data
-          revenue: Math.round((Math.random() * 1000) * 100) / 100,
-          revenueExpected: Math.round((Math.random() * 800) * 100) / 100,
-          revenueConfirmed: Math.round((Math.random() * 600) * 100) / 100,
-          revenueRejected: Math.round((Math.random() * 200) * 100) / 100,
-          revenueDeposit: Math.round((Math.random() * 500) * 100) / 100,
-          revenueRegistration: Math.round((Math.random() * 100) * 100) / 100,
-          cost: Math.round((Math.random() * 200) * 100) / 100,
-          profit: Math.round((Math.random() * 300) * 100) / 100,
-          profitability: Math.round((Math.random() * 200 - 50) * 100) / 100,
-          roi: Math.round((Math.random() * 300 - 50) * 100) / 100,
-          cr: Math.round((Math.random() * 10) * 100) / 100,
-          epc: Math.round((Math.random() * 5) * 100) / 100,
+          // Financial calculations - Would need real conversion data
+          revenue: 0, // Calculate from conversions
+          revenueExpected: 0,
+          revenueConfirmed: 0,
+          revenueRejected: 0,
+          revenueDeposit: 0,
+          revenueRegistration: 0,
+          cost: 0,
+          profit: 0,
+          profitability: 0,
+          roi: 0,
+          cr: 0,   // Conversion rate
+          epc: 0,  // Earnings per click
           currency: 'USD',
           
-          // Conversion data
-          lead: Math.random() > 0.7,
-          sale: Math.random() > 0.8,
-          deposit: Math.random() > 0.85,
-          registration: Math.random() > 0.6,
-          approved: Math.random() > 0.3,
-          rejected: Math.random() > 0.9,
-          clickOnLanding: Math.random() > 0.1,
-          conversion: Math.random() > 0.8,
-          conversions: Math.random() > 0.8 ? 1 : 0,
-          upsells: Math.floor(Math.random() * 5),
+          // Conversion data - Real from DB
+          lead: row.status === 'converted',
+          sale: false, // Would need conversion type tracking
+          deposit: false, // Would need deposit tracking
+          registration: false, // Would need registration tracking
+          approved: row.status === 'converted',
+          rejected: row.status === 'rejected',
+          clickOnLanding: true, // Assume true for clicks
+          conversion: row.status === 'converted',
+          conversions: row.status === 'converted' ? 1 : 0,
+          upsells: 0,
           
-          // Time analytics
+          // Time and analytics
           year: timestamp.getFullYear(),
           month: timestamp.getMonth() + 1,
           week: Math.ceil(timestamp.getDate() / 7),
@@ -3175,28 +3317,226 @@ class MemStorage implements IStorage {
           day: timestamp.getDate(),
           hour: timestamp.getHours(),
           dayAndHour: `${timestamp.getDate()}-${timestamp.getHours()}`,
-          timeOnLanding: Math.floor(Math.random() * 300),
-          timeLeftLanding: new Date(timestamp.getTime() + Math.random() * 300000).toISOString(),
+          timeOnLanding: row.timeOnLanding || 0,
+          timeLeftLanding: timestamp.toISOString(),
           
           // Connection data
-          mobileCarrier: operators[Math.floor(Math.random() * operators.length)],
-          connectionType: ['wifi', 'mobile', '3g', '4g', '5g'][Math.floor(Math.random() * 5)],
+          mobileCarrier: row.mobileCarrier || 'Unknown',
+          connectionType: row.connectionType || 'unknown',
           
           // Landing data
-          landingUrl: `https://landing${Math.floor(Math.random() * 10) + 1}.example.com`,
+          landingUrl: row.landingUrl || '',
           
           // Previous campaign tracking
-          previousCampaignId: Math.random() > 0.8 ? `prev_${Math.floor(Math.random() * 1000)}` : null,
-          previousCampaign: Math.random() > 0.8 ? `Previous Campaign ${Math.floor(Math.random() * 20)}` : null,
-          parentClickSubid: Math.random() > 0.9 ? `parent_${Math.floor(Math.random() * 100)}` : null
+          previousCampaignId: null,
+          previousCampaign: null,
+          parentClickSubid: null,
         };
       });
+
+      return transformedResults;
+      
     } catch (error) {
-      console.error('Error generating analytics data:', error);
+      console.error('Error fetching real analytics data:', error);
+      
+      // Return empty array on error instead of mock data
       return [];
     }
   }
+
+  // Helper method to extract traffic source from referer
+  private extractTrafficSource(referer?: string): string {
+    if (!referer) return 'Direct';
+    
+    const refererLower = referer.toLowerCase();
+    
+    if (refererLower.includes('facebook')) return 'Facebook';
+    if (refererLower.includes('google')) return 'Google';
+    if (refererLower.includes('instagram')) return 'Instagram';
+    if (refererLower.includes('tiktok')) return 'TikTok';
+    if (refererLower.includes('youtube')) return 'YouTube';
+    if (refererLower.includes('twitter')) return 'Twitter';
+    if (refererLower.includes('telegram')) return 'Telegram';
+    if (refererLower.includes('whatsapp')) return 'WhatsApp';
+    
+    return 'Other';
+  }
+
+  // Fallback method that was removed (now returns empty array)
+  private generateMockAnalytics(): any[] {
+    // Mock data generation was here but removed to use only real data
+    return [];
+      const timestamp = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+      const countries = ['RU', 'US', 'DE', 'UA', 'BY', 'KZ', 'GB', 'FR', 'IT', 'ES'];
+      const browsers = ['Chrome', 'Firefox', 'Safari', 'Edge', 'Opera'];
+      const os = ['Windows', 'macOS', 'Linux', 'iOS', 'Android'];
+      const devices = ['Desktop', 'Mobile', 'Tablet'];
+      const operators = ['MTS', 'Beeline', 'Megafon', 'Tele2', 'Vodafone', 'T-Mobile'];
+      const sources = ['Facebook', 'Google', 'TikTok', 'Native', 'Push', 'Email'];
+      
+      return {
+        // Core tracking
+        id: `analytics_${i + 1}`,
+        timestamp: timestamp.toISOString(),
+        date: timestamp.toISOString().split('T')[0],
+        time: timestamp.toTimeString().split(' ')[0],
+        
+        // Campaign data
+        campaign: `Campaign ${Math.floor(Math.random() * 20) + 1}`,
+        campaignId: `camp_${Math.floor(Math.random() * 1000)}`,
+        campaignGroupId: `group_${Math.floor(Math.random() * 100)}`,
+        campaignGroup: `Group ${Math.floor(Math.random() * 10) + 1}`,
+        
+        // SubIDs (1-30) - Sub ID 1-20 более активны
+        subid: `sub_${Math.floor(Math.random() * 1000)}`,
+        subId1: Math.random() > 0.2 ? `sub1_${Math.floor(Math.random() * 1000)}` : null,
+        subId2: Math.random() > 0.2 ? `sub2_${Math.floor(Math.random() * 1000)}` : null,
+        subId3: Math.random() > 0.3 ? `sub3_${Math.floor(Math.random() * 1000)}` : null,
+        subId4: Math.random() > 0.3 ? `sub4_${Math.floor(Math.random() * 1000)}` : null,
+        subId5: Math.random() > 0.4 ? `sub5_${Math.floor(Math.random() * 1000)}` : null,
+        subId6: Math.random() > 0.4 ? `sub6_${Math.floor(Math.random() * 1000)}` : null,
+        subId7: Math.random() > 0.5 ? `sub7_${Math.floor(Math.random() * 1000)}` : null,
+        subId8: Math.random() > 0.5 ? `sub8_${Math.floor(Math.random() * 1000)}` : null,
+        subId9: Math.random() > 0.6 ? `sub9_${Math.floor(Math.random() * 1000)}` : null,
+        subId10: Math.random() > 0.6 ? `sub10_${Math.floor(Math.random() * 1000)}` : null,
+        subId11: Math.random() > 0.7 ? `sub11_${Math.floor(Math.random() * 1000)}` : null,
+        subId12: Math.random() > 0.7 ? `sub12_${Math.floor(Math.random() * 1000)}` : null,
+        subId13: Math.random() > 0.8 ? `sub13_${Math.floor(Math.random() * 1000)}` : null,
+        subId14: Math.random() > 0.8 ? `sub14_${Math.floor(Math.random() * 1000)}` : null,
+        subId15: Math.random() > 0.8 ? `sub15_${Math.floor(Math.random() * 1000)}` : null,
+        subId16: Math.random() > 0.9 ? `sub16_${Math.floor(Math.random() * 1000)}` : null,
+        subId17: Math.random() > 0.9 ? `sub17_${Math.floor(Math.random() * 1000)}` : null,
+        subId18: Math.random() > 0.9 ? `sub18_${Math.floor(Math.random() * 1000)}` : null,
+        subId19: Math.random() > 0.9 ? `sub19_${Math.floor(Math.random() * 1000)}` : null,
+        subId20: Math.random() > 0.9 ? `sub20_${Math.floor(Math.random() * 1000)}` : null,
+        // Continue pattern for subId21-30 (реже используются)
+        ...Array.from({ length: 10 }, (_, j) => ({
+          [`subId${j + 21}`]: Math.random() > 0.95 ? `sub${j + 21}_${Math.floor(Math.random() * 100)}` : null
+        })).reduce((acc, curr) => ({ ...acc, ...curr }), {}),
+        
+        // Geographic data
+        ip: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+        ipMasked12: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.*.*`,
+        ipMasked123: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.*`,
+        country: countries[Math.floor(Math.random() * countries.length)],
+        countryFlag: countries[Math.floor(Math.random() * countries.length)],
+        region: `Region ${Math.floor(Math.random() * 10) + 1}`,
+        city: `City ${Math.floor(Math.random() * 50) + 1}`,
+        language: ['ru', 'en', 'de', 'fr', 'es'][Math.floor(Math.random() * 5)],
+        
+        // Device & Browser
+        os: os[Math.floor(Math.random() * os.length)],
+        osLogo: os[Math.floor(Math.random() * os.length)],
+        osVersion: `${Math.floor(Math.random() * 15) + 1}.${Math.floor(Math.random() * 10)}`,
+        browser: browsers[Math.floor(Math.random() * browsers.length)],
+        browserLogo: browsers[Math.floor(Math.random() * browsers.length)],
+        browserVersion: `${Math.floor(Math.random() * 100) + 1}.0`,
+        device: devices[Math.floor(Math.random() * devices.length)],
+        deviceType: devices[Math.floor(Math.random() * devices.length)],
+        deviceModel: `Model ${Math.floor(Math.random() * 20) + 1}`,
+        userAgent: `Mozilla/5.0 (${os[Math.floor(Math.random() * os.length)]}) Browser/${Math.floor(Math.random() * 100)}`,
+        
+        // Network
+        connectionType: ['WiFi', '4G', '5G', '3G', 'Ethernet'][Math.floor(Math.random() * 5)],
+        operator: operators[Math.floor(Math.random() * operators.length)],
+        provider: operators[Math.floor(Math.random() * operators.length)],
+        usingProxy: Math.random() > 0.8,
+        
+        // Offers & Landing
+        offer: `Offer ${Math.floor(Math.random() * 50) + 1}`,
+        offerId: `offer_${Math.floor(Math.random() * 1000)}`,
+        offerGroupId: `ogroup_${Math.floor(Math.random() * 100)}`,
+        offerGroup: `Offer Group ${Math.floor(Math.random() * 10) + 1}`,
+        landing: `Landing ${Math.floor(Math.random() * 30) + 1}`,
+        landingId: `land_${Math.floor(Math.random() * 1000)}`,
+        landingGroupId: `lgroup_${Math.floor(Math.random() * 100)}`,
+        landingGroup: `Landing Group ${Math.floor(Math.random() * 10) + 1}`,
+        
+        // Traffic & Sources
+        partnerNetwork: `Network ${Math.floor(Math.random() * 10) + 1}`,
+        networkId: `net_${Math.floor(Math.random() * 100)}`,
+        source: sources[Math.floor(Math.random() * sources.length)],
+        sourceId: `src_${Math.floor(Math.random() * 1000)}`,
+        stream: `Stream ${Math.floor(Math.random() * 20) + 1}`,
+        streamId: `stream_${Math.floor(Math.random() * 1000)}`,
+        site: `site${Math.floor(Math.random() * 100) + 1}.com`,
+        direction: ['IN', 'OUT'][Math.floor(Math.random() * 2)],
+        
+        // Tracking IDs
+        clickId: `click_${Math.random().toString(36).substr(2, 9)}`,
+        visitorCode: `visitor_${Math.random().toString(36).substr(2, 8)}`,
+        externalId: `ext_${Math.random().toString(36).substr(2, 10)}`,
+        creativeId: `creative_${Math.floor(Math.random() * 1000)}`,
+        adCampaignId: `ad_${Math.floor(Math.random() * 1000)}`,
+        
+        // Request data
+        xRequestedWith: Math.random() > 0.7 ? 'XMLHttpRequest' : null,
+        referrer: Math.random() > 0.3 ? `https://site${Math.floor(Math.random() * 100)}.com` : null,
+        emptyReferrer: Math.random() > 0.7,
+        searchEngine: Math.random() > 0.8 ? ['Google', 'Yandex', 'Bing'][Math.floor(Math.random() * 3)] : null,
+        keyword: Math.random() > 0.8 ? `keyword${Math.floor(Math.random() * 100)}` : null,
+        
+        // Conversion data
+        isBot: Math.random() > 0.85,
+        uniqueForCampaign: Math.random() > 0.3,
+        uniqueForStream: Math.random() > 0.4,
+        uniqueGlobally: Math.random() > 0.2,
+        lead: Math.random() > 0.7,
+        sale: Math.random() > 0.8,
+        deposit: Math.random() > 0.85,
+        registration: Math.random() > 0.6,
+        clickOnLanding: Math.random() > 0.4,
+        rejected: Math.random() > 0.9,
+        
+        // Financial data
+        revenue: Math.round((Math.random() * 1000) * 100) / 100,
+        revenueExpected: Math.round((Math.random() * 800) * 100) / 100,
+        revenueConfirmed: Math.round((Math.random() * 600) * 100) / 100,
+        revenueRejected: Math.round((Math.random() * 200) * 100) / 100,
+        revenueDeposit: Math.round((Math.random() * 500) * 100) / 100,
+        revenueRegistration: Math.round((Math.random() * 100) * 100) / 100,
+        cost: Math.round((Math.random() * 200) * 100) / 100,
+        profit: Math.round((Math.random() * 300) * 100) / 100,
+        profitability: Math.round((Math.random() * 200 - 50) * 100) / 100,
+        upsells: Math.floor(Math.random() * 5),
+        
+        // Time data
+        year: timestamp.getFullYear(),
+        month: timestamp.getMonth() + 1,
+        week: Math.ceil(timestamp.getDate() / 7),
+        dayOfWeek: timestamp.getDay(),
+        day: timestamp.getDate(),
+        hour: timestamp.getHours(),
+        dayAndHour: `${timestamp.getDate()}-${timestamp.getHours()}`,
+        timeOnLanding: Math.floor(Math.random() * 300), // seconds
+        timeLeftLanding: new Date(timestamp.getTime() + Math.random() * 300000).toISOString(),
+        
+        // Previous campaign data
+        previousCampaignId: Math.random() > 0.8 ? `prev_${Math.floor(Math.random() * 1000)}` : null,
+        previousCampaign: Math.random() > 0.8 ? `Previous Campaign ${Math.floor(Math.random() * 20)}` : null,
+        parentClickSubid: Math.random() > 0.9 ? `parent_${Math.floor(Math.random() * 100)}` : null
+      };
+    });
+  }
+
+  // Helper method to extract traffic source from referer
+  private extractTrafficSource(referer?: string): string {
+    if (!referer) return 'Direct';
+    
+    const refererLower = referer.toLowerCase();
+    
+    if (refererLower.includes('facebook')) return 'Facebook';
+    if (refererLower.includes('google')) return 'Google';
+    if (refererLower.includes('instagram')) return 'Instagram';
+    if (refererLower.includes('tiktok')) return 'TikTok';
+    if (refererLower.includes('youtube')) return 'YouTube';
+    if (refererLower.includes('twitter')) return 'Twitter';  
+    if (refererLower.includes('telegram')) return 'Telegram';
+    if (refererLower.includes('whatsapp')) return 'WhatsApp';
+    
+    return 'Other';
+  }
 }
 
-// Use MemStorage
+// Use MemStorage due to database issues
 export const storage = new MemStorage();
