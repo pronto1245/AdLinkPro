@@ -5,8 +5,10 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { 
   insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, 
-  type User, users, offers, statistics, fraudAlerts, tickets, postbacks, postbackLogs, trackingClicks 
+  type User, users, offers, statistics, fraudAlerts, tickets, postbacks, postbackLogs, trackingClicks,
+  transactions, fraudReports, fraudBlocks
 } from "@shared/schema";
+import { sql } from "drizzle-orm";
 import { eq, and, gte, lte, count, sum, desc } from "drizzle-orm";
 import { db, queryCache } from "./db";
 import { z } from "zod";

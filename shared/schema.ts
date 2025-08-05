@@ -18,8 +18,8 @@ export const walletTypeEnum = pgEnum('wallet_type', ['platform', 'user']);
 export const cryptoCurrencyEnum = pgEnum('crypto_currency', ['BTC', 'ETH', 'USDT', 'USDC', 'TRX', 'LTC', 'BCH', 'XRP']);
 export const walletStatusEnum = pgEnum('wallet_status', ['active', 'suspended', 'maintenance']);
 
-// Users table
-export const users = pgTable("users", {
+// Users table  
+export const users: any = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
@@ -754,6 +754,38 @@ export const platformCommissions = pgTable("platform_commissions", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+// Креативы будут добавлены после основных таблиц
+
+// Команда партнёра - байеры и аналитики
+export const partnerTeam = pgTable("partner_team", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  partnerId: varchar("partner_id").notNull().references(() => users.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  role: text("role").notNull(), // 'buyer', 'analyst', 'manager'
+  permissions: jsonb("permissions").notNull(), // разрешения на ссылки, креативы, статистику
+  subIdPrefix: text("sub_id_prefix"), // уникальный префикс для SubID
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Источники трафика партнёров
+export const trafficSources = pgTable("traffic_sources", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  partnerId: varchar("partner_id").notNull().references(() => users.id),  
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'push', 'pop', 'native', 'seo', 'social', 'email', 'display', 'search'
+  description: text("description"),
+  website: text("website"),
+  volume: integer("volume"), // daily volume estimate
+  quality: text("quality").default('medium'), // 'low', 'medium', 'high'
+  isVerified: boolean("is_verified").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Новые таблицы будут добавлены после исправления дублирования
 
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({

@@ -28,13 +28,18 @@ import AnalyticsNew from "@/pages/super-admin/analytics-new";
 import PartnerOffers from '@/pages/affiliate/PartnerOffers';
 import SuperAdminSupport from "@/pages/super-admin/support";
 import UserAnalytics from "@/pages/super-admin/user-analytics";
-import PostbackManagement from "@/pages/super-admin/postback-management";
+import PostbackManagementSuperAdmin from "@/pages/super-admin/postback-management";
 import AdvertiserDashboard from "@/pages/advertiser/simple-dashboard";
 import AdvertiserProfile from '@/pages/advertiser/AdvertiserProfile';
 import AdvertiserFinances from '@/pages/advertiser/AdvertiserFinances';
 import AdvertiserOffers from '@/pages/advertiser/AdvertiserOffers';
 import AdvertiserPartners from '@/pages/advertiser/AdvertiserPartners';
 import AffiliateDashboard from "@/pages/affiliate/simple-dashboard";
+import CreativesAndTools from "@/pages/affiliate/CreativesAndTools";
+import TeamManagement from "@/pages/affiliate/TeamManagement";
+import PostbackManagementAffiliate from "@/pages/affiliate/PostbackManagement";
+import AdvertiserDashboardNew from "@/pages/advertiser/AdvertiserDashboard";
+import OfferManagement from "@/pages/advertiser/OfferManagement";
 import { useAuth } from "./contexts/auth-context";
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
@@ -166,7 +171,7 @@ function Router() {
       </Route>
       <Route path="/admin/postbacks">
         <ProtectedRoute allowedRoles={['super_admin']}>
-          <PostbackManagement />
+          <PostbackManagementSuperAdmin />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/support">
@@ -226,7 +231,19 @@ function Router() {
       
       <Route path="/advertiser/postbacks">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <PostbackManagement />
+          <PostbackManagementSuperAdmin />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/dashboard">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <AdvertiserDashboardNew />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/offers/manage">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <OfferManagement />
         </ProtectedRoute>
       </Route>
       
@@ -240,6 +257,24 @@ function Router() {
       <Route path="/affiliate/offers">
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PartnerOffers />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/creatives">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <CreativesAndTools />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/team">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <TeamManagement />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/postbacks">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PostbackManagementAffiliate />
         </ProtectedRoute>
       </Route>
       
