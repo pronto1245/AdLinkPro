@@ -152,6 +152,11 @@ function Router() {
           <SuperAdminAnalytics />
         </ProtectedRoute>
       </Route>
+      <Route path="/super-admin/analytics">
+        <ProtectedRoute allowedRoles={['super_admin']}>
+          <SuperAdminAnalytics />
+        </ProtectedRoute>
+      </Route>
       <Route path="/admin/postbacks">
         <ProtectedRoute allowedRoles={['super_admin']}>
           <PostbackManagement />

@@ -3655,6 +3655,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analytics routes for full-page analytics
+  app.get('/api/admin/analytics', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const {
+        search = '',
+        dateFrom,
+        dateTo,
+        quickFilter = 'all',
+        page = 1,
+        limit = 50,
+        sortBy = 'timestamp',
+        sortOrder = 'desc'
+      } = req.query;
+
+      // Mock analytics data for now (replace with real DB queries)
+      const mockData = Array.from({ length: 100 }, (_, i) => ({
+        id: `analytics_${i + 1}`,
+        timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        ip: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+        geo: ['RU', 'US', 'DE', 'CA', 'FR'][Math.floor(Math.random() * 5)],
+        browser: ['Chrome', 'Firefox', 'Safari', 'Edge'][Math.floor(Math.random() * 4)],
+        device: ['Desktop', 'Mobile', 'Tablet'][Math.floor(Math.random() * 3)],
+        os: ['Windows', 'macOS', 'Linux', 'iOS', 'Android'][Math.floor(Math.random() * 5)],
+        offerId: `offer_${Math.floor(Math.random() * 10) + 1}`,
+        offerName: `Offer ${Math.floor(Math.random() * 10) + 1}`,
+        partnerId: `partner_${Math.floor(Math.random() * 5) + 1}`,
+        partnerName: `Partner ${Math.floor(Math.random() * 5) + 1}`,
+        subId1: Math.random() > 0.5 ? `sub1_${Math.floor(Math.random() * 100)}` : undefined,
+        subId2: Math.random() > 0.7 ? `sub2_${Math.floor(Math.random() * 100)}` : undefined,
+        subId3: Math.random() > 0.8 ? `sub3_${Math.floor(Math.random() * 100)}` : undefined,
+        clickId: `click_${Math.random().toString(36).substr(2, 9)}`,
+        visitorCode: `visitor_${Math.random().toString(36).substr(2, 8)}`,
+        traffic_source: ['Facebook', 'Google', 'Native', 'Push', 'Email'][Math.floor(Math.random() * 5)],
+        campaign: `Campaign ${Math.floor(Math.random() * 20) + 1}`,
+        clicks: Math.floor(Math.random() * 100) + 1,
+        uniqueClicks: Math.floor(Math.random() * 50) + 1,
+        leads: Math.floor(Math.random() * 20),
+        conversions: Math.floor(Math.random() * 5),
+        revenue: Math.round((Math.random() * 500 + 50) * 100) / 100,
+        payout: Math.round((Math.random() * 200 + 20) * 100) / 100,
+        profit: Math.round((Math.random() * 300 + 30) * 100) / 100,
+        roi: Math.round((Math.random() * 200 - 50) * 100) / 100,
+        cr: Math.round(Math.random() * 15 * 100) / 100,
+        epc: Math.round((Math.random() * 10 + 1) * 100) / 100,
+        isBot: Math.random() > 0.85,
+        isFraud: Math.random() > 0.9,
+        isUnique: Math.random() > 0.3,
+        vpnDetected: Math.random() > 0.8,
+        riskScore: Math.floor(Math.random() * 100),
+        postbackReceived: Math.random() > 0.4,
+        integrationSource: ['API', 'Postback', 'S2S', 'Pixel'][Math.floor(Math.random() * 4)]
+      }));
+
+      // Apply filters (implement real filtering logic)
+      let filteredData = mockData;
+      
+      if (search) {
+        filteredData = filteredData.filter(item => 
+          item.ip.includes(search) ||
+          item.geo.includes(search) ||
+          item.clickId.includes(search) ||
+          item.subId1?.includes(search) ||
+          item.subId2?.includes(search) ||
+          item.subId3?.includes(search)
+        );
+      }
+
+      if (quickFilter !== 'all') {
+        switch (quickFilter) {
+          case 'bots':
+            filteredData = filteredData.filter(item => item.isBot);
+            break;
+          case 'fraud':
+            filteredData = filteredData.filter(item => item.isFraud);
+            break;
+          case 'conversions':
+            filteredData = filteredData.filter(item => item.conversions > 0);
+            break;
+          case 'highRoi':
+            filteredData = filteredData.filter(item => item.roi > 100);
+            break;
+          case 'lowRoi':
+            filteredData = filteredData.filter(item => item.roi < 0);
+            break;
+        }
+      }
+
+      // Apply pagination
+      const startIndex = (Number(page) - 1) * Number(limit);
+      const paginatedData = filteredData.slice(startIndex, startIndex + Number(limit));
+
+      res.json(paginatedData);
+    } catch (error) {
+      console.error("Analytics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Analytics export endpoint
+  app.post('/api/admin/analytics/export', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { format = 'csv', columns = [] } = req.body;
+      const { search = '', dateFrom, dateTo, quickFilter = 'all' } = req.query;
+
+      // This would normally fetch and process real data
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="analytics_export.${format}"`);
+      
+      res.json({
+        message: `Export in ${format} format requested`,
+        columns,
+        filters: { search, dateFrom, dateTo, quickFilter }
+      });
+    } catch (error) {
+      console.error("Analytics export error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
