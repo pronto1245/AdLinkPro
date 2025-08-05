@@ -29,8 +29,8 @@ import PartnerOffers from '@/pages/affiliate/PartnerOffers';
 import SuperAdminSupport from "@/pages/super-admin/support";
 import UserAnalytics from "@/pages/super-admin/user-analytics";
 import PostbackManagement from "@/pages/super-admin/postback-management";
-import AdvertiserDashboard from "@/pages/advertiser/dashboard";
-import AffiliateDashboard from "@/pages/affiliate/dashboard";
+import AdvertiserDashboard from "@/pages/advertiser/simple-dashboard";
+import AffiliateDashboard from "@/pages/affiliate/simple-dashboard";
 import { useAuth } from "./contexts/auth-context";
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
@@ -181,6 +181,12 @@ function Router() {
       <Route path="/affiliate">
         <ProtectedRoute allowedRoles={['affiliate']}>
           <AffiliateDashboard />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/offers">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PartnerOffers />
         </ProtectedRoute>
       </Route>
       <Route path="/affiliate/offers">
