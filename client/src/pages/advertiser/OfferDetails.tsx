@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, ExternalLink, ArrowLeft, Globe, Calendar, Target, CreditCard, Users, Eye, BarChart3, Activity, Shield, TrendingUp, MapPin } from "lucide-react";
+import { Copy, ExternalLink, ArrowLeft, Globe, Calendar, Target, CreditCard, Users, Eye, BarChart3, Activity, Shield, TrendingUp, MapPin, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
 import { useLocation, Link } from "wouter";
@@ -35,7 +35,7 @@ interface OfferDetails {
   cookieLifetime?: number;
 }
 
-export default function OfferDetails() {
+export default function AdvertiserOfferDetails() {
   const [location] = useLocation();
   const offerId = location.split('/')[3]; // Extract offer ID from URL
   const { toast } = useToast();
@@ -43,7 +43,7 @@ export default function OfferDetails() {
 
   // Fetch specific offer details
   const { data: offer, isLoading } = useQuery({
-    queryKey: [`/api/partner/offers/${offerId}`],
+    queryKey: [`/api/admin/offers/${offerId}`],
     enabled: !!offerId,
     staleTime: 5 * 60 * 1000,
   });
@@ -93,7 +93,7 @@ export default function OfferDetails() {
       <RoleBasedLayout>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           <div className="flex items-center gap-4 p-6">
-            <Link href="/affiliate/offers">
+            <Link href="/advertiser/offers">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Назад к офферам
@@ -119,7 +119,7 @@ export default function OfferDetails() {
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/affiliate/offers">
+              <Link href="/advertiser/offers">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Назад к офферам
@@ -127,12 +127,18 @@ export default function OfferDetails() {
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{offer.name}</h1>
-                <p className="text-gray-600 dark:text-gray-400">Детальная информация об оффере</p>
+                <p className="text-gray-600 dark:text-gray-400">Управление оффером</p>
               </div>
             </div>
-            <Badge variant={offer.isApproved ? "default" : "secondary"} className="text-sm">
-              {offer.isApproved ? "Одобрен" : "Публичный"}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant={offer.status === 'active' ? "default" : "secondary"} className="text-sm">
+                {offer.status === 'active' ? "Активен" : "Неактивен"}
+              </Badge>
+              <Button size="sm" variant="outline">
+                <Edit className="h-4 w-4 mr-2" />
+                Редактировать
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -157,50 +163,49 @@ export default function OfferDetails() {
               </CardContent>
             </Card>
 
-            {/* Category Card */}
+            {/* Partners Card */}
             <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
               <CardContent className="p-6">
                 <div className="flex items-center">
                   <div className="p-2 bg-blue-500 rounded-lg">
-                    <Target className="w-6 h-6 text-white" />
+                    <Users className="w-6 h-6 text-white" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Категория</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{offer.category}</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Партнеры</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+                    <p className="text-sm text-blue-600">Активных</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Geography Card */}
+            {/* Clicks Card */}
             <Card className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20">
               <CardContent className="p-6">
                 <div className="flex items-center">
                   <div className="p-2 bg-purple-500 rounded-lg">
-                    <Globe className="w-6 h-6 text-white" />
+                    <Activity className="w-6 h-6 text-white" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">География</p>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">
-                      {Array.isArray(offer.countries) ? offer.countries.length + ' стран' : 'Все страны'}
-                    </p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Клики</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+                    <p className="text-sm text-purple-600">За все время</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Status Card */}
+            {/* Conversions Card */}
             <Card className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20">
               <CardContent className="p-6">
                 <div className="flex items-center">
                   <div className="p-2 bg-orange-500 rounded-lg">
-                    <Shield className="w-6 h-6 text-white" />
+                    <Target className="w-6 h-6 text-white" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Статус</p>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">
-                      {offer.isApproved ? "Одобрен" : "Публичный"}
-                    </p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Конверсии</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+                    <p className="text-sm text-orange-600">За все время</p>
                   </div>
                 </div>
               </CardContent>
@@ -208,10 +213,11 @@ export default function OfferDetails() {
           </div>
 
           <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="details">Детали оффера</TabsTrigger>
-              <TabsTrigger value="links">Трек-ссылки</TabsTrigger>
-              <TabsTrigger value="info">Информация</TabsTrigger>
+              <TabsTrigger value="partners">Партнеры</TabsTrigger>
+              <TabsTrigger value="analytics">Аналитика</TabsTrigger>
+              <TabsTrigger value="settings">Настройки</TabsTrigger>
             </TabsList>
 
             {/* Details Tab */}
@@ -245,22 +251,63 @@ export default function OfferDetails() {
                     </CardContent>
                   </Card>
 
-                  {/* KPI Requirements */}
-                  {offer.kpiConditions && (
-                    <Card className="mt-6">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Target className="h-5 w-5 text-orange-600" />
-                          Требования и KPI
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                          <p className="text-sm">{getDescription(offer.kpiConditions)}</p>
+                  {/* Landing Pages */}
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Globe className="h-5 w-5 text-blue-600" />
+                        Лендинги
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {offer.landingPages && Array.isArray(offer.landingPages) && offer.landingPages.length > 0 ? (
+                        offer.landingPages.map((landing: any, index: number) => (
+                          <div key={index} className="border rounded-lg p-4 space-y-3 bg-gray-50 dark:bg-gray-800">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium">{landing.name || `Лендинг ${index + 1}`}</span>
+                              {landing.payout && (
+                                <Badge variant="secondary">
+                                  {landing.payout} {offer.currency}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {landing.description && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{landing.description}</p>
+                            )}
+                            
+                            <div className="flex gap-2">
+                              <Input
+                                value={landing.url || `https://example.com/landing/${index + 1}`}
+                                readOnly
+                                className="text-sm"
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => copyToClipboard(landing.url || `https://example.com/landing/${index + 1}`, "URL лендинга")}
+                                title="Копировать URL"
+                              >
+                                <Copy className="h-4 w-4 text-blue-600" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => window.open(landing.url || `https://example.com/landing/${index + 1}`, '_blank')}
+                                title="Открыть лендинг"
+                              >
+                                <ExternalLink className="h-4 w-4 text-green-600" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Лендинги не настроены</p>
                         </div>
-                      </CardContent>
-                    </Card>
-                  )}
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
 
                 {/* Side Info */}
@@ -270,35 +317,26 @@ export default function OfferDetails() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <BarChart3 className="h-5 w-5" />
-                        Быстрая информация
+                        Информация
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Категория:</span>
+                        <Badge variant="outline">{offer.category}</Badge>
+                      </div>
+                      
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Тип выплаты:</span>
                         <Badge variant="outline">{getPayoutTypeLabel(offer.payoutType)}</Badge>
                       </div>
                       
-                      {offer.advertiser && (
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">Рекламодатель:</span>
-                          <span className="text-sm font-medium">{offer.advertiser.name}</span>
-                        </div>
-                      )}
-                      
-                      {offer.conversionRate && (
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">CR:</span>
-                          <span className="text-sm font-medium text-green-600">{offer.conversionRate}%</span>
-                        </div>
-                      )}
-                      
-                      {offer.cookieLifetime && (
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">Cookie:</span>
-                          <span className="text-sm font-medium">{offer.cookieLifetime} дней</span>
-                        </div>
-                      )}
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Статус:</span>
+                        <Badge variant={offer.status === 'active' ? "default" : "secondary"}>
+                          {offer.status === 'active' ? "Активен" : "Неактивен"}
+                        </Badge>
+                      </div>
                       
                       <Separator />
                       
@@ -320,7 +358,7 @@ export default function OfferDetails() {
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <MapPin className="h-5 w-5 text-blue-600" />
-                          Доступные страны
+                          География
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -336,136 +374,46 @@ export default function OfferDetails() {
               </div>
             </TabsContent>
 
-            {/* Links Tab */}
-            <TabsContent value="links" className="space-y-6">
+            {/* Partners Tab */}
+            <TabsContent value="partners" className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <ExternalLink className="h-5 w-5 text-blue-600" />
-                    Готовые трек-ссылки
+                    <Users className="h-5 w-5" />
+                    Партнеры оффера
                   </CardTitle>
                   <CardDescription>
-                    Готовые ссылки для каждого лендинга. Просто скопируйте и используйте.
+                    Управление партнерами, имеющими доступ к офферу
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {offer.landingPages && Array.isArray(offer.landingPages) && offer.landingPages.length > 0 ? (
-                    offer.landingPages.map((landing: any, index: number) => (
-                      <div key={index} className="border rounded-lg p-4 space-y-3 bg-gray-50 dark:bg-gray-800">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Globe className="h-4 w-4 text-blue-600" />
-                            <span className="font-medium">{landing.name || `Лендинг ${index + 1}`}</span>
-                          </div>
-                          {landing.payout && (
-                            <Badge variant="secondary">
-                              {landing.payout} {offer.currency}
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        {landing.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{landing.description}</p>
-                        )}
-                        
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                            Готовая трек-ссылка:
-                          </label>
-                          <div className="flex gap-2">
-                            <Input
-                              value={`https://track.platform.com/click/${offer.id}/${index}?partner=${user?.id || 'PARTNER_ID'}&subid=YOUR_SUBID`}
-                              readOnly
-                              className="text-sm"
-                              data-testid={`input-landing-link-${offer.id}-${index}`}
-                            />
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => copyToClipboard(
-                                `https://track.platform.com/click/${offer.id}/${index}?partner=${user?.id || 'PARTNER_ID'}&subid=YOUR_SUBID`,
-                                "Трек-ссылка"
-                              )}
-                              data-testid={`button-copy-landing-link-${offer.id}-${index}`}
-                              title="Копировать трек-ссылку"
-                            >
-                              <Copy className="h-4 w-4 text-blue-600" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => window.open(landing.url || `https://track.platform.com/click/${offer.id}/${index}?partner=${user?.id || 'PARTNER_ID'}`, '_blank')}
-                              data-testid={`button-open-landing-${offer.id}-${index}`}
-                              title="Открыть лендинг"
-                            >
-                              <ExternalLink className="h-4 w-4 text-green-600" />
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {landing.geo && (
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
-                            <strong>Гео:</strong> {Array.isArray(landing.geo) ? landing.geo.join(', ') : landing.geo}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                        Основная трек-ссылка:
-                      </label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={`https://track.platform.com/click/${offer.id}?partner=${user?.id || 'PARTNER_ID'}&subid=YOUR_SUBID`}
-                          readOnly
-                          className="text-sm"
-                          data-testid={`input-main-link-${offer.id}`}
-                        />
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => copyToClipboard(
-                            `https://track.platform.com/click/${offer.id}?partner=${user?.id || 'PARTNER_ID'}&subid=YOUR_SUBID`,
-                            "Основная ссылка"
-                          )}
-                          data-testid={`button-copy-main-link-${offer.id}`}
-                          title="Копировать ссылку"
-                        >
-                          <Copy className="h-4 w-4 text-blue-600" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => window.open(`https://track.platform.com/click/${offer.id}?partner=${user?.id || 'PARTNER_ID'}`, '_blank')}
-                          data-testid={`button-open-main-link-${offer.id}`}
-                          title="Открыть ссылку"
-                        >
-                          <ExternalLink className="h-4 w-4 text-green-600" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                <CardContent>
+                  <div className="text-center p-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-600 dark:text-gray-400">Пока нет партнеров</p>
+                    <p className="text-sm text-gray-500 mt-2">Добавьте партнеров для продвижения этого оффера</p>
+                    <Button className="mt-4" size="sm">
+                      Добавить партнера
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* Info Tab */}
-            <TabsContent value="info" className="space-y-6">
+            {/* Analytics Tab */}
+            <TabsContent value="analytics" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Activity className="h-5 w-5" />
-                      Статистика
+                      Статистика переходов
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Статистика недоступна</p>
-                        <p className="text-xs text-gray-500 mt-1">Данные появятся после первых переходов</p>
-                      </div>
+                    <div className="text-center p-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <BarChart3 className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                      <p className="text-gray-600 dark:text-gray-400">Нет данных</p>
+                      <p className="text-sm text-gray-500 mt-2">Статистика появится после первых переходов</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -474,19 +422,60 @@ export default function OfferDetails() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <TrendingUp className="h-5 w-5" />
-                      Производительность
+                      Конверсии
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Данные о производительности</p>
-                        <p className="text-xs text-gray-500 mt-1">Аналитика будет доступна после активности</p>
-                      </div>
+                    <div className="text-center p-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <Target className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                      <p className="text-gray-600 dark:text-gray-400">Нет конверсий</p>
+                      <p className="text-sm text-gray-500 mt-2">Данные о конверсиях появятся после настройки постбеков</p>
                     </div>
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Настройки оффера
+                  </CardTitle>
+                  <CardDescription>
+                    Основные параметры и доступ к офферу
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h4 className="font-medium">Приватный оффер</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Только одобренные партнеры имеют доступ</p>
+                      </div>
+                      <Badge variant="outline">Настраивается</Badge>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h4 className="font-medium">Автоодобрение</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Партнеры получают доступ автоматически</p>
+                      </div>
+                      <Badge variant="outline">Настраивается</Badge>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h4 className="font-medium">Лимиты трафика</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Ограничения по объему трафика</p>
+                      </div>
+                      <Badge variant="outline">Настраивается</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

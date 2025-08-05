@@ -26,6 +26,7 @@ import SuperAdminAnalytics from "@/pages/super-admin/analytics";
 import AnalyticsNew from "@/pages/super-admin/analytics-new";
 import PartnerOffers from '@/pages/affiliate/PartnerOffers';
 import OfferDetails from '@/pages/affiliate/OfferDetails';
+import AdvertiserOfferDetails from '@/pages/advertiser/OfferDetails';
 import SuperAdminSupport from "@/pages/super-admin/support";
 import UserAnalytics from "@/pages/super-admin/user-analytics";
 import PostbackManagementSuperAdmin from "@/pages/super-admin/postback-management";
@@ -219,6 +220,12 @@ function Router() {
       <Route path="/advertiser/offers/manage">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <OfferManagement />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/offers/:id">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <AdvertiserOfferDetails />
         </ProtectedRoute>
       </Route>
       
