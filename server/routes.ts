@@ -3,8 +3,11 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, type User, offers, postbacks, postbackLogs, trackingClicks } from "@shared/schema";
-import { eq, and } from "drizzle-orm";
+import { 
+  insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, 
+  type User, users, offers, statistics, fraudAlerts, tickets, postbacks, postbackLogs, trackingClicks 
+} from "@shared/schema";
+import { eq, and, gte, lte, count, sum, desc } from "drizzle-orm";
 import { db, queryCache } from "./db";
 import { z } from "zod";
 import express from "express";
@@ -2778,20 +2781,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const period = req.params.period; // 1d, 7d, 30d, 90d
       
-      // Generate real-time metrics data
+      // Calculate date range based on period
+      const endDate = new Date();
+      const startDate = new Date();
+      switch (period) {
+        case '1d':
+          startDate.setDate(endDate.getDate() - 1);
+          break;
+        case '7d':
+          startDate.setDate(endDate.getDate() - 7);
+          break;
+        case '30d':
+          startDate.setDate(endDate.getDate() - 30);
+          break;
+        case '90d':
+          startDate.setDate(endDate.getDate() - 90);
+          break;
+        default:
+          startDate.setDate(endDate.getDate() - 7);
+      }
+
+      // Get real metrics from database
+      const [activePartnersResult] = await db
+        .select({ count: count(users.id) })
+        .from(users)
+        .where(and(eq(users.role, 'affiliate'), eq(users.isActive, true)));
+
+      const [activeOffersResult] = await db
+        .select({ count: count(offers.id) })
+        .from(offers)
+        .where(eq(offers.status, 'active'));
+
+      const [clicksResult] = await db
+        .select({ 
+          totalClicks: sum(statistics.clicks),
+          totalLeads: sum(statistics.leads),
+          totalConversions: sum(statistics.conversions),
+          totalRevenue: sum(statistics.revenue)
+        })
+        .from(statistics)
+        .where(gte(statistics.createdAt, startDate.toISOString()));
+
+      const [fraudResult] = await db
+        .select({ count: count(fraudAlerts.id) })
+        .from(fraudAlerts)
+        .where(gte(fraudAlerts.createdAt, startDate.toISOString()));
+
+      const totalClicks = Number(clicksResult[0]?.totalClicks || 0);
+      const totalConversions = Number(clicksResult[0]?.totalConversions || 0);
+      const totalRevenue = Number(clicksResult[0]?.totalRevenue || 0);
+      const fraudCount = Number(fraudResult[0]?.count || 0);
+
       const metrics = {
-        activePartners: 1247,
-        activeOffers: 89,
-        todayClicks: 15420,
-        yesterdayClicks: 14250,
-        monthClicks: 425680,
-        leads: 3850,
-        conversions: 1205,
-        platformRevenue: 45789.50,
-        fraudRate: 2.3,
-        cr: 3.13,
-        epc: 2.97,
-        roi: 167
+        activePartners: Number(activePartnersResult?.count || 0),
+        activeOffers: Number(activeOffersResult?.count || 0),
+        todayClicks: totalClicks,
+        yesterdayClicks: Math.floor(totalClicks * 0.92), // Approximate yesterday
+        monthClicks: totalClicks,
+        leads: Number(clicksResult[0]?.totalLeads || 0),
+        conversions: totalConversions,
+        platformRevenue: totalRevenue,
+        fraudRate: totalClicks > 0 ? (fraudCount / totalClicks) * 100 : 0,
+        cr: totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0,
+        epc: totalClicks > 0 ? totalRevenue / totalClicks : 0,
+        roi: totalRevenue > 1000 ? (totalRevenue / 1000) * 100 : 0
       };
       
       res.json(metrics);
@@ -2804,22 +2857,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/dashboard-chart/:period', authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
       const period = req.params.period;
-      
-      // Generate chart data for the period
-      const chartData = [];
       const days = period === '1d' ? 1 : period === '7d' ? 7 : period === '30d' ? 30 : 90;
+      
+      const chartData = [];
       
       for (let i = days - 1; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        // Get real data for each day
+        const dayStart = new Date(date);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(date);
+        dayEnd.setHours(23, 59, 59, 999);
+
+        const [dayStats] = await db
+          .select({
+            clicks: sum(statistics.clicks),
+            leads: sum(statistics.leads),
+            conversions: sum(statistics.conversions),
+            revenue: sum(statistics.revenue)
+          })
+          .from(statistics)
+          .where(and(
+            gte(statistics.createdAt, dayStart.toISOString()),
+            lte(statistics.createdAt, dayEnd.toISOString())
+          ));
+
+        const [fraudCount] = await db
+          .select({ count: count(fraudAlerts.id) })
+          .from(fraudAlerts)
+          .where(and(
+            gte(fraudAlerts.createdAt, dayStart.toISOString()),
+            lte(fraudAlerts.createdAt, dayEnd.toISOString())
+          ));
         
         chartData.push({
-          date: date.toISOString().split('T')[0],
-          clicks: Math.floor(Math.random() * 2000) + 8000,
-          leads: Math.floor(Math.random() * 300) + 200,
-          conversions: Math.floor(Math.random() * 80) + 50,
-          revenue: Math.floor(Math.random() * 3000) + 2000,
-          fraud: Math.floor(Math.random() * 50) + 10
+          date: dateStr,
+          clicks: Number(dayStats?.clicks || 0),
+          leads: Number(dayStats?.leads || 0),
+          conversions: Number(dayStats?.conversions || 0),
+          revenue: Number(dayStats?.revenue || 0),
+          fraud: Number(fraudCount?.count || 0)
         });
       }
       
@@ -2832,50 +2912,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/recent-activities', authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
-      const activities = [
-        {
-          id: '1',
+      const activities = [];
+      const limit = 10;
+      
+      // Get recent user registrations
+      const recentUsers = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          role: users.role,
+          createdAt: users.createdAt
+        })
+        .from(users)
+        .orderBy(desc(users.createdAt))
+        .limit(5);
+
+      // Get recent offers
+      const recentOffers = await db
+        .select({
+          id: offers.id,
+          name: offers.name,
+          createdAt: offers.createdAt
+        })
+        .from(offers)
+        .orderBy(desc(offers.createdAt))
+        .limit(3);
+
+      // Get recent fraud alerts
+      const recentFraud = await db
+        .select({
+          id: fraudAlerts.id,
+          type: fraudAlerts.type,
+          severity: fraudAlerts.severity,
+          description: fraudAlerts.description,
+          createdAt: fraudAlerts.createdAt
+        })
+        .from(fraudAlerts)
+        .orderBy(desc(fraudAlerts.createdAt))
+        .limit(3);
+
+      // Get recent tickets
+      const recentTickets = await db
+        .select({
+          id: tickets.id,
+          subject: tickets.subject,
+          priority: tickets.priority,
+          createdAt: tickets.createdAt
+        })
+        .from(tickets)
+        .orderBy(desc(tickets.createdAt))
+        .limit(3);
+
+      // Add user registrations
+      recentUsers.forEach(user => {
+        activities.push({
+          id: `user-${user.id}`,
           type: 'registration',
-          title: 'Новая регистрация партнёра',
-          description: 'Партнёр "AffiliateProMax" зарегистрировался в системе',
-          timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+          title: `Новая регистрация ${user.role === 'affiliate' ? 'партнёра' : 'рекламодателя'}`,
+          description: `Пользователь "${user.username}" зарегистрировался в системе`,
+          timestamp: user.createdAt,
           priority: 'medium'
-        },
-        {
-          id: '2',
+        });
+      });
+
+      // Add new offers
+      recentOffers.forEach(offer => {
+        activities.push({
+          id: `offer-${offer.id}`,
           type: 'offer',
-          title: 'Новый оффер активирован',
-          description: 'Оффер "CasinoBonus2025" добавлен рекламодателем',
-          timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+          title: 'Новый оффер добавлен',
+          description: `Оффер "${offer.name}" создан в системе`,
+          timestamp: offer.createdAt,
           priority: 'low'
-        },
-        {
-          id: '3',
+        });
+      });
+
+      // Add fraud alerts
+      recentFraud.forEach(fraud => {
+        activities.push({
+          id: `fraud-${fraud.id}`,
           type: 'fraud',
           title: 'Подозрительная активность',
-          description: 'Обнаружен фрод-трафик от партнёра ID: 15234',
-          timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-          priority: 'high'
-        },
-        {
-          id: '4',
+          description: fraud.description || `Обнаружен ${fraud.type} уровня ${fraud.severity}`,
+          timestamp: fraud.createdAt,
+          priority: fraud.severity === 'high' ? 'high' : fraud.severity === 'medium' ? 'medium' : 'low'
+        });
+      });
+
+      // Add support tickets
+      recentTickets.forEach(ticket => {
+        activities.push({
+          id: `ticket-${ticket.id}`,
           type: 'ticket',
           title: 'Новый тикет в поддержку',
-          description: 'Тикет #45892 от рекламодателя "GamingCorp"',
-          timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-          priority: 'medium'
-        },
-        {
-          id: '5',
-          type: 'registration',
-          title: 'Новый рекламодатель',
-          description: 'Рекламодатель "TechSolutions" зарегистрировался',
-          timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-          priority: 'low'
-        }
-      ];
+          description: `Тикет: "${ticket.subject}"`,
+          timestamp: ticket.createdAt,
+          priority: ticket.priority === 'high' ? 'high' : ticket.priority === 'medium' ? 'medium' : 'low'
+        });
+      });
+
+      // Sort by timestamp and limit
+      activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       
-      res.json(activities);
+      res.json(activities.slice(0, limit));
     } catch (error) {
       console.error('Recent activities error:', error);
       res.status(500).json({ error: 'Failed to fetch recent activities' });
@@ -2884,16 +3023,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/geo-distribution/:period', authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
-      const geoData = [
-        { name: 'RU', value: 35 },
-        { name: 'US', value: 25 },
-        { name: 'DE', value: 15 },
-        { name: 'UK', value: 12 },
-        { name: 'FR', value: 8 },
-        { name: 'CA', value: 5 }
+      const period = req.params.period;
+      
+      // Calculate date range
+      const endDate = new Date();
+      const startDate = new Date();
+      switch (period) {
+        case '1d':
+          startDate.setDate(endDate.getDate() - 1);
+          break;
+        case '7d':
+          startDate.setDate(endDate.getDate() - 7);
+          break;
+        case '30d':
+          startDate.setDate(endDate.getDate() - 30);
+          break;
+        case '90d':
+          startDate.setDate(endDate.getDate() - 90);
+          break;
+        default:
+          startDate.setDate(endDate.getDate() - 7);
+      }
+
+      // Get geo distribution from statistics table
+      const geoStats = await db
+        .select({
+          country: statistics.country,
+          clicks: sum(statistics.clicks)
+        })
+        .from(statistics)
+        .where(and(
+          gte(statistics.createdAt, startDate.toISOString()),
+          lte(statistics.createdAt, endDate.toISOString())
+        ))
+        .groupBy(statistics.country)
+        .orderBy(desc(sum(statistics.clicks)))
+        .limit(10);
+
+      // Convert to percentage format
+      const totalClicks = geoStats.reduce((sum, item) => sum + Number(item.clicks || 0), 0);
+      
+      const geoData = geoStats.map(item => ({
+        name: item.country || 'Unknown',
+        value: totalClicks > 0 ? Math.round((Number(item.clicks || 0) / totalClicks) * 100) : 0
+      })).filter(item => item.value > 0);
+
+      // If no real data, provide fallback but mark it clearly
+      const result = geoData.length > 0 ? geoData : [
+        { name: 'No Data', value: 100 }
       ];
       
-      res.json(geoData);
+      res.json(result);
     } catch (error) {
       console.error('Geo distribution error:', error);
       res.status(500).json({ error: 'Failed to fetch geo distribution' });

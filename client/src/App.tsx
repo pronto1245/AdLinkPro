@@ -62,6 +62,11 @@ function Router() {
           <Dashboard />
         </ProtectedRoute>
       </Route>
+      <Route path="/super-admin/dashboard">
+        <ProtectedRoute allowedRoles={['super_admin']}>
+          <Dashboard />
+        </ProtectedRoute>
+      </Route>
       <Route path="/admin/users">
         <ProtectedRoute allowedRoles={['super_admin']}>
           <SuperAdminUsersManagement />
