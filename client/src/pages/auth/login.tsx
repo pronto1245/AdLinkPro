@@ -67,9 +67,29 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
-              <div className="font-medium text-blue-800 mb-2">Данные для входа:</div>
-              <div className="text-blue-700">
-                <div><strong>Администратор:</strong> superadmin / admin</div>
+              <div className="font-medium text-blue-800 mb-2">Быстрый вход:</div>
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => { setUsername('superadmin'); setPassword('admin'); }}
+                  className="block w-full text-left p-2 text-blue-700 hover:bg-blue-100 rounded text-xs"
+                >
+                  <strong>👑 Супер-админ:</strong> superadmin / admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setUsername('advertiser1'); setPassword('admin'); }}
+                  className="block w-full text-left p-2 text-blue-700 hover:bg-blue-100 rounded text-xs"
+                >
+                  <strong>🏢 Рекламодатель:</strong> advertiser1 / admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setUsername('test_affiliate'); setPassword('admin'); }}
+                  className="block w-full text-left p-2 text-blue-700 hover:bg-blue-100 rounded text-xs"
+                >
+                  <strong>🤝 Партнер:</strong> test_affiliate / admin
+                </button>
               </div>
             </div>
             

@@ -57,6 +57,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/login/:role" component={Login} />
       
       {/* Super Admin Routes */}
       <Route path="/admin">
