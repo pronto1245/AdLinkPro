@@ -595,11 +595,16 @@ export default function AnalyticsNew() {
 
   // Reset filters
   const handleResetFilters = () => {
+    console.log('Reset filters clicked');
     setSearchTerm('');
     setDateFrom(format(subDays(new Date(), 7), 'yyyy-MM-dd'));
     setDateTo(format(new Date(), 'yyyy-MM-dd'));
     setQuickFilter('all');
     setCurrentPage(1);
+    
+    // Also invalidate query to refresh data
+    queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics'] });
+    
     toast({
       title: 'Фильтры сброшены',
       description: 'Все фильтры возвращены к значениям по умолчанию',
