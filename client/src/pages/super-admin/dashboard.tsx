@@ -13,6 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useAuth } from '@/contexts/auth-context';
+import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
@@ -56,6 +57,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 export default function Dashboard() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
   
@@ -117,8 +119,8 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ['/api/admin/recent-activities'] });
     queryClient.invalidateQueries({ queryKey: ['/api/admin/geo-distribution'] });
     toast({
-      title: 'Данные обновлены',
-      description: 'Информация дашборда успешно обновлена',
+      title: t('dashboard.data.updated'),
+      description: t('dashboard.data.updateDesc'),
     });
   };
 
@@ -137,10 +139,10 @@ export default function Dashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                🧭 Дашборд владельца платформы
+                🧭 {t('dashboard.title')}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                Центральная панель управления с ключевыми метриками и аналитикой
+                {t('dashboard.subtitle')}
               </p>
             </div>
             
@@ -149,10 +151,10 @@ export default function Dashboard() {
                 variant="outline"
                 onClick={refreshData}
                 data-testid="button-refresh"
-                title="Обновить данные"
+                title={t('dashboard.refresh')}
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Обновить
+                {t('dashboard.refresh')}
               </Button>
               
               <Select value={dateFilter} onValueChange={setDateFilter}>
@@ -160,10 +162,10 @@ export default function Dashboard() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1d">Сегодня</SelectItem>
-                  <SelectItem value="7d">7 дней</SelectItem>
-                  <SelectItem value="30d">30 дней</SelectItem>
-                  <SelectItem value="90d">90 дней</SelectItem>
+                  <SelectItem value="1d">{t('dashboard.period.today')}</SelectItem>
+                  <SelectItem value="7d">{t('dashboard.period.7days')}</SelectItem>
+                  <SelectItem value="30d">{t('dashboard.period.30days')}</SelectItem>
+                  <SelectItem value="90d">{t('dashboard.period.90days')}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -172,10 +174,10 @@ export default function Dashboard() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Все ГЕО</SelectItem>
-                  <SelectItem value="RU">Россия</SelectItem>
-                  <SelectItem value="US">США</SelectItem>
-                  <SelectItem value="EU">Европа</SelectItem>
+                  <SelectItem value="all">{t('dashboard.geo.all')}</SelectItem>
+                  <SelectItem value="RU">{t('dashboard.geo.russia')}</SelectItem>
+                  <SelectItem value="US">{t('dashboard.geo.usa')}</SelectItem>
+                  <SelectItem value="EU">{t('dashboard.geo.europe')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -193,7 +195,7 @@ export default function Dashboard() {
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Активные партнёры</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.activePartners')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {metrics?.activePartners?.toLocaleString() || '1,247'}
                   </p>
@@ -214,7 +216,7 @@ export default function Dashboard() {
                   <Target className="w-6 h-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Активные офферы</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.activeOffers')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {metrics?.activeOffers?.toLocaleString() || '89'}
                   </p>
@@ -235,7 +237,7 @@ export default function Dashboard() {
                   <MousePointer className="w-6 h-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Клики сегодня</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.todayClicks')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {metrics?.todayClicks?.toLocaleString() || '15,420'}
                   </p>
@@ -256,7 +258,7 @@ export default function Dashboard() {
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Конверсии</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.conversions')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {metrics?.conversions?.toLocaleString() || '1,205'}
                   </p>
@@ -277,7 +279,7 @@ export default function Dashboard() {
                   <DollarSign className="w-6 h-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Доход платформы</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.platformRevenue')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     ${metrics?.platformRevenue?.toLocaleString() || '45,789'}
                   </p>
@@ -298,7 +300,7 @@ export default function Dashboard() {
                   <AlertTriangle className="w-6 h-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Фрод-показатель</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.fraudRate')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {metrics?.fraudRate?.toFixed(1) || '2.3'}%
                   </p>
@@ -374,10 +376,10 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5" />
-                Динамика трафика и конверсий
+                {t('dashboard.charts.trafficTitle')}
               </CardTitle>
               <CardDescription>
-                Клики, лиды и конверсии за выбранный период
+                {t('dashboard.charts.trafficDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -402,10 +404,10 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5" />
-                Доходы платформы
+                {t('dashboard.charts.revenueTitle')}
               </CardTitle>
               <CardDescription>
-                Динамика доходов по дням
+                {t('dashboard.charts.revenueDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -428,10 +430,10 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="w-5 h-5" />
-                Распределение по ГЕО
+                {t('dashboard.charts.geoTitle')}
               </CardTitle>
               <CardDescription>
-                Топ стран по трафику
+                {t('dashboard.charts.geoDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -468,10 +470,10 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="w-5 h-5" />
-                Последние события
+                {t('dashboard.activities.title')}
               </CardTitle>
               <CardDescription>
-                Активность на платформе в режиме реального времени
+                {t('dashboard.activities.desc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -500,10 +502,10 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="w-5 h-5" />
-                Быстрые действия
+                {t('dashboard.quickActions.title')}
               </CardTitle>
               <CardDescription>
-                Основные операции управления
+                {t('dashboard.quickActions.desc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -515,7 +517,7 @@ export default function Dashboard() {
                   data-testid="quick-action-add-offer"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Добавить оффер
+                  {t('dashboard.quickActions.addOffer')}
                 </Button>
                 
                 <Button 
@@ -525,7 +527,7 @@ export default function Dashboard() {
                   data-testid="quick-action-add-user"
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Добавить пользователя
+                  {t('dashboard.quickActions.addUser')}
                 </Button>
                 
                 <Button 
@@ -535,7 +537,7 @@ export default function Dashboard() {
                   data-testid="quick-action-postback"
                 >
                   <Settings className="w-4 h-4 mr-2" />
-                  Настроить постбек
+                  {t('dashboard.quickActions.postback')}
                 </Button>
                 
                 <Button 
@@ -545,7 +547,7 @@ export default function Dashboard() {
                   data-testid="quick-action-analytics"
                 >
                   <BarChart3 className="w-4 h-4 mr-2" />
-                  Расширенная аналитика
+                  {t('dashboard.quickActions.analytics')}
                 </Button>
                 
                 <Button 
@@ -555,7 +557,7 @@ export default function Dashboard() {
                   data-testid="quick-action-fraud"
                 >
                   <Shield className="w-4 h-4 mr-2" />
-                  Детекция фрода
+                  {t('dashboard.quickActions.fraud')}
                 </Button>
                 
                 <Button 
@@ -565,7 +567,7 @@ export default function Dashboard() {
                   data-testid="quick-action-finances"
                 >
                   <Eye className="w-4 h-4 mr-2" />
-                  Финансовые отчёты
+                  {t('dashboard.quickActions.finances')}
                 </Button>
               </div>
             </CardContent>
