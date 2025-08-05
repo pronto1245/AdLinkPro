@@ -210,12 +210,11 @@ export default function OffersManagement() {
                     {t('create_offer')}
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>{t('create_new_offer')}</DialogTitle>
                   </DialogHeader>
-                  <div>
-                    <form onSubmit={(e) => {
+                  <form onSubmit={(e) => {
                       e.preventDefault();
                       if (createOfferMutation.isPending) return;
                       
@@ -371,8 +370,7 @@ export default function OffersManagement() {
                           {createOfferMutation.isPending ? 'Создание...' : 'Создать оффер'}
                         </Button>
                       </div>
-                    </form>
-                  </div>
+                  </form>
                 </DialogContent>
               </Dialog>
             </div>
