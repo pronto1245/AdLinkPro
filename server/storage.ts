@@ -1476,52 +1476,118 @@ export class DatabaseStorage implements IStorage {
         .from(users)
         .groupBy(users.role);
 
-      // Activity trends (mock data for now)
-      const activityTrend = Array.from({ length: 7 }, (_, i) => {
+      // Activity trends - real data from user logins
+      const activityTrendData = await db
+        .select({
+          date: sql<string>`DATE(${users.lastLoginAt})`,
+          count: count()
+        })
+        .from(users)
+        .where(
+          and(
+            gte(users.lastLoginAt, startDate),
+            isNotNull(users.lastLoginAt)
+          )
+        )
+        .groupBy(sql`DATE(${users.lastLoginAt})`)
+        .orderBy(sql`DATE(${users.lastLoginAt})`);
+
+      // Fill missing dates with zero values
+      const activityTrend = [];
+      for (let i = 6; i >= 0; i--) {
         const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-        return {
-          date: date.toISOString().split('T')[0],
-          active24h: Math.floor(Math.random() * 100) + 50,
-          active7d: Math.floor(Math.random() * 200) + 100
-        };
-      }).reverse();
+        const dateStr = date.toISOString().split('T')[0];
+        const found = activityTrendData.find(item => item.date === dateStr);
+        activityTrend.push({
+          date: dateStr,
+          active24h: found ? found.count : 0,
+          active7d: found ? found.count : 0
+        });
+      }
 
-      // Registration trend
-      const registrationTrend = Array.from({ length: 7 }, (_, i) => {
+      // Registration trend - real data from user registrations
+      const registrationTrendData = await db
+        .select({
+          date: sql<string>`DATE(${users.createdAt})`,
+          count: count()
+        })
+        .from(users)
+        .where(gte(users.createdAt, startDate))
+        .groupBy(sql`DATE(${users.createdAt})`)
+        .orderBy(sql`DATE(${users.createdAt})`);
+
+      // Fill missing dates with zero values
+      const registrationTrend = [];
+      for (let i = 6; i >= 0; i--) {
         const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-        return {
-          date: date.toISOString().split('T')[0],
-          registrations: Math.floor(Math.random() * 10) + 1
-        };
-      }).reverse();
+        const dateStr = date.toISOString().split('T')[0];
+        const found = registrationTrendData.find(item => item.date === dateStr);
+        registrationTrend.push({
+          date: dateStr,
+          registrations: found ? found.count : 0
+        });
+      }
 
-      // Geographic distribution (mock data)
-      const geoDistribution = [
-        { country: 'Russia', users: 450 },
-        { country: 'Ukraine', users: 320 },
-        { country: 'Belarus', users: 180 },
-        { country: 'Kazakhstan', users: 120 },
-        { country: 'Other', users: 230 }
-      ];
+      // Geographic distribution - real data from users table
+      const geoDistribution = await db
+        .select({
+          country: users.country,
+          users: count()
+        })
+        .from(users)
+        .where(isNotNull(users.country))
+        .groupBy(users.country)
+        .orderBy(desc(count()));
 
-      // Recent activity (mock data)
-      const recentActivity = [
-        { user: 'user123', action: 'Вход в систему', timestamp: new Date() },
-        { user: 'affiliate456', action: 'Создание трекинг-ссылки', timestamp: new Date(Date.now() - 30000) },
-        { user: 'advertiser789', action: 'Обновление оффера', timestamp: new Date(Date.now() - 60000) }
-      ];
+      // Format for chart display
+      const geoData = geoDistribution.map(item => ({
+        country: item.country || 'Unknown',
+        users: Number(item.users)
+      }));
+
+      // Recent activity - real data from recent logins and registrations
+      const recentLogins = await db
+        .select({
+          user: users.username,
+          action: sql<string>`'Вход в систему'`,
+          timestamp: users.lastLoginAt
+        })
+        .from(users)
+        .where(
+          and(
+            isNotNull(users.lastLoginAt),
+            gte(users.lastLoginAt, new Date(now.getTime() - 24 * 60 * 60 * 1000))
+          )
+        )
+        .orderBy(desc(users.lastLoginAt))
+        .limit(5);
+
+      const recentRegistrations = await db
+        .select({
+          user: users.username,
+          action: sql<string>`'Регистрация в системе'`,
+          timestamp: users.createdAt
+        })
+        .from(users)
+        .where(gte(users.createdAt, new Date(now.getTime() - 24 * 60 * 60 * 1000)))
+        .orderBy(desc(users.createdAt))
+        .limit(3);
+
+      const recentActivity = [...recentLogins, ...recentRegistrations]
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 10);
 
       return {
         totalUsers: totalUsers.count,
         totalUsersChange: '+5.2%',
-        active24h: Math.floor(totalUsers.count * 0.3),
+        active24h: activityTrendData.reduce((sum, item) => sum + item.count, 0),
         active24hChange: '+2.1%',
         newUsers: newUsers.count,
         newUsersChange: '+12.5%',
         roleDistribution,
         activityTrend,
         registrationTrend,
-        geoDistribution,
+        geoDistribution: geoData,
         recentActivity
       };
     } catch (error) {
