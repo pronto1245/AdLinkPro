@@ -13,7 +13,7 @@ import {
   type FraudBlock, type InsertFraudBlock
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte, count, sum, sql, isNotNull } from "drizzle-orm";
+import { eq, desc, and, gte, lt, lte, count, sum, sql, isNotNull, like, ilike, or, inArray, ne } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -2084,25 +2084,29 @@ export class DatabaseStorage implements IStorage {
         ));
       
       // Calculate fraud rate (fraud reports / total events ratio)
-      // For now, using fraud reports vs total clicks as proxy
-      const [totalEventsResult] = await db.select({ count: count() })
-        .from(clicks)
-        .where(gte(clicks.createdAt, thirtyDaysAgo));
+      // Using fraud reports vs total clicks from statistics
+      const [totalEventsResult] = await db.select({ 
+        totalClicks: sql<number>`COALESCE(SUM(${statistics.clicks}), 0)` 
+      })
+        .from(statistics)
+        .where(gte(statistics.date, thirtyDaysAgo));
       
-      const totalEvents = totalEventsResult.count;
+      const totalEvents = totalEventsResult.totalClicks;
       const fraudRate = totalEvents > 0 
         ? ((totalReports / totalEvents) * 100).toFixed(2)
         : '0.00';
       
       // Previous period fraud rate for comparison
-      const [previousEventsResult] = await db.select({ count: count() })
-        .from(clicks)
+      const [previousEventsResult] = await db.select({ 
+        totalClicks: sql<number>`COALESCE(SUM(${statistics.clicks}), 0)` 
+      })
+        .from(statistics)
         .where(and(
-          gte(clicks.createdAt, sixtyDaysAgo),
-          lt(clicks.createdAt, thirtyDaysAgo)
+          gte(statistics.date, sixtyDaysAgo),
+          lt(statistics.date, thirtyDaysAgo)
         ));
       
-      const previousEvents = previousEventsResult.count;
+      const previousEvents = previousEventsResult.totalClicks;
       const previousFraudRate = previousEvents > 0 
         ? (previousReports / previousEvents) * 100
         : 0;
@@ -2370,39 +2374,47 @@ export class DatabaseStorage implements IStorage {
         .from(fraudReports)
         .where(gte(fraudReports.createdAt, fifteenMinutesAgo));
       
-      const [recentClicks] = await db.select({ count: count() })
-        .from(clicks)
-        .where(gte(clicks.createdAt, fifteenMinutesAgo));
+      const [recentClicks] = await db.select({ 
+        totalClicks: sql<number>`COALESCE(SUM(${statistics.clicks}), 0)` 
+      })
+        .from(statistics)
+        .where(gte(statistics.date, fifteenMinutesAgo));
       
-      const currentFraudRate = recentClicks.count > 0 
-        ? (recentFraudReports.count / recentClicks.count) * 100 
+      const currentFraudRate = recentClicks.totalClicks > 0 
+        ? (recentFraudReports.count / recentClicks.totalClicks) * 100 
         : 0;
       
       // Get conversion rate for CR anomaly detection
-      const [recentConversions] = await db.select({ count: count() })
-        .from(conversions)
-        .where(gte(conversions.createdAt, thirtyMinutesAgo));
+      const [recentConversions] = await db.select({ 
+        totalConversions: sql<number>`COALESCE(SUM(${statistics.conversions}), 0)` 
+      })
+        .from(statistics)
+        .where(gte(statistics.date, thirtyMinutesAgo));
       
-      const [baselineConversions] = await db.select({ count: count() })
-        .from(conversions)
+      const [baselineConversions] = await db.select({ 
+        totalConversions: sql<number>`COALESCE(SUM(${statistics.conversions}), 0)` 
+      })
+        .from(statistics)
         .where(and(
-          gte(conversions.createdAt, oneHourAgo),
-          lt(conversions.createdAt, thirtyMinutesAgo)
+          gte(statistics.date, oneHourAgo),
+          lt(statistics.date, thirtyMinutesAgo)
         ));
       
-      const [baselineClicks] = await db.select({ count: count() })
-        .from(clicks)
+      const [baselineClicks] = await db.select({ 
+        totalClicks: sql<number>`COALESCE(SUM(${statistics.clicks}), 0)` 
+      })
+        .from(statistics)
         .where(and(
-          gte(clicks.createdAt, oneHourAgo),
-          lt(clicks.createdAt, thirtyMinutesAgo)
+          gte(statistics.date, oneHourAgo),
+          lt(statistics.date, thirtyMinutesAgo)
         ));
       
-      const currentCR = recentClicks.count > 0 
-        ? (recentConversions.count / recentClicks.count) * 100 
+      const currentCR = recentClicks.totalClicks > 0 
+        ? (recentConversions.totalConversions / recentClicks.totalClicks) * 100 
         : 0;
       
-      const baselineCR = baselineClicks.count > 0 
-        ? (baselineConversions.count / baselineClicks.count) * 100 
+      const baselineCR = baselineClicks.totalClicks > 0 
+        ? (baselineConversions.totalConversions / baselineClicks.totalClicks) * 100 
         : 0;
       
       const alerts = [];
@@ -2421,7 +2433,7 @@ export class DatabaseStorage implements IStorage {
             fraudRate: Number(currentFraudRate.toFixed(1)), 
             period: "last_15_min",
             fraudReports: recentFraudReports.count,
-            totalEvents: recentClicks.count
+            totalEvents: recentClicks.totalClicks
           },
           affectedMetrics: ["fraud_rate", "blocked_ips"],
           autoActions: ["block_suspicious_ips", "alert_admins"],
@@ -2443,7 +2455,7 @@ export class DatabaseStorage implements IStorage {
             crIncrease: Number((currentCR / baselineCR).toFixed(1)), 
             baseline: Number(baselineCR.toFixed(2)), 
             current: Number(currentCR.toFixed(2)),
-            conversions: recentConversions.count
+            conversions: recentConversions.totalConversions
           },
           affectedMetrics: ["conversion_rate", "revenue"],
           autoActions: ["flag_traffic", "manual_review"],
@@ -2452,21 +2464,23 @@ export class DatabaseStorage implements IStorage {
       }
       
       // Volume surge alert (threshold: >500% increase in clicks)
-      const [hourlyClicks] = await db.select({ count: count() })
-        .from(clicks)
-        .where(gte(clicks.createdAt, oneHourAgo));
+      const [hourlyClicks] = await db.select({ 
+        totalClicks: sql<number>`COALESCE(SUM(${statistics.clicks}), 0)` 
+      })
+        .from(statistics)
+        .where(gte(statistics.date, oneHourAgo));
       
-      if (hourlyClicks.count > 1000) { // High volume threshold
+      if (hourlyClicks.totalClicks > 1000) { // High volume threshold
         alerts.push({
           id: `volume-surge-${Date.now()}`,
           type: "volume_surge", 
           title: "Всплеск трафика",
           description: "Обнаружен необычно высокий объем трафика",
-          severity: hourlyClicks.count > 5000 ? "high" : "medium",
+          severity: hourlyClicks.totalClicks > 5000 ? "high" : "medium",
           triggeredAt: new Date(now.getTime() - 3 * 60 * 1000).toISOString(),
           threshold: { value: 1000, period: 60, unit: "minutes" },
           currentValue: { 
-            clicks: hourlyClicks.count,
+            clicks: hourlyClicks.totalClicks,
             period: "last_hour"
           },
           affectedMetrics: ["traffic_volume", "server_load"],
