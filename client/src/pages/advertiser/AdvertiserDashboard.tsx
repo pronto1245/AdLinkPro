@@ -37,6 +37,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { Link } from "wouter";
+import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
 
 interface DashboardStats {
   totalRevenue: number;
@@ -155,7 +156,8 @@ export default function AdvertiserDashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <RoleBasedLayout>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -328,7 +330,7 @@ export default function AdvertiserDashboard() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={revenueData}>
+              <LineChart data={Array.isArray(revenueData) ? revenueData : []}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
@@ -351,7 +353,7 @@ export default function AdvertiserDashboard() {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={trafficSources}
+                  data={Array.isArray(trafficSources) ? trafficSources : []}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -360,9 +362,9 @@ export default function AdvertiserDashboard() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {trafficSources.map((entry: any, index: number) => (
+                  {Array.isArray(trafficSources) ? trafficSources.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
+                  )) : []}
                 </Pie>
                 <Tooltip />
               </PieChart>
@@ -570,6 +572,7 @@ export default function AdvertiserDashboard() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </RoleBasedLayout>
   );
 }

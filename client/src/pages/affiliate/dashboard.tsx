@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Sidebar from '@/components/layout/sidebar';
-import Header from '@/components/layout/header';
+import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -185,16 +184,14 @@ export default function AffiliateDashboard() {
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
-      
-      <main className="flex-1 lg:ml-64 overflow-y-auto">
-        <Header 
-          title="dashboard" 
-          subtitle="welcome"
-        />
-
-        <div className="p-6 space-y-6">
+    <RoleBasedLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Панель партнёра</h1>
+          <p className="text-muted-foreground mt-2">
+            Добро пожаловать в ваш кабинет партнёра
+          </p>
+        </div>
           {/* Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {dashboardMetrics.map((metric, index) => (
@@ -405,7 +402,7 @@ export default function AffiliateDashboard() {
             </CardContent>
           </Card>
         </div>
-      </main>
-    </div>
+      </div>
+    </RoleBasedLayout>
   );
 }

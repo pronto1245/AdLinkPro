@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Copy, ExternalLink, Settings, Eye, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
 
 interface PartnerOffer {
   id: string;
@@ -99,7 +100,7 @@ export default function PartnerOffers() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
+      <RoleBasedLayout>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="animate-pulse">
@@ -116,12 +117,13 @@ export default function PartnerOffers() {
             </Card>
           ))}
         </div>
-      </div>
+      </RoleBasedLayout>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <RoleBasedLayout>
+      <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Партнерские офферы</h1>
@@ -222,7 +224,8 @@ export default function PartnerOffers() {
           )}
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </RoleBasedLayout>
   );
 }
 
@@ -337,3 +340,4 @@ function OfferCard({ offer, copyToClipboard }: OfferCardProps) {
     </Card>
   );
 }
+
