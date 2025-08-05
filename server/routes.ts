@@ -1269,14 +1269,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Creating offer for user:", authUser.id, authUser.username);
       console.log("Request body data:", JSON.stringify(req.body, null, 2));
       
+      // Process multilingual fields 
+      let description = req.body.description;
+      if (req.body.description_ru || req.body.description_en) {
+        description = {
+          ru: req.body.description_ru || '',
+          en: req.body.description_en || ''
+        };
+      }
+      
+      let goals = req.body.goals;
+      if (req.body.goals_ru || req.body.goals_en) {
+        goals = {
+          ru: req.body.goals_ru || '',
+          en: req.body.goals_en || ''
+        };
+      }
+      
+      let kpiConditions = req.body.kpiConditions;
+      if (req.body.kpiConditions_ru || req.body.kpiConditions_en) {
+        kpiConditions = {
+          ru: req.body.kpiConditions_ru || '',
+          en: req.body.kpiConditions_en || ''
+        };
+      }
+
       // Insert directly into database bypassing all validation
       const [newOffer] = await db
         .insert(offers)
         .values({
           name: req.body.name || "Unnamed Offer",
           category: req.body.category || "other", 
-          description: req.body.description || null,
-          goals: req.body.goals || null,
+          description: description || null,
+          goals: goals || null,
           logo: req.body.logo || null,
           status: req.body.status || 'draft',
           payout: "0.00",
@@ -1284,7 +1309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           currency: req.body.currency || 'USD',
           advertiserId: authUser.id,
           landingPages: req.body.landingPages || null,
-          kpiConditions: req.body.kpiConditions || null,
+          kpiConditions: kpiConditions || null,
           trafficSources: req.body.trafficSources || req.body.allowedTrafficSources || null,
           allowedApps: req.body.allowedApps || null,
           dailyLimit: req.body.dailyLimit || null,

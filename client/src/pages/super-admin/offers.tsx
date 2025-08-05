@@ -81,6 +81,7 @@ export default function OffersManagement() {
     },
     onError: (error) => {
       console.error('Frontend - Create offer mutation error:', error);
+      console.error('Frontend - Error stack:', error.stack);
       alert('Ошибка создания оффера: ' + error.message);
     },
   });

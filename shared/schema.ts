@@ -1033,18 +1033,65 @@ export const insertOfferSchema = createInsertSchema(offers).omit({
 export const createOfferFrontendSchema = z.object({
   name: z.string().min(1),
   category: z.string().min(1),
-  description: z.string().optional(),
+  description: z.union([z.string(), z.object({ ru: z.string(), en: z.string() })]).optional(),
+  goals: z.union([z.string(), z.object({ ru: z.string(), en: z.string() })]).optional(),
   logo: z.string().optional(),
   status: z.string().optional(),
   payoutType: z.string().optional(),
   currency: z.string().optional(),
   landingPages: z.any().optional(),
-  kpiConditions: z.string().optional(),
+  kpiConditions: z.union([z.string(), z.object({ ru: z.string(), en: z.string() })]).optional(),
   allowedTrafficSources: z.array(z.string()).optional(),
+  trafficSources: z.array(z.string()).optional(),
+  allowedApps: z.array(z.string()).optional(),
   dailyLimit: z.number().optional(),
   monthlyLimit: z.number().optional(),
   antifraudEnabled: z.boolean().optional(),
   autoApprovePartners: z.boolean().optional(),
+  // Allow additional fields that might come from the complex form
+  description_ru: z.string().optional(),
+  description_en: z.string().optional(),
+  goals_ru: z.string().optional(), 
+  goals_en: z.string().optional(),
+  kpiConditions_ru: z.string().optional(),
+  kpiConditions_en: z.string().optional(),
+}).transform((data) => {
+  // Transform separate language fields into objects
+  const result: any = { ...data };
+  
+  if (data.description_ru !== undefined || data.description_en !== undefined) {
+    result.description = {
+      ru: data.description_ru || '',
+      en: data.description_en || ''
+    };
+    delete result.description_ru;
+    delete result.description_en;
+  }
+  
+  if (data.goals_ru !== undefined || data.goals_en !== undefined) {
+    result.goals = {
+      ru: data.goals_ru || '',
+      en: data.goals_en || ''
+    };
+    delete result.goals_ru;
+    delete result.goals_en;
+  }
+  
+  if (data.kpiConditions_ru !== undefined || data.kpiConditions_en !== undefined) {
+    result.kpiConditions = {
+      ru: data.kpiConditions_ru || '',
+      en: data.kpiConditions_en || ''
+    };
+    delete result.kpiConditions_ru;
+    delete result.kpiConditions_en;
+  }
+  
+  // Map allowedTrafficSources to trafficSources
+  if (data.allowedTrafficSources && !data.trafficSources) {
+    result.trafficSources = data.allowedTrafficSources;
+  }
+  
+  return result;
 });
 
 export const insertPartnerOfferSchema = createInsertSchema(partnerOffers).omit({
