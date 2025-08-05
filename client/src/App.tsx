@@ -58,14 +58,16 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   console.log('ProtectedRoute check:', { 
     userRole: user.role, 
     allowedRoles, 
-    hasAccess: allowedRoles.includes(user.role) 
+    hasAccess: allowedRoles.includes(user.role),
+    currentPath: window.location.pathname 
   });
   
   if (!allowedRoles.includes(user.role)) {
-    console.log('Access denied for user:', user);
+    console.log('Access denied for user:', user, 'attempting to access:', window.location.pathname);
     return <Redirect to="/unauthorized" />;
   }
   
+  console.log('ProtectedRoute: Access granted, rendering children for path:', window.location.pathname);
   return <>{children}</>;
 }
 

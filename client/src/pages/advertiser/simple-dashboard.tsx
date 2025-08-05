@@ -27,6 +27,8 @@ import {
 
 export default function AdvertiserDashboard() {
   const { user } = useAuth();
+  
+  console.log('AdvertiserDashboard rendering, user:', user);
 
   // Получаем данные дашборда
   const { data: dashboardData, isLoading } = useQuery({
