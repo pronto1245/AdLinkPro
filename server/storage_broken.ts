@@ -2741,9 +2741,8 @@ export class DatabaseStorage implements IStorage {
   async deletePostbackTemplate(id: string): Promise<void> {
     console.log(`Deleting postback template: ${id}`);
   }
-
-  // End of DatabaseStorage class
-}
+        responseTime: 247,
+        status: 'success',
         errorMessage: null,
         attempt: 1,
         maxAttempts: 3,
