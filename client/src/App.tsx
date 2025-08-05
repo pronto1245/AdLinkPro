@@ -54,7 +54,15 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
     return <Redirect to="/login" />;
   }
   
+  // Debug logging
+  console.log('ProtectedRoute check:', { 
+    userRole: user.role, 
+    allowedRoles, 
+    hasAccess: allowedRoles.includes(user.role) 
+  });
+  
   if (!allowedRoles.includes(user.role)) {
+    console.log('Access denied for user:', user);
     return <Redirect to="/unauthorized" />;
   }
   
