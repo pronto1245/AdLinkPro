@@ -586,6 +586,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get advertiser's partners
+  app.get("/api/advertiser/partners", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      
+      // Get all partners who have access to this advertiser's offers
+      const partners = await storage.getAdvertiserPartners(authUser.id);
+      res.json(partners);
+    } catch (error) {
+      console.error("Get advertiser partners error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Get partner's available offers with auto-generated links
   app.get("/api/partner/offers", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {

@@ -102,10 +102,17 @@ export default function AdvertiserOffers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedPartner, setSelectedPartner] = useState('all');
 
   // Получаем офферы рекламодателя
   const { data: offers = [], isLoading } = useQuery({
     queryKey: ['/api/advertiser/offers'],
+    enabled: !!user
+  });
+
+  // Получаем список партнеров для фильтрации
+  const { data: partners = [] } = useQuery({
+    queryKey: ['/api/advertiser/partners'],
     enabled: !!user
   });
 
@@ -138,8 +145,9 @@ export default function AdvertiserOffers() {
                          offer.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = selectedStatus === 'all' || offer.status === selectedStatus;
     const matchesCategory = selectedCategory === 'all' || offer.category === selectedCategory;
+    const matchesPartner = selectedPartner === 'all'; // Пока показываем все, т.к. связи офферов с партнерами в отдельной таблице
     
-    return matchesSearch && matchesStatus && matchesCategory;
+    return matchesSearch && matchesStatus && matchesCategory && matchesPartner;
   });
 
   const getStatusBadge = (status: string) => {
@@ -212,7 +220,7 @@ export default function AdvertiserOffers() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               {/* Free Form Search */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Поиск</label>
@@ -276,6 +284,24 @@ export default function AdvertiserOffers() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Partners Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Партнеры</label>
+                <Select value={selectedPartner} onValueChange={setSelectedPartner}>
+                  <SelectTrigger data-testid="select-partner-filter">
+                    <SelectValue placeholder="Все партнеры" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все партнеры</SelectItem>
+                    {partners.map((partner: any) => (
+                      <SelectItem key={partner.id} value={partner.id}>
+                        {partner.username || partner.firstName + ' ' + partner.lastName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -296,7 +322,7 @@ export default function AdvertiserOffers() {
               <div className="text-center py-8">
                 <Target className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  {searchTerm || selectedStatus !== 'all' || selectedCategory !== 'all' 
+                  {searchTerm || selectedStatus !== 'all' || selectedCategory !== 'all' || selectedPartner !== 'all'
                     ? 'Нет офферов, соответствующих фильтрам'
                     : 'У вас пока нет офферов'
                   }
