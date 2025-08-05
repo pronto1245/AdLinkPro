@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import * as React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
@@ -30,6 +31,16 @@ export default function OffersManagement() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
+  // Add global error handler for debugging
+  React.useEffect(() => {
+    const handler = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      event.preventDefault();
+    };
+    window.addEventListener('unhandledrejection', handler);
+    return () => window.removeEventListener('unhandledrejection', handler);
+  }, []);
+
   const { data: offers, isLoading } = useQuery({
     queryKey: ['/api/admin/offers'],
     queryFn: async () => {
@@ -54,24 +65,38 @@ export default function OffersManagement() {
 
   const createOfferMutation = useMutation({
     mutationFn: async (offerData: z.infer<typeof createOfferFrontendSchema>) => {
-      console.log('Frontend - Creating offer with data:', offerData);
-      const response = await fetch('/api/admin/offers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(offerData),
-      });
-      console.log('Frontend - Response status:', response.status, response.statusText);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Frontend - Error response:', errorData);
-        throw new Error(errorData.details || errorData.error || 'Failed to create offer');
+      try {
+        console.log('Frontend - Creating offer with data:', offerData);
+        const response = await fetch('/api/admin/offers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(offerData),
+        });
+        console.log('Frontend - Response status:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Frontend - Error response text:', errorText);
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { error: errorText };
+          }
+          console.error('Frontend - Error response data:', errorData);
+          throw new Error(errorData.details || errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('Frontend - Success response:', result);
+        return result;
+      } catch (error) {
+        console.error('Frontend - Fetch error:', error);
+        throw error;
       }
-      const result = await response.json();
-      console.log('Frontend - Success response:', result);
-      return result;
     },
     onSuccess: (data) => {
       console.log('Frontend - Offer created successfully:', data);
@@ -185,7 +210,12 @@ export default function OffersManagement() {
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit((data) => {
                       console.log('Form submitted with data:', data);
-                      createOfferMutation.mutate(data);
+                      console.log('Form validation errors:', form.formState.errors);
+                      try {
+                        createOfferMutation.mutate(data);
+                      } catch (error) {
+                        console.error('Mutation call error:', error);
+                      }
                     })} className="space-y-4">
                       <FormField
                         control={form.control}
