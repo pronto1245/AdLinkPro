@@ -2718,6 +2718,12 @@ export class DatabaseStorage implements IStorage {
     return filtered;
   }
 
+  // Postback templates methods for DatabaseStorage
+  async getPostbackTemplates(): Promise<any[]> {
+    console.log('DatabaseStorage: getting postback templates from database');
+    return [];
+  }
+
   async createPostbackTemplate(data: any): Promise<any> {
     const template = {
       id: `tpl_${Date.now()}`,
@@ -2725,12 +2731,12 @@ export class DatabaseStorage implements IStorage {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    console.log('Creating postback template:', template);
+    console.log('DatabaseStorage: creating postback template:', template);
     return template;
   }
 
   async updatePostbackTemplate(id: string, data: any): Promise<any> {
-    console.log(`Updating postback template ${id}:`, data);
+    console.log(`DatabaseStorage: updating postback template ${id}:`, data);
     return {
       id,
       ...data,
@@ -2739,7 +2745,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deletePostbackTemplate(id: string): Promise<void> {
-    console.log(`Deleting postback template: ${id}`);
+    console.log(`DatabaseStorage: deleting postback template: ${id}`);
   }
 
   // End of DatabaseStorage class
@@ -2777,6 +2783,75 @@ class MemStorage implements IStorage {
   private statistics: any[] = [];
   private postbacks: any[] = [];
   private fraudReports: any[] = [];
+  // Постбеки в памяти
+  private postbackTemplates: any[] = [
+    {
+      id: 'tpl_001',
+      name: 'Основной трекер',
+      url: 'https://tracker.com/postback?click_id={clickid}&status={status}&payout={payout}',
+      events: ['sale', 'lead'],
+      level: 'global',
+      timeout: 30,
+      retryAttempts: 3,
+      isActive: true,
+      createdAt: '2025-08-04T10:00:00Z',
+      updatedAt: '2025-08-04T10:00:00Z'
+    },
+    {
+      id: 'tpl_002', 
+      name: 'Кейтаро интеграция',
+      url: 'https://keitaro.tracker.com/api/v1/postback?subid={subid}&status={status}&sum={payout}&offer={offer_id}',
+      events: ['sale', 'lead', 'registration'],
+      level: 'partner',
+      partnerId: 'user_003',
+      timeout: 60,
+      retryAttempts: 5,
+      isActive: true,
+      createdAt: '2025-08-04T11:30:00Z',
+      updatedAt: '2025-08-04T11:30:00Z'
+    }
+  ];
+  private postbackLogs: any[] = [
+    {
+      id: 'log_001',
+      postbackId: 'tpl_001',
+      postbackName: 'Основной трекер',
+      conversionId: 'conv_001',
+      offerId: 'offer_001',
+      offerName: 'Gambling Offer Premium',
+      partnerId: 'user_003',
+      partnerName: 'Partner Alpha',
+      url: 'https://tracker.com/postback?click_id=abc123&status=sale&payout=50.00',
+      method: 'GET',
+      headers: {
+        'User-Agent': 'AffiliateTracker/1.0',
+        'Content-Type': 'application/json'
+      },
+      payload: {},
+      responseCode: 200,
+      responseBody: '{"status":"ok","message":"Conversion recorded"}',
+      responseTime: 247,
+      status: 'success',
+      errorMessage: null,
+      attempt: 1,
+      maxAttempts: 3,
+      nextRetryAt: null,
+      completedAt: '2025-08-04T12:15:30Z',
+      createdAt: '2025-08-04T12:15:28Z'
+    }
+  ];
+  private globalPostbacks: any[] = [
+    {
+      id: 'global_001',
+      name: 'Глобальный постбек трекера',
+      url: 'https://tracker.com/global/postback?event={event}&value={value}',
+      events: ['all'],
+      isActive: true,
+      priority: 1,
+      createdAt: '2025-08-04T10:00:00Z',
+      updatedAt: '2025-08-04T10:00:00Z'
+    }
+  ];
 
   async getUser(id: string): Promise<User | undefined> {
     return this.users.find(u => u.id === id);
@@ -2820,33 +2895,7 @@ class MemStorage implements IStorage {
 
   // Add postback methods to MemStorage
   async getPostbackTemplates(): Promise<any[]> {
-    return [
-      {
-        id: 'tpl_001',
-        name: 'Основной трекер',
-        url: 'https://tracker.com/postback?click_id={clickid}&status={status}&payout={payout}',
-        events: ['sale', 'lead'],
-        level: 'global',
-        timeout: 30,
-        retryAttempts: 3,
-        isActive: true,
-        createdAt: '2025-08-04T10:00:00Z',
-        updatedAt: '2025-08-04T10:00:00Z'
-      },
-      {
-        id: 'tpl_002', 
-        name: 'Кейтаро интеграция',
-        url: 'https://keitaro.tracker.com/api/v1/postback?subid={subid}&status={status}&sum={payout}&offer={offer_id}',
-        events: ['sale', 'lead', 'registration'],
-        level: 'partner',
-        partnerId: 'user_003',
-        timeout: 60,
-        retryAttempts: 5,
-        isActive: true,
-        createdAt: '2025-08-04T11:30:00Z',
-        updatedAt: '2025-08-04T11:30:00Z'
-      }
-    ];
+    return this.postbackTemplates;
   }
 
   async createPostbackTemplate(data: any): Promise<any> {
@@ -2856,53 +2905,39 @@ class MemStorage implements IStorage {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    console.log('Creating postback template:', template);
+    this.postbackTemplates.push(template);
+    console.log('MemStorage: Creating postback template:', template);
+    console.log('MemStorage: Total templates now:', this.postbackTemplates.length);
     return template;
   }
 
   async updatePostbackTemplate(id: string, data: any): Promise<any> {
-    console.log(`Updating postback template ${id}:`, data);
-    return {
-      id,
-      ...data,
-      updatedAt: new Date().toISOString()
-    };
+    const index = this.postbackTemplates.findIndex(t => t.id === id);
+    if (index !== -1) {
+      this.postbackTemplates[index] = { 
+        ...this.postbackTemplates[index], 
+        ...data, 
+        updatedAt: new Date().toISOString() 
+      };
+      console.log(`MemStorage: Updated postback template ${id}`);
+      return this.postbackTemplates[index];
+    }
+    console.log(`MemStorage: Template ${id} not found for update`);
+    return { id, ...data, updatedAt: new Date().toISOString() };
   }
 
   async deletePostbackTemplate(id: string): Promise<void> {
-    console.log(`Deleting postback template: ${id}`);
+    const index = this.postbackTemplates.findIndex(t => t.id === id);
+    if (index !== -1) {
+      this.postbackTemplates.splice(index, 1);
+      console.log(`MemStorage: Deleted postback template ${id}`);
+    } else {
+      console.log(`MemStorage: Template ${id} not found for deletion`);
+    }
   }
 
   async getPostbackLogs(filters?: any): Promise<any[]> {
-    return [
-      {
-        id: 'log_001',
-        postbackId: 'tpl_001',
-        postbackName: 'Основной трекер',
-        conversionId: 'conv_001',
-        offerId: 'offer_001',
-        offerName: 'Gambling Offer Premium',
-        partnerId: 'user_003',
-        partnerName: 'Partner Alpha',
-        url: 'https://tracker.com/postback?click_id=abc123&status=sale&payout=50.00',
-        method: 'GET',
-        headers: {
-          'User-Agent': 'AffiliateTracker/1.0',
-          'Content-Type': 'application/json'
-        },
-        payload: {},
-        responseCode: 200,
-        responseBody: '{"status":"ok","message":"Conversion recorded"}',
-        responseTime: 247,
-        status: 'success',
-        errorMessage: null,
-        attempt: 1,
-        maxAttempts: 3,
-        nextRetryAt: null,
-        completedAt: '2025-08-04T12:15:30Z',
-        createdAt: '2025-08-04T12:15:28Z'
-      }
-    ];
+    return this.postbackLogs;
   }
 
   async retryPostback(logId: string): Promise<void> {
@@ -2910,18 +2945,7 @@ class MemStorage implements IStorage {
   }
 
   async getGlobalPostbacks(): Promise<any[]> {
-    return [
-      {
-        id: 'global_001',
-        name: 'Глобальный постбек трекера',
-        url: 'https://tracker.com/global/postback?event={event}&value={value}',
-        events: ['all'],
-        isActive: true,
-        priority: 1,
-        createdAt: '2025-08-04T10:00:00Z',
-        updatedAt: '2025-08-04T10:00:00Z'
-      }
-    ];
+    return this.globalPostbacks;
   }
 
   async createGlobalPostback(data: any): Promise<any> {
@@ -2931,7 +2955,9 @@ class MemStorage implements IStorage {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    console.log('Creating global postback:', postback);
+    this.globalPostbacks.push(postback);
+    console.log('MemStorage: Creating global postback:', postback);
+    console.log('MemStorage: Total global postbacks now:', this.globalPostbacks.length);
     return postback;
   }
 
@@ -2950,9 +2976,11 @@ class MemStorage implements IStorage {
       success: true,
       responseTime: 150,
       status: 200,
-      response: 'OK'
+      response: 'OK'  
     };
   }
+
+
 
   // Stub implementations for all other IStorage methods
   async getUsersWithFilters(): Promise<any> { return { data: [], total: 0 }; }
