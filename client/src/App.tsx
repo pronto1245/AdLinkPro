@@ -189,13 +189,7 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
-      {/* Advertiser Routes - ТЗ2 Implementation */}
-      <Route path="/advertiser" nest>
-        <ProtectedRoute allowedRoles={['advertiser']}>
-          <AdvertiserDashboard />
-        </ProtectedRoute>
-      </Route>
-      
+      {/* Advertiser Routes - ТЗ2 Implementation - Specific routes first */}
       <Route path="/advertiser/profile">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <AdvertiserProfile />
@@ -208,12 +202,6 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
-      <Route path="/advertiser/offers">
-        <ProtectedRoute allowedRoles={['advertiser']}>
-          <AdvertiserOffers />
-        </ProtectedRoute>
-      </Route>
-      
       <Route path="/advertiser/offers/new">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <SuperAdminOffersManagement />
@@ -223,6 +211,18 @@ function Router() {
       <Route path="/advertiser/offers/:id/edit">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <SuperAdminOfferDetails />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/offers/manage">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <OfferManagement />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/offers">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <AdvertiserOffers />
         </ProtectedRoute>
       </Route>
       
@@ -250,19 +250,13 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
-      <Route path="/advertiser/offers/manage">
+      <Route path="/advertiser">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <OfferManagement />
+          <AdvertiserDashboard />
         </ProtectedRoute>
       </Route>
       
-      {/* Affiliate Routes */}
-      <Route path="/affiliate">
-        <ProtectedRoute allowedRoles={['affiliate']}>
-          <AffiliateDashboard />
-        </ProtectedRoute>
-      </Route>
-      
+      {/* Affiliate Routes - Specific routes first */}
       <Route path="/affiliate/offers">
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PartnerOffers />
@@ -284,6 +278,12 @@ function Router() {
       <Route path="/affiliate/postbacks">
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PostbackManagementAffiliate />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <AffiliateDashboard />
         </ProtectedRoute>
       </Route>
       
