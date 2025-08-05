@@ -66,54 +66,35 @@ export default function OffersManagement() {
   });
 
   const createOfferMutation = useMutation({
-    mutationFn: async (offerData: z.infer<typeof createOfferFrontendSchema>) => {
-      return new Promise(async (resolve, reject) => {
-        try {
-          console.log('Frontend - Creating offer with data:', offerData);
-          
-          const response = await fetch('/api/admin/offers', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(offerData),
-          });
-          
-          console.log('Frontend - Response status:', response.status, response.statusText);
-          
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Frontend - Error response text:', errorText);
-            let errorData;
-            try {
-              errorData = JSON.parse(errorText);
-            } catch {
-              errorData = { error: errorText };
-            }
-            console.error('Frontend - Error response data:', errorData);
-            reject(new Error(errorData.details || errorData.error || `HTTP ${response.status}: ${response.statusText}`));
-            return;
-          }
-          
-          const result = await response.json();
-          console.log('Frontend - Success response:', result);
-          resolve(result);
-        } catch (error) {
-          console.error('Frontend - Fetch error:', error);
-          reject(error);
-        }
+    mutationFn: async (offerData: any) => {
+      console.log('Creating offer with data:', offerData);
+      
+      const response = await fetch('/api/admin/offers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(offerData),
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('Offer created successfully:', result);
+      return result;
     },
-    onSuccess: (data) => {
-      console.log('Frontend - Offer created successfully:', data);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
       alert('Оффер успешно создан!');
       setIsCreateDialogOpen(false);
-      form.reset();
     },
     onError: (error) => {
-      console.error('Frontend - Create offer mutation error:', error);
+      console.error('Create offer error:', error);
       alert('Ошибка создания оффера: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'));
     },
   });
@@ -245,7 +226,7 @@ export default function OffersManagement() {
                         }] : []
                       };
                       
-                      console.log('Simple form data:', data);
+                      console.log('Form data:', data);
                       createOfferMutation.mutate(data);
                     }} className="space-y-4">
                       <div>
