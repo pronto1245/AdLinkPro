@@ -43,7 +43,8 @@ export const getQueryFn: <T>(options: {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const res = await fetch(queryKey.join("/") as string, {
+    const res = await fetch(queryKey[0] as string, {
+      method: 'GET',
       headers,
       credentials: "include",
     });

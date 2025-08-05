@@ -160,6 +160,9 @@ export default function OffersManagement() {
                   </DialogHeader>
                   <OfferFormSimple onClose={() => setIsCreateDialogOpen(false)} />
                 </DialogContent>
+              </Dialog>
+            </div>
+
             {/* Filters */}
             <Card className="mb-6">
               <CardContent className="p-6">
