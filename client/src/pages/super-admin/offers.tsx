@@ -22,6 +22,7 @@ import { createOfferFrontendSchema } from '@shared/schema';
 import { z } from 'zod';
 import { Plus, Search, Edit, Trash2, Target, DollarSign, Globe, Eye, Pause, Play, Shield } from 'lucide-react';
 import { useLocation } from 'wouter';
+import SimpleOfferForm from '@/components/simple-offer-form';
 
 export default function OffersManagement() {
   const { token } = useAuth();
@@ -35,7 +36,8 @@ export default function OffersManagement() {
   React.useEffect(() => {
     const handler = (event: PromiseRejectionEvent) => {
       console.error('Unhandled promise rejection:', event.reason);
-      event.preventDefault();
+      console.error('Stack trace:', event.reason?.stack);
+      // Don't prevent default to see the actual error
     };
     window.addEventListener('unhandledrejection', handler);
     return () => window.removeEventListener('unhandledrejection', handler);
@@ -65,38 +67,35 @@ export default function OffersManagement() {
 
   const createOfferMutation = useMutation({
     mutationFn: async (offerData: z.infer<typeof createOfferFrontendSchema>) => {
-      try {
-        console.log('Frontend - Creating offer with data:', offerData);
-        const response = await fetch('/api/admin/offers', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(offerData),
-        });
-        console.log('Frontend - Response status:', response.status, response.statusText);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Frontend - Error response text:', errorText);
-          let errorData;
-          try {
-            errorData = JSON.parse(errorText);
-          } catch {
-            errorData = { error: errorText };
-          }
-          console.error('Frontend - Error response data:', errorData);
-          throw new Error(errorData.details || errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      console.log('Frontend - Creating offer with data:', offerData);
+      
+      const response = await fetch('/api/admin/offers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(offerData),
+      });
+      
+      console.log('Frontend - Response status:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Frontend - Error response text:', errorText);
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText };
         }
-        
-        const result = await response.json();
-        console.log('Frontend - Success response:', result);
-        return result;
-      } catch (error) {
-        console.error('Frontend - Fetch error:', error);
-        throw error;
+        console.error('Frontend - Error response data:', errorData);
+        throw new Error(errorData.details || errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
+      
+      const result = await response.json();
+      console.log('Frontend - Success response:', result);
+      return result;
     },
     onSuccess: (data) => {
       console.log('Frontend - Offer created successfully:', data);
@@ -196,25 +195,51 @@ export default function OffersManagement() {
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('offers_management')}</h1>
                 <p className="text-gray-600 dark:text-gray-400">{t('manage_platform_offers')}</p>
               </div>
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button data-testid="button-create-offer">
-                    <Plus className="w-4 h-4 mr-2" />
-                    {t('create_offer')}
-                  </Button>
-                </DialogTrigger>
+              <div className="flex gap-2">
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" data-testid="button-create-offer-simple">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Простая форма
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Создать оффер (простая форма)</DialogTitle>
+                    </DialogHeader>
+                    <SimpleOfferForm onSuccess={() => {
+                      setIsCreateDialogOpen(false);
+                      queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
+                    }} />
+                  </DialogContent>
+                </Dialog>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button data-testid="button-create-offer">
+                      <Plus className="w-4 h-4 mr-2" />
+                      {t('create_offer')}
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
+              </div>
                 <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>{t('create_new_offer')}</DialogTitle>
                   </DialogHeader>
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit((data) => {
+                    <form onSubmit={form.handleSubmit(async (data) => {
                       console.log('Form submitted with data:', data);
                       console.log('Form validation errors:', form.formState.errors);
+                      
+                      if (createOfferMutation.isPending) {
+                        console.log('Mutation already pending, skipping');
+                        return;
+                      }
+                      
                       try {
-                        createOfferMutation.mutate(data);
+                        await createOfferMutation.mutateAsync(data);
                       } catch (error) {
-                        console.error('Mutation call error:', error);
+                        console.error('Mutation error:', error);
                       }
                     })} className="space-y-4">
                       <FormField
