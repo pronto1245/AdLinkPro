@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Copy, ExternalLink, Eye, CheckCircle } from "lucide-react";
+import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
 import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
@@ -194,7 +195,11 @@ function OfferCard({ offer, copyToClipboard, user }: OfferCardProps) {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-lg leading-tight">{offer.name}</CardTitle>
+            <CardTitle className="text-lg leading-tight">
+              <Link href={`/affiliate/offers/${offer.id}`} className="hover:text-blue-600 transition-colors">
+                {offer.name}
+              </Link>
+            </CardTitle>
             <CardDescription className="mt-1">
               {getDescription(offer.description).slice(0, 100)}
               {getDescription(offer.description).length > 100 && '...'}

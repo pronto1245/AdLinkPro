@@ -598,6 +598,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get specific partner offer by ID
+  app.get("/api/partner/offers/:id", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerId = req.params.id;
+      
+      // Get the offer
+      const offer = await storage.getOffer(offerId);
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+
+      // Check if partner has access to this offer
+      const partnerOffers = await storage.getPartnerOffers(authUser.id, offerId);
+      
+      // For private offers, partner must be approved
+      if (offer.isPrivate && partnerOffers.length === 0) {
+        return res.status(403).json({ error: "Access denied to this offer" });
+      }
+
+      // Return offer with enhanced details
+      res.json({
+        ...offer,
+        isApproved: partnerOffers.length > 0 || !offer.isPrivate,
+        partnerLink: `https://track.platform.com/click/${offerId}?partner=${authUser.id}&subid=YOUR_SUBID`
+      });
+    } catch (error) {
+      console.error("Get partner offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Generate partner link for specific offer
   app.post("/api/partner/generate-link", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
