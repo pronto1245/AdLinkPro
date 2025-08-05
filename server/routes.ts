@@ -371,27 +371,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!offers) {
         if (authUser.role === 'super_admin') {
-          // Super admin sees all offers
-          offers = await storage.getOffers();
+          // Super admin sees all offers with advertiser names
+          offers = await storage.getAllOffers();
         } else if (authUser.role === 'advertiser') {
-          // Advertiser sees only their own offers
-          offers = await storage.getOffers(authUser.id);
+          // Advertiser sees only their own offers with advertiser names
+          const allOffers = await storage.getAllOffers();
+          offers = allOffers.filter((offer: any) => offer.advertiserId === authUser.id);
         } else if (authUser.role === 'affiliate') {
           // Affiliate sees only offers they're approved for or public offers from their owner's advertisers
           const partnerOffers = await storage.getPartnerOffers(authUser.id);
           const offerIds = partnerOffers.map(po => po.offerId);
           
+          const allOffers = await storage.getAllOffers();
           if (offerIds.length > 0) {
-            offers = await storage.getOffers();
-            offers = offers.filter((offer: any) => offerIds.includes(offer.id) || !offer.isPrivate);
+            offers = allOffers.filter((offer: any) => offerIds.includes(offer.id) || !offer.isPrivate);
           } else {
-            offers = await storage.getOffers();
-            offers = offers.filter((offer: any) => !offer.isPrivate);
+            offers = allOffers.filter((offer: any) => !offer.isPrivate);
           }
         } else if (authUser.role === 'staff') {
           // Staff can see offers of their owner (the advertiser who created them)
           if (authUser.ownerId) {
-            offers = await storage.getOffers(authUser.ownerId);
+            const allOffers = await storage.getAllOffers();
+            offers = allOffers.filter((offer: any) => offer.advertiserId === authUser.ownerId);
           } else {
             offers = [];
           }
