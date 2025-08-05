@@ -84,7 +84,7 @@ export default function AdvertiserDashboard() {
                   Добавьте новый оффер с автоматической генерацией партнерских ссылок
                 </p>
               </div>
-              <Link href="/admin/offers">
+              <Link href="/advertiser/offers">
                 <Button data-testid="button-create-offer">
                   Создать
                 </Button>
@@ -98,7 +98,7 @@ export default function AdvertiserDashboard() {
                   Редактируйте существующие офферы и настраивайте base_url
                 </p>
               </div>
-              <Link href="/admin/offers">
+              <Link href="/advertiser/offers">
                 <Button variant="outline" data-testid="button-manage-offers">
                   Управление
                 </Button>
@@ -122,7 +122,7 @@ export default function AdvertiserDashboard() {
                   Одобряйте партнеров для приватных офферов
                 </p>
               </div>
-              <Link href="/admin/users">
+              <Link href="/advertiser/users">
                 <Button variant="outline" data-testid="button-manage-partners">
                   Партнеры
                 </Button>
@@ -136,7 +136,7 @@ export default function AdvertiserDashboard() {
                   Просматривайте детальную статистику по кликам и конверсиям
                 </p>
               </div>
-              <Link href="/admin/analytics">
+              <Link href="/advertiser/analytics">
                 <Button variant="outline" data-testid="button-view-analytics">
                   Аналитика
                 </Button>

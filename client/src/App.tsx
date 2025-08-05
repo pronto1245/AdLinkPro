@@ -178,6 +178,36 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
+      <Route path="/advertiser/offers">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <SuperAdminOffers />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/offers/new">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <SuperAdminOffersManagement />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/offers/:id">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <SuperAdminOfferDetails />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/users">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <SuperAdminUsersManagement />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/analytics">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <SuperAdminAnalytics />
+        </ProtectedRoute>
+      </Route>
+      
       {/* Affiliate Routes */}
       <Route path="/affiliate">
         <ProtectedRoute allowedRoles={['affiliate']}>
