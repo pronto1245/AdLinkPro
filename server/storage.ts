@@ -2745,6 +2745,283 @@ export class DatabaseStorage implements IStorage {
   // End of DatabaseStorage class
 }
 
-// Export storage instance  
-export const storage = new DatabaseStorage();
+// Basic in-memory storage implementation for demo
+class MemStorage implements IStorage {
+  private users: User[] = [
+    {
+      id: '1',
+      username: 'superadmin',
+      email: 'admin@example.com', 
+      password: 'admin',
+      role: 'super_admin',
+      firstName: 'Super',
+      lastName: 'Admin',
+      isActive: true,
+      status: 'active',
+      userType: 'admin',
+      language: 'en',
+      timezone: 'UTC',
+      currency: 'USD',
+      kycStatus: 'pending',
+      balance: '0.00',
+      holdAmount: '0.00',
+      registrationApproved: false,
+      documentsVerified: false,
+      isBlocked: false,
+      isDeleted: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
+  private offers: Offer[] = [];
+  private statistics: any[] = [];
+  private postbacks: any[] = [];
+  private fraudReports: any[] = [];
+
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.find(u => u.id === id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return this.users.find(u => u.username === username);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return this.users.find(u => u.email === email);
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const newUser: User = {
+      id: String(this.users.length + 1),
+      ...user,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.users.push(newUser);
+    return newUser;
+  }
+
+  async updateUser(id: string, data: Partial<InsertUser>): Promise<User> {
+    const userIndex = this.users.findIndex(u => u.id === id);
+    if (userIndex === -1) throw new Error('User not found');
+    
+    this.users[userIndex] = { ...this.users[userIndex], ...data, updatedAt: new Date() };
+    return this.users[userIndex];
+  }
+
+  async getUsers(role?: string): Promise<User[]> {
+    return role ? this.users.filter(u => u.role === role) : this.users;
+  }
+
+  async getUsersByOwner(ownerId: string, role?: string): Promise<User[]> {
+    let filtered = this.users.filter(u => u.ownerId === ownerId || u.id === ownerId);
+    return role ? filtered.filter(u => u.role === role) : filtered;
+  }
+
+  // Add postback methods to MemStorage
+  async getPostbackTemplates(): Promise<any[]> {
+    return [
+      {
+        id: 'tpl_001',
+        name: 'Основной трекер',
+        url: 'https://tracker.com/postback?click_id={clickid}&status={status}&payout={payout}',
+        events: ['sale', 'lead'],
+        level: 'global',
+        timeout: 30,
+        retryAttempts: 3,
+        isActive: true,
+        createdAt: '2025-08-04T10:00:00Z',
+        updatedAt: '2025-08-04T10:00:00Z'
+      },
+      {
+        id: 'tpl_002', 
+        name: 'Кейтаро интеграция',
+        url: 'https://keitaro.tracker.com/api/v1/postback?subid={subid}&status={status}&sum={payout}&offer={offer_id}',
+        events: ['sale', 'lead', 'registration'],
+        level: 'partner',
+        partnerId: 'user_003',
+        timeout: 60,
+        retryAttempts: 5,
+        isActive: true,
+        createdAt: '2025-08-04T11:30:00Z',
+        updatedAt: '2025-08-04T11:30:00Z'
+      }
+    ];
+  }
+
+  async createPostbackTemplate(data: any): Promise<any> {
+    const template = {
+      id: `tpl_${Date.now()}`,
+      ...data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    console.log('Creating postback template:', template);
+    return template;
+  }
+
+  async updatePostbackTemplate(id: string, data: any): Promise<any> {
+    console.log(`Updating postback template ${id}:`, data);
+    return {
+      id,
+      ...data,
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  async deletePostbackTemplate(id: string): Promise<void> {
+    console.log(`Deleting postback template: ${id}`);
+  }
+
+  async getPostbackLogs(filters?: any): Promise<any[]> {
+    return [
+      {
+        id: 'log_001',
+        postbackId: 'tpl_001',
+        postbackName: 'Основной трекер',
+        conversionId: 'conv_001',
+        offerId: 'offer_001',
+        offerName: 'Gambling Offer Premium',
+        partnerId: 'user_003',
+        partnerName: 'Partner Alpha',
+        url: 'https://tracker.com/postback?click_id=abc123&status=sale&payout=50.00',
+        method: 'GET',
+        headers: {
+          'User-Agent': 'AffiliateTracker/1.0',
+          'Content-Type': 'application/json'
+        },
+        payload: {},
+        responseCode: 200,
+        responseBody: '{"status":"ok","message":"Conversion recorded"}',
+        responseTime: 247,
+        status: 'success',
+        errorMessage: null,
+        attempt: 1,
+        maxAttempts: 3,
+        nextRetryAt: null,
+        completedAt: '2025-08-04T12:15:30Z',
+        createdAt: '2025-08-04T12:15:28Z'
+      }
+    ];
+  }
+
+  async retryPostback(logId: string): Promise<void> {
+    console.log(`Retrying postback log: ${logId}`);
+  }
+
+  async getGlobalPostbacks(): Promise<any[]> {
+    return [
+      {
+        id: 'global_001',
+        name: 'Глобальный постбек трекера',
+        url: 'https://tracker.com/global/postback?event={event}&value={value}',
+        events: ['all'],
+        isActive: true,
+        priority: 1,
+        createdAt: '2025-08-04T10:00:00Z',
+        updatedAt: '2025-08-04T10:00:00Z'
+      }
+    ];
+  }
+
+  async createGlobalPostback(data: any): Promise<any> {
+    const postback = {
+      id: `global_${Date.now()}`,
+      ...data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    console.log('Creating global postback:', postback);
+    return postback;
+  }
+
+  async updateGlobalPostback(id: string, data: any): Promise<any> {
+    console.log(`Updating global postback ${id}:`, data);
+    return {
+      id,
+      ...data,
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  async testGlobalPostback(id: string): Promise<any> {
+    console.log(`Testing global postback: ${id}`);
+    return {
+      success: true,
+      responseTime: 150,
+      status: 200,
+      response: 'OK'
+    };
+  }
+
+  // Stub implementations for all other IStorage methods
+  async getUsersWithFilters(): Promise<any> { return { data: [], total: 0 }; }
+  async blockUser(): Promise<any> { return {}; }
+  async unblockUser(): Promise<any> { return {}; }
+  async softDeleteUser(): Promise<any> { return {}; }
+  async forceLogoutUser(): Promise<void> {}
+  async resetUserPassword(): Promise<string> { return 'newpass123'; }
+  async getUserAnalytics(): Promise<any> { return {}; }
+  async exportUsers(): Promise<string> { return 'csv data'; }
+  async bulkBlockUsers(): Promise<any> { return { blocked: 0 }; }
+  async bulkUnblockUsers(): Promise<any> { return { unblocked: 0 }; }
+  async bulkDeleteUsers(): Promise<any> { return { deleted: 0 }; }
+  async getOffer(): Promise<any> { return null; }
+  async getOffers(): Promise<any[]> { return this.offers; }
+  async createOffer(): Promise<any> { return {}; }
+  async updateOffer(): Promise<any> { return {}; }
+  async deleteOffer(): Promise<void> {}
+  async getAllOffers(): Promise<any[]> { return this.offers; }
+  async deleteUser(): Promise<void> {}
+  async getPartnerOffers(): Promise<any[]> { return []; }
+  async createPartnerOffer(): Promise<any> { return {}; }
+  async updatePartnerOffer(): Promise<any> { return {}; }
+  async getTrackingLinks(): Promise<any[]> { return []; }
+  async getTrackingLinkByCode(): Promise<any> { return null; }
+  async createTrackingLink(): Promise<any> { return {}; }
+  async getStatistics(): Promise<any[]> { return this.statistics; }
+  async createStatistics(): Promise<any> { return {}; }
+  async getTransactions(): Promise<any[]> { return []; }
+  async createTransaction(): Promise<any> { return {}; }
+  async getPostbacks(): Promise<any[]> { return this.postbacks; }
+  async createPostback(): Promise<any> { return {}; }
+  async updatePostback(): Promise<any> { return {}; }
+  async getTickets(): Promise<any[]> { return []; }
+  async createTicket(): Promise<any> { return {}; }
+  async updateTicket(): Promise<any> { return {}; }
+  async getFraudAlerts(): Promise<any[]> { return []; }
+  async createFraudAlert(): Promise<any> { return {}; }
+  async getAuditLogs(): Promise<any[]> { return []; }
+  async createAuditLog(): Promise<any> { return {}; }
+  async getCryptoWallets(): Promise<any[]> { return []; }
+  async createCryptoWallet(): Promise<any> { return {}; }
+  async updateCryptoWallet(): Promise<any> { return {}; }
+  async getCryptoTransactions(): Promise<any[]> { return []; }
+  async createCryptoTransaction(): Promise<any> { return {}; }
+  async getFraudReports(): Promise<any[]> { return this.fraudReports; }
+  async createFraudReport(): Promise<any> { return {}; }
+  async updateFraudReport(): Promise<any> { return {}; }
+  async getFraudRules(): Promise<any[]> { return []; }
+  async createFraudRule(): Promise<any> { return {}; }
+  async updateFraudRule(): Promise<any> { return {}; }
+  async deleteFraudRule(): Promise<void> {}
+  async getDeviceTracking(): Promise<any[]> { return []; }
+  async createDeviceTracking(): Promise<any> { return {}; }
+  async getIpAnalysis(): Promise<any[]> { return []; }
+  async createIpAnalysis(): Promise<any> { return {}; }
+  async getFraudBlocks(): Promise<any[]> { return []; }
+  async createFraudBlock(): Promise<any> { return {}; }
+  async deleteFraudBlock(): Promise<void> {}
+  async getPostbacksWithFilters(): Promise<any> { return { data: [], total: 0 }; }
+  async getSystemSettings(): Promise<any[]> { return []; }
+  async getSmartAlerts(): Promise<any[]> { return []; }
+  async getBlacklistEntries(): Promise<any[]> { return []; }
+  async createBlacklistEntry(): Promise<any> { return {}; }
+  async updateBlacklistEntry(): Promise<any> { return {}; }
+  async deleteBlacklistEntry(): Promise<void> {}
+  async moderateOffer(): Promise<boolean> { return true; }
+}
+
+// Use MemStorage for demo
+export const storage = new MemStorage();
 
