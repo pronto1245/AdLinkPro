@@ -100,10 +100,19 @@ export default function FinancesManagement() {
       if (!response.ok) throw new Error('Failed to fetch financial metrics');
       return response.json();
     },
+    staleTime: 30 * 1000, // 30 секунд для финансовых данных
+    gcTime: 2 * 60 * 1000, // 2 минуты в памяти
+    refetchOnWindowFocus: true, // Обновлять при возврате к окну
   });
 
   const { data: transactions = [] } = useQuery<Transaction[]>({
-    queryKey: ['/api/admin/finances'],
+    queryKey: ['/api/admin/finances', { 
+      status: filterStatus, 
+      type: filterType, 
+      currency: filterCurrency, 
+      method: filterMethod,
+      search: searchTerm 
+    }],
     queryFn: async () => {
       const response = await fetch('/api/admin/finances', {
         headers: { Authorization: `Bearer ${token}` },
@@ -111,10 +120,17 @@ export default function FinancesManagement() {
       if (!response.ok) throw new Error('Failed to fetch transactions');
       return response.json();
     },
+    staleTime: 30 * 1000, // 30 секунд для финансовых данных
+    gcTime: 2 * 60 * 1000, // 2 минуты в памяти
   });
 
   const { data: payoutRequests = [] } = useQuery<PayoutRequest[]>({
-    queryKey: ['/api/admin/payout-requests'],
+    queryKey: ['/api/admin/payout-requests', { 
+      status: filterStatus, 
+      currency: filterCurrency, 
+      method: filterMethod,
+      search: searchTerm 
+    }],
     queryFn: async () => {
       const response = await fetch('/api/admin/payout-requests', {
         headers: { Authorization: `Bearer ${token}` },
@@ -122,10 +138,18 @@ export default function FinancesManagement() {
       if (!response.ok) throw new Error('Failed to fetch payout requests');
       return response.json();
     },
+    staleTime: 30 * 1000, // 30 секунд для финансовых данных
+    gcTime: 2 * 60 * 1000, // 2 минуты в памяти
   });
 
   const { data: deposits = [] } = useQuery<any[]>({
-    queryKey: ['/api/admin/deposits'],
+    queryKey: ['/api/admin/deposits', { 
+      status: filterStatus, 
+      currency: filterCurrency, 
+      method: filterMethod,
+      search: searchTerm,
+      period: dateFilter 
+    }],
     queryFn: async () => {
       const response = await fetch('/api/admin/deposits', {
         headers: { Authorization: `Bearer ${token}` },
@@ -133,10 +157,12 @@ export default function FinancesManagement() {
       if (!response.ok) throw new Error('Failed to fetch deposits');
       return response.json();
     },
+    staleTime: 30 * 1000, // 30 секунд для финансовых данных
+    gcTime: 2 * 60 * 1000, // 2 минуты в памяти
   });
 
   const { data: commissionData = [] } = useQuery<any[]>({
-    queryKey: ['/api/admin/commission-data'],
+    queryKey: ['/api/admin/commission-data', { period: dateFilter }],
     queryFn: async () => {
       const response = await fetch('/api/admin/commission-data', {
         headers: { Authorization: `Bearer ${token}` },
@@ -144,6 +170,8 @@ export default function FinancesManagement() {
       if (!response.ok) throw new Error('Failed to fetch commission data');
       return response.json();
     },
+    staleTime: 30 * 1000, // 30 секунд для финансовых данных
+    gcTime: 2 * 60 * 1000, // 2 минуты в памяти
   });
 
   const { data: chartData = [] } = useQuery<any[]>({
@@ -155,6 +183,9 @@ export default function FinancesManagement() {
       if (!response.ok) throw new Error('Failed to fetch chart data');
       return response.json();
     },
+    staleTime: 30 * 1000, // 30 секунд для финансовых данных
+    gcTime: 2 * 60 * 1000, // 2 минуты в памяти
+    refetchOnWindowFocus: true, // Обновлять при возврате к окну
   });
 
   const { data: cryptoPortfolio = [] } = useQuery<any[]>({
@@ -194,8 +225,17 @@ export default function FinancesManagement() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/finances'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/financial-metrics'] });
+      // Инвалидация всех финансовых данных при обновлении транзакции
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0] as string;
+          return key?.includes('/api/admin/financial') || 
+                 key?.includes('/api/admin/finances') || 
+                 key?.includes('/api/admin/payout-requests') ||
+                 key?.includes('/api/admin/deposits') ||
+                 key?.includes('/api/admin/commission-data');
+        }
+      });
       toast({
         title: 'Успешно',
         description: 'Статус транзакции обновлён',

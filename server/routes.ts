@@ -269,15 +269,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/dashboard/metrics", authenticateToken, async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
-      const cacheKey = `dashboard_metrics_${authUser.id}`;
+      const { period = '30d' } = req.query;
+      const cacheKey = `dashboard_metrics_${authUser.id}_${period}`;
       
       // Проверяем кеш
       let metrics = queryCache.get(cacheKey);
       
       if (!metrics) {
         metrics = await storage.getDashboardMetrics(authUser.role, authUser.id);
-        // Кешируем метрики на 1 минуту (частые обновления)
-        queryCache.set(cacheKey, metrics, 60 * 1000);
+        // Кешируем метрики на 30 секунд для финансовых данных
+        queryCache.set(cacheKey, metrics, 30 * 1000);
       }
       
       res.json(metrics);
@@ -2410,7 +2411,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } catch (dbError) {
         // Fallback to mock data if database queries fail
-        res.json({
+        // Кешируем fallback данные на короткое время
+        const fallbackData = {
           platformBalance: 125000,
           advertiserRevenue: 85000,
           partnerPayouts: 32000,
@@ -2418,7 +2420,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           revenueGrowth: 12.5,
           period,
           dateRange: { startDate, endDate }
-        });
+        };
+        const cacheKey = `financial_metrics_${period}_fallback`;
+        queryCache.set(cacheKey, fallbackData, 30 * 1000);
+        res.json(fallbackData);
       }
     } catch (error) {
       console.error("Financial metrics error:", error);
