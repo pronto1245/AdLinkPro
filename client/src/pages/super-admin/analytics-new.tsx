@@ -455,12 +455,47 @@ export default function AnalyticsNew() {
   };
 
   // Format cell value based on type
+  // OS Logo component
+  const OsLogo = ({ os }: { os: string }) => {
+    const getOsInfo = (osName: string) => {
+      const osLower = osName?.toLowerCase() || '';
+      
+      if (osLower.includes('windows')) {
+        return { logo: '🪟', name: 'Windows', color: 'text-blue-600' };
+      } else if (osLower.includes('mac') || osLower.includes('darwin')) {
+        return { logo: '🍎', name: 'macOS', color: 'text-gray-600' };
+      } else if (osLower.includes('linux') || osLower.includes('ubuntu')) {
+        return { logo: '🐧', name: 'Linux', color: 'text-orange-600' };
+      } else if (osLower.includes('android')) {
+        return { logo: '🤖', name: 'Android', color: 'text-green-600' };
+      } else if (osLower.includes('ios') || osLower.includes('iphone')) {
+        return { logo: '📱', name: 'iOS', color: 'text-gray-600' };
+      } else {
+        return { logo: '💻', name: osName || 'Unknown', color: 'text-gray-400' };
+      }
+    };
+
+    const osInfo = getOsInfo(os);
+    
+    return (
+      <div className="flex items-center gap-1" title={osInfo.name}>
+        <span className="text-lg">{osInfo.logo}</span>
+        <span className={`text-xs ${osInfo.color}`}>{osInfo.name}</span>
+      </div>
+    );
+  };
+
   const formatCellValue = (value: any, type: ColumnConfig['type'], columnKey?: string) => {
     if (value === null || value === undefined) return '-';
     
     // Special handling for country flag
     if (columnKey === 'countryFlag' || columnKey === 'country') {
       return <CountryFlag countryCode={value} />;
+    }
+    
+    // Special handling for OS logo
+    if (columnKey === 'osLogo' || columnKey === 'os') {
+      return <OsLogo os={value} />;
     }
     
     switch (type) {
