@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format, subDays } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -326,6 +326,7 @@ export default function AnalyticsNew() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const { isCollapsed } = useSidebar();
+  const queryClient = useQueryClient();
 
   // State management
   const [selectedTab, setSelectedTab] = useState('table');
@@ -521,6 +522,90 @@ export default function AnalyticsNew() {
     return rangeWithDots;
   };
 
+  // Export data to CSV
+  const handleExport = () => {
+    try {
+      const visibleData = analyticsData.map(row => {
+        const exportRow: any = {};
+        visibleColumns.forEach(column => {
+          const value = row[column.key];
+          // Handle special cases for export
+          if (column.key === 'countryFlag' || column.key === 'country') {
+            exportRow[column.label] = value; // Keep country code for CSV
+          } else if (column.type === 'boolean') {
+            exportRow[column.label] = value ? 'Да' : 'Нет';
+          } else if (column.type === 'currency') {
+            exportRow[column.label] = `$${Number(value || 0).toFixed(2)}`;
+          } else if (column.type === 'percentage') {
+            exportRow[column.label] = `${Number(value || 0).toFixed(1)}%`;
+          } else {
+            exportRow[column.label] = value || '-';
+          }
+        });
+        return exportRow;
+      });
+
+      // Create CSV content
+      const headers = visibleColumns.map(col => col.label);
+      const csvContent = [
+        headers.join(','),
+        ...visibleData.map(row => 
+          headers.map(header => {
+            const value = row[header];
+            // Escape quotes and commas
+            return typeof value === 'string' && (value.includes(',') || value.includes('"')) 
+              ? `"${value.replace(/"/g, '""')}"` 
+              : value;
+          }).join(',')
+        )
+      ].join('\n');
+
+      // Download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `analytics-${new Date().toISOString().slice(0, 10)}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: 'Экспорт завершен',
+        description: `Данные экспортированы в CSV файл (${visibleData.length} записей)`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Ошибка экспорта',
+        description: 'Не удалось экспортировать данные',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Refresh data
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics'] });
+    toast({
+      title: 'Данные обновлены',
+      description: 'Аналитические данные успешно обновлены',
+    });
+  };
+
+  // Reset filters
+  const handleResetFilters = () => {
+    setSearchTerm('');
+    setDateFrom(format(subDays(new Date(), 7), 'yyyy-MM-dd'));
+    setDateTo(format(new Date(), 'yyyy-MM-dd'));
+    setQuickFilter('all');
+    setCurrentPage(1);
+    toast({
+      title: 'Фильтры сброшены',
+      description: 'Все фильтры возвращены к значениям по умолчанию',
+    });
+  };
+
   return (
     <div className="h-screen bg-background overflow-hidden">
       <Sidebar />
@@ -542,12 +627,12 @@ export default function AnalyticsNew() {
                     <Settings className="w-4 h-4 mr-1" />
                     Столбцы ({visibleColumns.length})
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button onClick={handleExport} variant="outline" size="sm">
                     <Download className="w-4 h-4 mr-1" />
                     Экспорт
                   </Button>
-                  <Button variant="outline" size="sm">
-                    <RefreshCw className="w-4 h-4 mr-1" />
+                  <Button onClick={handleRefresh} variant="outline" size="sm" disabled={isLoading}>
+                    <RefreshCw className={`w-4 h-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
                     Обновить
                   </Button>
                 </div>
@@ -661,7 +746,7 @@ export default function AnalyticsNew() {
                     </Select>
                   </div>
                   <div>
-                    <Button variant="outline" className="h-8 w-full text-sm" size="sm">
+                    <Button onClick={handleResetFilters} variant="outline" className="h-8 w-full text-sm" size="sm">
                       <RotateCcw className="w-3 h-3 mr-1" />
                       Сбросить
                     </Button>
