@@ -10,7 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
+import { useSidebar } from '@/contexts/sidebar-context';
 import { useToast } from '@/hooks/use-toast';
+import Sidebar from '@/components/layout/sidebar';
+import Header from '@/components/layout/header';
 import { Search, Download, Settings, Filter, RefreshCw, Eye, EyeOff } from 'lucide-react';
 
 // Comprehensive analytics data interface with 100+ fields
@@ -322,6 +325,7 @@ export default function AnalyticsNew() {
   const { token } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { isCollapsed } = useSidebar();
 
   // State management
   const [selectedTab, setSelectedTab] = useState('table');
@@ -412,7 +416,12 @@ export default function AnalyticsNew() {
   const visibleColumns = columns.filter(col => col.visible);
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-screen bg-background">
+      <Sidebar />
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+        <Header />
+        <main className="flex-1 overflow-auto p-6">
+          <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Аналитика (Полная версия)</h1>
@@ -581,6 +590,9 @@ export default function AnalyticsNew() {
             <p className="text-muted-foreground">Ботов обнаружено</p>
           </CardContent>
         </Card>
+      </div>
+          </div>
+        </main>
       </div>
     </div>
   );
