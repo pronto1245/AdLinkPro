@@ -572,49 +572,66 @@ export default function AnalyticsNew() {
               </CardContent>
             </Card>
 
-            {/* Data Table */}
+            {/* Data Table - Contained within screen bounds */}
             <Card className="bg-white dark:bg-gray-800 border shadow-sm">
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                  <CardTitle className="text-xl">Данные аналитики ({analyticsData.length} записей)</CardTitle>
+              <CardHeader className="pb-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <CardTitle className="text-sm">Данные аналитики ({analyticsData.length} записей)</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-2">
                 {isLoading ? (
-                  <div className="flex justify-center p-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <div className="flex justify-center p-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                      <thead>
-                        <tr className="border-b">
-                          {visibleColumns.map((column) => (
-                            <th
-                              key={column.key}
-                              className="text-left p-2 font-medium text-sm"
-                              style={{ width: column.width }}
-                            >
-                              {column.label}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {analyticsData.map((row, index) => (
-                          <tr key={row.id || index} className="border-b hover:bg-muted/50">
+                  <div className="w-full overflow-x-auto" style={{ maxWidth: '100%' }}>
+                    <div className="min-w-full inline-block align-top">
+                      <table className="min-w-full border-collapse table-fixed">
+                        <thead>
+                          <tr className="border-b bg-muted/30">
                             {visibleColumns.map((column) => (
-                              <td key={column.key} className="p-2 text-sm">
-                                {formatCellValue(row[column.key], column.type)}
-                              </td>
+                              <th
+                                key={column.key}
+                                className="text-left p-1.5 font-medium text-xs bg-muted/20 border-r last:border-r-0"
+                                style={{ 
+                                  width: column.width || 'auto',
+                                  minWidth: '80px',
+                                  maxWidth: '200px'
+                                }}
+                              >
+                                <div className="truncate" title={column.label}>
+                                  {column.label}
+                                </div>
+                              </th>
                             ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {analyticsData.map((row, index) => (
+                            <tr key={row.id || index} className="border-b hover:bg-muted/30 even:bg-muted/10">
+                              {visibleColumns.map((column) => (
+                                <td 
+                                  key={column.key} 
+                                  className="p-1.5 text-xs border-r last:border-r-0"
+                                  style={{ 
+                                    maxWidth: '200px',
+                                    minWidth: '80px'
+                                  }}
+                                >
+                                  <div className="truncate" title={String(row[column.key])}>
+                                    {formatCellValue(row[column.key], column.type)}
+                                  </div>
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                     
                     {analyticsData.length === 0 && (
-                      <div className="text-center py-8 text-muted-foreground">
+                      <div className="text-center py-6 text-muted-foreground text-sm">
                         Нет данных для отображения
                       </div>
                     )}
