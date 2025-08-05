@@ -46,8 +46,9 @@ export default function OffersManagement() {
   const { data: offers, isLoading } = useQuery({
     queryKey: ['/api/admin/offers'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/offers', {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await window.fetch('/api/admin/offers', {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch offers');
       return response.json();
@@ -66,17 +67,21 @@ export default function OffersManagement() {
   });
 
   const createOfferMutation = useMutation({
+    mutationKey: ['createOffer'],
     mutationFn: async (offerData: any) => {
       console.log('Creating offer with data:', offerData);
       
-      const response = await fetch('/api/admin/offers', {
+      // Use standard fetch with explicit configuration
+      const fetchOptions = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(offerData),
-      });
+      };
+      
+      const response = await window.fetch('/api/admin/offers', fetchOptions);
       
       if (!response.ok) {
         const errorText = await response.text();
