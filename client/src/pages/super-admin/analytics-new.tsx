@@ -14,7 +14,7 @@ import { useSidebar } from '@/contexts/sidebar-context';
 import { useToast } from '@/hooks/use-toast';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
-import { Search, Download, Settings, Filter, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { Search, Download, Settings, Filter, RefreshCw, Eye, EyeOff, RotateCcw } from 'lucide-react';
 
 // Comprehensive analytics data interface with 100+ fields
 interface AnalyticsData {
@@ -419,7 +419,7 @@ export default function AnalyticsNew() {
     <div className="flex h-screen bg-background">
       <Sidebar />
       <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
-        <Header />
+        <Header title="Аналитика" />
         <main className="flex-1 overflow-auto p-6">
           <div className="space-y-6">
             {/* Header with title and controls */}
@@ -478,162 +478,143 @@ export default function AnalyticsNew() {
               </Card>
             </div>
 
-      {/* Column Settings Panel */}
-      {showColumnSettings && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Настройка столбцов</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
-              {columns.map((column) => (
-                <div key={column.key} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={column.key}
-                    checked={column.visible}
-                    onCheckedChange={() => toggleColumnVisibility(column.key)}
-                  />
-                  <label htmlFor={column.key} className="text-sm cursor-pointer">
-                    {column.label}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Поиск..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              placeholder="От даты"
-            />
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              placeholder="До даты"
-            />
-            <Select value={quickFilter} onValueChange={setQuickFilter}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {quickFilters.map(filter => (
-                  <SelectItem key={filter.value} value={filter.value}>
-                    {filter.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Data Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Данные аналитики</CardTitle>
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Экспорт
-              </Button>
-              <Button variant="outline" size="sm">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Обновить
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b">
-                    {visibleColumns.map((column) => (
-                      <th
-                        key={column.key}
-                        className="text-left p-2 font-medium text-sm"
-                        style={{ width: column.width }}
-                      >
-                        {column.label}
-                      </th>
+            {/* Column Settings Panel */}
+            {showColumnSettings && (
+              <Card className="bg-white dark:bg-gray-800 border shadow-sm">
+                <CardHeader>
+                  <CardTitle>Настройка столбцов</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4 max-h-96 overflow-y-auto">
+                    {columns.map((column) => (
+                      <div key={column.key} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={column.key}
+                          checked={column.visible}
+                          onCheckedChange={() => toggleColumnVisibility(column.key)}
+                        />
+                        <label htmlFor={column.key} className="text-sm cursor-pointer">
+                          {column.label}
+                        </label>
+                      </div>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {analyticsData.map((row, index) => (
-                    <tr key={row.id || index} className="border-b hover:bg-muted/50">
-                      {visibleColumns.map((column) => (
-                        <td key={column.key} className="p-2 text-sm">
-                          {formatCellValue(row[column.key], column.type)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              
-              {analyticsData.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  Нет данных для отображения
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{analyticsData.length}</div>
-            <p className="text-muted-foreground">Всего записей</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{visibleColumns.length}</div>
-            <p className="text-muted-foreground">Видимых столбцов</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{allColumns.length}</div>
-            <p className="text-muted-foreground">Всего полей</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">
-              {analyticsData.filter(item => item.isBot).length}
-            </div>
-            <p className="text-muted-foreground">Ботов обнаружено</p>
-          </CardContent>
-        </Card>
-      </div>
+            {/* Filters - Wide and Adaptive */}
+            <Card className="bg-white dark:bg-gray-800 border shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Filter className="w-5 h-5" />
+                  Фильтрация данных
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Поиск по всем полям..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-9 h-12"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">От даты</label>
+                    <Input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      className="h-12"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">До даты</label>
+                    <Input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      className="h-12"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Быстрые фильтры</label>
+                    <Select value={quickFilter} onValueChange={setQuickFilter}>
+                      <SelectTrigger className="h-12">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {quickFilters.map(filter => (
+                          <SelectItem key={filter.value} value={filter.value}>
+                            {filter.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-end">
+                    <Button variant="outline" className="h-12 w-full">
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Сбросить
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Data Table */}
+            <Card className="bg-white dark:bg-gray-800 border shadow-sm">
+              <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                  <CardTitle className="text-xl">Данные аналитики ({analyticsData.length} записей)</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex justify-center p-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b">
+                          {visibleColumns.map((column) => (
+                            <th
+                              key={column.key}
+                              className="text-left p-2 font-medium text-sm"
+                              style={{ width: column.width }}
+                            >
+                              {column.label}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {analyticsData.map((row, index) => (
+                          <tr key={row.id || index} className="border-b hover:bg-muted/50">
+                            {visibleColumns.map((column) => (
+                              <td key={column.key} className="p-2 text-sm">
+                                {formatCellValue(row[column.key], column.type)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    
+                    {analyticsData.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        Нет данных для отображения
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </main>
       </div>
