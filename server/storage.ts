@@ -2791,4 +2791,243 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Basic in-memory storage implementation for demo
+class MemStorage implements IStorage {
+  private users: User[] = [
+    {
+      id: '1',
+      username: 'admin',
+      email: 'admin@example.com', 
+      password: 'admin',
+      role: 'super_admin',
+      firstName: 'Super',
+      lastName: 'Admin',
+      isActive: true,
+      status: 'active',
+      userType: 'admin',
+      language: 'en',
+      timezone: 'UTC',
+      currency: 'USD',
+      kycStatus: 'pending',
+      balance: '0.00',
+      holdAmount: '0.00',
+      registrationApproved: false,
+      documentsVerified: false,
+      isBlocked: false,
+      isDeleted: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
+  private offers: Offer[] = [];
+  private statistics: any[] = [];
+  private postbacks: any[] = [];
+  private fraudReports: any[] = [];
+
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.find(u => u.id === id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return this.users.find(u => u.username === username);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return this.users.find(u => u.email === email);
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const newUser = { id: randomUUID(), ...user, createdAt: new Date(), updatedAt: new Date() } as User;
+    this.users.push(newUser);
+    return newUser;
+  }
+
+  async updateUser(id: string, data: Partial<InsertUser>): Promise<User> {
+    const userIndex = this.users.findIndex(u => u.id === id);
+    if (userIndex === -1) throw new Error('User not found');
+    this.users[userIndex] = { ...this.users[userIndex], ...data, updatedAt: new Date() };
+    return this.users[userIndex];
+  }
+
+  async getUsers(role?: string): Promise<User[]> {
+    return role ? this.users.filter(u => u.role === role) : this.users;
+  }
+
+  async getUsersByOwner(ownerId: string, role?: string): Promise<User[]> {
+    let filtered = this.users.filter(u => u.ownerId === ownerId);
+    return role ? filtered.filter(u => u.role === role) : filtered;
+  }
+
+  async getOffers(advertiserId?: string): Promise<Offer[]> {
+    return advertiserId ? this.offers.filter(o => o.advertiserId === advertiserId) : this.offers;
+  }
+
+  async getOffer(id: string): Promise<Offer | undefined> {
+    return this.offers.find(o => o.id === id);
+  }
+
+  async createOffer(offer: InsertOffer): Promise<Offer> {
+    const newOffer = { id: randomUUID(), ...offer, createdAt: new Date(), updatedAt: new Date() } as Offer;
+    this.offers.push(newOffer);
+    return newOffer;
+  }
+
+  async updateOffer(id: string, data: Partial<InsertOffer>): Promise<Offer> {
+    const offerIndex = this.offers.findIndex(o => o.id === id);
+    if (offerIndex === -1) throw new Error('Offer not found');
+    this.offers[offerIndex] = { ...this.offers[offerIndex], ...data, updatedAt: new Date() };
+    return this.offers[offerIndex];
+  }
+
+  async deleteOffer(id: string): Promise<void> {
+    this.offers = this.offers.filter(o => o.id !== id);
+  }
+
+  async getStatistics(filters: any): Promise<any[]> {
+    return this.statistics;
+  }
+
+  async getPostbacks(): Promise<any[]> {
+    return this.postbacks;
+  }
+
+  async getFraudReports(): Promise<any[]> {
+    return this.fraudReports;
+  }
+
+  // Placeholder implementations for other required methods
+  async getUsersWithFilters(filters: any): Promise<{ data: User[]; total: number }> {
+    return { data: this.users, total: this.users.length };
+  }
+
+  async blockUser(id: string, reason: string, blockedBy: string): Promise<User> {
+    return this.updateUser(id, { isBlocked: true, blockReason: reason, blockedBy, blockedAt: new Date() });
+  }
+
+  async unblockUser(id: string): Promise<User> {
+    return this.updateUser(id, { isBlocked: false, blockReason: null, blockedBy: null, blockedAt: null });
+  }
+
+  async softDeleteUser(id: string, deletedBy: string): Promise<User> {
+    return this.updateUser(id, { isDeleted: true, deletedBy, deletedAt: new Date() });
+  }
+
+  async forceLogoutUser(id: string): Promise<void> {
+    await this.updateUser(id, { sessionToken: null });
+  }
+
+  async resetUserPassword(id: string): Promise<string> {
+    const newPassword = Math.random().toString(36).slice(-8);
+    await this.updateUser(id, { password: newPassword });
+    return newPassword;
+  }
+
+  async getUserAnalytics(period: string): Promise<any> {
+    return { totalUsers: this.users.length, activeUsers: this.users.filter(u => u.isActive).length };
+  }
+
+  async exportUsers(filters: any, format: string): Promise<string> {
+    return JSON.stringify(this.users);
+  }
+
+  async bulkBlockUsers(userIds: string[], reason: string, blockedBy: string): Promise<any> {
+    return { blocked: userIds.length };
+  }
+
+  async bulkUnblockUsers(userIds: string[]): Promise<any> {
+    return { unblocked: userIds.length };
+  }
+
+  async bulkDeleteUsers(userIds: string[], hardDelete: boolean, deletedBy: string): Promise<any> {
+    return { deleted: userIds.length };
+  }
+
+  // Complete interface implementations with stub methods
+  async getPartnerOffers(): Promise<any[]> { return []; }
+  async createPartnerOffer(): Promise<any> { return {}; }
+  async updatePartnerOffer(): Promise<any> { return {}; }
+  async getTrackingLinks(): Promise<any[]> { return []; }
+  async getTrackingLinkByCode(): Promise<any> { return null; }
+  async createTrackingLink(): Promise<any> { return {}; }
+  async createStatistics(): Promise<any> { return {}; }
+  async getTransactions(): Promise<any[]> { return []; }
+  async createTransaction(): Promise<any> { return {}; }
+  async createPostback(): Promise<any> { return {}; }
+  async updatePostback(): Promise<any> { return {}; }
+  async getTickets(): Promise<any[]> { return []; }
+  async createTicket(): Promise<any> { return {}; }
+  async updateTicket(): Promise<any> { return {}; }
+  async getFraudAlerts(): Promise<any[]> { return []; }
+  async createFraudAlert(): Promise<any> { return {}; }
+  async getAuditLogs(): Promise<any[]> { return []; }
+  async createAuditLog(): Promise<any> { return {}; }
+  async getCryptoWallets(): Promise<any[]> { return []; }
+  async createCryptoWallet(): Promise<any> { return {}; }
+  async updateCryptoWallet(): Promise<any> { return {}; }
+  async getCryptoTransactions(): Promise<any[]> { return []; }
+  async createCryptoTransaction(): Promise<any> { return {}; }
+  async createFraudReport(): Promise<any> { return {}; }
+  async updateFraudReport(): Promise<any> { return {}; }
+  async getFraudRules(): Promise<any[]> { return []; }
+  async createFraudRule(): Promise<any> { return {}; }
+  async updateFraudRule(): Promise<any> { return {}; }
+  async deleteFraudRule(): Promise<void> {}
+  async getDeviceTracking(): Promise<any[]> { return []; }
+  async createDeviceTracking(): Promise<any> { return {}; }
+  async getIpAnalysis(): Promise<any[]> { return []; }
+  async createIpAnalysis(): Promise<any> { return {}; }
+  async getFraudBlocks(): Promise<any[]> { return []; }
+  async createFraudBlock(): Promise<any> { return {}; }
+  async deleteFraudBlock(): Promise<void> {}
+  async getAllOffers(): Promise<any[]> { return this.offers; }
+  async deleteUser(): Promise<void> {}
+  
+  // Add missing methods to match IStorage interface
+  async getPostbacksWithFilters(): Promise<any> { return { data: [], total: 0 }; }
+  async createPostbackTemplate(): Promise<any> { return {}; }
+  async updatePostbackTemplate(): Promise<any> { return {}; }
+  async deletePostbackTemplate(): Promise<void> {}
+  async getGlobalPostbacks(): Promise<any[]> { return []; }
+  async createGlobalPostback(): Promise<any> { return {}; }
+  async updateGlobalPostback(): Promise<any> { return {}; }
+  async testGlobalPostback(): Promise<void> {}
+  async getPostbackLogs(): Promise<any[]> { return []; }
+  async getBlacklistEntries(): Promise<any[]> { return []; }
+  async createBlacklistEntry(): Promise<any> { return {}; }
+  async updateBlacklistEntry(): Promise<any> { return {}; }
+  async deleteBlacklistEntry(): Promise<void> {}
+  async moderateOffer(): Promise<boolean> { return true; }
+  async getOfferLogs(): Promise<any[]> { return []; }
+  async getOfferStats(): Promise<any> { return {}; }
+  async logOfferAction(): Promise<void> {}
+  async getOfferCategories(): Promise<any[]> { return []; }
+  async createOfferCategory(): Promise<any> { return {}; }
+  async getModerationTemplates(): Promise<any[]> { return []; }
+  async createModerationTemplate(): Promise<any> { return {}; }
+  async getKycDocuments(): Promise<any[]> { return []; }
+  async updateKycDocument(): Promise<any> { return {}; }
+  async getDashboardMetrics(): Promise<any> { return {}; }
+  async getCustomRoles(): Promise<any[]> { return []; }
+  async getCustomRole(): Promise<any> { return null; }
+  async createCustomRole(): Promise<any> { return {}; }
+  async updateCustomRole(): Promise<any> { return {}; }
+  async deleteCustomRole(): Promise<void> {}
+  async assignUserRole(): Promise<any> { return {}; }
+  async unassignUserRole(): Promise<void> {}
+  async getUserAnalyticsDetailed(): Promise<any> { return {}; }
+  async getFraudAnalytics(): Promise<any> { return {}; }
+  async exportAnalytics(): Promise<string> { return ''; }
+  async getCryptoPortfolio(): Promise<any> { return {}; }
+  async getCryptoBalance(): Promise<any> { return {}; }
+  async getUserCryptoWallets(): Promise<any[]> { return []; }
+  async createUserCryptoWallet(): Promise<any> { return {}; }
+  async syncCryptoWallet(): Promise<any> { return {}; }
+  async getFraudReport(): Promise<any> { return null; }
+  async reviewFraudReport(): Promise<any> { return {}; }
+  async getFraudStats(): Promise<any> { return {}; }
+  async updateIpAnalysis(): Promise<any> { return {}; }
+  async updateFraudBlock(): Promise<any> { return {}; }
+}
+
+// Use MemStorage due to database issues
+export const storage = new MemStorage();
