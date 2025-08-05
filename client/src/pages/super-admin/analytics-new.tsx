@@ -631,33 +631,28 @@ export default function AnalyticsNew() {
       return;
     }
 
-    // Get the dragged column data
+    // Simply reorder the columns array based on visible columns order
+    const newColumns = [...columns];
     const draggedItem = visibleColumns[draggedColumn];
     
-    // Create new order of visible columns
-    const newVisibleColumns = [...visibleColumns];
-    newVisibleColumns.splice(draggedColumn, 1);
-    newVisibleColumns.splice(dropIndex, 0, draggedItem);
-
-    // Update the main columns array to reflect new order
-    const newColumns = [...columns];
+    // Find indexes in the main columns array
+    const draggedIndexInMain = newColumns.findIndex(col => col.key === draggedItem.key);
+    const dropTargetColumn = visibleColumns[dropIndex];
+    const dropIndexInMain = newColumns.findIndex(col => col.key === dropTargetColumn.key);
     
-    // Find current positions of visible columns in main array
-    const visiblePositions = visibleColumns.map(visCol => 
-      newColumns.findIndex(col => col.key === visCol.key)
-    );
+    // Remove dragged item from its current position
+    const [removed] = newColumns.splice(draggedIndexInMain, 1);
     
-    // Rearrange only the visible columns in their new order
-    const reorderedVisibleColumns = newVisibleColumns.map(visCol => 
-      newColumns.find(col => col.key === visCol.key)!
-    );
+    // Calculate new position after removal
+    let newDropIndex = dropIndexInMain;
+    if (draggedIndexInMain < dropIndexInMain) {
+      newDropIndex = dropIndexInMain;
+    } else {
+      newDropIndex = dropIndexInMain + 1;
+    }
     
-    // Replace visible columns in their original positions with reordered ones
-    visiblePositions.forEach((pos, index) => {
-      if (reorderedVisibleColumns[index]) {
-        newColumns[pos] = reorderedVisibleColumns[index];
-      }
-    });
+    // Insert at new position
+    newColumns.splice(newDropIndex, 0, removed);
 
     setColumns(newColumns);
     setDraggedColumn(null);
