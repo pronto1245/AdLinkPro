@@ -111,7 +111,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
         allowedApps: data.allowedApps || [],
       };
       console.log('Sending offer data:', transformedData);
-      return await apiRequest('POST', '/api/admin/offers', transformedData);
+      return await apiRequest('/api/admin/offers', 'POST', transformedData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
@@ -982,7 +982,7 @@ export default function OffersManagement() {
   // Moderate offer mutation
   const moderateOfferMutation = useMutation({
     mutationFn: async ({ offerId, action, comment }: { offerId: string; action: string; comment?: string }) => {
-      const response = await apiRequest('POST', `/api/admin/offers/${offerId}/moderate`, {
+      const response = await apiRequest(`/api/admin/offers/${offerId}/moderate`, 'POST', {
         action,
         comment
       });
@@ -1008,7 +1008,7 @@ export default function OffersManagement() {
   // Bulk actions mutations
   const bulkActivateMutation = useMutation({
     mutationFn: async (offerIds: string[]) => {
-      const response = await apiRequest('POST', '/api/admin/offers/bulk-activate', { offerIds });
+      const response = await apiRequest('/api/admin/offers/bulk-activate', 'POST', { offerIds });
       return response.json();
     },
     onSuccess: () => {
@@ -1031,7 +1031,7 @@ export default function OffersManagement() {
 
   const bulkPauseMutation = useMutation({
     mutationFn: async (offerIds: string[]) => {
-      const response = await apiRequest('POST', '/api/admin/offers/bulk-pause', { offerIds });
+      const response = await apiRequest('/api/admin/offers/bulk-pause', 'POST', { offerIds });
       return response.json();
     },
     onSuccess: () => {
@@ -1054,7 +1054,7 @@ export default function OffersManagement() {
 
   const bulkDeleteMutation = useMutation({
     mutationFn: async (offerIds: string[]) => {
-      const response = await apiRequest('POST', '/api/admin/offers/bulk-delete', { offerIds });
+      const response = await apiRequest('/api/admin/offers/bulk-delete', 'POST', { offerIds });
       return response.json();
     },
     onSuccess: () => {
@@ -1124,7 +1124,7 @@ export default function OffersManagement() {
   // Delete offer mutation
   const deleteOfferMutation = useMutation({
     mutationFn: async (offerId: string) => {
-      const response = await apiRequest('DELETE', `/api/admin/offers/${offerId}`);
+      const response = await apiRequest(`/api/admin/offers/${offerId}`, 'DELETE');
       return response.json();
     },
     onSuccess: () => {
@@ -1258,7 +1258,7 @@ export default function OffersManagement() {
   // Change status mutation
   const changeStatusMutation = useMutation({
     mutationFn: async ({ offerId, status }: { offerId: string; status: string }) => {
-      const response = await apiRequest('PUT', `/api/admin/offers/${offerId}`, { status });
+      const response = await apiRequest(`/api/admin/offers/${offerId}`, 'PUT', { status });
       return await response.json();
     },
     onSuccess: (updatedOffer) => {

@@ -1743,7 +1743,7 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
         trafficSources: data.allowedTrafficSources || [],
         allowedApps: data.allowedApps || [],
       };
-      return await apiRequest('PUT', `/api/admin/offers/${offer.id}`, transformedData);
+      return await apiRequest(`/api/admin/offers/${offer.id}`, 'PUT', transformedData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
