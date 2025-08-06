@@ -80,47 +80,44 @@ interface OfferFormData {
 
 const initialFormData: OfferFormData = {
   // Основная информация
-  name: 'Тестовый игровой оффер',
-  description: { 
-    ru: 'Популярная игра с высокой конверсией. Отличные выплаты для качественного трафика.', 
-    en: 'Popular gaming offer with high conversion rates. Great payouts for quality traffic.' 
-  },
-  category: 'Gaming',
+  name: '',
+  description: { ru: '', en: '' },
+  category: '',
   logo: '',
   
   // GEO и устройства
-  geoTargeting: ['RU', 'UA', 'KZ'],
-  allowedDevices: ['mobile', 'desktop'],
-  allowedOs: ['android', 'ios', 'windows'],
+  geoTargeting: [],
+  allowedDevices: [],
+  allowedOs: [],
   
   // Ссылки
-  targetUrl: 'https://example-game.com/landing',
-  postbackUrl: 'https://tracking.example.com/postback',
-  hasGlobalGeoSetting: true,
-  hasGlobalPayoutSetting: true,
-  globalGeo: 'RU',
-  globalPayout: '150',
-  landingPages: [{ id: '1', name: 'Основной лендинг', url: 'https://example-game.com/landing', geo: 'RU', payout: '150', hasCustomGeo: false, hasCustomPayout: false, isDefault: true }],
+  targetUrl: '',
+  postbackUrl: '',
+  hasGlobalGeoSetting: false,
+  hasGlobalPayoutSetting: false,
+  globalGeo: '',
+  globalPayout: '',
+  landingPages: [{ id: '1', name: 'Основная', url: '', geo: '', payout: '', hasCustomGeo: false, hasCustomPayout: false, isDefault: true }],
   
   // Выплаты
   payoutType: 'cpa',
-  payoutAmount: 150,
-  currency: 'RUB',
+  payoutAmount: 0,
+  currency: 'USD',
   
   // Условия
   partnerApprovalType: 'auto',
-  trafficSources: ['Push', 'Facebook Ads', 'Google Ads'],
-  deniedSources: ['Bot', 'Phishing'],
-  allowedAppTypes: ['PWA App', 'WebView App'],
-  trafficRequirements: 'Только качественный трафик без ботов',
+  trafficSources: [],
+  deniedSources: [],
+  allowedAppTypes: [],
+  trafficRequirements: '',
   
   // Кепы и лимиты
-  dailyLimit: 100,
-  monthlyLimit: 3000,
+  dailyLimit: 0,
+  monthlyLimit: 0,
   
   // Антифрод
   antifraudEnabled: true,
-  antifraudMethods: ['ip', 'vpn', 'bot'],
+  antifraudMethods: [],
   
   // Дополнительные настройки
   kycRequired: false,
@@ -129,9 +126,9 @@ const initialFormData: OfferFormData = {
   customDomains: [],
   
   // Мета данные
-  tags: ['gaming', 'high-payout'],
-  kpi: 'CR > 5%',
-  status: 'active'
+  tags: [],
+  kpi: '',
+  status: 'draft'
 };
 
 const categories = [

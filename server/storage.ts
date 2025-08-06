@@ -3580,7 +3580,7 @@ export class DatabaseStorage implements IStorage {
 
   async createOffer(offerData: any): Promise<any> {
     try {
-      // Map frontend fields to database fields correctly
+      // Map only existing database fields
       const mappedData = {
         id: randomUUID(),
         name: offerData.name,
