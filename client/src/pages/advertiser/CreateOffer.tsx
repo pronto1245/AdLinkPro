@@ -670,7 +670,7 @@ export default function CreateOffer() {
             <TabsContent value="targeting" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Гео-таргетинг</CardTitle>
+                  <CardTitle>Разрешенные источники</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
