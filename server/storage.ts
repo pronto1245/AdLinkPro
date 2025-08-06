@@ -3595,6 +3595,7 @@ export class DatabaseStorage implements IStorage {
         landingPageUrl: offerData.landingPageUrl || '',
         landingPages: offerData.landingPages || [],
         trafficSources: offerData.trafficSources || [],
+        allowedApplications: offerData.allowedApplications || [], // Новое поле для разрешенных приложений
         deniedSources: offerData.deniedSources || [],
         trafficRequirements: offerData.trafficRequirements || '',
         dailyLimit: offerData.dailyLimit || null,
