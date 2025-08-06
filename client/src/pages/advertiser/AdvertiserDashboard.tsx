@@ -396,13 +396,15 @@ export default function AdvertiserDashboard() {
         {/* Карточки основных метрик KPI */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {/* Количество офферов */}
-          <Card data-testid="card-offers">
+          <Card data-testid="card-offers" className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Офферы</CardTitle>
-              <Target className="h-4 w-4 text-blue-500" />
+              <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">Офферы</CardTitle>
+              <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+                <Target className="h-6 w-6 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{overview?.totalOffers || 0}</div>
+              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{overview?.totalOffers || 0}</div>
               <div className="flex items-center gap-1 text-xs mt-1">
                 {getChangeIcon(overview?.offersChange || 0)}
                 <span className={getChangeColor(overview?.offersChange || 0)}>
@@ -417,13 +419,15 @@ export default function AdvertiserDashboard() {
           </Card>
 
           {/* Бюджет / Расход */}
-          <Card data-testid="card-budget">
+          <Card data-testid="card-budget" className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Бюджет / Расход</CardTitle>
-              <Wallet className="h-4 w-4 text-orange-500" />
+              <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">Бюджет / Расход</CardTitle>
+              <div className="p-3 bg-green-500 rounded-xl shadow-lg">
+                <Wallet className="h-6 w-6 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(overview?.totalSpent || 0)}</div>
+              <div className="text-2xl font-bold text-green-900 dark:text-green-100">{formatCurrency(overview?.totalSpent || 0)}</div>
               <div className="flex items-center gap-1 text-xs mt-1">
                 {getChangeIcon(overview?.budgetChange || 0)}
                 <span className={getChangeColor(overview?.budgetChange || 0)}>
@@ -439,13 +443,15 @@ export default function AdvertiserDashboard() {
           </Card>
 
           {/* Доход рекламодателя */}
-          <Card data-testid="card-revenue">
+          <Card data-testid="card-revenue" className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Доход рекламодателя</CardTitle>
-              <DollarSign className="h-4 w-4 text-green-500" />
+              <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">Доход рекламодателя</CardTitle>
+              <div className="p-3 bg-purple-500 rounded-xl shadow-lg">
+                <DollarSign className="h-6 w-6 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(overview?.advertiserRevenue || 0)}</div>
+              <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">{formatCurrency(overview?.advertiserRevenue || 0)}</div>
               <div className="flex items-center gap-1 text-xs mt-1">
                 {getChangeIcon(overview?.revenueChange || 0)}
                 <span className={getChangeColor(overview?.revenueChange || 0)}>
@@ -457,13 +463,15 @@ export default function AdvertiserDashboard() {
           </Card>
 
           {/* Постбеки */}
-          <Card data-testid="card-postbacks">
+          <Card data-testid="card-postbacks" className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 border-teal-200 dark:border-teal-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Постбеки</CardTitle>
-              <Send className="h-4 w-4 text-purple-500" />
+              <CardTitle className="text-sm font-medium text-teal-700 dark:text-teal-300">Постбеки</CardTitle>
+              <div className="p-3 bg-teal-500 rounded-xl shadow-lg">
+                <Send className="h-6 w-6 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{overview?.postbacksSent || 0}</div>
+              <div className="text-2xl font-bold text-teal-900 dark:text-teal-100">{overview?.postbacksSent || 0}</div>
               <div className="flex items-center gap-1 text-xs mt-1">
                 {getChangeIcon(overview?.postbacksChange || 0)}
                 <span className={getChangeColor(overview?.postbacksChange || 0)}>
@@ -478,13 +486,15 @@ export default function AdvertiserDashboard() {
           </Card>
 
           {/* Партнёры */}
-          <Card data-testid="card-partners">
+          <Card data-testid="card-partners" className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Партнёры</CardTitle>
-              <Users className="h-4 w-4 text-indigo-500" />
+              <CardTitle className="text-sm font-medium text-orange-700 dark:text-orange-300">Партнёры</CardTitle>
+              <div className="p-3 bg-orange-500 rounded-xl shadow-lg">
+                <Users className="h-6 w-6 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{overview?.partnersCount || 0}</div>
+              <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{overview?.partnersCount || 0}</div>
               <div className="flex items-center gap-1 text-xs mt-1">
                 {getChangeIcon(overview?.partnersChange || 0)}
                 <span className={getChangeColor(overview?.partnersChange || 0)}>
@@ -496,13 +506,15 @@ export default function AdvertiserDashboard() {
           </Card>
 
           {/* CR (Conversion Rate) */}
-          <Card data-testid="card-cr">
+          <Card data-testid="card-cr" className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">CR (%)</CardTitle>
-              <BarChart3 className="h-4 w-4 text-cyan-500" />
+              <CardTitle className="text-sm font-medium text-indigo-700 dark:text-indigo-300">CR (%)</CardTitle>
+              <div className="p-3 bg-indigo-500 rounded-xl shadow-lg">
+                <BarChart3 className="h-6 w-6 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{overview?.avgCR?.toFixed(2) || 0}%</div>
+              <div className="text-2xl font-bold text-indigo-900 dark:text-indigo-100">{overview?.avgCR?.toFixed(2) || 0}%</div>
               <div className="flex items-center gap-1 text-xs mt-1">
                 {getChangeIcon(overview?.crChange || 0)}
                 <span className={getChangeColor(overview?.crChange || 0)}>
@@ -514,13 +526,15 @@ export default function AdvertiserDashboard() {
           </Card>
 
           {/* EPC (Earnings Per Click) */}
-          <Card data-testid="card-epc">
+          <Card data-testid="card-epc" className="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-900/20 dark:to-pink-800/20 border-pink-200 dark:border-pink-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">EPC ($)</CardTitle>
-              <MousePointer className="h-4 w-4 text-pink-500" />
+              <CardTitle className="text-sm font-medium text-pink-700 dark:text-pink-300">EPC ($)</CardTitle>
+              <div className="p-3 bg-pink-500 rounded-xl shadow-lg">
+                <MousePointer className="h-6 w-6 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${overview?.epc?.toFixed(2) || 0}</div>
+              <div className="text-2xl font-bold text-pink-900 dark:text-pink-100">${overview?.epc?.toFixed(2) || 0}</div>
               <div className="flex items-center gap-1 text-xs mt-1">
                 {getChangeIcon(overview?.epcChange || 0)}
                 <span className={getChangeColor(overview?.epcChange || 0)}>
@@ -532,13 +546,15 @@ export default function AdvertiserDashboard() {
           </Card>
 
           {/* Фрод-активность */}
-          <Card data-testid="card-fraud">
+          <Card data-testid="card-fraud" className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Фрод-активность</CardTitle>
-              <Shield className="h-4 w-4 text-red-500" />
+              <CardTitle className="text-sm font-medium text-red-700 dark:text-red-300">Фрод-активность</CardTitle>
+              <div className="p-3 bg-red-500 rounded-xl shadow-lg">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{overview?.fraudActivity || 0}</div>
+              <div className="text-2xl font-bold text-red-900 dark:text-red-100">{overview?.fraudActivity || 0}</div>
               <div className="flex items-center gap-1 text-xs mt-1">
                 {getChangeIcon(overview?.fraudChange || 0)}
                 <span className={getChangeColor(overview?.fraudChange || 0)}>
