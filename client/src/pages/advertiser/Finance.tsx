@@ -187,7 +187,11 @@ export default function Finance() {
       params.set('dateTo', filters.dateTo);
       params.set('advertiserId', user?.id || '');
       
-      const response = await fetch(`/api/advertiser/finance/summary?${params}`);
+      const response = await fetch(`/api/advertiser/financial-overview?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       if (!response.ok) {
         throw new Error('Не удалось загрузить финансовую сводку');
       }
@@ -206,7 +210,11 @@ export default function Finance() {
       });
       params.set('advertiserId', user?.id || '');
       
-      const response = await fetch(`/api/advertiser/finance/transactions?${params}`);
+      const response = await fetch(`/api/advertiser/transactions?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       if (!response.ok) {
         throw new Error('Не удалось загрузить транзакции');
       }
@@ -219,7 +227,11 @@ export default function Finance() {
   const { data: partners = [] } = useQuery({
     queryKey: ['/api/advertiser/partners', user?.id],
     queryFn: async () => {
-      const response = await fetch('/api/advertiser/partners');
+      const response = await fetch('/api/advertiser/partners', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       if (!response.ok) throw new Error('Ошибка загрузки партнёров');
       return response.json();
     },
@@ -230,7 +242,11 @@ export default function Finance() {
   const { data: offers = [] } = useQuery({
     queryKey: ['/api/advertiser/offers', user?.id],
     queryFn: async () => {
-      const response = await fetch('/api/advertiser/offers');
+      const response = await fetch('/api/advertiser/offers', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       if (!response.ok) throw new Error('Ошибка загрузки офферов');
       return response.json();
     },
@@ -242,7 +258,10 @@ export default function Finance() {
     mutationFn: async (payoutData: PayoutForm) => {
       const response = await fetch('/api/advertiser/finance/payouts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify({
           ...payoutData,
           amount: parseFloat(payoutData.amount),
@@ -283,7 +302,10 @@ export default function Finance() {
     mutationFn: async ({ transactionId, status }: { transactionId: string; status: string }) => {
       const response = await fetch(`/api/advertiser/finance/transactions/${transactionId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify({ status })
       });
       if (!response.ok) throw new Error('Ошибка изменения статуса');
