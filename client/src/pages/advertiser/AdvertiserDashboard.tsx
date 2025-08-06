@@ -575,7 +575,7 @@ export default function AdvertiserDashboard() {
                   data-testid="tab-traffic"
                   className="data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
                 >
-                  <Activity className="h-4 w-4 mr-2" />
+                  <Activity className="h-4 w-4 mr-2 text-blue-500 data-[state=active]:text-white" />
                   Трафик
                 </TabsTrigger>
                 <TabsTrigger 
@@ -583,7 +583,7 @@ export default function AdvertiserDashboard() {
                   data-testid="tab-conversions"
                   className="data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=active]:shadow-md"
                 >
-                  <Target className="h-4 w-4 mr-2" />
+                  <Target className="h-4 w-4 mr-2 text-green-500 data-[state=active]:text-white" />
                   Конверсии
                 </TabsTrigger>
                 <TabsTrigger 
@@ -591,7 +591,7 @@ export default function AdvertiserDashboard() {
                   data-testid="tab-spending"
                   className="data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md"
                 >
-                  <DollarSign className="h-4 w-4 mr-2" />
+                  <DollarSign className="h-4 w-4 mr-2 text-orange-500 data-[state=active]:text-white" />
                   Расходы
                 </TabsTrigger>
                 <TabsTrigger 
@@ -599,7 +599,7 @@ export default function AdvertiserDashboard() {
                   data-testid="tab-postbacks"
                   className="data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md"
                 >
-                  <Send className="h-4 w-4 mr-2" />
+                  <Send className="h-4 w-4 mr-2 text-purple-500 data-[state=active]:text-white" />
                   Постбеки
                 </TabsTrigger>
               </TabsList>
