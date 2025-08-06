@@ -932,18 +932,18 @@ export default function AntiFraud() {
                   <div className="flex items-center justify-between">
                     <Label>Включить детекцию VPN/Proxy</Label>
                     <Switch
-                      checked={settings?.vpnProxyDetection.enabled || false}
+                      checked={settings?.vpnProxyDetection?.enabled || false}
                       onCheckedChange={(checked) => handleSettingsUpdate('vpnProxyDetection.enabled', checked)}
                       data-testid="switch-vpn-proxy-detection"
                     />
                   </div>
 
-                  {settings?.vpnProxyDetection.enabled && (
+                  {settings?.vpnProxyDetection?.enabled && (
                     <>
                       <div className="flex items-center justify-between">
                         <Label>Блокировать VPN</Label>
                         <Switch
-                          checked={settings.vpnProxyDetection.blockVpn}
+                          checked={settings?.vpnProxyDetection?.blockVpn || false}
                           onCheckedChange={(checked) => handleSettingsUpdate('vpnProxyDetection.blockVpn', checked)}
                           data-testid="switch-block-vpn"
                         />
@@ -952,7 +952,7 @@ export default function AntiFraud() {
                       <div className="flex items-center justify-between">
                         <Label>Блокировать Proxy</Label>
                         <Switch
-                          checked={settings.vpnProxyDetection.blockProxy}
+                          checked={settings?.vpnProxyDetection?.blockProxy || false}
                           onCheckedChange={(checked) => handleSettingsUpdate('vpnProxyDetection.blockProxy', checked)}
                           data-testid="switch-block-proxy"
                         />
@@ -961,7 +961,7 @@ export default function AntiFraud() {
                       <div className="flex items-center justify-between">
                         <Label>Блокировать TOR</Label>
                         <Switch
-                          checked={settings.vpnProxyDetection.blockTor}
+                          checked={settings?.vpnProxyDetection?.blockTor || false}
                           onCheckedChange={(checked) => handleSettingsUpdate('vpnProxyDetection.blockTor', checked)}
                           data-testid="switch-block-tor"
                         />
