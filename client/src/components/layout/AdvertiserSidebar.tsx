@@ -68,12 +68,7 @@ const sidebarItems = [
     icon: Settings,
     description: 'Настройки профиля'
   },
-  {
-    title: 'Безопасность',
-    href: '/advertiser/security',
-    icon: Shield,
-    description: 'Настройки безопасности'
-  },
+
   {
     title: 'Документы',
     href: '/advertiser/documents',
