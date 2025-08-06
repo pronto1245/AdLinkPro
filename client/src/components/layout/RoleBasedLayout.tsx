@@ -3,6 +3,7 @@ import { useSidebar } from '@/contexts/sidebar-context';
 import { cn } from '@/lib/utils';
 import AdvertiserSidebar from './AdvertiserSidebar';
 import AffiliateSidebar from './AffiliateSidebar';
+import { TopNavigation } from './TopNavigation';
 
 interface RoleBasedLayoutProps {
   children: React.ReactNode;
@@ -17,28 +18,34 @@ export default function RoleBasedLayout({ children }: RoleBasedLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      {user.role === 'advertiser' && <AdvertiserSidebar key={`sidebar-${user.id}`} />}
-      {user.role === 'affiliate' && <AffiliateSidebar key={`sidebar-${user.id}`} />}
-      <main 
-        className="flex-1 overflow-auto transition-all duration-300 ease-in-out"
-        style={{
-          '--sidebar-width': `${sidebarWidth}px`,
-          maxWidth: `calc(100vw - ${sidebarWidth}px)`
-        } as React.CSSProperties}
-      >
-        <div className={cn(
-          "p-6",
-          collapsed ? "max-w-full" : "max-w-full"
-        )}>
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Top Navigation */}
+      <TopNavigation />
+      
+      {/* Main Content Area */}
+      <div className="flex flex-1 overflow-hidden">
+        {user.role === 'advertiser' && <AdvertiserSidebar key={`sidebar-${user.id}`} />}
+        {user.role === 'affiliate' && <AffiliateSidebar key={`sidebar-${user.id}`} />}
+        <main 
+          className="flex-1 overflow-auto transition-all duration-300 ease-in-out"
+          style={{
+            '--sidebar-width': `${sidebarWidth}px`,
+            maxWidth: `calc(100vw - ${sidebarWidth}px)`
+          } as React.CSSProperties}
+        >
           <div className={cn(
-            "mx-auto transition-all duration-300",
-            collapsed ? "max-w-7xl" : "max-w-6xl"
+            "p-6",
+            collapsed ? "max-w-full" : "max-w-full"
           )}>
-            {children}
+            <div className={cn(
+              "mx-auto transition-all duration-300",
+              collapsed ? "max-w-7xl" : "max-w-6xl"
+            )}>
+              {children}
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
