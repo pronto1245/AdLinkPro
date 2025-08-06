@@ -42,6 +42,7 @@ import TeamManagement from "@/pages/affiliate/TeamManagement";
 import PostbackManagementAffiliate from "@/pages/affiliate/PostbackManagement";
 import AdvertiserDashboardNew from "@/pages/advertiser/AdvertiserDashboard";
 import OfferManagement from "@/pages/advertiser/OfferManagement";
+import CreateOffer from "@/pages/advertiser/CreateOffer";
 import PartnerDashboard from "@/pages/affiliate/PartnerDashboard";
 import { useAuth } from "./contexts/auth-context";
 import Login from "@/pages/auth/login";
@@ -209,7 +210,7 @@ function Router() {
       
       <Route path="/advertiser/offers/new">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <SuperAdminOffersManagement />
+          <CreateOffer />
         </ProtectedRoute>
       </Route>
       

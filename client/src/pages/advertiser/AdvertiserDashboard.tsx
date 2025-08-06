@@ -293,7 +293,7 @@ export default function AdvertiserDashboard() {
             </Button>
             
             <Link to="/advertiser/offers/new">
-              <Button data-testid="button-create-offer" title="Создать новый оффер">
+              <Button className="bg-blue-600 hover:bg-blue-700" data-testid="button-create-offer" title="Создать новый оффер">
                 <Plus className="h-4 w-4 mr-2" />
                 Новый оффер
               </Button>

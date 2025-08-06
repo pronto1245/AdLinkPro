@@ -379,13 +379,20 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(offers);
   }
 
-  async createOffer(offer: InsertOffer): Promise<Offer> {
-    const [newOffer] = await db
+  async createOffer(insertOffer: InsertOffer): Promise<Offer> {
+    const [offer] = await db
       .insert(offers)
-      .values(offer)
+      .values({
+        ...insertOffer,
+        id: insertOffer.id || randomUUID(),
+        createdAt: insertOffer.createdAt || new Date(),
+        updatedAt: insertOffer.updatedAt || new Date()
+      })
       .returning();
-    return newOffer;
+    return offer;
   }
+
+
 
   async updateOffer(id: string, data: Partial<InsertOffer>): Promise<Offer> {
     // Don't add updatedAt manually - let database handle it with default

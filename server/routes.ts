@@ -880,6 +880,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create new offer (Advertiser)
+  app.post("/api/advertiser/offers", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerData = req.body;
+      
+      // Validate required fields
+      if (!offerData.name || !offerData.description || !offerData.category) {
+        return res.status(400).json({ error: "Name, description, and category are required" });
+      }
+      
+      // Set advertiser and owner
+      offerData.advertiserId = authUser.id;
+      offerData.ownerId = authUser.ownerId || authUser.id;
+      offerData.isActive = offerData.isActive !== false;
+      offerData.createdAt = new Date();
+      offerData.updatedAt = new Date();
+      
+      const offer = await storage.createOffer(offerData);
+      res.status(201).json(offer);
+    } catch (error) {
+      console.error("Create offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get advertiser's tracking domains
+  app.get("/api/advertiser/tracking-domains", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      // Return available tracking domains for the advertiser
+      const domains = [
+        'track.platform.com',
+        'click.ads-system.com',
+        'go.traffic-hub.net',
+        'link.promo-leads.org'
+      ];
+      res.json(domains);
+    } catch (error) {
+      console.error("Get tracking domains error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Get partner's available offers with auto-generated links
   app.get("/api/partner/offers", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
