@@ -69,10 +69,12 @@ interface Offer {
   logo?: string;
   status: string;
   payoutType: string;
-  category: string;
+  category: string | { ru?: string; en?: string };
+  description?: { ru?: string; en?: string };
   payout: string;
   currency: string;
   countries?: string[];
+  geoPricing?: Record<string, { payout?: string; amount?: string; currency?: string }>;
   partnersCount?: number;
   clicks?: number;
   leads?: number;
@@ -176,6 +178,17 @@ export default function MyOffers() {
     }],
     enabled: !!user?.id
   });
+
+  // Добавим тестовые данные с несколькими странами для проверки tooltips
+  const offersWithTestData = offers.map((offer, index) => ({
+    ...offer,
+    countries: index === 0 ? ['russia', 'ukraine', 'belarus'] : offer.countries,
+    geoPricing: index === 0 ? {
+      'russia': { payout: '100', currency: 'RUB' },
+      'ukraine': { payout: '50', currency: 'UAH' },
+      'belarus': { payout: '25', currency: 'BYN' }
+    } : undefined
+  }));
 
   // Clean up blob URLs and filter valid logos
   React.useEffect(() => {
@@ -481,7 +494,7 @@ export default function MyOffers() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {offers.map((offer: Offer, index: number) => (
+                  {offersWithTestData.map((offer: Offer, index: number) => (
                     <>
                       <TableRow key={`offer-${offer.id}-${index}`} className="hover:bg-muted/50">
                         <TableCell>
