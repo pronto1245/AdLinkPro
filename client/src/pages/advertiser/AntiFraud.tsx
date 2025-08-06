@@ -328,7 +328,7 @@ export default function AntiFraud() {
   };
 
   // Фильтрация событий
-  const filteredEvents = (events || []).filter(event => {
+  const filteredEvents = Array.isArray(events) ? events.filter(event => {
     const matchesSearch = 
       event.partnerName.toLowerCase().includes(filters.search.toLowerCase()) ||
       event.offerName.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -341,7 +341,7 @@ export default function AntiFraud() {
     const matchesCountry = filters.country === 'all' || event.country === filters.country;
     
     return matchesSearch && matchesFraudType && matchesAction && matchesStatus && matchesCountry;
-  });
+  }) : [];
 
   if (!user) return <div>Загрузка...</div>;
 

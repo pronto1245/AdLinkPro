@@ -17,7 +17,6 @@ import SuperAdminOffersManagement from "@/pages/super-admin/offers-management";
 import SuperAdminOfferDetails from "@/pages/super-admin/offer-details";
 import SuperAdminFinances from "@/pages/super-admin/finances";
 import SuperAdminFraudAlerts from "@/pages/super-admin/fraud-alerts";
-import FraudDetectionPage from "@/pages/super-admin/fraud-detection";
 import PostbacksPage from "@/pages/super-admin/postbacks";
 import SuperAdminSystemSettings from "@/pages/super-admin/system-settings";
 import SuperAdminAuditLogs from "@/pages/super-admin/audit-logs";
@@ -146,16 +145,8 @@ function Router() {
           <SuperAdminFraudAlerts />
         </ProtectedRoute>
       </Route>
-      <Route path="/admin/fraud">
-        <ProtectedRoute allowedRoles={['super_admin']}>
-          <FraudDetectionPage />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/admin/fraud-detection">
-        <ProtectedRoute allowedRoles={['super_admin']}>
-          <FraudDetectionPage />
-        </ProtectedRoute>
-      </Route>
+
+
       <Route path="/super-admin/postbacks">
         <ProtectedRoute allowedRoles={['super_admin']}>
           <PostbacksPage />
