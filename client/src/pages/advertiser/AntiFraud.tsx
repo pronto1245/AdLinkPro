@@ -593,9 +593,9 @@ export default function AntiFraud() {
         {/* События */}
         <TabsContent value="events" className="space-y-6">
           {/* Фильтры */}
-          <Card className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-orange-200 dark:border-orange-700">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-orange-700 dark:text-orange-300">⚡ Фильтры событий</CardTitle>
+              <CardTitle>⚡ Фильтры событий</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -846,9 +846,9 @@ export default function AntiFraud() {
           ) : (
             <>
               {/* Основные настройки */}
-              <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-700">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="text-purple-700 dark:text-purple-300">⚙️ Основные настройки</CardTitle>
+                  <CardTitle>⚙️ Основные настройки</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
@@ -898,9 +898,9 @@ export default function AntiFraud() {
               </Card>
 
               {/* Детекция ботов */}
-              <Card className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-red-200 dark:border-red-700">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-300">
+                  <CardTitle className="flex items-center gap-2">
                     <Bot className="h-5 w-5" />
                     🤖 Детекция ботов
                   </CardTitle>
@@ -949,9 +949,9 @@ export default function AntiFraud() {
               </Card>
 
               {/* VPN/Proxy детекция */}
-              <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200 dark:border-blue-700">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                  <CardTitle className="flex items-center gap-2">
                     <Globe className="h-5 w-5" />
                     🌐 VPN/Proxy детекция
                   </CardTitle>
@@ -1000,9 +1000,9 @@ export default function AntiFraud() {
               </Card>
 
               {/* Клик-спам детекция */}
-              <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-yellow-200 dark:border-yellow-700">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+                  <CardTitle className="flex items-center gap-2">
                     <Zap className="h-5 w-5" />
                     ⚡ Детекция клик-спама
                   </CardTitle>
@@ -1044,9 +1044,9 @@ export default function AntiFraud() {
               </Card>
 
               {/* Уведомления */}
-              <Card className="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 border-green-200 dark:border-green-700">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                  <CardTitle className="flex items-center gap-2">
                     <Bell className="h-5 w-5" />
                     🔔 Уведомления
                   </CardTitle>
@@ -1087,15 +1087,16 @@ export default function AntiFraud() {
 
         {/* Отчеты */}
         <TabsContent value="reports" className="space-y-6">
-          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-emerald-200 dark:border-emerald-700">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-emerald-700 dark:text-emerald-300">📊 Генерация отчетов</CardTitle>
+              <CardTitle>📊 Генерация отчетов</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Button
                   onClick={() => exportData('pdf')}
-                  className="h-24 flex-col gap-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white shadow-lg transform transition-transform hover:scale-105"
+                  className="h-24 flex-col gap-2"
+                  variant="outline"
                   data-testid="button-export-pdf"
                 >
                   <Download className="h-6 w-6" />
@@ -1104,7 +1105,8 @@ export default function AntiFraud() {
 
                 <Button
                   onClick={() => exportData('csv')}
-                  className="h-24 flex-col gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg transform transition-transform hover:scale-105"
+                  className="h-24 flex-col gap-2"
+                  variant="outline"
                   data-testid="button-export-csv"
                 >
                   <Upload className="h-6 w-6" />
@@ -1113,7 +1115,8 @@ export default function AntiFraud() {
 
                 <Button
                   onClick={() => exportData('json')}
-                  className="h-24 flex-col gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-lg transform transition-transform hover:scale-105"
+                  className="h-24 flex-col gap-2"
+                  variant="outline"
                   data-testid="button-export-json"
                 >
                   <Download className="h-6 w-6" />
