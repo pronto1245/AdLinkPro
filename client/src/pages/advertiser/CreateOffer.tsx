@@ -35,6 +35,8 @@ interface OfferFormData {
     id: string;
     name: string;
     url: string;
+    geo?: string;
+    payout?: string;
     isDefault: boolean;
   }>;
   
@@ -84,7 +86,7 @@ const initialFormData: OfferFormData = {
   // Ссылки
   targetUrl: '',
   postbackUrl: '',
-  landingPages: [{ id: '1', name: 'Основная', url: '', isDefault: true }],
+  landingPages: [{ id: '1', name: 'Основная', url: '', geo: '', payout: '', isDefault: true }],
   
   // Выплаты
   payoutType: 'cpa',
@@ -294,6 +296,8 @@ export default function CreateOffer() {
       id: Date.now().toString(),
       name: `Лендинг ${formData.landingPages.length + 1}`,
       url: '',
+      geo: '',
+      payout: '',
       isDefault: false
     };
     setFormData(prev => ({
@@ -811,6 +815,18 @@ export default function CreateOffer() {
                                 }
                               }}
                               className="flex-1"
+                            />
+                            <Input
+                              placeholder="ГЕО"
+                              value={landing.geo || ''}
+                              onChange={(e) => updateLandingPage(landing.id, 'geo', e.target.value)}
+                              className="w-24"
+                            />
+                            <Input
+                              placeholder="Сумма выплаты"
+                              value={landing.payout || ''}
+                              onChange={(e) => updateLandingPage(landing.id, 'payout', e.target.value)}
+                              className="w-32"
                             />
                             <div className="flex items-center space-x-2">
                               <input
