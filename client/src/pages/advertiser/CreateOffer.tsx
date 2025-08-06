@@ -262,14 +262,7 @@ export default function CreateOffer() {
       return;
     }
 
-    if (!formData.description.ru && !formData.description.en) {
-      toast({
-        title: 'Добавьте описание',
-        description: 'Необходимо указать описание хотя бы на одном языке',
-        variant: 'destructive'
-      });
-      return;
-    }
+
 
     if (!formData.targetUrl) {
       toast({
@@ -549,7 +542,7 @@ export default function CreateOffer() {
 
 
                   <div>
-                    <Label>Описание оффера *</Label>
+                    <Label>Описание оффера</Label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                       <div>
                         <Label htmlFor="description-ru" className="text-sm text-muted-foreground">На русском</Label>
