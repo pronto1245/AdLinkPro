@@ -342,18 +342,7 @@ export default function AdvertiserDashboardNew() {
             </CardContent>
           </Card>
 
-          <Card data-testid="card-analytics" className="bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20 border-violet-200 dark:border-violet-700">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-violet-700 dark:text-violet-300">Аналитика</CardTitle>
-              <div className="p-3 bg-violet-500 rounded-xl shadow-lg">
-                <Activity className="h-6 w-6 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-violet-900 dark:text-violet-100">{((overview?.activeOffers || 0) * 100).toLocaleString()}</div>
-              <p className="text-xs text-violet-700 dark:text-violet-400">событий отслежено</p>
-            </CardContent>
-          </Card>
+
         </div>
 
         {/* Charts Section */}
