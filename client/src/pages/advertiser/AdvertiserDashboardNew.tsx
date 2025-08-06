@@ -1,0 +1,536 @@
+import { useState } from "react";
+import { useAuth } from "@/contexts/auth-context";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Link } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import RoleBasedLayout from "@/components/layout/RoleBasedLayout";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { 
+  Target, 
+  Users, 
+  BarChart3, 
+  Settings, 
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  User,
+  Briefcase,
+  Wallet,
+  Send,
+  Building2,
+  Bell,
+  Plus,
+  ArrowRight,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Activity,
+  Shield,
+  Eye,
+  FileText,
+  Download,
+  Upload,
+  RefreshCw,
+  Calendar,
+  Filter,
+  AlertTriangle,
+  Copy,
+  ExternalLink
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+interface DashboardData {
+  overview: {
+    totalOffers: number;
+    activeOffers: number;
+    pendingOffers: number;
+    rejectedOffers: number;
+    totalBudget: number;
+    totalSpent: number;
+    totalRevenue: number;
+    partnersCount: number;
+    avgCR: number;
+    epc: number;
+    postbacksSent: number;
+    postbacksReceived: number;
+    postbackErrors: number;
+    fraudActivity: number;
+  };
+  chartData: {
+    traffic: Array<{ date: string; clicks: number; uniqueClicks: number }>;
+    conversions: Array<{ date: string; leads: number; registrations: number; deposits: number }>;
+    spending: Array<{ date: string; spent: number; revenue: number }>;
+    postbacks: Array<{ date: string; sent: number; successful: number; failed: number }>;
+    fraud: Array<{ date: string; detected: number; blocked: number }>;
+  };
+  topOffers: Array<{
+    id: string;
+    name: string;
+    status: string;
+    clicks: number;
+    cr: number;
+    conversions: number;
+    spent: number;
+    postbacks: number;
+    fraudRate: number;
+  }>;
+  notifications: Array<{
+    id: string;
+    type: string;
+    title: string;
+    message: string;
+    createdAt: string;
+    isRead: boolean;
+  }>;
+  offerStatus: {
+    pending: number;
+    active: number;
+    hidden: number;
+    archived: number;
+  };
+}
+
+export default function AdvertiserDashboardNew() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  
+  // State for filters
+  const [dateRange, setDateRange] = useState({
+    from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    to: new Date()
+  });
+  const [filters, setFilters] = useState({
+    geo: '',
+    device: '',
+    offerId: ''
+  });
+
+  // Fetch dashboard data
+  const { data: dashboard, isLoading, refetch } = useQuery({
+    queryKey: ['/api/advertiser/dashboard', dateRange, filters],
+    enabled: !!user
+  }) as { data: DashboardData | undefined; isLoading: boolean; refetch: () => void };
+
+  // Export data mutation
+  const exportMutation = useMutation({
+    mutationFn: () => apiRequest('/api/advertiser/export'),
+    onSuccess: () => {
+      alert('Данные экспортированы успешно');
+    }
+  });
+
+  if (!user) {
+    return <div>Загрузка...</div>;
+  }
+
+  if (isLoading) {
+    return (
+      <RoleBasedLayout>
+        <div className="container mx-auto p-6">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </RoleBasedLayout>
+    );
+  }
+
+  const overview = dashboard?.overview;
+  const chartData = dashboard?.chartData;
+  const topOffers = dashboard?.topOffers || [];
+  const notifications = dashboard?.notifications || [];
+
+  return (
+    <RoleBasedLayout>
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Дашборд рекламодателя</h1>
+            <p className="text-muted-foreground">Обзор эффективности ваших офферов и партнёров</p>
+          </div>
+          
+          {/* Filters and Actions */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
+              <Input
+                type="date"
+                value={dateRange.from.toISOString().split('T')[0]}
+                onChange={(e) => setDateRange(prev => ({ ...prev, from: new Date(e.target.value) }))}
+                className="w-auto"
+                data-testid="input-date-from"
+              />
+              <span className="text-muted-foreground">-</span>
+              <Input
+                type="date"
+                value={dateRange.to.toISOString().split('T')[0]}
+                onChange={(e) => setDateRange(prev => ({ ...prev, to: new Date(e.target.value) }))}
+                className="w-auto"
+                data-testid="input-date-to"
+              />
+            </div>
+            
+            <Button variant="outline" size="icon" onClick={() => refetch()} data-testid="button-refresh" title="Обновить данные">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            
+            <Button variant="outline" onClick={() => exportMutation.mutate()} data-testid="button-export" title="Экспорт статистики">
+              <Download className="h-4 w-4 mr-2" />
+              Экспорт
+            </Button>
+            
+            <Link to="/advertiser/offers/new">
+              <Button data-testid="button-create-offer" title="Создать новый оффер">
+                <Plus className="h-4 w-4 mr-2" />
+                Новый оффер
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <Card data-testid="card-offers">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Офферы</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{overview?.totalOffers || 0}</div>
+              <div className="flex gap-2 text-xs text-muted-foreground mt-2">
+                <span className="text-green-600">Активных: {overview?.activeOffers || 0}</span>
+                <span className="text-yellow-600">На модерации: {overview?.pendingOffers || 0}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-budget">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Бюджет / Расход</CardTitle>
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${overview?.totalSpent || 0}</div>
+              <p className="text-xs text-muted-foreground">из ${overview?.totalBudget || 0}</p>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-revenue">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Доход платформы</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${overview?.totalRevenue || 0}</div>
+              <div className="flex items-center text-xs text-green-600">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                +12% за период
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-partners">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Партнёры</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{overview?.partnersCount || 0}</div>
+              <p className="text-xs text-muted-foreground">работают с офферами</p>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-cr">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">CR / EPC</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{overview?.avgCR?.toFixed(2) || 0}%</div>
+              <p className="text-xs text-muted-foreground">EPC: ${overview?.epc?.toFixed(2) || 0}</p>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-postbacks">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Постбеки</CardTitle>
+              <Send className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{overview?.postbacksSent || 0}</div>
+              <div className="flex gap-2 text-xs">
+                <span className="text-green-600">Получено: {overview?.postbacksReceived || 0}</span>
+                <span className="text-red-600">Ошибок: {overview?.postbackErrors || 0}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-fraud">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Фрод-активность</CardTitle>
+              <Shield className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">{overview?.fraudActivity || 0}</div>
+              <p className="text-xs text-muted-foreground">случаев за период</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card data-testid="chart-traffic">
+            <CardHeader>
+              <CardTitle>Трафик по времени</CardTitle>
+              <CardDescription>Клики и уникальные посетители</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData?.traffic || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="clicks" stroke="#3b82f6" name="Клики" />
+                  <Line type="monotone" dataKey="uniqueClicks" stroke="#10b981" name="Уники" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="chart-conversions">
+            <CardHeader>
+              <CardTitle>Конверсии</CardTitle>
+              <CardDescription>Лиды, регистрации и депозиты</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={chartData?.conversions || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="leads" stackId="1" stroke="#3b82f6" fill="#3b82f6" name="Лиды" />
+                  <Area type="monotone" dataKey="registrations" stackId="1" stroke="#10b981" fill="#10b981" name="Регистрации" />
+                  <Area type="monotone" dataKey="deposits" stackId="1" stroke="#f59e0b" fill="#f59e0b" name="Депозиты" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="chart-spending">
+            <CardHeader>
+              <CardTitle>Расходы / Выплаты</CardTitle>
+              <CardDescription>Финансовая динамика</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData?.spending || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="spent" fill="#ef4444" name="Расходы" />
+                  <Bar dataKey="revenue" fill="#10b981" name="Доходы" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="chart-postbacks">
+            <CardHeader>
+              <CardTitle>Активность постбеков</CardTitle>
+              <CardDescription>Отправленные и обработанные</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData?.postbacks || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="sent" stroke="#3b82f6" name="Отправлено" />
+                  <Line type="monotone" dataKey="successful" stroke="#10b981" name="Успешно" />
+                  <Line type="monotone" dataKey="failed" stroke="#ef4444" name="Ошибки" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tables and Status */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Top Offers Table */}
+          <Card className="lg:col-span-2" data-testid="table-top-offers">
+            <CardHeader>
+              <CardTitle>Топ-офферы</CardTitle>
+              <CardDescription>Лучшие офферы по эффективности</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Оффер</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead>Клики</TableHead>
+                    <TableHead>CR</TableHead>
+                    <TableHead>Конверсии</TableHead>
+                    <TableHead>Расход</TableHead>
+                    <TableHead>Фрод %</TableHead>
+                    <TableHead>Действия</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {topOffers.map((offer: any) => (
+                    <TableRow key={offer.id}>
+                      <TableCell className="font-medium">{offer.name}</TableCell>
+                      <TableCell>
+                        <Badge variant={offer.status === 'active' ? 'default' : 'secondary'}>
+                          {offer.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{offer.clicks}</TableCell>
+                      <TableCell>{offer.cr}%</TableCell>
+                      <TableCell>{offer.conversions}</TableCell>
+                      <TableCell>${offer.spent}</TableCell>
+                      <TableCell className={cn(
+                        offer.fraudRate > 5 ? 'text-red-600' : 'text-green-600'
+                      )}>
+                        {offer.fraudRate}%
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" data-testid={`button-view-${offer.id}`} title="Просмотр">
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="sm" data-testid={`button-edit-${offer.id}`} title="Редактировать">
+                            <Settings className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Offer Status and Notifications */}
+          <div className="space-y-6">
+            {/* Offer Status */}
+            <Card data-testid="card-offer-status">
+              <CardHeader>
+                <CardTitle>Статус офферов</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">На модерации</span>
+                  <Badge variant="secondary">{dashboard?.offerStatus.pending || 0}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Активные</span>
+                  <Badge variant="default">{dashboard?.offerStatus.active || 0}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Скрытые</span>
+                  <Badge variant="outline">{dashboard?.offerStatus.hidden || 0}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Архив</span>
+                  <Badge variant="secondary">{dashboard?.offerStatus.archived || 0}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Notifications */}
+            <Card data-testid="card-notifications">
+              <CardHeader>
+                <CardTitle>Уведомления</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {notifications.slice(0, 5).map((notification: any) => (
+                  <div key={notification.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="mt-1">
+                      {notification.type === 'partner_request' && <Users className="h-4 w-4 text-blue-600" />}
+                      {notification.type === 'postback_error' && <AlertTriangle className="h-4 w-4 text-red-600" />}
+                      {notification.type === 'offer_pending' && <Clock className="h-4 w-4 text-yellow-600" />}
+                      {notification.type === 'fraud_alert' && <Shield className="h-4 w-4 text-red-600" />}
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium">{notification.title}</p>
+                      <p className="text-xs text-muted-foreground">{notification.message}</p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <Card data-testid="card-quick-actions">
+          <CardHeader>
+            <CardTitle>Быстрые действия</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <Link to="/advertiser/offers/new">
+                <Button variant="outline" className="w-full" data-testid="button-quick-new-offer">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Новый оффер
+                </Button>
+              </Link>
+              
+              <Link to="/advertiser/finances">
+                <Button variant="outline" className="w-full" data-testid="button-quick-finances">
+                  <FileText className="h-4 w-4 mr-2" />
+                  История расходов
+                </Button>
+              </Link>
+              
+              <Link to="/advertiser/postbacks">
+                <Button variant="outline" className="w-full" data-testid="button-quick-postbacks">
+                  <Send className="h-4 w-4 mr-2" />
+                  Постбеки
+                </Button>
+              </Link>
+              
+              <Button variant="outline" className="w-full" onClick={() => exportMutation.mutate()} data-testid="button-quick-export">
+                <Download className="h-4 w-4 mr-2" />
+                Экспорт
+              </Button>
+              
+              <Link to="/advertiser/offers">
+                <Button variant="outline" className="w-full" data-testid="button-quick-offers">
+                  <Target className="h-4 w-4 mr-2" />
+                  Офферы
+                </Button>
+              </Link>
+              
+              <Link to="/advertiser/analytics">
+                <Button variant="outline" className="w-full" data-testid="button-quick-analytics">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Аналитика
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </RoleBasedLayout>
+  );
+}

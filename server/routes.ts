@@ -297,6 +297,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advertiser dashboard
+  app.get("/api/advertiser/dashboard", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const filters = {
+        dateFrom: req.query.dateFrom as string,
+        dateTo: req.query.dateTo as string,
+        geo: req.query.geo as string,
+        device: req.query.device as string,
+        offerId: req.query.offerId as string
+      };
+      
+      const dashboard = await storage.getAdvertiserDashboard(authUser.id, filters);
+      res.json(dashboard);
+    } catch (error) {
+      console.error("Advertiser dashboard error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // User management with hierarchy
   app.get("/api/users", authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
     try {
