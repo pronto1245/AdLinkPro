@@ -750,12 +750,12 @@ export default function CreateOffer() {
                   <CardTitle>Ссылки и домены</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-4">
                     <div>
                       <Label htmlFor="targetUrl">Целевая ссылка оффера *</Label>
                       <div className="space-y-2 mt-2">
                         {formData.landingPages.map((landing, index) => (
-                          <div key={landing.id} className="grid grid-cols-12 gap-3 items-start p-4 border rounded-lg">
+                          <div key={landing.id} className="grid grid-cols-12 gap-3 items-center p-4 border rounded-lg">
                             <div className="col-span-2">
                               <Input
                                 placeholder="Название"
@@ -764,7 +764,7 @@ export default function CreateOffer() {
                                 className="w-full"
                               />
                             </div>
-                            <div className="col-span-4">
+                            <div className="col-span-5">
                               <Input
                                 placeholder="URL целевой страницы"
                                 value={landing.url}
@@ -778,100 +778,87 @@ export default function CreateOffer() {
                               />
                             </div>
                             <div className="col-span-2">
-                              <div className="flex flex-col space-y-1">
-                                <span className="text-xs text-muted-foreground">Разные ГЕО для URL</span>
-                                <div className="flex items-center space-x-1">
-                                  <input
-                                    type="checkbox"
-                                    checked={formData.hasGlobalGeoSetting || false}
-                                    onChange={(e) => setFormData(prev => ({ 
-                                      ...prev, 
-                                      hasGlobalGeoSetting: e.target.checked,
-                                      landingPages: prev.landingPages.map(lp => ({
-                                        ...lp,
-                                        hasCustomGeo: e.target.checked
-                                      }))
-                                    }))}
-                                    className="rounded"
-                                  />
-                                  <Input
-                                    placeholder="ГЕО"
-                                    value={formData.hasGlobalGeoSetting ? (landing.geo || '') : formData.globalGeo || ''}
-                                    onChange={(e) => {
-                                      if (formData.hasGlobalGeoSetting) {
-                                        updateLandingPage(landing.id, 'geo', e.target.value);
-                                      } else {
-                                        setFormData(prev => ({ 
-                                          ...prev, 
-                                          globalGeo: e.target.value,
-                                          landingPages: prev.landingPages.map(lp => ({
-                                            ...lp,
-                                            geo: e.target.value
-                                          }))
-                                        }));
-                                      }
-                                    }}
-                                    className="w-16"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-span-2">
-                              <div className="flex flex-col space-y-1">
-                                <span className="text-xs text-muted-foreground">Разные выплаты для URL</span>
-                                <div className="flex items-center space-x-1">
-                                  <input
-                                    type="checkbox"
-                                    checked={formData.hasGlobalPayoutSetting || false}
-                                    onChange={(e) => setFormData(prev => ({ 
-                                      ...prev, 
-                                      hasGlobalPayoutSetting: e.target.checked,
-                                      landingPages: prev.landingPages.map(lp => ({
-                                        ...lp,
-                                        hasCustomPayout: e.target.checked
-                                      }))
-                                    }))}
-                                    className="rounded"
-                                  />
-                                  <Input
-                                    placeholder="Сумма"
-                                    value={formData.hasGlobalPayoutSetting ? (landing.payout || '') : formData.globalPayout || ''}
-                                    onChange={(e) => {
-                                      if (formData.hasGlobalPayoutSetting) {
-                                        updateLandingPage(landing.id, 'payout', e.target.value);
-                                      } else {
-                                        setFormData(prev => ({ 
-                                          ...prev, 
-                                          globalPayout: e.target.value,
-                                          landingPages: prev.landingPages.map(lp => ({
-                                            ...lp,
-                                            payout: e.target.value
-                                          }))
-                                        }));
-                                      }
-                                    }}
-                                    className="w-20"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-span-1 flex items-center justify-center">
-                              <div className="flex flex-col items-center space-y-1">
-                                <span className="text-xs text-muted-foreground">По умолчанию</span>
+                              <div className="flex items-center space-x-1">
                                 <input
                                   type="checkbox"
-                                  checked={landing.isDefault}
-                                  onChange={(e) => updateLandingPage(landing.id, 'isDefault', e.target.checked)}
+                                  checked={formData.hasGlobalGeoSetting || false}
+                                  onChange={(e) => setFormData(prev => ({ 
+                                    ...prev, 
+                                    hasGlobalGeoSetting: e.target.checked,
+                                    landingPages: prev.landingPages.map(lp => ({
+                                      ...lp,
+                                      hasCustomGeo: e.target.checked
+                                    }))
+                                  }))}
                                   className="rounded"
+                                  title="Разные ГЕО для URL"
+                                />
+                                <Input
+                                  placeholder="ГЕО"
+                                  value={formData.hasGlobalGeoSetting ? (landing.geo || '') : formData.globalGeo || ''}
+                                  onChange={(e) => {
+                                    if (formData.hasGlobalGeoSetting) {
+                                      updateLandingPage(landing.id, 'geo', e.target.value);
+                                    } else {
+                                      setFormData(prev => ({ 
+                                        ...prev, 
+                                        globalGeo: e.target.value,
+                                        landingPages: prev.landingPages.map(lp => ({
+                                          ...lp,
+                                          geo: e.target.value
+                                        }))
+                                      }));
+                                    }
+                                  }}
+                                  className="w-full"
                                 />
                               </div>
                             </div>
-                            <div className="col-span-1 flex items-center justify-center">
-                              {formData.landingPages.length > 1 && (
-                                <Button type="button" variant="outline" size="sm" onClick={() => removeLandingPage(landing.id)}>
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              )}
+                            <div className="col-span-2">
+                              <div className="flex items-center space-x-1">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.hasGlobalPayoutSetting || false}
+                                  onChange={(e) => setFormData(prev => ({ 
+                                    ...prev, 
+                                    hasGlobalPayoutSetting: e.target.checked,
+                                    landingPages: prev.landingPages.map(lp => ({
+                                      ...lp,
+                                      hasCustomPayout: e.target.checked
+                                    }))
+                                  }))}
+                                  className="rounded"
+                                  title="Разные выплаты для URL"
+                                />
+                                <Input
+                                  placeholder="Сумма"
+                                  value={formData.hasGlobalPayoutSetting ? (landing.payout || '') : formData.globalPayout || ''}
+                                  onChange={(e) => {
+                                    if (formData.hasGlobalPayoutSetting) {
+                                      updateLandingPage(landing.id, 'payout', e.target.value);
+                                    } else {
+                                      setFormData(prev => ({ 
+                                        ...prev, 
+                                        globalPayout: e.target.value,
+                                        landingPages: prev.landingPages.map(lp => ({
+                                          ...lp,
+                                          payout: e.target.value
+                                        }))
+                                      }));
+                                    }
+                                  }}
+                                  className="w-full"
+                                />
+                              </div>
+                            </div>
+                            <div className="col-span-1 flex justify-center">
+                              <input
+                                type="checkbox"
+                                checked={landing.isDefault}
+                                onChange={(e) => updateLandingPage(landing.id, 'isDefault', e.target.checked)}
+                                className="rounded"
+                                title="По умолчанию"
+                              />
                             </div>
                           </div>
                         ))}
@@ -883,6 +870,14 @@ export default function CreateOffer() {
                       <p className="text-sm text-muted-foreground mt-1">
                         Целевые ссылки оффера, куда будут направляться пользователи
                       </p>
+                    </div>
+
+                    <div className="grid grid-cols-12 gap-3 text-xs font-medium text-muted-foreground px-4">
+                      <div className="col-span-2">Название</div>
+                      <div className="col-span-5">URL целевой страницы</div>
+                      <div className="col-span-2">Разные ГЕО для URL</div>
+                      <div className="col-span-2">Разные выплаты для URL</div>
+                      <div className="col-span-1">По умолчанию</div>
                     </div>
 
 
