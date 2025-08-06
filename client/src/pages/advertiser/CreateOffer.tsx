@@ -31,6 +31,10 @@ interface OfferFormData {
   // Ссылки
   targetUrl: string;
   postbackUrl: string;
+  hasGlobalGeoSetting: boolean;
+  hasGlobalPayoutSetting: boolean;
+  globalGeo: string;
+  globalPayout: string;
   landingPages: Array<{
     id: string;
     name: string;
@@ -88,6 +92,10 @@ const initialFormData: OfferFormData = {
   // Ссылки
   targetUrl: '',
   postbackUrl: '',
+  hasGlobalGeoSetting: false,
+  hasGlobalPayoutSetting: false,
+  globalGeo: '',
+  globalPayout: '',
   landingPages: [{ id: '1', name: 'Основная', url: '', geo: '', payout: '', hasCustomGeo: false, hasCustomPayout: false, isDefault: true }],
   
   // Выплаты
@@ -298,10 +306,10 @@ export default function CreateOffer() {
       id: Date.now().toString(),
       name: `Лендинг ${formData.landingPages.length + 1}`,
       url: '',
-      geo: '',
-      payout: '',
-      hasCustomGeo: false,
-      hasCustomPayout: false,
+      geo: formData.hasGlobalGeoSetting ? '' : formData.globalGeo,
+      payout: formData.hasGlobalPayoutSetting ? '' : formData.globalPayout,
+      hasCustomGeo: formData.hasGlobalGeoSetting,
+      hasCustomPayout: formData.hasGlobalPayoutSetting,
       isDefault: false
     };
     setFormData(prev => ({
@@ -775,16 +783,35 @@ export default function CreateOffer() {
                                 <div className="flex items-center space-x-1">
                                   <input
                                     type="checkbox"
-                                    checked={landing.hasCustomGeo || false}
-                                    onChange={(e) => updateLandingPage(landing.id, 'hasCustomGeo', e.target.checked)}
+                                    checked={formData.hasGlobalGeoSetting || false}
+                                    onChange={(e) => setFormData(prev => ({ 
+                                      ...prev, 
+                                      hasGlobalGeoSetting: e.target.checked,
+                                      landingPages: prev.landingPages.map(lp => ({
+                                        ...lp,
+                                        hasCustomGeo: e.target.checked
+                                      }))
+                                    }))}
                                     className="rounded"
                                   />
                                   <Input
                                     placeholder="ГЕО"
-                                    value={landing.geo || ''}
-                                    onChange={(e) => updateLandingPage(landing.id, 'geo', e.target.value)}
+                                    value={formData.hasGlobalGeoSetting ? (landing.geo || '') : formData.globalGeo || ''}
+                                    onChange={(e) => {
+                                      if (formData.hasGlobalGeoSetting) {
+                                        updateLandingPage(landing.id, 'geo', e.target.value);
+                                      } else {
+                                        setFormData(prev => ({ 
+                                          ...prev, 
+                                          globalGeo: e.target.value,
+                                          landingPages: prev.landingPages.map(lp => ({
+                                            ...lp,
+                                            geo: e.target.value
+                                          }))
+                                        }));
+                                      }
+                                    }}
                                     className="w-16"
-                                    disabled={!landing.hasCustomGeo}
                                   />
                                 </div>
                               </div>
@@ -795,16 +822,35 @@ export default function CreateOffer() {
                                 <div className="flex items-center space-x-1">
                                   <input
                                     type="checkbox"
-                                    checked={landing.hasCustomPayout || false}
-                                    onChange={(e) => updateLandingPage(landing.id, 'hasCustomPayout', e.target.checked)}
+                                    checked={formData.hasGlobalPayoutSetting || false}
+                                    onChange={(e) => setFormData(prev => ({ 
+                                      ...prev, 
+                                      hasGlobalPayoutSetting: e.target.checked,
+                                      landingPages: prev.landingPages.map(lp => ({
+                                        ...lp,
+                                        hasCustomPayout: e.target.checked
+                                      }))
+                                    }))}
                                     className="rounded"
                                   />
                                   <Input
                                     placeholder="Сумма"
-                                    value={landing.payout || ''}
-                                    onChange={(e) => updateLandingPage(landing.id, 'payout', e.target.value)}
+                                    value={formData.hasGlobalPayoutSetting ? (landing.payout || '') : formData.globalPayout || ''}
+                                    onChange={(e) => {
+                                      if (formData.hasGlobalPayoutSetting) {
+                                        updateLandingPage(landing.id, 'payout', e.target.value);
+                                      } else {
+                                        setFormData(prev => ({ 
+                                          ...prev, 
+                                          globalPayout: e.target.value,
+                                          landingPages: prev.landingPages.map(lp => ({
+                                            ...lp,
+                                            payout: e.target.value
+                                          }))
+                                        }));
+                                      }
+                                    }}
                                     className="w-20"
-                                    disabled={!landing.hasCustomPayout}
                                   />
                                 </div>
                               </div>
