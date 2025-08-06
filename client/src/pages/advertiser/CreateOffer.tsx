@@ -1001,16 +1001,6 @@ export default function CreateOffer() {
                   <CardTitle>Условия работы</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="kycRequired"
-                      checked={formData.kycRequired}
-                      onChange={(e) => setFormData(prev => ({ ...prev, kycRequired: e.target.checked }))}
-                      className="rounded"
-                    />
-                    <Label htmlFor="kycRequired">Требуется верификация KYC</Label>
-                  </div>
 
                   <div>
                     <Label>Разрешенные источники трафика</Label>
@@ -1090,6 +1080,17 @@ export default function CreateOffer() {
                       </div>
                     </div>
                   )}
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="kycRequired"
+                      checked={formData.kycRequired}
+                      onChange={(e) => setFormData(prev => ({ ...prev, kycRequired: e.target.checked }))}
+                      className="rounded"
+                    />
+                    <Label htmlFor="kycRequired">Требуется верификация KYC</Label>
+                  </div>
 
                   <div>
                     <Label htmlFor="partnerApprovalType">Тип подтверждения партнеров</Label>
