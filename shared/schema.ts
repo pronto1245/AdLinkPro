@@ -463,6 +463,27 @@ export const kycDocuments = pgTable("kyc_documents", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Received offers from suppliers (for advertisers)
+export const receivedOffers = pgTable("received_offers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  name: text("name").notNull(),
+  category: text("category").notNull(),
+  geo: jsonb("geo").notNull(), // Array of country codes/names
+  devices: jsonb("devices").notNull(), // Array of device types
+  payoutType: text("payout_type").notNull(), // 'cpa', 'cpl', 'revshare'
+  supplierRate: decimal("supplier_rate", { precision: 10, scale: 2 }).notNull(), // Cost from supplier
+  partnerRate: decimal("partner_rate", { precision: 10, scale: 2 }).notNull(), // Rate for partners
+  targetUrl: text("target_url").notNull(), // Supplier's landing page
+  postbackUrl: text("postback_url").notNull(), // Where to send conversions
+  conditions: text("conditions"), // Terms and restrictions
+  supplierSource: text("supplier_source"), // Source/network name
+  status: text("status").default('active'), // 'active', 'paused', 'draft'
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Partner ratings and achievements
 export const partnerRatings = pgTable("partner_ratings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -1096,6 +1117,12 @@ export const insertOfferSchema = createInsertSchema(offers).omit({
   updatedAt: true,
 });
 
+export const insertReceivedOfferSchema = createInsertSchema(receivedOffers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Create offer schema for frontend (without required backend fields)
 export const createOfferFrontendSchema = z.object({
   name: z.string().min(1),
@@ -1292,6 +1319,8 @@ export type InsertPostbackLog = z.infer<typeof insertPostbackLogSchema>;
 export type PostbackLog = typeof postbackLogs.$inferSelect;
 export type InsertTrackingClick = z.infer<typeof insertTrackingClickSchema>;
 export type TrackingClick = typeof trackingClicks.$inferSelect;
+export type InsertReceivedOffer = z.infer<typeof insertReceivedOfferSchema>;
+export type ReceivedOffer = typeof receivedOffers.$inferSelect;
 
 export const insertCustomRoleSchema = createInsertSchema(customRoles).omit({
   id: true,

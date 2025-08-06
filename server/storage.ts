@@ -2,7 +2,7 @@ import {
   users, offers, partnerOffers, trackingLinks, trackingClicks, statistics, transactions, 
   postbacks, postbackLogs, postbackTemplates, tickets, fraudAlerts, customRoles, userRoleAssignments,
   cryptoWallets, cryptoTransactions, fraudReports, fraudRules, 
-  deviceTracking, ipAnalysis, fraudBlocks,
+  deviceTracking, ipAnalysis, fraudBlocks, receivedOffers,
   type User, type InsertUser, type Offer, type InsertOffer,
   type PartnerOffer, type InsertPartnerOffer, type TrackingLink, type InsertTrackingLink,
   type Transaction, type InsertTransaction, type Postback, type InsertPostback,
@@ -10,7 +10,7 @@ import {
   type CryptoWallet, type InsertCryptoWallet, type CryptoTransaction, type InsertCryptoTransaction,
   type FraudReport, type InsertFraudReport, type FraudRule, type InsertFraudRule,
   type DeviceTracking, type InsertDeviceTracking, type IpAnalysis, type InsertIpAnalysis,
-  type FraudBlock, type InsertFraudBlock
+  type FraudBlock, type InsertFraudBlock, type ReceivedOffer, type InsertReceivedOffer
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lt, lte, count, sum, sql, isNotNull, like, ilike, or, inArray, ne } from "drizzle-orm";
@@ -60,6 +60,12 @@ export interface IStorage {
   createOffer(offer: InsertOffer): Promise<Offer>;
   updateOffer(id: string, data: Partial<InsertOffer>): Promise<Offer>;
   deleteOffer(id: string): Promise<void>;
+  
+  // Received offers management
+  getReceivedOffers(advertiserId: string): Promise<ReceivedOffer[]>;
+  createReceivedOffer(receivedOffer: InsertReceivedOffer): Promise<ReceivedOffer>;
+  updateReceivedOffer(id: string, data: Partial<InsertReceivedOffer>): Promise<ReceivedOffer>;
+  deleteReceivedOffer(id: string): Promise<void>;
   
   // Partner offer management
   getPartnerOffers(partnerId?: string, offerId?: string): Promise<PartnerOffer[]>;
@@ -408,6 +414,45 @@ export class DatabaseStorage implements IStorage {
       .where(eq(offers.id, id))
       .returning();
     return offer;
+  }
+
+  async deleteOffer(id: string): Promise<void> {
+    await db.delete(offers).where(eq(offers.id, id));
+  }
+
+  // Received offers management
+  async getReceivedOffers(advertiserId: string): Promise<ReceivedOffer[]> {
+    return await db.select().from(receivedOffers).where(eq(receivedOffers.advertiserId, advertiserId));
+  }
+
+  async createReceivedOffer(insertReceivedOffer: InsertReceivedOffer): Promise<ReceivedOffer> {
+    const [receivedOffer] = await db
+      .insert(receivedOffers)
+      .values({
+        ...insertReceivedOffer,
+        id: insertReceivedOffer.id || randomUUID(),
+        createdAt: insertReceivedOffer.createdAt || new Date(),
+        updatedAt: insertReceivedOffer.updatedAt || new Date()
+      })
+      .returning();
+    return receivedOffer;
+  }
+
+  async updateReceivedOffer(id: string, data: Partial<InsertReceivedOffer>): Promise<ReceivedOffer> {
+    const updateData = { ...data };
+    delete updateData.createdAt;
+    delete updateData.updatedAt;
+    
+    const [receivedOffer] = await db
+      .update(receivedOffers)
+      .set(updateData)
+      .where(eq(receivedOffers.id, id))
+      .returning();
+    return receivedOffer;
+  }
+
+  async deleteReceivedOffer(id: string): Promise<void> {
+    await db.delete(receivedOffers).where(eq(receivedOffers.id, id));
   }
 
   async deleteOffer(id: string): Promise<void> {

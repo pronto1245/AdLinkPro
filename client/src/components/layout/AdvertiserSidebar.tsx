@@ -9,7 +9,8 @@ import {
   Home,
   Building2,
   Shield,
-  FileText
+  FileText,
+  Download
 } from 'lucide-react';
 
 const sidebarItems = [
@@ -24,6 +25,12 @@ const sidebarItems = [
     href: '/advertiser/offers',
     icon: Target,
     description: 'Управление офферами'
+  },
+  {
+    title: 'Полученные офферы',
+    href: '/advertiser/received-offers',
+    icon: Download,
+    description: 'Офферы от поставщиков'
   },
   {
     title: 'Партнёры',

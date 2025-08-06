@@ -5,7 +5,7 @@ import { ObjectStorageService } from "./objectStorage";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { 
-  insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, 
+  insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, insertReceivedOfferSchema,
   type User, users, offers, statistics, fraudAlerts, tickets, postbacks, postbackLogs, trackingClicks,
   transactions, fraudReports, fraudBlocks
 } from "@shared/schema";
@@ -482,6 +482,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       console.error("Get offer statistics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Received offers endpoints
+  app.get("/api/advertiser/received-offers", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const receivedOffers = await storage.getReceivedOffers(authUser.id);
+      res.json(receivedOffers);
+    } catch (error) {
+      console.error("Get received offers error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/advertiser/received-offers", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      
+      // Validate request body
+      const validatedData = insertReceivedOfferSchema.parse(req.body);
+      
+      // Ensure the received offer belongs to the authenticated advertiser
+      const receivedOfferData = {
+        ...validatedData,
+        advertiserId: authUser.id
+      };
+      
+      const receivedOffer = await storage.createReceivedOffer(receivedOfferData);
+      res.status(201).json(receivedOffer);
+    } catch (error) {
+      console.error("Create received offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/advertiser/received-offers/:id", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const receivedOfferId = req.params.id;
+      
+      // Verify received offer ownership
+      const existingReceivedOffer = await storage.getReceivedOffers(authUser.id);
+      const receivedOffer = existingReceivedOffer.find(ro => ro.id === receivedOfferId);
+      if (!receivedOffer) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const updatedReceivedOffer = await storage.updateReceivedOffer(receivedOfferId, req.body);
+      res.json(updatedReceivedOffer);
+    } catch (error) {
+      console.error("Update received offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/advertiser/received-offers/:id", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const receivedOfferId = req.params.id;
+      
+      // Verify received offer ownership
+      const existingReceivedOffers = await storage.getReceivedOffers(authUser.id);
+      const receivedOffer = existingReceivedOffers.find(ro => ro.id === receivedOfferId);
+      if (!receivedOffer) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      await storage.deleteReceivedOffer(receivedOfferId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Delete received offer error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
