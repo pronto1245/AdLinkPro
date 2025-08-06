@@ -681,26 +681,6 @@ export default function CreateOffer() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label>Разрешенные страны</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-2">
-                      {countries.map(country => (
-                        <div key={country.code} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={`geo-${country.code}`}
-                            checked={formData.geoTargeting.includes(country.code)}
-                            onChange={() => toggleGeoTarget(country.code)}
-                            className="rounded"
-                          />
-                          <Label htmlFor={`geo-${country.code}`} className="text-sm">{country.name}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
                     <Label>Устройства</Label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
                       {deviceTypes.map(device => (
