@@ -429,10 +429,18 @@ export default function MyOffers() {
                               </div>
                               <div className="text-sm text-muted-foreground">
                                 {offer.category && (
-                                  <span className="capitalize">{offer.category}</span>
+                                  <span className="capitalize">
+                                    {typeof offer.category === 'string' ? offer.category : 
+                                     typeof offer.category === 'object' ? (offer.category.ru || offer.category.en || 'Категория') : 
+                                     'Категория'}
+                                  </span>
                                 )}
                                 {offer.description && (
-                                  <span className="ml-2 text-xs opacity-70 truncate max-w-xs">• {offer.description}</span>
+                                  <span className="ml-2 text-xs opacity-70 truncate max-w-xs">
+                                    • {typeof offer.description === 'string' ? offer.description : 
+                                        typeof offer.description === 'object' ? (offer.description.ru || offer.description.en || '') : 
+                                        ''}
+                                  </span>
                                 )}
                               </div>
                             </div>
@@ -452,7 +460,11 @@ export default function MyOffers() {
                         </TableCell>
                         
                         <TableCell>
-                          <span className="capitalize">{offer.category}</span>
+                          <span className="capitalize">
+                            {typeof offer.category === 'string' ? offer.category : 
+                             typeof offer.category === 'object' ? (offer.category.ru || offer.category.en || 'Категория') : 
+                             'Категория'}
+                          </span>
                         </TableCell>
                         
                         <TableCell className="text-right">
