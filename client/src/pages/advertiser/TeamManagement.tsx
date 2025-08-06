@@ -444,11 +444,11 @@ export default function TeamManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Заголовок */}
-      <div className="flex justify-between items-center">
+      {/* Заголовок с градиентом */}
+      <div className="flex justify-between items-center p-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl border border-purple-200 dark:border-purple-700">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Командный режим</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight text-purple-800 dark:text-purple-200">👥 Командный режим</h1>
+          <p className="text-purple-600 dark:text-purple-300">
             Управление командой и разграничение прав доступа
           </p>
         </div>
@@ -456,42 +456,48 @@ export default function TeamManagement() {
           <Button 
             onClick={() => setIsAddMemberOpen(true)}
             data-testid="button-add-member"
+            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Добавить сотрудника
+            ➕ Добавить сотрудника
           </Button>
           <Button 
             variant="outline"
             onClick={() => handleExportTeamData('csv')}
             data-testid="button-export-team"
+            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg"
           >
             <Download className="h-4 w-4 mr-2" />
-            Экспорт
+            📊 Экспорт
           </Button>
         </div>
       </div>
 
-      {/* Статистика команды */}
+      {/* Статистика команды с градиентами */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <Users className="h-8 w-8 text-blue-500" />
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full">
+                <Users className="h-8 w-8 text-white" />
+              </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Всего сотрудников</p>
-                <p className="text-2xl font-bold">{teamMembers.length}</p>
+                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">👤 Всего сотрудников</p>
+                <p className="text-3xl font-bold text-blue-800 dark:text-blue-200">{teamMembers.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <UserCheck className="h-8 w-8 text-green-500" />
+              <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full">
+                <UserCheck className="h-8 w-8 text-white" />
+              </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Активных</p>
-                <p className="text-2xl font-bold">
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">✅ Активных</p>
+                <p className="text-3xl font-bold text-green-800 dark:text-green-200">
                   {teamMembers.filter((m: TeamMember) => m.status === 'active').length}
                 </p>
               </div>
@@ -499,13 +505,15 @@ export default function TeamManagement() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-700 shadow-lg hover:shadow-xl transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <Shield className="h-8 w-8 text-purple-500" />
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full">
+                <Shield className="h-8 w-8 text-white" />
+              </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">С ограничениями</p>
-                <p className="text-2xl font-bold">
+                <p className="text-sm font-medium text-purple-700 dark:text-purple-300">🔒 С ограничениями</p>
+                <p className="text-3xl font-bold text-purple-800 dark:text-purple-200">
                   {teamMembers.filter((m: TeamMember) => 
                     m.restrictions.ipWhitelist.length > 0 || 
                     m.restrictions.geoRestrictions.length > 0 ||
@@ -517,13 +525,15 @@ export default function TeamManagement() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200 dark:border-orange-700 shadow-lg hover:shadow-xl transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <Bell className="h-8 w-8 text-orange-500" />
+              <div className="p-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-full">
+                <Bell className="h-8 w-8 text-white" />
+              </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Telegram уведомления</p>
-                <p className="text-2xl font-bold">
+                <p className="text-sm font-medium text-orange-700 dark:text-orange-300">🔔 Telegram уведомления</p>
+                <p className="text-3xl font-bold text-orange-800 dark:text-orange-200">
                   {teamMembers.filter((m: TeamMember) => m.telegramNotifications).length}
                 </p>
               </div>
@@ -532,22 +542,22 @@ export default function TeamManagement() {
         </Card>
       </div>
 
-      {/* Вкладки */}
+      {/* Яркие вкладки */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="members">Сотрудники</TabsTrigger>
-          <TabsTrigger value="roles">Роли и права</TabsTrigger>
-          <TabsTrigger value="activity">Логи действий</TabsTrigger>
+        <TabsList className="bg-gradient-to-r from-slate-100 to-gray-100 dark:from-slate-800 dark:to-gray-800 p-1 rounded-xl">
+          <TabsTrigger value="members" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white">👥 Сотрудники</TabsTrigger>
+          <TabsTrigger value="roles" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">🔑 Роли и права</TabsTrigger>
+          <TabsTrigger value="activity" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white">📋 Логи действий</TabsTrigger>
         </TabsList>
 
         {/* Вкладка: Сотрудники */}
         <TabsContent value="members" className="space-y-4">
-          {/* Фильтры */}
-          <Card>
+          {/* Фильтры с красивым оформлением */}
+          <Card className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 border-cyan-200 dark:border-cyan-700">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
                 <Filter className="h-5 w-5" />
-                Фильтры
+                🔍 Фильтры сотрудников
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -732,10 +742,10 @@ export default function TeamManagement() {
 
         {/* Вкладка: Роли и права */}
         <TabsContent value="roles" className="space-y-4">
-          <Card>
+          <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-700">
             <CardHeader>
-              <CardTitle>Таблица ролей и разрешений</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <CardTitle className="text-purple-700 dark:text-purple-300">🔑 Таблица ролей и разрешений</CardTitle>
+              <p className="text-purple-600 dark:text-purple-400">
                 Права доступа для каждой роли в системе
               </p>
             </CardHeader>
@@ -744,11 +754,11 @@ export default function TeamManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[200px]">Функция</TableHead>
-                      <TableHead className="text-center">Менеджер</TableHead>
-                      <TableHead className="text-center">Аналитик</TableHead>
-                      <TableHead className="text-center">Финансист</TableHead>
-                      <TableHead className="text-center">Техподдержка</TableHead>
+                      <TableHead className="w-[200px] bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">⚙️ Функция</TableHead>
+                      <TableHead className="text-center bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 text-blue-800 dark:text-blue-200">👤 Менеджер</TableHead>
+                      <TableHead className="text-center bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/50 dark:to-emerald-900/50 text-green-800 dark:text-green-200">📊 Аналитик</TableHead>
+                      <TableHead className="text-center bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/50 dark:to-orange-900/50 text-yellow-800 dark:text-yellow-200">💰 Финансист</TableHead>
+                      <TableHead className="text-center bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 text-purple-800 dark:text-purple-200">🔧 Техподдержка</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -836,27 +846,80 @@ export default function TeamManagement() {
 
         {/* Вкладка: Логи действий */}
         <TabsContent value="activity" className="space-y-4">
-          <Card>
+          <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-700">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Логи действий команды
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                История действий всех сотрудников команды
-              </p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                    <Activity className="h-5 w-5" />
+                    📋 Логи действий команды
+                  </CardTitle>
+                  <p className="text-green-600 dark:text-green-400">
+                    История действий всех сотрудников команды
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // Экспорт логов в CSV
+                      const csvData = activityLogs.map(log => ({
+                        timestamp: new Date(log.timestamp).toLocaleString('ru-RU'),
+                        username: log.username,
+                        action: log.action,
+                        resource: log.resource,
+                        ipAddress: log.ipAddress,
+                        result: log.result
+                      }));
+                      
+                      const headers = ['Время', 'Пользователь', 'Действие', 'Ресурс', 'IP адрес', 'Результат'];
+                      const csvContent = [
+                        headers.join(','),
+                        ...csvData.map((row: any) => Object.values(row).join(','))
+                      ].join('\n');
+                      
+                      const blob = new Blob([csvContent], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `team-activity-logs-${new Date().toISOString().split('T')[0]}.csv`;
+                      a.click();
+                    }}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0"
+                  >
+                    📊 Экспорт CSV
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // Экспорт логов в JSON
+                      const blob = new Blob([JSON.stringify(activityLogs, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `team-activity-logs-${new Date().toISOString().split('T')[0]}.json`;
+                      a.click();
+                    }}
+                    className="bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white border-0"
+                  >
+                    📄 Экспорт JSON
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Время</TableHead>
-                      <TableHead>Пользователь</TableHead>
-                      <TableHead>Действие</TableHead>
-                      <TableHead>Ресурс</TableHead>
-                      <TableHead>IP адрес</TableHead>
-                      <TableHead>Результат</TableHead>
+                      <TableHead className="bg-gradient-to-r from-slate-100 to-gray-100 dark:from-slate-800 dark:to-gray-700 text-slate-700 dark:text-slate-300">🕒 Время</TableHead>
+                      <TableHead className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 text-blue-700 dark:text-blue-300">👤 Пользователь</TableHead>
+                      <TableHead className="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/50 dark:to-emerald-900/50 text-green-700 dark:text-green-300">⚡ Действие</TableHead>
+                      <TableHead className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 text-purple-700 dark:text-purple-300">📁 Ресурс</TableHead>
+                      <TableHead className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/50 dark:to-red-900/50 text-orange-700 dark:text-orange-300">🌐 IP адрес</TableHead>
+                      <TableHead className="bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900/50 dark:to-amber-900/50 text-yellow-700 dark:text-yellow-300">✅ Результат</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
