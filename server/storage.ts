@@ -3580,14 +3580,34 @@ export class DatabaseStorage implements IStorage {
 
   async createOffer(offerData: any): Promise<any> {
     try {
+      // Map frontend fields to database fields correctly
+      const mappedData = {
+        id: randomUUID(),
+        name: offerData.name,
+        description: offerData.description,
+        category: offerData.category,
+        logo: offerData.logo,
+        advertiserId: offerData.advertiserId,
+        payout: parseFloat(offerData.payout),
+        payoutType: offerData.payoutType,
+        currency: offerData.currency,
+        countries: offerData.countries,
+        landingPageUrl: offerData.landingPageUrl,
+        landingPages: offerData.landingPages,
+        trafficSources: offerData.trafficSources,
+        kycRequired: offerData.kycRequired || false,
+        isPrivate: offerData.isPrivate || false,
+        dailyLimit: offerData.dailyLimit,
+        monthlyLimit: offerData.monthlyLimit,
+        antifraudEnabled: offerData.antifraudEnabled || false,
+        status: offerData.status,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
       const newOffer = await db
         .insert(offers)
-        .values({
-          id: randomUUID(),
-          ...offerData,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        })
+        .values(mappedData)
         .returning();
       
       return newOffer[0];

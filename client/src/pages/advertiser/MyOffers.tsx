@@ -331,9 +331,9 @@ export default function MyOffers() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {offers.map((offer: Offer) => (
+                  {offers.map((offer: Offer, index: number) => (
                     <>
-                      <TableRow key={offer.id} className="hover:bg-muted/50">
+                      <TableRow key={`offer-${offer.id}-${index}`} className="hover:bg-muted/50">
                         <TableCell>
                           <Button
                             variant="ghost"
