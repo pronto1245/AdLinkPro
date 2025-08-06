@@ -620,44 +620,44 @@ export default function MyOffers() {
                               {offer.payoutType?.toUpperCase() || 'CPA'}
                             </div>
                             
-                            {/* Вторая строка: Гео + Сумма */}
-                            <div className="flex items-center gap-2 text-sm">
-                              {/* Гео с флагами */}
-                              <div className="flex items-center gap-1">
-                                {offer.countries && offer.countries.length > 0 ? (
-                                  <>
-                                    <span className="text-lg">{getCountryFlag(offer.countries[0])}</span>
-                                    <span className="font-mono text-xs text-muted-foreground">
-                                      {getCountryCode(offer.countries[0])}
+                            {/* Вторая строка: Гео */}
+                            <div className="flex items-center gap-1 text-sm">
+                              {offer.countries && offer.countries.length > 0 ? (
+                                <>
+                                  <span className="text-lg">{getCountryFlag(offer.countries[0])}</span>
+                                  <span className="font-mono text-xs text-muted-foreground">
+                                    {getCountryCode(offer.countries[0])}
+                                  </span>
+                                  {offer.countries.length > 1 && (
+                                    <span className="text-xs text-muted-foreground">
+                                      +{offer.countries.length - 1}
                                     </span>
-                                    {offer.countries.length > 1 && (
-                                      <span className="text-xs text-muted-foreground">
-                                        +{offer.countries.length - 1}
-                                      </span>
-                                    )}
-                                  </>
-                                ) : (
-                                  <>
-                                    <span className="text-lg">🌍</span>
-                                    <span className="font-mono text-xs text-muted-foreground">GL</span>
-                                  </>
-                                )}
-                              </div>
-                              
-                              {/* Сумма выплаты */}
-                              <div className="font-semibold text-green-600 dark:text-green-400">
-                                {formatCurrency(parseFloat(offer.payout || '0'), offer.currency)}
-                              </div>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-lg">🌍</span>
+                                  <span className="font-mono text-xs text-muted-foreground">GL</span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </TableCell>
                         
                         <TableCell>
-                          <span className="capitalize">
-                            {typeof offer.category === 'string' ? offer.category : 
-                             typeof offer.category === 'object' ? (offer.category.ru || offer.category.en || 'Категория') : 
-                             'Категория'}
-                          </span>
+                          <div className="space-y-2">
+                            {/* Первая строка: Категория */}
+                            <Badge variant="outline" className="capitalize">
+                              {typeof offer.category === 'string' ? offer.category : 
+                               typeof offer.category === 'object' ? (offer.category.ru || offer.category.en || 'Категория') : 
+                               'Категория'}
+                            </Badge>
+                            
+                            {/* Вторая строка: Сумма выплаты */}
+                            <div className="font-semibold text-green-600 dark:text-green-400">
+                              {formatCurrency(parseFloat(offer.payout || '0'), offer.currency)}
+                            </div>
+                          </div>
                         </TableCell>
                         
                         <TableCell className="text-right">
