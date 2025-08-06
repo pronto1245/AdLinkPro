@@ -428,11 +428,11 @@ export default function MyOffers() {
                                 {offer.name}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                ID: {offer.id.slice(0, 8)}... 
-                                {offer.logo && (
-                                  <span className="text-xs text-blue-500 ml-2">
-                                    [Логотип: {offer.logo}]
-                                  </span>
+                                {offer.category && (
+                                  <span className="capitalize">{offer.category}</span>
+                                )}
+                                {offer.description && (
+                                  <span className="ml-2 text-xs opacity-70 truncate max-w-xs">• {offer.description}</span>
                                 )}
                               </div>
                             </div>
