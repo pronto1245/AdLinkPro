@@ -4781,6 +4781,285 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === ADVERTISER PARTNERS MANAGEMENT ROUTES ===
+  
+  // Get partners list for advertiser
+  app.get("/api/advertiser/partners", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const {
+        search,
+        status,
+        offerId,
+        minRevenue,
+        minCr,
+        minEpc,
+        activityDays,
+        riskLevel,
+        topPerformersOnly
+      } = req.query;
+
+      // Generate mock partners data
+      const generateMockPartners = () => {
+        const partners = [];
+        const statuses = ['active', 'inactive', 'pending', 'blocked'];
+        const riskLevels = ['low', 'medium', 'high'];
+        const countries = ['US', 'GB', 'DE', 'FR', 'CA', 'RU'];
+        
+        const mockOffers = [
+          { id: '1', name: 'Casino Welcome Bonus', defaultPayout: 150 },
+          { id: '2', name: 'Sports Betting CPA', defaultPayout: 200 },
+          { id: '3', name: 'Forex Trading Lead', defaultPayout: 75 }
+        ];
+
+        for (let i = 1; i <= 20; i++) {
+          const clicks = Math.floor(Math.random() * 5000) + 500;
+          const uniqueClicks = Math.floor(clicks * 0.8);
+          const leads = Math.floor(clicks * (Math.random() * 0.1 + 0.005));
+          const revenue = leads * (Math.random() * 100 + 50);
+          const payout = leads * (Math.random() * 80 + 30);
+          const profit = revenue - payout;
+          const cr = clicks > 0 ? (leads / clicks) * 100 : 0;
+          const epc = clicks > 0 ? revenue / clicks : 0;
+          const roi = payout > 0 ? ((revenue - payout) / payout) * 100 : 0;
+          const isTopPerformer = Math.random() > 0.8;
+
+          // Generate payout settings for random offers
+          const payoutSettings: any = {};
+          const partnerOffers = mockOffers.slice(0, Math.floor(Math.random() * 3) + 1);
+          partnerOffers.forEach(offer => {
+            payoutSettings[offer.id] = {
+              offerId: offer.id,
+              offerName: offer.name,
+              defaultPayout: offer.defaultPayout,
+              customPayout: Math.random() > 0.5 ? offer.defaultPayout * (1 + (Math.random() * 0.4 - 0.2)) : offer.defaultPayout,
+              isActive: Math.random() > 0.1
+            };
+          });
+
+          partners.push({
+            id: `partner_${i}`,
+            partnerId: `P${String(i).padStart(5, '0')}`,
+            username: `partner${i}`,
+            email: `partner${i}@example.com`,
+            firstName: `Partner`,
+            lastName: `${i}`,
+            telegram: Math.random() > 0.5 ? `partner${i}` : null,
+            status: statuses[Math.floor(Math.random() * statuses.length)],
+            offersCount: partnerOffers.length,
+            clicks,
+            uniqueClicks,
+            leads,
+            conversions: leads,
+            revenue: parseFloat(revenue.toFixed(2)),
+            payout: parseFloat(payout.toFixed(2)),
+            profit: parseFloat(profit.toFixed(2)),
+            cr: parseFloat(cr.toFixed(2)),
+            epc: parseFloat(epc.toFixed(4)),
+            roi: parseFloat(roi.toFixed(2)),
+            fraudClicks: Math.floor(Math.random() * 20),
+            botClicks: Math.floor(Math.random() * 30),
+            fraudScore: Math.floor(Math.random() * 100),
+            lastActivity: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+            registrationDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
+            country: countries[Math.floor(Math.random() * countries.length)],
+            timezone: 'UTC',
+            isTopPerformer,
+            riskLevel: riskLevels[Math.floor(Math.random() * riskLevels.length)],
+            payoutSettings
+          });
+        }
+        return partners;
+      };
+
+      let partnersData = generateMockPartners();
+
+      // Apply filters
+      if (search) {
+        partnersData = partnersData.filter(partner =>
+          partner.username.toLowerCase().includes(search.toString().toLowerCase()) ||
+          partner.email.toLowerCase().includes(search.toString().toLowerCase()) ||
+          partner.partnerId.includes(search.toString())
+        );
+      }
+
+      if (status) {
+        partnersData = partnersData.filter(partner => partner.status === status);
+      }
+
+      if (minRevenue) {
+        partnersData = partnersData.filter(partner => partner.revenue >= parseFloat(minRevenue.toString()));
+      }
+
+      if (minCr) {
+        partnersData = partnersData.filter(partner => partner.cr >= parseFloat(minCr.toString()));
+      }
+
+      if (minEpc) {
+        partnersData = partnersData.filter(partner => partner.epc >= parseFloat(minEpc.toString()));
+      }
+
+      if (riskLevel) {
+        partnersData = partnersData.filter(partner => partner.riskLevel === riskLevel);
+      }
+
+      if (topPerformersOnly === 'true') {
+        partnersData = partnersData.filter(partner => partner.isTopPerformer);
+      }
+
+      if (activityDays) {
+        const daysSince = parseInt(activityDays.toString()) * 24 * 60 * 60 * 1000;
+        const cutoffDate = new Date(Date.now() - daysSince);
+        partnersData = partnersData.filter(partner => 
+          new Date(partner.lastActivity) >= cutoffDate
+        );
+      }
+
+      res.json(partnersData);
+    } catch (error) {
+      console.error("Get partners error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get partner details
+  app.get("/api/advertiser/partner/:partnerId", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { partnerId } = req.params;
+
+      // Mock partner details
+      const partnerDetails = {
+        id: partnerId,
+        partnerId: `P${partnerId.slice(-5)}`,
+        username: `partner_${partnerId}`,
+        email: `partner${partnerId}@example.com`,
+        firstName: 'Partner',
+        lastName: partnerId,
+        phone: '+1234567890',
+        telegram: `partner${partnerId}`,
+        country: 'US',
+        timezone: 'UTC',
+        status: 'active',
+        registrationDate: '2024-01-15T10:30:00Z',
+        lastActivity: new Date().toISOString(),
+        // Additional partner information...
+      };
+
+      res.json(partnerDetails);
+    } catch (error) {
+      console.error("Get partner details error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update partner payout
+  app.patch("/api/advertiser/partner/:partnerId/payout", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { partnerId } = req.params;
+      const { offerId, payout } = req.body;
+
+      console.log(`Updating payout for partner ${partnerId}, offer ${offerId} to ${payout}`);
+
+      res.json({
+        success: true,
+        message: "Payout updated successfully",
+        partnerId,
+        offerId,
+        newPayout: payout
+      });
+    } catch (error) {
+      console.error("Update payout error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update partner status
+  app.patch("/api/advertiser/partner/:partnerId/status", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { partnerId } = req.params;
+      const { status } = req.body;
+
+      console.log(`Updating status for partner ${partnerId} to ${status}`);
+
+      res.json({
+        success: true,
+        message: "Status updated successfully",
+        partnerId,
+        newStatus: status
+      });
+    } catch (error) {
+      console.error("Update status error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Remove partner from offer
+  app.delete("/api/advertiser/partner/:partnerId/offers/:offerId", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { partnerId, offerId } = req.params;
+
+      console.log(`Removing partner ${partnerId} from offer ${offerId}`);
+
+      res.json({
+        success: true,
+        message: "Partner removed from offer successfully"
+      });
+    } catch (error) {
+      console.error("Remove partner from offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Notify partner
+  app.post("/api/advertiser/partner/:partnerId/notify", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { partnerId } = req.params;
+      const { message } = req.body;
+
+      console.log(`Sending notification to partner ${partnerId}: ${message}`);
+
+      res.json({
+        success: true,
+        message: "Notification sent successfully"
+      });
+    } catch (error) {
+      console.error("Notify partner error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Export partners data
+  app.get("/api/advertiser/partners/export", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { format = 'csv' } = req.query;
+
+      if (format === 'csv') {
+        const csvContent = `Partner ID,Username,Email,Status,Offers Count,Clicks,Leads,CR%,Revenue,Payout,Profit
+P00001,partner1,partner1@example.com,active,3,2450,89,3.63,$4450.00,$2670.00,$1780.00
+P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$900.00`;
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="partners.csv"');
+        res.send(csvContent);
+      } else if (format === 'xlsx') {
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename="partners.xlsx"');
+        res.send(Buffer.from('Mock Excel content'));
+      } else {
+        res.json({ message: "JSON export not implemented yet" });
+      }
+    } catch (error) {
+      console.error("Export partners error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
