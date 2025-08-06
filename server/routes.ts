@@ -472,6 +472,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/advertiser/offers/:id/statistics", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerId = req.params.id;
+      
+      // Verify offer ownership
+      const existingOffer = await storage.getOffer(offerId);
+      if (!existingOffer || existingOffer.advertiserId !== authUser.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const stats = await storage.getOfferStatistics(offerId, req.query);
+      res.json(stats);
+    } catch (error) {
+      console.error("Get offer statistics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/advertiser/offers/export", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
