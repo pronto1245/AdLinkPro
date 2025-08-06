@@ -1081,29 +1081,31 @@ export default function CreateOffer() {
                     </div>
                   )}
 
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="kycRequired"
-                      checked={formData.kycRequired}
-                      onChange={(e) => setFormData(prev => ({ ...prev, kycRequired: e.target.checked }))}
-                      className="rounded"
-                    />
-                    <Label htmlFor="kycRequired">Требуется верификация KYC</Label>
-                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="partnerApprovalType">Тип подтверждения партнеров</Label>
+                      <Select value={formData.partnerApprovalType} onValueChange={(value: 'auto' | 'manual' | 'invite_only') => setFormData(prev => ({ ...prev, partnerApprovalType: value }))}>
+                        <SelectTrigger data-testid="select-partner-approval">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="auto">Автоматическое подтверждение</SelectItem>
+                          <SelectItem value="manual">Ручное подтверждение</SelectItem>
+                          <SelectItem value="invite_only">Только по приглашениям</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div>
-                    <Label htmlFor="partnerApprovalType">Тип подтверждения партнеров</Label>
-                    <Select value={formData.partnerApprovalType} onValueChange={(value: 'auto' | 'manual' | 'invite_only') => setFormData(prev => ({ ...prev, partnerApprovalType: value }))}>
-                      <SelectTrigger data-testid="select-partner-approval">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="auto">Автоматическое подтверждение</SelectItem>
-                        <SelectItem value="manual">Ручное подтверждение</SelectItem>
-                        <SelectItem value="invite_only">Только по приглашениям</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center space-x-2 pt-6">
+                      <input
+                        type="checkbox"
+                        id="kycRequired"
+                        checked={formData.kycRequired}
+                        onChange={(e) => setFormData(prev => ({ ...prev, kycRequired: e.target.checked }))}
+                        className="rounded"
+                      />
+                      <Label htmlFor="kycRequired">Требуется верификация KYC</Label>
+                    </div>
                   </div>
 
                   <div className="pt-4 border-t">
