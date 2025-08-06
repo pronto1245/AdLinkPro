@@ -711,6 +711,32 @@ export default function CreateOffer() {
                       ))}
                     </div>
                   </div>
+
+                  <Separator />
+
+                  <div>
+                    <Label>Источники трафика</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                      {allowedTrafficSources.map(source => (
+                        <div key={source} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`traffic-${source}`}
+                            checked={formData.trafficSources?.includes(source) || false}
+                            onChange={() => {
+                              const currentSources = formData.trafficSources || [];
+                              const newSources = currentSources.includes(source)
+                                ? currentSources.filter(s => s !== source)
+                                : [...currentSources, source];
+                              setFormData(prev => ({ ...prev, trafficSources: newSources }));
+                            }}
+                            className="rounded"
+                          />
+                          <Label htmlFor={`traffic-${source}`} className="text-sm">{source}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
