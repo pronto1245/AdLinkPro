@@ -749,14 +749,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           rejectedOffers: 2,
           totalBudget: 50000,
           totalSpent: 15750,
-          totalRevenue: 8900,
+          advertiserRevenue: 8900,
           partnersCount: 24,
           avgCR: 3.2,
           epc: 2.15,
           postbacksSent: 1245,
           postbacksReceived: 1187,
           postbackErrors: 58,
-          fraudActivity: 12
+          fraudActivity: 12,
+          // Изменения по сравнению с предыдущим периодом
+          offersChange: 8.5,
+          budgetChange: -3.2,
+          revenueChange: 12.3,
+          partnersChange: 15.7,
+          crChange: -0.8,
+          epcChange: 4.2,
+          postbacksChange: 6.1,
+          fraudChange: -18.5
         },
         chartData: {
           traffic: [
@@ -778,13 +787,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             { date: "2025-08-05", leads: 73, registrations: 52, deposits: 31 }
           ],
           spending: [
-            { date: "2025-07-30", spent: 2100, revenue: 1580 },
-            { date: "2025-07-31", spent: 2350, revenue: 1720 },
-            { date: "2025-08-01", spent: 2650, revenue: 1950 },
-            { date: "2025-08-02", spent: 2200, revenue: 1650 },
-            { date: "2025-08-03", spent: 2450, revenue: 1800 },
-            { date: "2025-08-04", spent: 2750, revenue: 2050 },
-            { date: "2025-08-05", spent: 2950, revenue: 2200 }
+            { date: "2025-07-30", spent: 2100, payouts: 1580 },
+            { date: "2025-07-31", spent: 2350, payouts: 1720 },
+            { date: "2025-08-01", spent: 2650, payouts: 1950 },
+            { date: "2025-08-02", spent: 2200, payouts: 1650 },
+            { date: "2025-08-03", spent: 2450, payouts: 1800 },
+            { date: "2025-08-04", spent: 2750, payouts: 2050 },
+            { date: "2025-08-05", spent: 2950, payouts: 2200 }
           ],
           postbacks: [
             { date: "2025-07-30", sent: 180, successful: 172, failed: 8 },
@@ -813,11 +822,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { id: "5", name: "Mostbet Live", status: "active", clicks: 3340, cr: 4.1, conversions: 137, spent: 2250, postbacks: 131, fraudRate: 1.9 }
         ],
         notifications: [
-          { id: "1", type: "partner_request", title: "Новая заявка партнёра", message: "Партнёр WebTraffic подал заявку на оффер 4RaBet", createdAt: "2025-08-05T10:30:00Z", isRead: false },
-          { id: "2", type: "postback_error", title: "Ошибка постбека", message: "Постбек для конверсии #12453 не доставлен", createdAt: "2025-08-05T09:15:00Z", isRead: false },
-          { id: "3", type: "fraud_alert", title: "Фрод-активность", message: "Обнаружена подозрительная активность в оффере Melbet", createdAt: "2025-08-05T08:45:00Z", isRead: true },
-          { id: "4", type: "offer_pending", title: "Оффер на модерации", message: "Оффер 1xBet Sports ожидает модерации", createdAt: "2025-08-04T16:20:00Z", isRead: true },
-          { id: "5", type: "partner_request", title: "Партнёр одобрен", message: "Партнёр ClickMaster одобрен для работы", createdAt: "2025-08-04T14:10:00Z", isRead: true }
+          { id: "1", type: "partner_request", title: "Новая заявка партнёра", message: "Партнёр WebTraffic подал заявку на оффер 4RaBet", createdAt: "2025-08-05T10:30:00Z", isRead: false, priority: "high" },
+          { id: "2", type: "postback_error", title: "Ошибка постбека", message: "Постбек для конверсии #12453 не доставлен", createdAt: "2025-08-05T09:15:00Z", isRead: false, priority: "medium" },
+          { id: "3", type: "fraud_alert", title: "Фрод-активность", message: "Обнаружена подозрительная активность в оффере Melbet", createdAt: "2025-08-05T08:45:00Z", isRead: true, priority: "high" },
+          { id: "4", type: "offer_pending", title: "Оффер на модерации", message: "Оффер 1xBet Sports ожидает модерации", createdAt: "2025-08-04T16:20:00Z", isRead: true, priority: "low" },
+          { id: "5", type: "partner_request", title: "Партнёр одобрен", message: "Партнёр ClickMaster одобрен для работы", createdAt: "2025-08-04T14:10:00Z", isRead: true, priority: "low" }
         ],
         offerStatus: {
           pending: 2,
