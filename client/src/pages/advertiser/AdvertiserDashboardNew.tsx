@@ -245,8 +245,8 @@ export default function AdvertiserDashboardNew() {
           <Card data-testid="card-offers" className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">Офферы</CardTitle>
-              <div className="p-2 bg-blue-500 rounded-lg">
-                <Target className="h-4 w-4 text-white" />
+              <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+                <Target className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent>
@@ -261,8 +261,8 @@ export default function AdvertiserDashboardNew() {
           <Card data-testid="card-budget" className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">Бюджет / Расход</CardTitle>
-              <div className="p-2 bg-green-500 rounded-lg">
-                <Wallet className="h-4 w-4 text-white" />
+              <div className="p-3 bg-green-500 rounded-xl shadow-lg">
+                <Wallet className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent>
@@ -274,8 +274,8 @@ export default function AdvertiserDashboardNew() {
           <Card data-testid="card-revenue" className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">Доход платформы</CardTitle>
-              <div className="p-2 bg-purple-500 rounded-lg">
-                <DollarSign className="h-4 w-4 text-white" />
+              <div className="p-3 bg-purple-500 rounded-xl shadow-lg">
+                <DollarSign className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent>
@@ -290,8 +290,8 @@ export default function AdvertiserDashboardNew() {
           <Card data-testid="card-partners" className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-orange-700 dark:text-orange-300">Партнёры</CardTitle>
-              <div className="p-2 bg-orange-500 rounded-lg">
-                <Users className="h-4 w-4 text-white" />
+              <div className="p-3 bg-orange-500 rounded-xl shadow-lg">
+                <Users className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent>
@@ -303,8 +303,8 @@ export default function AdvertiserDashboardNew() {
           <Card data-testid="card-cr" className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-indigo-700 dark:text-indigo-300">CR / EPC</CardTitle>
-              <div className="p-2 bg-indigo-500 rounded-lg">
-                <BarChart3 className="h-4 w-4 text-white" />
+              <div className="p-3 bg-indigo-500 rounded-xl shadow-lg">
+                <BarChart3 className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent>
@@ -316,8 +316,8 @@ export default function AdvertiserDashboardNew() {
           <Card data-testid="card-postbacks" className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 border-teal-200 dark:border-teal-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-teal-700 dark:text-teal-300">Постбеки</CardTitle>
-              <div className="p-2 bg-teal-500 rounded-lg">
-                <Send className="h-4 w-4 text-white" />
+              <div className="p-3 bg-teal-500 rounded-xl shadow-lg">
+                <Send className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent>
@@ -332,13 +332,26 @@ export default function AdvertiserDashboardNew() {
           <Card data-testid="card-fraud" className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-red-700 dark:text-red-300">Фрод-активность</CardTitle>
-              <div className="p-2 bg-red-500 rounded-lg">
-                <Shield className="h-4 w-4 text-white" />
+              <div className="p-3 bg-red-500 rounded-xl shadow-lg">
+                <Shield className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-900 dark:text-red-100">{overview?.fraudActivity || 0}</div>
               <p className="text-xs text-red-700 dark:text-red-400">случаев за период</p>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-analytics" className="bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20 border-violet-200 dark:border-violet-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-violet-700 dark:text-violet-300">Аналитика</CardTitle>
+              <div className="p-3 bg-violet-500 rounded-xl shadow-lg">
+                <Activity className="h-6 w-6 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-violet-900 dark:text-violet-100">{((overview?.activeOffers || 0) * 100).toLocaleString()}</div>
+              <p className="text-xs text-violet-700 dark:text-violet-400">событий отслежено</p>
             </CardContent>
           </Card>
         </div>
