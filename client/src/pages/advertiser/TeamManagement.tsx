@@ -752,11 +752,11 @@ export default function TeamManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[200px] bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">⚙️ Функция</TableHead>
-                      <TableHead className="text-center bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 text-blue-800 dark:text-blue-200">👤 Менеджер</TableHead>
-                      <TableHead className="text-center bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/50 dark:to-emerald-900/50 text-green-800 dark:text-green-200">📊 Аналитик</TableHead>
-                      <TableHead className="text-center bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/50 dark:to-orange-900/50 text-yellow-800 dark:text-yellow-200">💰 Финансист</TableHead>
-                      <TableHead className="text-center bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 text-purple-800 dark:text-purple-200">🔧 Техподдержка</TableHead>
+                      <TableHead className="w-[200px]">Функция</TableHead>
+                      <TableHead className="text-center">Менеджер</TableHead>
+                      <TableHead className="text-center">Аналитик</TableHead>
+                      <TableHead className="text-center">Финансист</TableHead>
+                      <TableHead className="text-center">Техподдержка</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -910,12 +910,12 @@ export default function TeamManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="bg-gradient-to-r from-slate-100 to-gray-100 dark:from-slate-800 dark:to-gray-700 text-slate-700 dark:text-slate-300">🕒 Время</TableHead>
-                      <TableHead className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 text-blue-700 dark:text-blue-300">👤 Пользователь</TableHead>
-                      <TableHead className="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/50 dark:to-emerald-900/50 text-green-700 dark:text-green-300">⚡ Действие</TableHead>
-                      <TableHead className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 text-purple-700 dark:text-purple-300">📁 Ресурс</TableHead>
-                      <TableHead className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/50 dark:to-red-900/50 text-orange-700 dark:text-orange-300">🌐 IP адрес</TableHead>
-                      <TableHead className="bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900/50 dark:to-amber-900/50 text-yellow-700 dark:text-yellow-300">✅ Результат</TableHead>
+                      <TableHead>Время</TableHead>
+                      <TableHead>Пользователь</TableHead>
+                      <TableHead>Действие</TableHead>
+                      <TableHead>Ресурс</TableHead>
+                      <TableHead>IP адрес</TableHead>
+                      <TableHead>Результат</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
