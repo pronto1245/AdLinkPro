@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/auth-context';
+import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
 import { 
   Plus, 
   Save, 
@@ -190,8 +191,9 @@ export default function ReceivedOffers() {
   };
 
   return (
-    <div className="space-y-6" data-testid="received-offers-page">
-      <div className="flex justify-between items-center">
+    <RoleBasedLayout>
+      <div className="space-y-6" data-testid="received-offers-page">
+        <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             Полученные офферы
@@ -541,6 +543,7 @@ export default function ReceivedOffers() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </RoleBasedLayout>
   );
 }
