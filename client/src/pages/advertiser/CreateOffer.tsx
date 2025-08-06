@@ -753,9 +753,9 @@ export default function CreateOffer() {
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="targetUrl">Целевая ссылка оффера *</Label>
-                      <div className="grid grid-cols-13 gap-3 text-xs font-medium text-muted-foreground px-4 mb-2 mt-3">
+                      <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground px-4 mb-2 mt-3">
                         <div className="col-span-2">Название</div>
-                        <div className="col-span-5">URL целевой страницы</div>
+                        <div className="col-span-4">URL целевой страницы</div>
                         <div className="col-span-2">Разные ГЕО для URL</div>
                         <div className="col-span-2">Разные выплаты для URL</div>
                         <div className="col-span-1">По умолчанию</div>
@@ -763,16 +763,16 @@ export default function CreateOffer() {
                       </div>
                       <div className="space-y-2">
                         {formData.landingPages.map((landing, index) => (
-                          <div key={landing.id} className="grid grid-cols-13 gap-3 items-center p-4 border rounded-lg">
+                          <div key={landing.id} className="grid grid-cols-12 gap-2 items-center p-3 border rounded-lg">
                             <div className="col-span-2">
                               <Input
                                 placeholder="Название"
                                 value={landing.name}
                                 onChange={(e) => updateLandingPage(landing.id, 'name', e.target.value)}
-                                className="w-full"
+                                className="w-full text-sm"
                               />
                             </div>
-                            <div className="col-span-5">
+                            <div className="col-span-4">
                               <Input
                                 placeholder="URL целевой страницы"
                                 value={landing.url}
@@ -782,7 +782,7 @@ export default function CreateOffer() {
                                     setFormData(prev => ({ ...prev, targetUrl: e.target.value }));
                                   }
                                 }}
-                                className="w-full"
+                                className="w-full text-sm"
                               />
                             </div>
                             <div className="col-span-2">
@@ -798,7 +798,7 @@ export default function CreateOffer() {
                                       hasCustomGeo: e.target.checked
                                     }))
                                   }))}
-                                  className="rounded"
+                                  className="rounded flex-shrink-0"
                                   title="Разные ГЕО для URL"
                                 />
                                 <Input
@@ -818,7 +818,7 @@ export default function CreateOffer() {
                                       }));
                                     }
                                   }}
-                                  className="w-full"
+                                  className="w-full text-sm"
                                 />
                               </div>
                             </div>
@@ -835,7 +835,7 @@ export default function CreateOffer() {
                                       hasCustomPayout: e.target.checked
                                     }))
                                   }))}
-                                  className="rounded"
+                                  className="rounded flex-shrink-0"
                                   title="Разные выплаты для URL"
                                 />
                                 <Input
@@ -855,7 +855,7 @@ export default function CreateOffer() {
                                       }));
                                     }
                                   }}
-                                  className="w-full"
+                                  className="w-full text-sm"
                                 />
                               </div>
                             </div>
@@ -876,8 +876,9 @@ export default function CreateOffer() {
                                   size="sm" 
                                   onClick={() => removeLandingPage(landing.id)}
                                   title="Удалить лендинг"
+                                  className="h-8 w-8 p-0"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
                               )}
                             </div>
