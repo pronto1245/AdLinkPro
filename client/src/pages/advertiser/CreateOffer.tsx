@@ -123,10 +123,7 @@ export default function CreateOffer() {
   // Мутация для создания оффера
   const createOfferMutation = useMutation({
     mutationFn: async (data: OfferFormData) => {
-      return apiRequest('/api/advertiser/offers', {
-        method: 'POST',
-        body: JSON.stringify(data)
-      });
+      return apiRequest('/api/advertiser/offers', 'POST', data);
     },
     onSuccess: (data) => {
       toast({

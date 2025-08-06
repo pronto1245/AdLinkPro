@@ -15,6 +15,7 @@ import {
 import { db } from "./db";
 import { eq, desc, and, gte, lt, lte, count, sum, sql, isNotNull, like, ilike, or, inArray, ne } from "drizzle-orm";
 import { randomUUID } from "crypto";
+import { nanoid } from "nanoid";
 
 export interface IStorage {
   // User management
@@ -3566,7 +3567,7 @@ export class DatabaseStorage implements IStorage {
       const newOffer = await db
         .insert(offers)
         .values({
-          id: nanoid(),
+          id: randomUUID(),
           ...offerData,
           createdAt: new Date(),
           updatedAt: new Date()
