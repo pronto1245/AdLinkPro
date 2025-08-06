@@ -301,94 +301,78 @@ export default function AdvertiserDashboard() {
           </div>
         </div>
 
-        {/* Интерактивные фильтры */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Фильтры и период</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-              <Select value={filters.period} onValueChange={handlePeriodChange} data-testid="select-period">
-                <SelectTrigger>
-                  <SelectValue placeholder="Период" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1d">Сегодня</SelectItem>
-                  <SelectItem value="7d">7 дней</SelectItem>
-                  <SelectItem value="30d">30 дней</SelectItem>
-                  <SelectItem value="90d">3 месяца</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* Компактные фильтры */}
+        <div className="flex flex-wrap items-center gap-3 p-4 bg-muted/30 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Select value={filters.period} onValueChange={handlePeriodChange} data-testid="select-period">
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1d">Сегодня</SelectItem>
+                <SelectItem value="7d">7 дней</SelectItem>
+                <SelectItem value="30d">30 дней</SelectItem>
+                <SelectItem value="90d">3 месяца</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-              <Select value={filters.geo} onValueChange={(value) => setFilters(prev => ({ ...prev, geo: value }))} data-testid="select-geo">
-                <SelectTrigger>
-                  <SelectValue placeholder="Страна" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все страны</SelectItem>
-                  <SelectItem value="IN">Индия</SelectItem>
-                  <SelectItem value="BR">Бразилия</SelectItem>
-                  <SelectItem value="RU">Россия</SelectItem>
-                  <SelectItem value="BD">Бангладеш</SelectItem>
-                </SelectContent>
-              </Select>
+          <Select value={filters.geo} onValueChange={(value) => setFilters(prev => ({ ...prev, geo: value }))} data-testid="select-geo">
+            <SelectTrigger className="w-28">
+              <SelectValue placeholder="Страна" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все</SelectItem>
+              <SelectItem value="IN">Индия</SelectItem>
+              <SelectItem value="BR">Бразилия</SelectItem>
+              <SelectItem value="RU">Россия</SelectItem>
+              <SelectItem value="BD">Бангладеш</SelectItem>
+            </SelectContent>
+          </Select>
 
-              <Select value={filters.device} onValueChange={(value) => setFilters(prev => ({ ...prev, device: value }))} data-testid="select-device">
-                <SelectTrigger>
-                  <SelectValue placeholder="Устройство" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все устройства</SelectItem>
-                  <SelectItem value="mobile">Мобильные</SelectItem>
-                  <SelectItem value="desktop">Десктоп</SelectItem>
-                  <SelectItem value="tablet">Планшеты</SelectItem>
-                </SelectContent>
-              </Select>
+          <Select value={filters.device} onValueChange={(value) => setFilters(prev => ({ ...prev, device: value }))} data-testid="select-device">
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Устройство" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все</SelectItem>
+              <SelectItem value="mobile">Мобильные</SelectItem>
+              <SelectItem value="desktop">Десктоп</SelectItem>
+              <SelectItem value="tablet">Планшеты</SelectItem>
+            </SelectContent>
+          </Select>
 
-              <Select value={filters.offerId} onValueChange={(value) => setFilters(prev => ({ ...prev, offerId: value }))} data-testid="select-offer">
-                <SelectTrigger>
-                  <SelectValue placeholder="Оффер" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все офферы</SelectItem>
-                  {topOffers.slice(0, 5).map((offer) => (
-                    <SelectItem key={offer.id} value={offer.id}>{offer.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <Select value={filters.status} onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))} data-testid="select-status">
+            <SelectTrigger className="w-28">
+              <SelectValue placeholder="Статус" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все</SelectItem>
+              <SelectItem value="active">Активные</SelectItem>
+              <SelectItem value="pending">Модерация</SelectItem>
+              <SelectItem value="paused">Пауза</SelectItem>
+            </SelectContent>
+          </Select>
 
-              <Select value={filters.status} onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))} data-testid="select-status">
-                <SelectTrigger>
-                  <SelectValue placeholder="Статус" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все статусы</SelectItem>
-                  <SelectItem value="active">Активные</SelectItem>
-                  <SelectItem value="pending">На модерации</SelectItem>
-                  <SelectItem value="paused">Приостановлены</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <div className="flex items-center gap-2">
-                <Input
-                  type="date"
-                  value={dateRange.from.toISOString().split('T')[0]}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, from: new Date(e.target.value) }))}
-                  className="w-auto"
-                  data-testid="input-date-from"
-                />
-                <span className="text-muted-foreground">до</span>
-                <Input
-                  type="date"
-                  value={dateRange.to.toISOString().split('T')[0]}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, to: new Date(e.target.value) }))}
-                  className="w-auto"
-                  data-testid="input-date-to"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="flex items-center gap-1 text-sm">
+            <Input
+              type="date"
+              value={dateRange.from.toISOString().split('T')[0]}
+              onChange={(e) => setDateRange(prev => ({ ...prev, from: new Date(e.target.value) }))}
+              className="w-36 h-8"
+              data-testid="input-date-from"
+            />
+            <span className="text-muted-foreground">—</span>
+            <Input
+              type="date"
+              value={dateRange.to.toISOString().split('T')[0]}
+              onChange={(e) => setDateRange(prev => ({ ...prev, to: new Date(e.target.value) }))}
+              className="w-36 h-8"
+              data-testid="input-date-to"
+            />
+          </div>
+        </div>
 
 
 
