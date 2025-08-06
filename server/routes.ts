@@ -32,23 +32,46 @@ declare global {
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 // Auth middleware
-const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
+const authenticateToken = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.log('=== AUTHENTICATING TOKEN ===');
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
+  console.log('Auth header present:', !!authHeader);
+  console.log('Token present:', !!token);
 
   if (!token) {
+    console.log('No token provided - returning 401');
     return res.sendStatus(401);
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    const user = await storage.getUser(decoded.id);
-    if (!user) {
+    console.log('JWT decoded successfully:', decoded);
+    
+    // Проверяем userId в токене (может быть id или userId)
+    const userId = decoded.userId || decoded.id;
+    console.log('Extracted userId:', userId);
+    
+    if (!userId) {
+      console.log('No userId found in token - returning 403');
       return res.sendStatus(403);
     }
+    
+    const user = await storage.getUser(userId);
+    console.log('User lookup result:', user ? `Found: ${user.username}` : 'Not found');
+    
+    if (!user) {
+      console.log('User not found for ID:', userId, '- returning 403');
+      return res.sendStatus(403);
+    }
+    
+    console.log('User authenticated successfully:', user.username, 'Role:', user.role);
     req.user = user;
+    console.log('=== AUTH MIDDLEWARE SUCCESS ===');
     next();
   } catch (error) {
+    console.log('JWT verification error:', error);
+    console.log('=== AUTH MIDDLEWARE FAILED ===');
     return res.sendStatus(403);
   }
 };
@@ -261,17 +284,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Protected routes
   app.get("/api/auth/me", authenticateToken, async (req, res) => {
     try {
-      const authUser = getAuthenticatedUser(req);
-      const user = await storage.getUser(authUser.id);
+      const user = req.user as any;
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        console.log('/api/auth/me - No user found in request');
+        return res.status(403).json({ error: 'User not authenticated' });
       }
       
+      console.log('/api/auth/me - User found:', user.username, 'Role:', user.role);
       const { password, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
-      console.error("Get user error:", error);
-      res.status(500).json({ error: "Internal server error" });
+      console.log('/api/auth/me - Error:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 

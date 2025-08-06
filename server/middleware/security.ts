@@ -47,46 +47,61 @@ export const auditLog = (req: Request, action: string, resource?: string, succes
 };
 
 export const checkIPBlacklist = (req: Request, res: Response, next: NextFunction) => {
-  const clientIP = req.ip || req.connection.remoteAddress || '';
-  
-  if (ipBlacklist.has(clientIP)) {
-    auditLog(req, 'BLOCKED_IP_ACCESS', undefined, false, { ip: clientIP });
-    return res.status(403).json({ error: 'Access denied' });
-  }
-  
-  next();
-};
-
-export const rateLimiter = (windowMs: number = 15 * 60 * 1000, maxRequests: number = 100) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
+  try {
+    const clientIP = req.ip || req.connection?.remoteAddress || 'unknown';
     
-    // Skip rate limiting for localhost in development
+    // Skip IP blacklist check for localhost in development
     if (clientIP === '127.0.0.1' || clientIP === '::1' || clientIP === 'localhost' || clientIP.startsWith('::ffff:127.')) {
       return next();
     }
     
-    const now = Date.now();
-    const key = `${clientIP}_general`;
-    
-    let entry = rateLimitStore.get(key);
-    
-    if (!entry || now > entry.resetTime) {
-      entry = { count: 1, resetTime: now + windowMs };
-      rateLimitStore.set(key, entry);
-      return next();
+    if (ipBlacklist.has(clientIP)) {
+      auditLog(req, 'BLOCKED_IP_ACCESS', undefined, false, { ip: clientIP });
+      return res.status(403).json({ error: 'Access denied' });
     }
     
-    if (entry.count >= maxRequests) {
-      auditLog(req, 'RATE_LIMIT_EXCEEDED', undefined, false, { ip: clientIP, count: entry.count });
-      return res.status(429).json({ 
-        error: 'Too many requests', 
-        retryAfter: Math.ceil((entry.resetTime - now) / 1000) 
-      });
-    }
-    
-    entry.count++;
     next();
+  } catch (error) {
+    console.error('IP blacklist check error:', error);
+    next(); // Continue on error for development
+  }
+};
+
+export const rateLimiter = (windowMs: number = 15 * 60 * 1000, maxRequests: number = 100) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const clientIP = req.ip || req.connection?.remoteAddress || 'unknown';
+      
+      // Skip rate limiting for localhost in development
+      if (clientIP === '127.0.0.1' || clientIP === '::1' || clientIP === 'localhost' || clientIP.startsWith('::ffff:127.')) {
+        return next();
+      }
+      
+      const now = Date.now();
+      const key = `${clientIP}_general`;
+      
+      let entry = rateLimitStore.get(key);
+      
+      if (!entry || now > entry.resetTime) {
+        entry = { count: 1, resetTime: now + windowMs };
+        rateLimitStore.set(key, entry);
+        return next();
+      }
+      
+      if (entry.count >= maxRequests) {
+        auditLog(req, 'RATE_LIMIT_EXCEEDED', undefined, false, { ip: clientIP, count: entry.count });
+        return res.status(429).json({ 
+          error: 'Too many requests', 
+          retryAfter: Math.ceil((entry.resetTime - now) / 1000) 
+        });
+      }
+      
+      entry.count++;
+      next();
+    } catch (error) {
+      console.error('Rate limiter error:', error);
+      next(); // Continue on error for development
+    }
   };
 };
 

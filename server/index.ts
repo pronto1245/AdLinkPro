@@ -36,33 +36,35 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rate limiting для API
+// Rate limiting для API (отключен в development для отладки)
 const rateLimitTracker = new Map();
-app.use('/api', (req, res, next) => {
-  const clientIp = req.ip || req.connection.remoteAddress;
-  const now = Date.now();
-  const windowMs = 60 * 1000; // 1 минута
-  const maxRequests = 100; // максимум запросов в минуту
-  
-  if (!rateLimitTracker.has(clientIp)) {
-    rateLimitTracker.set(clientIp, { count: 1, resetTime: now + windowMs });
-  } else {
-    const tracker = rateLimitTracker.get(clientIp);
-    if (now > tracker.resetTime) {
-      tracker.count = 1;
-      tracker.resetTime = now + windowMs;
+if (process.env.NODE_ENV === 'production') {
+  app.use('/api', (req, res, next) => {
+    const clientIp = req.ip || req.connection.remoteAddress;
+    const now = Date.now();
+    const windowMs = 60 * 1000; // 1 минута
+    const maxRequests = 100; // максимум запросов в минуту
+    
+    if (!rateLimitTracker.has(clientIp)) {
+      rateLimitTracker.set(clientIp, { count: 1, resetTime: now + windowMs });
     } else {
-      tracker.count++;
-      if (tracker.count > maxRequests) {
-        return res.status(429).json({ 
-          error: 'Too many requests', 
-          retryAfter: Math.ceil((tracker.resetTime - now) / 1000) 
-        });
+      const tracker = rateLimitTracker.get(clientIp);
+      if (now > tracker.resetTime) {
+        tracker.count = 1;
+        tracker.resetTime = now + windowMs;
+      } else {
+        tracker.count++;
+        if (tracker.count > maxRequests) {
+          return res.status(429).json({ 
+            error: 'Too many requests', 
+            retryAfter: Math.ceil((tracker.resetTime - now) / 1000) 
+          });
+        }
       }
     }
-  }
-  next();
-});
+    next();
+  });
+}
 
 app.use((req, res, next) => {
   const start = Date.now();
