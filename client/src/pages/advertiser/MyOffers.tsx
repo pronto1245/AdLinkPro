@@ -221,7 +221,7 @@ export default function MyOffers() {
               Обновить
             </Button>
             
-            <Link href="/advertiser/offers/create">
+            <Link href="/advertiser/offers/new">
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
                 Создать оффер
