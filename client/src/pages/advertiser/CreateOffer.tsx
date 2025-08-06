@@ -37,6 +37,8 @@ interface OfferFormData {
     url: string;
     geo?: string;
     payout?: string;
+    hasCustomGeo?: boolean;
+    hasCustomPayout?: boolean;
     isDefault: boolean;
   }>;
   
@@ -86,7 +88,7 @@ const initialFormData: OfferFormData = {
   // Ссылки
   targetUrl: '',
   postbackUrl: '',
-  landingPages: [{ id: '1', name: 'Основная', url: '', geo: '', payout: '', isDefault: true }],
+  landingPages: [{ id: '1', name: 'Основная', url: '', geo: '', payout: '', hasCustomGeo: false, hasCustomPayout: false, isDefault: true }],
   
   // Выплаты
   payoutType: 'cpa',
@@ -298,6 +300,8 @@ export default function CreateOffer() {
       url: '',
       geo: '',
       payout: '',
+      hasCustomGeo: false,
+      hasCustomPayout: false,
       isDefault: false
     };
     setFormData(prev => ({
@@ -816,18 +820,38 @@ export default function CreateOffer() {
                               }}
                               className="flex-1"
                             />
-                            <Input
-                              placeholder="ГЕО"
-                              value={landing.geo || ''}
-                              onChange={(e) => updateLandingPage(landing.id, 'geo', e.target.value)}
-                              className="w-24"
-                            />
-                            <Input
-                              placeholder="Сумма выплаты"
-                              value={landing.payout || ''}
-                              onChange={(e) => updateLandingPage(landing.id, 'payout', e.target.value)}
-                              className="w-32"
-                            />
+                            <div className="flex items-center space-x-1">
+                              <input
+                                type="checkbox"
+                                checked={landing.hasCustomGeo || false}
+                                onChange={(e) => updateLandingPage(landing.id, 'hasCustomGeo', e.target.checked)}
+                                className="rounded"
+                              />
+                              <Input
+                                placeholder="ГЕО"
+                                value={landing.geo || ''}
+                                onChange={(e) => updateLandingPage(landing.id, 'geo', e.target.value)}
+                                className="w-20"
+                                disabled={!landing.hasCustomGeo}
+                              />
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">Разные ГЕО для URL</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <input
+                                type="checkbox"
+                                checked={landing.hasCustomPayout || false}
+                                onChange={(e) => updateLandingPage(landing.id, 'hasCustomPayout', e.target.checked)}
+                                className="rounded"
+                              />
+                              <Input
+                                placeholder="Сумма"
+                                value={landing.payout || ''}
+                                onChange={(e) => updateLandingPage(landing.id, 'payout', e.target.value)}
+                                className="w-24"
+                                disabled={!landing.hasCustomPayout}
+                              />
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">Разные выплаты для URL</span>
+                            </div>
                             <div className="flex items-center space-x-2">
                               <input
                                 type="checkbox"
