@@ -1,22 +1,29 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface SidebarContextType {
-  isCollapsed: boolean;
-  setIsCollapsed: (collapsed: boolean) => void;
-  toggleSidebar: () => void;
+  collapsed: boolean;
+  toggleCollapsed: () => void;
+  setCollapsed: (value: boolean) => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
-export function SidebarProvider({ children }: { children: ReactNode }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+export function SidebarProvider({ children }: { children: React.ReactNode }) {
+  const [collapsed, setCollapsed] = useState(() => {
+    // Восстанавливаем состояние из localStorage
+    const saved = localStorage.getItem('sidebar-collapsed');
+    return saved ? JSON.parse(saved) : false;
+  });
 
-  const toggleSidebar = () => {
-    setIsCollapsed(prev => !prev);
-  };
+  // Сохраняем состояние в localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebar-collapsed', JSON.stringify(collapsed));
+  }, [collapsed]);
+
+  const toggleCollapsed = () => setCollapsed(!collapsed);
 
   return (
-    <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed, toggleSidebar }}>
+    <SidebarContext.Provider value={{ collapsed, toggleCollapsed, setCollapsed }}>
       {children}
     </SidebarContext.Provider>
   );

@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
+import { useSidebar } from '@/contexts/sidebar-context';
 import { 
   BarChart3, 
   Settings, 
@@ -10,7 +11,9 @@ import {
   Building2,
   Shield,
   FileText,
-  Download
+  Download,
+  ChevronLeft,
+  Menu
 } from 'lucide-react';
 
 const sidebarItems = [
@@ -79,19 +82,43 @@ const sidebarItems = [
 
 export default function AdvertiserSidebar() {
   const [location] = useLocation();
+  const { collapsed, toggleCollapsed } = useSidebar();
 
   return (
-    <div className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col">
+    <div 
+      className={cn(
+        "bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col transition-all duration-300 ease-in-out",
+        collapsed ? "w-16" : "w-64"
+      )}
+    >
       {/* Header */}
-      <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <Building2 className="w-6 h-6 text-white" />
+      <div className="border-b border-gray-200 dark:border-gray-800 p-4">
+        <div className="flex items-center justify-between">
+          <div className={cn("flex items-center space-x-3", collapsed && "justify-center")}>
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <Building2 className="w-6 h-6 text-white" />
+            </div>
+            {!collapsed && (
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">FraudGuard</h1>
+                <p className="text-sm text-blue-600 dark:text-blue-400">Кабинет рекламодателя</p>
+              </div>
+            )}
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white">FraudGuard</h1>
-            <p className="text-sm text-blue-600 dark:text-blue-400">Кабинет рекламодателя</p>
-          </div>
+          <button
+            onClick={toggleCollapsed}
+            className={cn(
+              "p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
+              collapsed && "mx-auto"
+            )}
+            title={collapsed ? "Развернуть меню" : "Свернуть меню"}
+          >
+            {collapsed ? (
+              <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            ) : (
+              <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -106,19 +133,22 @@ export default function AdvertiserSidebar() {
             <Link key={item.href} href={item.href}>
               <div
                 className={cn(
-                  'flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors group',
+                  'flex items-center rounded-lg transition-colors group',
+                  collapsed ? 'px-3 py-3 justify-center' : 'px-3 py-2 space-x-3',
                   isActive
                     ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
                 )}
-                title={item.description}
+                title={collapsed ? item.title : item.description}
                 data-testid={`sidebar-link-${item.href.split('/').pop()}`}
               >
                 <Icon className={cn(
-                  'w-5 h-5',
+                  'w-5 h-5 flex-shrink-0',
                   isActive ? 'text-blue-600 dark:text-blue-400' : ''
                 )} />
-                <span className="font-medium">{item.title}</span>
+                {!collapsed && (
+                  <span className="font-medium truncate">{item.title}</span>
+                )}
               </div>
             </Link>
           );
