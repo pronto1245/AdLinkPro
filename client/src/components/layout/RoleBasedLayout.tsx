@@ -9,29 +9,14 @@ interface RoleBasedLayoutProps {
 export default function RoleBasedLayout({ children }: RoleBasedLayoutProps) {
   const { user } = useAuth();
   
-  console.log('RoleBasedLayout: Rendering with user:', user?.role);
-  
   if (!user) {
-    console.log('RoleBasedLayout: No user found');
     return <div>Загрузка...</div>;
   }
 
-  const renderSidebar = () => {
-    if (!user) return null;
-    
-    switch (user.role) {
-      case 'advertiser':
-        return <AdvertiserSidebar />;
-      case 'affiliate':
-        return <AffiliateSidebar />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      {renderSidebar()}
+      {user.role === 'advertiser' && <AdvertiserSidebar />}
+      {user.role === 'affiliate' && <AffiliateSidebar />}
       <main className="flex-1 overflow-auto">
         <div className="p-6">
           {children}
