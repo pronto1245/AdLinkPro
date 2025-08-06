@@ -753,7 +753,14 @@ export default function CreateOffer() {
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="targetUrl">Целевая ссылка оффера *</Label>
-                      <div className="space-y-2 mt-2">
+                      <div className="grid grid-cols-12 gap-3 text-xs font-medium text-muted-foreground px-4 mb-2 mt-3">
+                        <div className="col-span-2">Название</div>
+                        <div className="col-span-5">URL целевой страницы</div>
+                        <div className="col-span-2">Разные ГЕО для URL</div>
+                        <div className="col-span-2">Разные выплаты для URL</div>
+                        <div className="col-span-1">По умолчанию</div>
+                      </div>
+                      <div className="space-y-2">
                         {formData.landingPages.map((landing, index) => (
                           <div key={landing.id} className="grid grid-cols-12 gap-3 items-center p-4 border rounded-lg">
                             <div className="col-span-2">
@@ -872,13 +879,7 @@ export default function CreateOffer() {
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-12 gap-3 text-xs font-medium text-muted-foreground px-4">
-                      <div className="col-span-2">Название</div>
-                      <div className="col-span-5">URL целевой страницы</div>
-                      <div className="col-span-2">Разные ГЕО для URL</div>
-                      <div className="col-span-2">Разные выплаты для URL</div>
-                      <div className="col-span-1">По умолчанию</div>
-                    </div>
+
 
 
 
