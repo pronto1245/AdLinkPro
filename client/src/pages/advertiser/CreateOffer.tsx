@@ -233,7 +233,35 @@ export default function CreateOffer() {
   // Мутация для создания оффера
   const createOfferMutation = useMutation({
     mutationFn: async (data: OfferFormData) => {
-      return apiRequest('/api/advertiser/offers', 'POST', data);
+      // Преобразуем данные формы в формат API
+      const apiData = {
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        logo: data.logo,
+        countries: data.geoTargeting,
+        landingPageUrl: data.targetUrl,
+        landingPages: data.landingPages,
+        payout: data.payoutAmount.toString(),
+        payoutType: data.payoutType,
+        currency: data.currency,
+        partnerApprovalType: data.partnerApprovalType,
+        trafficSources: data.trafficSources,
+        deniedSources: data.deniedSources,
+        trafficRequirements: data.trafficRequirements,
+        dailyLimit: data.dailyLimit || null,
+        monthlyLimit: data.monthlyLimit || null,
+        antifraudEnabled: data.antifraudEnabled,
+        antifraudMethods: data.antifraudMethods,
+        kycRequired: data.kycRequired,
+        isPrivate: data.isPrivate,
+        customDomains: data.customDomains,
+        tags: data.tags,
+        kpiConditions: { en: data.kpi, ru: data.kpi },
+        advertiserId: user?.id,
+        status: data.status
+      };
+      return apiRequest('/api/advertiser/offers', 'POST', apiData);
     },
     onSuccess: (data) => {
       toast({
