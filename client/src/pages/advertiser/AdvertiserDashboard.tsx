@@ -569,11 +569,39 @@ export default function AdvertiserDashboard() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="traffic" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="traffic" data-testid="tab-traffic">Трафик</TabsTrigger>
-                <TabsTrigger value="conversions" data-testid="tab-conversions">Конверсии</TabsTrigger>
-                <TabsTrigger value="spending" data-testid="tab-spending">Расходы</TabsTrigger>
-                <TabsTrigger value="postbacks" data-testid="tab-postbacks">Постбеки</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4 bg-gray-100">
+                <TabsTrigger 
+                  value="traffic" 
+                  data-testid="tab-traffic"
+                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                >
+                  <Activity className="h-4 w-4 mr-2" />
+                  Трафик
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="conversions" 
+                  data-testid="tab-conversions"
+                  className="data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                >
+                  <Target className="h-4 w-4 mr-2" />
+                  Конверсии
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="spending" 
+                  data-testid="tab-spending"
+                  className="data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                >
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Расходы
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="postbacks" 
+                  data-testid="tab-postbacks"
+                  className="data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Постбеки
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="traffic" className="space-y-4">
