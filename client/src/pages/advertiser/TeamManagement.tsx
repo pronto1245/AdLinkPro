@@ -444,11 +444,11 @@ export default function TeamManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Заголовок с градиентом */}
-      <div className="flex justify-between items-center p-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl border border-purple-200 dark:border-purple-700">
+      {/* Заголовок */}
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-purple-800 dark:text-purple-200">👥 Командный режим</h1>
-          <p className="text-purple-600 dark:text-purple-300">
+          <h1 className="text-3xl font-bold tracking-tight">Командный режим</h1>
+          <p className="text-muted-foreground">
             Управление командой и разграничение прав доступа
           </p>
         </div>
