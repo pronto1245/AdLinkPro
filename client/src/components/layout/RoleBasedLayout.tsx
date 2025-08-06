@@ -15,8 +15,8 @@ export default function RoleBasedLayout({ children }: RoleBasedLayoutProps) {
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      {user.role === 'advertiser' && <AdvertiserSidebar />}
-      {user.role === 'affiliate' && <AffiliateSidebar />}
+      {user.role === 'advertiser' && <AdvertiserSidebar key={`sidebar-${user.id}`} />}
+      {user.role === 'affiliate' && <AffiliateSidebar key={`sidebar-${user.id}`} />}
       <main className="flex-1 overflow-auto">
         <div className="p-6">
           {children}

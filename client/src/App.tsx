@@ -284,7 +284,7 @@ function Router() {
       
       <Route path="/advertiser/team">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <RoleBasedLayout>
+          <RoleBasedLayout key="advertiser-team">
             <AdvertiserTeamManagement />
           </RoleBasedLayout>
         </ProtectedRoute>
