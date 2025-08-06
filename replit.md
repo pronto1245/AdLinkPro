@@ -1,6 +1,12 @@
 # Overview
 This anti-fraud platform provides comprehensive financial security and real-time risk management for financial institutions, payment processors, and e-commerce. Key capabilities include AI-powered fraud detection, real-time risk assessment, analytics dashboards, automated blocking, and detailed audit trails. It supports device fingerprinting, IP analysis, behavioral patterns, and transaction monitoring to offer deep insights into fraud patterns, risk scores, and security metrics for effective prevention and compliance. The platform, rebranded as FraudGuard, is fully operational with robust security features, performance optimizations, and comprehensive integration across all modules.
 
+## Recent Updates (August 2025)
+- ✅ **Enhanced Offer Creation**: Added comprehensive antifraud protection system with 9 selectable methods (IP verification, VPN/Proxy detection, bot protection, device fingerprinting, behavioral analysis, click spam protection, time analysis, referrer validation, conversion validation)
+- ✅ **Application Type Management**: Integrated 16 allowed application types (PWA App, WebView App, APK, iOS App, SPA, Landing App, SmartLink, Mini App, Desktop App, iFrame, ZIP, Cloud App, DApp, Masked App, WebRTC, TWA)
+- ✅ **Partner Approval Workflow**: Implemented partner approval type selection (Automatic, Manual, On request, Whitelist only) with full database integration
+- ✅ **Database Schema Enhancement**: Successfully migrated all new fields (allowedApplications, antifraudMethods, partnerApprovalType) to PostgreSQL with proper JSONB and text column types
+
 # User Preferences
 Preferred communication style: Simple, everyday language.
 
