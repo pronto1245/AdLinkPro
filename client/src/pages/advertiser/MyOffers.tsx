@@ -104,6 +104,50 @@ interface PartnerStats {
 export default function MyOffers() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  // Мутация для изменения статуса оффера
+  const updateOfferStatusMutation = useMutation({
+    mutationFn: async ({ offerId, status }: { offerId: string; status: string }) => {
+      const response = await fetch(`/api/advertiser/offers/${offerId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ status })
+      });
+
+      if (!response.ok) {
+        throw new Error('Не удалось изменить статус оффера');
+      }
+
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      // Обновляем кеш после успешного изменения
+      queryClient.setQueryData(['/api/advertiser/offers'], (oldData: any) => {
+        if (!oldData) return oldData;
+        
+        return oldData.map((offer: Offer) => 
+          offer.id === variables.offerId 
+            ? { ...offer, status: variables.status }
+            : offer
+        );
+      });
+      
+      // Показываем уведомление об успехе
+      console.log('Статус оффера успешно изменен:', variables.status);
+    },
+    onError: (error) => {
+      console.error('Ошибка при изменении статуса:', error);
+      // Здесь можно добавить toast уведомление об ошибке
+    }
+  });
+
+  // Обработчик изменения статуса
+  const handleStatusChange = (offerId: string, newStatus: string) => {
+    updateOfferStatusMutation.mutate({ offerId, status: newStatus });
+  };
   
   // State для фильтров и поиска
   const [searchTerm, setSearchTerm] = useState('');
@@ -460,9 +504,49 @@ export default function MyOffers() {
                         </TableCell>
                         
                         <TableCell>
-                          <Badge variant={getStatusBadge(offer.status).variant}>
-                            {getStatusBadge(offer.status).label}
-                          </Badge>
+                          <Select 
+                            value={offer.status} 
+                            onValueChange={(newStatus) => handleStatusChange(offer.id, newStatus)}
+                          >
+                            <SelectTrigger className="w-[140px] h-8">
+                              <Badge variant={getStatusBadge(offer.status).variant} className="text-xs">
+                                {getStatusBadge(offer.status).label}
+                              </Badge>
+                              <ChevronDown className="h-3 w-3 ml-1" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                  Активен
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="paused">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                  Приостановлен
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="stopped">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                  Остановлен
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="archived">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                                  Архивирован
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="draft">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                                  Черновик
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                         
                         <TableCell>

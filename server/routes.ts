@@ -1037,6 +1037,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update offer status
+  app.patch("/api/advertiser/offers/:id/status", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerId = req.params.id;
+      const { status } = req.body;
+      
+      // Validate status
+      const validStatuses = ['active', 'paused', 'stopped', 'archived', 'draft'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ error: "Invalid status value" });
+      }
+      
+      // Get the offer and check ownership
+      const offer = await storage.getOffer(offerId);
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      if (offer.advertiserId !== authUser.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      // Update the offer status
+      const updatedOffer = await storage.updateOffer(offerId, { status });
+      
+      console.log(`Offer ${offerId} status updated to ${status} by ${authUser.id}`);
+      
+      res.json(updatedOffer);
+    } catch (error) {
+      console.error("Update offer status error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Generate partner link for specific offer
   app.post("/api/partner/generate-link", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
