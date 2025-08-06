@@ -202,6 +202,44 @@ export default function AdvertiserDashboardNew() {
           </div>
         </div>
 
+        {/* Quick Actions - Moved under filters */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <Link to="/analytics/traffic">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" data-testid="button-quick-traffic">
+              <Activity className="h-5 w-5" />
+              <span className="text-sm font-medium">Трафик</span>
+            </Button>
+          </Link>
+          
+          <Link to="/analytics/conversions">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-green-50 hover:bg-green-100 border-green-200 text-green-700" data-testid="button-quick-conversions">
+              <Target className="h-5 w-5" />
+              <span className="text-sm font-medium">Конверсии</span>
+            </Button>
+          </Link>
+          
+          <Link to="/advertiser/finances">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-700" data-testid="button-quick-spending">
+              <DollarSign className="h-5 w-5" />
+              <span className="text-sm font-medium">Расходы</span>
+            </Button>
+          </Link>
+          
+          <Link to="/advertiser/postbacks">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700" data-testid="button-quick-postbacks">
+              <Send className="h-5 w-5" />
+              <span className="text-sm font-medium">Постбеки</span>
+            </Button>
+          </Link>
+          
+          <Link to="/fraud-detection">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-red-50 hover:bg-red-100 border-red-200 text-red-700" data-testid="button-quick-fraud">
+              <Shield className="h-5 w-5" />
+              <span className="text-sm font-medium">Фрод</span>
+            </Button>
+          </Link>
+        </div>
+
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <Card data-testid="card-offers">
@@ -481,55 +519,7 @@ export default function AdvertiserDashboardNew() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <Card data-testid="card-quick-actions">
-          <CardHeader>
-            <CardTitle>Быстрые действия</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              <Link to="/advertiser/offers/new">
-                <Button variant="outline" className="w-full" data-testid="button-quick-new-offer">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Новый оффер
-                </Button>
-              </Link>
-              
-              <Link to="/advertiser/finances">
-                <Button variant="outline" className="w-full" data-testid="button-quick-finances">
-                  <FileText className="h-4 w-4 mr-2" />
-                  История расходов
-                </Button>
-              </Link>
-              
-              <Link to="/advertiser/postbacks">
-                <Button variant="outline" className="w-full" data-testid="button-quick-postbacks">
-                  <Send className="h-4 w-4 mr-2" />
-                  Постбеки
-                </Button>
-              </Link>
-              
-              <Button variant="outline" className="w-full" onClick={() => exportMutation.mutate()} data-testid="button-quick-export">
-                <Download className="h-4 w-4 mr-2" />
-                Экспорт
-              </Button>
-              
-              <Link to="/advertiser/offers">
-                <Button variant="outline" className="w-full" data-testid="button-quick-offers">
-                  <Target className="h-4 w-4 mr-2" />
-                  Офферы
-                </Button>
-              </Link>
-              
-              <Link to="/advertiser/analytics">
-                <Button variant="outline" className="w-full" data-testid="button-quick-analytics">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Аналитика
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Quick Actions moved and removed from end */}
       </div>
     </RoleBasedLayout>
   );
