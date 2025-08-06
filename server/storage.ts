@@ -4217,29 +4217,6 @@ class MemStorage implements IStorage {
     return [
       {
         id: 'tracking',
-        title: 'Трек-ссылки',
-        content: 'Полная документация по структуре трекинговых ссылок...',
-        updated: '2025-08-06T12:00:00Z'
-      },
-      {
-        id: 'postbacks',
-        title: 'Постбэки',
-        content: 'Макросы и настройка постбэков...',
-        updated: '2025-08-06T12:00:00Z'
-      },
-      {
-        id: 'api',
-        title: 'API-документация',
-        content: 'Документация по API endpoints...',
-        updated: '2025-08-06T12:00:00Z'
-      }
-    ];
-  }
-
-  async getDocumentationSections(): Promise<any[]> {
-    return [
-      {
-        id: 'tracking',
         title: 'Трекинг и ссылки',
         description: 'Руководство по созданию и управлению трекинговыми ссылками',
         category: 'tracking',

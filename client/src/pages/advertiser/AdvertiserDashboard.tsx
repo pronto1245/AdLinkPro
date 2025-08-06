@@ -741,15 +741,15 @@ export default function AdvertiserDashboard() {
                       </TableCell>
                       <TableCell>{getStatusBadge(offer.status)}</TableCell>
                       <TableCell className="font-mono">{formatNumber(offer.clicks)}</TableCell>
-                      <TableCell className="font-mono">{(offer.cr || 0).toFixed(2)}%</TableCell>
+                      <TableCell className="font-mono">{typeof offer.cr === 'number' ? offer.cr.toFixed(2) : '0.00'}%</TableCell>
                       <TableCell className="font-mono">{formatNumber(offer.conversions)}</TableCell>
                       <TableCell className="font-mono">{formatCurrency(offer.spent)}</TableCell>
                       <TableCell className="font-mono">{offer.postbacks}</TableCell>
                       <TableCell className={cn(
                         "font-mono",
-                        offer.fraudRate > 5 ? 'text-red-600' : offer.fraudRate > 2 ? 'text-yellow-600' : 'text-green-600'
+                        (offer.fraudRate || 0) > 5 ? 'text-red-600' : (offer.fraudRate || 0) > 2 ? 'text-yellow-600' : 'text-green-600'
                       )}>
-                        {offer.fraudRate.toFixed(1)}%
+                        {typeof offer.fraudRate === 'number' ? offer.fraudRate.toFixed(1) : '0.0'}%
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
