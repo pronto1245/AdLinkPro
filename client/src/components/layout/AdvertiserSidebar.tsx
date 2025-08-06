@@ -57,6 +57,12 @@ const sidebarItems = [
     description: 'Управление командой и права доступа'
   },
   {
+    title: 'Антифрод',
+    href: '/advertiser/antifraud',
+    icon: Shield,
+    description: 'Система защиты от фродового трафика'
+  },
+  {
     title: 'Профиль',
     href: '/advertiser/profile',
     icon: Settings,

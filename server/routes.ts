@@ -337,6 +337,304 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   console.log('=== TEAM ROUTES ADDED SUCCESSFULLY ===');
+
+  // АНТИФРОД API ЭНДПОИНТЫ
+  console.log('=== ADDING ANTIFRAUD ROUTES ===');
+  
+  app.get("/api/advertiser/antifraud/dashboard", async (req, res) => {
+    console.log('=== GET ANTIFRAUD DASHBOARD ===');
+    const { range = '24h' } = req.query;
+    
+    try {
+      // Mock данные дашборда антифрод системы
+      const mockDashboard = {
+        totalEvents: 1547,
+        blockedEvents: 312,
+        fraudRate: 20.17,
+        topFraudTypes: [
+          { type: 'bot', count: 156, percentage: 50.0 },
+          { type: 'vpn', count: 89, percentage: 28.5 },
+          { type: 'proxy', count: 43, percentage: 13.8 },
+          { type: 'click_spam', count: 24, percentage: 7.7 }
+        ],
+        topFraudPartners: [
+          { partnerId: 'partner_1', partnerName: 'Suspicious Partner 1', events: 45, fraudRate: 78.3 },
+          { partnerId: 'partner_2', partnerName: 'High Risk Partner', events: 32, fraudRate: 65.2 },
+          { partnerId: 'partner_3', partnerName: 'Bot Traffic Source', events: 28, fraudRate: 89.1 }
+        ],
+        hourlyStats: Array.from({ length: 24 }, (_, i) => ({
+          hour: String(i).padStart(2, '0') + ':00',
+          events: Math.floor(Math.random() * 50) + 10,
+          blocked: Math.floor(Math.random() * 20) + 5
+        })),
+        countryStats: [
+          { country: 'US', events: 245, fraudRate: 15.3 },
+          { country: 'RU', events: 189, fraudRate: 23.7 },
+          { country: 'BR', events: 156, fraudRate: 31.2 },
+          { country: 'IN', events: 134, fraudRate: 45.1 }
+        ],
+        recentEvents: [
+          {
+            id: 'evt_1',
+            timestamp: new Date(Date.now() - 300000).toISOString(),
+            partnerId: 'partner_1',
+            partnerName: 'Suspicious Partner 1',
+            offerId: 'offer_1',
+            offerName: 'Gaming Offer',
+            subId: 'suspicious_sub_001',
+            ip: '192.168.1.100',
+            country: 'US',
+            fraudType: 'bot',
+            riskScore: 95,
+            action: 'blocked',
+            status: 'confirmed',
+            details: 'Detected headless browser with no user interactions',
+            userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+            fingerprint: 'fp_abc123def456'
+          },
+          {
+            id: 'evt_2',
+            timestamp: new Date(Date.now() - 600000).toISOString(),
+            partnerId: 'partner_2',
+            partnerName: 'High Risk Partner',
+            offerId: 'offer_2',
+            offerName: 'Casino Offer',
+            subId: 'vpn_traffic_002',
+            ip: '10.0.0.5',
+            country: 'RU',
+            fraudType: 'vpn',
+            riskScore: 87,
+            action: 'flagged',
+            status: 'pending',
+            details: 'VPN detected from commercial VPN service',
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0',
+            fingerprint: 'fp_def789ghi012'
+          }
+        ]
+      };
+      
+      console.log('Returning antifraud dashboard for range:', range);
+      res.json(mockDashboard);
+    } catch (error) {
+      console.error("Get antifraud dashboard error:", error);
+      res.status(500).json({ error: "Internal server error", details: error.message });
+    }
+  });
+
+  app.get("/api/advertiser/antifraud/events", async (req, res) => {
+    console.log('=== GET ANTIFRAUD EVENTS ===');
+    console.log('Query params:', req.query);
+    
+    try {
+      // Mock данные событий фрода
+      const mockEvents = [
+        {
+          id: 'evt_1',
+          timestamp: new Date(Date.now() - 300000).toISOString(),
+          partnerId: 'partner_1',
+          partnerName: 'Suspicious Partner 1',
+          offerId: 'offer_1',
+          offerName: 'Gaming Offer',
+          subId: 'suspicious_sub_001',
+          ip: '192.168.1.100',
+          country: 'US',
+          fraudType: 'bot',
+          riskScore: 95,
+          action: 'blocked',
+          status: 'confirmed',
+          details: 'Detected headless browser with no user interactions',
+          userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+          fingerprint: 'fp_abc123def456'
+        },
+        {
+          id: 'evt_2',
+          timestamp: new Date(Date.now() - 600000).toISOString(),
+          partnerId: 'partner_2',
+          partnerName: 'High Risk Partner',
+          offerId: 'offer_2',
+          offerName: 'Casino Offer',
+          subId: 'vpn_traffic_002',
+          ip: '10.0.0.5',
+          country: 'RU',
+          fraudType: 'vpn',
+          riskScore: 87,
+          action: 'flagged',
+          status: 'pending',
+          details: 'VPN detected from commercial VPN service',
+          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0',
+          fingerprint: 'fp_def789ghi012'
+        },
+        {
+          id: 'evt_3',
+          timestamp: new Date(Date.now() - 900000).toISOString(),
+          partnerId: 'partner_3',
+          partnerName: 'Bot Traffic Source',
+          offerId: 'offer_3',
+          offerName: 'Finance Offer',
+          subId: 'proxy_clicks_003',
+          ip: '203.0.113.15',
+          country: 'BR',
+          fraudType: 'proxy',
+          riskScore: 76,
+          action: 'blocked',
+          status: 'confirmed',
+          details: 'Traffic from known proxy server',
+          userAgent: 'Mozilla/5.0 (Windows NT 6.1; WOW64) Gecko/20100101',
+          fingerprint: 'fp_ghi345jkl678'
+        },
+        {
+          id: 'evt_4',
+          timestamp: new Date(Date.now() - 1200000).toISOString(),
+          partnerId: 'partner_4',
+          partnerName: 'Click Farm Network',
+          offerId: 'offer_1',
+          offerName: 'Gaming Offer',
+          subId: 'spam_clicks_004',
+          ip: '198.51.100.42',
+          country: 'IN',
+          fraudType: 'click_spam',
+          riskScore: 92,
+          action: 'blocked',
+          status: 'confirmed',
+          details: '150 clicks from same IP in 5 minutes',
+          userAgent: 'Mozilla/5.0 (Android 10; Mobile; rv:81.0) Gecko/81.0',
+          fingerprint: 'fp_jkl901mno234'
+        },
+        {
+          id: 'evt_5',
+          timestamp: new Date(Date.now() - 1500000).toISOString(),
+          partnerId: 'partner_5',
+          partnerName: 'Suspicious CR Partner',
+          offerId: 'offer_4',
+          offerName: 'Dating Offer',
+          subId: 'high_cr_005',
+          ip: '192.0.2.100',
+          country: 'DE',
+          fraudType: 'suspicious_cr',
+          riskScore: 83,
+          action: 'flagged',
+          status: 'pending',
+          details: '100% conversion rate - statistically impossible',
+          userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+          fingerprint: 'fp_mno567pqr890'
+        }
+      ];
+      
+      console.log('Returning', mockEvents.length, 'antifraud events');
+      res.json(mockEvents);
+    } catch (error) {
+      console.error("Get antifraud events error:", error);
+      res.status(500).json({ error: "Internal server error", details: error.message });
+    }
+  });
+
+  app.get("/api/advertiser/antifraud/settings", async (req, res) => {
+    console.log('=== GET ANTIFRAUD SETTINGS ===');
+    
+    try {
+      // Mock настройки антифрод системы
+      const mockSettings = {
+        enabled: true,
+        sensitivity: 7,
+        autoBlock: true,
+        botDetection: {
+          enabled: true,
+          checkJs: true,
+          checkHeadless: true,
+          checkInteraction: true
+        },
+        vpnProxyDetection: {
+          enabled: true,
+          blockVpn: true,
+          blockProxy: true,
+          blockTor: true
+        },
+        clickSpamDetection: {
+          enabled: true,
+          maxClicksPerIp: 50,
+          timeWindow: 60
+        },
+        suspiciousActivity: {
+          enabled: true,
+          maxConversionRate: 25,
+          minTimeOnSite: 10
+        },
+        geoFiltering: {
+          enabled: false,
+          allowedCountries: ['US', 'CA', 'GB', 'DE', 'FR'],
+          blockedCountries: []
+        },
+        notifications: {
+          email: true,
+          telegram: false,
+          webhooks: false,
+          threshold: 10
+        }
+      };
+      
+      console.log('Returning antifraud settings');
+      res.json(mockSettings);
+    } catch (error) {
+      console.error("Get antifraud settings error:", error);
+      res.status(500).json({ error: "Internal server error", details: error.message });
+    }
+  });
+
+  app.patch("/api/advertiser/antifraud/settings", async (req, res) => {
+    console.log('=== PATCH ANTIFRAUD SETTINGS ===');
+    console.log('Settings update:', req.body);
+    
+    try {
+      // В реальной системе здесь был бы код обновления настроек в БД
+      console.log('Antifraud settings updated successfully');
+      res.json({ success: true, message: 'Settings updated' });
+    } catch (error) {
+      console.error("Update antifraud settings error:", error);
+      res.status(500).json({ error: "Internal server error", details: error.message });
+    }
+  });
+
+  app.post("/api/advertiser/antifraud/confirm-event", async (req, res) => {
+    console.log('=== POST CONFIRM ANTIFRAUD EVENT ===');
+    console.log('Event confirmation:', req.body);
+    
+    try {
+      const { eventId, status } = req.body;
+      
+      if (!eventId || !status) {
+        return res.status(400).json({ error: "Event ID and status are required" });
+      }
+      
+      // В реальной системе здесь был бы код обновления статуса события в БД
+      console.log('Event', eventId, 'marked as', status);
+      res.json({ success: true, message: 'Event status updated' });
+    } catch (error) {
+      console.error("Confirm antifraud event error:", error);
+      res.status(500).json({ error: "Internal server error", details: error.message });
+    }
+  });
+
+  app.post("/api/advertiser/antifraud/block-partner", async (req, res) => {
+    console.log('=== POST BLOCK PARTNER ===');
+    console.log('Partner blocking:', req.body);
+    
+    try {
+      const { partnerId, reason } = req.body;
+      
+      if (!partnerId || !reason) {
+        return res.status(400).json({ error: "Partner ID and reason are required" });
+      }
+      
+      // В реальной системе здесь был бы код блокировки партнера в БД
+      console.log('Partner', partnerId, 'blocked. Reason:', reason);
+      res.json({ success: true, message: 'Partner blocked successfully' });
+    } catch (error) {
+      console.error("Block partner error:", error);
+      res.status(500).json({ error: "Internal server error", details: error.message });
+    }
+  });
+
+  console.log('=== ANTIFRAUD ROUTES ADDED SUCCESSFULLY ===');
   
   // Move middleware setup after team routes (so team routes work without middleware)
   // Security middleware disabled for development to fix team functionality

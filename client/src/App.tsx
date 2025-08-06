@@ -49,6 +49,7 @@ import ReceivedOffers from "@/pages/advertiser/ReceivedOffers";
 import Finance from "@/pages/advertiser/Finance";
 import Analytics from "@/pages/advertiser/Analytics";
 import AdvertiserTeamManagement from "@/pages/advertiser/TeamManagement";
+import AntiFraud from "@/pages/advertiser/AntiFraud";
 import PartnerDashboard from "@/pages/affiliate/PartnerDashboard";
 import { useAuth } from "./contexts/auth-context";
 import Login from "@/pages/auth/login";
@@ -294,6 +295,14 @@ function Router() {
         <ProtectedRoute allowedRoles={['advertiser']}>
           <RoleBasedLayout>
             <AdvertiserPartners />
+          </RoleBasedLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/antifraud">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <RoleBasedLayout key="advertiser-antifraud">
+            <AntiFraud />
           </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
