@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "./contexts/auth-context";
 import { LanguageProvider } from "./contexts/language-context";
 import { SidebarProvider } from "./contexts/sidebar-context";
+import RoleBasedLayout from "./components/layout/RoleBasedLayout";
 import NotFound from "./pages/NotFound";
 import Dashboard from "@/pages/super-admin/dashboard";
 import SuperAdminUsers from "@/pages/super-admin/users";
@@ -202,25 +203,33 @@ function Router() {
       {/* Advertiser Routes - ТЗ2 Implementation - Specific routes first */}
       <Route path="/advertiser/profile">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <AdvertiserProfile />
+          <RoleBasedLayout>
+            <AdvertiserProfile />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/advertiser/finances">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <AdvertiserFinances />
+          <RoleBasedLayout>
+            <AdvertiserFinances />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/advertiser/finance">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <Finance />
+          <RoleBasedLayout>
+            <Finance />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/advertiser/offers/new">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <CreateOffer />
+          <RoleBasedLayout>
+            <CreateOffer />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
@@ -232,13 +241,17 @@ function Router() {
       
       <Route path="/advertiser/offers/manage">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <OfferManagement />
+          <RoleBasedLayout>
+            <OfferManagement />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/advertiser/offers/:id">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <AdvertiserOfferDetails />
+          <RoleBasedLayout>
+            <AdvertiserOfferDetails />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
@@ -246,25 +259,33 @@ function Router() {
       
       <Route path="/advertiser/offers">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <MyOffers />
+          <RoleBasedLayout>
+            <MyOffers />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/advertiser/received-offers">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <ReceivedOffers />
+          <RoleBasedLayout>
+            <ReceivedOffers />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/advertiser/analytics">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <Analytics />
+          <RoleBasedLayout>
+            <Analytics />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/advertiser/partners">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <AdvertiserPartners />
+          <RoleBasedLayout>
+            <AdvertiserPartners />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
@@ -282,13 +303,17 @@ function Router() {
       
       <Route path="/advertiser/dashboard">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <AdvertiserDashboardNew />
+          <RoleBasedLayout>
+            <AdvertiserDashboardNew />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/advertiser">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <AdvertiserDashboardNew />
+          <RoleBasedLayout>
+            <AdvertiserDashboardNew />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
