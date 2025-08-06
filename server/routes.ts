@@ -366,6 +366,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         trafficSources: req.body.trafficSources || [],
         allowedApplications: req.body.allowedApplications || [],
         
+        // Partner approval settings
+        partnerApprovalType: req.body.partnerApprovalType || 'manual',
+        autoApprovePartners: req.body.partnerApprovalType === 'auto',
+        
         // Limits
         dailyLimit: req.body.dailyLimit || null,
         monthlyLimit: req.body.monthlyLimit || null,

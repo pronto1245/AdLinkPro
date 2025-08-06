@@ -63,6 +63,7 @@ interface OfferFormData {
   
   // Антифрод
   antifraudEnabled: boolean;
+  partnerApprovalType: 'auto' | 'manual' | 'by_request' | 'whitelist_only';
   
   // Дополнительные настройки
   kycRequired: boolean;
@@ -107,6 +108,7 @@ const initialFormData: OfferFormData = {
   
   // Антифрод
   antifraudEnabled: true,
+  partnerApprovalType: 'manual',
   
   // Дополнительные настройки
   kycRequired: false,
@@ -376,6 +378,7 @@ export default function CreateOffer() {
         dailyLimit: data.dailyLimit || null,
         monthlyLimit: data.monthlyLimit || null,
         antifraudEnabled: data.antifraudEnabled,
+        partnerApprovalType: data.partnerApprovalType, // Тип подтверждения партнеров
         kycRequired: data.kycRequired,
         isPrivate: data.isPrivate,
         kpiConditions: { en: data.kpi, ru: data.kpi },
@@ -1058,8 +1061,28 @@ export default function CreateOffer() {
                   {/* Методы антифрода удалены из функциональности */}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Тип подтверждения партнёров удален из функциональности */}
-                    <div></div>
+                    <div>
+                      <Label htmlFor="partnerApprovalType" className="font-medium">Тип подтверждения партнеров</Label>
+                      <Select 
+                        value={formData.partnerApprovalType} 
+                        onValueChange={(value: 'auto' | 'manual' | 'by_request' | 'whitelist_only') => 
+                          setFormData(prev => ({ ...prev, partnerApprovalType: value }))
+                        }
+                      >
+                        <SelectTrigger data-testid="select-partner-approval" className="mt-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="auto">Автоматическое одобрение</SelectItem>
+                          <SelectItem value="manual">Ручное одобрение</SelectItem>
+                          <SelectItem value="by_request">По запросу партнера</SelectItem>
+                          <SelectItem value="whitelist_only">Только из белого списка</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Выберите, как партнеры получают доступ к офферу
+                      </p>
+                    </div>
 
                     <div className="flex items-center space-x-2 pt-6">
                       <input
@@ -1068,6 +1091,7 @@ export default function CreateOffer() {
                         checked={formData.kycRequired}
                         onChange={(e) => setFormData(prev => ({ ...prev, kycRequired: e.target.checked }))}
                         className="rounded"
+                        data-testid="checkbox-kyc-required"
                       />
                       <Label htmlFor="kycRequired">Требуется верификация KYC</Label>
                     </div>
