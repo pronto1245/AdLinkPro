@@ -29,8 +29,6 @@ interface OfferFormData {
   
   // GEO и устройства
   geoTargeting: string[];
-  allowedDevices: string[];
-  allowedOs: string[];
   
   // Ссылки
   targetUrl: string;
@@ -91,8 +89,6 @@ const initialFormData: OfferFormData = {
   
   // GEO и устройства
   geoTargeting: [],
-  allowedDevices: [],
-  allowedOs: [],
   
   // Ссылки
   targetUrl: '',
@@ -571,21 +567,13 @@ export default function CreateOffer() {
     }));
   };
 
-  const toggleDevice = (device: string) => {
+  // Функции для работы с приложениями
+  const toggleAppType = (appType: string) => {
     setFormData(prev => ({
       ...prev,
-      allowedDevices: prev.allowedDevices.includes(device)
-        ? prev.allowedDevices.filter(d => d !== device)
-        : [...prev.allowedDevices, device]
-    }));
-  };
-
-  const toggleOs = (os: string) => {
-    setFormData(prev => ({
-      ...prev,
-      allowedOs: prev.allowedOs.includes(os)
-        ? prev.allowedOs.filter(o => o !== os)
-        : [...prev.allowedOs, os]
+      allowedAppTypes: prev.allowedAppTypes.includes(appType)
+        ? prev.allowedAppTypes.filter(a => a !== appType)
+        : [...prev.allowedAppTypes, appType]
     }));
   };
 

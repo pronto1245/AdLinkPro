@@ -97,8 +97,8 @@ export const offers = pgTable("offers", {
   geoPricing: jsonb("geo_pricing"), // Array of geo-specific pricing
   
   // Device and OS targeting
-  allowedDevices: jsonb("allowed_devices"), // ['mobile', 'desktop', 'tablet']
-  allowedOs: jsonb("allowed_os"), // ['android', 'ios', 'windows', 'mac']
+  allowedApps: jsonb("allowed_apps"), // Array of allowed apps or app types
+
   landingLanguage: text("landing_language").default('en'), // Primary language of landing page
   
   // Restrictions and traffic
