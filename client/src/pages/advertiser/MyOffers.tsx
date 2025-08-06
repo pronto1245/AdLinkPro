@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
 import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
@@ -125,6 +125,20 @@ export default function MyOffers() {
     }],
     enabled: !!user?.id
   });
+
+  // Debug log to check offer data
+  React.useEffect(() => {
+    if (offers && offers.length > 0) {
+      console.log('Offers data with logos:', offers.map(offer => ({ 
+        id: offer.id, 
+        name: offer.name, 
+        logo: offer.logo,
+        logoType: typeof offer.logo,
+        logoTruthy: !!offer.logo,
+        logoLength: offer.logo?.length || 0
+      })));
+    }
+  }, [offers]);
 
   // Мутация для обновления оффера
   const updateOfferMutation = useMutation({

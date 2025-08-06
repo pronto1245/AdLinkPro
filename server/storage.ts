@@ -3550,6 +3550,7 @@ export class DatabaseStorage implements IStorage {
           id: offers.id,
           name: offers.name,
           description: offers.description,
+          logo: offers.logo,
           category: offers.category,
           status: offers.status,
           payout: offers.payout,
