@@ -60,6 +60,7 @@ import { cn } from '@/lib/utils';
 interface Offer {
   id: string;
   name: string;
+  logo?: string;
   status: string;
   payoutType: string;
   category: string;
@@ -349,10 +350,37 @@ export default function MyOffers() {
                         </TableCell>
                         
                         <TableCell>
-                          <div>
-                            <div className="font-medium">{offer.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              ID: {offer.id.slice(0, 8)}...
+                          <div className="flex items-center gap-3">
+                            {/* Логотип оффера */}
+                            <div className="flex-shrink-0">
+                              {offer.logo ? (
+                                <img
+                                  src={offer.logo}
+                                  alt={`${offer.name} logo`}
+                                  className="w-10 h-10 rounded-lg object-cover border border-border"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    target.nextElementSibling?.classList.remove('hidden');
+                                  }}
+                                />
+                              ) : null}
+                              {/* Заглушка если нет логотипа или ошибка загрузки */}
+                              <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary/20 border border-border flex items-center justify-center ${offer.logo ? 'hidden' : ''}`}>
+                                <span className="text-xs font-semibold text-primary">
+                                  {offer.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {/* Информация об оффере */}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium truncate" title={offer.name}>
+                                {offer.name}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                ID: {offer.id.slice(0, 8)}...
+                              </div>
                             </div>
                           </div>
                         </TableCell>
