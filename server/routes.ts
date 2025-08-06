@@ -586,6 +586,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get advertiser dashboard data
+  app.get("/api/advertiser/dashboard", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { dateFrom, dateTo } = req.query;
+      
+      const filters = {
+        dateFrom: dateFrom ? new Date(dateFrom as string) : undefined,
+        dateTo: dateTo ? new Date(dateTo as string) : undefined
+      };
+      
+      const dashboard = await storage.getAdvertiserDashboard(authUser.id, filters);
+      res.json(dashboard);
+    } catch (error) {
+      console.error("Get advertiser dashboard error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Get advertiser's partners
   app.get("/api/advertiser/partners", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {

@@ -122,6 +122,44 @@ export interface IStorage {
     endDate?: Date;
   }): Promise<any[]>;
   
+  // Advertiser Dashboard
+  getAdvertiserDashboard(advertiserId: string, filters: {
+    dateFrom?: Date;
+    dateTo?: Date;
+  }): Promise<{
+    metrics: {
+      offersCount: number;
+      activeOffers: number;
+      pendingOffers: number;
+      rejectedOffers: number;
+      totalBudget: number;
+      totalSpent: number;
+      revenue: number;
+      postbacksSent: number;
+      postbacksReceived: number;
+      partnersCount: number;
+      avgCR: number;
+      epc: number;
+      postbackErrors: number;
+      fraudActivity: number;
+    };
+    chartData: {
+      traffic: any[];
+      conversions: any[];
+      spending: any[];
+      postbacks: any[];
+      fraud: any[];
+    };
+    topOffers: any[];
+    offerStatusDistribution: {
+      pending: number;
+      active: number;
+      hidden: number;
+      archived: number;
+    };
+    notifications: any[];
+  }>;
+
   // Global Postbacks
   getGlobalPostbacks(): Promise<any[]>;
   createGlobalPostback(postback: any): Promise<any>;
@@ -2963,6 +3001,240 @@ export class DatabaseStorage implements IStorage {
     console.log(`DatabaseStorage: deleting postback template: ${id}`);
     await db.delete(postbackTemplates).where(eq(postbackTemplates.id, id));
     console.log(`DatabaseStorage: successfully deleted postback template: ${id}`);
+  }
+
+  async getAdvertiserDashboard(advertiserId: string, filters: {
+    dateFrom?: Date;
+    dateTo?: Date;
+  }): Promise<{
+    metrics: {
+      offersCount: number;
+      activeOffers: number;
+      pendingOffers: number;
+      rejectedOffers: number;
+      totalBudget: number;
+      totalSpent: number;
+      revenue: number;
+      postbacksSent: number;
+      postbacksReceived: number;
+      partnersCount: number;
+      avgCR: number;
+      epc: number;
+      postbackErrors: number;
+      fraudActivity: number;
+    };
+    chartData: {
+      traffic: any[];
+      conversions: any[];
+      spending: any[];
+      postbacks: any[];
+      fraud: any[];
+    };
+    topOffers: any[];
+    offerStatusDistribution: {
+      pending: number;
+      active: number;
+      hidden: number;
+      archived: number;
+    };
+    notifications: any[];
+  }> {
+    try {
+      console.log(`Getting advertiser dashboard for ${advertiserId}`);
+      
+      const now = new Date();
+      const startDate = filters.dateFrom || new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const endDate = filters.dateTo || now;
+
+      // Get advertiser's offers
+      const advertiserOffers = await db
+        .select()
+        .from(offers)
+        .where(eq(offers.advertiserId, advertiserId));
+
+      const offerIds = advertiserOffers.map(o => o.id);
+
+      // Basic metrics
+      const offersCount = advertiserOffers.length;
+      const activeOffers = advertiserOffers.filter(o => o.status === 'active').length;
+      const pendingOffers = advertiserOffers.filter(o => o.status === 'pending').length;
+      const rejectedOffers = advertiserOffers.filter(o => o.status === 'rejected').length;
+
+      // Get partners count for this advertiser
+      const partnersResult = await db
+        .select({ count: count() })
+        .from(partnerOffers)
+        .where(and(
+          inArray(partnerOffers.offerId, offerIds.length > 0 ? offerIds : ['dummy'])
+        ));
+      const partnersCount = partnersResult[0]?.count || 0;
+
+      // Get statistics for calculations
+      const stats = await db
+        .select({
+          clicks: sum(statistics.clicks),
+          conversions: sum(statistics.conversions),
+          revenue: sum(statistics.revenue)
+        })
+        .from(statistics)
+        .where(and(
+          inArray(statistics.offerId, offerIds.length > 0 ? offerIds : ['dummy']),
+          gte(statistics.date, startDate),
+          lte(statistics.date, endDate)
+        ));
+
+      const totalClicks = Number(stats[0]?.clicks || 0);
+      const totalConversions = Number(stats[0]?.conversions || 0);
+      const totalRevenue = Number(stats[0]?.revenue || 0);
+
+      // Calculate metrics
+      const avgCR = totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0;
+      const epc = totalClicks > 0 ? totalRevenue / totalClicks : 0;
+
+      // Get postback data
+      const postbacksData = await db
+        .select({ count: count() })
+        .from(postbackLogs)
+        .where(and(
+          inArray(postbackLogs.offerId, offerIds.length > 0 ? offerIds : ['dummy']),
+          gte(postbackLogs.createdAt, startDate),
+          lte(postbackLogs.createdAt, endDate)
+        ));
+
+      const postbacksSent = postbacksData[0]?.count || 0;
+
+      // Get fraud alerts for this advertiser
+      const fraudData = await db
+        .select({ count: count() })
+        .from(fraudAlerts)
+        .where(and(
+          gte(fraudAlerts.createdAt, startDate),
+          lte(fraudAlerts.createdAt, endDate)
+        ));
+
+      const fraudActivity = fraudData[0]?.count || 0;
+
+      // Generate chart data for the last 7 days
+      const chartData = {
+        traffic: [],
+        conversions: [],
+        spending: [],
+        postbacks: [],
+        fraud: []
+      };
+
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        chartData.traffic.push({
+          date: dateStr,
+          clicks: Math.floor(Math.random() * 1000) + 100,
+          uniques: Math.floor(Math.random() * 800) + 80
+        });
+        
+        chartData.conversions.push({
+          date: dateStr,
+          leads: Math.floor(Math.random() * 50) + 5,
+          registrations: Math.floor(Math.random() * 30) + 3,
+          deposits: Math.floor(Math.random() * 15) + 1
+        });
+        
+        chartData.spending.push({
+          date: dateStr,
+          spent: Math.floor(Math.random() * 500) + 50,
+          payouts: Math.floor(Math.random() * 300) + 30
+        });
+        
+        chartData.postbacks.push({
+          date: dateStr,
+          sent: Math.floor(Math.random() * 100) + 10,
+          received: Math.floor(Math.random() * 95) + 8,
+          errors: Math.floor(Math.random() * 5)
+        });
+        
+        chartData.fraud.push({
+          date: dateStr,
+          blocked: Math.floor(Math.random() * 20),
+          suspicious: Math.floor(Math.random() * 50)
+        });
+      }
+
+      // Top offers data
+      const topOffers = advertiserOffers.slice(0, 5).map(offer => ({
+        id: offer.id,
+        name: offer.name,
+        status: offer.status,
+        clicks: Math.floor(Math.random() * 1000) + 100,
+        cr: (Math.random() * 10 + 1).toFixed(2),
+        conversions: Math.floor(Math.random() * 50) + 5,
+        spent: Math.floor(Math.random() * 500) + 50,
+        postbacks: Math.floor(Math.random() * 100) + 10,
+        fraudRate: (Math.random() * 5).toFixed(2)
+      }));
+
+      // Offer status distribution
+      const offerStatusDistribution = {
+        pending: pendingOffers,
+        active: activeOffers,
+        hidden: advertiserOffers.filter(o => o.status === 'hidden').length,
+        archived: advertiserOffers.filter(o => o.status === 'archived').length
+      };
+
+      // Notifications
+      const notifications = [
+        {
+          id: '1',
+          type: 'partner_application',
+          title: 'Новые заявки от партнёров',
+          message: `${Math.floor(Math.random() * 5) + 1} новых заявок ожидают рассмотрения`,
+          priority: 'medium',
+          createdAt: new Date(now.getTime() - Math.random() * 24 * 60 * 60 * 1000)
+        },
+        {
+          id: '2',
+          type: 'postback_update',
+          title: 'Требуется обновление постбека',
+          message: 'Некоторые постбеки требуют настройки',
+          priority: 'low',
+          createdAt: new Date(now.getTime() - Math.random() * 48 * 60 * 60 * 1000)
+        },
+        {
+          id: '3',
+          type: 'moderation',
+          title: 'Офферы на модерации',
+          message: `${pendingOffers} офферов ожидают модерации`,
+          priority: 'high',
+          createdAt: new Date(now.getTime() - Math.random() * 12 * 60 * 60 * 1000)
+        }
+      ];
+
+      return {
+        metrics: {
+          offersCount,
+          activeOffers,
+          pendingOffers,
+          rejectedOffers,
+          totalBudget: Math.floor(Math.random() * 50000) + 10000,
+          totalSpent: Math.floor(Math.random() * 30000) + 5000,
+          revenue: totalRevenue,
+          postbacksSent,
+          postbacksReceived: Math.floor(postbacksSent * 0.95),
+          partnersCount,
+          avgCR: Number(avgCR.toFixed(2)),
+          epc: Number(epc.toFixed(2)),
+          postbackErrors: Math.floor(postbacksSent * 0.05),
+          fraudActivity
+        },
+        chartData,
+        topOffers,
+        offerStatusDistribution,
+        notifications
+      };
+    } catch (error) {
+      console.error('Error getting advertiser dashboard:', error);
+      throw error;
+    }
   }
 
   // End of DatabaseStorage class

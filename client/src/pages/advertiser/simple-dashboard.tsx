@@ -5,6 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import RoleBasedLayout from "@/components/layout/RoleBasedLayout";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { 
   Target, 
   Users, 
@@ -12,6 +16,7 @@ import {
   Settings, 
   DollarSign,
   TrendingUp,
+  TrendingDown,
   User,
   Briefcase,
   Wallet,
@@ -22,8 +27,19 @@ import {
   ArrowRight,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Activity,
+  Shield,
+  Eye,
+  FileText,
+  Download,
+  Upload,
+  RefreshCw,
+  Calendar,
+  Filter
 } from "lucide-react";
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 export default function AdvertiserDashboard() {
   const { user } = useAuth();
@@ -35,385 +51,559 @@ export default function AdvertiserDashboard() {
     return <div>Загрузка...</div>;
   }
 
-  // Временно отключаем React Query для диагностики
-  const dashboard = {
-    offersCount: 0,
-    activeOffers: 0, 
-    partnersCount: 0,
-    pendingApplications: 0,
-    monthlyRevenue: 0,
-    revenueGrowth: 0,
-    recentOffers: [],
-    recentActivity: []
-  };
-  const financial = { balance: 0 };
+  // Получаем данные дашборда
+  const { data: dashboard, isLoading } = useQuery({
+    queryKey: ['/api/advertiser/dashboard'],
+    enabled: !!user
+  });
 
   console.log('AdvertiserDashboard: Rendering main content');
+  
+  if (isLoading) {
+    return (
+      <RoleBasedLayout>
+        <div className="container mx-auto p-6">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </RoleBasedLayout>
+    );
+  }
+
+  if (!dashboard) {
+    return (
+      <RoleBasedLayout>
+        <div className="container mx-auto p-6">
+          <div className="text-center">
+            <p>Не удалось загрузить данные дашборда</p>
+          </div>
+        </div>
+      </RoleBasedLayout>
+    );
+  }
+
   return (
     <RoleBasedLayout>
       <div className="container mx-auto p-6 space-y-6">
-      {/* Заголовок и приветствие */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="page-title">
-            Кабинет рекламодателя
-          </h1>
-          <p className="text-muted-foreground">
-            Добро пожаловать, {user?.firstName} {user?.lastName}! 
-            Управляйте офферами и партнёрами
-          </p>
+        {/* Заголовок и фильтры */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold" data-testid="page-title">
+              Дашборд рекламодателя
+            </h1>
+            <p className="text-muted-foreground">
+              Добро пожаловать, {user?.firstName} {user?.lastName}! 
+              Обзор эффективности ваших офферов
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Select defaultValue="7d">
+              <SelectTrigger className="w-[140px]" data-testid="select-period">
+                <Calendar className="h-4 w-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1d">Сегодня</SelectItem>
+                <SelectItem value="7d">7 дней</SelectItem>
+                <SelectItem value="30d">30 дней</SelectItem>
+                <SelectItem value="90d">3 месяца</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button variant="outline" size="sm" title="Обновить данные">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            
+            <Button variant="outline" size="sm" title="Экспорт статистики">
+              <Download className="h-4 w-4 mr-2" />
+              Экспорт
+            </Button>
+          </div>
         </div>
 
-      </div>
-
-      {/* Основные метрики */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Баланс</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="balance-amount">
-              ${financial.balance?.toFixed(2) || '0.00'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Доступно для выплат
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Мои офферы</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="offers-count">
-              {dashboard.offersCount || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {dashboard.activeOffers || 0} активных
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Партнёры</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="partners-count">
-              {dashboard.partnersCount || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {dashboard.pendingApplications || 0} новых заявок
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Выручка (месяц)</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="monthly-revenue">
-              ${dashboard.monthlyRevenue?.toFixed(2) || '0.00'}
-            </div>
-            <div className="flex items-center text-xs">
-              {dashboard.revenueGrowth >= 0 ? (
-                <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
-              ) : (
-                <TrendingUp className="h-3 w-3 text-red-600 mr-1 rotate-180" />
-              )}
-              <span className={dashboard.revenueGrowth >= 0 ? "text-green-600" : "text-red-600"}>
-                {Math.abs(dashboard.revenueGrowth || 0).toFixed(1)}%
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Быстрые действия и навигация */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Управление офферами */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Target className="h-5 w-5 mr-2" />
-              Управление офферами
-            </CardTitle>
-            <CardDescription>
-              Создавайте и управляйте вашими офферами
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Link href="/advertiser/offers">
-              <Button className="w-full justify-start" data-testid="button-my-offers">
-                <Target className="mr-2 h-4 w-4" />
-                Мои офферы
-                <ArrowRight className="ml-auto h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/advertiser/offers/new">
-              <Button variant="outline" className="w-full justify-start" data-testid="button-create-new-offer">
-                <Plus className="mr-2 h-4 w-4" />
-                Создать новый оффер
-              </Button>
-            </Link>
-            <Link href="/advertiser/analytics">
-              <Button variant="ghost" className="w-full justify-start" data-testid="button-offer-analytics">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Аналитика офферов
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        {/* Работа с партнёрами */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Users className="h-5 w-5 mr-2" />
-              Работа с партнёрами
-            </CardTitle>
-            <CardDescription>
-              Управляйте партнёрами и заявками
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Link href="/advertiser/partners">
-              <Button className="w-full justify-start" data-testid="button-partners">
-                <Users className="mr-2 h-4 w-4" />
-                Мои партнёры
-                <ArrowRight className="ml-auto h-4 w-4" />
-              </Button>
-            </Link>
-            <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
-              <div className="flex items-center">
-                <Bell className="h-4 w-4 mr-2 text-orange-600" />
-                <span className="text-sm">Новые заявки</span>
+        {/* Основные KPI метрики */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Офферы</CardTitle>
+              <Target className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="offers-count">
+                {dashboard.metrics.offersCount}
               </div>
-              <Badge variant="destructive">
-                {dashboard.pendingApplications || 0}
-              </Badge>
-            </div>
-            <Link href="/advertiser/postbacks">
-              <Button variant="ghost" className="w-full justify-start" data-testid="button-postbacks">
-                <Send className="mr-2 h-4 w-4" />
-                Постбэки
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        {/* Финансы и профиль */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Building2 className="h-5 w-5 mr-2" />
-              Бизнес и финансы
-            </CardTitle>
-            <CardDescription>
-              Настройки бренда и финансовые операции
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Link href="/advertiser/finances">
-              <Button className="w-full justify-start" data-testid="button-finances">
-                <DollarSign className="mr-2 h-4 w-4" />
-                Финансы
-                <ArrowRight className="ml-auto h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/advertiser/profile">
-              <Button variant="outline" className="w-full justify-start" data-testid="button-profile">
-                <User className="mr-2 h-4 w-4" />
-                Профиль и бренд
-              </Button>
-            </Link>
-            <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
-              <div className="flex items-center">
-                <Wallet className="h-4 w-4 mr-2 text-green-600" />
-                <span className="text-sm">Текущий баланс</span>
+              <p className="text-xs text-green-600 flex items-center">
+                <span className="font-medium">{dashboard.metrics.activeOffers} активных</span>
+              </p>
+              <div className="text-xs text-muted-foreground mt-1">
+                {dashboard.metrics.pendingOffers} на модерации
               </div>
-              <span className="font-semibold text-green-600">
-                $0.00
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
 
-      {/* Статистика и последние действия */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Последние офферы */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Последние офферы</CardTitle>
-            <CardDescription>
-              Недавно созданные и обновлённые офферы
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {dashboard.recentOffers?.length > 0 ? (
-              <div className="space-y-3">
-                {dashboard.recentOffers.slice(0, 5).map((offer: any) => (
-                  <div key={offer.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{offer.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {offer.category} • Выплата: {offer.payout}
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge 
-                        className={
-                          offer.status === 'active' ? 'bg-green-100 text-green-800' :
-                          offer.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Бюджет / Расход</CardTitle>
+              <DollarSign className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600" data-testid="budget-amount">
+                ${dashboard.metrics.totalBudget.toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Потрачено: ${dashboard.metrics.totalSpent.toLocaleString()}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Доход</CardTitle>
+              <TrendingUp className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-600" data-testid="revenue-amount">
+                ${dashboard.metrics.revenue.toLocaleString()}
+              </div>
+              <p className="text-xs text-green-600 flex items-center">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                +{((dashboard.metrics.revenue / Math.max(dashboard.metrics.totalSpent, 1)) * 100).toFixed(1)}%
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Постбеки</CardTitle>
+              <Send className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="postbacks-sent">
+                {dashboard.metrics.postbacksSent}
+              </div>
+              <p className="text-xs text-green-600">
+                {dashboard.metrics.postbacksReceived} получено
+              </p>
+              <div className="text-xs text-red-500">
+                {dashboard.metrics.postbackErrors} ошибок
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Партнёры</CardTitle>
+              <Users className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="partners-count">
+                {dashboard.metrics.partnersCount}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Работают с офферами
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Дополнительные метрики */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">CR (%)</CardTitle>
+              <BarChart3 className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-600" data-testid="cr-rate">
+                {dashboard.metrics.avgCR}%
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Средний по всем офферам
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">EPC ($)</CardTitle>
+              <Activity className="h-4 w-4 text-indigo-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-indigo-600" data-testid="epc-amount">
+                ${dashboard.metrics.epc}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Доход на клик
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Ошибки постбеков</CardTitle>
+              <AlertCircle className="h-4 w-4 text-red-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600" data-testid="postback-errors">
+                {dashboard.metrics.postbackErrors}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {((dashboard.metrics.postbackErrors / Math.max(dashboard.metrics.postbacksSent, 1)) * 100).toFixed(1)}% от отправленных
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Фрод активность</CardTitle>
+              <Shield className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600" data-testid="fraud-activity">
+                {dashboard.metrics.fraudActivity}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Подозрительных событий
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Графики и аналитика */}
+        <Tabs defaultValue="traffic" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="traffic" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Трафик
+            </TabsTrigger>
+            <TabsTrigger value="conversions" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Конверсии
+            </TabsTrigger>
+            <TabsTrigger value="spending" className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Расходы
+            </TabsTrigger>
+            <TabsTrigger value="postbacks" className="flex items-center gap-2">
+              <Send className="h-4 w-4" />
+              Постбеки
+            </TabsTrigger>
+            <TabsTrigger value="fraud" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Фрод
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="traffic">
+            <Card>
+              <CardHeader>
+                <CardTitle>График трафика по времени</CardTitle>
+                <CardDescription>Клики и уникальные посетители за период</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={dashboard.chartData.traffic}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="clicks" stroke="#8884d8" name="Клики" />
+                    <Line type="monotone" dataKey="uniques" stroke="#82ca9d" name="Уники" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="conversions">
+            <Card>
+              <CardHeader>
+                <CardTitle>График конверсий</CardTitle>
+                <CardDescription>Лиды, регистрации и депозиты</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={dashboard.chartData.conversions}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="deposits" stackId="1" stroke="#8884d8" fill="#8884d8" name="Депозиты" />
+                    <Area type="monotone" dataKey="registrations" stackId="1" stroke="#82ca9d" fill="#82ca9d" name="Регистрации" />
+                    <Area type="monotone" dataKey="leads" stackId="1" stroke="#ffc658" fill="#ffc658" name="Лиды" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="spending">
+            <Card>
+              <CardHeader>
+                <CardTitle>График расходов / выплат</CardTitle>
+                <CardDescription>Потраченные средства и выплаты партнёрам</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={dashboard.chartData.spending}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="spent" fill="#8884d8" name="Потрачено" />
+                    <Bar dataKey="payouts" fill="#82ca9d" name="Выплаты" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="postbacks">
+            <Card>
+              <CardHeader>
+                <CardTitle>График активности постбеков</CardTitle>
+                <CardDescription>Отправленные, полученные постбеки и ошибки</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={dashboard.chartData.postbacks}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="sent" stroke="#8884d8" name="Отправлено" />
+                    <Line type="monotone" dataKey="received" stroke="#82ca9d" name="Получено" />
+                    <Line type="monotone" dataKey="errors" stroke="#ff7300" name="Ошибки" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="fraud">
+            <Card>
+              <CardHeader>
+                <CardTitle>Фрод-индикаторы</CardTitle>
+                <CardDescription>Заблокированные и подозрительные события</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={dashboard.chartData.fraud}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="blocked" stackId="1" stroke="#ff4444" fill="#ff4444" name="Заблокировано" />
+                    <Area type="monotone" dataKey="suspicious" stackId="1" stroke="#ffaa44" fill="#ffaa44" name="Подозрительно" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Основной контент с таблицами и статусами */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Топ-офферы */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Топ-офферы рекламодателя
+                </CardTitle>
+                <CardDescription>Основные метрики по вашим офферам</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Оффер</TableHead>
+                      <TableHead>Статус</TableHead>
+                      <TableHead>Клики</TableHead>
+                      <TableHead>CR</TableHead>
+                      <TableHead>Конверсии</TableHead>
+                      <TableHead>Расход</TableHead>
+                      <TableHead>Постбеки</TableHead>
+                      <TableHead>Фрод %</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {dashboard.topOffers.map((offer: any) => (
+                      <TableRow key={offer.id}>
+                        <TableCell className="font-medium">{offer.name}</TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={offer.status === 'active' ? 'default' : offer.status === 'pending' ? 'secondary' : 'destructive'}
+                          >
+                            {offer.status === 'active' ? 'Активен' : 
+                             offer.status === 'pending' ? 'На модерации' : 
+                             offer.status === 'rejected' ? 'Отклонён' : offer.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{offer.clicks.toLocaleString()}</TableCell>
+                        <TableCell className="text-green-600 font-medium">{offer.cr}%</TableCell>
+                        <TableCell>{offer.conversions}</TableCell>
+                        <TableCell>${offer.spent}</TableCell>
+                        <TableCell>{offer.postbacks}</TableCell>
+                        <TableCell className="text-orange-600">{offer.fraudRate}%</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Статус по офферам и уведомления */}
+          <div className="space-y-6">
+            {/* Статус офферов */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="h-5 w-5" />
+                  Статус по офферам
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">На модерации:</span>
+                    <Badge variant="secondary">{dashboard.offerStatusDistribution.pending}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Активные:</span>
+                    <Badge variant="default">{dashboard.offerStatusDistribution.active}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Скрытые:</span>
+                    <Badge variant="outline">{dashboard.offerStatusDistribution.hidden}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Архив:</span>
+                    <Badge variant="secondary">{dashboard.offerStatusDistribution.archived}</Badge>
+                  </div>
+                </div>
+                
+                {/* Круговая диаграмма статусов */}
+                <div className="mt-4">
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Активные', value: dashboard.offerStatusDistribution.active },
+                          { name: 'На модерации', value: dashboard.offerStatusDistribution.pending },
+                          { name: 'Скрытые', value: dashboard.offerStatusDistribution.hidden },
+                          { name: 'Архив', value: dashboard.offerStatusDistribution.archived }
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
                       >
-                        {offer.status === 'active' && <CheckCircle className="h-3 w-3 mr-1" />}
-                        {offer.status === 'paused' && <Clock className="h-3 w-3 mr-1" />}
-                        {offer.status}
-                      </Badge>
+                        {COLORS.map((color, index) => (
+                          <Cell key={`cell-${index}`} fill={color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Уведомления / задачи */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Уведомления
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {dashboard.notifications.map((notification: any) => (
+                  <div key={notification.id} className="flex items-start space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+                    <div className={`w-2 h-2 rounded-full mt-2 ${
+                      notification.priority === 'high' ? 'bg-red-500' :
+                      notification.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                    }`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">{notification.title}</p>
+                      <p className="text-xs text-muted-foreground">{notification.message}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(notification.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
                 ))}
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <Target className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">Офферов пока нет</p>
-                <Link href="/advertiser/offers/new">
-                  <Button size="sm" className="mt-2">
-                    Создать первый оффер
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
-        {/* Недавняя активность */}
+        {/* Быстрые действия */}
         <Card>
           <CardHeader>
-            <CardTitle>Недавняя активность</CardTitle>
-            <CardDescription>
-              Последние события в кабинете
-            </CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Быстрые действия
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {dashboard.recentActivity?.length > 0 ? (
-              <div className="space-y-3">
-                {dashboard.recentActivity.slice(0, 5).map((activity: any, index: number) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="flex-shrink-0 mt-1">
-                      {activity.type === 'offer_created' && <Plus className="h-4 w-4 text-green-600" />}
-                      {activity.type === 'partner_joined' && <Users className="h-4 w-4 text-blue-600" />}
-                      {activity.type === 'conversion' && <TrendingUp className="h-4 w-4 text-purple-600" />}
-                      {activity.type === 'payment' && <DollarSign className="h-4 w-4 text-orange-600" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm">{activity.description}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(activity.timestamp).toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <AlertCircle className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">Активности пока нет</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Быстрые действия */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Управление офферами</CardTitle>
-            <CardDescription>
-              Создавайте и управляйте вашими офферами
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h3 className="font-medium">Создать новый оффер</h3>
-                <p className="text-sm text-muted-foreground">
-                  Добавьте новый оффер с автоматической генерацией партнерских ссылок
-                </p>
-              </div>
-              <Link href="/advertiser/offers">
-                <Button data-testid="button-create-offer">
-                  Создать
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              <Link href="/advertiser/offers/new">
+                <Button className="w-full" variant="default">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Новый оффер
                 </Button>
               </Link>
-            </div>
-            
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h3 className="font-medium">Управление офферами</h3>
-                <p className="text-sm text-muted-foreground">
-                  Редактируйте существующие офферы и настраивайте base_url
-                </p>
-              </div>
-              <Link href="/advertiser/offers">
-                <Button variant="outline" data-testid="button-manage-offers">
-                  Управление
+              
+              <Link href="/advertiser/financial">
+                <Button className="w-full" variant="outline">
+                  <FileText className="h-4 w-4 mr-2" />
+                  История расходов
                 </Button>
               </Link>
+              
+              <Link href="/advertiser/postbacks">
+                <Button className="w-full" variant="outline">
+                  <Send className="h-4 w-4 mr-2" />
+                  Добавить постбек
+                </Button>
+              </Link>
+              
+              <Button className="w-full" variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Экспорт
+              </Button>
+              
+              <Button className="w-full" variant="outline">
+                <Upload className="h-4 w-4 mr-2" />
+                Импорт
+              </Button>
+              
+              <Link href="/advertiser/offers">
+                <Button className="w-full" variant="outline">
+                  <Target className="h-4 w-4 mr-2" />
+                  К офферам
+                </Button>
+              </Link>
+              
+              <Button className="w-full" variant="outline">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Аналитика
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Партнеры и аналитика</CardTitle>
-            <CardDescription>
-              Отслеживайте производительность ваших офферов
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h3 className="font-medium">Управление партнерами</h3>
-                <p className="text-sm text-muted-foreground">
-                  Одобряйте партнеров для приватных офферов
-                </p>
-              </div>
-              <Link href="/advertiser/users">
-                <Button variant="outline" data-testid="button-manage-partners">
-                  Партнеры
-                </Button>
-              </Link>
-            </div>
-            
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h3 className="font-medium">Аналитика и статистика</h3>
-                <p className="text-sm text-muted-foreground">
-                  Просматривайте детальную статистику по кликам и конверсиям
-                </p>
-              </div>
-              <Link href="/advertiser/analytics">
-                <Button variant="outline" data-testid="button-view-analytics">
-                  Аналитика
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
       </div>
     </RoleBasedLayout>
   );
