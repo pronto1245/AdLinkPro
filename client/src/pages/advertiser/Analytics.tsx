@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
-import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
+
 import { 
   BarChart3, 
   Search, 
@@ -358,17 +358,14 @@ export default function Analytics() {
 
   if (isLoading) {
     return (
-      <RoleBasedLayout>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </RoleBasedLayout>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
     );
   }
 
   return (
-    <RoleBasedLayout>
-      <div className="space-y-6" data-testid="analytics-page">
+    <div className="space-y-6" data-testid="analytics-page">
         {/* Заголовок */}
         <div className="flex justify-between items-center">
           <div>
@@ -955,6 +952,5 @@ export default function Analytics() {
           </Card>
         )}
       </div>
-    </RoleBasedLayout>
   );
 }

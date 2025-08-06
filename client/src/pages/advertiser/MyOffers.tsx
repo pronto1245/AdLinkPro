@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
-import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -412,7 +412,6 @@ export default function MyOffers() {
 
   return (
     <TooltipProvider>
-    <RoleBasedLayout>
       <div className="space-y-6">
         {/* Заголовок и основные действия */}
         <div className="flex justify-between items-center">
@@ -1212,7 +1211,6 @@ export default function MyOffers() {
           </DialogContent>
         </Dialog>
       </div>
-    </RoleBasedLayout>
     </TooltipProvider>
   );
 }
