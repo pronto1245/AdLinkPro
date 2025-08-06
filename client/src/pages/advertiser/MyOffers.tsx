@@ -75,6 +75,7 @@ interface Offer {
   currency: string;
   countries?: string[];
   geoPricing?: Record<string, { payout?: string; amount?: string; currency?: string }>;
+  createdAt?: string;
   partnersCount?: number;
   clicks?: number;
   leads?: number;
@@ -179,8 +180,14 @@ export default function MyOffers() {
     enabled: !!user?.id
   });
 
-  // Добавим тестовые данные с несколькими странами для проверки tooltips
-  const offersWithTestData = offers.map((offer, index) => ({
+  // Сортируем офферы по дате создания (новые наверху) и добавляем тестовые данные
+  const sortedOffers = [...offers].sort((a, b) => {
+    const dateA = new Date(a.createdAt || 0).getTime();
+    const dateB = new Date(b.createdAt || 0).getTime();
+    return dateB - dateA; // Сортировка в убывающем порядке (новые наверху)
+  });
+
+  const offersWithTestData = sortedOffers.map((offer, index) => ({
     ...offer,
     countries: index === 0 ? ['russia', 'ukraine', 'belarus'] : offer.countries,
     geoPricing: index === 0 ? {
