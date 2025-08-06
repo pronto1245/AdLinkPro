@@ -63,14 +63,7 @@ export default function AdvertiserDashboard() {
             Управляйте офферами и партнёрами
           </p>
         </div>
-        <div className="flex space-x-2">
-          <Link href="/advertiser/offers/new">
-            <Button data-testid="button-create-offer">
-              <Plus className="h-4 w-4 mr-2" />
-              Создать оффер
-            </Button>
-          </Link>
-        </div>
+
       </div>
 
       {/* Основные метрики */}
