@@ -314,17 +314,17 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             <Label className="text-base font-medium">{t('landing_pages')}</Label>
             <Button 
               type="button" 
-              variant="outline" 
+              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
               size="sm"
               onClick={() => {
                 const current = form.getValues('landingPages');
                 form.setValue('landingPages', [...current, { name: '', url: '', payoutAmount: 0, currency: 'USD', geo: '' }]);
               }}
               data-testid="button-add-landing-page"
-              title={t('add_new_landing_page')}
+              title="Добавить новую посадочную страницу"
             >
               <PlusCircle className="w-4 h-4 mr-2" />
-              {t('add_page')}
+              Добавить страницу
             </Button>
           </div>
           
