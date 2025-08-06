@@ -198,6 +198,8 @@ export default function MyOffers() {
 
   // Обрабатываем офферы для извлечения geoPricing из landingPages
   const processedOffers = sortedOffers.map(offer => {
+    console.log('Processing offer:', offer.name, 'landingPages:', offer.landingPages);
+    
     let geoPricing: Record<string, { payout: string; currency: string }> | undefined;
     let countries: string[] | undefined;
 
@@ -207,7 +209,8 @@ export default function MyOffers() {
       const geoPayouts: Record<string, { payout: string; currency: string }> = {};
       
       offer.landingPages.forEach((page: any) => {
-        if (page.geo && page.payout) {
+        console.log('Processing landing page:', page.name, 'geo:', page.geo, 'payout:', page.payout);
+        if (page.geo && (page.payout || page.payout === 0)) {
           uniqueGeos.add(page.geo);
           geoPayouts[page.geo] = {
             payout: page.payout.toString(),
@@ -219,14 +222,23 @@ export default function MyOffers() {
       if (uniqueGeos.size > 0) {
         countries = Array.from(uniqueGeos);
         geoPricing = geoPayouts;
+        console.log('Extracted countries:', countries, 'geoPricing:', geoPricing);
       }
     }
 
-    return {
+    // Fallback к оригинальным данным если нет landingPages
+    if (!countries && offer.countries) {
+      countries = offer.countries;
+    }
+
+    const result = {
       ...offer,
-      countries: countries || offer.countries,
+      countries: countries,
       geoPricing: geoPricing
     };
+    
+    console.log('Final processed offer:', offer.name, 'countries:', result.countries, 'geoPricing:', result.geoPricing);
+    return result;
   });
 
   // Clean up blob URLs and filter valid logos
