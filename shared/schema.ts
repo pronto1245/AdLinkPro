@@ -102,6 +102,7 @@ export const offers = pgTable("offers", {
   // Restrictions and traffic
   kpiConditions: jsonb("kpi_conditions"), // KPI conditions - Multilingual: { "en": "English text", "ru": "Russian text" }
   trafficSources: jsonb("traffic_sources"), // Allowed traffic sources
+  allowedApplications: jsonb("allowed_applications").default([]), // PWA App, WebView App, APK, iOS App, etc.
   
   // Limits and caps
   dailyLimit: integer("daily_limit"), // Daily conversion limit

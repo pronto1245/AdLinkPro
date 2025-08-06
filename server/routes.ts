@@ -364,6 +364,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Conditions (only fields that exist in DB)
         trafficSources: req.body.trafficSources || [],
+        allowedApplications: req.body.allowedApplications || [],
         
         // Limits
         dailyLimit: req.body.dailyLimit || null,

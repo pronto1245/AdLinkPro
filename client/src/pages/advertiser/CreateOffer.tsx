@@ -55,6 +55,7 @@ interface OfferFormData {
   
   // Условия
   trafficSources: string[];
+  allowedApplications: string[];
   
   // Кепы и лимиты
   dailyLimit: number;
@@ -98,6 +99,7 @@ const initialFormData: OfferFormData = {
   
   // Условия
   trafficSources: [],
+  allowedApplications: [],
   
   // Кепы и лимиты
   dailyLimit: 0,
@@ -224,10 +226,11 @@ const allowedTrafficSources = [
   'Autoredirect', 'Proxy/VPN', 'Twitter/X'
 ];
 
+// 16 типов разрешенных приложений согласно требованию пользователя
 const allowedAppTypes = [
   'PWA App', 'WebView App', 'APK', 'iOS App', 'SPA', 'Landing App',
-  'SmartLink App', 'Mini App', 'Desktop App', 'iFrame', 'ZIP',
-  'Cloud App', 'DApp', 'Masked App', 'WebRTC'
+  'SmartLink', 'Mini App', 'Desktop App', 'iFrame', 'ZIP', 'Cloud App',
+  'DApp', 'Masked App', 'WebRTC', 'TWA'
 ];
 
 const deniedTrafficSources = [
@@ -369,6 +372,7 @@ export default function CreateOffer() {
         payoutType: data.payoutType,
         currency: data.currency,
         trafficSources: data.trafficSources,
+        allowedApplications: data.allowedApplications, // Новое поле для 16 типов приложений
         dailyLimit: data.dailyLimit || null,
         monthlyLimit: data.monthlyLimit || null,
         antifraudEnabled: data.antifraudEnabled,
@@ -778,9 +782,45 @@ export default function CreateOffer() {
 
                   <Separator />
 
-                  {/* Разрешенные приложения удалены из функциональности */}
-
-
+                  <div>
+                    <Label>Разрешенные приложения</Label>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Выберите типы приложений, которые разрешены для данного оффера
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+                      {allowedAppTypes.map(appType => (
+                        <div key={appType} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`app-${appType.replace(/\s+/g, '-').toLowerCase()}`}
+                            checked={formData.allowedApplications?.includes(appType) || false}
+                            onChange={() => {
+                              const currentApps = formData.allowedApplications || [];
+                              const newApps = currentApps.includes(appType)
+                                ? currentApps.filter(a => a !== appType)
+                                : [...currentApps, appType];
+                              setFormData(prev => ({ ...prev, allowedApplications: newApps }));
+                            }}
+                            className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                            data-testid={`checkbox-app-${appType.replace(/\s+/g, '-').toLowerCase()}`}
+                          />
+                          <Label 
+                            htmlFor={`app-${appType.replace(/\s+/g, '-').toLowerCase()}`} 
+                            className="text-sm font-medium cursor-pointer hover:text-blue-600 transition-colors"
+                          >
+                            {appType}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    {formData.allowedApplications?.length > 0 && (
+                      <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                        <p className="text-xs text-blue-700 dark:text-blue-300">
+                          Выбрано приложений: {formData.allowedApplications.length} из {allowedAppTypes.length}
+                        </p>
+                      </div>
+                    )}
+                  </div>
 
                   <Separator />
 
