@@ -747,42 +747,16 @@ export default function CreateOffer() {
                   <CardTitle>Настройки выплат</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="payoutAmount">Размер выплаты</Label>
-                      <Input
-                        id="payoutAmount"
-                        type="number"
-                        value={formData.payoutAmount}
-                        onChange={(e) => setFormData(prev => ({ ...prev, payoutAmount: Number(e.target.value) }))}
-                        placeholder="0"
-                        data-testid="input-payout-amount"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="dailyLimit">Дневной лимит</Label>
-                      <Input
-                        id="dailyLimit"
-                        type="number"
-                        value={formData.dailyLimit}
-                        onChange={(e) => setFormData(prev => ({ ...prev, dailyLimit: Number(e.target.value) }))}
-                        placeholder="0 - без ограничений"
-                        data-testid="input-daily-limit"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="monthlyLimit">Месячный лимит</Label>
-                      <Input
-                        id="monthlyLimit"
-                        type="number"
-                        value={formData.monthlyLimit}
-                        onChange={(e) => setFormData(prev => ({ ...prev, monthlyLimit: Number(e.target.value) }))}
-                        placeholder="0 - без ограничений"
-                        data-testid="input-monthly-limit"
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="payoutAmount">Размер выплаты</Label>
+                    <Input
+                      id="payoutAmount"
+                      type="number"
+                      value={formData.payoutAmount}
+                      onChange={(e) => setFormData(prev => ({ ...prev, payoutAmount: Number(e.target.value) }))}
+                      placeholder="0"
+                      data-testid="input-payout-amount"
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -893,6 +867,32 @@ export default function CreateOffer() {
                     </div>
 
 
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="dailyLimit">Дневной лимит</Label>
+                        <Input
+                          id="dailyLimit"
+                          type="number"
+                          value={formData.dailyLimit}
+                          onChange={(e) => setFormData(prev => ({ ...prev, dailyLimit: Number(e.target.value) }))}
+                          placeholder="0 - без ограничений"
+                          data-testid="input-daily-limit"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="monthlyLimit">Месячный лимит</Label>
+                        <Input
+                          id="monthlyLimit"
+                          type="number"
+                          value={formData.monthlyLimit}
+                          onChange={(e) => setFormData(prev => ({ ...prev, monthlyLimit: Number(e.target.value) }))}
+                          placeholder="0 - без ограничений"
+                          data-testid="input-monthly-limit"
+                        />
+                      </div>
+                    </div>
 
                     <div>
                       <Label htmlFor="postbackUrl">Postback URL</Label>
