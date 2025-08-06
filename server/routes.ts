@@ -6257,6 +6257,39 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
+  // Documentation API Routes
+  app.get('/api/advertiser/documentation', authenticateToken, async (req, res) => {
+    try {
+      const sections = await storage.getDocumentationSections();
+      res.json(sections);
+    } catch (error) {
+      console.error('Get documentation sections error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/api/advertiser/documentation/:sectionId/feedback', authenticateToken, async (req, res) => {
+    try {
+      const { sectionId } = req.params;
+      const feedback = req.body;
+      await storage.updateDocumentationFeedback(sectionId, feedback);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Update documentation feedback error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/api/advertiser/documentation/download-pdf', authenticateToken, async (req, res) => {
+    try {
+      const url = await storage.downloadDocumentationPDF();
+      res.json({ url });
+    } catch (error) {
+      console.error('Download PDF error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

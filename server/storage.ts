@@ -4212,6 +4212,111 @@ class MemStorage implements IStorage {
   async deleteBlacklistEntry(): Promise<void> {}
   async moderateOffer(): Promise<boolean> { return true; }
 
+  // Documentation Methods
+  async getDocumentationSections(): Promise<any[]> {
+    return [
+      {
+        id: 'tracking',
+        title: 'Трек-ссылки',
+        content: 'Полная документация по структуре трекинговых ссылок...',
+        updated: '2025-08-06T12:00:00Z'
+      },
+      {
+        id: 'postbacks',
+        title: 'Постбэки',
+        content: 'Макросы и настройка постбэков...',
+        updated: '2025-08-06T12:00:00Z'
+      },
+      {
+        id: 'api',
+        title: 'API-документация',
+        content: 'Документация по API endpoints...',
+        updated: '2025-08-06T12:00:00Z'
+      }
+    ];
+  }
+
+  async updateDocumentationFeedback(sectionId: string, feedback: any): Promise<void> {
+    // Mock implementation - store feedback
+  }
+
+  async downloadDocumentationPDF(): Promise<string> {
+    return 'https://example.com/docs.pdf';
+  }
+
+  // Profile API Methods
+  async getApiTokens(userId: string): Promise<any[]> {
+    return [
+      {
+        id: '1',
+        name: 'Production API Key',
+        token: 'api_prod_' + Math.random().toString(36).substr(2, 9),
+        permissions: ['offers', 'stats', 'postbacks'],
+        createdAt: '2025-08-06T12:00:00Z',
+        lastUsed: '2025-08-06T11:30:00Z',
+        isActive: true
+      }
+    ];
+  }
+
+  async createApiToken(userId: string, tokenData: any): Promise<any> {
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      name: tokenData.name,
+      token: 'api_' + Math.random().toString(36).substr(2, 16),
+      permissions: tokenData.permissions || [],
+      createdAt: new Date().toISOString(),
+      lastUsed: null,
+      isActive: true
+    };
+  }
+
+  async deleteApiToken(tokenId: string): Promise<void> {
+    // Mock implementation
+  }
+
+  async getCustomDomains(userId: string): Promise<any[]> {
+    return [
+      {
+        id: '1',
+        domain: 'track.example.com',
+        status: 'active',
+        sslEnabled: true,
+        createdAt: '2025-08-01T12:00:00Z',
+        verifiedAt: '2025-08-01T14:00:00Z'
+      }
+    ];
+  }
+
+  async addCustomDomain(userId: string, domainData: any): Promise<any> {
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      domain: domainData.domain,
+      status: 'pending',
+      sslEnabled: false,
+      createdAt: new Date().toISOString(),
+      verifiedAt: null
+    };
+  }
+
+  async getWebhookSettings(userId: string): Promise<any> {
+    return {
+      id: '1',
+      url: 'https://example.com/webhook',
+      events: ['conversion', 'click', 'fraud'],
+      isActive: true,
+      secretKey: 'webhook_' + Math.random().toString(36).substr(2, 16),
+      createdAt: '2025-08-01T12:00:00Z'
+    };
+  }
+
+  async updateWebhookSettings(userId: string, webhookData: any): Promise<any> {
+    return {
+      ...webhookData,
+      id: '1',
+      updatedAt: new Date().toISOString()
+    };
+  }
 
 }
 

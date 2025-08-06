@@ -49,6 +49,7 @@ import Finance from "@/pages/advertiser/Finance";
 import Analytics from "@/pages/advertiser/Analytics";
 import AdvertiserTeamManagement from "@/pages/advertiser/TeamManagement";
 import AntiFraud from "@/pages/advertiser/AntiFraud";
+import AdvertiserDocuments from "@/pages/advertiser/AdvertiserDocuments";
 import PartnerDashboard from "@/pages/affiliate/PartnerDashboard";
 import { useAuth } from "./contexts/auth-context";
 import Login from "@/pages/auth/login";
@@ -198,6 +199,14 @@ function Router() {
         <ProtectedRoute allowedRoles={['advertiser']}>
           <RoleBasedLayout>
             <AdvertiserProfile />
+          </RoleBasedLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/documents">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <RoleBasedLayout key="advertiser-documents">
+            <AdvertiserDocuments />
           </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
