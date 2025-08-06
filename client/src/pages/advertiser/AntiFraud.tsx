@@ -983,19 +983,19 @@ export default function AntiFraud() {
                   <div className="flex items-center justify-between">
                     <Label>Включить детекцию клик-спама</Label>
                     <Switch
-                      checked={settings?.clickSpamDetection.enabled || false}
+                      checked={settings?.clickSpamDetection?.enabled || false}
                       onCheckedChange={(checked) => handleSettingsUpdate('clickSpamDetection.enabled', checked)}
                       data-testid="switch-click-spam-detection"
                     />
                   </div>
 
-                  {settings?.clickSpamDetection.enabled && (
+                  {settings?.clickSpamDetection?.enabled && (
                     <>
                       <div className="space-y-2">
                         <Label>Макс. кликов с одного IP</Label>
                         <Input
                           type="number"
-                          value={settings.clickSpamDetection.maxClicksPerIp}
+                          value={settings?.clickSpamDetection?.maxClicksPerIp || 5}
                           onChange={(e) => handleSettingsUpdate('clickSpamDetection.maxClicksPerIp', parseInt(e.target.value))}
                           data-testid="input-max-clicks-per-ip"
                         />
@@ -1005,7 +1005,7 @@ export default function AntiFraud() {
                         <Label>Временное окно (минуты)</Label>
                         <Input
                           type="number"
-                          value={settings.clickSpamDetection.timeWindow}
+                          value={settings?.clickSpamDetection?.timeWindow || 60}
                           onChange={(e) => handleSettingsUpdate('clickSpamDetection.timeWindow', parseInt(e.target.value))}
                           data-testid="input-time-window"
                         />
@@ -1027,7 +1027,7 @@ export default function AntiFraud() {
                   <div className="flex items-center justify-between">
                     <Label>Email уведомления</Label>
                     <Switch
-                      checked={settings?.notifications.email || false}
+                      checked={settings?.notifications?.email || false}
                       onCheckedChange={(checked) => handleSettingsUpdate('notifications.email', checked)}
                       data-testid="switch-email-notifications"
                     />
@@ -1036,7 +1036,7 @@ export default function AntiFraud() {
                   <div className="flex items-center justify-between">
                     <Label>Telegram уведомления</Label>
                     <Switch
-                      checked={settings?.notifications.telegram || false}
+                      checked={settings?.notifications?.telegram || false}
                       onCheckedChange={(checked) => handleSettingsUpdate('notifications.telegram', checked)}
                       data-testid="switch-telegram-notifications"
                     />
@@ -1046,7 +1046,7 @@ export default function AntiFraud() {
                     <Label>Порог уведомлений (событий в час)</Label>
                     <Input
                       type="number"
-                      value={settings?.notifications.threshold || 10}
+                      value={settings?.notifications?.threshold || 10}
                       onChange={(e) => handleSettingsUpdate('notifications.threshold', parseInt(e.target.value))}
                       data-testid="input-notification-threshold"
                     />
