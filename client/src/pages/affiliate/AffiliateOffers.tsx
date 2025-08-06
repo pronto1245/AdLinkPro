@@ -182,15 +182,15 @@ export default function AffiliateOffers() {
                 </div>
               </div>
 
-              {/* All Offers Filter - Always shows all */}
+              {/* All Offers Filter - Shows total count */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Все офферы</label>
-                <Select value="all" disabled>
-                  <SelectTrigger data-testid="select-all-offers">
+                <Select value="all">
+                  <SelectTrigger data-testid="select-all-offers" className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700">
                     <SelectValue placeholder="Все офферы" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Все офферы ({filteredOffers.length})</SelectItem>
+                    <SelectItem value="all">✅ Все офферы ({offers.length})</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
