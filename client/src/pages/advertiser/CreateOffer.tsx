@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Minus, Upload, Image, Globe, DollarSign, Target, Settings, ArrowLeft, Save, Eye, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+// import { useAuth } from '@/contexts/AuthContext';
 import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -225,6 +226,19 @@ export default function CreateOffer() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  // Получаем ID пользователя из локального хранилища или используем заглушку
+  const getUserId = () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.id;
+      }
+    } catch (e) {
+      console.warn('Error parsing token:', e);
+    }
+    return null;
+  };
   
   const [formData, setFormData] = useState<OfferFormData>(initialFormData);
   const [activeTab, setActiveTab] = useState('basic');
@@ -262,7 +276,7 @@ export default function CreateOffer() {
         customDomains: data.customDomains,
         tags: data.tags,
         kpiConditions: { en: data.kpi, ru: data.kpi },
-        advertiserId: user?.id,
+        advertiserId: getUserId(),
         status: data.status
       };
       return apiRequest('/api/advertiser/offers', 'POST', apiData);
@@ -294,21 +308,30 @@ export default function CreateOffer() {
     e.preventDefault();
     
     // Валидация основных полей
-    if (!formData.name || !formData.category) {
+    if (!formData.name?.trim()) {
       toast({
-        title: 'Заполните обязательные поля',
-        description: 'Название и категория обязательны для заполнения',
+        title: 'Заполните название оффера',
+        description: 'Название оффера обязательно для заполнения',
         variant: 'destructive'
       });
       return;
     }
 
-
-
-    if (!formData.targetUrl) {
+    if (!formData.category) {
       toast({
-        title: 'Укажите целевую ссылку',
-        description: 'Целевая ссылка (offer link) обязательна для заполнения',
+        title: 'Выберите категорию',
+        description: 'Категория оффера обязательна для выбора',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Проверяем URL в landing pages
+    const hasValidUrl = formData.landingPages.some(lp => lp.url && lp.url.trim() !== '');
+    if (!hasValidUrl) {
+      toast({
+        title: 'Укажите URL целевой страницы',
+        description: 'Необходимо указать хотя бы один URL целевой страницы',
         variant: 'destructive'
       });
       return;
