@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Minus, Upload, Image, Globe, DollarSign, Target, Settings, ArrowLeft, Save, Eye, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ObjectUploader } from '@/components/ObjectUploader';
 // import { useAuth } from '@/contexts/AuthContext';
 import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
 import { apiRequest } from '@/lib/queryClient';
@@ -736,28 +737,68 @@ export default function CreateOffer() {
                     <div>
                       <Label htmlFor="logo">Логотип оффера</Label>
                       <div className="mt-2">
-                        <Input
-                          type="file"
-                          id="logo"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              // Создаем URL для предварительного просмотра
-                              const url = URL.createObjectURL(file);
-                              setFormData(prev => ({ ...prev, logo: url }));
+                        <ObjectUploader
+                          maxNumberOfFiles={1}
+                          maxFileSize={5 * 1024 * 1024} // 5MB
+                          onGetUploadParameters={async () => {
+                            const response = await fetch('/api/objects/upload', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' }
+                            });
+                            const data = await response.json();
+                            return {
+                              method: 'PUT' as const,
+                              url: data.uploadURL
+                            };
+                          }}
+                          onComplete={(result) => {
+                            if (result.successful && result.successful[0]) {
+                              const uploadURL = result.successful[0].uploadURL;
+                              if (uploadURL) {
+                                // Normalize the URL to our object serving endpoint
+                                const objectPath = uploadURL.split('uploads/')[1]?.split('?')[0];
+                                if (objectPath) {
+                                  const finalURL = `/objects/uploads/${objectPath}`;
+                                  setFormData(prev => ({ ...prev, logo: finalURL }));
+                                  toast({
+                                    title: "Успех",
+                                    description: "Логотип успешно загружен"
+                                  });
+                                }
+                              }
                             }
                           }}
-                          className="mb-2"
-                          data-testid="input-logo-file"
-                        />
+                          buttonClassName="w-full"
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Загрузить логотип
+                        </ObjectUploader>
+                        
                         {formData.logo && (
-                          <div className="mt-2">
+                          <div className="mt-4 space-y-2">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Image className="h-4 w-4" />
+                              Предварительный просмотр:
+                            </div>
                             <img 
                               src={formData.logo} 
                               alt="Логотип оффера" 
-                              className="w-16 h-16 object-cover rounded-md border"
+                              className="w-20 h-20 object-cover rounded-lg border border-border"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yNS4zMzMzIDMzLjMzMzNIMzBWNDBIMjUuMzMzM1YzMy4zMzMzWk01MCA0MC4wMDAxSDU0LjY2NjdWMzMuMzMzNEg1MFY0MC4wMDAxWk0zNi42NjY3IDI2LjY2NjdWMzMuMzMzM0g0My4zMzMzVjI2LjY2NjdIMzYuNjY2N1pNMzEuMzMzMyAyNi42NjY3SDI1LjMzMzNWMjAuNjY2N0gyNS4zMzMzVjI2LjY2NjdIMzEuMzMzM1pNNTQuNjY2NyAyNi42NjY3SDQ4LjY2NjdWMjAuNjY2N0g1NC42NjY3VjI2LjY2NjdaTTI0LjY2NjcgNTIuNjY2N0g1NVY1OC42NjY3SDI0LjY2NjdWNTIuNjY2N1oiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+";
+                              }}
                             />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setFormData(prev => ({ ...prev, logo: '' }))}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Удалить логотип
+                            </Button>
                           </div>
                         )}
                       </div>
