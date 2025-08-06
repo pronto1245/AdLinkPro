@@ -298,12 +298,6 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
-      <Route path="/advertiser/analytics">
-        <ProtectedRoute allowedRoles={['advertiser']}>
-          <SuperAdminAnalytics />
-        </ProtectedRoute>
-      </Route>
-      
       <Route path="/advertiser/postbacks">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <PostbackManagementSuperAdmin />
