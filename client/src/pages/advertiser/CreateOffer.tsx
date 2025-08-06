@@ -764,12 +764,9 @@ export default function CreateOffer() {
                         {formData.landingPages.map((landing, index) => (
                           <div key={landing.id} className="grid grid-cols-12 gap-3 items-center p-4 border rounded-lg">
                             <div className="col-span-2">
-                              <Input
-                                placeholder="Название"
-                                value={landing.name}
-                                onChange={(e) => updateLandingPage(landing.id, 'name', e.target.value)}
-                                className="w-full"
-                              />
+                              <div className="flex items-center h-10 px-3 text-sm text-muted-foreground bg-gray-50 rounded-md border">
+                                {landing.name}
+                              </div>
                             </div>
                             <div className="col-span-5">
                               <Input
