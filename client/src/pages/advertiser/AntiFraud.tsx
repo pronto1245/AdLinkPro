@@ -404,7 +404,7 @@ export default function AntiFraud() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {dashboardLoading ? '...' : dashboard?.totalEvents.toLocaleString() || '0'}
+                  {dashboardLoading ? '...' : (dashboard?.totalEvents?.toLocaleString() || '0')}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   За выбранный период
@@ -419,7 +419,7 @@ export default function AntiFraud() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-red-600">
-                  {dashboardLoading ? '...' : dashboard?.blockedEvents.toLocaleString() || '0'}
+                  {dashboardLoading ? '...' : (dashboard?.blockedEvents?.toLocaleString() || '0')}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Фродовых событий
@@ -434,7 +434,7 @@ export default function AntiFraud() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-orange-600">
-                  {dashboardLoading ? '...' : `${dashboard?.fraudRate.toFixed(2) || '0'}%`}
+                  {dashboardLoading ? '...' : `${dashboard?.fraudRate?.toFixed(2) || '0'}%`}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   От общего трафика
@@ -471,7 +471,7 @@ export default function AntiFraud() {
                   <div>Загрузка...</div>
                 ) : (
                   <div className="space-y-3">
-                    {dashboard?.topFraudTypes.map((type, index) => (
+                    {dashboard?.topFraudTypes?.map((type, index) => (
                       <div key={type.type} className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           <Badge className={FRAUD_TYPE_COLORS[type.type as keyof typeof FRAUD_TYPE_COLORS]}>
@@ -499,7 +499,7 @@ export default function AntiFraud() {
                   <div>Загрузка...</div>
                 ) : (
                   <div className="space-y-3">
-                    {dashboard?.topFraudPartners.map((partner, index) => (
+                    {dashboard?.topFraudPartners?.map((partner, index) => (
                       <div key={partner.partnerId} className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">{partner.partnerName}</div>
@@ -538,7 +538,7 @@ export default function AntiFraud() {
                 <div>Загрузка...</div>
               ) : (
                 <div className="space-y-3">
-                  {dashboard?.recentEvents.slice(0, 5).map((event) => (
+                  {dashboard?.recentEvents?.slice(0, 5).map((event) => (
                     <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center space-x-3">
                         <Badge className={FRAUD_TYPE_COLORS[event.fraudType]}>
@@ -881,18 +881,18 @@ export default function AntiFraud() {
                   <div className="flex items-center justify-between">
                     <Label>Включить детекцию ботов</Label>
                     <Switch
-                      checked={settings?.botDetection.enabled || false}
+                      checked={settings?.botDetection?.enabled || false}
                       onCheckedChange={(checked) => handleSettingsUpdate('botDetection.enabled', checked)}
                       data-testid="switch-bot-detection"
                     />
                   </div>
 
-                  {settings?.botDetection.enabled && (
+                  {settings?.botDetection?.enabled && (
                     <>
                       <div className="flex items-center justify-between">
                         <Label>Проверка JavaScript</Label>
                         <Switch
-                          checked={settings.botDetection.checkJs}
+                          checked={settings?.botDetection?.checkJs || false}
                           onCheckedChange={(checked) => handleSettingsUpdate('botDetection.checkJs', checked)}
                           data-testid="switch-check-js"
                         />
@@ -901,7 +901,7 @@ export default function AntiFraud() {
                       <div className="flex items-center justify-between">
                         <Label>Детекция headless браузеров</Label>
                         <Switch
-                          checked={settings.botDetection.checkHeadless}
+                          checked={settings?.botDetection?.checkHeadless || false}
                           onCheckedChange={(checked) => handleSettingsUpdate('botDetection.checkHeadless', checked)}
                           data-testid="switch-check-headless"
                         />
@@ -910,7 +910,7 @@ export default function AntiFraud() {
                       <div className="flex items-center justify-between">
                         <Label>Проверка взаимодействий</Label>
                         <Switch
-                          checked={settings.botDetection.checkInteraction}
+                          checked={settings?.botDetection?.checkInteraction || false}
                           onCheckedChange={(checked) => handleSettingsUpdate('botDetection.checkInteraction', checked)}
                           data-testid="switch-check-interaction"
                         />
