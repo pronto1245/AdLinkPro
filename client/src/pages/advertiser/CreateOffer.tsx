@@ -239,7 +239,9 @@ export default function CreateOffer() {
         description: data.description,
         category: data.category,
         logo: data.logo,
-        countries: data.geoTargeting,
+        countries: data.hasGlobalGeoSetting 
+          ? data.landingPages.map(lp => lp.geo).filter(geo => geo && geo.trim() !== '')
+          : data.globalGeo ? [data.globalGeo] : [],
         landingPageUrl: data.targetUrl,
         landingPages: data.landingPages,
         payout: data.hasGlobalPayoutSetting 
@@ -326,10 +328,15 @@ export default function CreateOffer() {
       return;
     }
 
-    if (formData.geoTargeting.length === 0) {
+    // Проверяем гео в landing pages
+    const hasValidGeo = formData.hasGlobalGeoSetting 
+      ? formData.landingPages.some(lp => lp.geo && lp.geo.trim() !== '')
+      : formData.globalGeo && formData.globalGeo.trim() !== '';
+    
+    if (!hasValidGeo) {
       toast({
         title: 'Выберите гео',
-        description: 'Необходимо выбрать хотя бы одну страну',
+        description: 'Необходимо указать гео для целевых страниц',
         variant: 'destructive'
       });
       return;
