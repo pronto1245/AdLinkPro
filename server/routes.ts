@@ -376,6 +376,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Antifraud (only antifraudEnabled exists in DB)
         antifraudEnabled: req.body.antifraudEnabled || true,
+        antifraudMethods: req.body.antifraudMethods || [],
         
         // Settings that exist in DB
         kycRequired: req.body.kycRequired || false,

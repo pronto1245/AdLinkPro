@@ -114,6 +114,7 @@ export const offers = pgTable("offers", {
   
   // Anti-fraud settings
   antifraudEnabled: boolean("antifraud_enabled").default(true),
+  antifraudMethods: jsonb("antifraud_methods").default([]), // Selected antifraud protection methods
   
   // Status and moderation
   status: offerStatusEnum("status").default('draft'),

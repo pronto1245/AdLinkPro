@@ -63,6 +63,7 @@ interface OfferFormData {
   
   // Антифрод
   antifraudEnabled: boolean;
+  antifraudMethods: string[]; // Выбранные методы антифрод защиты
   partnerApprovalType: 'auto' | 'manual' | 'by_request' | 'whitelist_only';
   
   // Дополнительные настройки
@@ -108,6 +109,7 @@ const initialFormData: OfferFormData = {
   
   // Антифрод
   antifraudEnabled: true,
+  antifraudMethods: ['ip_check', 'vpn_detection'], // По умолчанию включены базовые методы
   partnerApprovalType: 'manual',
   
   // Дополнительные настройки
@@ -255,12 +257,53 @@ const osTypes = [
   { value: 'linux', label: 'Linux' }
 ];
 
+// Методы антифрод защиты с описаниями для полной интеграции
 const antifraudMethods = [
-  { value: 'ip', label: 'Проверка IP адресов' },
-  { value: 'vpn', label: 'Детекция VPN/Proxy' },
-  { value: 'bot', label: 'Защита от ботов' },
-  { value: 'ctr', label: 'Анализ CTR' },
-  { value: 'click_spam', label: 'Защита от кликспама' }
+  { 
+    value: 'ip_check', 
+    label: 'Проверка IP адресов',
+    description: 'Анализ подозрительных IP и геолокации'
+  },
+  { 
+    value: 'vpn_detection', 
+    label: 'Детекция VPN/Proxy',
+    description: 'Обнаружение VPN, прокси и анонимайзеров'
+  },
+  { 
+    value: 'bot_protection', 
+    label: 'Защита от ботов',
+    description: 'Идентификация автоматизированного трафика'
+  },
+  { 
+    value: 'device_fingerprint', 
+    label: 'Отпечаток устройства',
+    description: 'Уникальная идентификация устройств'
+  },
+  { 
+    value: 'behavioral_analysis', 
+    label: 'Поведенческий анализ',
+    description: 'Анализ паттернов поведения пользователей'
+  },
+  { 
+    value: 'click_spam_protection', 
+    label: 'Защита от кликспама',
+    description: 'Предотвращение массовых фиктивных кликов'
+  },
+  { 
+    value: 'time_analysis', 
+    label: 'Временной анализ',
+    description: 'Контроль времени между событиями'
+  },
+  { 
+    value: 'referrer_validation', 
+    label: 'Проверка источников',
+    description: 'Валидация источников переходов'
+  },
+  { 
+    value: 'conversion_validation', 
+    label: 'Проверка конверсий',
+    description: 'Валидация качества конверсий'
+  }
 ];
 
 const languages = [
@@ -378,6 +421,7 @@ export default function CreateOffer() {
         dailyLimit: data.dailyLimit || null,
         monthlyLimit: data.monthlyLimit || null,
         antifraudEnabled: data.antifraudEnabled,
+        antifraudMethods: data.antifraudMethods, // Выбранные методы антифрод защиты
         partnerApprovalType: data.partnerApprovalType, // Тип подтверждения партнеров
         kycRequired: data.kycRequired,
         isPrivate: data.isPrivate,
@@ -1058,7 +1102,54 @@ export default function CreateOffer() {
                     <Label htmlFor="antifraudEnabled" className="font-medium">Включить антифрод защиту</Label>
                   </div>
 
-                  {/* Методы антифрода удалены из функциональности */}
+                  {formData.antifraudEnabled && (
+                    <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
+                      <Label className="text-base font-medium mb-3 block">Методы антифрод защиты</Label>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Выберите методы защиты от мошеннического трафика
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {antifraudMethods.map(method => (
+                          <div key={method.value} className="flex items-start space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`antifraud-${method.value}`}
+                              checked={formData.antifraudMethods?.includes(method.value) || false}
+                              onChange={() => {
+                                const currentMethods = formData.antifraudMethods || [];
+                                const newMethods = currentMethods.includes(method.value)
+                                  ? currentMethods.filter(m => m !== method.value)
+                                  : [...currentMethods, method.value];
+                                setFormData(prev => ({ ...prev, antifraudMethods: newMethods }));
+                              }}
+                              className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 mt-1"
+                              data-testid={`checkbox-antifraud-${method.value}`}
+                            />
+                            <div className="flex-1">
+                              <Label 
+                                htmlFor={`antifraud-${method.value}`} 
+                                className="text-sm font-medium cursor-pointer hover:text-blue-600 transition-colors"
+                              >
+                                {method.label}
+                              </Label>
+                              {method.description && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {method.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {formData.antifraudMethods?.length > 0 && (
+                        <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                          <p className="text-xs text-blue-700 dark:text-blue-300">
+                            Активные методы защиты: {formData.antifraudMethods.length} из {antifraudMethods.length}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
