@@ -256,7 +256,7 @@ export default function CreateOffer() {
         countries: data.hasGlobalGeoSetting 
           ? data.landingPages.map(lp => lp.geo).filter(geo => geo && geo.trim() !== '')
           : data.globalGeo ? [data.globalGeo] : [],
-        landingPageUrl: data.targetUrl,
+        targetUrl: data.landingPages.find(lp => lp.isDefault)?.url || data.landingPages[0]?.url || '',
         landingPages: data.landingPages,
         payout: data.hasGlobalPayoutSetting 
           ? (data.landingPages.find(lp => lp.isDefault)?.payout || data.landingPages[0]?.payout || '0')

@@ -351,17 +351,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         logo: req.body.logo,
         
         // Geo and devices
-        countries: req.body.geoTargeting, // Store selected countries
-        allowedDevices: req.body.allowedDevices,
-        allowedOs: req.body.allowedOs,
+        countries: req.body.countries || [], // Store selected countries
 
         
         // Links (map to existing fields)
-        landingPageUrl: req.body.targetUrl,
+        landingPageUrl: req.body.targetUrl || req.body.landingPageUrl,
         landingPages: req.body.landingPages,
         
         // Payout
-        payout: req.body.payoutAmount.toString(),
+        payout: req.body.payout ? req.body.payout.toString() : '0',
         payoutType: req.body.payoutType,
         currency: req.body.currency,
         
