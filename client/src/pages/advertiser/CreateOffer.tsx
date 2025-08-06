@@ -737,6 +737,20 @@ export default function CreateOffer() {
                       ))}
                     </div>
                   </div>
+
+                  <Separator />
+
+                  <div>
+                    <Label htmlFor="trafficRequirements">Требования к трафику</Label>
+                    <Textarea
+                      id="trafficRequirements"
+                      value={formData.trafficRequirements}
+                      onChange={(e) => setFormData(prev => ({ ...prev, trafficRequirements: e.target.value }))}
+                      placeholder="Дополнительные требования к качеству трафика"
+                      rows={4}
+                      data-testid="textarea-traffic-requirements"
+                    />
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -1054,17 +1068,7 @@ export default function CreateOffer() {
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="trafficRequirements">Требования к трафику</Label>
-                    <Textarea
-                      id="trafficRequirements"
-                      value={formData.trafficRequirements}
-                      onChange={(e) => setFormData(prev => ({ ...prev, trafficRequirements: e.target.value }))}
-                      placeholder="Дополнительные требования к качеству трафика"
-                      rows={4}
-                      data-testid="textarea-traffic-requirements"
-                    />
-                  </div>
+
                 </CardContent>
               </Card>
             </TabsContent>
