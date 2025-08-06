@@ -316,52 +316,52 @@ export default function Dashboard() {
 
           {/* KPI Cards Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
+          <Card className="bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 border-cyan-200 dark:border-cyan-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">CR (Conversion Rate)</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-cyan-700 dark:text-cyan-300">CR (Conversion Rate)</p>
+                  <p className="text-3xl font-bold text-cyan-900 dark:text-cyan-100">
                     {metrics?.cr?.toFixed(2) || '3.13'}%
                   </p>
                 </div>
                 <div className="text-right">
                   <Progress value={metrics?.cr || 31.3} className="w-16" />
-                  <p className="text-sm text-gray-500 mt-1">Целевой: 3.5%</p>
+                  <p className="text-sm text-cyan-600 dark:text-cyan-400 mt-1">Целевой: 3.5%</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">EPC (Earnings Per Click)</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">EPC (Earnings Per Click)</p>
+                  <p className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
                     ${metrics?.epc?.toFixed(2) || '2.97'}
                   </p>
                 </div>
                 <div className="text-right">
                   <Progress value={((metrics?.epc || 2.97) / 5) * 100} className="w-16" />
-                  <p className="text-sm text-gray-500 mt-1">Целевой: $2.5</p>
+                  <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1">Целевой: $2.5</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20 border-rose-200 dark:border-rose-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">ROI (Return on Investment)</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-rose-700 dark:text-rose-300">ROI (Return on Investment)</p>
+                  <p className="text-3xl font-bold text-rose-900 dark:text-rose-100">
                     {metrics?.roi?.toFixed(0) || '167'}%
                   </p>
                 </div>
                 <div className="text-right">
                   <Progress value={Math.min((metrics?.roi || 167) / 2, 100)} className="w-16" />
-                  <p className="text-sm text-gray-500 mt-1">Целевой: 150%</p>
+                  <p className="text-sm text-rose-600 dark:text-rose-400 mt-1">Целевой: 150%</p>
                 </div>
               </div>
             </CardContent>
