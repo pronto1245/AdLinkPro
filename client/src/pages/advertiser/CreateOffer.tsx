@@ -377,25 +377,20 @@ export default function CreateOffer() {
         countries: data.hasGlobalGeoSetting 
           ? data.landingPages.map(lp => lp.geo).filter(geo => geo && geo.trim() !== '')
           : data.globalGeo ? [data.globalGeo] : [],
-        targetUrl: data.landingPages.find(lp => lp.isDefault)?.url || data.landingPages[0]?.url || '',
+        landingPageUrl: data.landingPages.find(lp => lp.isDefault)?.url || data.landingPages[0]?.url || '',
         landingPages: data.landingPages,
         payout: data.hasGlobalPayoutSetting 
           ? (data.landingPages.find(lp => lp.isDefault)?.payout || data.landingPages[0]?.payout || '0')
           : (data.globalPayout || '0'),
         payoutType: data.payoutType,
         currency: data.currency,
-        partnerApprovalType: data.partnerApprovalType,
         trafficSources: data.trafficSources,
-        deniedSources: data.deniedSources,
         trafficRequirements: data.trafficRequirements,
         dailyLimit: data.dailyLimit || null,
         monthlyLimit: data.monthlyLimit || null,
         antifraudEnabled: data.antifraudEnabled,
-        antifraudMethods: data.antifraudMethods,
         kycRequired: data.kycRequired,
         isPrivate: data.isPrivate,
-        customDomains: data.customDomains,
-        tags: data.tags,
         kpiConditions: { en: data.kpi, ru: data.kpi },
         advertiserId: getUserId(),
         status: data.status

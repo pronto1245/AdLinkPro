@@ -102,7 +102,6 @@ export const offers = pgTable("offers", {
   // Restrictions and traffic
   kpiConditions: jsonb("kpi_conditions"), // KPI conditions - Multilingual: { "en": "English text", "ru": "Russian text" }
   trafficSources: jsonb("traffic_sources"), // Allowed traffic sources
-  deniedSources: jsonb("denied_sources"), // Explicitly denied traffic sources
   trafficRequirements: text("traffic_requirements"), // Free text requirements
   
   // Limits and caps
@@ -110,12 +109,10 @@ export const offers = pgTable("offers", {
   monthlyLimit: integer("monthly_limit"), // Monthly conversion limit
   
   // Partner approval and settings
-  partnerApprovalType: text("partner_approval_type").default('auto'), // 'auto', 'manual', 'invite_only'
   autoApprovePartners: boolean("auto_approve_partners").default(false),
   
   // Anti-fraud settings
   antifraudEnabled: boolean("antifraud_enabled").default(true),
-  antifraudMethods: jsonb("antifraud_methods"), // ['ip', 'vpn', 'bot', 'ctr', 'click_spam']
   
   // Status and moderation
   status: offerStatusEnum("status").default('draft'),
@@ -126,18 +123,15 @@ export const offers = pgTable("offers", {
   restrictions: text("restrictions"),
   fraudRestrictions: text("fraud_restrictions"), // Global fraud restrictions set by admin
   macros: text("macros"), // JSON string of macros
+  smartlinkEnabled: boolean("smartlink_enabled").default(false),
   
   // Flags and visibility
   kycRequired: boolean("kyc_required").default(false),
   isPrivate: boolean("is_private").default(false),
-  smartlinkEnabled: boolean("smartlink_enabled").default(false),
   isBlocked: boolean("is_blocked").default(false),
   blockedReason: text("blocked_reason"),
   isArchived: boolean("is_archived").default(false),
-  regionVisibility: jsonb("region_visibility"), // Regions where offer is visible
-  
-  // Redirect domains for this offer
-  allowCustomDomains: boolean("allow_custom_domains").default(false),
+  regionVisibility: jsonb("region_visibility"),
   
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
