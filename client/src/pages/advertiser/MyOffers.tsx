@@ -126,7 +126,7 @@ export default function MyOffers() {
     enabled: !!user?.id
   });
 
-  // Debug log to check offer data
+  // Clean up blob URLs and filter valid logos
   React.useEffect(() => {
     if (offers && offers.length > 0) {
       console.log('Offers data with logos:', offers.map(offer => ({ 
@@ -134,9 +134,29 @@ export default function MyOffers() {
         name: offer.name, 
         logo: offer.logo,
         logoType: typeof offer.logo,
-        logoTruthy: !!offer.logo,
-        logoLength: offer.logo?.length || 0
+        isValidLogo: offer.logo && (offer.logo.startsWith('/') || offer.logo.startsWith('data:')),
+        isBlob: offer.logo && offer.logo.startsWith('blob:')
       })));
+      
+      // Clean up invalid blob URLs from database
+      offers.forEach(async (offer) => {
+        if (offer.logo && offer.logo.startsWith('blob:')) {
+          console.log('Found invalid blob URL for offer:', offer.id, offer.logo);
+          // Auto-clean blob URLs by setting them to empty
+          try {
+            const response = await fetch(`/api/advertiser/offers/${offer.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ logo: '' })
+            });
+            if (response.ok) {
+              console.log('Cleaned blob URL for offer:', offer.id);
+            }
+          } catch (error) {
+            console.error('Failed to clean blob URL:', error);
+          }
+        }
+      });
     }
   }, [offers]);
 
@@ -367,18 +387,18 @@ export default function MyOffers() {
                           <div className="flex items-center gap-3">
                             {/* Логотип оффера */}
                             <div className="flex-shrink-0 relative">
-                              {offer.logo ? (
+                              {offer.logo && (offer.logo.startsWith('/') || offer.logo.startsWith('data:')) ? (
                                 <div className="relative">
                                   <img
                                     src={offer.logo}
                                     alt={`${offer.name} logo`}
                                     className="w-10 h-10 rounded-lg object-cover border border-border"
                                     onError={(e) => {
-                                      console.error('Failed to load image:', offer.logo);
+                                      console.log('Failed to load image:', offer.logo);
                                       const target = e.target as HTMLImageElement;
                                       target.style.display = 'none';
                                       if (target.nextElementSibling) {
-                                        target.nextElementSibling.classList.remove('hidden');
+                                        (target.nextElementSibling as HTMLElement).classList.remove('hidden');
                                       }
                                     }}
                                     onLoad={() => {
@@ -393,7 +413,7 @@ export default function MyOffers() {
                                   </div>
                                 </div>
                               ) : (
-                                /* Заглушка если нет логотипа */
+                                /* Заглушка если нет логотипа или blob URL */
                                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary/20 border border-border flex items-center justify-center">
                                   <span className="text-xs font-semibold text-primary">
                                     {offer.name.charAt(0).toUpperCase()}
