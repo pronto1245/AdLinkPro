@@ -352,8 +352,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Geo and devices
         countries: req.body.countries || [], // Store selected countries
-        allowedDevices: req.body.allowedDevices || [],
-        allowedOs: req.body.allowedOs || [],
 
         
         // Links (map to existing fields)

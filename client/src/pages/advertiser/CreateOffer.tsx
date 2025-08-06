@@ -7,6 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -146,21 +149,91 @@ const verticals = [
 ];
 
 const countries = [
-  { code: 'IN', name: '🇮🇳 Индия' },
-  { code: 'BR', name: '🇧🇷 Бразилия' },
-  { code: 'RU', name: '🇷🇺 Россия' },
-  { code: 'BD', name: '🇧🇩 Бангладеш' },
-  { code: 'US', name: '🇺🇸 США' },
-  { code: 'UK', name: '🇬🇧 Великобритания' },
-  { code: 'DE', name: '🇩🇪 Германия' },
-  { code: 'FR', name: '🇫🇷 Франция' },
-  { code: 'JP', name: '🇯🇵 Япония' },
-  { code: 'KR', name: '🇰🇷 Южная Корея' },
-  { code: 'TR', name: '🇹🇷 Турция' },
-  { code: 'TH', name: '🇹🇭 Таиланд' },
-  { code: 'ID', name: '🇮🇩 Индонезия' },
-  { code: 'MY', name: '🇲🇾 Малайзия' },
-  { code: 'PH', name: '🇵🇭 Филиппины' }
+  { code: 'afghanistan', name: '🇦🇫 Афганистан' },
+  { code: 'albania', name: '🇦🇱 Албания' },
+  { code: 'algeria', name: '🇩🇿 Алжир' },
+  { code: 'andorra', name: '🇦🇩 Андорра' },
+  { code: 'angola', name: '🇦🇴 Ангола' },
+  { code: 'argentina', name: '🇦🇷 Аргентина' },
+  { code: 'armenia', name: '🇦🇲 Армения' },
+  { code: 'australia', name: '🇦🇺 Австралия' },
+  { code: 'austria', name: '🇦🇹 Австрия' },
+  { code: 'azerbaijan', name: '🇦🇿 Азербайджан' },
+  { code: 'bahrain', name: '🇧🇭 Бахрейн' },
+  { code: 'bangladesh', name: '🇧🇩 Бангладеш' },
+  { code: 'belarus', name: '🇧🇾 Беларусь' },
+  { code: 'belgium', name: '🇧🇪 Бельгия' },
+  { code: 'bolivia', name: '🇧🇴 Боливия' },
+  { code: 'brazil', name: '🇧🇷 Бразилия' },
+  { code: 'bulgaria', name: '🇧🇬 Болгария' },
+  { code: 'cambodia', name: '🇰🇭 Камбоджа' },
+  { code: 'canada', name: '🇨🇦 Канада' },
+  { code: 'chile', name: '🇨🇱 Чили' },
+  { code: 'china', name: '🇨🇳 Китай' },
+  { code: 'colombia', name: '🇨🇴 Колумбия' },
+  { code: 'croatia', name: '🇭🇷 Хорватия' },
+  { code: 'cyprus', name: '🇨🇾 Кипр' },
+  { code: 'czech', name: '🇨🇿 Чехия' },
+  { code: 'denmark', name: '🇩🇰 Дания' },
+  { code: 'ecuador', name: '🇪🇨 Эквадор' },
+  { code: 'egypt', name: '🇪🇬 Египет' },
+  { code: 'estonia', name: '🇪🇪 Эстония' },
+  { code: 'finland', name: '🇫🇮 Финляндия' },
+  { code: 'france', name: '🇫🇷 Франция' },
+  { code: 'georgia', name: '🇬🇪 Грузия' },
+  { code: 'germany', name: '🇩🇪 Германия' },
+  { code: 'ghana', name: '🇬🇭 Гана' },
+  { code: 'greece', name: '🇬🇷 Греция' },
+  { code: 'hungary', name: '🇭🇺 Венгрия' },
+  { code: 'iceland', name: '🇮🇸 Исландия' },
+  { code: 'india', name: '🇮🇳 Индия' },
+  { code: 'indonesia', name: '🇮🇩 Индонезия' },
+  { code: 'iran', name: '🇮🇷 Иран' },
+  { code: 'iraq', name: '🇮🇶 Ирак' },
+  { code: 'ireland', name: '🇮🇪 Ирландия' },
+  { code: 'israel', name: '🇮🇱 Израиль' },
+  { code: 'italy', name: '🇮🇹 Италия' },
+  { code: 'japan', name: '🇯🇵 Япония' },
+  { code: 'jordan', name: '🇯🇴 Иордания' },
+  { code: 'kazakhstan', name: '🇰🇿 Казахстан' },
+  { code: 'kenya', name: '🇰🇪 Кения' },
+  { code: 'kuwait', name: '🇰🇼 Кувейт' },
+  { code: 'latvia', name: '🇱🇻 Латвия' },
+  { code: 'lebanon', name: '🇱🇧 Ливан' },
+  { code: 'lithuania', name: '🇱🇹 Литва' },
+  { code: 'malaysia', name: '🇲🇾 Малайзия' },
+  { code: 'malta', name: '🇲🇹 Мальта' },
+  { code: 'mexico', name: '🇲🇽 Мексика' },
+  { code: 'morocco', name: '🇲🇦 Марокко' },
+  { code: 'netherlands', name: '🇳🇱 Нидерланды' },
+  { code: 'newzealand', name: '🇳🇿 Новая Зеландия' },
+  { code: 'nigeria', name: '🇳🇬 Нигерия' },
+  { code: 'norway', name: '🇳🇴 Норвегия' },
+  { code: 'pakistan', name: '🇵🇰 Пакистан' },
+  { code: 'peru', name: '🇵🇪 Перу' },
+  { code: 'philippines', name: '🇵🇭 Филиппины' },
+  { code: 'poland', name: '🇵🇱 Польша' },
+  { code: 'portugal', name: '🇵🇹 Португалия' },
+  { code: 'qatar', name: '🇶🇦 Катар' },
+  { code: 'romania', name: '🇷🇴 Румыния' },
+  { code: 'russia', name: '🇷🇺 Россия' },
+  { code: 'saudiarabia', name: '🇸🇦 Саудовская Аравия' },
+  { code: 'singapore', name: '🇸🇬 Сингапур' },
+  { code: 'slovakia', name: '🇸🇰 Словакия' },
+  { code: 'slovenia', name: '🇸🇮 Словения' },
+  { code: 'southafrica', name: '🇿🇦 Южная Африка' },
+  { code: 'southkorea', name: '🇰🇷 Южная Корея' },
+  { code: 'spain', name: '🇪🇸 Испания' },
+  { code: 'sweden', name: '🇸🇪 Швеция' },
+  { code: 'switzerland', name: '🇨🇭 Швейцария' },
+  { code: 'thailand', name: '🇹🇭 Таиланд' },
+  { code: 'turkey', name: '🇹🇷 Турция' },
+  { code: 'uae', name: '🇦🇪 ОАЭ' },
+  { code: 'ukraine', name: '🇺🇦 Украина' },
+  { code: 'uk', name: '🇬🇧 Великобритания' },
+  { code: 'usa', name: '🇺🇸 США' },
+  { code: 'venezuela', name: '🇻🇪 Венесуэла' },
+  { code: 'vietnam', name: '🇻🇳 Вьетнам' }
 ];
 
 const allowedTrafficSources = [
@@ -221,6 +294,58 @@ const languages = [
   { value: 'th', label: 'ไทย' },
   { value: 'tr', label: 'Türkçe' }
 ];
+
+// Компонент выбора страны с поиском
+function CountrySelect({ value, onChange, placeholder = "Выберите страну" }: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between text-sm"
+        >
+          {value
+            ? countries.find((country) => country.code === value)?.name || value
+            : placeholder}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder="Поиск страны..." className="h-9" />
+          <CommandEmpty>Страна не найдена.</CommandEmpty>
+          <CommandGroup className="max-h-64 overflow-auto">
+            {countries.map((country) => (
+              <CommandItem
+                key={country.code}
+                value={country.name}
+                onSelect={() => {
+                  onChange(country.code);
+                  setOpen(false);
+                }}
+              >
+                {country.name}
+                <Check
+                  className={`ml-auto h-4 w-4 ${
+                    value === country.code ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export default function CreateOffer() {
   const [, navigate] = useLocation();
@@ -869,24 +994,23 @@ export default function CreateOffer() {
                                   className="rounded flex-shrink-0"
                                   title="Разные ГЕО для URL"
                                 />
-                                <Input
-                                  placeholder="ГЕО"
+                                <CountrySelect
+                                  placeholder="Выберите ГЕО"
                                   value={formData.hasGlobalGeoSetting ? (landing.geo || '') : formData.globalGeo || ''}
-                                  onChange={(e) => {
+                                  onChange={(value) => {
                                     if (formData.hasGlobalGeoSetting) {
-                                      updateLandingPage(landing.id, 'geo', e.target.value);
+                                      updateLandingPage(landing.id, 'geo', value);
                                     } else {
                                       setFormData(prev => ({ 
                                         ...prev, 
-                                        globalGeo: e.target.value,
+                                        globalGeo: value,
                                         landingPages: prev.landingPages.map(lp => ({
                                           ...lp,
-                                          geo: e.target.value
+                                          geo: value
                                         }))
                                       }));
                                     }
                                   }}
-                                  className="w-full text-sm"
                                 />
                               </div>
                             </div>
