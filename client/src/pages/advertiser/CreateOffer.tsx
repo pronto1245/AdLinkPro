@@ -1108,10 +1108,10 @@ export default function CreateOffer() {
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t">
-                    <Label htmlFor="status">Статус оффера</Label>
+                  <div className="pt-4 border-t bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <Label htmlFor="status" className="text-lg font-semibold text-blue-800 dark:text-blue-300">Статус оффера</Label>
                     <Select value={formData.status} onValueChange={(value: 'draft' | 'active' | 'paused') => setFormData(prev => ({ ...prev, status: value }))}>
-                      <SelectTrigger data-testid="select-status">
+                      <SelectTrigger data-testid="select-status" className="mt-2 border-blue-300 dark:border-blue-700 focus:border-blue-500 dark:focus:border-blue-400">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
