@@ -161,10 +161,11 @@ const countries = [
 ];
 
 const allowedTrafficSources = [
-  'Google Ads', 'Facebook Ads', 'Native Ads', 'Push Notifications',
-  'Pop Traffic', 'Email Marketing', 'SMS Marketing', 'Influencer Marketing',
-  'SEO', 'Social Media', 'Display Ads', 'Video Ads', 'TikTok Ads',
-  'Snapchat Ads', 'YouTube Ads', 'LinkedIn Ads', 'Twitter Ads'
+  'Push', 'Popunder', 'Google Ads', 'Facebook Ads', 'TikTok Ads', 
+  'Instagram', 'YouTube Ads', 'Native', 'UAC', 'SEO', 'Email', 
+  'WhatsApp', 'Telegram', 'Motivated', 'In-App', 'Cloaking', 
+  'Bot', 'Farm', 'Doros', 'APK', 'VK', 'Discord', 'Phishing', 
+  'Autoredirect', 'Proxy/VPN', 'Twitter/X'
 ];
 
 const deniedTrafficSources = [
