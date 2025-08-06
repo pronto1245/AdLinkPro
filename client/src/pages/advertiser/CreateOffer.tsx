@@ -30,7 +30,6 @@ interface OfferFormData {
   
   // Ссылки
   targetUrl: string;
-  prelandingUrl: string;
   postbackUrl: string;
   landingPages: Array<{
     id: string;
@@ -84,7 +83,6 @@ const initialFormData: OfferFormData = {
   
   // Ссылки
   targetUrl: '',
-  prelandingUrl: '',
   postbackUrl: '',
   landingPages: [{ id: '1', name: 'Основная', url: '', isDefault: true }],
   
@@ -806,19 +804,7 @@ export default function CreateOffer() {
                       </p>
                     </div>
 
-                    <div>
-                      <Label htmlFor="prelandingUrl">Prelanding URL (опционально)</Label>
-                      <Input
-                        id="prelandingUrl"
-                        value={formData.prelandingUrl}
-                        onChange={(e) => setFormData(prev => ({ ...prev, prelandingUrl: e.target.value }))}
-                        placeholder="https://example.com/prelanding"
-                        data-testid="input-prelanding-url"
-                      />
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Промежуточная страница перед основным лендингом
-                      </p>
-                    </div>
+
 
                     <div>
                       <Label htmlFor="postbackUrl">Postback URL</Label>

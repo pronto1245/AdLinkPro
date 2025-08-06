@@ -358,7 +358,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Links (map to existing fields)
         landingPageUrl: req.body.targetUrl,
-        previewUrl: req.body.prelandingUrl,
         landingPages: req.body.landingPages,
         
         // Payout
