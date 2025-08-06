@@ -399,7 +399,7 @@ export default function AdvertiserDashboard() {
           <Card data-testid="card-offers">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Офферы</CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
+              <Target className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{overview?.totalOffers || 0}</div>
@@ -420,7 +420,7 @@ export default function AdvertiserDashboard() {
           <Card data-testid="card-budget">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Бюджет / Расход</CardTitle>
-              <Wallet className="h-4 w-4 text-muted-foreground" />
+              <Wallet className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(overview?.totalSpent || 0)}</div>
@@ -442,7 +442,7 @@ export default function AdvertiserDashboard() {
           <Card data-testid="card-revenue">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Доход рекламодателя</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <DollarSign className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(overview?.advertiserRevenue || 0)}</div>
@@ -460,7 +460,7 @@ export default function AdvertiserDashboard() {
           <Card data-testid="card-postbacks">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Постбеки</CardTitle>
-              <Send className="h-4 w-4 text-muted-foreground" />
+              <Send className="h-4 w-4 text-purple-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{overview?.postbacksSent || 0}</div>
@@ -481,7 +481,7 @@ export default function AdvertiserDashboard() {
           <Card data-testid="card-partners">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Партнёры</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <Users className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{overview?.partnersCount || 0}</div>
@@ -499,7 +499,7 @@ export default function AdvertiserDashboard() {
           <Card data-testid="card-cr">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">CR (%)</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              <BarChart3 className="h-4 w-4 text-cyan-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{overview?.avgCR?.toFixed(2) || 0}%</div>
@@ -517,7 +517,7 @@ export default function AdvertiserDashboard() {
           <Card data-testid="card-epc">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">EPC ($)</CardTitle>
-              <MousePointer className="h-4 w-4 text-muted-foreground" />
+              <MousePointer className="h-4 w-4 text-pink-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${overview?.epc?.toFixed(2) || 0}</div>
@@ -535,7 +535,7 @@ export default function AdvertiserDashboard() {
           <Card data-testid="card-fraud">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Фрод-активность</CardTitle>
-              <Shield className="h-4 w-4 text-muted-foreground" />
+              <Shield className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">{overview?.fraudActivity || 0}</div>
