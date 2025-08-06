@@ -835,7 +835,6 @@ export class DatabaseStorage implements IStorage {
         createdAt: offers.createdAt,
         updatedAt: offers.updatedAt,
         advertiserName: sql<string>`COALESCE(${users.firstName} || ' ' || ${users.lastName}, 'Unknown')`,
-        allowedApps: offers.allowedApps,
       })
       .from(offers)
       .leftJoin(users, eq(offers.advertiserId, users.id))
@@ -2021,7 +2020,7 @@ export class DatabaseStorage implements IStorage {
       // Get recent security events from fraud_alerts
       const securityEvents = await db
         .select({
-          type: fraudAlerts.alertType,
+          type: fraudAlerts.type,
           description: fraudAlerts.description,
           severity: fraudAlerts.severity,
           timestamp: fraudAlerts.createdAt
@@ -4065,8 +4064,7 @@ class MemStorage implements IStorage {
   async createPostback(): Promise<any> { return {}; }
   async updatePostback(): Promise<any> { return {}; }
   async getTickets(): Promise<any[]> { return []; }
-  async createTicket(): Promise<any> { return {}; }
-  async updateTicket(): Promise<any> { return {}; }
+
   async getFraudAlerts(): Promise<any[]> { return []; }
   async createFraudAlert(): Promise<any> { return {}; }
   async getAuditLogs(): Promise<any[]> { return []; }
