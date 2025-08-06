@@ -89,7 +89,7 @@ export const prefetchCriticalData = async () => {
       staleTime: 2 * 60 * 1000, // 2 минуты для данных пользователя
     }),
     queryClient.prefetchQuery({
-      queryKey: ['/api/admin/offers'],
+      queryKey: ['/api/advertiser/offers'],
       staleTime: 5 * 60 * 1000, // 5 минут для списка офферов
     }),
   ]);
