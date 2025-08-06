@@ -51,10 +51,10 @@ const sidebarItems = [
     description: 'Финансовые операции'
   },
   {
-    title: 'Компания',
-    href: '/advertiser/company',
-    icon: Building2,
-    description: 'Информация о компании'
+    title: 'Командный режим',
+    href: '/advertiser/team',
+    icon: Users,
+    description: 'Управление командой и права доступа'
   },
   {
     title: 'Профиль',

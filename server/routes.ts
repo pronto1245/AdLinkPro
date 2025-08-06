@@ -5294,6 +5294,189 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
+  // Team Management Routes for Advertisers
+  app.get("/api/advertiser/team/members", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      
+      // Get team members for this advertiser
+      const teamMembers = await db.query.users.findMany({
+        where: and(
+          eq(users.ownerId, authUser.id),
+          eq(users.userType, 'team_member')
+        ),
+        orderBy: desc(users.createdAt)
+      });
+      
+      res.json(teamMembers);
+    } catch (error) {
+      console.error("Get team members error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/advertiser/team/members", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { username, email, firstName, lastName, role, permissions, restrictions, telegramNotifications, telegramUserId } = req.body;
+      
+      // Validate required fields
+      if (!username || !email || !firstName || !lastName || !role) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      // Check if username or email already exists
+      const existingUser = await db.query.users.findFirst({
+        where: sql`${users.username} = ${username} OR ${users.email} = ${email}`
+      });
+      
+      if (existingUser) {
+        return res.status(400).json({ error: "Username or email already exists" });
+      }
+      
+      // Generate temporary password
+      const tempPassword = Math.random().toString(36).slice(-8);
+      const hashedPassword = await bcrypt.hash(tempPassword, 10);
+      
+      // Create team member
+      const teamMember = await storage.createUser({
+        username,
+        email,
+        firstName,
+        lastName,
+        password: hashedPassword,
+        role: 'affiliate',
+        adminRole: role,
+        ownerId: authUser.id,
+        userType: 'team_member',
+        settings: JSON.stringify({
+          permissions,
+          restrictions,
+          telegramNotifications,
+          telegramUserId: telegramUserId || null,
+          teamRole: role
+        })
+      });
+      
+      res.status(201).json({
+        ...teamMember,
+        temporaryPassword: tempPassword
+      });
+    } catch (error) {
+      console.error("Create team member error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/advertiser/team/members/:id", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { id } = req.params;
+      const updateData = req.body;
+      
+      // Check if team member exists and belongs to this advertiser
+      const teamMember = await db.query.users.findFirst({
+        where: and(
+          eq(users.id, id),
+          eq(users.ownerId, authUser.id),
+          eq(users.userType, 'team_member')
+        )
+      });
+      
+      if (!teamMember) {
+        return res.status(404).json({ error: "Team member not found" });
+      }
+      
+      // Update team member
+      const updatedMember = await db.update(users)
+        .set({
+          ...updateData,
+          updatedAt: new Date(),
+          settings: updateData.settings ? JSON.stringify(updateData.settings) : teamMember.settings
+        })
+        .where(eq(users.id, id))
+        .returning();
+      
+      res.json(updatedMember[0]);
+    } catch (error) {
+      console.error("Update team member error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/advertiser/team/members/:id", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { id } = req.params;
+      
+      // Check if team member exists and belongs to this advertiser
+      const teamMember = await db.query.users.findFirst({
+        where: and(
+          eq(users.id, id),
+          eq(users.ownerId, authUser.id),
+          eq(users.userType, 'team_member')
+        )
+      });
+      
+      if (!teamMember) {
+        return res.status(404).json({ error: "Team member not found" });
+      }
+      
+      // Soft delete - mark as deleted
+      await db.update(users)
+        .set({
+          isDeleted: true,
+          deletedAt: new Date(),
+          deletedBy: authUser.id
+        })
+        .where(eq(users.id, id));
+      
+      res.json({ message: "Team member deleted successfully" });
+    } catch (error) {
+      console.error("Delete team member error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/advertiser/team/activity-logs", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      
+      // Mock data for now - in real implementation this would fetch from audit_logs table
+      const mockLogs = [
+        {
+          id: '1',
+          userId: 'member1',
+          username: 'ivan_petrov',
+          action: 'LOGIN',
+          resource: 'System',
+          details: 'User logged in successfully',
+          ipAddress: '192.168.1.100',
+          userAgent: 'Mozilla/5.0...',
+          timestamp: new Date().toISOString(),
+          result: 'success'
+        },
+        {
+          id: '2',
+          userId: 'member2',
+          username: 'maria_sidorova',
+          action: 'VIEW_STATISTICS',
+          resource: 'Analytics',
+          details: 'Viewed offer statistics',
+          ipAddress: '10.0.0.5',
+          userAgent: 'Chrome/91.0...',
+          timestamp: new Date(Date.now() - 3600000).toISOString(),
+          result: 'success'
+        }
+      ];
+      
+      res.json(mockLogs);
+    } catch (error) {
+      console.error("Get team activity logs error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
