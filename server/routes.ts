@@ -352,6 +352,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Geo and devices
         countries: req.body.countries || [], // Store selected countries
+        allowedDevices: req.body.allowedDevices || [],
+        allowedOs: req.body.allowedOs || [],
 
         
         // Links (map to existing fields)
@@ -366,8 +368,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Conditions
         partnerApprovalType: req.body.partnerApprovalType,
         trafficSources: req.body.trafficSources,
-        deniedSources: req.body.deniedSources,
-        trafficRequirements: req.body.trafficRequirements,
+        deniedSources: req.body.deniedSources || [],
+        trafficRequirements: req.body.trafficRequirements || '',
         
         // Limits
         dailyLimit: req.body.dailyLimit,
@@ -378,13 +380,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         antifraudMethods: req.body.antifraudMethods,
         
         // Additional settings
-        kycRequired: req.body.kycRequired,
-        isPrivate: req.body.isPrivate,
-        customDomains: req.body.allowCustomDomains ? req.body.customDomains : null,
+        kycRequired: req.body.kycRequired || false,
+        isPrivate: req.body.isPrivate || false,
         
         // Meta
-        tags: req.body.tags,
-        kpiConditions: req.body.kpi ? { en: req.body.kpi, ru: req.body.kpi } : null,
+        kpiConditions: req.body.kpiConditions || null,
         
         // System fields
         advertiserId: authUser.id,
