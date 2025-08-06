@@ -86,11 +86,9 @@ export const offers = pgTable("offers", {
   countries: jsonb("countries"), // Array of country codes
   geoTargeting: text("geo_targeting"), // Free text geo targeting
   
-  // Landing pages and URLs
-  targetUrl: text("target_url"), // Main target URL where users will be redirected
+  // Landing pages and URLs  
   trackingUrl: text("tracking_url"), // Generated tracking URL template
-  prelandingUrl: text("prelanding_url"), // Optional prelanding page
-  postbackUrl: text("postback_url"), // Custom postback URL for this offer
+  landingPageUrl: text("landing_page_url"), // Main landing page URL
   landingPages: jsonb("landing_pages"), // Array of landing pages with different prices
   baseUrl: text("base_url"), // Base URL for automatic partner link generation
   previewUrl: text("preview_url"), // Preview link for partners
@@ -127,8 +125,7 @@ export const offers = pgTable("offers", {
   moderationStatus: text("moderation_status").default('pending'), // pending, approved, rejected, needs_revision
   moderationComment: text("moderation_comment"), // Admin comment for moderation
   
-  // Technical settings
-  landingPageUrl: text("landing_page_url"), 
+  // Technical settings 
   restrictions: text("restrictions"),
   fraudRestrictions: text("fraud_restrictions"), // Global fraud restrictions set by admin
   macros: text("macros"), // JSON string of macros

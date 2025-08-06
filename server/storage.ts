@@ -3586,7 +3586,7 @@ export class DatabaseStorage implements IStorage {
         name: offerData.name,
         description: offerData.description,
         category: offerData.category,
-        logo: offerData.logo,
+        logo: offerData.logo || '',
         advertiserId: offerData.advertiserId,
         payout: parseFloat(offerData.payout),
         payoutType: offerData.payoutType,
