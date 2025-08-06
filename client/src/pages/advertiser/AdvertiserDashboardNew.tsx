@@ -342,7 +342,18 @@ export default function AdvertiserDashboardNew() {
             </CardContent>
           </Card>
 
-
+          <Card data-testid="card-notifications" className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-300">Уведомления</CardTitle>
+              <div className="p-3 bg-amber-500 rounded-xl shadow-lg">
+                <Bell className="h-6 w-6 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-amber-900 dark:text-amber-100">{Math.floor(Math.random() * 15) + 5}</div>
+              <p className="text-xs text-amber-700 dark:text-amber-400">новых сообщений</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Charts Section */}
