@@ -390,43 +390,7 @@ export default function AdvertiserDashboard() {
           </CardContent>
         </Card>
 
-        {/* Быстрые действия */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          <Link to="/analytics/traffic">
-            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" data-testid="button-quick-traffic" title="Анализ трафика">
-              <Activity className="h-5 w-5" />
-              <span className="text-sm font-medium">Трафик</span>
-            </Button>
-          </Link>
-          
-          <Link to="/analytics/conversions">
-            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-green-50 hover:bg-green-100 border-green-200 text-green-700" data-testid="button-quick-conversions" title="Анализ конверсий">
-              <Target className="h-5 w-5" />
-              <span className="text-sm font-medium">Конверсии</span>
-            </Button>
-          </Link>
-          
-          <Link to="/advertiser/finances">
-            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-700" data-testid="button-quick-spending" title="История расходов">
-              <DollarSign className="h-5 w-5" />
-              <span className="text-sm font-medium">Расходы</span>
-            </Button>
-          </Link>
-          
-          <Link to="/advertiser/postbacks">
-            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700" data-testid="button-quick-postbacks" title="Управление постбеками">
-              <Send className="h-5 w-5" />
-              <span className="text-sm font-medium">Постбеки</span>
-            </Button>
-          </Link>
-          
-          <Link to="/fraud-detection">
-            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-red-50 hover:bg-red-100 border-red-200 text-red-700" data-testid="button-quick-fraud" title="Антифрод система">
-              <Shield className="h-5 w-5" />
-              <span className="text-sm font-medium">Фрод</span>
-            </Button>
-          </Link>
-        </div>
+
 
         {/* Карточки основных метрик KPI */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
