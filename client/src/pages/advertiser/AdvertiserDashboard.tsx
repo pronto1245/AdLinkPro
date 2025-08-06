@@ -1,577 +1,526 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Link } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import RoleBasedLayout from "@/components/layout/RoleBasedLayout";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { 
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts";
-import { 
+  Target, 
+  Users, 
+  BarChart3, 
+  Settings, 
+  DollarSign,
   TrendingUp,
   TrendingDown,
-  DollarSign,
-  Users,
-  MousePointer,
-  Target,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  Eye,
+  User,
+  Briefcase,
+  Wallet,
+  Send,
+  Building2,
+  Bell,
   Plus,
-  Calendar,
+  ArrowRight,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Activity,
+  Shield,
+  Eye,
+  FileText,
   Download,
-  RefreshCw
+  Upload,
+  RefreshCw,
+  Calendar,
+  Filter,
+  AlertTriangle,
+  Copy,
+  ExternalLink
 } from "lucide-react";
-import { Link } from "wouter";
-import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
+import { cn } from "@/lib/utils";
 
-interface DashboardStats {
-  totalRevenue: number;
-  totalPartners: number;
-  totalClicks: number;
-  totalConversions: number;
-  activeOffers: number;
-  pendingOffers: number;
-  conversionRate: number;
-  avgPayout: number;
-  revenueChange: number;
-  partnersChange: number;
-  clicksChange: number;
-  conversionsChange: number;
+const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+interface DashboardData {
+  overview: {
+    totalOffers: number;
+    activeOffers: number;
+    pendingOffers: number;
+    rejectedOffers: number;
+    totalBudget: number;
+    totalSpent: number;
+    totalRevenue: number;
+    partnersCount: number;
+    avgCR: number;
+    epc: number;
+    postbacksSent: number;
+    postbacksReceived: number;
+    postbackErrors: number;
+    fraudActivity: number;
+  };
+  chartData: {
+    traffic: Array<{ date: string; clicks: number; uniqueClicks: number }>;
+    conversions: Array<{ date: string; leads: number; registrations: number; deposits: number }>;
+    spending: Array<{ date: string; spent: number; revenue: number }>;
+    postbacks: Array<{ date: string; sent: number; successful: number; failed: number }>;
+    fraud: Array<{ date: string; detected: number; blocked: number }>;
+  };
+  topOffers: Array<{
+    id: string;
+    name: string;
+    clicks: number;
+    conversions: number;
+    spent: number;
+    revenue: number;
+    cr: number;
+    fraudRate: number;
+    status: string;
+  }>;
+  notifications: Array<{
+    id: string;
+    type: string;
+    title: string;
+    message: string;
+    timestamp: string;
+  }>;
+  offerStatus: {
+    pending: number;
+    active: number;
+    hidden: number;
+    archived: number;
+  };
 }
-
-interface OfferPerformance {
-  id: string;
-  name: string;
-  clicks: number;
-  conversions: number;
-  revenue: number;
-  partners: number;
-  conversionRate: number;
-  avgPayout: number;
-  status: string;
-}
-
-interface PartnerPerformance {
-  id: string;
-  username: string;
-  email: string;
-  clicks: number;
-  conversions: number;
-  revenue: number;
-  conversionRate: number;
-  rating: number;
-  joinedAt: string;
-  status: string;
-}
-
-const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
 
 export default function AdvertiserDashboard() {
-  const [dateRange, setDateRange] = useState("7d");
-  const [refreshing, setRefreshing] = useState(false);
-
-  // Fetch dashboard statistics
-  const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
-    queryKey: ['/api/advertiser/dashboard/stats', dateRange],
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  
+  console.log('AdvertiserDashboard: Starting render with user:', user);
+  
+  // State for filters
+  const [dateRange, setDateRange] = useState({
+    from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    to: new Date()
+  });
+  const [filters, setFilters] = useState({
+    geo: '',
+    device: '',
+    offerId: ''
   });
 
-  // Fetch offer performance
-  const { data: offerPerformance = [], isLoading: offersLoading } = useQuery<OfferPerformance[]>({
-    queryKey: ['/api/advertiser/dashboard/offers', dateRange],
+  // Fetch dashboard data
+  const { data: dashboard, isLoading, refetch } = useQuery({
+    queryKey: ['/api/advertiser/dashboard', dateRange, filters],
+    enabled: !!user
+  }) as { data: DashboardData | undefined; isLoading: boolean; refetch: () => void };
+
+  // Export data mutation
+  const exportMutation = useMutation({
+    mutationFn: () => apiRequest('/api/advertiser/export'),
+    onSuccess: () => {
+      alert('Данные экспортированы успешно');
+    }
   });
 
-  // Fetch partner performance
-  const { data: partnerPerformance = [], isLoading: partnersLoading } = useQuery<PartnerPerformance[]>({
-    queryKey: ['/api/advertiser/dashboard/partners', dateRange],
-  });
+  if (!user) {
+    return <div>Загрузка...</div>;
+  }
 
-  // Fetch revenue chart data
-  const { data: revenueData = [] } = useQuery({
-    queryKey: ['/api/advertiser/dashboard/revenue-chart', dateRange],
-  });
-
-  // Fetch traffic sources data
-  const { data: trafficSources = [] } = useQuery({
-    queryKey: ['/api/advertiser/dashboard/traffic-sources', dateRange],
-  });
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    // Simulate refresh delay
-    setTimeout(() => setRefreshing(false), 1000);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('ru-RU').format(num);
-  };
-
-  const getChangeIcon = (change: number) => {
-    if (change > 0) return <TrendingUp className="h-4 w-4 text-green-600" />;
-    if (change < 0) return <TrendingDown className="h-4 w-4 text-red-600" />;
-    return null;
-  };
-
-  const getChangeColor = (change: number) => {
-    if (change > 0) return "text-green-600";
-    if (change < 0) return "text-red-600";
-    return "text-gray-600";
-  };
-
-  if (statsLoading) {
+  if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="grid grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
-            ))}
+      <RoleBasedLayout>
+        <div className="container mx-auto p-6">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              ))}
+            </div>
           </div>
-          <div className="h-64 bg-gray-200 rounded"></div>
         </div>
-      </div>
+      </RoleBasedLayout>
     );
   }
 
+  const overview = dashboard?.overview;
+  const chartData = dashboard?.chartData;
+  const topOffers = dashboard?.topOffers || [];
+  const notifications = dashboard?.notifications || [];
+
+  console.log('AdvertiserDashboard: Rendering main content');
+
   return (
     <RoleBasedLayout>
-      <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Кабинет рекламодателя</h1>
-          <p className="text-muted-foreground mt-2">
-            Управление офферами, партнёрами и аналитика
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-[180px]" data-testid="select-date-range">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1d">Сегодня</SelectItem>
-              <SelectItem value="7d">Последние 7 дней</SelectItem>
-              <SelectItem value="30d">Последние 30 дней</SelectItem>
-              <SelectItem value="90d">Последние 90 дней</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={refreshing}
-            data-testid="button-refresh-dashboard"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Обновить
-          </Button>
-        </div>
-      </div>
-
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Выручка</p>
-                <p className="text-2xl font-bold">
-                  {formatCurrency(stats?.totalRevenue || 0)}
-                </p>
-                <div className={`flex items-center gap-1 text-sm ${getChangeColor(stats?.revenueChange || 0)}`}>
-                  {getChangeIcon(stats?.revenueChange || 0)}
-                  <span>{Math.abs(stats?.revenueChange || 0)}%</span>
-                </div>
-              </div>
-              <DollarSign className="h-8 w-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Партнёры</p>
-                <p className="text-2xl font-bold">
-                  {formatNumber(stats?.totalPartners || 0)}
-                </p>
-                <div className={`flex items-center gap-1 text-sm ${getChangeColor(stats?.partnersChange || 0)}`}>
-                  {getChangeIcon(stats?.partnersChange || 0)}
-                  <span>{Math.abs(stats?.partnersChange || 0)}%</span>
-                </div>
-              </div>
-              <Users className="h-8 w-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Клики</p>
-                <p className="text-2xl font-bold">
-                  {formatNumber(stats?.totalClicks || 0)}
-                </p>
-                <div className={`flex items-center gap-1 text-sm ${getChangeColor(stats?.clicksChange || 0)}`}>
-                  {getChangeIcon(stats?.clicksChange || 0)}
-                  <span>{Math.abs(stats?.clicksChange || 0)}%</span>
-                </div>
-              </div>
-              <MousePointer className="h-8 w-8 text-purple-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Конверсии</p>
-                <p className="text-2xl font-bold">
-                  {formatNumber(stats?.totalConversions || 0)}
-                </p>
-                <div className={`flex items-center gap-1 text-sm ${getChangeColor(stats?.conversionsChange || 0)}`}>
-                  {getChangeIcon(stats?.conversionsChange || 0)}
-                  <span>{Math.abs(stats?.conversionsChange || 0)}%</span>
-                </div>
-              </div>
-              <Target className="h-8 w-8 text-orange-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Additional Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Активные офферы</p>
-                <p className="text-lg font-bold">{stats?.activeOffers || 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-yellow-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">На модерации</p>
-                <p className="text-lg font-bold">{stats?.pendingOffers || 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">CR</p>
-                <p className="text-lg font-bold">{(stats?.conversionRate || 0).toFixed(2)}%</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-purple-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Средняя выплата</p>
-                <p className="text-lg font-bold">{formatCurrency(stats?.avgPayout || 0)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts and Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Revenue Chart */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Динамика выручки</CardTitle>
-            <CardDescription>
-              Изменение выручки за выбранный период
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={Array.isArray(revenueData) ? revenueData : []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip formatter={(value) => [formatCurrency(value as number), 'Выручка']} />
-                <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Traffic Sources */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Источники трафика</CardTitle>
-            <CardDescription>
-              Распределение трафика по источникам
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={Array.isArray(trafficSources) ? trafficSources : []}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {Array.isArray(trafficSources) ? trafficSources.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  )) : []}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="offers" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="offers" data-testid="tab-offers">
-            Топ офферы ({offerPerformance.length})
-          </TabsTrigger>
-          <TabsTrigger value="partners" data-testid="tab-partners">
-            Топ партнёры ({partnerPerformance.length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="offers">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                Производительность офферов
-                <Link href="/advertiser/offers">
-                  <Button variant="outline" size="sm" data-testid="button-view-all-offers">
-                    <Eye className="h-4 w-4 mr-2" />
-                    Все офферы
-                  </Button>
-                </Link>
-              </CardTitle>
-              <CardDescription>
-                Статистика по вашим офферам за выбранный период
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {offersLoading ? (
-                <div className="animate-pulse space-y-2">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-12 bg-gray-200 rounded"></div>
-                  ))}
-                </div>
-              ) : offerPerformance.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Target className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                  <p>Нет данных по офферам</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Оффер</TableHead>
-                        <TableHead>Клики</TableHead>
-                        <TableHead>Конверсии</TableHead>
-                        <TableHead>CR</TableHead>
-                        <TableHead>Выручка</TableHead>
-                        <TableHead>Партнёры</TableHead>
-                        <TableHead>Статус</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {offerPerformance.slice(0, 10).map((offer) => (
-                        <TableRow key={offer.id}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{offer.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                Средняя выплата: {formatCurrency(offer.avgPayout)}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell>{formatNumber(offer.clicks)}</TableCell>
-                          <TableCell>{formatNumber(offer.conversions)}</TableCell>
-                          <TableCell>{offer.conversionRate.toFixed(2)}%</TableCell>
-                          <TableCell>{formatCurrency(offer.revenue)}</TableCell>
-                          <TableCell>{offer.partners}</TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={offer.status === 'active' ? 'default' : 'secondary'}
-                            >
-                              {offer.status === 'active' ? 'Активен' : 'Неактивен'}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="partners">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                Производительность партнёров
-                <Link href="/advertiser/partners">
-                  <Button variant="outline" size="sm" data-testid="button-view-all-partners">
-                    <Eye className="h-4 w-4 mr-2" />
-                    Все партнёры
-                  </Button>
-                </Link>
-              </CardTitle>
-              <CardDescription>
-                Статистика по партнёрам за выбранный период
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {partnersLoading ? (
-                <div className="animate-pulse space-y-2">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-12 bg-gray-200 rounded"></div>
-                  ))}
-                </div>
-              ) : partnerPerformance.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                  <p>Нет данных по партнёрам</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Партнёр</TableHead>
-                        <TableHead>Клики</TableHead>
-                        <TableHead>Конверсии</TableHead>
-                        <TableHead>CR</TableHead>
-                        <TableHead>Выручка</TableHead>
-                        <TableHead>Рейтинг</TableHead>
-                        <TableHead>Статус</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {partnerPerformance.slice(0, 10).map((partner) => (
-                        <TableRow key={partner.id}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{partner.username}</p>
-                              <p className="text-sm text-muted-foreground">{partner.email}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>{formatNumber(partner.clicks)}</TableCell>
-                          <TableCell>{formatNumber(partner.conversions)}</TableCell>
-                          <TableCell>{partner.conversionRate.toFixed(2)}%</TableCell>
-                          <TableCell>{formatCurrency(partner.revenue)}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center">
-                              <span className="text-yellow-400">★</span>
-                              <span className="ml-1">{partner.rating.toFixed(1)}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={partner.status === 'active' ? 'default' : 'secondary'}
-                            >
-                              {partner.status === 'active' ? 'Активен' : 'Неактивен'}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Быстрые действия</CardTitle>
-          <CardDescription>
-            Часто используемые функции
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link href="/advertiser/offers/create">
-              <Button className="w-full justify-start" data-testid="button-create-offer">
-                <Plus className="h-4 w-4 mr-2" />
-                Создать оффер
-              </Button>
-            </Link>
-            
-            <Link href="/advertiser/partners">
-              <Button variant="outline" className="w-full justify-start" data-testid="button-manage-partners">
-                <Users className="h-4 w-4 mr-2" />
-                Управление партнёрами
-              </Button>
-            </Link>
-            
-            <Button 
-              variant="outline" 
-              className="w-full justify-start"
-              data-testid="button-export-report"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Экспорт отчёта
-            </Button>
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Дашборд рекламодателя</h1>
+            <p className="text-muted-foreground">Обзор эффективности ваших офферов и партнёров</p>
           </div>
-        </CardContent>
-      </Card>
+          
+          {/* Filters and Actions */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
+              <Input
+                type="date"
+                value={dateRange.from.toISOString().split('T')[0]}
+                onChange={(e) => setDateRange(prev => ({ ...prev, from: new Date(e.target.value) }))}
+                className="w-auto"
+                data-testid="input-date-from"
+              />
+              <span className="text-muted-foreground">-</span>
+              <Input
+                type="date"
+                value={dateRange.to.toISOString().split('T')[0]}
+                onChange={(e) => setDateRange(prev => ({ ...prev, to: new Date(e.target.value) }))}
+                className="w-auto"
+                data-testid="input-date-to"
+              />
+            </div>
+            
+            <Button variant="outline" size="icon" onClick={() => refetch()} data-testid="button-refresh" title="Обновить данные">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            
+            <Button variant="outline" onClick={() => exportMutation.mutate()} data-testid="button-export" title="Экспорт статистики">
+              <Download className="h-4 w-4 mr-2" />
+              Экспорт
+            </Button>
+            
+            <Link to="/advertiser/offers/new">
+              <Button data-testid="button-create-offer" title="Создать новый оффер">
+                <Plus className="h-4 w-4 mr-2" />
+                Новый оффер
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Quick Actions - Moved under filters */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <Link to="/analytics/traffic">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" data-testid="button-quick-traffic">
+              <Activity className="h-5 w-5" />
+              <span className="text-sm font-medium">Трафик</span>
+            </Button>
+          </Link>
+          
+          <Link to="/analytics/conversions">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-green-50 hover:bg-green-100 border-green-200 text-green-700" data-testid="button-quick-conversions">
+              <Target className="h-5 w-5" />
+              <span className="text-sm font-medium">Конверсии</span>
+            </Button>
+          </Link>
+          
+          <Link to="/advertiser/finances">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-700" data-testid="button-quick-spending">
+              <DollarSign className="h-5 w-5" />
+              <span className="text-sm font-medium">Расходы</span>
+            </Button>
+          </Link>
+          
+          <Link to="/advertiser/postbacks">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700" data-testid="button-quick-postbacks">
+              <Send className="h-5 w-5" />
+              <span className="text-sm font-medium">Постбеки</span>
+            </Button>
+          </Link>
+          
+          <Link to="/fraud-detection">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-red-50 hover:bg-red-100 border-red-200 text-red-700" data-testid="button-quick-fraud">
+              <Shield className="h-5 w-5" />
+              <span className="text-sm font-medium">Фрод</span>
+            </Button>
+          </Link>
+        </div>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <Card data-testid="card-offers">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Офферы</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{overview?.totalOffers || 0}</div>
+              <div className="flex gap-2 text-xs text-muted-foreground mt-2">
+                <span className="text-green-600">Активных: {overview?.activeOffers || 0}</span>
+                <span className="text-yellow-600">На модерации: {overview?.pendingOffers || 0}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-budget">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Бюджет / Расход</CardTitle>
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${overview?.totalSpent || 0}</div>
+              <p className="text-xs text-muted-foreground">из ${overview?.totalBudget || 0}</p>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-revenue">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Доход платформы</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${overview?.totalRevenue || 0}</div>
+              <div className="flex items-center text-xs text-green-600">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                +12% за период
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-partners">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Партнёры</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{overview?.partnersCount || 0}</div>
+              <p className="text-xs text-muted-foreground">работают с офферами</p>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-cr">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">CR / EPC</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{overview?.avgCR?.toFixed(2) || 0}%</div>
+              <p className="text-xs text-muted-foreground">EPC: ${overview?.epc?.toFixed(2) || 0}</p>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-postbacks">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Постбеки</CardTitle>
+              <Send className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{overview?.postbacksSent || 0}</div>
+              <div className="flex gap-2 text-xs">
+                <span className="text-green-600">Получено: {overview?.postbacksReceived || 0}</span>
+                <span className="text-red-600">Ошибок: {overview?.postbackErrors || 0}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-fraud">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Фрод-активность</CardTitle>
+              <Shield className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">{overview?.fraudActivity || 0}</div>
+              <p className="text-xs text-muted-foreground">случаев за период</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card data-testid="chart-traffic">
+            <CardHeader>
+              <CardTitle>Трафик по времени</CardTitle>
+              <CardDescription>Клики и уникальные посетители</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData?.traffic || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="clicks" stroke="#3b82f6" name="Клики" />
+                  <Line type="monotone" dataKey="uniqueClicks" stroke="#10b981" name="Уники" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="chart-conversions">
+            <CardHeader>
+              <CardTitle>Конверсии</CardTitle>
+              <CardDescription>Лиды, регистрации и депозиты</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={chartData?.conversions || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="leads" stackId="1" stroke="#3b82f6" fill="#3b82f6" name="Лиды" />
+                  <Area type="monotone" dataKey="registrations" stackId="1" stroke="#10b981" fill="#10b981" name="Регистрации" />
+                  <Area type="monotone" dataKey="deposits" stackId="1" stroke="#f59e0b" fill="#f59e0b" name="Депозиты" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="chart-spending">
+            <CardHeader>
+              <CardTitle>Расходы / Выплаты</CardTitle>
+              <CardDescription>Финансовая динамика</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData?.spending || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="spent" fill="#ef4444" name="Расходы" />
+                  <Bar dataKey="revenue" fill="#10b981" name="Доходы" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="chart-postbacks">
+            <CardHeader>
+              <CardTitle>Активность постбеков</CardTitle>
+              <CardDescription>Отправленные и обработанные</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData?.postbacks || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="sent" stroke="#3b82f6" name="Отправлено" />
+                  <Line type="monotone" dataKey="successful" stroke="#10b981" name="Успешно" />
+                  <Line type="monotone" dataKey="failed" stroke="#ef4444" name="Ошибки" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tables and Status */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Top Offers Table */}
+          <Card className="lg:col-span-2" data-testid="table-top-offers">
+            <CardHeader>
+              <CardTitle>Топ-офферы</CardTitle>
+              <CardDescription>Лучшие офферы по эффективности</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Оффер</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead>Клики</TableHead>
+                    <TableHead>CR</TableHead>
+                    <TableHead>Конверсии</TableHead>
+                    <TableHead>Расход</TableHead>
+                    <TableHead>Фрод %</TableHead>
+                    <TableHead>Действия</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {topOffers.map((offer: any) => (
+                    <TableRow key={offer.id}>
+                      <TableCell className="font-medium">{offer.name}</TableCell>
+                      <TableCell>
+                        <Badge variant={offer.status === 'active' ? 'default' : 'secondary'}>
+                          {offer.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{offer.clicks}</TableCell>
+                      <TableCell>{offer.cr}%</TableCell>
+                      <TableCell>{offer.conversions}</TableCell>
+                      <TableCell>${offer.spent}</TableCell>
+                      <TableCell className={cn(
+                        offer.fraudRate > 5 ? 'text-red-600' : 'text-green-600'
+                      )}>
+                        {offer.fraudRate}%
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" data-testid={`button-view-${offer.id}`} title="Просмотр">
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="sm" data-testid={`button-edit-${offer.id}`} title="Редактировать">
+                            <Settings className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Offer Status and Notifications */}
+          <div className="space-y-6">
+            {/* Offer Status */}
+            <Card data-testid="card-offer-status">
+              <CardHeader>
+                <CardTitle>Статус офферов</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">На модерации</span>
+                  <Badge variant="secondary">{dashboard?.offerStatus.pending || 0}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Активные</span>
+                  <Badge variant="default">{dashboard?.offerStatus.active || 0}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Скрытые</span>
+                  <Badge variant="outline">{dashboard?.offerStatus.hidden || 0}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Архив</span>
+                  <Badge variant="secondary">{dashboard?.offerStatus.archived || 0}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Notifications */}
+            <Card data-testid="card-notifications">
+              <CardHeader>
+                <CardTitle>Уведомления</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {notifications.slice(0, 5).map((notification: any) => (
+                  <div key={notification.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="mt-1">
+                      {notification.type === 'partner_request' && <Users className="h-4 w-4 text-blue-600" />}
+                      {notification.type === 'postback_error' && <AlertTriangle className="h-4 w-4 text-red-600" />}
+                      {notification.type === 'offer_pending' && <Clock className="h-4 w-4 text-yellow-600" />}
+                      {notification.type === 'fraud_alert' && <Shield className="h-4 w-4 text-red-600" />}
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium">{notification.title}</p>
+                      <p className="text-xs text-muted-foreground">{notification.message}</p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </RoleBasedLayout>
   );
