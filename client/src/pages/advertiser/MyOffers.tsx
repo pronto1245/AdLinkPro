@@ -81,6 +81,16 @@ interface Offer {
   leads?: number;
   conversionRate?: number;
   revenue?: number;
+  landingPages?: Array<{
+    id: string;
+    name: string;
+    url: string;
+    geo?: string;
+    payout?: string | number;
+    hasCustomGeo?: boolean;
+    hasCustomPayout?: boolean;
+    isDefault?: boolean;
+  }>;
 }
 
 interface Partner {
@@ -179,22 +189,45 @@ export default function MyOffers() {
     enabled: !!user?.id
   });
 
-  // Сортируем офферы по дате создания (новые наверху) и добавляем тестовые данные
+  // Сортируем офферы по дате создания (новые наверху) и обрабатываем geoPricing из landingPages
   const sortedOffers = [...offers].sort((a, b) => {
     const dateA = new Date(a.createdAt || 0).getTime();
     const dateB = new Date(b.createdAt || 0).getTime();
     return dateB - dateA; // Сортировка в убывающем порядке (новые наверху)
   });
 
-  const offersWithTestData = sortedOffers.map((offer, index) => ({
-    ...offer,
-    countries: index === 0 ? ['russia', 'ukraine', 'belarus'] : offer.countries,
-    geoPricing: index === 0 ? {
-      'russia': { payout: '100', currency: 'RUB' },
-      'ukraine': { payout: '50', currency: 'UAH' },
-      'belarus': { payout: '25', currency: 'BYN' }
-    } : undefined
-  }));
+  // Обрабатываем офферы для извлечения geoPricing из landingPages
+  const processedOffers = sortedOffers.map(offer => {
+    let geoPricing: Record<string, { payout: string; currency: string }> | undefined;
+    let countries: string[] | undefined;
+
+    // Извлекаем гео и суммы из landingPages если они есть
+    if (offer.landingPages && Array.isArray(offer.landingPages)) {
+      const uniqueGeos = new Set<string>();
+      const geoPayouts: Record<string, { payout: string; currency: string }> = {};
+      
+      offer.landingPages.forEach((page: any) => {
+        if (page.geo && page.payout) {
+          uniqueGeos.add(page.geo);
+          geoPayouts[page.geo] = {
+            payout: page.payout.toString(),
+            currency: offer.currency || 'USD'
+          };
+        }
+      });
+
+      if (uniqueGeos.size > 0) {
+        countries = Array.from(uniqueGeos);
+        geoPricing = geoPayouts;
+      }
+    }
+
+    return {
+      ...offer,
+      countries: countries || offer.countries,
+      geoPricing: geoPricing
+    };
+  });
 
   // Clean up blob URLs and filter valid logos
   React.useEffect(() => {
@@ -500,7 +533,7 @@ export default function MyOffers() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {offersWithTestData.map((offer: Offer, index: number) => (
+                  {processedOffers.map((offer: Offer, index: number) => (
                     <>
                       <TableRow key={`offer-${offer.id}-${index}`} className="hover:bg-muted/50">
                         <TableCell>
