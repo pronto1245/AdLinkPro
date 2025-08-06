@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import RoleBasedLayout from "@/components/layout/RoleBasedLayout";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -61,36 +61,31 @@ export default function AdvertiserDashboard() {
   
   if (isLoading) {
     return (
-      <RoleBasedLayout>
-        <div className="container mx-auto p-6">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded"></div>
-              ))}
-            </div>
+      <div className="container mx-auto p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            ))}
           </div>
         </div>
-      </RoleBasedLayout>
+      </div>
     );
   }
 
   if (!dashboard) {
     return (
-      <RoleBasedLayout>
-        <div className="container mx-auto p-6">
-          <div className="text-center">
-            <p>Не удалось загрузить данные дашборда</p>
-          </div>
+      <div className="container mx-auto p-6">
+        <div className="text-center">
+          <p>Не удалось загрузить данные дашборда</p>
         </div>
-      </RoleBasedLayout>
+      </div>
     );
   }
 
   return (
-    <RoleBasedLayout>
-      <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
         {/* Заголовок и фильтры */}
         <div className="flex items-center justify-between">
           <div>
@@ -605,6 +600,5 @@ export default function AdvertiserDashboard() {
         </Card>
 
       </div>
-    </RoleBasedLayout>
   );
 }

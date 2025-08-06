@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import RoleBasedLayout from "@/components/layout/RoleBasedLayout";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -426,17 +426,14 @@ export default function Finance() {
 
   if (summaryLoading || transactionsLoading) {
     return (
-      <RoleBasedLayout>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </RoleBasedLayout>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
     );
   }
 
   return (
-    <RoleBasedLayout>
-      <div className="space-y-6" data-testid="finance-page">
+    <div className="space-y-6" data-testid="finance-page">
         {/* Заголовок */}
         <div className="flex justify-between items-center">
           <div>
@@ -966,6 +963,5 @@ export default function Finance() {
           </CardContent>
         </Card>
       </div>
-    </RoleBasedLayout>
   );
 }

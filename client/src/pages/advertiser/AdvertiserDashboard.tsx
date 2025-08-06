@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import RoleBasedLayout from "@/components/layout/RoleBasedLayout";
+
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { 
   Target, 
@@ -250,18 +250,16 @@ export default function AdvertiserDashboard() {
 
   if (isLoading) {
     return (
-      <RoleBasedLayout>
-        <div className="container mx-auto p-6">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded"></div>
-              ))}
-            </div>
+      <div className="container mx-auto p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            ))}
           </div>
         </div>
-      </RoleBasedLayout>
+      </div>
     );
   }
 
@@ -271,8 +269,7 @@ export default function AdvertiserDashboard() {
   const notifications = dashboard?.notifications || [];
 
   return (
-    <RoleBasedLayout>
-      <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
         {/* Заголовок и основные действия */}
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>
@@ -880,6 +877,5 @@ export default function AdvertiserDashboard() {
           </div>
         </div>
       </div>
-    </RoleBasedLayout>
   );
 }

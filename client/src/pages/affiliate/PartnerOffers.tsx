@@ -9,7 +9,7 @@ import { Copy, ExternalLink, Eye, CheckCircle } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
-import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
+
 
 interface PartnerOffer {
   id: string;
@@ -50,14 +50,12 @@ export default function PartnerOffers() {
 
   if (isLoading) {
     return (
-      <RoleBasedLayout>
-        <div className="space-y-6">
-          <div className="flex items-center space-x-4">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary"></div>
-            <p>Загрузка офферов...</p>
-          </div>
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary"></div>
+          <p>Загрузка офферов...</p>
         </div>
-      </RoleBasedLayout>
+      </div>
     );
   }
 
@@ -66,31 +64,28 @@ export default function PartnerOffers() {
 
   if (!offers || offers.length === 0) {
     return (
-      <RoleBasedLayout>
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold">Партнерские офферы</h1>
-              <p className="text-muted-foreground">
-                Готовые трек-ссылки для каждого лендинга
-              </p>
-            </div>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold">Партнерские офферы</h1>
+            <p className="text-muted-foreground">
+              Готовые трек-ссылки для каждого лендинга
+            </p>
           </div>
-          <Card>
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">
-                Пока нет доступных офферов. Обратитесь к рекламодателю для получения доступа.
-              </p>
-            </CardContent>
-          </Card>
         </div>
-      </RoleBasedLayout>
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground">
+              Пока нет доступных офферов. Обратитесь к рекламодателю для получения доступа.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <RoleBasedLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold">Партнерские офферы</h1>
@@ -160,7 +155,6 @@ export default function PartnerOffers() {
           </TabsContent>
         </Tabs>
       </div>
-    </RoleBasedLayout>
   );
 }
 

@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import RoleBasedLayout from "@/components/layout/RoleBasedLayout";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -295,8 +295,7 @@ export default function OfferManagement() {
   }
 
   return (
-    <RoleBasedLayout>
-      <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>
@@ -1032,6 +1031,5 @@ export default function OfferManagement() {
           </DialogContent>
         </Dialog>
       </div>
-    </RoleBasedLayout>
   );
 }

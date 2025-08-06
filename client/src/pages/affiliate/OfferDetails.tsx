@@ -9,7 +9,7 @@ import { Copy, ExternalLink, ArrowLeft, Globe, Calendar, Target, CreditCard, Use
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
 import { useLocation, Link } from "wouter";
-import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
+
 
 interface OfferDetails {
   id: string;
@@ -77,44 +77,39 @@ export default function OfferDetails() {
 
   if (isLoading) {
     return (
-      <RoleBasedLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Загрузка деталей оффера...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка деталей оффера...</p>
         </div>
-      </RoleBasedLayout>
+      </div>
     );
   }
 
   if (!offer) {
     return (
-      <RoleBasedLayout>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-          <div className="flex items-center gap-4 p-6">
-            <Link href="/affiliate/offers">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Назад к офферам
-              </Button>
-            </Link>
-          </div>
-          <div className="flex items-center justify-center">
-            <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">Оффер не найден</p>
-              </CardContent>
-            </Card>
-          </div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="flex items-center gap-4 p-6">
+          <Link href="/affiliate/offers">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Назад к офферам
+            </Button>
+          </Link>
         </div>
-      </RoleBasedLayout>
+        <div className="flex items-center justify-center">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-muted-foreground">Оффер не найден</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <RoleBasedLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
           <div className="flex items-center justify-between">
@@ -506,6 +501,5 @@ export default function OfferDetails() {
           </Tabs>
         </div>
       </div>
-    </RoleBasedLayout>
   );
 }

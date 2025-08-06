@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -184,7 +184,7 @@ export default function AffiliateDashboard() {
   ];
 
   return (
-    <RoleBasedLayout>
+    <div>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Панель партнёра</h1>
@@ -403,6 +403,6 @@ export default function AffiliateDashboard() {
           </Card>
         </div>
       </div>
-    </RoleBasedLayout>
+    </div>
   );
 }

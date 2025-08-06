@@ -18,7 +18,7 @@ import { Plus, Minus, Upload, Image, Globe, DollarSign, Target, Settings, ArrowL
 import { useToast } from '@/hooks/use-toast';
 import { ObjectUploader } from '@/components/ObjectUploader';
 // import { useAuth } from '@/contexts/AuthContext';
-import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
+
 import { apiRequest } from '@/lib/queryClient';
 
 interface OfferFormData {
@@ -582,7 +582,7 @@ export default function CreateOffer() {
   // Кастомные домены удалены из функциональности
 
   return (
-    <RoleBasedLayout>
+    <div>
       <div className="container mx-auto p-6 space-y-6">
         {/* Заголовок */}
         <div className="flex items-center justify-between">
@@ -1288,6 +1288,6 @@ export default function CreateOffer() {
           </div>
         </form>
       </div>
-    </RoleBasedLayout>
+    </div>
   );
 }
