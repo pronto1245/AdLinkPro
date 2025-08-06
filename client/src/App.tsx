@@ -263,7 +263,7 @@ function Router() {
       
       <Route path="/advertiser">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <AdvertiserDashboard />
+          <AdvertiserDashboardNew />
         </ProtectedRoute>
       </Route>
       
