@@ -42,6 +42,7 @@ import TeamManagement from "@/pages/affiliate/TeamManagement";
 import PostbackManagementAffiliate from "@/pages/affiliate/PostbackManagement";
 import AdvertiserDashboardNew from "@/pages/advertiser/AdvertiserDashboard";
 import OfferManagement from "@/pages/advertiser/OfferManagement";
+import PartnerDashboard from "@/pages/affiliate/PartnerDashboard";
 import { useAuth } from "./contexts/auth-context";
 import Login from "@/pages/auth/login";
 
@@ -297,9 +298,15 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
+      <Route path="/affiliate/dashboard">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PartnerDashboard />
+        </ProtectedRoute>
+      </Route>
+      
       <Route path="/affiliate">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <AffiliateDashboard />
+          <PartnerDashboard />
         </ProtectedRoute>
       </Route>
       

@@ -605,6 +605,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get partner dashboard data
+  app.get("/api/partner/dashboard", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { dateFrom, dateTo, geo, device, offerId, actionType } = req.query;
+      
+      const filters = {
+        dateFrom: dateFrom ? new Date(dateFrom as string) : undefined,
+        dateTo: dateTo ? new Date(dateTo as string) : undefined,
+        geo: geo as string,
+        device: device as string,
+        offerId: offerId as string,
+        actionType: actionType as string
+      };
+      
+      const dashboard = await storage.getPartnerDashboard(authUser.id, filters);
+      res.json(dashboard);
+    } catch (error) {
+      console.error("Get partner dashboard error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Get advertiser's partners
   app.get("/api/advertiser/partners", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {
