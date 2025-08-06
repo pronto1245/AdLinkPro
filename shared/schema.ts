@@ -98,14 +98,11 @@ export const offers = pgTable("offers", {
   
   // Device and OS targeting
   allowedApps: jsonb("allowed_apps"), // Array of allowed apps or app types
-
-  landingLanguage: text("landing_language").default('en'), // Primary language of landing page
   
   // Restrictions and traffic
   kpiConditions: jsonb("kpi_conditions"), // KPI conditions - Multilingual: { "en": "English text", "ru": "Russian text" }
   trafficSources: jsonb("traffic_sources"), // Allowed traffic sources
   deniedSources: jsonb("denied_sources"), // Explicitly denied traffic sources
-  allowedApps: jsonb("allowed_apps"), // Allowed applications
   trafficRequirements: text("traffic_requirements"), // Free text requirements
   
   // Limits and caps
