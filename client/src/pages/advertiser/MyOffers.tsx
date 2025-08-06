@@ -351,18 +351,18 @@ export default function MyOffers() {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12"></TableHead>
-                    <TableHead className="font-semibold text-blue-600 dark:text-blue-400">Название оффера</TableHead>
-                    <TableHead className="font-semibold text-green-600 dark:text-green-400">Статус</TableHead>
-                    <TableHead className="font-semibold text-purple-600 dark:text-purple-400">Тип</TableHead>
-                    <TableHead className="font-semibold text-orange-600 dark:text-orange-400">Категория</TableHead>
-                    <TableHead className="text-right font-semibold text-indigo-600 dark:text-indigo-400">Клики</TableHead>
-                    <TableHead className="text-right font-semibold text-emerald-600 dark:text-emerald-400">Лиды</TableHead>
-                    <TableHead className="text-right font-semibold text-yellow-600 dark:text-yellow-400">CR</TableHead>
-                    <TableHead className="text-right font-semibold text-red-600 dark:text-red-400">Доход</TableHead>
-                    <TableHead className="text-center font-semibold text-teal-600 dark:text-teal-400">Партнеры</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600 dark:text-gray-400">Действия</TableHead>
+                  <TableRow className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b-2 border-slate-200 dark:border-slate-600">
+                    <TableHead className="w-12 bg-slate-100 dark:bg-slate-800"></TableHead>
+                    <TableHead className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-4 py-3">Название оффера</TableHead>
+                    <TableHead className="font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/30 px-4 py-3">Статус</TableHead>
+                    <TableHead className="font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 px-4 py-3">Тип</TableHead>
+                    <TableHead className="font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 px-4 py-3">Категория</TableHead>
+                    <TableHead className="text-right font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-4 py-3">Клики</TableHead>
+                    <TableHead className="text-right font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-4 py-3">Лиды</TableHead>
+                    <TableHead className="text-right font-semibold text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 px-4 py-3">CR</TableHead>
+                    <TableHead className="text-right font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 px-4 py-3">Доход</TableHead>
+                    <TableHead className="text-center font-semibold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/30 px-4 py-3">Партнеры</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-950/30 px-4 py-3">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
