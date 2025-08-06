@@ -732,45 +732,7 @@ export default function CreateOffer() {
                     </div>
                   </div>
 
-                  <Separator />
 
-                  <div>
-                    <Label>Устройства</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                      {deviceTypes.map(device => (
-                        <div key={device.value} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={`device-${device.value}`}
-                            checked={formData.allowedDevices.includes(device.value)}
-                            onChange={() => toggleDevice(device.value)}
-                            className="rounded"
-                          />
-                          <Label htmlFor={`device-${device.value}`} className="text-sm">{device.label}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <Label>Операционные системы</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                      {osTypes.map(os => (
-                        <div key={os.value} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={`os-${os.value}`}
-                            checked={formData.allowedOs.includes(os.value)}
-                            onChange={() => toggleOs(os.value)}
-                            className="rounded"
-                          />
-                          <Label htmlFor={`os-${os.value}`} className="text-sm">{os.label}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
 
                   <Separator />
 
