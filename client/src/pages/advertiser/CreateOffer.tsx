@@ -482,10 +482,10 @@ export default function CreateOffer() {
               <TabsTrigger 
                 value="targeting" 
                 className="flex items-center gap-2 data-[state=active]:bg-orange-100 dark:data-[state=active]:bg-orange-900 data-[state=active]:text-orange-700 dark:data-[state=active]:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950"
-                title="Таргетинг по гео и устройствам"
+                title="Разрешенные источники трафика"
               >
                 <Globe className="h-4 w-4 text-orange-600" />
-                Таргетинг
+                Разрешенные источники
               </TabsTrigger>
               <TabsTrigger 
                 value="conditions" 
