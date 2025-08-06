@@ -675,6 +675,32 @@ export default function CreateOffer() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
+                    <Label>Источники трафика</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                      {allowedTrafficSources.map(source => (
+                        <div key={source} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`traffic-${source}`}
+                            checked={formData.trafficSources?.includes(source) || false}
+                            onChange={() => {
+                              const currentSources = formData.trafficSources || [];
+                              const newSources = currentSources.includes(source)
+                                ? currentSources.filter(s => s !== source)
+                                : [...currentSources, source];
+                              setFormData(prev => ({ ...prev, trafficSources: newSources }));
+                            }}
+                            className="rounded"
+                          />
+                          <Label htmlFor={`traffic-${source}`} className="text-sm">{source}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
                     <Label>Устройства</Label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
                       {deviceTypes.map(device => (
@@ -707,32 +733,6 @@ export default function CreateOffer() {
                             className="rounded"
                           />
                           <Label htmlFor={`os-${os.value}`} className="text-sm">{os.label}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <Label>Источники трафика</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-                      {allowedTrafficSources.map(source => (
-                        <div key={source} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={`traffic-${source}`}
-                            checked={formData.trafficSources?.includes(source) || false}
-                            onChange={() => {
-                              const currentSources = formData.trafficSources || [];
-                              const newSources = currentSources.includes(source)
-                                ? currentSources.filter(s => s !== source)
-                                : [...currentSources, source];
-                              setFormData(prev => ({ ...prev, trafficSources: newSources }));
-                            }}
-                            className="rounded"
-                          />
-                          <Label htmlFor={`traffic-${source}`} className="text-sm">{source}</Label>
                         </div>
                       ))}
                     </div>
