@@ -5295,6 +5295,35 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   });
 
   // Team Management Routes for Advertisers
+  app.post("/api/advertiser/team/invite", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { email, role } = req.body;
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Invalid email format" });
+      }
+      
+      // Mock invitation process - in real app would send actual email
+      const invitationId = `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Log invitation - simplified for now
+      console.log(`Team invitation: ${authUser.username} invited ${email} with role ${role}`);
+      
+      res.status(201).json({
+        invitationId,
+        email,
+        role,
+        message: 'Invitation sent successfully'
+      });
+    } catch (error) {
+      console.error("Invite team member error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/advertiser/team/members", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);

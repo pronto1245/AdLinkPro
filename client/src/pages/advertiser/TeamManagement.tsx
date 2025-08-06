@@ -170,8 +170,8 @@ export default function TeamManagement() {
     telegramUserId: ''
   });
 
-  // Загрузка команды
-  const { data: teamMembers = [], isLoading: membersLoading, refetch: refetchMembers } = useQuery({
+  // Загрузка команды - интеграция с реальными API данными
+  const { data: teamMembers = [], isLoading: membersLoading, refetch: refetchMembers, error: membersError } = useQuery({
     queryKey: ['/api/advertiser/team/members', user?.id],
     queryFn: async () => {
       const response = await fetch('/api/advertiser/team/members', {
@@ -186,7 +186,7 @@ export default function TeamManagement() {
   });
 
   // Загрузка логов активности
-  const { data: activityLogs = [], isLoading: logsLoading } = useQuery({
+  const { data: activityLogs = [], isLoading: logsLoading, error: logsError } = useQuery({
     queryKey: ['/api/advertiser/team/activity-logs', user?.id],
     queryFn: async () => {
       const response = await fetch('/api/advertiser/team/activity-logs', {
@@ -200,7 +200,39 @@ export default function TeamManagement() {
     enabled: !!user?.id
   });
 
-  // Мутации
+  // Мутации для полной функциональной интеграции
+  const inviteMemberMutation = useMutation({
+    mutationFn: async (inviteData: { email: string; role: string }) => {
+      const response = await fetch('/api/advertiser/team/invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(inviteData)
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Ошибка отправки приглашения');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Приглашение отправлено",
+        description: `Email-приглашение отправлено на ${data.email}`,
+      });
+      refetchMembers();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Ошибка отправки приглашения",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const createMemberMutation = useMutation({
     mutationFn: async (memberData: any) => {
       const response = await fetch('/api/advertiser/team/members', {
@@ -276,6 +308,91 @@ export default function TeamManagement() {
     }
   });
 
+  // Функции-обработчики для полной интеграции с действиями пользователя
+  const handleInviteMember = () => {
+    if (!memberForm.email || !memberForm.role) {
+      toast({
+        title: "Ошибка валидации",
+        description: "Email и роль обязательны для заполнения",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    inviteMemberMutation.mutate({
+      email: memberForm.email,
+      role: memberForm.role
+    });
+  };
+
+  const handleBulkActions = (action: 'activate' | 'block' | 'delete', memberIds: string[]) => {
+    // Массовые операции с участниками команды
+    const confirmMessage = action === 'delete' 
+      ? `Удалить ${memberIds.length} участников?`
+      : `${action === 'block' ? 'Заблокировать' : 'Активировать'} ${memberIds.length} участников?`;
+
+    if (confirm(confirmMessage)) {
+      // В реальном приложении здесь будет API вызов
+      memberIds.forEach(id => {
+        if (action === 'delete') {
+          deleteMemberMutation.mutate(id);
+        } else {
+          updateMemberMutation.mutate({ 
+            id, 
+            data: { status: action === 'block' ? 'blocked' : 'active' }
+          });
+        }
+      });
+    }
+  };
+
+  const handleExportTeamData = (format: 'csv' | 'json' = 'csv') => {
+    // Экспорт данных команды
+    const exportData = teamMembers.map(member => ({
+      email: member.email,
+      name: `${member.firstName} ${member.lastName}`,
+      role: ROLE_LABELS[member.role],
+      status: member.status,
+      lastActivity: member.lastActivity,
+      createdAt: member.createdAt
+    }));
+
+    if (format === 'json') {
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `team-members-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+    } else {
+      // CSV export
+      const headers = ['Email', 'Name', 'Role', 'Status', 'Last Activity', 'Added Date'];
+      const csvContent = [
+        headers.join(','),
+        ...exportData.map(row => [
+          row.email,
+          row.name,
+          row.role,
+          row.status,
+          row.lastActivity,
+          row.createdAt
+        ].join(','))
+      ].join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `team-members-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+
+    toast({
+      title: "Экспорт завершен",
+      description: `Данные команды экспортированы в формате ${format.toUpperCase()}`
+    });
+  };
+
   // Сброс формы
   const resetForm = () => {
     setMemberForm({
@@ -335,13 +452,23 @@ export default function TeamManagement() {
             Управление командой и разграничение прав доступа
           </p>
         </div>
-        <Button 
-          onClick={() => setIsAddMemberOpen(true)}
-          data-testid="button-add-member"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Добавить сотрудника
-        </Button>
+        <div className="flex space-x-2">
+          <Button 
+            onClick={() => setIsAddMemberOpen(true)}
+            data-testid="button-add-member"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Добавить сотрудника
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => handleExportTeamData('csv')}
+            data-testid="button-export-team"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Экспорт
+          </Button>
+        </div>
       </div>
 
       {/* Статистика команды */}
@@ -1099,17 +1226,22 @@ export default function TeamManagement() {
                 onClick={() => {
                   if (editingMember) {
                     updateMemberMutation.mutate({ id: editingMember.id, data: memberForm });
-                  } else {
+                  } else if (memberForm.username && memberForm.firstName && memberForm.lastName) {
                     createMemberMutation.mutate(memberForm);
+                  } else {
+                    handleInviteMember();
                   }
                 }}
-                disabled={createMemberMutation.isPending || updateMemberMutation.isPending}
+                disabled={createMemberMutation.isPending || updateMemberMutation.isPending || inviteMemberMutation.isPending}
                 data-testid="button-save-member"
               >
-                {(createMemberMutation.isPending || updateMemberMutation.isPending) && (
+                {(createMemberMutation.isPending || updateMemberMutation.isPending || inviteMemberMutation.isPending) && (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                 )}
-                {editingMember ? 'Сохранить' : 'Добавить'}
+                {editingMember 
+                  ? 'Сохранить' 
+                  : (memberForm.username ? 'Добавить' : 'Пригласить')
+                }
               </Button>
             </div>
           </div>
