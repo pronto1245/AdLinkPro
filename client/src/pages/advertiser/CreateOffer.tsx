@@ -792,15 +792,48 @@ export default function CreateOffer() {
                   <div className="grid grid-cols-1 gap-4">
                     <div>
                       <Label htmlFor="targetUrl">Целевая ссылка оффера *</Label>
-                      <Input
-                        id="targetUrl"
-                        value={formData.targetUrl}
-                        onChange={(e) => setFormData(prev => ({ ...prev, targetUrl: e.target.value }))}
-                        placeholder="https://example.com/offer"
-                        data-testid="input-target-url"
-                      />
+                      <div className="space-y-2 mt-2">
+                        {formData.landingPages.map((landing, index) => (
+                          <div key={landing.id} className="flex items-center gap-2 p-3 border rounded-lg">
+                            <Input
+                              placeholder="Название"
+                              value={landing.name}
+                              onChange={(e) => updateLandingPage(landing.id, 'name', e.target.value)}
+                              className="w-32"
+                            />
+                            <Input
+                              placeholder="URL целевой страницы"
+                              value={landing.url}
+                              onChange={(e) => {
+                                updateLandingPage(landing.id, 'url', e.target.value);
+                                if (landing.isDefault) {
+                                  setFormData(prev => ({ ...prev, targetUrl: e.target.value }));
+                                }
+                              }}
+                              className="flex-1"
+                            />
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                checked={landing.isDefault}
+                                onChange={(e) => updateLandingPage(landing.id, 'isDefault', e.target.checked)}
+                              />
+                              <span className="text-sm">По умолчанию</span>
+                            </div>
+                            {formData.landingPages.length > 1 && (
+                              <Button type="button" variant="outline" size="sm" onClick={() => removeLandingPage(landing.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                        <Button type="button" onClick={addLandingPage} variant="outline">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Добавить лендинг
+                        </Button>
+                      </div>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Основная ссылка оффера, куда будут направляться пользователи
+                        Целевые ссылки оффера, куда будут направляться пользователи
                       </p>
                     </div>
 
@@ -861,44 +894,7 @@ export default function CreateOffer() {
                     )}
                   </div>
 
-                  <div>
-                    <Label>Лендинги</Label>
-                    <div className="space-y-2 mt-2">
-                      {formData.landingPages.map((landing, index) => (
-                        <div key={landing.id} className="flex items-center gap-2 p-3 border rounded-lg">
-                          <Input
-                            placeholder="Название"
-                            value={landing.name}
-                            onChange={(e) => updateLandingPage(landing.id, 'name', e.target.value)}
-                            className="w-32"
-                          />
-                          <Input
-                            placeholder="URL посадочной страницы"
-                            value={landing.url}
-                            onChange={(e) => updateLandingPage(landing.id, 'url', e.target.value)}
-                            className="flex-1"
-                          />
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              checked={landing.isDefault}
-                              onChange={(e) => updateLandingPage(landing.id, 'isDefault', e.target.checked)}
-                            />
-                            <span className="text-sm">По умолчанию</span>
-                          </div>
-                          {formData.landingPages.length > 1 && (
-                            <Button type="button" variant="outline" size="sm" onClick={() => removeLandingPage(landing.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                      <Button type="button" onClick={addLandingPage} variant="outline">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Добавить лендинг
-                      </Button>
-                    </div>
-                  </div>
+
                 </CardContent>
               </Card>
             </TabsContent>
