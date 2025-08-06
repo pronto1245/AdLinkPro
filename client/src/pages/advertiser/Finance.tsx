@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import RoleBasedLayout from "@/components/layout/RoleBasedLayout";
@@ -34,7 +34,8 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Send
+  Send,
+  Target
 } from "lucide-react";
 
 // Типы данных
@@ -374,62 +375,34 @@ export default function Finance() {
 
   // Функции валидации
   const validatePayoutForm = () => {
-    if (!payoutForm.partnerId) return "Выберите партнёра";
-    if (!payoutForm.amount || parseFloat(payoutForm.amount) <= 0) return "Введите корректную сумму";
-    if (parseFloat(payoutForm.amount) > summary.balance) return "Недостаточно средств на балансе";
-    if (parseFloat(payoutForm.amount) > 10000) return "Сумма превышает дневный лимит $10,000";
-    return null;
-  };
-
-  // Отфильтрованные транзакции
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((tx: Transaction) => {
-      if (filters.search && 
-          !tx.offerName.toLowerCase().includes(filters.search.toLowerCase()) &&
-          !tx.partnerUsername.toLowerCase().includes(filters.search.toLowerCase()) &&
-          !tx.id.includes(filters.search)) {
-        return false;
-      }
-      if (filters.offerId && filters.offerId !== 'all' && tx.offerId !== filters.offerId) return false;
-      if (filters.partnerId && filters.partnerId !== 'all' && tx.partnerId !== filters.partnerId) return false;
-      if (filters.type && filters.type !== 'all' && tx.type !== filters.type) return false;
-      if (filters.status && filters.status !== 'all' && tx.status !== filters.status) return false;
-      if (filters.minAmount && tx.amount < parseFloat(filters.minAmount)) return false;
-      if (filters.maxAmount && tx.amount > parseFloat(filters.maxAmount)) return false;
-      
-      return true;
-    });
-  }, [transactions, filters]);
-
-  // Функция для получения иконки типа транзакции
-  const getTransactionIcon = (type: string) => {
-    switch (type) {
-      case 'payout': return <Send className="h-4 w-4 text-red-500" />;
-      case 'commission': return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'refund': return <ArrowDownRight className="h-4 w-4 text-blue-500" />;
-      case 'bonus': return <Plus className="h-4 w-4 text-purple-500" />;
-      default: return <FileText className="h-4 w-4 text-gray-500" />;
+    const errors: string[] = [];
+    
+    if (!payoutForm.partnerId) errors.push("Выберите партнёра");
+    if (!payoutForm.amount || isNaN(parseFloat(payoutForm.amount)) || parseFloat(payoutForm.amount) <= 0) {
+      errors.push("Введите корректную сумму выплаты");
     }
-  };
-
-  // Функция для получения иконки статуса
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'pending': return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'cancelled': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'failed': return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      default: return <Clock className="h-4 w-4 text-gray-500" />;
+    if (summary.balance < parseFloat(payoutForm.amount || '0')) {
+      errors.push("Недостаточно средств на балансе");
     }
+    
+    return errors;
   };
 
-  // Обновление данных
-  const refetch = () => {
-    refetchSummary();
-    refetchTransactions();
+  const handleCreatePayout = () => {
+    const validationErrors = validatePayoutForm();
+    if (validationErrors.length > 0) {
+      toast({
+        title: "Ошибка валидации",
+        description: validationErrors.join(", "),
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    createPayoutMutation.mutate(payoutForm);
   };
 
-  if (summaryLoading) {
+  if (summaryLoading || transactionsLoading) {
     return (
       <RoleBasedLayout>
         <div className="flex justify-center items-center h-64">
@@ -442,17 +415,24 @@ export default function Finance() {
   return (
     <RoleBasedLayout>
       <div className="space-y-6" data-testid="finance-page">
-        {/* Заголовок и действия */}
+        {/* Заголовок */}
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Финансы</h1>
             <p className="text-muted-foreground">
-              Управление выплатами, доходами и финансовой отчётностью
+              Управление финансами, выплаты партнёрам и транзакции
             </p>
           </div>
           
           <div className="flex gap-3">
-            <Button variant="outline" onClick={refetch} data-testid="button-refresh">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                refetchSummary();
+                refetchTransactions();
+              }}
+              data-testid="button-refresh"
+            >
               <RefreshCw className="h-4 w-4 mr-2" />
               Обновить
             </Button>
@@ -461,21 +441,23 @@ export default function Finance() {
               <DialogTrigger asChild>
                 <Button data-testid="button-create-payout">
                   <Plus className="h-4 w-4 mr-2" />
-                  Выплатить партнёру
+                  Создать выплату
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                  <DialogTitle>Создать выплату партнёру</DialogTitle>
+                  <DialogTitle>Выплата партнёру</DialogTitle>
                 </DialogHeader>
+                
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="partner">Партнёр</Label>
+                  {/* Партнёр */}
+                  <div className="space-y-2">
+                    <Label htmlFor="partnerId">Партнёр *</Label>
                     <Select 
-                      value={payoutForm.partnerId} 
+                      value={payoutForm.partnerId}
                       onValueChange={(value) => setPayoutForm({...payoutForm, partnerId: value})}
                     >
-                      <SelectTrigger data-testid="select-partner-payout">
+                      <SelectTrigger data-testid="select-partner">
                         <SelectValue placeholder="Выберите партнёра" />
                       </SelectTrigger>
                       <SelectContent>
@@ -487,10 +469,11 @@ export default function Finance() {
                       </SelectContent>
                     </Select>
                   </div>
-
+                  
+                  {/* Сумма и валюта */}
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="amount">Сумма</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="amount">Сумма *</Label>
                       <Input
                         id="amount"
                         type="number"
@@ -499,13 +482,14 @@ export default function Finance() {
                         value={payoutForm.amount}
                         onChange={(e) => setPayoutForm({...payoutForm, amount: e.target.value})}
                         placeholder="0.00"
-                        data-testid="input-payout-amount"
+                        data-testid="input-amount"
                       />
                     </div>
-                    <div>
+                    
+                    <div className="space-y-2">
                       <Label htmlFor="currency">Валюта</Label>
                       <Select 
-                        value={payoutForm.currency} 
+                        value={payoutForm.currency}
                         onValueChange={(value) => setPayoutForm({...payoutForm, currency: value})}
                       >
                         <SelectTrigger data-testid="select-currency">
@@ -520,8 +504,9 @@ export default function Finance() {
                       </Select>
                     </div>
                   </div>
-
-                  <div>
+                  
+                  {/* Период */}
+                  <div className="space-y-2">
                     <Label htmlFor="period">Период</Label>
                     <Input
                       id="period"
@@ -531,11 +516,12 @@ export default function Finance() {
                       data-testid="input-period"
                     />
                   </div>
-
-                  <div>
-                    <Label htmlFor="payment-method">Способ выплаты</Label>
+                  
+                  {/* Способ оплаты */}
+                  <div className="space-y-2">
+                    <Label>Способ выплаты</Label>
                     <Select 
-                      value={payoutForm.paymentMethod} 
+                      value={payoutForm.paymentMethod}
                       onValueChange={(value) => setPayoutForm({...payoutForm, paymentMethod: value})}
                     >
                       <SelectTrigger data-testid="select-payment-method">
@@ -543,32 +529,43 @@ export default function Finance() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="bank">Банковский перевод</SelectItem>
-                        <SelectItem value="crypto">Криптовалюта</SelectItem>
+                        <SelectItem value="crypto">Криптовалюта (USDT)</SelectItem>
                         <SelectItem value="paypal">PayPal</SelectItem>
                         <SelectItem value="wise">Wise</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-
-                  <div>
+                  
+                  {/* Комментарий */}
+                  <div className="space-y-2">
                     <Label htmlFor="comment">Комментарий</Label>
                     <Textarea
                       id="comment"
                       value={payoutForm.comment}
                       onChange={(e) => setPayoutForm({...payoutForm, comment: e.target.value})}
-                      placeholder="Дополнительная информация о выплате"
+                      placeholder="Комментарий к выплате (опционально)"
                       data-testid="textarea-comment"
                     />
                   </div>
-
-                  {validatePayoutForm() && (
-                    <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-md">
-                      {validatePayoutForm()}
+                  
+                  {/* Информация о балансе */}
+                  <div className="p-4 bg-muted rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Доступный баланс:</span>
+                      <span className="font-semibold">${summary.balance.toLocaleString()}</span>
                     </div>
-                  )}
-
+                    {payoutForm.amount && parseFloat(payoutForm.amount) > summary.balance && (
+                      <div className="mt-2 flex items-center gap-2 text-red-600">
+                        <AlertTriangle className="h-4 w-4" />
+                        <span className="text-sm">Недостаточно средств</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Кнопки */}
                   <div className="flex justify-end gap-3">
                     <Button 
+                      type="button" 
                       variant="outline" 
                       onClick={() => setIsPayoutDialogOpen(false)}
                       data-testid="button-cancel-payout"
@@ -576,11 +573,16 @@ export default function Finance() {
                       Отмена
                     </Button>
                     <Button 
-                      onClick={() => createPayoutMutation.mutate(payoutForm)}
-                      disabled={!!validatePayoutForm() || createPayoutMutation.isPending}
+                      type="button" 
+                      onClick={handleCreatePayout}
+                      disabled={createPayoutMutation.isPending}
                       data-testid="button-submit-payout"
                     >
-                      {createPayoutMutation.isPending ? 'Создание...' : 'Выплатить'}
+                      {createPayoutMutation.isPending && (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      )}
+                      <Send className="h-4 w-4 mr-2" />
+                      Выплатить
                     </Button>
                   </div>
                 </div>
@@ -589,19 +591,19 @@ export default function Finance() {
           </div>
         </div>
 
-        {/* Финансовый дашборд */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4">
-          <MetricCard
-            title="Баланс"
-            value={summary.balance}
-            icon={Wallet}
-            type="currency"
-            alert={summary.balance < 1000}
-          />
+        {/* Финансовые метрики */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
             title="Общие расходы"
             value={summary.totalExpenses}
-            icon={CreditCard}
+            icon={DollarSign}
+            type="currency"
+            alert={summary.totalExpenses > summary.balance * 10}
+          />
+          <MetricCard
+            title="Доход от офферов"
+            value={summary.totalRevenue}
+            icon={TrendingUp}
             type="currency"
           />
           <MetricCard
@@ -611,16 +613,16 @@ export default function Finance() {
             type="currency"
           />
           <MetricCard
-            title="Ожидающие выплаты"
-            value={summary.pendingPayouts}
-            icon={Clock}
+            title="Баланс"
+            value={summary.balance}
+            icon={Wallet}
             type="currency"
-            alert={summary.pendingPayouts > summary.balance}
+            alert={summary.balance < 1000}
           />
         </div>
 
         {/* Дополнительные метрики */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <MetricCard
             title="Средний EPC"
             value={summary.avgEPC}
@@ -630,169 +632,188 @@ export default function Finance() {
           <MetricCard
             title="Средний CR"
             value={summary.avgCR}
-            icon={TrendingUp}
+            icon={Target}
             type="percent"
-            alert={summary.avgCR < 1}
           />
           <MetricCard
-            title="Средняя выплата"
-            value={summary.avgPayout}
-            icon={DollarSign}
+            title="В ожидании выплат"
+            value={summary.pendingPayouts}
+            icon={Clock}
             type="currency"
+            alert={summary.pendingPayouts > 0}
           />
         </div>
 
-        {/* Фильтры */}
+        {/* Фильтры и поиск транзакций */}
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                Фильтры и поиск
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={resetFilters} data-testid="button-reset-filters">
-                Сбросить
-              </Button>
-            </div>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Фильтры транзакций
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-              {/* Период дат */}
-              <div>
-                <Label>Дата от</Label>
-                <Input
-                  type="date"
-                  value={filters.dateFrom}
-                  onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
-                  data-testid="input-date-from"
-                />
-              </div>
-              
-              <div>
-                <Label>Дата до</Label>
-                <Input
-                  type="date"
-                  value={filters.dateTo}
-                  onChange={(e) => setFilters({...filters, dateTo: e.target.value})}
-                  data-testid="input-date-to"
-                />
-              </div>
-
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Поиск */}
-              <div className="col-span-2">
+              <div className="space-y-2">
                 <Label>Поиск</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="По партнёру, офферу, ID транзакции..."
+                    placeholder="Транзакция, партнёр, оффер..."
                     value={filters.search}
                     onChange={(e) => setFilters({...filters, search: e.target.value})}
                     className="pl-10"
-                    data-testid="input-search"
+                    data-testid="input-search-transactions"
                   />
                 </div>
               </div>
 
-              {/* Фильтр по офферу */}
-              <Select value={filters.offerId} onValueChange={(value) => setFilters({...filters, offerId: value})}>
-                <SelectTrigger data-testid="select-offer-filter">
-                  <SelectValue placeholder="Оффер" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все офферы</SelectItem>
-                  {offers.map((offer: any) => (
-                    <SelectItem key={offer.id} value={offer.id}>
-                      {offer.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Период */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
+                  <Label>С даты</Label>
+                  <Input
+                    type="date"
+                    value={filters.dateFrom}
+                    onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
+                    data-testid="input-date-from"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>По дату</Label>
+                  <Input
+                    type="date"
+                    value={filters.dateTo}
+                    onChange={(e) => setFilters({...filters, dateTo: e.target.value})}
+                    data-testid="input-date-to"
+                  />
+                </div>
+              </div>
 
-              {/* Фильтр по партнёру */}
-              <Select value={filters.partnerId} onValueChange={(value) => setFilters({...filters, partnerId: value})}>
-                <SelectTrigger data-testid="select-partner-filter">
-                  <SelectValue placeholder="Партнёр" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все партнёры</SelectItem>
-                  {partners.map((partner: any) => (
-                    <SelectItem key={partner.id} value={partner.id}>
-                      {partner.username}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              {/* Оффер */}
+              <div className="space-y-2">
+                <Label>Оффер</Label>
+                <Select value={filters.offerId} onValueChange={(value) => setFilters({...filters, offerId: value})}>
+                  <SelectTrigger data-testid="select-offer-filter">
+                    <SelectValue placeholder="Все офферы" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все офферы</SelectItem>
+                    {offers.map((offer: any) => (
+                      <SelectItem key={offer.id} value={offer.id}>
+                        {offer.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Дополнительные фильтры */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {/* Партнёр */}
+              <div className="space-y-2">
+                <Label>Партнёр</Label>
+                <Select value={filters.partnerId} onValueChange={(value) => setFilters({...filters, partnerId: value})}>
+                  <SelectTrigger data-testid="select-partner-filter">
+                    <SelectValue placeholder="Все партнёры" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все партнёры</SelectItem>
+                    {partners.map((partner: any) => (
+                      <SelectItem key={partner.id} value={partner.id}>
+                        {partner.username}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Тип транзакции */}
-              <Select value={filters.type} onValueChange={(value) => setFilters({...filters, type: value})}>
-                <SelectTrigger data-testid="select-type">
-                  <SelectValue placeholder="Тип" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все типы</SelectItem>
-                  <SelectItem value="payout">Выплата</SelectItem>
-                  <SelectItem value="commission">Комиссия</SelectItem>
-                  <SelectItem value="refund">Возврат</SelectItem>
-                  <SelectItem value="bonus">Бонус</SelectItem>
-                  <SelectItem value="adjustment">Корректировка</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label>Тип</Label>
+                <Select value={filters.type} onValueChange={(value) => setFilters({...filters, type: value})}>
+                  <SelectTrigger data-testid="select-type-filter">
+                    <SelectValue placeholder="Все типы" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все типы</SelectItem>
+                    <SelectItem value="payout">Выплата</SelectItem>
+                    <SelectItem value="commission">Комиссия</SelectItem>
+                    <SelectItem value="refund">Возврат</SelectItem>
+                    <SelectItem value="bonus">Бонус</SelectItem>
+                    <SelectItem value="adjustment">Корректировка</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* Статус */}
-              <Select value={filters.status} onValueChange={(value) => setFilters({...filters, status: value})}>
-                <SelectTrigger data-testid="select-status">
-                  <SelectValue placeholder="Статус" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все статусы</SelectItem>
-                  <SelectItem value="completed">Завершена</SelectItem>
-                  <SelectItem value="pending">В ожидании</SelectItem>
-                  <SelectItem value="cancelled">Отменена</SelectItem>
-                  <SelectItem value="failed">Ошибка</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label>Статус</Label>
+                <Select value={filters.status} onValueChange={(value) => setFilters({...filters, status: value})}>
+                  <SelectTrigger data-testid="select-status-filter">
+                    <SelectValue placeholder="Все статусы" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все статусы</SelectItem>
+                    <SelectItem value="completed">Завершена</SelectItem>
+                    <SelectItem value="pending">В ожидании</SelectItem>
+                    <SelectItem value="cancelled">Отменена</SelectItem>
+                    <SelectItem value="failed">Ошибка</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-              {/* Минимальная сумма */}
-              <Input
-                type="number"
-                placeholder="Мин. сумма"
-                value={filters.minAmount}
-                onChange={(e) => setFilters({...filters, minAmount: e.target.value})}
-                data-testid="input-min-amount"
-              />
-
-              {/* Максимальная сумма */}
-              <Input
-                type="number"
-                placeholder="Макс. сумма"
-                value={filters.maxAmount}
-                onChange={(e) => setFilters({...filters, maxAmount: e.target.value})}
-                data-testid="input-max-amount"
-              />
-
-              {/* Экспорт */}
-              <Select onValueChange={(format) => handleExport(format as 'csv' | 'xlsx')}>
-                <SelectTrigger data-testid="select-export">
-                  <SelectValue placeholder="Экспорт" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="csv">
-                    <div className="flex items-center gap-2">
-                      <Download className="h-4 w-4" />
-                      CSV
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="xlsx">
-                    <div className="flex items-center gap-2">
-                      <Download className="h-4 w-4" />
-                      Excel
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              {/* Сумма */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
+                  <Label>От суммы</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={filters.minAmount}
+                    onChange={(e) => setFilters({...filters, minAmount: e.target.value})}
+                    data-testid="input-min-amount"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>До суммы</Label>
+                  <Input
+                    type="number"
+                    placeholder="∞"
+                    value={filters.maxAmount}
+                    onChange={(e) => setFilters({...filters, maxAmount: e.target.value})}
+                    data-testid="input-max-amount"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center mt-4 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={resetFilters}
+                data-testid="button-reset-filters"
+              >
+                Сбросить фильтры
+              </Button>
+              
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleExport('csv')}
+                  data-testid="button-export-csv"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  CSV
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleExport('xlsx')}
+                  data-testid="button-export-xlsx"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Excel
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -801,39 +822,38 @@ export default function Finance() {
         <Card>
           <CardHeader>
             <CardTitle>
-              Финансовые транзакции ({filteredTransactions.length})
+              Транзакции ({transactions.length} записей)
             </CardTitle>
           </CardHeader>
           <CardContent>
             {transactionsLoading ? (
-              <div className="flex justify-center items-center py-8">
+              <div className="flex justify-center items-center h-32">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
               </div>
-            ) : filteredTransactions.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Нет транзакций для отображения
+            ) : transactions.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>Нет транзакций за выбранный период</p>
+                <p className="text-sm mt-2">Создайте первую выплату партнёру</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
                       <TableHead>Дата</TableHead>
                       <TableHead>Тип</TableHead>
                       <TableHead>Оффер</TableHead>
                       <TableHead>Партнёр</TableHead>
-                      <TableHead>Сумма</TableHead>
+                      <TableHead className="text-right">Сумма</TableHead>
                       <TableHead>Статус</TableHead>
-                      <TableHead>Действия</TableHead>
+                      <TableHead>Способ оплаты</TableHead>
+                      <TableHead className="text-center">Действия</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredTransactions.map((transaction: Transaction) => (
-                      <TableRow key={transaction.id} data-testid={`transaction-row-${transaction.id}`}>
-                        <TableCell className="font-mono text-xs">
-                          {transaction.id.slice(0, 8)}...
-                        </TableCell>
+                    {transactions.map((transaction: Transaction) => (
+                      <TableRow key={transaction.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -842,67 +862,70 @@ export default function Finance() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {getTransactionIcon(transaction.type)}
+                            {transaction.type === 'payout' && <Send className="h-4 w-4 text-red-500" />}
+                            {transaction.type === 'commission' && <TrendingUp className="h-4 w-4 text-green-500" />}
+                            {transaction.type === 'refund' && <ArrowDownRight className="h-4 w-4 text-blue-500" />}
+                            {transaction.type === 'bonus' && <Plus className="h-4 w-4 text-purple-500" />}
                             <span className="capitalize">
-                              {transaction.type === 'payout' ? 'Выплата' :
+                              {transaction.type === 'payout' ? 'Выплата' : 
                                transaction.type === 'commission' ? 'Комиссия' :
                                transaction.type === 'refund' ? 'Возврат' :
-                               transaction.type === 'bonus' ? 'Бонус' : 'Корректировка'}
+                               transaction.type === 'bonus' ? 'Бонус' : transaction.type}
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <div className="max-w-[150px] truncate" title={transaction.offerName}>
-                            {transaction.offerName}
-                          </div>
+                        <TableCell>{transaction.offerName}</TableCell>
+                        <TableCell>{transaction.partnerUsername}</TableCell>
+                        <TableCell className="text-right font-medium">
+                          <span className={transaction.type === 'payout' || transaction.type === 'refund' ? 'text-red-600' : 'text-green-600'}>
+                            {transaction.type === 'payout' || transaction.type === 'refund' ? '-' : '+'}
+                            {transaction.currency} {transaction.amount.toLocaleString()}
+                          </span>
                         </TableCell>
                         <TableCell>
-                          <div className="max-w-[120px] truncate" title={transaction.partnerUsername}>
-                            {transaction.partnerUsername}
-                          </div>
+                          <Badge variant={
+                            transaction.status === 'completed' ? 'default' :
+                            transaction.status === 'pending' ? 'secondary' :
+                            transaction.status === 'cancelled' ? 'outline' : 'destructive'
+                          }>
+                            <div className="flex items-center gap-1">
+                              {transaction.status === 'completed' && <CheckCircle className="h-3 w-3" />}
+                              {transaction.status === 'pending' && <Clock className="h-3 w-3" />}
+                              {transaction.status === 'cancelled' && <XCircle className="h-3 w-3" />}
+                              {transaction.status === 'failed' && <AlertTriangle className="h-3 w-3" />}
+                              {transaction.status === 'completed' ? 'Завершена' :
+                               transaction.status === 'pending' ? 'В ожидании' :
+                               transaction.status === 'cancelled' ? 'Отменена' : 'Ошибка'}
+                            </div>
+                          </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className={`font-semibold ${
-                            transaction.type === 'payout' ? 'text-red-600' : 
-                            transaction.type === 'commission' ? 'text-green-600' : 
-                            'text-blue-600'
-                          }`}>
-                            {transaction.type === 'payout' ? '-' : '+'}
-                            ${transaction.amount.toFixed(2)} {transaction.currency}
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="h-4 w-4 text-muted-foreground" />
+                            {transaction.paymentMethod === 'bank' ? 'Банк' :
+                             transaction.paymentMethod === 'crypto' ? 'Криpto' :
+                             transaction.paymentMethod === 'paypal' ? 'PayPal' :
+                             transaction.paymentMethod === 'wise' ? 'Wise' : transaction.paymentMethod}
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {getStatusIcon(transaction.status)}
-                            <Badge variant={
-                              transaction.status === 'completed' ? 'default' :
-                              transaction.status === 'pending' ? 'secondary' :
-                              transaction.status === 'failed' ? 'destructive' : 'outline'
-                            }>
-                              {transaction.status === 'completed' ? 'Завершена' :
-                               transaction.status === 'pending' ? 'В ожидании' :
-                               transaction.status === 'cancelled' ? 'Отменена' : 'Ошибка'}
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button
+                            <Button 
+                              variant="ghost" 
                               size="sm"
-                              variant="ghost"
-                              onClick={() => fetchTransactionDetails(transaction.id)}
-                              title="Посмотреть детали"
-                              data-testid={`button-details-${transaction.id}`}
+                              onClick={() => setSelectedTransaction(transaction)}
+                              title="Посмотреть детализацию"
+                              data-testid={`button-view-details-${transaction.id}`}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
                             {transaction.status === 'pending' && (
-                              <Button
+                              <Button 
+                                variant="ghost" 
                                 size="sm"
-                                variant="ghost"
-                                onClick={() => updateTransactionMutation.mutate({ 
-                                  transactionId: transaction.id, 
-                                  status: 'cancelled' 
+                                onClick={() => updateTransactionMutation.mutate({
+                                  transactionId: transaction.id,
+                                  status: 'cancelled'
                                 })}
                                 title="Отменить транзакцию"
                                 data-testid={`button-cancel-${transaction.id}`}
