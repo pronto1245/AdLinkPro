@@ -480,19 +480,19 @@ export default function AdvertiserDashboard() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm">На модерации</span>
-                  <Badge variant="secondary">{dashboard?.offerStatus.pending || 0}</Badge>
+                  <Badge variant="secondary">{dashboard?.offerStatus?.pending || 0}</Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Активные</span>
-                  <Badge variant="default">{dashboard?.offerStatus.active || 0}</Badge>
+                  <Badge variant="default">{dashboard?.offerStatus?.active || 0}</Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Скрытые</span>
-                  <Badge variant="outline">{dashboard?.offerStatus.hidden || 0}</Badge>
+                  <Badge variant="outline">{dashboard?.offerStatus?.hidden || 0}</Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Архив</span>
-                  <Badge variant="secondary">{dashboard?.offerStatus.archived || 0}</Badge>
+                  <Badge variant="secondary">{dashboard?.offerStatus?.archived || 0}</Badge>
                 </div>
               </CardContent>
             </Card>

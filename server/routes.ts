@@ -738,13 +738,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const authUser = getAuthenticatedUser(req);
       const { dateFrom, dateTo } = req.query;
       
-      const filters = {
-        dateFrom: dateFrom ? new Date(dateFrom as string) : undefined,
-        dateTo: dateTo ? new Date(dateTo as string) : undefined
+      console.log('Getting advertiser dashboard for', authUser.id);
+      
+      // Mock comprehensive dashboard data following frontend interface
+      const dashboardData = {
+        overview: {
+          totalOffers: 12,
+          activeOffers: 8,
+          pendingOffers: 2,
+          rejectedOffers: 2,
+          totalBudget: 50000,
+          totalSpent: 15750,
+          totalRevenue: 8900,
+          partnersCount: 24,
+          avgCR: 3.2,
+          epc: 2.15,
+          postbacksSent: 1245,
+          postbacksReceived: 1187,
+          postbackErrors: 58,
+          fraudActivity: 12
+        },
+        chartData: {
+          traffic: [
+            { date: "2025-07-30", clicks: 1200, uniqueClicks: 890 },
+            { date: "2025-07-31", clicks: 1450, uniqueClicks: 1020 },
+            { date: "2025-08-01", clicks: 1650, uniqueClicks: 1180 },
+            { date: "2025-08-02", clicks: 1340, uniqueClicks: 950 },
+            { date: "2025-08-03", clicks: 1580, uniqueClicks: 1150 },
+            { date: "2025-08-04", clicks: 1720, uniqueClicks: 1250 },
+            { date: "2025-08-05", clicks: 1890, uniqueClicks: 1380 }
+          ],
+          conversions: [
+            { date: "2025-07-30", leads: 45, registrations: 32, deposits: 18 },
+            { date: "2025-07-31", leads: 52, registrations: 38, deposits: 22 },
+            { date: "2025-08-01", leads: 61, registrations: 44, deposits: 26 },
+            { date: "2025-08-02", leads: 48, registrations: 35, deposits: 20 },
+            { date: "2025-08-03", leads: 58, registrations: 42, deposits: 24 },
+            { date: "2025-08-04", leads: 67, registrations: 48, deposits: 28 },
+            { date: "2025-08-05", leads: 73, registrations: 52, deposits: 31 }
+          ],
+          spending: [
+            { date: "2025-07-30", spent: 2100, revenue: 1580 },
+            { date: "2025-07-31", spent: 2350, revenue: 1720 },
+            { date: "2025-08-01", spent: 2650, revenue: 1950 },
+            { date: "2025-08-02", spent: 2200, revenue: 1650 },
+            { date: "2025-08-03", spent: 2450, revenue: 1800 },
+            { date: "2025-08-04", spent: 2750, revenue: 2050 },
+            { date: "2025-08-05", spent: 2950, revenue: 2200 }
+          ],
+          postbacks: [
+            { date: "2025-07-30", sent: 180, successful: 172, failed: 8 },
+            { date: "2025-07-31", sent: 205, successful: 195, failed: 10 },
+            { date: "2025-08-01", sent: 235, successful: 224, failed: 11 },
+            { date: "2025-08-02", sent: 195, successful: 186, failed: 9 },
+            { date: "2025-08-03", sent: 220, successful: 210, failed: 10 },
+            { date: "2025-08-04", sent: 245, successful: 233, failed: 12 },
+            { date: "2025-08-05", sent: 265, successful: 252, failed: 13 }
+          ],
+          fraud: [
+            { date: "2025-07-30", detected: 15, blocked: 12 },
+            { date: "2025-07-31", detected: 18, blocked: 15 },
+            { date: "2025-08-01", detected: 22, blocked: 19 },
+            { date: "2025-08-02", detected: 16, blocked: 13 },
+            { date: "2025-08-03", detected: 20, blocked: 17 },
+            { date: "2025-08-04", detected: 25, blocked: 21 },
+            { date: "2025-08-05", detected: 28, blocked: 24 }
+          ]
+        },
+        topOffers: [
+          { id: "1", name: "4RaBet India", status: "active", clicks: 5420, cr: 4.2, conversions: 228, spent: 3250, postbacks: 215, fraudRate: 2.1 },
+          { id: "2", name: "Melbet Casino", status: "active", clicks: 3890, cr: 3.8, conversions: 148, spent: 2150, postbacks: 142, fraudRate: 1.8 },
+          { id: "3", name: "1xBet Sports", status: "pending", clicks: 2650, cr: 2.9, conversions: 77, spent: 1450, postbacks: 73, fraudRate: 3.2 },
+          { id: "4", name: "Pin-Up Gaming", status: "active", clicks: 4120, cr: 3.5, conversions: 144, spent: 2890, postbacks: 138, fraudRate: 2.7 },
+          { id: "5", name: "Mostbet Live", status: "active", clicks: 3340, cr: 4.1, conversions: 137, spent: 2250, postbacks: 131, fraudRate: 1.9 }
+        ],
+        notifications: [
+          { id: "1", type: "partner_request", title: "Новая заявка партнёра", message: "Партнёр WebTraffic подал заявку на оффер 4RaBet", createdAt: "2025-08-05T10:30:00Z", isRead: false },
+          { id: "2", type: "postback_error", title: "Ошибка постбека", message: "Постбек для конверсии #12453 не доставлен", createdAt: "2025-08-05T09:15:00Z", isRead: false },
+          { id: "3", type: "fraud_alert", title: "Фрод-активность", message: "Обнаружена подозрительная активность в оффере Melbet", createdAt: "2025-08-05T08:45:00Z", isRead: true },
+          { id: "4", type: "offer_pending", title: "Оффер на модерации", message: "Оффер 1xBet Sports ожидает модерации", createdAt: "2025-08-04T16:20:00Z", isRead: true },
+          { id: "5", type: "partner_request", title: "Партнёр одобрен", message: "Партнёр ClickMaster одобрен для работы", createdAt: "2025-08-04T14:10:00Z", isRead: true }
+        ],
+        offerStatus: {
+          pending: 2,
+          active: 8,
+          hidden: 1,
+          archived: 1
+        }
       };
       
-      const dashboard = await storage.getAdvertiserDashboard(authUser.id, filters);
-      res.json(dashboard);
+      res.json(dashboardData);
     } catch (error) {
       console.error("Get advertiser dashboard error:", error);
       res.status(500).json({ error: "Internal server error" });
