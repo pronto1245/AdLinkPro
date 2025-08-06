@@ -435,13 +435,25 @@ export default function MyOffers() {
                                      'Категория'}
                                   </span>
                                 )}
-                                {offer.description && (
-                                  <span className="ml-2 text-xs opacity-70 truncate max-w-xs">
-                                    • {typeof offer.description === 'string' ? offer.description : 
-                                        typeof offer.description === 'object' ? (offer.description.ru || offer.description.en || '') : 
-                                        ''}
-                                  </span>
-                                )}
+                                {offer.description && (() => {
+                                  const desc = typeof offer.description === 'string' ? offer.description : 
+                                              typeof offer.description === 'object' ? (offer.description.ru || offer.description.en || '') : '';
+                                  const shouldTruncate = desc.length > 10;
+                                  const displayText = shouldTruncate ? desc.substring(0, 10) + '...' : desc;
+                                  
+                                  return shouldTruncate ? (
+                                    <span 
+                                      className="ml-2 text-xs opacity-70 cursor-help" 
+                                      title={desc}
+                                    >
+                                      • {displayText}
+                                    </span>
+                                  ) : (
+                                    <span className="ml-2 text-xs opacity-70">
+                                      • {displayText}
+                                    </span>
+                                  );
+                                })()}
                               </div>
                             </div>
                           </div>
