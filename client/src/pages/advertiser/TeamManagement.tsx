@@ -456,19 +456,17 @@ export default function TeamManagement() {
           <Button 
             onClick={() => setIsAddMemberOpen(true)}
             data-testid="button-add-member"
-            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg"
           >
             <Plus className="h-4 w-4 mr-2" />
-            ➕ Добавить сотрудника
+            Добавить сотрудника
           </Button>
           <Button 
             variant="outline"
             onClick={() => handleExportTeamData('csv')}
             data-testid="button-export-team"
-            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg"
           >
             <Download className="h-4 w-4 mr-2" />
-            📊 Экспорт
+            Экспорт
           </Button>
         </div>
       </div>
@@ -553,11 +551,11 @@ export default function TeamManagement() {
         {/* Вкладка: Сотрудники */}
         <TabsContent value="members" className="space-y-4">
           {/* Фильтры с красивым оформлением */}
-          <Card className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 border-cyan-200 dark:border-cyan-700">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+              <CardTitle className="flex items-center gap-2">
                 <Filter className="h-5 w-5" />
-                🔍 Фильтры сотрудников
+                Фильтры сотрудников
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -742,10 +740,10 @@ export default function TeamManagement() {
 
         {/* Вкладка: Роли и права */}
         <TabsContent value="roles" className="space-y-4">
-          <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-700">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-purple-700 dark:text-purple-300">🔑 Таблица ролей и разрешений</CardTitle>
-              <p className="text-purple-600 dark:text-purple-400">
+              <CardTitle>Таблица ролей и разрешений</CardTitle>
+              <p className="text-sm text-muted-foreground">
                 Права доступа для каждой роли в системе
               </p>
             </CardHeader>
@@ -846,15 +844,15 @@ export default function TeamManagement() {
 
         {/* Вкладка: Логи действий */}
         <TabsContent value="activity" className="space-y-4">
-          <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-700">
+          <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                  <CardTitle className="flex items-center gap-2">
                     <Activity className="h-5 w-5" />
-                    📋 Логи действий команды
+                    Логи действий команды
                   </CardTitle>
-                  <p className="text-green-600 dark:text-green-400">
+                  <p className="text-sm text-muted-foreground">
                     История действий всех сотрудников команды
                   </p>
                 </div>
@@ -886,9 +884,8 @@ export default function TeamManagement() {
                       a.download = `team-activity-logs-${new Date().toISOString().split('T')[0]}.csv`;
                       a.click();
                     }}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0"
                   >
-                    📊 Экспорт CSV
+                    Экспорт CSV
                   </Button>
                   <Button
                     variant="outline"
@@ -902,9 +899,8 @@ export default function TeamManagement() {
                       a.download = `team-activity-logs-${new Date().toISOString().split('T')[0]}.json`;
                       a.click();
                     }}
-                    className="bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white border-0"
                   >
-                    📄 Экспорт JSON
+                    Экспорт JSON
                   </Button>
                 </div>
               </div>
