@@ -10,7 +10,7 @@ interface RoleBasedLayoutProps {
 
 export default function RoleBasedLayout({ children }: RoleBasedLayoutProps) {
   const { user } = useAuth();
-  const { collapsed } = useSidebar();
+  const { collapsed, sidebarWidth } = useSidebar();
   
   if (!user) {
     return <div>Загрузка...</div>;
@@ -21,13 +21,22 @@ export default function RoleBasedLayout({ children }: RoleBasedLayoutProps) {
       {user.role === 'advertiser' && <AdvertiserSidebar key={`sidebar-${user.id}`} />}
       {user.role === 'affiliate' && <AffiliateSidebar key={`sidebar-${user.id}`} />}
       <main 
-        className={cn(
-          "flex-1 overflow-auto transition-all duration-300 ease-in-out",
-          collapsed ? "ml-0" : "ml-0" // Контент автоматически адаптируется благодаря flex
-        )}
+        className="flex-1 overflow-auto transition-all duration-300 ease-in-out"
+        style={{
+          '--sidebar-width': `${sidebarWidth}px`,
+          maxWidth: `calc(100vw - ${sidebarWidth}px)`
+        } as React.CSSProperties}
       >
-        <div className="p-6">
-          {children}
+        <div className={cn(
+          "p-6",
+          collapsed ? "max-w-full" : "max-w-full"
+        )}>
+          <div className={cn(
+            "mx-auto transition-all duration-300",
+            collapsed ? "max-w-7xl" : "max-w-6xl"
+          )}>
+            {children}
+          </div>
         </div>
       </main>
     </div>

@@ -4,6 +4,7 @@ interface SidebarContextType {
   collapsed: boolean;
   toggleCollapsed: () => void;
   setCollapsed: (value: boolean) => void;
+  sidebarWidth: number; // Ширина сайдбара в пикселях
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -30,8 +31,10 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 
   const toggleCollapsed = () => setCollapsed(!collapsed);
 
+  const sidebarWidth = collapsed ? 64 : 256; // 16rem = 256px, 4rem = 64px
+
   return (
-    <SidebarContext.Provider value={{ collapsed, toggleCollapsed, setCollapsed }}>
+    <SidebarContext.Provider value={{ collapsed, toggleCollapsed, setCollapsed, sidebarWidth }}>
       {children}
     </SidebarContext.Provider>
   );

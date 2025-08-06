@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'wouter';
+import { useSidebar } from '@/contexts/sidebar-context';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
+import { ResponsiveCard } from '@/components/layout/ResponsiveCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

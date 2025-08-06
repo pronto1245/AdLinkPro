@@ -2,6 +2,12 @@
 This anti-fraud platform provides comprehensive financial security and real-time risk management for financial institutions, payment processors, and e-commerce. Key capabilities include AI-powered fraud detection, real-time risk assessment, analytics dashboards, automated blocking, and detailed audit trails. It supports device fingerprinting, IP analysis, behavioral patterns, and transaction monitoring to offer deep insights into fraud patterns, risk scores, and security metrics for effective prevention and compliance. The platform, rebranded as FraudGuard, is fully operational with robust security features, performance optimizations, and comprehensive integration across all modules.
 
 ## Recent Updates (August 2025)
+- ✅ **Collapsible Sidebar Implementation (Aug 6, 2025)**: Successfully implemented responsive collapsible sidebar system
+  - Created SidebarContext with localStorage persistence for state management
+  - Updated AdvertiserSidebar and AffiliateSidebar with collapse/expand functionality
+  - Implemented smooth transitions, hover effects, and adaptive icon-only display when collapsed
+  - Fixed SSR compatibility issues with localStorage access
+  - All pages automatically adapt to sidebar width changes through RoleBasedLayout
 - ✅ **Architectural Cleanup (Aug 6, 2025)**: Successfully completed RoleBasedLayout architectural refactoring
   - Removed RoleBasedLayout from all individual components (advertiser and affiliate pages)
   - RoleBasedLayout now exists only at App.tsx routing level and in component definition
