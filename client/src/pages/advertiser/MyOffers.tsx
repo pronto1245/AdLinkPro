@@ -353,16 +353,16 @@ export default function MyOffers() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12"></TableHead>
-                    <TableHead>Название оффера</TableHead>
-                    <TableHead>Статус</TableHead>
-                    <TableHead>Тип</TableHead>
-                    <TableHead>Категория</TableHead>
-                    <TableHead className="text-right">Клики</TableHead>
-                    <TableHead className="text-right">Лиды</TableHead>
-                    <TableHead className="text-right">CR</TableHead>
-                    <TableHead className="text-right">Доход</TableHead>
-                    <TableHead className="text-center">Партнеры</TableHead>
-                    <TableHead className="text-right">Действия</TableHead>
+                    <TableHead className="font-semibold text-blue-600 dark:text-blue-400">Название оффера</TableHead>
+                    <TableHead className="font-semibold text-green-600 dark:text-green-400">Статус</TableHead>
+                    <TableHead className="font-semibold text-purple-600 dark:text-purple-400">Тип</TableHead>
+                    <TableHead className="font-semibold text-orange-600 dark:text-orange-400">Категория</TableHead>
+                    <TableHead className="text-right font-semibold text-indigo-600 dark:text-indigo-400">Клики</TableHead>
+                    <TableHead className="text-right font-semibold text-emerald-600 dark:text-emerald-400">Лиды</TableHead>
+                    <TableHead className="text-right font-semibold text-yellow-600 dark:text-yellow-400">CR</TableHead>
+                    <TableHead className="text-right font-semibold text-red-600 dark:text-red-400">Доход</TableHead>
+                    <TableHead className="text-center font-semibold text-teal-600 dark:text-teal-400">Партнеры</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600 dark:text-gray-400">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
