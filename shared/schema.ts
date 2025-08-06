@@ -85,25 +85,55 @@ export const offers = pgTable("offers", {
   currency: text("currency").default('USD'),
   countries: jsonb("countries"), // Array of country codes
   geoTargeting: text("geo_targeting"), // Free text geo targeting
+  
+  // Landing pages and URLs
+  targetUrl: text("target_url"), // Main target URL where users will be redirected
+  trackingUrl: text("tracking_url"), // Generated tracking URL template
+  prelandingUrl: text("prelanding_url"), // Optional prelanding page
+  postbackUrl: text("postback_url"), // Custom postback URL for this offer
   landingPages: jsonb("landing_pages"), // Array of landing pages with different prices
+  baseUrl: text("base_url"), // Base URL for automatic partner link generation
+  previewUrl: text("preview_url"), // Preview link for partners
+  
+  // Geo and pricing
   geoPricing: jsonb("geo_pricing"), // Array of geo-specific pricing
+  
+  // Device and OS targeting
+  allowedDevices: jsonb("allowed_devices"), // ['mobile', 'desktop', 'tablet']
+  allowedOs: jsonb("allowed_os"), // ['android', 'ios', 'windows', 'mac']
+  landingLanguage: text("landing_language").default('en'), // Primary language of landing page
+  
+  // Restrictions and traffic
   kpiConditions: jsonb("kpi_conditions"), // KPI conditions - Multilingual: { "en": "English text", "ru": "Russian text" }
   trafficSources: jsonb("traffic_sources"), // Allowed traffic sources
+  deniedSources: jsonb("denied_sources"), // Explicitly denied traffic sources
   allowedApps: jsonb("allowed_apps"), // Allowed applications
+  trafficRequirements: text("traffic_requirements"), // Free text requirements
+  
+  // Limits and caps
   dailyLimit: integer("daily_limit"), // Daily conversion limit
   monthlyLimit: integer("monthly_limit"), // Monthly conversion limit
-  antifraudEnabled: boolean("antifraud_enabled").default(true),
+  
+  // Partner approval and settings
+  partnerApprovalType: text("partner_approval_type").default('auto'), // 'auto', 'manual', 'invite_only'
   autoApprovePartners: boolean("auto_approve_partners").default(false),
+  
+  // Anti-fraud settings
+  antifraudEnabled: boolean("antifraud_enabled").default(true),
+  antifraudMethods: jsonb("antifraud_methods"), // ['ip', 'vpn', 'bot', 'ctr', 'click_spam']
+  
+  // Status and moderation
   status: offerStatusEnum("status").default('draft'),
   moderationStatus: text("moderation_status").default('pending'), // pending, approved, rejected, needs_revision
   moderationComment: text("moderation_comment"), // Admin comment for moderation
-  trackingUrl: text("tracking_url"),
+  
+  // Technical settings
   landingPageUrl: text("landing_page_url"), 
-  baseUrl: text("base_url"), // Base URL for automatic partner link generation
-  previewUrl: text("preview_url"), // Preview link for partners
   restrictions: text("restrictions"),
   fraudRestrictions: text("fraud_restrictions"), // Global fraud restrictions set by admin
   macros: text("macros"), // JSON string of macros
+  
+  // Flags and visibility
   kycRequired: boolean("kyc_required").default(false),
   isPrivate: boolean("is_private").default(false),
   smartlinkEnabled: boolean("smartlink_enabled").default(false),
@@ -111,8 +141,22 @@ export const offers = pgTable("offers", {
   blockedReason: text("blocked_reason"),
   isArchived: boolean("is_archived").default(false),
   regionVisibility: jsonb("region_visibility"), // Regions where offer is visible
+  
+  // Redirect domains for this offer
+  allowCustomDomains: boolean("allow_custom_domains").default(false),
+  
+  // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Offer domains (for custom redirect domains)
+export const offerDomains = pgTable("offer_domains", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  offerId: varchar("offer_id").notNull().references(() => offers.id),
+  domain: text("domain").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Partner assignments (many-to-many between affiliates and offers)
@@ -1339,3 +1383,12 @@ export type IpAnalysis = typeof ipAnalysis.$inferSelect;
 export type InsertIpAnalysis = z.infer<typeof insertIpAnalysisSchema>;
 export type FraudBlock = typeof fraudBlocks.$inferSelect;
 export type InsertFraudBlock = z.infer<typeof insertFraudBlockSchema>;
+
+// Offer domains schemas and types  
+export const insertOfferDomainSchema = createInsertSchema(offerDomains).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type OfferDomain = typeof offerDomains.$inferSelect;
+export type InsertOfferDomain = z.infer<typeof insertOfferDomainSchema>;

@@ -11,85 +11,129 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Minus, Upload, Image, Globe, DollarSign, Target, Settings, ArrowLeft, Save, Eye } from 'lucide-react';
+import { Plus, Minus, Upload, Image, Globe, DollarSign, Target, Settings, ArrowLeft, Save, Eye, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
 import { apiRequest } from '@/lib/queryClient';
 
 interface OfferFormData {
+  // Основная информация
   name: string;
-  description: string;
+  description: { ru: string; en: string };
   category: string;
   vertical: string;
+  logo: string;
+  
+  // GEO и устройства
   geoTargeting: string[];
-  payoutType: 'cpa' | 'cpl' | 'cps' | 'revenue_share';
-  payoutAmount: number;
-  currency: string;
-  cap: number;
-  dailyCap: number;
+  allowedDevices: string[];
+  allowedOs: string[];
+  landingLanguage: string;
+  
+  // Ссылки
+  targetUrl: string;
+  prelandingUrl: string;
+  postbackUrl: string;
   landingPages: Array<{
     id: string;
     name: string;
     url: string;
     isDefault: boolean;
   }>;
-  trackingDomains: string[];
-  restrictions: {
-    trafficSources: string[];
-    deviceTypes: string[];
-    osTypes: string[];
-    browserTypes: string[];
-  };
-  isActive: boolean;
-  requiresApproval: boolean;
-  allowDeeplink: boolean;
-  postbackUrl: string;
-  conversionFlow: string;
-  kpi: string;
-  logo: string;
-  images: string[];
+  
+  // Выплаты
+  payoutType: 'cpa' | 'cpl' | 'cps' | 'revshare' | 'hybrid';
+  payoutAmount: number;
+  currency: string;
+  
+  // Условия
+  partnerApprovalType: 'auto' | 'manual' | 'invite_only';
+  trafficSources: string[];
+  deniedSources: string[];
+  trafficRequirements: string;
+  
+  // Кепы и лимиты
+  dailyLimit: number;
+  monthlyLimit: number;
+  
+  // Антифрод
+  antifraudEnabled: boolean;
+  antifraudMethods: string[];
+  
+  // Дополнительные настройки
+  kycRequired: boolean;
+  isPrivate: boolean;
+  allowCustomDomains: boolean;
+  customDomains: string[];
+  
+  // Мета данные
   tags: string[];
+  kpi: string;
+  status: 'draft' | 'active' | 'paused';
 }
 
 const initialFormData: OfferFormData = {
+  // Основная информация
   name: '',
-  description: '',
+  description: { ru: '', en: '' },
   category: '',
   vertical: '',
+  logo: '',
+  
+  // GEO и устройства
   geoTargeting: [],
+  allowedDevices: [],
+  allowedOs: [],
+  landingLanguage: 'en',
+  
+  // Ссылки
+  targetUrl: '',
+  prelandingUrl: '',
+  postbackUrl: '',
+  landingPages: [{ id: '1', name: 'Основная', url: '', isDefault: true }],
+  
+  // Выплаты
   payoutType: 'cpa',
   payoutAmount: 0,
   currency: 'USD',
-  cap: 0,
-  dailyCap: 0,
-  landingPages: [{ id: '1', name: 'Основная', url: '', isDefault: true }],
-  trackingDomains: [],
-  restrictions: {
-    trafficSources: [],
-    deviceTypes: [],
-    osTypes: [],
-    browserTypes: []
-  },
-  isActive: true,
-  requiresApproval: false,
-  allowDeeplink: true,
-  postbackUrl: '',
-  conversionFlow: '',
+  
+  // Условия
+  partnerApprovalType: 'auto',
+  trafficSources: [],
+  deniedSources: [],
+  trafficRequirements: '',
+  
+  // Кепы и лимиты
+  dailyLimit: 0,
+  monthlyLimit: 0,
+  
+  // Антифрод
+  antifraudEnabled: true,
+  antifraudMethods: [],
+  
+  // Дополнительные настройки
+  kycRequired: false,
+  isPrivate: false,
+  allowCustomDomains: false,
+  customDomains: [],
+  
+  // Мета данные
+  tags: [],
   kpi: '',
-  logo: '',
-  images: [],
-  tags: []
+  status: 'draft'
 };
 
 const categories = [
-  'Gambling', 'Dating', 'Finance', 'Health', 'E-commerce', 
-  'Gaming', 'Crypto', 'VPN', 'Antivirus', 'Education'
+  'gambling', 'dating', 'crypto', 'betting', 'e-commerce', 
+  'gaming', 'finance', 'health', 'vpn', 'antivirus', 'education',
+  'software', 'mobile_apps', 'nutra', 'beauty'
 ];
 
 const verticals = [
   'Casino', 'Sports Betting', 'Adult Dating', 'Mainstream Dating',
   'Forex', 'Binary Options', 'Crypto Trading', 'Insurance',
-  'Nutra', 'Beauty', 'Mobile Apps', 'Software'
+  'Nutra', 'Beauty', 'Mobile Apps', 'Software', 'VPN Services',
+  'Antivirus', 'E-commerce', 'Gambling', 'Betting'
 ];
 
 const countries = [
@@ -102,13 +146,64 @@ const countries = [
   { code: 'DE', name: '🇩🇪 Германия' },
   { code: 'FR', name: '🇫🇷 Франция' },
   { code: 'JP', name: '🇯🇵 Япония' },
-  { code: 'KR', name: '🇰🇷 Южная Корея' }
+  { code: 'KR', name: '🇰🇷 Южная Корея' },
+  { code: 'TR', name: '🇹🇷 Турция' },
+  { code: 'TH', name: '🇹🇭 Таиланд' },
+  { code: 'ID', name: '🇮🇩 Индонезия' },
+  { code: 'MY', name: '🇲🇾 Малайзия' },
+  { code: 'PH', name: '🇵🇭 Филиппины' }
 ];
 
-const trafficSources = [
+const allowedTrafficSources = [
   'Google Ads', 'Facebook Ads', 'Native Ads', 'Push Notifications',
   'Pop Traffic', 'Email Marketing', 'SMS Marketing', 'Influencer Marketing',
-  'SEO', 'Social Media', 'Display Ads', 'Video Ads'
+  'SEO', 'Social Media', 'Display Ads', 'Video Ads', 'TikTok Ads',
+  'Snapchat Ads', 'YouTube Ads', 'LinkedIn Ads', 'Twitter Ads'
+];
+
+const deniedTrafficSources = [
+  'Adult Traffic', 'Motivational Traffic', 'Incentive Traffic', 'Bot Traffic',
+  'Click Spam', 'Fraud Traffic', 'Toolbar Traffic', 'Expired Domain Traffic',
+  'Spam Email', 'Auto-surf Traffic', 'Forced Clicks', 'PTC Sites'
+];
+
+const deviceTypes = [
+  { value: 'mobile', label: 'Мобильные устройства' },
+  { value: 'desktop', label: 'Десктоп' },
+  { value: 'tablet', label: 'Планшеты' }
+];
+
+const osTypes = [
+  { value: 'android', label: 'Android' },
+  { value: 'ios', label: 'iOS' },
+  { value: 'windows', label: 'Windows' },
+  { value: 'mac', label: 'macOS' },
+  { value: 'linux', label: 'Linux' }
+];
+
+const antifraudMethods = [
+  { value: 'ip', label: 'Проверка IP адресов' },
+  { value: 'vpn', label: 'Детекция VPN/Proxy' },
+  { value: 'bot', label: 'Защита от ботов' },
+  { value: 'ctr', label: 'Анализ CTR' },
+  { value: 'click_spam', label: 'Защита от кликспама' }
+];
+
+const languages = [
+  { value: 'en', label: 'English' },
+  { value: 'ru', label: 'Русский' },
+  { value: 'es', label: 'Español' },
+  { value: 'de', label: 'Deutsch' },
+  { value: 'fr', label: 'Français' },
+  { value: 'it', label: 'Italiano' },
+  { value: 'pt', label: 'Português' },
+  { value: 'zh', label: '中文' },
+  { value: 'ja', label: '日本語' },
+  { value: 'ko', label: '한국어' },
+  { value: 'ar', label: 'العربية' },
+  { value: 'hi', label: 'हिन्दी' },
+  { value: 'th', label: 'ไทย' },
+  { value: 'tr', label: 'Türkçe' }
 ];
 
 export default function CreateOffer() {
@@ -151,20 +246,47 @@ export default function CreateOffer() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Валидация
-    if (!formData.name || !formData.description || !formData.category) {
+    // Валидация основных полей
+    if (!formData.name || !formData.category) {
       toast({
         title: 'Заполните обязательные поля',
-        description: 'Название, описание и категория обязательны для заполнения',
+        description: 'Название и категория обязательны для заполнения',
         variant: 'destructive'
       });
       return;
     }
 
-    if (formData.landingPages.length === 0 || !formData.landingPages[0].url) {
+    if (!formData.description.ru && !formData.description.en) {
       toast({
-        title: 'Добавьте лендинг',
-        description: 'Необходимо указать хотя бы одну посадочную страницу',
+        title: 'Добавьте описание',
+        description: 'Необходимо указать описание хотя бы на одном языке',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (!formData.targetUrl) {
+      toast({
+        title: 'Укажите целевую ссылку',
+        description: 'Целевая ссылка (offer link) обязательна для заполнения',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (formData.payoutAmount <= 0) {
+      toast({
+        title: 'Укажите размер выплаты',
+        description: 'Размер выплаты должен быть больше нуля',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (formData.geoTargeting.length === 0) {
+      toast({
+        title: 'Выберите гео',
+        description: 'Необходимо выбрать хотя бы одну страну',
         variant: 'destructive'
       });
       return;
@@ -229,6 +351,68 @@ export default function CreateOffer() {
     }));
   };
 
+  const toggleTrafficSource = (source: string) => {
+    setFormData(prev => ({
+      ...prev,
+      trafficSources: prev.trafficSources.includes(source)
+        ? prev.trafficSources.filter(s => s !== source)
+        : [...prev.trafficSources, source]
+    }));
+  };
+
+  const toggleDeniedSource = (source: string) => {
+    setFormData(prev => ({
+      ...prev,
+      deniedSources: prev.deniedSources.includes(source)
+        ? prev.deniedSources.filter(s => s !== source)
+        : [...prev.deniedSources, source]
+    }));
+  };
+
+  const toggleDevice = (device: string) => {
+    setFormData(prev => ({
+      ...prev,
+      allowedDevices: prev.allowedDevices.includes(device)
+        ? prev.allowedDevices.filter(d => d !== device)
+        : [...prev.allowedDevices, device]
+    }));
+  };
+
+  const toggleOs = (os: string) => {
+    setFormData(prev => ({
+      ...prev,
+      allowedOs: prev.allowedOs.includes(os)
+        ? prev.allowedOs.filter(o => o !== os)
+        : [...prev.allowedOs, os]
+    }));
+  };
+
+  const toggleAntifraudMethod = (method: string) => {
+    setFormData(prev => ({
+      ...prev,
+      antifraudMethods: prev.antifraudMethods.includes(method)
+        ? prev.antifraudMethods.filter(m => m !== method)
+        : [...prev.antifraudMethods, method]
+    }));
+  };
+
+  const addCustomDomain = () => {
+    const domain = prompt('Введите домен (например: track.yourdomain.com):');
+    if (domain && !formData.customDomains.includes(domain)) {
+      setFormData(prev => ({
+        ...prev,
+        customDomains: [...prev.customDomains, domain]
+      }));
+    }
+  };
+
+  const removeCustomDomain = (domain: string) => {
+    setFormData(prev => ({
+      ...prev,
+      customDomains: prev.customDomains.filter(d => d !== domain)
+    }));
+  };
+
   return (
     <RoleBasedLayout>
       <div className="container mx-auto p-6 space-y-6">
@@ -274,26 +458,30 @@ export default function CreateOffer() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="basic" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 Основное
               </TabsTrigger>
-              <TabsTrigger value="targeting" className="flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                Таргетинг
+              <TabsTrigger value="links" className="flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                Ссылки
               </TabsTrigger>
               <TabsTrigger value="payout" className="flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
                 Выплаты
               </TabsTrigger>
-              <TabsTrigger value="tracking" className="flex items-center gap-2">
-                <Target className="h-4 w-4" />
-                Трекинг
+              <TabsTrigger value="targeting" className="flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                Таргетинг
               </TabsTrigger>
-              <TabsTrigger value="creative" className="flex items-center gap-2">
+              <TabsTrigger value="conditions" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Условия
+              </TabsTrigger>
+              <TabsTrigger value="antifraud" className="flex items-center gap-2">
                 <Image className="h-4 w-4" />
-                Креативы
+                Антифрод
               </TabsTrigger>
             </TabsList>
 
@@ -347,34 +535,66 @@ export default function CreateOffer() {
                     </div>
 
                     <div>
-                      <Label htmlFor="currency">Валюта</Label>
-                      <Select value={formData.currency} onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}>
-                        <SelectTrigger data-testid="select-currency">
+                      <Label htmlFor="landingLanguage">Язык лендинга</Label>
+                      <Select value={formData.landingLanguage} onValueChange={(value) => setFormData(prev => ({ ...prev, landingLanguage: value }))}>
+                        <SelectTrigger data-testid="select-landing-language">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="USD">USD - Доллар США</SelectItem>
-                          <SelectItem value="EUR">EUR - Евро</SelectItem>
-                          <SelectItem value="RUB">RUB - Российский рубль</SelectItem>
-                          <SelectItem value="INR">INR - Индийская рупия</SelectItem>
+                          {languages.map(lang => (
+                            <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="description">Описание *</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Подробное описание оффера"
-                      rows={4}
-                      data-testid="textarea-description"
-                    />
+                    <Label>Описание оффера *</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                      <div>
+                        <Label htmlFor="description-ru" className="text-sm text-muted-foreground">На русском</Label>
+                        <Textarea
+                          id="description-ru"
+                          value={formData.description.ru}
+                          onChange={(e) => setFormData(prev => ({ 
+                            ...prev, 
+                            description: { ...prev.description, ru: e.target.value }
+                          }))}
+                          placeholder="Подробное описание оффера на русском языке"
+                          rows={4}
+                          data-testid="textarea-description-ru"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="description-en" className="text-sm text-muted-foreground">На английском</Label>
+                        <Textarea
+                          id="description-en"
+                          value={formData.description.en}
+                          onChange={(e) => setFormData(prev => ({ 
+                            ...prev, 
+                            description: { ...prev.description, en: e.target.value }
+                          }))}
+                          placeholder="Detailed offer description in English"
+                          rows={4}
+                          data-testid="textarea-description-en"
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="logo">Логотип оффера (URL)</Label>
+                      <Input
+                        id="logo"
+                        value={formData.logo}
+                        onChange={(e) => setFormData(prev => ({ ...prev, logo: e.target.value }))}
+                        placeholder="https://example.com/logo.png"
+                        data-testid="input-logo"
+                      />
+                    </div>
+
                     <div>
                       <Label htmlFor="kpi">KPI / Цель</Label>
                       <Input
@@ -385,26 +605,34 @@ export default function CreateOffer() {
                         data-testid="input-kpi"
                       />
                     </div>
+                  </div>
 
-                    <div>
-                      <Label htmlFor="conversionFlow">Воронка конверсии</Label>
-                      <Input
-                        id="conversionFlow"
-                        value={formData.conversionFlow}
-                        onChange={(e) => setFormData(prev => ({ ...prev, conversionFlow: e.target.value }))}
-                        placeholder="Click → Lead → Registration → Deposit"
-                        data-testid="input-conversion-flow"
-                      />
+                  <div>
+                    <Label>Теги</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {formData.tags.map(tag => (
+                        <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => removeTag(tag)}
+                            className="ml-1 text-xs hover:text-red-500"
+                          >
+                            ×
+                          </button>
+                        </Badge>
+                      ))}
                     </div>
-
-                    <div className="flex items-center space-x-2 pt-6">
-                      <Switch
-                        id="isActive"
-                        checked={formData.isActive}
-                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
-                        data-testid="switch-active"
+                    <div className="flex gap-2 mt-2">
+                      <Input
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        placeholder="Добавить тег"
+                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                       />
-                      <Label htmlFor="isActive">Активный оффер</Label>
+                      <Button type="button" onClick={addTag} variant="outline">
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -439,29 +667,38 @@ export default function CreateOffer() {
                   <Separator />
 
                   <div>
-                    <Label>Источники трафика</Label>
+                    <Label>Устройства</Label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                      {trafficSources.map(source => (
-                        <div key={source} className="flex items-center space-x-2">
+                      {deviceTypes.map(device => (
+                        <div key={device.value} className="flex items-center space-x-2">
                           <input
                             type="checkbox"
-                            id={`traffic-${source}`}
-                            checked={formData.restrictions.trafficSources.includes(source)}
-                            onChange={(e) => {
-                              const isChecked = e.target.checked;
-                              setFormData(prev => ({
-                                ...prev,
-                                restrictions: {
-                                  ...prev.restrictions,
-                                  trafficSources: isChecked
-                                    ? [...prev.restrictions.trafficSources, source]
-                                    : prev.restrictions.trafficSources.filter(s => s !== source)
-                                }
-                              }));
-                            }}
+                            id={`device-${device.value}`}
+                            checked={formData.allowedDevices.includes(device.value)}
+                            onChange={() => toggleDevice(device.value)}
                             className="rounded"
                           />
-                          <Label htmlFor={`traffic-${source}`} className="text-sm">{source}</Label>
+                          <Label htmlFor={`device-${device.value}`} className="text-sm">{device.label}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <Label>Операционные системы</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                      {osTypes.map(os => (
+                        <div key={os.value} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`os-${os.value}`}
+                            checked={formData.allowedOs.includes(os.value)}
+                            onChange={() => toggleOs(os.value)}
+                            className="rounded"
+                          />
+                          <Label htmlFor={`os-${os.value}`} className="text-sm">{os.label}</Label>
                         </div>
                       ))}
                     </div>
@@ -480,7 +717,7 @@ export default function CreateOffer() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="payoutType">Тип выплаты</Label>
-                      <Select value={formData.payoutType} onValueChange={(value: 'cpa' | 'cpl' | 'cps' | 'revenue_share') => setFormData(prev => ({ ...prev, payoutType: value }))}>
+                      <Select value={formData.payoutType} onValueChange={(value: 'cpa' | 'cpl' | 'cps' | 'revshare' | 'hybrid') => setFormData(prev => ({ ...prev, payoutType: value }))}>
                         <SelectTrigger data-testid="select-payout-type">
                           <SelectValue />
                         </SelectTrigger>
@@ -488,7 +725,8 @@ export default function CreateOffer() {
                           <SelectItem value="cpa">CPA - Cost Per Action</SelectItem>
                           <SelectItem value="cpl">CPL - Cost Per Lead</SelectItem>
                           <SelectItem value="cps">CPS - Cost Per Sale</SelectItem>
-                          <SelectItem value="revenue_share">Revenue Share</SelectItem>
+                          <SelectItem value="revshare">Revenue Share</SelectItem>
+                          <SelectItem value="hybrid">Hybrid</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -508,26 +746,26 @@ export default function CreateOffer() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="cap">Общий кап</Label>
+                      <Label htmlFor="dailyLimit">Дневной лимит</Label>
                       <Input
-                        id="cap"
+                        id="dailyLimit"
                         type="number"
-                        value={formData.cap}
-                        onChange={(e) => setFormData(prev => ({ ...prev, cap: Number(e.target.value) }))}
+                        value={formData.dailyLimit}
+                        onChange={(e) => setFormData(prev => ({ ...prev, dailyLimit: Number(e.target.value) }))}
                         placeholder="0 - без ограничений"
-                        data-testid="input-cap"
+                        data-testid="input-daily-limit"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="dailyCap">Дневной кап</Label>
+                      <Label htmlFor="monthlyLimit">Месячный лимит</Label>
                       <Input
-                        id="dailyCap"
+                        id="monthlyLimit"
                         type="number"
-                        value={formData.dailyCap}
-                        onChange={(e) => setFormData(prev => ({ ...prev, dailyCap: Number(e.target.value) }))}
+                        value={formData.monthlyLimit}
+                        onChange={(e) => setFormData(prev => ({ ...prev, monthlyLimit: Number(e.target.value) }))}
                         placeholder="0 - без ограничений"
-                        data-testid="input-daily-cap"
+                        data-testid="input-monthly-limit"
                       />
                     </div>
                   </div>
@@ -535,15 +773,99 @@ export default function CreateOffer() {
               </Card>
             </TabsContent>
 
-            {/* Трекинг */}
-            <TabsContent value="tracking" className="space-y-6">
+            {/* Ссылки */}
+            <TabsContent value="links" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Лендинги и трекинг</CardTitle>
+                  <CardTitle>Ссылки и домены</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <Label htmlFor="targetUrl">Целевая ссылка оффера *</Label>
+                      <Input
+                        id="targetUrl"
+                        value={formData.targetUrl}
+                        onChange={(e) => setFormData(prev => ({ ...prev, targetUrl: e.target.value }))}
+                        placeholder="https://example.com/offer"
+                        data-testid="input-target-url"
+                      />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Основная ссылка оффера, куда будут направляться пользователи
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="prelandingUrl">Prelanding URL (опционально)</Label>
+                      <Input
+                        id="prelandingUrl"
+                        value={formData.prelandingUrl}
+                        onChange={(e) => setFormData(prev => ({ ...prev, prelandingUrl: e.target.value }))}
+                        placeholder="https://example.com/prelanding"
+                        data-testid="input-prelanding-url"
+                      />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Промежуточная страница перед основным лендингом
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="postbackUrl">Postback URL</Label>
+                      <Input
+                        id="postbackUrl"
+                        value={formData.postbackUrl}
+                        onChange={(e) => setFormData(prev => ({ ...prev, postbackUrl: e.target.value }))}
+                        placeholder="https://example.com/postback"
+                        data-testid="input-postback-url"
+                      />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        URL для получения уведомлений о конверсиях
+                      </p>
+                    </div>
+                  </div>
+
+                  <Separator />
+
                   <div>
-                    <Label>Посадочные страницы</Label>
+                    <div className="flex items-center space-x-2 mb-4">
+                      <input
+                        type="checkbox"
+                        id="allowCustomDomains"
+                        checked={formData.allowCustomDomains}
+                        onChange={(e) => setFormData(prev => ({ ...prev, allowCustomDomains: e.target.checked }))}
+                        className="rounded"
+                      />
+                      <Label htmlFor="allowCustomDomains">Разрешить использование кастомных доменов</Label>
+                    </div>
+
+                    {formData.allowCustomDomains && (
+                      <div>
+                        <Label>Кастомные домены</Label>
+                        <div className="space-y-2 mt-2">
+                          {formData.customDomains.map((domain, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                              <Input value={domain} readOnly className="flex-1" />
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => removeCustomDomain(domain)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          <Button type="button" onClick={addCustomDomain} variant="outline">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Добавить домен
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label>Лендинги</Label>
                     <div className="space-y-2 mt-2">
                       {formData.landingPages.map((landing, index) => (
                         <div key={landing.id} className="flex items-center gap-2 p-3 border rounded-lg">
@@ -565,116 +887,204 @@ export default function CreateOffer() {
                               checked={landing.isDefault}
                               onChange={(e) => updateLandingPage(landing.id, 'isDefault', e.target.checked)}
                             />
-                            <Label className="text-sm">По умолчанию</Label>
+                            <span className="text-sm">По умолчанию</span>
                           </div>
                           {formData.landingPages.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              onClick={() => removeLandingPage(landing.id)}
-                            >
-                              <Minus className="h-4 w-4" />
+                            <Button type="button" variant="outline" size="sm" onClick={() => removeLandingPage(landing.id)}>
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           )}
                         </div>
                       ))}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={addLandingPage}
-                        className="w-full"
-                      >
+                      <Button type="button" onClick={addLandingPage} variant="outline">
                         <Plus className="h-4 w-4 mr-2" />
                         Добавить лендинг
                       </Button>
                     </div>
                   </div>
-
-                  <div>
-                    <Label htmlFor="postbackUrl">Postback URL</Label>
-                    <Input
-                      id="postbackUrl"
-                      value={formData.postbackUrl}
-                      onChange={(e) => setFormData(prev => ({ ...prev, postbackUrl: e.target.value }))}
-                      placeholder="https://yourserver.com/postback?clickid={clickid}&payout={payout}"
-                      data-testid="input-postback-url"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="requiresApproval"
-                        checked={formData.requiresApproval}
-                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, requiresApproval: checked }))}
-                      />
-                      <Label htmlFor="requiresApproval">Требует одобрения партнера</Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="allowDeeplink"
-                        checked={formData.allowDeeplink}
-                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, allowDeeplink: checked }))}
-                      />
-                      <Label htmlFor="allowDeeplink">Разрешить диплинки</Label>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* Креативы */}
-            <TabsContent value="creative" className="space-y-6">
+            {/* Условия */}
+            <TabsContent value="conditions" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Креативы и материалы</CardTitle>
+                  <CardTitle>Условия работы</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="logo">Логотип (URL)</Label>
-                    <Input
-                      id="logo"
-                      value={formData.logo}
-                      onChange={(e) => setFormData(prev => ({ ...prev, logo: e.target.value }))}
-                      placeholder="https://example.com/logo.png"
-                      data-testid="input-logo"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="partnerApprovalType">Тип подтверждения партнеров</Label>
+                      <Select value={formData.partnerApprovalType} onValueChange={(value: 'auto' | 'manual' | 'invite_only') => setFormData(prev => ({ ...prev, partnerApprovalType: value }))}>
+                        <SelectTrigger data-testid="select-partner-approval">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="auto">Автоматическое подтверждение</SelectItem>
+                          <SelectItem value="manual">Ручное подтверждение</SelectItem>
+                          <SelectItem value="invite_only">Только по приглашениям</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center space-x-2 pt-6">
+                      <input
+                        type="checkbox"
+                        id="kycRequired"
+                        checked={formData.kycRequired}
+                        onChange={(e) => setFormData(prev => ({ ...prev, kycRequired: e.target.checked }))}
+                        className="rounded"
+                      />
+                      <Label htmlFor="kycRequired">Требуется верификация KYC</Label>
+                    </div>
                   </div>
 
                   <div>
-                    <Label>Теги</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {formData.tags.map(tag => (
-                        <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                          {tag}
-                          <button
-                            type="button"
-                            onClick={() => removeTag(tag)}
-                            className="ml-1 text-xs hover:text-red-500"
-                          >
-                            ×
-                          </button>
-                        </Badge>
+                    <Label>Разрешенные источники трафика</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                      {allowedTrafficSources.map(source => (
+                        <div key={source} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`allowed-${source}`}
+                            checked={formData.trafficSources.includes(source)}
+                            onChange={() => toggleTrafficSource(source)}
+                            className="rounded"
+                          />
+                          <Label htmlFor={`allowed-${source}`} className="text-sm">{source}</Label>
+                        </div>
                       ))}
                     </div>
-                    <div className="flex gap-2 mt-2">
-                      <Input
-                        value={newTag}
-                        onChange={(e) => setNewTag(e.target.value)}
-                        placeholder="Добавить тег"
-                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                      />
-                      <Button type="button" onClick={addTag} variant="outline">
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                  </div>
+
+                  <div>
+                    <Label>Запрещенные источники трафика</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                      {deniedTrafficSources.map(source => (
+                        <div key={source} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`denied-${source}`}
+                            checked={formData.deniedSources.includes(source)}
+                            onChange={() => toggleDeniedSource(source)}
+                            className="rounded"
+                          />
+                          <Label htmlFor={`denied-${source}`} className="text-sm">{source}</Label>
+                        </div>
+                      ))}
                     </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="trafficRequirements">Требования к трафику</Label>
+                    <Textarea
+                      id="trafficRequirements"
+                      value={formData.trafficRequirements}
+                      onChange={(e) => setFormData(prev => ({ ...prev, trafficRequirements: e.target.value }))}
+                      placeholder="Дополнительные требования к качеству трафика"
+                      rows={4}
+                      data-testid="textarea-traffic-requirements"
+                    />
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {/* Антифрод */}
+            <TabsContent value="antifraud" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Антифрод защита</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="antifraudEnabled"
+                      checked={formData.antifraudEnabled}
+                      onChange={(e) => setFormData(prev => ({ ...prev, antifraudEnabled: e.target.checked }))}
+                      className="rounded"
+                    />
+                    <Label htmlFor="antifraudEnabled" className="font-medium">Включить антифрод защиту</Label>
+                  </div>
+
+                  {formData.antifraudEnabled && (
+                    <div>
+                      <Label>Методы защиты от мошенничества</Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                        {antifraudMethods.map(method => (
+                          <div key={method.value} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`antifraud-${method.value}`}
+                              checked={formData.antifraudMethods.includes(method.value)}
+                              onChange={() => toggleAntifraudMethod(method.value)}
+                              className="rounded"
+                            />
+                            <Label htmlFor={`antifraud-${method.value}`} className="text-sm">{method.label}</Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="pt-4 border-t">
+                    <Label htmlFor="status">Статус оффера</Label>
+                    <Select value={formData.status} onValueChange={(value: 'draft' | 'active' | 'paused') => setFormData(prev => ({ ...prev, status: value }))}>
+                      <SelectTrigger data-testid="select-status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Черновик</SelectItem>
+                        <SelectItem value="active">Активный</SelectItem>
+                        <SelectItem value="paused">Приостановлен</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+
           </Tabs>
+
+          {/* Кнопки управления */}
+          <div className="flex justify-between items-center pt-6 border-t">
+            <Button 
+              type="button" 
+              variant="outline"
+              onClick={() => setFormData(initialFormData)}
+            >
+              Сбросить
+            </Button>
+            
+            <div className="flex gap-3">
+              <Button 
+                type="button" 
+                variant="outline"
+                onClick={() => {
+                  setFormData(prev => ({ ...prev, status: 'draft' }));
+                  handleSubmit(new Event('submit') as any);
+                }}
+                disabled={createOfferMutation.isPending}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Сохранить как черновик
+              </Button>
+              
+              <Button 
+                type="button"
+                onClick={() => {
+                  setFormData(prev => ({ ...prev, status: 'active' }));
+                  handleSubmit(new Event('submit') as any);
+                }}
+                disabled={createOfferMutation.isPending}
+              >
+                {createOfferMutation.isPending ? 'Создание...' : 'Создать оффер'}
+              </Button>
+            </div>
+          </div>
         </form>
       </div>
     </RoleBasedLayout>

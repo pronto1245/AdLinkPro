@@ -342,19 +342,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/advertiser/offers", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
+      
+      // Prepare offer data with proper field mapping
       const offerData = {
-        ...req.body,
+        name: req.body.name,
+        description: req.body.description, // Already in {ru: "", en: ""} format from frontend
+        category: req.body.category,
+        vertical: req.body.vertical,
+        logo: req.body.logo,
+        
+        // Geo and devices
+        countries: req.body.geoTargeting, // Store selected countries
+        allowedDevices: req.body.allowedDevices,
+        allowedOs: req.body.allowedOs,
+        landingLanguage: req.body.landingLanguage || 'en',
+        
+        // Links
+        targetUrl: req.body.targetUrl,
+        prelandingUrl: req.body.prelandingUrl,
+        postbackUrl: req.body.postbackUrl,
+        landingPages: req.body.landingPages,
+        
+        // Payout
+        payout: req.body.payoutAmount.toString(),
+        payoutType: req.body.payoutType,
+        currency: req.body.currency,
+        
+        // Conditions
+        partnerApprovalType: req.body.partnerApprovalType,
+        trafficSources: req.body.trafficSources,
+        deniedSources: req.body.deniedSources,
+        trafficRequirements: req.body.trafficRequirements,
+        
+        // Limits
+        dailyLimit: req.body.dailyLimit,
+        monthlyLimit: req.body.monthlyLimit,
+        
+        // Antifraud
+        antifraudEnabled: req.body.antifraudEnabled,
+        antifraudMethods: req.body.antifraudMethods,
+        
+        // Additional settings
+        kycRequired: req.body.kycRequired,
+        isPrivate: req.body.isPrivate,
+        customDomains: req.body.allowCustomDomains ? req.body.customDomains : null,
+        
+        // Meta
+        tags: req.body.tags,
+        kpiConditions: req.body.kpi ? { en: req.body.kpi, ru: req.body.kpi } : null,
+        
+        // System fields
         advertiserId: authUser.id,
-        status: 'pending', // New offers go to moderation
+        status: req.body.status === 'active' ? 'active' : 'draft',
         createdAt: new Date(),
         updatedAt: new Date()
       };
       
+      console.log("Creating offer with data:", JSON.stringify(offerData, null, 2));
+      
       const offer = await storage.createOffer(offerData);
+      
+      // Clear cache
+      queryCache.clear();
+      
       res.status(201).json(offer);
     } catch (error) {
       console.error("Create offer error:", error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ 
+        error: "Failed to create offer", 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   });
 
