@@ -587,6 +587,77 @@ export const auditLogs = pgTable("audit_logs", {
   description: text("description"),
 });
 
+// Financial Transactions - Core finance table
+export const financialTransactions = pgTable("financial_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  partnerId: varchar("partner_id").references(() => users.id),
+  offerId: varchar("offer_id").references(() => offers.id),
+  offerName: text("offer_name"), // Cached for performance
+  partnerUsername: text("partner_username"), // Cached for performance
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  currency: text("currency").default('USD'),
+  type: text("type").$type<'payout' | 'commission' | 'refund' | 'bonus' | 'adjustment'>().notNull(),
+  status: text("status").$type<'completed' | 'pending' | 'cancelled' | 'failed'>().default('pending'),
+  period: text("period"), // YYYY-MM format
+  comment: text("comment"),
+  paymentMethod: text("payment_method"), // 'bank', 'crypto', 'paypal', 'wise'
+  txHash: text("tx_hash"), // For crypto transactions
+  bankReference: text("bank_reference"), // For bank transfers
+  details: jsonb("details"), // { leads: number, clicks: number, period: string }
+  processedBy: varchar("processed_by").references(() => users.id),
+  processedAt: timestamp("processed_at"),
+  errorMessage: text("error_message"),
+  retryCount: integer("retry_count").default(0),
+  nextRetryAt: timestamp("next_retry_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Financial Summary Cache - Pre-computed metrics for performance
+export const financialSummaries = pgTable("financial_summaries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  period: text("period").notNull(), // 'daily', 'weekly', 'monthly', 'yearly'
+  periodDate: text("period_date").notNull(), // YYYY-MM-DD format
+  totalExpenses: decimal("total_expenses", { precision: 15, scale: 2 }).default('0.00'),
+  totalRevenue: decimal("total_revenue", { precision: 15, scale: 2 }).default('0.00'),
+  totalPayouts: decimal("total_payouts", { precision: 15, scale: 2 }).default('0.00'),
+  pendingPayouts: decimal("pending_payouts", { precision: 15, scale: 2 }).default('0.00'),
+  avgEPC: decimal("avg_epc", { precision: 10, scale: 4 }).default('0.0000'),
+  avgCR: decimal("avg_cr", { precision: 10, scale: 4 }).default('0.0000'),
+  avgPayout: decimal("avg_payout", { precision: 10, scale: 2 }).default('0.00'),
+  totalTransactions: integer("total_transactions").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Payout Requests - Detailed payout workflow
+export const payoutRequests = pgTable("payout_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  partnerId: varchar("partner_id").notNull().references(() => users.id),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  currency: text("currency").default('USD'),
+  period: text("period").notNull(), // YYYY-MM format
+  comment: text("comment"),
+  paymentMethod: text("payment_method").notNull(),
+  paymentDetails: jsonb("payment_details"), // Bank account, crypto wallet, etc.
+  status: text("status").$type<'draft' | 'pending_approval' | 'approved' | 'processing' | 'completed' | 'failed' | 'cancelled'>().default('draft'),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  processedBy: varchar("processed_by").references(() => users.id),
+  processedAt: timestamp("processed_at"),
+  transactionId: varchar("transaction_id").references(() => financialTransactions.id),
+  failureReason: text("failure_reason"),
+  securityChecksPassed: boolean("security_checks_passed").default(false),
+  fraudScore: integer("fraud_score").default(0),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Fraud Detection Tables
 
 // Fraud Reports - Main fraud incidents table

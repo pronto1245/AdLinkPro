@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 import { 
   insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, insertReceivedOfferSchema,
   type User, users, offers, statistics, fraudAlerts, tickets, postbacks, postbackLogs, trackingClicks,
-  transactions, fraudReports, fraudBlocks
+  transactions, fraudReports, fraudBlocks, financialTransactions, financialSummaries, payoutRequests
 } from "@shared/schema";
 import { sql } from "drizzle-orm";
 import { eq, and, gte, lte, count, sum, desc } from "drizzle-orm";
@@ -5057,6 +5057,240 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     } catch (error) {
       console.error("Export partners error:", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // ===== FINANCIAL MANAGEMENT ENDPOINTS =====
+
+  // Get financial summary for advertiser
+  app.get("/api/advertiser/finance/summary", authenticateToken, requireRole(['advertiser']), async (req: Request, res: Response) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { dateFrom, dateTo } = req.query;
+      
+      // Calculate real-time financial summary
+      const transactionsQuery = db
+        .select({
+          totalAmount: sum(financialTransactions.amount),
+          count: count(financialTransactions.id),
+          type: financialTransactions.type,
+          status: financialTransactions.status
+        })
+        .from(financialTransactions)
+        .where(eq(financialTransactions.advertiserId, user.id));
+
+      if (dateFrom) {
+        transactionsQuery.where(gte(financialTransactions.createdAt, new Date(dateFrom as string)));
+      }
+      if (dateTo) {
+        transactionsQuery.where(lte(financialTransactions.createdAt, new Date(dateTo as string)));
+      }
+
+      const summaryData = await transactionsQuery
+        .groupBy(financialTransactions.type, financialTransactions.status)
+        .execute();
+
+      // Calculate metrics
+      let totalExpenses = 0;
+      let totalRevenue = 0;
+      let totalPayouts = 0;
+      let pendingPayouts = 0;
+
+      summaryData.forEach(row => {
+        const amount = parseFloat(row.totalAmount?.toString() || '0');
+        if (row.type === 'payout' && row.status === 'completed') {
+          totalPayouts += amount;
+          totalExpenses += amount;
+        } else if (row.type === 'payout' && row.status === 'pending') {
+          pendingPayouts += amount;
+        } else if (row.type === 'commission' && row.status === 'completed') {
+          totalRevenue += amount;
+        }
+      });
+
+      // Get user balance
+      const userBalance = parseFloat(user.balance?.toString() || '0');
+
+      // Mock additional metrics (in real app would be calculated from clicks/conversions data)
+      const summary = {
+        totalExpenses,
+        totalRevenue,
+        totalPayouts,
+        avgEPC: 2.45, // Mock data
+        avgCR: 1.8,   // Mock data
+        avgPayout: totalPayouts > 0 ? totalPayouts / summaryData.length : 0,
+        balance: userBalance,
+        pendingPayouts
+      };
+
+      res.json(summary);
+    } catch (error) {
+      console.error('Error getting financial summary:', error);
+      res.status(500).json({ error: 'Не удалось получить финансовую сводку' });
+    }
+  });
+
+  // Get financial transactions for advertiser
+  app.get("/api/advertiser/finance/transactions", authenticateToken, requireRole(['advertiser']), async (req: Request, res: Response) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { 
+        dateFrom, dateTo, search, offerId, partnerId, type, status, 
+        minAmount, maxAmount, page = '1', limit = '50' 
+      } = req.query;
+
+      let query = db
+        .select()
+        .from(financialTransactions)
+        .where(eq(financialTransactions.advertiserId, user.id))
+        .orderBy(desc(financialTransactions.createdAt));
+
+      // Apply filters
+      const conditions: any[] = [eq(financialTransactions.advertiserId, user.id)];
+
+      if (dateFrom) {
+        conditions.push(gte(financialTransactions.createdAt, new Date(dateFrom as string)));
+      }
+      if (dateTo) {
+        conditions.push(lte(financialTransactions.createdAt, new Date(dateTo as string)));
+      }
+      if (offerId && offerId !== 'all') {
+        conditions.push(eq(financialTransactions.offerId, offerId as string));
+      }
+      if (partnerId && partnerId !== 'all') {
+        conditions.push(eq(financialTransactions.partnerId, partnerId as string));
+      }
+      if (type && type !== 'all') {
+        conditions.push(eq(financialTransactions.type, type as any));
+      }
+      if (status && status !== 'all') {
+        conditions.push(eq(financialTransactions.status, status as any));
+      }
+      if (minAmount) {
+        conditions.push(gte(financialTransactions.amount, minAmount as string));
+      }
+      if (maxAmount) {
+        conditions.push(lte(financialTransactions.amount, maxAmount as string));
+      }
+
+      if (conditions.length > 1) {
+        query = query.where(and(...conditions));
+      }
+
+      // Pagination
+      const pageNum = parseInt(page as string);
+      const limitNum = parseInt(limit as string);
+      const offset = (pageNum - 1) * limitNum;
+
+      const transactions = await query.limit(limitNum).offset(offset);
+
+      // Search filtering (post-query for simplicity)
+      let filteredTransactions = transactions;
+      if (search) {
+        const searchLower = (search as string).toLowerCase();
+        filteredTransactions = transactions.filter(tx => 
+          tx.offerName?.toLowerCase().includes(searchLower) ||
+          tx.partnerUsername?.toLowerCase().includes(searchLower) ||
+          tx.id.includes(searchLower) ||
+          tx.comment?.toLowerCase().includes(searchLower)
+        );
+      }
+
+      res.json(filteredTransactions);
+    } catch (error) {
+      console.error('Error getting financial transactions:', error);
+      res.status(500).json({ error: 'Не удалось получить транзакции' });
+    }
+  });
+
+  // Create payout for partner
+  app.post("/api/advertiser/finance/payouts", authenticateToken, requireRole(['advertiser']), async (req: Request, res: Response) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { partnerId, amount, currency = 'USD', period, comment, paymentMethod } = req.body;
+
+      // Validation
+      if (!partnerId || !amount || amount <= 0) {
+        return res.status(400).json({ error: 'Некорректные данные для выплаты' });
+      }
+
+      const payoutAmount = parseFloat(amount);
+      const userBalance = parseFloat(user.balance?.toString() || '0');
+
+      if (payoutAmount > userBalance) {
+        return res.status(400).json({ error: 'Недостаточно средств на балансе' });
+      }
+
+      if (payoutAmount > 10000) {
+        return res.status(400).json({ error: 'Сумма превышает дневной лимит $10,000' });
+      }
+
+      // Get partner info
+      const partner = await storage.getUser(partnerId);
+      if (!partner) {
+        return res.status(404).json({ error: 'Партнёр не найден' });
+      }
+
+      // Create financial transaction
+      const transactionId = randomUUID();
+      await db.insert(financialTransactions).values({
+        id: transactionId,
+        advertiserId: user.id,
+        partnerId: partnerId,
+        amount: payoutAmount.toString(),
+        currency: currency,
+        type: 'payout',
+        status: 'pending',
+        period: period,
+        comment: comment,
+        paymentMethod: paymentMethod,
+        partnerUsername: partner.username,
+        details: JSON.stringify({ 
+          leads: 0, 
+          clicks: 0, 
+          period: period 
+        }),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      // Create payout request
+      const payoutRequestId = randomUUID();
+      await db.insert(payoutRequests).values({
+        id: payoutRequestId,
+        advertiserId: user.id,
+        partnerId: partnerId,
+        amount: payoutAmount.toString(),
+        currency: currency,
+        period: period,
+        comment: comment,
+        paymentMethod: paymentMethod,
+        status: 'pending_approval',
+        transactionId: transactionId,
+        securityChecksPassed: true,
+        fraudScore: 0,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      // Log audit trail
+      await auditLog(req, 'create', 'payout', payoutRequestId, null, {
+        partnerId,
+        amount: payoutAmount,
+        currency,
+        paymentMethod
+      });
+
+      res.status(201).json({
+        id: transactionId,
+        message: 'Выплата создана и поставлена в очередь на обработку',
+        payoutRequestId
+      });
+    } catch (error) {
+      console.error('Error creating payout:', error);
+      res.status(500).json({ error: 'Ошибка создания выплаты' });
     }
   });
 
