@@ -81,7 +81,6 @@ interface Offer {
   leads?: number;
   conversionRate?: number;
   revenue?: number;
-  createdAt: string;
 }
 
 interface Partner {
@@ -671,21 +670,19 @@ export default function MyOffers() {
                                   )}
                                 </div>
                               </TooltipTrigger>
-                              {offer.countries && offer.countries.length > 1 && (
-                                <TooltipContent className="max-w-xs">
-                                  <div className="space-y-1">
-                                    <div className="font-semibold text-xs mb-2">Все гео:</div>
-                                    <div className="grid grid-cols-3 gap-2">
-                                      {offer.countries.map((country, index) => (
-                                        <div key={index} className="flex items-center gap-1 text-xs">
-                                          <span className="text-sm">{getCountryFlag(country)}</span>
-                                          <span className="font-mono">{getCountryCode(country)}</span>
-                                        </div>
-                                      ))}
-                                    </div>
+                              <TooltipContent className="max-w-xs">
+                                <div className="space-y-1">
+                                  <div className="font-semibold text-xs mb-2">Все гео:</div>
+                                  <div className="grid grid-cols-3 gap-2">
+                                    {(offer.countries || ['global']).map((country, index) => (
+                                      <div key={index} className="flex items-center gap-1 text-xs">
+                                        <span className="text-sm">{getCountryFlag(country)}</span>
+                                        <span className="font-mono">{getCountryCode(country)}</span>
+                                      </div>
+                                    ))}
                                   </div>
-                                </TooltipContent>
-                              )}
+                                </div>
+                              </TooltipContent>
                             </Tooltip>
                           </div>
                         </TableCell>
@@ -706,46 +703,44 @@ export default function MyOffers() {
                                   {formatCurrency(parseFloat(offer.payout || '0'), offer.currency)}
                                 </div>
                               </TooltipTrigger>
-                              {((offer.countries && offer.countries.length > 1) || offer.geoPricing) && (
-                                <TooltipContent className="max-w-sm">
-                                  <div className="space-y-2">
-                                    <div className="font-semibold text-xs mb-2">Суммы по гео:</div>
-                                    {offer.geoPricing && typeof offer.geoPricing === 'object' ? (
-                                      <div className="space-y-1">
-                                        {Object.entries(offer.geoPricing).map(([country, pricing]: [string, any]) => (
-                                          <div key={country} className="flex items-center justify-between gap-2 text-xs">
-                                            <div className="flex items-center gap-1">
-                                              <span className="text-sm">{getCountryFlag(country)}</span>
-                                              <span className="font-mono">{getCountryCode(country)}</span>
-                                            </div>
-                                            <div className="font-semibold text-green-600">
-                                              {formatCurrency(parseFloat(pricing.payout || pricing.amount || '0'), pricing.currency || offer.currency)}
-                                            </div>
+                              <TooltipContent className="max-w-sm">
+                                <div className="space-y-2">
+                                  <div className="font-semibold text-xs mb-2">Суммы по гео:</div>
+                                  {offer.geoPricing && typeof offer.geoPricing === 'object' ? (
+                                    <div className="space-y-1">
+                                      {Object.entries(offer.geoPricing).map(([country, pricing]: [string, any]) => (
+                                        <div key={country} className="flex items-center justify-between gap-2 text-xs">
+                                          <div className="flex items-center gap-1">
+                                            <span className="text-sm">{getCountryFlag(country)}</span>
+                                            <span className="font-mono">{getCountryCode(country)}</span>
                                           </div>
-                                        ))}
-                                      </div>
-                                    ) : offer.countries && offer.countries.length > 1 ? (
-                                      <div className="space-y-1">
-                                        {offer.countries.map((country, index) => (
-                                          <div key={index} className="flex items-center justify-between gap-2 text-xs">
-                                            <div className="flex items-center gap-1">
-                                              <span className="text-sm">{getCountryFlag(country)}</span>
-                                              <span className="font-mono">{getCountryCode(country)}</span>
-                                            </div>
-                                            <div className="font-semibold text-green-600">
-                                              {formatCurrency(parseFloat(offer.payout || '0'), offer.currency)}
-                                            </div>
+                                          <div className="font-semibold text-green-600">
+                                            {formatCurrency(parseFloat(pricing.payout || pricing.amount || '0'), pricing.currency || offer.currency)}
                                           </div>
-                                        ))}
-                                      </div>
-                                    ) : (
-                                      <div className="text-xs text-muted-foreground">
-                                        Базовая ставка для всех гео
-                                      </div>
-                                    )}
-                                  </div>
-                                </TooltipContent>
-                              )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : offer.countries && offer.countries.length > 1 ? (
+                                    <div className="space-y-1">
+                                      {offer.countries.map((country, index) => (
+                                        <div key={index} className="flex items-center justify-between gap-2 text-xs">
+                                          <div className="flex items-center gap-1">
+                                            <span className="text-sm">{getCountryFlag(country)}</span>
+                                            <span className="font-mono">{getCountryCode(country)}</span>
+                                          </div>
+                                          <div className="font-semibold text-green-600">
+                                            {formatCurrency(parseFloat(offer.payout || '0'), offer.currency)}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-muted-foreground">
+                                      Базовая ставка: {formatCurrency(parseFloat(offer.payout || '0'), offer.currency)}
+                                    </div>
+                                  )}
+                                </div>
+                              </TooltipContent>
                             </Tooltip>
                           </div>
                         </TableCell>
