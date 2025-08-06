@@ -66,6 +66,7 @@ interface Offer {
   category: string;
   payout: string;
   currency: string;
+  countries?: string[];
   partnersCount?: number;
   clicks?: number;
   leads?: number;
@@ -253,6 +254,69 @@ export default function MyOffers() {
       newExpanded.add(offerId);
     }
     setExpandedOffers(newExpanded);
+  };
+
+  // Функция получения флага страны по коду
+  const getCountryFlag = (countryCode: string): string => {
+    const countryFlags: Record<string, string> = {
+      'afghanistan': '🇦🇫', 'albania': '🇦🇱', 'algeria': '🇩🇿', 'andorra': '🇦🇩', 'angola': '🇦🇴',
+      'argentina': '🇦🇷', 'armenia': '🇦🇲', 'australia': '🇦🇺', 'austria': '🇦🇹', 'azerbaijan': '🇦🇿',
+      'bahrain': '🇧🇭', 'bangladesh': '🇧🇩', 'belarus': '🇧🇾', 'belgium': '🇧🇪', 'bosnia': '🇧🇦',
+      'brazil': '🇧🇷', 'bulgaria': '🇧🇬', 'cambodia': '🇰🇭', 'canada': '🇨🇦', 'chile': '🇨🇱',
+      'china': '🇨🇳', 'colombia': '🇨🇴', 'croatia': '🇭🇷', 'cyprus': '🇨🇾', 'czech': '🇨🇿',
+      'denmark': '🇩🇰', 'egypt': '🇪🇬', 'estonia': '🇪🇪', 'finland': '🇫🇮', 'france': '🇫🇷',
+      'georgia': '🇬🇪', 'germany': '🇩🇪', 'ghana': '🇬🇭', 'greece': '🇬🇷', 'hungary': '🇭🇺',
+      'iceland': '🇮🇸', 'india': '🇮🇳', 'indonesia': '🇮🇩', 'iran': '🇮🇷', 'iraq': '🇮🇶',
+      'ireland': '🇮🇪', 'israel': '🇮🇱', 'italy': '🇮🇹', 'japan': '🇯🇵', 'jordan': '🇯🇴',
+      'kazakhstan': '🇰🇿', 'kenya': '🇰🇪', 'kuwait': '🇰🇼', 'kyrgyzstan': '🇰🇬', 'latvia': '🇱🇻',
+      'lebanon': '🇱🇧', 'lithuania': '🇱🇹', 'luxembourg': '🇱🇺', 'malaysia': '🇲🇾', 'malta': '🇲🇹',
+      'mexico': '🇲🇽', 'moldova': '🇲🇩', 'mongolia': '🇲🇳', 'morocco': '🇲🇦', 'netherlands': '🇳🇱',
+      'norway': '🇳🇴', 'pakistan': '🇵🇰', 'peru': '🇵🇪', 'philippines': '🇵🇭', 'poland': '🇵🇱',
+      'portugal': '🇵🇹', 'qatar': '🇶🇦', 'romania': '🇷🇴', 'russia': '🇷🇺', 'saudi': '🇸🇦',
+      'serbia': '🇷🇸', 'singapore': '🇸🇬', 'slovakia': '🇸🇰', 'slovenia': '🇸🇮', 'south_africa': '🇿🇦',
+      'south_korea': '🇰🇷', 'spain': '🇪🇸', 'sri_lanka': '🇱🇰', 'sweden': '🇸🇪', 'switzerland': '🇨🇭',
+      'thailand': '🇹🇭', 'turkey': '🇹🇷', 'uae': '🇦🇪', 'ukraine': '🇺🇦', 'united_kingdom': '🇬🇧',
+      'usa': '🇺🇸', 'uzbekistan': '🇺🇿', 'vietnam': '🇻🇳'
+    };
+    return countryFlags[countryCode.toLowerCase()] || '🌍';
+  };
+
+  // Функция получения двухбуквенного кода страны
+  const getCountryCode = (countryName: string): string => {
+    const countryCodes: Record<string, string> = {
+      'afghanistan': 'AF', 'albania': 'AL', 'algeria': 'DZ', 'andorra': 'AD', 'angola': 'AO',
+      'argentina': 'AR', 'armenia': 'AM', 'australia': 'AU', 'austria': 'AT', 'azerbaijan': 'AZ',
+      'bahrain': 'BH', 'bangladesh': 'BD', 'belarus': 'BY', 'belgium': 'BE', 'bosnia': 'BA',
+      'brazil': 'BR', 'bulgaria': 'BG', 'cambodia': 'KH', 'canada': 'CA', 'chile': 'CL',
+      'china': 'CN', 'colombia': 'CO', 'croatia': 'HR', 'cyprus': 'CY', 'czech': 'CZ',
+      'denmark': 'DK', 'egypt': 'EG', 'estonia': 'EE', 'finland': 'FI', 'france': 'FR',
+      'georgia': 'GE', 'germany': 'DE', 'ghana': 'GH', 'greece': 'GR', 'hungary': 'HU',
+      'iceland': 'IS', 'india': 'IN', 'indonesia': 'ID', 'iran': 'IR', 'iraq': 'IQ',
+      'ireland': 'IE', 'israel': 'IL', 'italy': 'IT', 'japan': 'JP', 'jordan': 'JO',
+      'kazakhstan': 'KZ', 'kenya': 'KE', 'kuwait': 'KW', 'kyrgyzstan': 'KG', 'latvia': 'LV',
+      'lebanon': 'LB', 'lithuania': 'LT', 'luxembourg': 'LU', 'malaysia': 'MY', 'malta': 'MT',
+      'mexico': 'MX', 'moldova': 'MD', 'mongolia': 'MN', 'morocco': 'MA', 'netherlands': 'NL',
+      'norway': 'NO', 'pakistan': 'PK', 'peru': 'PE', 'philippines': 'PH', 'poland': 'PL',
+      'portugal': 'PT', 'qatar': 'QA', 'romania': 'RO', 'russia': 'RU', 'saudi': 'SA',
+      'serbia': 'RS', 'singapore': 'SG', 'slovakia': 'SK', 'slovenia': 'SI', 'south_africa': 'ZA',
+      'south_korea': 'KR', 'spain': 'ES', 'sri_lanka': 'LK', 'sweden': 'SE', 'switzerland': 'CH',
+      'thailand': 'TH', 'turkey': 'TR', 'uae': 'AE', 'ukraine': 'UA', 'united_kingdom': 'GB',
+      'usa': 'US', 'uzbekistan': 'UZ', 'vietnam': 'VN'
+    };
+    return countryCodes[countryName.toLowerCase()] || 'XX';
+  };
+
+  // Функция получения цвета для типа выплаты
+  const getPayoutTypeColor = (payoutType: string): string => {
+    const colors: Record<string, string> = {
+      'cpa': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
+      'cpl': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
+      'cpc': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
+      'cpm': 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
+      'revshare': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
+      'hybrid': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400'
+    };
+    return colors[payoutType.toLowerCase()] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
   };
 
   // Функция получения badge цвета для статуса
@@ -550,9 +614,42 @@ export default function MyOffers() {
                         </TableCell>
                         
                         <TableCell>
-                          <Badge variant="outline">
-                            {offer.payoutType?.toUpperCase()}
-                          </Badge>
+                          <div className="space-y-2">
+                            {/* Первая строка: Тип выплаты с цветом */}
+                            <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPayoutTypeColor(offer.payoutType || 'cpa')}`}>
+                              {offer.payoutType?.toUpperCase() || 'CPA'}
+                            </div>
+                            
+                            {/* Вторая строка: Гео + Сумма */}
+                            <div className="flex items-center gap-2 text-sm">
+                              {/* Гео с флагами */}
+                              <div className="flex items-center gap-1">
+                                {offer.countries && offer.countries.length > 0 ? (
+                                  <>
+                                    <span className="text-lg">{getCountryFlag(offer.countries[0])}</span>
+                                    <span className="font-mono text-xs text-muted-foreground">
+                                      {getCountryCode(offer.countries[0])}
+                                    </span>
+                                    {offer.countries.length > 1 && (
+                                      <span className="text-xs text-muted-foreground">
+                                        +{offer.countries.length - 1}
+                                      </span>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="text-lg">🌍</span>
+                                    <span className="font-mono text-xs text-muted-foreground">GL</span>
+                                  </>
+                                )}
+                              </div>
+                              
+                              {/* Сумма выплаты */}
+                              <div className="font-semibold text-green-600 dark:text-green-400">
+                                {formatCurrency(parseFloat(offer.payout || '0'), offer.currency)}
+                              </div>
+                            </div>
+                          </div>
                         </TableCell>
                         
                         <TableCell>
