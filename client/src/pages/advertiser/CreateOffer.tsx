@@ -460,7 +460,7 @@ export default function CreateOffer() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger 
                 value="basic" 
                 className="flex items-center gap-2 data-[state=active]:bg-blue-100 dark:data-[state=active]:bg-blue-900 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950"
@@ -477,14 +477,7 @@ export default function CreateOffer() {
                 <Target className="h-4 w-4 text-purple-600" />
                 Ссылки
               </TabsTrigger>
-              <TabsTrigger 
-                value="payout" 
-                className="flex items-center gap-2 data-[state=active]:bg-green-100 dark:data-[state=active]:bg-green-900 data-[state=active]:text-green-700 dark:data-[state=active]:text-green-300 hover:bg-green-50 dark:hover:bg-green-950"
-                title="Настройки выплат"
-              >
-                <DollarSign className="h-4 w-4 text-green-600" />
-                Выплаты
-              </TabsTrigger>
+
               <TabsTrigger 
                 value="targeting" 
                 className="flex items-center gap-2 data-[state=active]:bg-orange-100 dark:data-[state=active]:bg-orange-900 data-[state=active]:text-orange-700 dark:data-[state=active]:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950"
@@ -740,27 +733,7 @@ export default function CreateOffer() {
               </Card>
             </TabsContent>
 
-            {/* Выплаты */}
-            <TabsContent value="payout" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Настройки выплат</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="payoutAmount">Размер выплаты</Label>
-                    <Input
-                      id="payoutAmount"
-                      type="number"
-                      value={formData.payoutAmount}
-                      onChange={(e) => setFormData(prev => ({ ...prev, payoutAmount: Number(e.target.value) }))}
-                      placeholder="0"
-                      data-testid="input-payout-amount"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+
 
             {/* Ссылки */}
             <TabsContent value="links" className="space-y-6">
