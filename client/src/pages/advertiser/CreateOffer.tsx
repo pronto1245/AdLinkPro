@@ -55,6 +55,7 @@ interface OfferFormData {
   partnerApprovalType: 'auto' | 'manual' | 'invite_only';
   trafficSources: string[];
   deniedSources: string[];
+  allowedAppTypes: string[];
   trafficRequirements: string;
   
   // Кепы и лимиты
@@ -107,6 +108,7 @@ const initialFormData: OfferFormData = {
   partnerApprovalType: 'auto',
   trafficSources: [],
   deniedSources: [],
+  allowedAppTypes: [],
   trafficRequirements: '',
   
   // Кепы и лимиты
@@ -166,6 +168,12 @@ const allowedTrafficSources = [
   'WhatsApp', 'Telegram', 'Motivated', 'In-App', 'Cloaking', 
   'Bot', 'Farm', 'Doros', 'APK', 'VK', 'Discord', 'Phishing', 
   'Autoredirect', 'Proxy/VPN', 'Twitter/X'
+];
+
+const allowedAppTypes = [
+  'PWA App', 'WebView App', 'APK', 'iOS App', 'SPA', 'Landing App',
+  'SmartLink App', 'Mini App', 'Desktop App', 'iFrame', 'ZIP',
+  'Cloud App', 'DApp', 'Masked App', 'WebRTC'
 ];
 
 const deniedTrafficSources = [
@@ -693,6 +701,32 @@ export default function CreateOffer() {
                             className="rounded"
                           />
                           <Label htmlFor={`traffic-${source}`} className="text-sm">{source}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <Label>Разрешенные приложения</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                      {allowedAppTypes.map(appType => (
+                        <div key={appType} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`app-${appType}`}
+                            checked={formData.allowedAppTypes?.includes(appType) || false}
+                            onChange={() => {
+                              const currentApps = formData.allowedAppTypes || [];
+                              const newApps = currentApps.includes(appType)
+                                ? currentApps.filter(a => a !== appType)
+                                : [...currentApps, appType];
+                              setFormData(prev => ({ ...prev, allowedAppTypes: newApps }));
+                            }}
+                            className="rounded"
+                          />
+                          <Label htmlFor={`app-${appType}`} className="text-sm">{appType}</Label>
                         </div>
                       ))}
                     </div>
