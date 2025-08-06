@@ -21,14 +21,12 @@ interface OfferFormData {
   name: string;
   description: { ru: string; en: string };
   category: string;
-  vertical: string;
   logo: string;
   
   // GEO и устройства
   geoTargeting: string[];
   allowedDevices: string[];
   allowedOs: string[];
-  landingLanguage: string;
   
   // Ссылки
   targetUrl: string;
@@ -77,14 +75,12 @@ const initialFormData: OfferFormData = {
   name: '',
   description: { ru: '', en: '' },
   category: '',
-  vertical: '',
   logo: '',
   
   // GEO и устройства
   geoTargeting: [],
   allowedDevices: [],
   allowedOs: [],
-  landingLanguage: 'en',
   
   // Ссылки
   targetUrl: '',
@@ -543,35 +539,7 @@ export default function CreateOffer() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="vertical">Вертикаль</Label>
-                      <Select value={formData.vertical} onValueChange={(value) => setFormData(prev => ({ ...prev, vertical: value }))}>
-                        <SelectTrigger data-testid="select-vertical">
-                          <SelectValue placeholder="Выберите вертикаль" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {verticals.map(vert => (
-                            <SelectItem key={vert} value={vert}>{vert}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
 
-                    <div>
-                      <Label htmlFor="landingLanguage">Язык лендинга</Label>
-                      <Select value={formData.landingLanguage} onValueChange={(value) => setFormData(prev => ({ ...prev, landingLanguage: value }))}>
-                        <SelectTrigger data-testid="select-landing-language">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {languages.map(lang => (
-                            <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
 
                   <div>
                     <Label>Описание оффера *</Label>
@@ -609,14 +577,33 @@ export default function CreateOffer() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="logo">Логотип оффера (URL)</Label>
-                      <Input
-                        id="logo"
-                        value={formData.logo}
-                        onChange={(e) => setFormData(prev => ({ ...prev, logo: e.target.value }))}
-                        placeholder="https://example.com/logo.png"
-                        data-testid="input-logo"
-                      />
+                      <Label htmlFor="logo">Логотип оффера</Label>
+                      <div className="mt-2">
+                        <Input
+                          type="file"
+                          id="logo"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              // Создаем URL для предварительного просмотра
+                              const url = URL.createObjectURL(file);
+                              setFormData(prev => ({ ...prev, logo: url }));
+                            }
+                          }}
+                          className="mb-2"
+                          data-testid="input-logo-file"
+                        />
+                        {formData.logo && (
+                          <div className="mt-2">
+                            <img 
+                              src={formData.logo} 
+                              alt="Логотип оффера" 
+                              className="w-16 h-16 object-cover rounded-md border"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div>

@@ -348,14 +348,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: req.body.name,
         description: req.body.description, // Already in {ru: "", en: ""} format from frontend
         category: req.body.category,
-        vertical: req.body.vertical,
         logo: req.body.logo,
         
         // Geo and devices
         countries: req.body.geoTargeting, // Store selected countries
         allowedDevices: req.body.allowedDevices,
         allowedOs: req.body.allowedOs,
-        landingLanguage: req.body.landingLanguage || 'en',
+
         
         // Links (map to existing fields)
         landingPageUrl: req.body.targetUrl,
