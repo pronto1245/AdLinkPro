@@ -54,11 +54,7 @@ interface OfferFormData {
   currency: string;
   
   // Условия
-  partnerApprovalType: 'auto' | 'manual' | 'invite_only';
   trafficSources: string[];
-  deniedSources: string[];
-  allowedAppTypes: string[];
-  trafficRequirements: string;
   
   // Кепы и лимиты
   dailyLimit: number;
@@ -66,16 +62,12 @@ interface OfferFormData {
   
   // Антифрод
   antifraudEnabled: boolean;
-  antifraudMethods: string[];
   
   // Дополнительные настройки
   kycRequired: boolean;
   isPrivate: boolean;
-  allowCustomDomains: boolean;
-  customDomains: string[];
   
   // Мета данные
-  tags: string[];
   kpi: string;
   status: 'draft' | 'active' | 'paused' | 'on_request';
 }
@@ -105,11 +97,7 @@ const initialFormData: OfferFormData = {
   currency: 'USD',
   
   // Условия
-  partnerApprovalType: 'auto',
   trafficSources: [],
-  deniedSources: [],
-  allowedAppTypes: [],
-  trafficRequirements: '',
   
   // Кепы и лимиты
   dailyLimit: 0,
@@ -117,16 +105,12 @@ const initialFormData: OfferFormData = {
   
   // Антифрод
   antifraudEnabled: true,
-  antifraudMethods: [],
   
   // Дополнительные настройки
   kycRequired: false,
   isPrivate: false,
-  allowCustomDomains: false,
-  customDomains: [],
   
   // Мета данные
-  tags: [],
   kpi: '',
   status: 'draft'
 };
@@ -385,7 +369,6 @@ export default function CreateOffer() {
         payoutType: data.payoutType,
         currency: data.currency,
         trafficSources: data.trafficSources,
-        trafficRequirements: data.trafficRequirements,
         dailyLimit: data.dailyLimit || null,
         monthlyLimit: data.monthlyLimit || null,
         antifraudEnabled: data.antifraudEnabled,
@@ -518,22 +501,7 @@ export default function CreateOffer() {
     }));
   };
 
-  const addTag = () => {
-    if (newTag && !formData.tags.includes(newTag)) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, newTag]
-      }));
-      setNewTag('');
-    }
-  };
-
-  const removeTag = (tag: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(t => t !== tag)
-    }));
-  };
+  // Теги удалены из функциональности
 
   const toggleGeoTarget = (countryCode: string) => {
     setFormData(prev => ({
@@ -553,50 +521,13 @@ export default function CreateOffer() {
     }));
   };
 
-  const toggleDeniedSource = (source: string) => {
-    setFormData(prev => ({
-      ...prev,
-      deniedSources: prev.deniedSources.includes(source)
-        ? prev.deniedSources.filter(s => s !== source)
-        : [...prev.deniedSources, source]
-    }));
-  };
+  // Запрещенные источники удалены из функциональности
 
-  // Функции для работы с приложениями
-  const toggleAppType = (appType: string) => {
-    setFormData(prev => ({
-      ...prev,
-      allowedAppTypes: prev.allowedAppTypes.includes(appType)
-        ? prev.allowedAppTypes.filter(a => a !== appType)
-        : [...prev.allowedAppTypes, appType]
-    }));
-  };
+  // Типы приложений удалены из функциональности
 
-  const toggleAntifraudMethod = (method: string) => {
-    setFormData(prev => ({
-      ...prev,
-      antifraudMethods: prev.antifraudMethods.includes(method)
-        ? prev.antifraudMethods.filter(m => m !== method)
-        : [...prev.antifraudMethods, method]
-    }));
-  };
+  // Методы антифрода удалены из функциональности
 
-  const addCustomDomain = () => {
-    const domain = prompt('Введите домен (например: track.yourdomain.com):');
-    if (domain && !formData.customDomains.includes(domain)) {
-      setFormData(prev => ({
-        ...prev,
-        customDomains: [...prev.customDomains, domain]
-      }));
-    }
-  };
-
-  const removeCustomDomain = (domain: string) => {
-    setFormData(prev => ({
-      ...prev,
-      customDomains: prev.customDomains.filter(d => d !== domain)
-    }));
-  };
+  // Кастомные домены удалены из функциональности
 
   return (
     <RoleBasedLayout>
@@ -809,34 +740,7 @@ export default function CreateOffer() {
                     </Select>
                   </div>
 
-                  <div>
-                    <Label>Теги</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {formData.tags.map(tag => (
-                        <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                          {tag}
-                          <button
-                            type="button"
-                            onClick={() => removeTag(tag)}
-                            className="ml-1 text-xs hover:text-red-500"
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      <Input
-                        value={newTag}
-                        onChange={(e) => setNewTag(e.target.value)}
-                        placeholder="Добавить тег"
-                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                      />
-                      <Button type="button" onClick={addTag} variant="outline">
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  {/* Теги удалены из функциональности */}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -874,45 +778,13 @@ export default function CreateOffer() {
 
                   <Separator />
 
-                  <div>
-                    <Label>Разрешенные приложения</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                      {allowedAppTypes.map(appType => (
-                        <div key={appType} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={`app-${appType}`}
-                            checked={formData.allowedAppTypes?.includes(appType) || false}
-                            onChange={() => {
-                              const currentApps = formData.allowedAppTypes || [];
-                              const newApps = currentApps.includes(appType)
-                                ? currentApps.filter(a => a !== appType)
-                                : [...currentApps, appType];
-                              setFormData(prev => ({ ...prev, allowedAppTypes: newApps }));
-                            }}
-                            className="rounded"
-                          />
-                          <Label htmlFor={`app-${appType}`} className="text-sm">{appType}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  {/* Разрешенные приложения удалены из функциональности */}
 
 
 
                   <Separator />
 
-                  <div>
-                    <Label htmlFor="trafficRequirements">Требования к трафику</Label>
-                    <Textarea
-                      id="trafficRequirements"
-                      value={formData.trafficRequirements}
-                      onChange={(e) => setFormData(prev => ({ ...prev, trafficRequirements: e.target.value }))}
-                      placeholder="Дополнительные требования к качеству трафика"
-                      rows={4}
-                      data-testid="textarea-traffic-requirements"
-                    />
-                  </div>
+                  {/* Требования к трафику удалены из функциональности */}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -1116,43 +988,7 @@ export default function CreateOffer() {
 
                   <Separator />
 
-                  <div>
-                    <div className="flex items-center space-x-2 mb-4">
-                      <input
-                        type="checkbox"
-                        id="allowCustomDomains"
-                        checked={formData.allowCustomDomains}
-                        onChange={(e) => setFormData(prev => ({ ...prev, allowCustomDomains: e.target.checked }))}
-                        className="rounded"
-                      />
-                      <Label htmlFor="allowCustomDomains">Разрешить использование кастомных доменов</Label>
-                    </div>
-
-                    {formData.allowCustomDomains && (
-                      <div>
-                        <Label>Кастомные домены</Label>
-                        <div className="space-y-2 mt-2">
-                          {formData.customDomains.map((domain, index) => (
-                            <div key={index} className="flex items-center gap-2">
-                              <Input value={domain} readOnly className="flex-1" />
-                              <Button 
-                                type="button" 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => removeCustomDomain(domain)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-                          <Button type="button" onClick={addCustomDomain} variant="outline">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Добавить домен
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  {/* Кастомные домены удалены из функциональности */}
 
 
                 </CardContent>
@@ -1179,40 +1015,11 @@ export default function CreateOffer() {
                     <Label htmlFor="antifraudEnabled" className="font-medium">Включить антифрод защиту</Label>
                   </div>
 
-                  {formData.antifraudEnabled && (
-                    <div>
-                      <Label>Методы защиты от мошенничества</Label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                        {antifraudMethods.map(method => (
-                          <div key={method.value} className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id={`antifraud-${method.value}`}
-                              checked={formData.antifraudMethods.includes(method.value)}
-                              onChange={() => toggleAntifraudMethod(method.value)}
-                              className="rounded"
-                            />
-                            <Label htmlFor={`antifraud-${method.value}`} className="text-sm">{method.label}</Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  {/* Методы антифрода удалены из функциональности */}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="partnerApprovalType">Тип подтверждения партнеров</Label>
-                      <Select value={formData.partnerApprovalType} onValueChange={(value: 'auto' | 'manual' | 'invite_only') => setFormData(prev => ({ ...prev, partnerApprovalType: value }))}>
-                        <SelectTrigger data-testid="select-partner-approval">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="auto">Автоматическое подтверждение</SelectItem>
-                          <SelectItem value="manual">Ручное подтверждение</SelectItem>
-                          <SelectItem value="invite_only">Только по приглашениям</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {/* Тип подтверждения партнёров удален из функциональности */}
+                    <div></div>
 
                     <div className="flex items-center space-x-2 pt-6">
                       <input

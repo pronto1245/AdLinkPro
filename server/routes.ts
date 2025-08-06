@@ -343,19 +343,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const authUser = getAuthenticatedUser(req);
       
-      // Prepare offer data with proper field mapping
+      // Prepare offer data with proper field mapping based on actual database schema
       const offerData = {
         name: req.body.name,
         description: req.body.description, // Already in {ru: "", en: ""} format from frontend
         category: req.body.category,
         logo: req.body.logo,
         
-        // Geo and devices
-        countries: req.body.countries || [], // Store selected countries
-
+        // Geo and devices (map to existing fields)
+        countries: req.body.countries || [], // Store selected countries as JSONB array
         
         // Links (map to existing fields)
-        landingPageUrl: req.body.targetUrl || req.body.landingPageUrl,
+        landingPageUrl: req.body.landingPageUrl || req.body.targetUrl,
         landingPages: req.body.landingPages,
         
         // Payout
@@ -363,32 +362,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         payoutType: req.body.payoutType,
         currency: req.body.currency,
         
-        // Conditions
-        partnerApprovalType: req.body.partnerApprovalType,
-        trafficSources: req.body.trafficSources,
-        deniedSources: req.body.deniedSources || [],
-        trafficRequirements: req.body.trafficRequirements || '',
+        // Conditions (only fields that exist in DB)
+        trafficSources: req.body.trafficSources || [],
         
         // Limits
-        dailyLimit: req.body.dailyLimit,
-        monthlyLimit: req.body.monthlyLimit,
+        dailyLimit: req.body.dailyLimit || null,
+        monthlyLimit: req.body.monthlyLimit || null,
         
-        // Antifraud
-        antifraudEnabled: req.body.antifraudEnabled,
-        antifraudMethods: req.body.antifraudMethods,
+        // Antifraud (only antifraudEnabled exists in DB)
+        antifraudEnabled: req.body.antifraudEnabled || true,
         
-        // Additional settings
+        // Settings that exist in DB
         kycRequired: req.body.kycRequired || false,
         isPrivate: req.body.isPrivate || false,
+        autoApprovePartners: false, // Default value
         
-        // Meta
+        // Meta (map to existing field)
         kpiConditions: req.body.kpiConditions || null,
         
         // System fields
         advertiserId: authUser.id,
-        status: req.body.status === 'active' ? 'active' : 'draft',
-        createdAt: new Date(),
-        updatedAt: new Date()
+        status: req.body.status === 'active' ? 'active' : 'draft'
       };
       
       console.log("Creating offer with data:", JSON.stringify(offerData, null, 2));
@@ -949,31 +943,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new offer (Advertiser)
-  app.post("/api/advertiser/offers", authenticateToken, requireRole(['advertiser']), async (req, res) => {
-    try {
-      const authUser = getAuthenticatedUser(req);
-      const offerData = req.body;
-      
-      // Validate required fields
-      if (!offerData.name || !offerData.description || !offerData.category) {
-        return res.status(400).json({ error: "Name, description, and category are required" });
-      }
-      
-      // Set advertiser and owner
-      offerData.advertiserId = authUser.id;
-      offerData.ownerId = authUser.ownerId || authUser.id;
-      offerData.isActive = offerData.isActive !== false;
-      offerData.createdAt = new Date();
-      offerData.updatedAt = new Date();
-      
-      const offer = await storage.createOffer(offerData);
-      res.status(201).json(offer);
-    } catch (error) {
-      console.error("Create offer error:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
+  // Дублирующий маршрут удален - используется основной выше
 
   // Get advertiser's tracking domains
   app.get("/api/advertiser/tracking-domains", authenticateToken, requireRole(['advertiser']), async (req, res) => {
