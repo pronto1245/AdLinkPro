@@ -357,10 +357,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         allowedOs: req.body.allowedOs,
         landingLanguage: req.body.landingLanguage || 'en',
         
-        // Links
-        targetUrl: req.body.targetUrl,
-        prelandingUrl: req.body.prelandingUrl,
-        postbackUrl: req.body.postbackUrl,
+        // Links (map to existing fields)
+        landingPageUrl: req.body.targetUrl,
+        previewUrl: req.body.prelandingUrl,
         landingPages: req.body.landingPages,
         
         // Payout

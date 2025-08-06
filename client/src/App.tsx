@@ -43,6 +43,7 @@ import PostbackManagementAffiliate from "@/pages/affiliate/PostbackManagement";
 import AdvertiserDashboardNew from "@/pages/advertiser/AdvertiserDashboard";
 import OfferManagement from "@/pages/advertiser/OfferManagement";
 import CreateOffer from "@/pages/advertiser/CreateOffer";
+import MyOffers from "@/pages/advertiser/MyOffers";
 import PartnerDashboard from "@/pages/affiliate/PartnerDashboard";
 import { useAuth } from "./contexts/auth-context";
 import Login from "@/pages/auth/login";
@@ -232,9 +233,15 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
+      <Route path="/advertiser/offers/create">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <CreateOffer />
+        </ProtectedRoute>
+      </Route>
+      
       <Route path="/advertiser/offers">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <OfferManagement />
+          <MyOffers />
         </ProtectedRoute>
       </Route>
       

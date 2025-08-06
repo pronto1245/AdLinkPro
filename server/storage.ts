@@ -3093,7 +3093,12 @@ export class DatabaseStorage implements IStorage {
 
       // Get advertiser's offers
       const advertiserOffers = await db
-        .select()
+        .select({
+          id: offers.id,
+          name: offers.name,
+          status: offers.status,
+          category: offers.category
+        })
         .from(offers)
         .where(eq(offers.advertiserId, advertiserId));
 
@@ -3540,9 +3545,20 @@ export class DatabaseStorage implements IStorage {
 
   async getAdvertiserOffers(advertiserId: string, filters: any = {}): Promise<any[]> {
     try {
-      // Get offers for this advertiser with basic mock data
+      // Get offers for this advertiser with basic data
       const advertiserOffers = await db
-        .select()
+        .select({
+          id: offers.id,
+          name: offers.name,
+          description: offers.description,
+          category: offers.category,
+          status: offers.status,
+          payout: offers.payout,
+          payoutType: offers.payoutType,
+          currency: offers.currency,
+          createdAt: offers.createdAt,
+          updatedAt: offers.updatedAt
+        })
         .from(offers)
         .where(eq(offers.advertiserId, advertiserId));
 
