@@ -802,73 +802,86 @@ export default function CreateOffer() {
                       <Label htmlFor="targetUrl">Целевая ссылка оффера *</Label>
                       <div className="space-y-2 mt-2">
                         {formData.landingPages.map((landing, index) => (
-                          <div key={landing.id} className="flex items-center gap-2 p-3 border rounded-lg">
-                            <Input
-                              placeholder="Название"
-                              value={landing.name}
-                              onChange={(e) => updateLandingPage(landing.id, 'name', e.target.value)}
-                              className="w-32"
-                            />
-                            <Input
-                              placeholder="URL целевой страницы"
-                              value={landing.url}
-                              onChange={(e) => {
-                                updateLandingPage(landing.id, 'url', e.target.value);
-                                if (landing.isDefault) {
-                                  setFormData(prev => ({ ...prev, targetUrl: e.target.value }));
-                                }
-                              }}
-                              className="flex-1"
-                            />
-                            <div className="flex flex-col space-y-1">
-                              <span className="text-xs text-muted-foreground">Разные ГЕО для URL</span>
-                              <div className="flex items-center space-x-1">
-                                <input
-                                  type="checkbox"
-                                  checked={landing.hasCustomGeo || false}
-                                  onChange={(e) => updateLandingPage(landing.id, 'hasCustomGeo', e.target.checked)}
-                                  className="rounded"
-                                />
-                                <Input
-                                  placeholder="ГЕО"
-                                  value={landing.geo || ''}
-                                  onChange={(e) => updateLandingPage(landing.id, 'geo', e.target.value)}
-                                  className="w-20"
-                                  disabled={!landing.hasCustomGeo}
-                                />
-                              </div>
-                            </div>
-                            <div className="flex flex-col space-y-1">
-                              <span className="text-xs text-muted-foreground">Разные выплаты для URL</span>
-                              <div className="flex items-center space-x-1">
-                                <input
-                                  type="checkbox"
-                                  checked={landing.hasCustomPayout || false}
-                                  onChange={(e) => updateLandingPage(landing.id, 'hasCustomPayout', e.target.checked)}
-                                  className="rounded"
-                                />
-                                <Input
-                                  placeholder="Сумма"
-                                  value={landing.payout || ''}
-                                  onChange={(e) => updateLandingPage(landing.id, 'payout', e.target.value)}
-                                  className="w-24"
-                                  disabled={!landing.hasCustomPayout}
-                                />
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                checked={landing.isDefault}
-                                onChange={(e) => updateLandingPage(landing.id, 'isDefault', e.target.checked)}
+                          <div key={landing.id} className="grid grid-cols-12 gap-3 items-start p-4 border rounded-lg">
+                            <div className="col-span-2">
+                              <Input
+                                placeholder="Название"
+                                value={landing.name}
+                                onChange={(e) => updateLandingPage(landing.id, 'name', e.target.value)}
+                                className="w-full"
                               />
-                              <span className="text-sm">По умолчанию</span>
                             </div>
-                            {formData.landingPages.length > 1 && (
-                              <Button type="button" variant="outline" size="sm" onClick={() => removeLandingPage(landing.id)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
+                            <div className="col-span-4">
+                              <Input
+                                placeholder="URL целевой страницы"
+                                value={landing.url}
+                                onChange={(e) => {
+                                  updateLandingPage(landing.id, 'url', e.target.value);
+                                  if (landing.isDefault) {
+                                    setFormData(prev => ({ ...prev, targetUrl: e.target.value }));
+                                  }
+                                }}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="col-span-2">
+                              <div className="flex flex-col space-y-1">
+                                <span className="text-xs text-muted-foreground">Разные ГЕО для URL</span>
+                                <div className="flex items-center space-x-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={landing.hasCustomGeo || false}
+                                    onChange={(e) => updateLandingPage(landing.id, 'hasCustomGeo', e.target.checked)}
+                                    className="rounded"
+                                  />
+                                  <Input
+                                    placeholder="ГЕО"
+                                    value={landing.geo || ''}
+                                    onChange={(e) => updateLandingPage(landing.id, 'geo', e.target.value)}
+                                    className="w-16"
+                                    disabled={!landing.hasCustomGeo}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <div className="col-span-2">
+                              <div className="flex flex-col space-y-1">
+                                <span className="text-xs text-muted-foreground">Разные выплаты для URL</span>
+                                <div className="flex items-center space-x-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={landing.hasCustomPayout || false}
+                                    onChange={(e) => updateLandingPage(landing.id, 'hasCustomPayout', e.target.checked)}
+                                    className="rounded"
+                                  />
+                                  <Input
+                                    placeholder="Сумма"
+                                    value={landing.payout || ''}
+                                    onChange={(e) => updateLandingPage(landing.id, 'payout', e.target.value)}
+                                    className="w-20"
+                                    disabled={!landing.hasCustomPayout}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <div className="col-span-1 flex items-center justify-center">
+                              <div className="flex flex-col items-center space-y-1">
+                                <span className="text-xs text-muted-foreground">По умолчанию</span>
+                                <input
+                                  type="checkbox"
+                                  checked={landing.isDefault}
+                                  onChange={(e) => updateLandingPage(landing.id, 'isDefault', e.target.checked)}
+                                  className="rounded"
+                                />
+                              </div>
+                            </div>
+                            <div className="col-span-1 flex items-center justify-center">
+                              {formData.landingPages.length > 1 && (
+                                <Button type="button" variant="outline" size="sm" onClick={() => removeLandingPage(landing.id)}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         ))}
                         <Button type="button" onClick={addLandingPage} variant="outline">
