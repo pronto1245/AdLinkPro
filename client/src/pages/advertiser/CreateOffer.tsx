@@ -820,37 +820,41 @@ export default function CreateOffer() {
                               }}
                               className="flex-1"
                             />
-                            <div className="flex items-center space-x-1">
-                              <input
-                                type="checkbox"
-                                checked={landing.hasCustomGeo || false}
-                                onChange={(e) => updateLandingPage(landing.id, 'hasCustomGeo', e.target.checked)}
-                                className="rounded"
-                              />
-                              <Input
-                                placeholder="ГЕО"
-                                value={landing.geo || ''}
-                                onChange={(e) => updateLandingPage(landing.id, 'geo', e.target.value)}
-                                className="w-20"
-                                disabled={!landing.hasCustomGeo}
-                              />
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">Разные ГЕО для URL</span>
+                            <div className="flex flex-col space-y-1">
+                              <span className="text-xs text-muted-foreground">Разные ГЕО для URL</span>
+                              <div className="flex items-center space-x-1">
+                                <input
+                                  type="checkbox"
+                                  checked={landing.hasCustomGeo || false}
+                                  onChange={(e) => updateLandingPage(landing.id, 'hasCustomGeo', e.target.checked)}
+                                  className="rounded"
+                                />
+                                <Input
+                                  placeholder="ГЕО"
+                                  value={landing.geo || ''}
+                                  onChange={(e) => updateLandingPage(landing.id, 'geo', e.target.value)}
+                                  className="w-20"
+                                  disabled={!landing.hasCustomGeo}
+                                />
+                              </div>
                             </div>
-                            <div className="flex items-center space-x-1">
-                              <input
-                                type="checkbox"
-                                checked={landing.hasCustomPayout || false}
-                                onChange={(e) => updateLandingPage(landing.id, 'hasCustomPayout', e.target.checked)}
-                                className="rounded"
-                              />
-                              <Input
-                                placeholder="Сумма"
-                                value={landing.payout || ''}
-                                onChange={(e) => updateLandingPage(landing.id, 'payout', e.target.value)}
-                                className="w-24"
-                                disabled={!landing.hasCustomPayout}
-                              />
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">Разные выплаты для URL</span>
+                            <div className="flex flex-col space-y-1">
+                              <span className="text-xs text-muted-foreground">Разные выплаты для URL</span>
+                              <div className="flex items-center space-x-1">
+                                <input
+                                  type="checkbox"
+                                  checked={landing.hasCustomPayout || false}
+                                  onChange={(e) => updateLandingPage(landing.id, 'hasCustomPayout', e.target.checked)}
+                                  className="rounded"
+                                />
+                                <Input
+                                  placeholder="Сумма"
+                                  value={landing.payout || ''}
+                                  onChange={(e) => updateLandingPage(landing.id, 'payout', e.target.value)}
+                                  className="w-24"
+                                  disabled={!landing.hasCustomPayout}
+                                />
+                              </div>
                             </div>
                             <div className="flex items-center space-x-2">
                               <input
