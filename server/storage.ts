@@ -173,6 +173,17 @@ export interface IStorage {
   updateGlobalPostback(id: string, data: any): Promise<any>;
   testGlobalPostback(id: string): Promise<void>;
   getPostbackLogs(): Promise<any[]>;
+
+  // Profile Management
+  getApiTokens(userId: string): Promise<any[]>;
+  generateApiToken(userId: string, name: string): Promise<any>;
+  deleteApiToken(userId: string, tokenId: string): Promise<void>;
+  getCustomDomains(userId: string): Promise<any[]>;
+  addCustomDomain(userId: string, domain: string, type: string): Promise<any>;
+  verifyCustomDomain(userId: string, domainId: string): Promise<any>;
+  deleteCustomDomain(userId: string, domainId: string): Promise<void>;
+  getWebhookSettings(userId: string): Promise<any>;
+  updateWebhookSettings(userId: string, settings: any): Promise<any>;
   
   // Postback Templates
   getPostbackTemplates(filters: {
@@ -4145,6 +4156,85 @@ class MemStorage implements IStorage {
   async updateBlacklistEntry(): Promise<any> { return {}; }
   async deleteBlacklistEntry(): Promise<void> {}
   async moderateOffer(): Promise<boolean> { return true; }
+
+  // Profile Management Methods
+  async getApiTokens(userId: string): Promise<any[]> {
+    return [
+      {
+        id: '1',
+        name: 'Main API Token',
+        token: 'tk_test_1234567890abcdef',
+        createdAt: '2025-08-01T10:00:00Z',
+        lastUsed: '2025-08-06T15:30:00Z'
+      }
+    ];
+  }
+
+  async generateApiToken(userId: string, name: string): Promise<any> {
+    const token = 'tk_' + randomUUID().replace(/-/g, '').substring(0, 32);
+    return {
+      id: randomUUID(),
+      name,
+      token,
+      createdAt: new Date().toISOString(),
+      lastUsed: null
+    };
+  }
+
+  async deleteApiToken(userId: string, tokenId: string): Promise<void> {
+    // Mock deletion - in real implementation would delete from database
+  }
+
+  async getCustomDomains(userId: string): Promise<any[]> {
+    return [
+      {
+        id: '1',
+        domain: 'track.example.com',
+        type: 'cname',
+        status: 'verified',
+        verificationValue: 'track.platform.com',
+        createdAt: '2025-08-01T10:00:00Z'
+      }
+    ];
+  }
+
+  async addCustomDomain(userId: string, domain: string, type: string): Promise<any> {
+    const verificationValue = type === 'cname' ? 'track.platform.com' : '192.168.1.1';
+    return {
+      id: randomUUID(),
+      domain,
+      type,
+      status: 'pending',
+      verificationValue,
+      createdAt: new Date().toISOString()
+    };
+  }
+
+  async verifyCustomDomain(userId: string, domainId: string): Promise<any> {
+    return {
+      verified: Math.random() > 0.5, // Random success for demo
+      status: 'verified'
+    };
+  }
+
+  async deleteCustomDomain(userId: string, domainId: string): Promise<void> {
+    // Mock deletion - in real implementation would delete from database
+  }
+
+  async getWebhookSettings(userId: string): Promise<any> {
+    return {
+      defaultUrl: 'https://example.com/webhook',
+      ipWhitelist: ['192.168.1.1', '10.0.0.1'],
+      enabled: true
+    };
+  }
+
+  async updateWebhookSettings(userId: string, settings: any): Promise<any> {
+    return {
+      ...settings,
+      updatedAt: new Date().toISOString()
+    };
+  }
 }
 
 // Use DatabaseStorage for persistent data
