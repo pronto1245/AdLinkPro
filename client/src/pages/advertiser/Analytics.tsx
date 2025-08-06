@@ -133,12 +133,12 @@ export default function Analytics() {
     dateFrom: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 дней назад
     dateTo: new Date().toISOString().split('T')[0], // сегодня
     search: '',
-    offerId: '',
-    partnerId: '',
-    geo: '',
-    device: '',
-    trafficSource: '',
-    fraudFilter: '',
+    offerId: 'all',
+    partnerId: 'all',
+    geo: 'all',
+    device: 'all',
+    trafficSource: 'all',
+    fraudFilter: 'all',
     subId: '',
     clickId: ''
   });
@@ -259,11 +259,11 @@ export default function Analytics() {
           !record.partnerUsername.toLowerCase().includes(filters.search.toLowerCase())) {
         return false;
       }
-      if (filters.offerId && record.offerId !== filters.offerId) return false;
-      if (filters.partnerId && record.partnerId !== filters.partnerId) return false;
-      if (filters.geo && record.geo !== filters.geo) return false;
-      if (filters.device && record.device !== filters.device) return false;
-      if (filters.trafficSource && record.trafficSource !== filters.trafficSource) return false;
+      if (filters.offerId && filters.offerId !== 'all' && record.offerId !== filters.offerId) return false;
+      if (filters.partnerId && filters.partnerId !== 'all' && record.partnerId !== filters.partnerId) return false;
+      if (filters.geo && filters.geo !== 'all' && record.geo !== filters.geo) return false;
+      if (filters.device && filters.device !== 'all' && record.device !== filters.device) return false;
+      if (filters.trafficSource && filters.trafficSource !== 'all' && record.trafficSource !== filters.trafficSource) return false;
       if (filters.subId && !record.subId.includes(filters.subId)) return false;
       if (filters.clickId && !record.clickId.includes(filters.clickId)) return false;
       if (filters.fraudFilter === 'fraud' && record.fraudClicks === 0) return false;
@@ -339,12 +339,12 @@ export default function Analytics() {
       dateFrom: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       dateTo: new Date().toISOString().split('T')[0],
       search: '',
-      offerId: '',
-      partnerId: '',
-      geo: '',
-      device: '',
-      trafficSource: '',
-      fraudFilter: '',
+      offerId: 'all',
+      partnerId: 'all',
+      geo: 'all',
+      device: 'all',
+      trafficSource: 'all',
+      fraudFilter: 'all',
       subId: '',
       clickId: ''
     });
@@ -491,7 +491,7 @@ export default function Analytics() {
                   <SelectValue placeholder="Оффер" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все офферы</SelectItem>
+                  <SelectItem value="all">Все офферы</SelectItem>
                   {offers.map((offer: any) => (
                     <SelectItem key={offer.id} value={offer.id}>
                       {offer.name}
@@ -506,7 +506,7 @@ export default function Analytics() {
                   <SelectValue placeholder="Партнёр" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все партнёры</SelectItem>
+                  <SelectItem value="all">Все партнёры</SelectItem>
                   {partners.map((partner: any) => (
                     <SelectItem key={partner.id} value={partner.id}>
                       {partner.username}
@@ -524,7 +524,7 @@ export default function Analytics() {
                   <SelectValue placeholder="GEO" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все страны</SelectItem>
+                  <SelectItem value="all">Все страны</SelectItem>
                   <SelectItem value="US">США</SelectItem>
                   <SelectItem value="GB">Великобритания</SelectItem>
                   <SelectItem value="DE">Германия</SelectItem>
@@ -540,7 +540,7 @@ export default function Analytics() {
                   <SelectValue placeholder="Устройство" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все устройства</SelectItem>
+                  <SelectItem value="all">Все устройства</SelectItem>
                   <SelectItem value="Desktop">Desktop</SelectItem>
                   <SelectItem value="Mobile">Mobile</SelectItem>
                   <SelectItem value="Tablet">Tablet</SelectItem>
@@ -553,7 +553,7 @@ export default function Analytics() {
                   <SelectValue placeholder="Источник" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все источники</SelectItem>
+                  <SelectItem value="all">Все источники</SelectItem>
                   <SelectItem value="push">Push</SelectItem>
                   <SelectItem value="pop">Pop</SelectItem>
                   <SelectItem value="native">Native</SelectItem>
@@ -569,7 +569,7 @@ export default function Analytics() {
                   <SelectValue placeholder="Фрод/Боты" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все данные</SelectItem>
+                  <SelectItem value="all">Все данные</SelectItem>
                   <SelectItem value="fraud">Только фрод</SelectItem>
                   <SelectItem value="bot">Только боты</SelectItem>
                 </SelectContent>
