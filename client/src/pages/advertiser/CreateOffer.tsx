@@ -242,7 +242,9 @@ export default function CreateOffer() {
         countries: data.geoTargeting,
         landingPageUrl: data.targetUrl,
         landingPages: data.landingPages,
-        payout: data.payoutAmount.toString(),
+        payout: data.hasGlobalPayoutSetting 
+          ? (data.landingPages.find(lp => lp.isDefault)?.payout || data.landingPages[0]?.payout || '0')
+          : (data.globalPayout || '0'),
         payoutType: data.payoutType,
         currency: data.currency,
         partnerApprovalType: data.partnerApprovalType,
@@ -310,7 +312,12 @@ export default function CreateOffer() {
       return;
     }
 
-    if (formData.payoutAmount <= 0) {
+    // Проверяем выплаты в landing pages
+    const hasValidPayout = formData.hasGlobalPayoutSetting 
+      ? formData.landingPages.some(lp => parseFloat(lp.payout || '0') > 0)
+      : parseFloat(formData.globalPayout || '0') > 0;
+    
+    if (!hasValidPayout) {
       toast({
         title: 'Укажите размер выплаты',
         description: 'Размер выплаты должен быть больше нуля',
