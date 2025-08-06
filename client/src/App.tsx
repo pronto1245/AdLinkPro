@@ -45,6 +45,7 @@ import OfferManagement from "@/pages/advertiser/OfferManagement";
 import CreateOffer from "@/pages/advertiser/CreateOffer";
 import MyOffers from "@/pages/advertiser/MyOffers";
 import ReceivedOffers from "@/pages/advertiser/ReceivedOffers";
+import Analytics from "@/pages/advertiser/Analytics";
 import PartnerDashboard from "@/pages/affiliate/PartnerDashboard";
 import { useAuth } from "./contexts/auth-context";
 import Login from "@/pages/auth/login";
@@ -245,6 +246,12 @@ function Router() {
       <Route path="/advertiser/received-offers">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <ReceivedOffers />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/analytics">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <Analytics />
         </ProtectedRoute>
       </Route>
       

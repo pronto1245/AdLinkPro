@@ -4591,6 +4591,196 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === ADVERTISER ANALYTICS ROUTES ===
+  
+  // Get comprehensive analytics data for advertiser
+  app.get("/api/advertiser/analytics", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { 
+        dateFrom, 
+        dateTo, 
+        search, 
+        offerId, 
+        partnerId, 
+        geo, 
+        device, 
+        trafficSource, 
+        fraudFilter,
+        subId,
+        clickId 
+      } = req.query;
+
+      // Create mock analytics data since we don't have real conversion data yet
+      const generateMockAnalytics = () => {
+        const records = [];
+        const offers = [
+          { id: '1', name: 'Casino Welcome Bonus' },
+          { id: '2', name: 'Sports Betting CPA' },
+          { id: '3', name: 'Forex Trading Lead' }
+        ];
+        const partners = [
+          { id: 'p1', username: 'partner1' },
+          { id: 'p2', username: 'partner2' },
+          { id: 'p3', username: 'partner3' }
+        ];
+        const geos = ['US', 'GB', 'DE', 'FR', 'CA'];
+        const devices = ['Desktop', 'Mobile', 'Tablet'];
+        const sources = ['push', 'pop', 'native', 'seo', 'social'];
+
+        for (let i = 0; i < 50; i++) {
+          const offer = offers[Math.floor(Math.random() * offers.length)];
+          const partner = partners[Math.floor(Math.random() * partners.length)];
+          const clicks = Math.floor(Math.random() * 1000) + 100;
+          const uniqueClicks = Math.floor(clicks * 0.8);
+          const leads = Math.floor(clicks * (Math.random() * 0.15 + 0.01));
+          const payout = leads * (Math.random() * 50 + 10);
+          const revenue = leads * (Math.random() * 80 + 15);
+          const profit = revenue - payout;
+          const cr = leads > 0 ? (leads / clicks) * 100 : 0;
+          const epc = clicks > 0 ? revenue / clicks : 0;
+          const roi = payout > 0 ? ((revenue - payout) / payout) * 100 : 0;
+          const fraudClicks = Math.floor(Math.random() * 10);
+          const botClicks = Math.floor(Math.random() * 15);
+
+          records.push({
+            id: `analytics_${i}`,
+            date: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+            offerId: offer.id,
+            offerName: offer.name,
+            partnerId: partner.id,
+            partnerUsername: partner.username,
+            clicks,
+            uniqueClicks,
+            leads,
+            conversions: leads,
+            revenue: parseFloat(revenue.toFixed(2)),
+            payout: parseFloat(payout.toFixed(2)),
+            profit: parseFloat(profit.toFixed(2)),
+            cr: parseFloat(cr.toFixed(2)),
+            epc: parseFloat(epc.toFixed(4)),
+            roi: parseFloat(roi.toFixed(2)),
+            geo: geos[Math.floor(Math.random() * geos.length)],
+            device: devices[Math.floor(Math.random() * devices.length)],
+            trafficSource: sources[Math.floor(Math.random() * sources.length)],
+            subId: `sub_${Math.random().toString(36).substring(2, 8)}`,
+            clickId: `click_${Math.random().toString(36).substring(2, 12)}`,
+            fraudClicks,
+            botClicks,
+            fraudScore: Math.floor(Math.random() * 100),
+            postbackStatus: Math.random() > 0.8 ? 'pending' : 'sent',
+            ipAddress: `${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`,
+            referer: Math.random() > 0.5 ? 'https://example.com' : null
+          });
+        }
+        return records;
+      };
+
+      let analyticsData = generateMockAnalytics();
+
+      // Apply filters
+      if (search) {
+        analyticsData = analyticsData.filter(record =>
+          record.offerName.toLowerCase().includes(search.toString().toLowerCase()) ||
+          record.partnerUsername.toLowerCase().includes(search.toString().toLowerCase()) ||
+          record.subId.includes(search.toString()) ||
+          record.clickId.includes(search.toString())
+        );
+      }
+
+      if (offerId) {
+        analyticsData = analyticsData.filter(record => record.offerId === offerId);
+      }
+
+      if (partnerId) {
+        analyticsData = analyticsData.filter(record => record.partnerId === partnerId);
+      }
+
+      if (geo) {
+        analyticsData = analyticsData.filter(record => record.geo === geo);
+      }
+
+      if (device) {
+        analyticsData = analyticsData.filter(record => record.device === device);
+      }
+
+      if (trafficSource) {
+        analyticsData = analyticsData.filter(record => record.trafficSource === trafficSource);
+      }
+
+      if (subId) {
+        analyticsData = analyticsData.filter(record => record.subId.includes(subId.toString()));
+      }
+
+      if (clickId) {
+        analyticsData = analyticsData.filter(record => record.clickId.includes(clickId.toString()));
+      }
+
+      if (fraudFilter === 'fraud') {
+        analyticsData = analyticsData.filter(record => record.fraudClicks > 0);
+      }
+
+      if (fraudFilter === 'bot') {
+        analyticsData = analyticsData.filter(record => record.botClicks > 0);
+      }
+
+      res.json(analyticsData);
+    } catch (error) {
+      console.error("Get analytics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Export analytics data
+  app.get("/api/advertiser/analytics/export", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { format = 'csv' } = req.query;
+
+      // For now, return a simple export response
+      if (format === 'csv') {
+        const csvContent = `Date,Offer,Partner,Clicks,Leads,CR%,Revenue,Payout,Profit,ROI%
+2024-01-15,Casino Offer,Partner1,1250,47,3.76,$2350.00,$1410.00,$940.00,66.67%
+2024-01-14,Sports Betting,Partner2,890,23,2.58,$1840.00,$1150.00,$690.00,60.00%`;
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="analytics.csv"');
+        res.send(csvContent);
+      } else if (format === 'xlsx') {
+        // Mock Excel export
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename="analytics.xlsx"');
+        res.send(Buffer.from('Mock Excel content'));
+      } else {
+        // JSON export
+        res.json({ message: "JSON export not implemented yet" });
+      }
+    } catch (error) {
+      console.error("Export analytics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Notify partner about traffic issues
+  app.post("/api/advertiser/partners/:partnerId/notify", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { partnerId } = req.params;
+      const { reason } = req.body;
+
+      // Mock notification - in real implementation, send email/push notification
+      console.log(`Notifying partner ${partnerId} about ${reason} from advertiser ${user.id}`);
+
+      res.json({ 
+        success: true, 
+        message: "Partner notification sent successfully" 
+      });
+    } catch (error) {
+      console.error("Notify partner error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

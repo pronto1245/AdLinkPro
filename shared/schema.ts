@@ -840,6 +840,87 @@ export const trafficSources = pgTable("traffic_sources", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Advanced analytics and statistics aggregation
+export const analyticsData = pgTable("analytics_data", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  offerId: varchar("offer_id").references(() => offers.id),
+  partnerId: varchar("partner_id").references(() => users.id),
+  date: timestamp("date").notNull(),
+  
+  // Core metrics
+  clicks: integer("clicks").default(0),
+  uniqueClicks: integer("unique_clicks").default(0),
+  leads: integer("leads").default(0),
+  conversions: integer("conversions").default(0),
+  
+  // Financial metrics  
+  revenue: decimal("revenue", { precision: 15, scale: 2 }).default('0.00'),
+  payout: decimal("payout", { precision: 15, scale: 2 }).default('0.00'),
+  profit: decimal("profit", { precision: 15, scale: 2 }).default('0.00'),
+  
+  // Performance metrics
+  cr: decimal("cr", { precision: 5, scale: 2 }).default('0.00'), // Conversion Rate
+  epc: decimal("epc", { precision: 8, scale: 2 }).default('0.00'), // Earnings Per Click
+  roi: decimal("roi", { precision: 5, scale: 2 }).default('0.00'), // Return on Investment
+  
+  // Additional data  
+  geo: text("geo"),
+  device: text("device"),
+  trafficSource: text("traffic_source"),
+  subId: text("sub_id"),
+  clickId: text("click_id"),
+  
+  // Fraud detection
+  fraudClicks: integer("fraud_clicks").default(0),
+  botClicks: integer("bot_clicks").default(0),
+  fraudScore: integer("fraud_score").default(0),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Click tracking and conversion data
+export const conversionData = pgTable("conversion_data", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clickId: text("click_id").notNull().unique(),
+  subId: text("sub_id"),
+  
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  offerId: varchar("offer_id").notNull().references(() => offers.id),
+  partnerId: varchar("partner_id").notNull().references(() => users.id),
+  
+  // Click data
+  clickTime: timestamp("click_time").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  referer: text("referer"),
+  
+  // Location and device
+  country: text("country"),
+  city: text("city"),
+  device: text("device"),
+  os: text("os"),
+  browser: text("browser"),
+  
+  // Conversion data
+  isConverted: boolean("is_converted").default(false),
+  conversionTime: timestamp("conversion_time"),
+  conversionValue: decimal("conversion_value", { precision: 10, scale: 2 }),
+  
+  // Fraud flags
+  isFraud: boolean("is_fraud").default(false),
+  isBot: boolean("is_bot").default(false),
+  fraudReason: text("fraud_reason"),
+  
+  // Postback tracking
+  postbackSent: boolean("postback_sent").default(false),
+  postbackTime: timestamp("postback_time"),
+  postbackStatus: text("postback_status"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Новые таблицы будут добавлены после исправления дублирования
 
 // Relations
@@ -1321,6 +1402,16 @@ export type InsertTrackingClick = z.infer<typeof insertTrackingClickSchema>;
 export type TrackingClick = typeof trackingClicks.$inferSelect;
 export type InsertReceivedOffer = z.infer<typeof insertReceivedOfferSchema>;
 export type ReceivedOffer = typeof receivedOffers.$inferSelect;
+
+// Analytics data schemas
+export const insertAnalyticsDataSchema = createInsertSchema(analyticsData);
+export type InsertAnalyticsData = z.infer<typeof insertAnalyticsDataSchema>;
+export type AnalyticsData = typeof analyticsData.$inferSelect;
+
+// Conversion data schemas  
+export const insertConversionDataSchema = createInsertSchema(conversionData);
+export type InsertConversionData = z.infer<typeof insertConversionDataSchema>;
+export type ConversionData = typeof conversionData.$inferSelect;
 
 export const insertCustomRoleSchema = createInsertSchema(customRoles).omit({
   id: true,
