@@ -5295,9 +5295,15 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   });
 
   // Team Management Routes for Advertisers
-  app.post("/api/advertiser/team/invite", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+  app.post("/api/advertiser/team/invite", authenticateToken, async (req, res) => {
     try {
-      const authUser = getAuthenticatedUser(req);
+      const authUser = req.user as any;
+      
+      // Проверяем роль пользователя
+      if (authUser.role !== 'advertiser') {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
       const { email, role } = req.body;
       
       // Validate email format
@@ -5324,29 +5330,102 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
-  app.get("/api/advertiser/team/members", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+  app.get("/api/advertiser/team/members", authenticateToken, async (req, res) => {
     try {
-      const authUser = getAuthenticatedUser(req);
+      const authUser = req.user as any;
       
-      // Get team members for this advertiser
-      const teamMembers = await db.query.users.findMany({
-        where: and(
-          eq(users.ownerId, authUser.id),
-          eq(users.userType, 'team_member')
-        ),
-        orderBy: desc(users.createdAt)
-      });
+      // Логируем для отладки
+      console.log('Team members request - User role:', authUser.role, 'User ID:', authUser.id);
       
-      res.json(teamMembers);
+      // Проверяем роль пользователя
+      if (authUser.role !== 'advertiser') {
+        console.log('Access denied - not advertiser role:', authUser.role);
+        return res.status(403).json({ error: "Access denied - not advertiser role" });
+      }
+      
+      // Mock данные для демонстрации - в реальном приложении здесь будет запрос к базе данных
+      const mockTeamMembers = [
+        {
+          id: 'member_1',
+          username: 'ivan_petrov',
+          email: 'ivan@example.com',
+          firstName: 'Иван',
+          lastName: 'Петров',
+          role: 'manager',
+          status: 'active',
+          permissions: {
+            manageOffers: true,
+            managePartners: true,
+            viewStatistics: true,
+            financialOperations: false,
+            postbacksApi: false
+          },
+          restrictions: {
+            ipWhitelist: ['192.168.1.100'],
+            geoRestrictions: ['RU'],
+            timeRestrictions: {
+              enabled: true,
+              startTime: '09:00',
+              endTime: '18:00',
+              timezone: 'UTC+3',
+              workingDays: [1, 2, 3, 4, 5]
+            }
+          },
+          telegramNotifications: true,
+          telegramUserId: '123456789',
+          lastActivity: new Date(Date.now() - 3600000).toISOString(),
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+          createdBy: authUser.id
+        },
+        {
+          id: 'member_2',
+          username: 'maria_sidorova',
+          email: 'maria@example.com',
+          firstName: 'Мария',
+          lastName: 'Сидорова',
+          role: 'analyst',
+          status: 'active',
+          permissions: {
+            manageOffers: false,
+            managePartners: false,
+            viewStatistics: true,
+            financialOperations: false,
+            postbacksApi: false
+          },
+          restrictions: {
+            ipWhitelist: [],
+            geoRestrictions: [],
+            timeRestrictions: {
+              enabled: false,
+              startTime: '09:00',
+              endTime: '18:00',
+              timezone: 'UTC+3',
+              workingDays: [1, 2, 3, 4, 5]
+            }
+          },
+          telegramNotifications: false,
+          lastActivity: new Date(Date.now() - 7200000).toISOString(),
+          createdAt: new Date(Date.now() - 172800000).toISOString(),
+          createdBy: authUser.id
+        }
+      ];
+      
+      res.json(mockTeamMembers);
     } catch (error) {
       console.error("Get team members error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
 
-  app.post("/api/advertiser/team/members", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+  app.post("/api/advertiser/team/members", authenticateToken, async (req, res) => {
     try {
-      const authUser = getAuthenticatedUser(req);
+      const authUser = req.user as any;
+      
+      // Проверяем роль пользователя
+      if (authUser.role !== 'advertiser') {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
       const { username, email, firstName, lastName, role, permissions, restrictions, telegramNotifications, telegramUserId } = req.body;
       
       // Validate required fields
@@ -5397,9 +5476,15 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
-  app.patch("/api/advertiser/team/members/:id", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+  app.patch("/api/advertiser/team/members/:id", authenticateToken, async (req, res) => {
     try {
-      const authUser = getAuthenticatedUser(req);
+      const authUser = req.user as any;
+      
+      // Проверяем роль пользователя
+      if (authUser.role !== 'advertiser') {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
       const { id } = req.params;
       const updateData = req.body;
       
@@ -5433,9 +5518,15 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
-  app.delete("/api/advertiser/team/members/:id", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+  app.delete("/api/advertiser/team/members/:id", authenticateToken, async (req, res) => {
     try {
-      const authUser = getAuthenticatedUser(req);
+      const authUser = req.user as any;
+      
+      // Проверяем роль пользователя
+      if (authUser.role !== 'advertiser') {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
       const { id } = req.params;
       
       // Check if team member exists and belongs to this advertiser
@@ -5467,11 +5558,20 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
-  app.get("/api/advertiser/team/activity-logs", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+  app.get("/api/advertiser/team/activity-logs", authenticateToken, async (req, res) => {
     try {
-      const authUser = getAuthenticatedUser(req);
+      const authUser = req.user as any;
       
-      // Mock data for now - in real implementation this would fetch from audit_logs table
+      // Логируем для отладки activity logs
+      console.log('Activity logs request - User role:', authUser.role, 'User ID:', authUser.id);
+      
+      // Проверяем роль пользователя для логов активности
+      if (authUser.role !== 'advertiser') {
+        console.log('Activity logs access denied - not advertiser role:', authUser.role);
+        return res.status(403).json({ error: "Activity logs access denied - not advertiser role" });
+      }
+      
+      // Mock данные логов активности для демонстрации
       const mockLogs = [
         {
           id: '1',

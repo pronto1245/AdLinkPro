@@ -348,10 +348,10 @@ export default function TeamManagement() {
 
   const handleExportTeamData = (format: 'csv' | 'json' = 'csv') => {
     // Экспорт данных команды
-    const exportData = teamMembers.map(member => ({
+    const exportData = teamMembers.map((member: TeamMember) => ({
       email: member.email,
       name: `${member.firstName} ${member.lastName}`,
-      role: ROLE_LABELS[member.role],
+      role: ROLE_LABELS[member.role as keyof typeof ROLE_LABELS],
       status: member.status,
       lastActivity: member.lastActivity,
       createdAt: member.createdAt
@@ -369,7 +369,7 @@ export default function TeamManagement() {
       const headers = ['Email', 'Name', 'Role', 'Status', 'Last Activity', 'Added Date'];
       const csvContent = [
         headers.join(','),
-        ...exportData.map(row => [
+        ...exportData.map((row: any) => [
           row.email,
           row.name,
           row.role,
@@ -923,12 +923,15 @@ export default function TeamManagement() {
           resetForm();
         }
       }}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" aria-describedby="team-member-dialog-description">
           <DialogHeader>
             <DialogTitle>
               {editingMember ? 'Редактировать сотрудника' : 'Добавить сотрудника'}
             </DialogTitle>
           </DialogHeader>
+          <div id="team-member-dialog-description" className="sr-only">
+            Форма для {editingMember ? 'редактирования данных' : 'добавления нового'} сотрудника в команду с настройкой ролей и разрешений
+          </div>
 
           <div className="space-y-6">
             {/* Основная информация */}
