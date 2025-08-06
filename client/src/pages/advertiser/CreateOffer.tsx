@@ -470,7 +470,7 @@ export default function CreateOffer() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger 
                 value="basic" 
                 className="flex items-center gap-2 data-[state=active]:bg-blue-100 dark:data-[state=active]:bg-blue-900 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950"
@@ -496,14 +496,7 @@ export default function CreateOffer() {
                 <Globe className="h-4 w-4 text-orange-600" />
                 Источники
               </TabsTrigger>
-              <TabsTrigger 
-                value="conditions" 
-                className="flex items-center gap-2 data-[state=active]:bg-indigo-100 dark:data-[state=active]:bg-indigo-900 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950"
-                title="Условия работы с партнерами"
-              >
-                <Settings className="h-4 w-4 text-indigo-600" />
-                Условия
-              </TabsTrigger>
+
               <TabsTrigger 
                 value="antifraud" 
                 className="flex items-center gap-2 data-[state=active]:bg-red-100 dark:data-[state=active]:bg-red-900 data-[state=active]:text-red-700 dark:data-[state=active]:text-red-300 hover:bg-red-50 dark:hover:bg-red-950"
@@ -994,54 +987,7 @@ export default function CreateOffer() {
               </Card>
             </TabsContent>
 
-            {/* Условия */}
-            <TabsContent value="conditions" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Условия работы</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
 
-                  <div>
-                    <Label>Разрешенные источники трафика</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                      {allowedTrafficSources.map(source => (
-                        <div key={source} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={`allowed-${source}`}
-                            checked={formData.trafficSources.includes(source)}
-                            onChange={() => toggleTrafficSource(source)}
-                            className="rounded"
-                          />
-                          <Label htmlFor={`allowed-${source}`} className="text-sm">{source}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label>Запрещенные источники трафика</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                      {deniedTrafficSources.map(source => (
-                        <div key={source} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={`denied-${source}`}
-                            checked={formData.deniedSources.includes(source)}
-                            onChange={() => toggleDeniedSource(source)}
-                            className="rounded"
-                          />
-                          <Label htmlFor={`denied-${source}`} className="text-sm">{source}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             {/* Антифрод */}
             <TabsContent value="antifraud" className="space-y-6">
