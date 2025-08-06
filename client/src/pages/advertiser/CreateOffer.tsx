@@ -624,6 +624,36 @@ export default function CreateOffer() {
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="payoutType">Тип выплаты</Label>
+                      <Select value={formData.payoutType} onValueChange={(value: 'cpa' | 'cpl' | 'cps' | 'revshare' | 'hybrid') => setFormData(prev => ({ ...prev, payoutType: value }))}>
+                        <SelectTrigger data-testid="select-payout-type">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cpa">CPA - Cost Per Action</SelectItem>
+                          <SelectItem value="cpl">CPL - Cost Per Lead</SelectItem>
+                          <SelectItem value="cps">CPS - Cost Per Sale</SelectItem>
+                          <SelectItem value="revshare">Revenue Share</SelectItem>
+                          <SelectItem value="hybrid">Hybrid</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="payoutAmount">Размер выплаты</Label>
+                      <Input
+                        id="payoutAmount"
+                        type="number"
+                        value={formData.payoutAmount}
+                        onChange={(e) => setFormData(prev => ({ ...prev, payoutAmount: Number(e.target.value) }))}
+                        placeholder="0"
+                        data-testid="input-payout-amount"
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <Label>Теги</Label>
                     <div className="flex flex-wrap gap-2 mt-2">
@@ -731,36 +761,6 @@ export default function CreateOffer() {
                   <CardTitle>Настройки выплат</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="payoutType">Тип выплаты</Label>
-                      <Select value={formData.payoutType} onValueChange={(value: 'cpa' | 'cpl' | 'cps' | 'revshare' | 'hybrid') => setFormData(prev => ({ ...prev, payoutType: value }))}>
-                        <SelectTrigger data-testid="select-payout-type">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="cpa">CPA - Cost Per Action</SelectItem>
-                          <SelectItem value="cpl">CPL - Cost Per Lead</SelectItem>
-                          <SelectItem value="cps">CPS - Cost Per Sale</SelectItem>
-                          <SelectItem value="revshare">Revenue Share</SelectItem>
-                          <SelectItem value="hybrid">Hybrid</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="payoutAmount">Размер выплаты</Label>
-                      <Input
-                        id="payoutAmount"
-                        type="number"
-                        value={formData.payoutAmount}
-                        onChange={(e) => setFormData(prev => ({ ...prev, payoutAmount: Number(e.target.value) }))}
-                        placeholder="0"
-                        data-testid="input-payout-amount"
-                      />
-                    </div>
-                  </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="dailyLimit">Дневной лимит</Label>
