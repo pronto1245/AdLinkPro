@@ -58,7 +58,8 @@ import {
   Calendar,
   Download,
   Settings,
-  Ban
+  Ban,
+  HelpCircle
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { cn } from '@/lib/utils';
@@ -525,16 +526,156 @@ export default function MyOffers() {
                 <TableHeader>
                   <TableRow className="bg-slate-100 dark:bg-slate-800 border-b-2 border-slate-200 dark:border-slate-600">
                     <TableHead className="w-12"></TableHead>
-                    <TableHead className="font-semibold text-blue-600 dark:text-blue-400 px-4 py-3">Название оффера</TableHead>
-                    <TableHead className="font-semibold text-green-600 dark:text-green-400 px-4 py-3">Статус</TableHead>
-                    <TableHead className="font-semibold text-purple-600 dark:text-purple-400 px-4 py-3">Тип</TableHead>
-                    <TableHead className="font-semibold text-orange-600 dark:text-orange-400 px-4 py-3">Категория</TableHead>
-                    <TableHead className="text-right font-semibold text-indigo-600 dark:text-indigo-400 px-4 py-3">Клики</TableHead>
-                    <TableHead className="text-right font-semibold text-emerald-600 dark:text-emerald-400 px-4 py-3">Лиды</TableHead>
-                    <TableHead className="text-right font-semibold text-yellow-600 dark:text-yellow-400 px-4 py-3">CR</TableHead>
-                    <TableHead className="text-right font-semibold text-red-600 dark:text-red-400 px-4 py-3">Доход</TableHead>
-                    <TableHead className="text-center font-semibold text-teal-600 dark:text-teal-400 px-4 py-3">Партнеры</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600 dark:text-gray-400 px-4 py-3">Действия</TableHead>
+                    <TableHead className="font-semibold text-blue-600 dark:text-blue-400 px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        Название оффера
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-3 h-3 text-gray-400 hover:text-gray-600 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Название и логотип рекламного оффера</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-semibold text-green-600 dark:text-green-400 px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        Статус
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-3 h-3 text-gray-400 hover:text-gray-600 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Текущий статус оффера (активен, на паузе, черновик)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-semibold text-purple-600 dark:text-purple-400 px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        Тип
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-3 h-3 text-gray-400 hover:text-gray-600 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Модель оплаты (CPA, CPL, CPC, CPM, RevShare)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-semibold text-orange-600 dark:text-orange-400 px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        Категория
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-3 h-3 text-gray-400 hover:text-gray-600 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Тематическая категория оффера (игры, финансы, здоровье и др.)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-right font-semibold text-indigo-600 dark:text-indigo-400 px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        Клики
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-3 h-3 text-gray-400 hover:text-gray-600 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Общее количество кликов по оферу</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-right font-semibold text-emerald-600 dark:text-emerald-400 px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        Лиды
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-3 h-3 text-gray-400 hover:text-gray-600 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Количество конверсий (успешных действий пользователей)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-right font-semibold text-yellow-600 dark:text-yellow-400 px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        CR
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-3 h-3 text-gray-400 hover:text-gray-600 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Конверсия (процент кликов, приведших к целевому действию)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-right font-semibold text-red-600 dark:text-red-400 px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        Доход
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-3 h-3 text-gray-400 hover:text-gray-600 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Общий доход, полученный с оффера</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-center font-semibold text-teal-600 dark:text-teal-400 px-4 py-3">
+                      <div className="flex items-center justify-center gap-2">
+                        Партнеры
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-3 h-3 text-gray-400 hover:text-gray-600 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Количество партнеров, работающих с оффером</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600 dark:text-gray-400 px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        Действия
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="w-3 h-3 text-gray-400 hover:text-gray-600 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Доступные действия с оффером (редактировать, копировать, удалить)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
