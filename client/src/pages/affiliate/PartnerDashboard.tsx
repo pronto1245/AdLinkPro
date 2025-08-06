@@ -53,7 +53,6 @@ import {
   Cell
 } from 'recharts';
 import { cn } from '@/lib/utils';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 const COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#8B5A2B'];
 const DEVICE_COLORS = { mobile: '#8B5CF6', desktop: '#06B6D4', tablet: '#10B981' };
@@ -168,7 +167,6 @@ const MetricCard = ({
 );
 
 const SmartAlertCard = ({ alert }: { alert: SmartAlert }) => {
-  const { t } = useLanguage();
   
   const getAlertIcon = (type: string) => {
     switch (type) {
@@ -204,8 +202,8 @@ const SmartAlertCard = ({ alert }: { alert: SmartAlert }) => {
               {alert.action}
             </Button>
             <Badge variant="outline" className="text-xs">
-              {alert.type === 'optimization' ? t('Оптимизация') : 
-               alert.type === 'anomaly' ? t('Аномалия') : t('Рекомендация')}
+              {alert.type === 'optimization' ? 'Оптимизация' : 
+               alert.type === 'anomaly' ? 'Аномалия' : 'Рекомендация'}
             </Badge>
           </div>
         </div>
@@ -215,7 +213,6 @@ const SmartAlertCard = ({ alert }: { alert: SmartAlert }) => {
 };
 
 export default function PartnerDashboard() {
-  const { t } = useLanguage();
   const [dateRange, setDateRange] = useState<any>({
     from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
     to: new Date()
