@@ -4236,6 +4236,102 @@ class MemStorage implements IStorage {
     ];
   }
 
+  async getDocumentationSections(): Promise<any[]> {
+    return [
+      {
+        id: 'tracking',
+        title: 'Трекинг и ссылки',
+        description: 'Руководство по созданию и управлению трекинговыми ссылками',
+        category: 'tracking',
+        priority: 'high',
+        lastUpdated: '2025-08-06T10:00:00Z',
+        version: '2.1',
+        content: `
+          # Трекинговые ссылки
+          
+          ## Создание ссылок
+          Для создания трекинговой ссылки используйте формат:
+          https://track.domain.com/click/{offer_id}?sub1={partner_id}&sub2={campaign_id}
+          
+          ## Параметры
+          - sub1: ID партнёра
+          - sub2: ID кампании
+          - sub3-sub5: Дополнительные параметры
+          
+          ## Постбеки
+          Настройте URL постбека для получения конверсий:
+          https://your-domain.com/postback?click_id={click_id}&status={status}
+        `,
+        tags: ['links', 'tracking', 'postbacks'],
+        attachments: [
+          { name: 'tracking_guide.pdf', size: '2.5 MB', url: '/docs/tracking_guide.pdf' }
+        ],
+        feedback: { helpful: 23, notHelpful: 2, rating: 4.8 }
+      },
+      {
+        id: 'integration',
+        title: 'API интеграция',
+        description: 'Документация по интеграции с API платформы',
+        category: 'api',
+        priority: 'high',
+        lastUpdated: '2025-08-05T14:30:00Z',
+        version: '1.8',
+        content: `
+          # API Интеграция
+          
+          ## Аутентификация
+          Используйте Bearer токен в заголовке:
+          Authorization: Bearer your_api_key
+          
+          ## Основные эндпойнты
+          - GET /api/offers - получение офферов
+          - GET /api/statistics - статистика
+          - POST /api/postbacks - отправка постбеков
+          
+          ## Лимиты
+          - 1000 запросов в час
+          - Максимум 100 записей за запрос
+        `,
+        tags: ['api', 'integration', 'authentication'],
+        attachments: [
+          { name: 'api_reference.json', size: '156 KB', url: '/docs/api_reference.json' },
+          { name: 'postman_collection.json', size: '45 KB', url: '/docs/postman.json' }
+        ],
+        feedback: { helpful: 18, notHelpful: 1, rating: 4.9 }
+      },
+      {
+        id: 'antifraud',
+        title: 'Антифрод система',
+        description: 'Настройка и использование системы защиты от фрода',
+        category: 'security',
+        priority: 'medium',
+        lastUpdated: '2025-08-04T09:15:00Z',
+        version: '1.3',
+        content: `
+          # Антифрод защита
+          
+          ## Методы защиты
+          1. IP фильтрация
+          2. Анализ поведения
+          3. Детекция ботов
+          4. Геофильтрация
+          
+          ## Настройка правил
+          Создавайте правила в разделе "Антифрод":
+          - Блокировка по IP
+          - Лимиты по времени
+          - Проверка реферера
+          
+          ## Мониторинг
+          Отслеживайте подозрительную активность в реальном времени
+        `,
+        tags: ['security', 'fraud', 'protection'],
+        attachments: [],
+        feedback: { helpful: 12, notHelpful: 3, rating: 4.2 }
+      }
+    ];
+  }
+
   async updateDocumentationFeedback(sectionId: string, feedback: any): Promise<void> {
     // Mock implementation - store feedback
   }

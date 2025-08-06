@@ -741,7 +741,7 @@ export default function AdvertiserDashboard() {
                       </TableCell>
                       <TableCell>{getStatusBadge(offer.status)}</TableCell>
                       <TableCell className="font-mono">{formatNumber(offer.clicks)}</TableCell>
-                      <TableCell className="font-mono">{offer.cr.toFixed(2)}%</TableCell>
+                      <TableCell className="font-mono">{(offer.cr || 0).toFixed(2)}%</TableCell>
                       <TableCell className="font-mono">{formatNumber(offer.conversions)}</TableCell>
                       <TableCell className="font-mono">{formatCurrency(offer.spent)}</TableCell>
                       <TableCell className="font-mono">{offer.postbacks}</TableCell>
