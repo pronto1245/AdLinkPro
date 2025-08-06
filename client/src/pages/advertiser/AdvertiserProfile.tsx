@@ -474,24 +474,24 @@ export default function AdvertiserProfile() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="account" data-testid="tab-account">
-            <User className="h-4 w-4 mr-2" />
+          <TabsTrigger value="account" data-testid="tab-account" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <User className="h-4 w-4 mr-2 text-blue-500" />
             Аккаунт
           </TabsTrigger>
-          <TabsTrigger value="api" data-testid="tab-api">
-            <Key className="h-4 w-4 mr-2" />
+          <TabsTrigger value="api" data-testid="tab-api" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
+            <Key className="h-4 w-4 mr-2 text-green-500" />
             API-доступ
           </TabsTrigger>
-          <TabsTrigger value="domain" data-testid="tab-domain">
-            <Link className="h-4 w-4 mr-2" />
+          <TabsTrigger value="domain" data-testid="tab-domain" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+            <Link className="h-4 w-4 mr-2 text-purple-500" />
             Кастомный домен
           </TabsTrigger>
-          <TabsTrigger value="notifications" data-testid="tab-notifications">
-            <Bell className="h-4 w-4 mr-2" />
+          <TabsTrigger value="notifications" data-testid="tab-notifications" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <Bell className="h-4 w-4 mr-2 text-orange-500" />
             Уведомления
           </TabsTrigger>
-          <TabsTrigger value="security" data-testid="tab-security">
-            <Shield className="h-4 w-4 mr-2" />
+          <TabsTrigger value="security" data-testid="tab-security" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">
+            <Shield className="h-4 w-4 mr-2 text-red-500" />
             Безопасность
           </TabsTrigger>
         </TabsList>

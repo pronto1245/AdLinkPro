@@ -4067,73 +4067,7 @@ class MemStorage implements IStorage {
 
 
 
-  // Stub implementations for all other IStorage methods
-  async getUsersWithFilters(): Promise<any> { return { data: [], total: 0 }; }
-  async blockUser(): Promise<any> { return {}; }
-  async unblockUser(): Promise<any> { return {}; }
-  async softDeleteUser(): Promise<any> { return {}; }
-  async forceLogoutUser(): Promise<void> {}
-  async resetUserPassword(): Promise<string> { return 'newpass123'; }
-  async getUserAnalytics(): Promise<any> { return {}; }
-  async exportUsers(): Promise<string> { return 'csv data'; }
-  async bulkBlockUsers(): Promise<any> { return { blocked: 0 }; }
-  async bulkUnblockUsers(): Promise<any> { return { unblocked: 0 }; }
-  async bulkDeleteUsers(): Promise<any> { return { deleted: 0 }; }
-  async getOffer(): Promise<any> { return null; }
-  async getOffers(): Promise<any[]> { return this.offers; }
-  async createOffer(): Promise<any> { return {}; }
-  async updateOffer(): Promise<any> { return {}; }
-  async deleteOffer(): Promise<void> {}
-  async getAllOffers(): Promise<any[]> { return this.offers; }
-  async deleteUser(): Promise<void> {}
-  async getPartnerOffers(): Promise<any[]> { return []; }
-  async createPartnerOffer(): Promise<any> { return {}; }
-  async updatePartnerOffer(): Promise<any> { return {}; }
-  async getTrackingLinks(): Promise<any[]> { return []; }
-  async getTrackingLinkByCode(): Promise<any> { return null; }
-  async createTrackingLink(): Promise<any> { return {}; }
-  async getStatistics(): Promise<any[]> { return this.statistics; }
-  async createStatistics(): Promise<any> { return {}; }
-  async getTransactions(): Promise<any[]> { return []; }
-  async createTransaction(): Promise<any> { return {}; }
-  async getPostbacks(): Promise<any[]> { return this.postbacks; }
-  async createPostback(): Promise<any> { return {}; }
-  async updatePostback(): Promise<any> { return {}; }
-  async getTickets(): Promise<any[]> { return []; }
-
-  async getFraudAlerts(): Promise<any[]> { return []; }
-  async createFraudAlert(): Promise<any> { return {}; }
-  async getAuditLogs(): Promise<any[]> { return []; }
-  async createAuditLog(): Promise<any> { return {}; }
-  async getCryptoWallets(): Promise<any[]> { return []; }
-  async createCryptoWallet(): Promise<any> { return {}; }
-  async updateCryptoWallet(): Promise<any> { return {}; }
-  async getCryptoTransactions(): Promise<any[]> { return []; }
-  async createCryptoTransaction(): Promise<any> { return {}; }
-  async getFraudReports(): Promise<any[]> { return this.fraudReports; }
-  async createFraudReport(): Promise<any> { return {}; }
-  async updateFraudReport(): Promise<any> { return {}; }
-  async getFraudRules(): Promise<any[]> { return []; }
-  async createFraudRule(): Promise<any> { return {}; }
-  async updateFraudRule(): Promise<any> { return {}; }
-  async deleteFraudRule(): Promise<void> {}
-  async getDeviceTracking(): Promise<any[]> { return []; }
-  async createDeviceTracking(): Promise<any> { return {}; }
-  async getIpAnalysis(): Promise<any[]> { return []; }
-  async createIpAnalysis(): Promise<any> { return {}; }
-  async getFraudBlocks(): Promise<any[]> { return []; }
-  async createFraudBlock(): Promise<any> { return {}; }
-  async deleteFraudBlock(): Promise<void> {}
-  async getPostbacksWithFilters(): Promise<any> { return { data: [], total: 0 }; }
-  async getSystemSettings(): Promise<any[]> { return []; }
-  async getSmartAlerts(): Promise<any[]> { return []; }
-  async getBlacklistEntries(): Promise<any[]> { return []; }
-  async createBlacklistEntry(): Promise<any> { return {}; }
-  async updateBlacklistEntry(): Promise<any> { return {}; }
-  async deleteBlacklistEntry(): Promise<void> {}
-  async moderateOffer(): Promise<boolean> { return true; }
-
-  // Profile Management Methods
+  // Profile Management Methods - moved up from bottom
   async getApiTokens(userId: string): Promise<any[]> {
     return [
       {
@@ -4211,6 +4145,74 @@ class MemStorage implements IStorage {
       updatedAt: new Date().toISOString()
     };
   }
+
+  // Stub implementations for all other IStorage methods
+  async getUsersWithFilters(): Promise<any> { return { data: [], total: 0 }; }
+  async blockUser(): Promise<any> { return {}; }
+  async unblockUser(): Promise<any> { return {}; }
+  async softDeleteUser(): Promise<any> { return {}; }
+  async forceLogoutUser(): Promise<void> {}
+  async resetUserPassword(): Promise<string> { return 'newpass123'; }
+  async getUserAnalytics(): Promise<any> { return {}; }
+  async exportUsers(): Promise<string> { return 'csv data'; }
+  async bulkBlockUsers(): Promise<any> { return { blocked: 0 }; }
+  async bulkUnblockUsers(): Promise<any> { return { unblocked: 0 }; }
+  async bulkDeleteUsers(): Promise<any> { return { deleted: 0 }; }
+  async getOffer(): Promise<any> { return null; }
+  async getOffers(): Promise<any[]> { return this.offers; }
+  async createOffer(): Promise<any> { return {}; }
+  async updateOffer(): Promise<any> { return {}; }
+  async deleteOffer(): Promise<void> {}
+  async getAllOffers(): Promise<any[]> { return this.offers; }
+  async deleteUser(): Promise<void> {}
+  async getPartnerOffers(): Promise<any[]> { return []; }
+  async createPartnerOffer(): Promise<any> { return {}; }
+  async updatePartnerOffer(): Promise<any> { return {}; }
+  async getTrackingLinks(): Promise<any[]> { return []; }
+  async getTrackingLinkByCode(): Promise<any> { return null; }
+  async createTrackingLink(): Promise<any> { return {}; }
+  async getStatistics(): Promise<any[]> { return this.statistics; }
+  async createStatistics(): Promise<any> { return {}; }
+  async getTransactions(): Promise<any[]> { return []; }
+  async createTransaction(): Promise<any> { return {}; }
+  async getPostbacks(): Promise<any[]> { return this.postbacks; }
+  async createPostback(): Promise<any> { return {}; }
+  async updatePostback(): Promise<any> { return {}; }
+  async getTickets(): Promise<any[]> { return []; }
+
+  async getFraudAlerts(): Promise<any[]> { return []; }
+  async createFraudAlert(): Promise<any> { return {}; }
+  async getAuditLogs(): Promise<any[]> { return []; }
+  async createAuditLog(): Promise<any> { return {}; }
+  async getCryptoWallets(): Promise<any[]> { return []; }
+  async createCryptoWallet(): Promise<any> { return {}; }
+  async updateCryptoWallet(): Promise<any> { return {}; }
+  async getCryptoTransactions(): Promise<any[]> { return []; }
+  async createCryptoTransaction(): Promise<any> { return {}; }
+  async getFraudReports(): Promise<any[]> { return this.fraudReports; }
+  async createFraudReport(): Promise<any> { return {}; }
+  async updateFraudReport(): Promise<any> { return {}; }
+  async getFraudRules(): Promise<any[]> { return []; }
+  async createFraudRule(): Promise<any> { return {}; }
+  async updateFraudRule(): Promise<any> { return {}; }
+  async deleteFraudRule(): Promise<void> {}
+  async getDeviceTracking(): Promise<any[]> { return []; }
+  async createDeviceTracking(): Promise<any> { return {}; }
+  async getIpAnalysis(): Promise<any[]> { return []; }
+  async createIpAnalysis(): Promise<any> { return {}; }
+  async getFraudBlocks(): Promise<any[]> { return []; }
+  async createFraudBlock(): Promise<any> { return {}; }
+  async deleteFraudBlock(): Promise<void> {}
+  async getPostbacksWithFilters(): Promise<any> { return { data: [], total: 0 }; }
+  async getSystemSettings(): Promise<any[]> { return []; }
+  async getSmartAlerts(): Promise<any[]> { return []; }
+  async getBlacklistEntries(): Promise<any[]> { return []; }
+  async createBlacklistEntry(): Promise<any> { return {}; }
+  async updateBlacklistEntry(): Promise<any> { return {}; }
+  async deleteBlacklistEntry(): Promise<void> {}
+  async moderateOffer(): Promise<boolean> { return true; }
+
+
 }
 
 // Use DatabaseStorage for persistent data
