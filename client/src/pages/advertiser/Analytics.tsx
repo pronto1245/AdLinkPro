@@ -32,7 +32,10 @@ import {
   Target,
   Eye,
   Bot,
-  Shield
+  Shield,
+  ChevronDown,
+  ChevronUp,
+  Settings
 } from 'lucide-react';
 
 // Интерфейс для статистических данных
@@ -163,6 +166,9 @@ export default function Analytics() {
     geo: true,
     device: true
   });
+
+  // Состояние для свернутости блока настроек
+  const [isTableSettingsCollapsed, setIsTableSettingsCollapsed] = useState(true);
 
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [detailViewId, setDetailViewId] = useState<string | null>(null);
@@ -586,46 +592,115 @@ export default function Analytics() {
           </CardContent>
         </Card>
 
-        {/* Настройка видимых колонок */}
+        {/* Настройка видимых колонок - сворачиваемый блок */}
         <Card>
-          <CardHeader>
-            <CardTitle>Настройки отображения таблицы</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {Object.entries(visibleColumns).map(([key, visible]) => (
-                <div key={key} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={key}
-                    checked={visible}
-                    onCheckedChange={(checked) => 
-                      setVisibleColumns({...visibleColumns, [key]: checked as boolean})
-                    }
-                    data-testid={`checkbox-${key}`}
-                  />
-                  <Label htmlFor={key} className="text-sm">
-                    {key === 'date' && 'Дата'}
-                    {key === 'offer' && 'Оффер'}
-                    {key === 'partner' && 'Партнёр'}
-                    {key === 'clicks' && 'Клики'}
-                    {key === 'uniqueClicks' && 'Уники'}
-                    {key === 'leads' && 'Лиды'}
-                    {key === 'cr' && 'CR %'}
-                    {key === 'revenue' && 'Доход'}
-                    {key === 'payout' && 'Выплата'}
-                    {key === 'profit' && 'Прибыль'}
-                    {key === 'roi' && 'ROI %'}
-                    {key === 'epc' && 'EPC'}
-                    {key === 'fraud' && 'Фрод'}
-                    {key === 'bot' && 'Бот'}
-                    {key === 'subId' && 'Sub ID'}
-                    {key === 'geo' && 'GEO'}
-                    {key === 'device' && 'Устройство'}
-                  </Label>
-                </div>
-              ))}
+          <CardHeader 
+            className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            onClick={() => setIsTableSettingsCollapsed(!isTableSettingsCollapsed)}
+            data-testid="table-settings-header"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Settings className="h-5 w-5 text-muted-foreground" />
+                <CardTitle>Настройки отображения таблицы</CardTitle>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                title={isTableSettingsCollapsed ? "Развернуть настройки" : "Свернуть настройки"}
+                data-testid="button-toggle-settings"
+              >
+                {isTableSettingsCollapsed ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronUp className="h-4 w-4" />
+                )}
+              </Button>
             </div>
-          </CardContent>
+          </CardHeader>
+          
+          {!isTableSettingsCollapsed && (
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {Object.entries(visibleColumns).map(([key, visible]) => (
+                  <div key={key} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={key}
+                      checked={visible}
+                      onCheckedChange={(checked) => 
+                        setVisibleColumns({...visibleColumns, [key]: checked as boolean})
+                      }
+                      data-testid={`checkbox-${key}`}
+                    />
+                    <Label htmlFor={key} className="text-sm">
+                      {key === 'date' && 'Дата'}
+                      {key === 'offer' && 'Оффер'}
+                      {key === 'partner' && 'Партнёр'}
+                      {key === 'clicks' && 'Клики'}
+                      {key === 'uniqueClicks' && 'Уники'}
+                      {key === 'leads' && 'Лиды'}
+                      {key === 'cr' && 'CR %'}
+                      {key === 'revenue' && 'Доход'}
+                      {key === 'payout' && 'Выплата'}
+                      {key === 'profit' && 'Прибыль'}
+                      {key === 'roi' && 'ROI %'}
+                      {key === 'epc' && 'EPC'}
+                      {key === 'fraud' && 'Фрод'}
+                      {key === 'bot' && 'Бот'}
+                      {key === 'subId' && 'Sub ID'}
+                      {key === 'geo' && 'GEO'}
+                      {key === 'device' && 'Устройство'}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 pt-4 border-t flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    const allVisible = Object.fromEntries(
+                      Object.keys(visibleColumns).map(key => [key, true])
+                    );
+                    setVisibleColumns(allVisible);
+                  }}
+                  data-testid="button-select-all"
+                >
+                  Выбрать все
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    const essentialColumns = {
+                      date: true,
+                      offer: true,
+                      partner: true,
+                      clicks: true,
+                      leads: true,
+                      revenue: true,
+                      cr: true,
+                      uniqueClicks: false,
+                      payout: false,
+                      profit: false,
+                      roi: false,
+                      epc: false,
+                      fraud: false,
+                      bot: false,
+                      subId: false,
+                      geo: false,
+                      device: false
+                    };
+                    setVisibleColumns(essentialColumns);
+                  }}
+                  data-testid="button-select-essential"
+                >
+                  Основные
+                </Button>
+              </div>
+            </CardContent>
+          )}
         </Card>
 
         {/* Таблица данных */}
