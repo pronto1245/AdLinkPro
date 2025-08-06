@@ -3530,6 +3530,110 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getAdvertiserOffers(advertiserId: string, filters: any = {}): Promise<any[]> {
+    try {
+      // Get offers for this advertiser with basic mock data
+      const advertiserOffers = await db
+        .select()
+        .from(offers)
+        .where(eq(offers.advertiserId, advertiserId));
+
+      return advertiserOffers.map(offer => ({
+        ...offer,
+        partnersCount: Math.floor(Math.random() * 10) + 1,
+        leads: Math.floor(Math.random() * 100) + 10,
+        cr: Math.random() * 10 + 1,
+        epc: Math.random() * 50 + 5,
+        revenue: Math.random() * 1000 + 100,
+        geoTargeting: ['US', 'CA', 'GB'],
+        isActive: offer.status === 'active'
+      }));
+    } catch (error) {
+      console.error('Error getting advertiser offers:', error);
+      throw error;
+    }
+  }
+
+  async createOffer(offerData: any): Promise<any> {
+    try {
+      const newOffer = await db
+        .insert(offers)
+        .values({
+          id: nanoid(),
+          ...offerData,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      return newOffer[0];
+    } catch (error) {
+      console.error('Error creating offer:', error);
+      throw error;
+    }
+  }
+
+  async updateOffer(offerId: string, updateData: any): Promise<any> {
+    try {
+      const updatedOffer = await db
+        .update(offers)
+        .set({ ...updateData, updatedAt: new Date() })
+        .where(eq(offers.id, offerId))
+        .returning();
+      
+      return updatedOffer[0];
+    } catch (error) {
+      console.error('Error updating offer:', error);
+      throw error;
+    }
+  }
+
+  async getOffer(offerId: string): Promise<any> {
+    try {
+      const offer = await db
+        .select()
+        .from(offers)
+        .where(eq(offers.id, offerId))
+        .limit(1);
+      
+      return offer[0];
+    } catch (error) {
+      console.error('Error getting offer:', error);
+      throw error;
+    }
+  }
+
+  async getOfferPartners(offerId: string): Promise<any[]> {
+    try {
+      // Mock data for offer partners
+      return [
+        {
+          id: '1',
+          name: 'Partner 1',
+          traffic: Math.floor(Math.random() * 1000) + 100,
+          leads: Math.floor(Math.random() * 50) + 5,
+          cr: Math.random() * 10 + 1,
+          revenue: Math.random() * 500 + 50,
+          status: 'active',
+          connectedAt: new Date().toISOString()
+        },
+        {
+          id: '2',
+          name: 'Partner 2',
+          traffic: Math.floor(Math.random() * 1000) + 100,
+          leads: Math.floor(Math.random() * 50) + 5,
+          cr: Math.random() * 10 + 1,
+          revenue: Math.random() * 500 + 50,
+          status: 'active',
+          connectedAt: new Date().toISOString()
+        }
+      ];
+    } catch (error) {
+      console.error('Error getting offer partners:', error);
+      throw error;
+    }
+  }
+
   // End of DatabaseStorage class
 }
 

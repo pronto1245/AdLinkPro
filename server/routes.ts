@@ -317,6 +317,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advertiser offers management
+  app.get("/api/advertiser/offers", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const filters = {
+        search: req.query.search as string,
+        category: req.query.category as string,
+        status: req.query.status as string,
+        payoutType: req.query.payoutType as string,
+        geo: req.query.geo as string,
+        dateFrom: req.query.dateFrom as string,
+        dateTo: req.query.dateTo as string
+      };
+      
+      const offers = await storage.getAdvertiserOffers(authUser.id, filters);
+      res.json(offers);
+    } catch (error) {
+      console.error("Get advertiser offers error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/advertiser/offers", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerData = {
+        ...req.body,
+        advertiserId: authUser.id,
+        status: 'pending', // New offers go to moderation
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      const offer = await storage.createOffer(offerData);
+      res.status(201).json(offer);
+    } catch (error) {
+      console.error("Create offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/advertiser/offers/:id", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerId = req.params.id;
+      
+      // Verify offer ownership
+      const existingOffer = await storage.getOffer(offerId);
+      if (!existingOffer || existingOffer.advertiserId !== authUser.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const updatedOffer = await storage.updateOffer(offerId, req.body);
+      res.json(updatedOffer);
+    } catch (error) {
+      console.error("Update offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/advertiser/offers/:id/toggle", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerId = req.params.id;
+      const { isActive } = req.body;
+      
+      // Verify offer ownership
+      const existingOffer = await storage.getOffer(offerId);
+      if (!existingOffer || existingOffer.advertiserId !== authUser.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const updatedOffer = await storage.updateOffer(offerId, { isActive });
+      res.json(updatedOffer);
+    } catch (error) {
+      console.error("Toggle offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/advertiser/offers/:id/partners", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerId = req.params.id;
+      
+      // Verify offer ownership
+      const existingOffer = await storage.getOffer(offerId);
+      if (!existingOffer || existingOffer.advertiserId !== authUser.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const partners = await storage.getOfferPartners(offerId);
+      res.json(partners);
+    } catch (error) {
+      console.error("Get offer partners error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/advertiser/offers/export", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offers = await storage.getAdvertiserOffers(authUser.id, {});
+      
+      // Simple CSV export
+      const csvData = offers.map(offer => ({
+        name: offer.name,
+        category: offer.category,
+        payoutType: offer.payoutType,
+        payoutAmount: offer.payoutAmount,
+        currency: offer.currency,
+        status: offer.status,
+        partnersCount: offer.partnersCount || 0,
+        leads: offer.leads || 0,
+        revenue: offer.revenue || 0
+      }));
+      
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', 'attachment; filename=offers.json');
+      res.json(csvData);
+    } catch (error) {
+      console.error("Export offers error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // User management with hierarchy
   app.get("/api/users", authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
     try {
