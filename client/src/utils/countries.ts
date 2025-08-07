@@ -1,78 +1,6 @@
-// Маппинг стран на ISO коды и флаги
-export const COUNTRY_MAPPING: Record<string, { code: string; flag: string; name: string }> = {
-  // Русские названия
-  'россия': { code: 'RU', flag: '🇷🇺', name: 'Россия' },
-  'украина': { code: 'UA', flag: '🇺🇦', name: 'Украина' },
-  'беларусь': { code: 'BY', flag: '🇧🇾', name: 'Беларусь' },
-  'казахстан': { code: 'KZ', flag: '🇰🇿', name: 'Казахстан' },
-  'турция': { code: 'TR', flag: '🇹🇷', name: 'Турция' },
-  'германия': { code: 'DE', flag: '🇩🇪', name: 'Германия' },
-  'франция': { code: 'FR', flag: '🇫🇷', name: 'Франция' },
-  'италия': { code: 'IT', flag: '🇮🇹', name: 'Италия' },
-  'испания': { code: 'ES', flag: '🇪🇸', name: 'Испания' },
-  'польша': { code: 'PL', flag: '🇵🇱', name: 'Польша' },
-  'чехия': { code: 'CZ', flag: '🇨🇿', name: 'Чехия' },
-  'венгрия': { code: 'HU', flag: '🇭🇺', name: 'Венгрия' },
-  'румыния': { code: 'RO', flag: '🇷🇴', name: 'Румыния' },
-  'болгария': { code: 'BG', flag: '🇧🇬', name: 'Болгария' },
-  'греция': { code: 'GR', flag: '🇬🇷', name: 'Греция' },
-  'сербия': { code: 'RS', flag: '🇷🇸', name: 'Сербия' },
-  'хорватия': { code: 'HR', flag: '🇭🇷', name: 'Хорватия' },
-  'словения': { code: 'SI', flag: '🇸🇮', name: 'Словения' },
-  'словакия': { code: 'SK', flag: '🇸🇰', name: 'Словакия' },
-  'литва': { code: 'LT', flag: '🇱🇹', name: 'Литва' },
-  'латвия': { code: 'LV', flag: '🇱🇻', name: 'Латвия' },
-  'эстония': { code: 'EE', flag: '🇪🇪', name: 'Эстония' },
-  'финляндия': { code: 'FI', flag: '🇫🇮', name: 'Финляндия' },
-  'швеция': { code: 'SE', flag: '🇸🇪', name: 'Швеция' },
-  'норвегия': { code: 'NO', flag: '🇳🇴', name: 'Норвегия' },
-  'дания': { code: 'DK', flag: '🇩🇰', name: 'Дания' },
-  'нидерланды': { code: 'NL', flag: '🇳🇱', name: 'Нидерланды' },
-  'бельгия': { code: 'BE', flag: '🇧🇪', name: 'Бельгия' },
-  'австрия': { code: 'AT', flag: '🇦🇹', name: 'Австрия' },
-  'швейцария': { code: 'CH', flag: '🇨🇭', name: 'Швейцария' },
-  'португалия': { code: 'PT', flag: '🇵🇹', name: 'Португалия' },
-  'ирландия': { code: 'IE', flag: '🇮🇪', name: 'Ирландия' },
-  'великобритания': { code: 'GB', flag: '🇬🇧', name: 'Великобритания' },
-  'канада': { code: 'CA', flag: '🇨🇦', name: 'Канада' },
-  'сша': { code: 'US', flag: '🇺🇸', name: 'США' },
-  'мексика': { code: 'MX', flag: '🇲🇽', name: 'Мексика' },
-  'бразилия': { code: 'BR', flag: '🇧🇷', name: 'Бразилия' },
-  'аргентина': { code: 'AR', flag: '🇦🇷', name: 'Аргентина' },
-  'чили': { code: 'CL', flag: '🇨🇱', name: 'Чили' },
-  'колумбия': { code: 'CO', flag: '🇨🇴', name: 'Колумбия' },
-  'перу': { code: 'PE', flag: '🇵🇪', name: 'Перу' },
-  'венесуэла': { code: 'VE', flag: '🇻🇪', name: 'Венесуэла' },
-  'китай': { code: 'CN', flag: '🇨🇳', name: 'Китай' },
-  'япония': { code: 'JP', flag: '🇯🇵', name: 'Япония' },
-  'южная корея': { code: 'KR', flag: '🇰🇷', name: 'Южная Корея' },
-  'индия': { code: 'IN', flag: '🇮🇳', name: 'Индия' },
-  'таиланд': { code: 'TH', flag: '🇹🇭', name: 'Таиланд' },
-  'вьетнам': { code: 'VN', flag: '🇻🇳', name: 'Вьетнам' },
-  'индонезия': { code: 'ID', flag: '🇮🇩', name: 'Индонезия' },
-  'малайзия': { code: 'MY', flag: '🇲🇾', name: 'Малайзия' },
-  'сингапур': { code: 'SG', flag: '🇸🇬', name: 'Сингапур' },
-  'филиппины': { code: 'PH', flag: '🇵🇭', name: 'Филиппины' },
-  'австралия': { code: 'AU', flag: '🇦🇺', name: 'Австралия' },
-  'новая зеландия': { code: 'NZ', flag: '🇳🇿', name: 'Новая Зеландия' },
-  'израиль': { code: 'IL', flag: '🇮🇱', name: 'Израиль' },
-  'саудовская аравия': { code: 'SA', flag: '🇸🇦', name: 'Саудовская Аравия' },
-  'оаэ': { code: 'AE', flag: '🇦🇪', name: 'ОАЭ' },
-  'египет': { code: 'EG', flag: '🇪🇬', name: 'Египет' },
-  'марокко': { code: 'MA', flag: '🇲🇦', name: 'Марокко' },
-  'южная африка': { code: 'ZA', flag: '🇿🇦', name: 'Южная Африка' },
-  'нигерия': { code: 'NG', flag: '🇳🇬', name: 'Нигерия' },
-  'кения': { code: 'KE', flag: '🇰🇪', name: 'Кения' },
-  'армения': { code: 'AM', flag: '🇦🇲', name: 'Армения' },
-  'грузия': { code: 'GE', flag: '🇬🇪', name: 'Грузия' },
-  'азербайджан': { code: 'AZ', flag: '🇦🇿', name: 'Азербайджан' },
-  'узбекистан': { code: 'UZ', flag: '🇺🇿', name: 'Узбекистан' },
-  'киргизия': { code: 'KG', flag: '🇰🇬', name: 'Киргизия' },
-  'таджикистан': { code: 'TJ', flag: '🇹🇯', name: 'Таджикистан' },
-  'туркменистан': { code: 'TM', flag: '🇹🇲', name: 'Туркменистан' },
-  'молдова': { code: 'MD', flag: '🇲🇩', name: 'Молдова' },
-
-  // Английские названия
+// Mapping стран для отображения флагов и кодов
+export const COUNTRIES: Record<string, { code: string; flag: string; name: string }> = {
+  // Основные страны (по названию на русском/английском)
   'russia': { code: 'RU', flag: '🇷🇺', name: 'Russia' },
   'ukraine': { code: 'UA', flag: '🇺🇦', name: 'Ukraine' },
   'belarus': { code: 'BY', flag: '🇧🇾', name: 'Belarus' },
@@ -84,7 +12,6 @@ export const COUNTRY_MAPPING: Record<string, { code: string; flag: string; name:
   'spain': { code: 'ES', flag: '🇪🇸', name: 'Spain' },
   'poland': { code: 'PL', flag: '🇵🇱', name: 'Poland' },
   'czech republic': { code: 'CZ', flag: '🇨🇿', name: 'Czech Republic' },
-  'czechia': { code: 'CZ', flag: '🇨🇿', name: 'Czechia' },
   'hungary': { code: 'HU', flag: '🇭🇺', name: 'Hungary' },
   'romania': { code: 'RO', flag: '🇷🇴', name: 'Romania' },
   'bulgaria': { code: 'BG', flag: '🇧🇬', name: 'Bulgaria' },
@@ -107,9 +34,7 @@ export const COUNTRY_MAPPING: Record<string, { code: string; flag: string; name:
   'portugal': { code: 'PT', flag: '🇵🇹', name: 'Portugal' },
   'ireland': { code: 'IE', flag: '🇮🇪', name: 'Ireland' },
   'united kingdom': { code: 'GB', flag: '🇬🇧', name: 'United Kingdom' },
-  'uk': { code: 'GB', flag: '🇬🇧', name: 'UK' },
   'canada': { code: 'CA', flag: '🇨🇦', name: 'Canada' },
-  'usa': { code: 'US', flag: '🇺🇸', name: 'USA' },
   'united states': { code: 'US', flag: '🇺🇸', name: 'United States' },
   'mexico': { code: 'MX', flag: '🇲🇽', name: 'Mexico' },
   'brazil': { code: 'BR', flag: '🇧🇷', name: 'Brazil' },
@@ -118,10 +43,10 @@ export const COUNTRY_MAPPING: Record<string, { code: string; flag: string; name:
   'colombia': { code: 'CO', flag: '🇨🇴', name: 'Colombia' },
   'peru': { code: 'PE', flag: '🇵🇪', name: 'Peru' },
   'venezuela': { code: 'VE', flag: '🇻🇪', name: 'Venezuela' },
-  'china': { code: 'CN', flag: '🇨🇳', name: 'China' },
   'japan': { code: 'JP', flag: '🇯🇵', name: 'Japan' },
+  'china': { code: 'CN', flag: '🇨🇳', name: 'China' },
   'south korea': { code: 'KR', flag: '🇰🇷', name: 'South Korea' },
-  'korea': { code: 'KR', flag: '🇰🇷', name: 'Korea' },
+  'north korea': { code: 'KP', flag: '🇰🇵', name: 'North Korea' },
   'india': { code: 'IN', flag: '🇮🇳', name: 'India' },
   'thailand': { code: 'TH', flag: '🇹🇭', name: 'Thailand' },
   'vietnam': { code: 'VN', flag: '🇻🇳', name: 'Vietnam' },
@@ -148,16 +73,23 @@ export const COUNTRY_MAPPING: Record<string, { code: string; flag: string; name:
   'tajikistan': { code: 'TJ', flag: '🇹🇯', name: 'Tajikistan' },
   'turkmenistan': { code: 'TM', flag: '🇹🇲', name: 'Turkmenistan' },
   'moldova': { code: 'MD', flag: '🇲🇩', name: 'Moldova' },
-
-  // Дополнительные страны
   'albania': { code: 'AL', flag: '🇦🇱', name: 'Albania' },
   'algeria': { code: 'DZ', flag: '🇩🇿', name: 'Algeria' },
   'andorra': { code: 'AD', flag: '🇦🇩', name: 'Andorra' },
-  'albania': { code: 'AL', flag: '🇦🇱', name: 'Albania' },
-  'algeria': { code: 'DZ', flag: '🇩🇿', name: 'Algeria' },
-  'andorra': { code: 'AD', flag: '🇦🇩', name: 'Andorra' },
+  'afghanistan': { code: 'AF', flag: '🇦🇫', name: 'Afghanistan' },
+  'bangladesh': { code: 'BD', flag: '🇧🇩', name: 'Bangladesh' },
+  'iran': { code: 'IR', flag: '🇮🇷', name: 'Iran' },
+  'iraq': { code: 'IQ', flag: '🇮🇶', name: 'Iraq' },
+  'jordan': { code: 'JO', flag: '🇯🇴', name: 'Jordan' },
+  'kuwait': { code: 'KW', flag: '🇰🇼', name: 'Kuwait' },
+  'lebanon': { code: 'LB', flag: '🇱🇧', name: 'Lebanon' },
+  'oman': { code: 'OM', flag: '🇴🇲', name: 'Oman' },
+  'pakistan': { code: 'PK', flag: '🇵🇰', name: 'Pakistan' },
+  'qatar': { code: 'QA', flag: '🇶🇦', name: 'Qatar' },
+  'syria': { code: 'SY', flag: '🇸🇾', name: 'Syria' },
+  'yemen': { code: 'YE', flag: '🇾🇪', name: 'Yemen' },
 
-  // ISO коды напрямую
+  // ISO коды напрямую (двухбуквенные коды стран)
   'ru': { code: 'RU', flag: '🇷🇺', name: 'Russia' },
   'ua': { code: 'UA', flag: '🇺🇦', name: 'Ukraine' },
   'by': { code: 'BY', flag: '🇧🇾', name: 'Belarus' },
@@ -200,9 +132,10 @@ export const COUNTRY_MAPPING: Record<string, { code: string; flag: string; name:
   'co': { code: 'CO', flag: '🇨🇴', name: 'Colombia' },
   'pe': { code: 'PE', flag: '🇵🇪', name: 'Peru' },
   've': { code: 'VE', flag: '🇻🇪', name: 'Venezuela' },
-  'cn': { code: 'CN', flag: '🇨🇳', name: 'China' },
   'jp': { code: 'JP', flag: '🇯🇵', name: 'Japan' },
+  'cn': { code: 'CN', flag: '🇨🇳', name: 'China' },
   'kr': { code: 'KR', flag: '🇰🇷', name: 'South Korea' },
+  'kp': { code: 'KP', flag: '🇰🇵', name: 'North Korea' },
   'in': { code: 'IN', flag: '🇮🇳', name: 'India' },
   'th': { code: 'TH', flag: '🇹🇭', name: 'Thailand' },
   'vn': { code: 'VN', flag: '🇻🇳', name: 'Vietnam' },
@@ -230,39 +163,88 @@ export const COUNTRY_MAPPING: Record<string, { code: string; flag: string; name:
   'md': { code: 'MD', flag: '🇲🇩', name: 'Moldova' },
   'al': { code: 'AL', flag: '🇦🇱', name: 'Albania' },
   'dz': { code: 'DZ', flag: '🇩🇿', name: 'Algeria' },
-  'ad': { code: 'AD', flag: '🇦🇩', name: 'Andorra' }
+  'ad': { code: 'AD', flag: '🇦🇩', name: 'Andorra' },
+  'af': { code: 'AF', flag: '🇦🇫', name: 'Afghanistan' },
+  'bd': { code: 'BD', flag: '🇧🇩', name: 'Bangladesh' },
+  'ir': { code: 'IR', flag: '🇮🇷', name: 'Iran' },
+  'iq': { code: 'IQ', flag: '🇮🇶', name: 'Iraq' },
+  'jo': { code: 'JO', flag: '🇯🇴', name: 'Jordan' },
+  'kw': { code: 'KW', flag: '🇰🇼', name: 'Kuwait' },
+  'lb': { code: 'LB', flag: '🇱🇧', name: 'Lebanon' },
+  'om': { code: 'OM', flag: '🇴🇲', name: 'Oman' },
+  'pk': { code: 'PK', flag: '🇵🇰', name: 'Pakistan' },
+  'qa': { code: 'QA', flag: '🇶🇦', name: 'Qatar' },
+  'sy': { code: 'SY', flag: '🇸🇾', name: 'Syria' },
+  'ye': { code: 'YE', flag: '🇾🇪', name: 'Yemen' },
 };
 
-// Функция для получения информации о стране по названию
-export function getCountryInfo(countryName: string): { code: string; flag: string; name: string } | null {
-  const normalizedName = countryName.toLowerCase().trim();
-  return COUNTRY_MAPPING[normalizedName] || null;
+// Функция для получения информации о стране
+export function getCountryInfo(countryInput: string): { code: string; flag: string; name: string } | null {
+  if (!countryInput) {
+    return null;
+  }
+
+  const input = countryInput.toLowerCase().trim();
+  
+  // Прямое совпадение из COUNTRIES
+  if (COUNTRIES[input]) {
+    return COUNTRIES[input];
+  }
+  
+  // Поиск по коду (если передан код напрямую)
+  const countryByCode = Object.values(COUNTRIES).find(country => 
+    country.code.toLowerCase() === input.toUpperCase()
+  );
+  if (countryByCode) {
+    return countryByCode;
+  }
+  
+  // Поиск по частичному совпадению названия
+  const countryByPartialName = Object.entries(COUNTRIES).find(([key, country]) =>
+    key.includes(input) || 
+    country.name.toLowerCase().includes(input)
+  );
+  if (countryByPartialName) {
+    return countryByPartialName[1];
+  }
+  
+  // Если ничего не найдено, возвращаем с кодом как есть
+  return {
+    code: input.toUpperCase(),
+    flag: '🏳️', // generic flag
+    name: countryInput
+  };
 }
 
-// Функция для форматирования массива стран для отображения
-export function formatCountries(countries: string[] | string | undefined): Array<{ code: string; flag: string; name: string }> {
-  if (!countries) return [];
-  
-  const countryArray = Array.isArray(countries) ? countries : [countries];
-  
-  return countryArray.map(country => {
+// Функция для форматирования списка стран
+export function formatCountries(countries?: string[] | string): Array<{ code: string; flag: string; name: string }> {
+  if (!countries) {
+    return [];
+  }
+
+  // Если передана строка, разбиваем по запятой
+  const countryList = typeof countries === 'string' 
+    ? countries.split(',').map(c => c.trim()).filter(Boolean)
+    : countries;
+
+  return countryList.map(country => {
     const info = getCountryInfo(country);
-    if (info) {
-      return info;
-    }
-    
-    // Если страна не найдена в маппинге, возвращаем как есть с заглушкой
-    return {
-      code: country.toUpperCase().slice(0, 2),
-      flag: '🌐',
+    return info || {
+      code: country.toUpperCase(),
+      flag: '🏳️',
       name: country
     };
   });
 }
 
-// Функция для получения флага по коду страны (для случаев когда уже есть ISO код)
-export function getFlagByCode(countryCode: string): string {
-  const upperCode = countryCode.toUpperCase();
-  const entry = Object.values(COUNTRY_MAPPING).find(country => country.code === upperCode);
-  return entry?.flag || '🌐';
-}
+// Экспорт списка всех стран для селекта
+export const getAllCountries = (): Array<{ value: string; label: string; flag: string }> => {
+  return Object.entries(COUNTRIES)
+    .filter(([key]) => key.length === 2) // Только ISO коды
+    .map(([key, country]) => ({
+      value: country.code,
+      label: `${country.flag} ${country.name}`,
+      flag: country.flag
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+};
