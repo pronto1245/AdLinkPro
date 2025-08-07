@@ -64,7 +64,7 @@ const MyOffersDragDrop: React.FC = () => {
   const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   const [filterStatus, setFilterStatus] = useState('all');
-  const [filterCategory, setFilterCategory] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all-categories');
   const [searchQuery, setSearchQuery] = useState('');
   const [items, setItems] = useState<string[]>([]);
   const queryClient = useQueryClient();
@@ -324,7 +324,7 @@ const MyOffersDragDrop: React.FC = () => {
 
   const filteredOffers = offers.filter((offer: Offer) => {
     const statusMatch = filterStatus === 'all' || offer.status === filterStatus;
-    const categoryMatch = !filterCategory || offer.category?.includes(filterCategory);
+    const categoryMatch = filterCategory === 'all-categories' || !filterCategory || offer.category?.includes(filterCategory);
     const searchMatch = !searchQuery || 
       offer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       offer.category?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -432,7 +432,7 @@ const MyOffersDragDrop: React.FC = () => {
               <SelectValue placeholder="Категория" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Все</SelectItem>
+              <SelectItem value="all-categories">Все</SelectItem>
               <SelectItem value="gambling">Gambling</SelectItem>
               <SelectItem value="dating">Dating</SelectItem>
               <SelectItem value="finance">Finance</SelectItem>
@@ -560,7 +560,6 @@ const MyOffersDragDrop: React.FC = () => {
                   
                   return (
                     <SortableItem key={`offer-${id}`} id={id}>
-                      <TableRow className="hover:bg-muted/50">
                         <TableCell>
                           <input
                             type="checkbox"
@@ -684,7 +683,6 @@ const MyOffersDragDrop: React.FC = () => {
                             </Button>
                           </div>
                         </TableCell>
-                      </TableRow>
                     </SortableItem>
                   );
                 })}

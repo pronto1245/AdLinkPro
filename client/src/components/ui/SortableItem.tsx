@@ -23,9 +23,9 @@ const SortableItem: React.FC<SortableItemProps> = ({ id, children }) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <TableRow ref={setNodeRef} style={style} {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
       {children}
-    </div>
+    </TableRow>
   );
 };
 
