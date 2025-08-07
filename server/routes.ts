@@ -1484,7 +1484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const authUser = getAuthenticatedUser(req);
       const { domain, type } = req.body;
-      const customDomain = await storage.addCustomDomain(authUser.id, domain, type);
+      const customDomain = await storage.addCustomDomain(authUser.id, { domain, type });
       res.json(customDomain);
     } catch (error) {
       console.error("Add custom domain error:", error);

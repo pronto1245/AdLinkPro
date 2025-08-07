@@ -4430,8 +4430,12 @@ class MemStorage implements IStorage {
     };
   }
 
-  async deleteApiToken(tokenId: string): Promise<void> {
-    // Mock implementation
+  async deleteApiToken(userId: string, tokenId: string): Promise<void> {
+    // Mock implementation - remove token for user
+  }
+
+  async generateApiToken(userId: string, name: string): Promise<any> {
+    return this.createApiToken(userId, { name });
   }
 
   async getCustomDomains(userId: string): Promise<any[]> {
@@ -4451,21 +4455,34 @@ class MemStorage implements IStorage {
     return {
       id: Math.random().toString(36).substr(2, 9),
       domain: domainData.domain,
+      type: domainData.type || 'cname',
       status: 'pending',
-      sslEnabled: false,
+      verificationValue: '123.456.789.0',
       createdAt: new Date().toISOString(),
-      verifiedAt: null
+      lastChecked: null,
+      errorMessage: null
     };
+  }
+
+  async verifyCustomDomain(userId: string, domainId: string): Promise<any> {
+    return {
+      id: domainId,
+      status: 'verified',
+      verifiedAt: new Date().toISOString()
+    };
+  }
+
+  async deleteCustomDomain(userId: string, domainId: string): Promise<void> {
+    // Mock implementation - remove domain for user
   }
 
   async getWebhookSettings(userId: string): Promise<any> {
     return {
-      id: '1',
-      url: 'https://example.com/webhook',
-      events: ['conversion', 'click', 'fraud'],
-      isActive: true,
-      secretKey: 'webhook_' + Math.random().toString(36).substr(2, 16),
-      createdAt: '2025-08-01T12:00:00Z'
+      defaultUrl: 'https://example.com/postback',
+      ipWhitelist: ['192.168.1.1', '10.0.0.1'],
+      enabled: true,
+      createdAt: '2025-08-01T12:00:00Z',
+      updatedAt: '2025-08-01T12:00:00Z'
     };
   }
 
