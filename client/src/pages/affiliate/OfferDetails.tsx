@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft } from "lucide-react";
+import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
@@ -86,6 +86,29 @@ export default function OfferDetails() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const offerId = params.id;
+
+  // Состояние запросов офферов (синхронизировано с PartnerOffers)
+  const [offerRequests, setOfferRequests] = useState<Record<string, 'none' | 'pending' | 'approved'>>({
+    '1': 'approved', // Первый оффер уже одобрен
+    '2': 'none',     // Второй не запрошен
+    '3': 'pending',  // Третий в ожидании
+  });
+
+  const requestStatus = offerRequests[offerId || '1'] || 'none';
+  const isApproved = requestStatus === 'approved';
+
+  const handleRequestAccess = () => {
+    if (offerId && requestStatus === 'none') {
+      setOfferRequests(prev => ({
+        ...prev,
+        [offerId]: 'pending'
+      }));
+      toast({
+        title: "Запрос отправлен",
+        description: "Ваш запрос на доступ к офферу отправлен рекламодателю",
+      });
+    }
+  };
 
   // Тестовые данные для детального оффера
   const offerDetails: OfferDetails = {
@@ -226,31 +249,33 @@ export default function OfferDetails() {
         </CardContent>
       </Card>
 
-      {/* Трекинговая ссылка */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5" />
-            Трекинговая ссылка
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg dark:bg-gray-900/50">
-            <code className="flex-1 text-sm font-mono">{offerDetails.trackingLink}</code>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => copyToClipboard(offerDetails.trackingLink, "Трекинговая ссылка")}
-              title="Копировать ссылку"
-            >
-              <Copy className="w-4 h-4" />
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            Замените {"{{"}<code>subid</code>{"}"} на ваш уникальный идентификатор трафика
-          </p>
-        </CardContent>
-      </Card>
+      {/* Трекинговая ссылка - только для одобренных офферов */}
+      {isApproved ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5" />
+              Трекинговая ссылка
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg dark:bg-gray-900/50">
+              <code className="flex-1 text-sm font-mono">{offerDetails.trackingLink}</code>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => copyToClipboard(offerDetails.trackingLink, "Трекинговая ссылка")}
+                title="Копировать ссылку"
+              >
+                <Copy className="w-4 h-4" />
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              Замените {"{{"}<code>subid</code>{"}"} на ваш уникальный идентификатор трафика
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* Гео-таргетинг */}
       <Card>
@@ -275,51 +300,93 @@ export default function OfferDetails() {
         </CardContent>
       </Card>
 
-      {/* Лендинг страницы */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ExternalLink className="w-5 h-5" />
-            Лендинг страницы ({offerDetails.landingPages.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {offerDetails.landingPages.map((landing) => (
-              <div key={landing.id} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium">{landing.name}</h4>
-                    {landing.isDefault && (
-                      <Badge variant="default" className="text-xs">По умолчанию</Badge>
-                    )}
-                    <Badge variant="outline" className="text-xs">{landing.type}</Badge>
+      {/* Лендинг страницы - условно для одобренных или кнопка запроса */}
+      {isApproved ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ExternalLink className="w-5 h-5" />
+              Лендинг страницы ({offerDetails.landingPages.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {offerDetails.landingPages.map((landing) => (
+                <div key={landing.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="font-medium">{landing.name}</h4>
+                      {landing.isDefault && (
+                        <Badge variant="default" className="text-xs">По умолчанию</Badge>
+                      )}
+                      <Badge variant="outline" className="text-xs">{landing.type}</Badge>
+                    </div>
+                    <code className="text-sm text-muted-foreground">{landing.url}</code>
                   </div>
-                  <code className="text-sm text-muted-foreground">{landing.url}</code>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => copyToClipboard(landing.url, "URL лендинга")}
+                      title="Копировать URL"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => window.open(landing.url, '_blank')}
+                      title="Открыть в новой вкладке"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => copyToClipboard(landing.url, "URL лендинга")}
-                    title="Копировать URL"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => window.open(landing.url, '_blank')}
-                    title="Открыть в новой вкладке"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5" />
+              Доступ к лендингам
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4 py-12">
+            <Lock className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
+            <div>
+              <h3 className="text-lg font-medium mb-2">
+                {requestStatus === 'pending' ? 'Запрос отправлен' : 'Требуется доступ'}
+              </h3>
+              <p className="text-muted-foreground">
+                {requestStatus === 'pending' 
+                  ? 'Ваш запрос на доступ к лендингам и ссылкам рассматривается рекламодателем'
+                  : 'Для получения ссылок отслеживания и лендинг-страниц необходимо запросить доступ у рекламодателя'
+                }
+              </p>
+            </div>
+            {requestStatus === 'none' && (
+              <Button 
+                onClick={handleRequestAccess}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+              >
+                Запросить доступ
+              </Button>
+            )}
+            {requestStatus === 'pending' && (
+              <Button 
+                variant="outline"
+                className="border-yellow-500 text-yellow-600 hover:bg-yellow-50 px-8"
+                disabled
+              >
+                В ожидании одобрения
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* KPI условия */}
       <Card>
