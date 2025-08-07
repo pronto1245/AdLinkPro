@@ -164,11 +164,33 @@ export default function PartnerOffers() {
     });
   };
 
+  // Состояние запросов офферов
+  const [offerRequests, setOfferRequests] = useState<Record<string, 'none' | 'pending' | 'approved'>>({
+    '1': 'approved', // Первый оффер уже одобрен
+    '2': 'none',     // Второй не запрошен
+    '3': 'pending',  // Третий в ожидании
+  });
+
   const handleRequestOffer = (offerId: string) => {
-    toast({
-      title: "Запрос отправлен",
-      description: "Ваш запрос на доступ к офферу отправлен рекламодателю",
-    });
+    const currentStatus = offerRequests[offerId] || 'none';
+    
+    if (currentStatus === 'none') {
+      // Отправляем запрос
+      setOfferRequests(prev => ({
+        ...prev,
+        [offerId]: 'pending'
+      }));
+      toast({
+        title: "Запрос отправлен",
+        description: "Ваш запрос на доступ к офферу отправлен рекламодателю",
+      });
+    } else if (currentStatus === 'approved') {
+      // Забираем ссылку
+      toast({
+        title: "Ссылка получена",
+        description: "Трекинговая ссылка скопирована в буфер обмена",
+      });
+    }
   };
 
   if (isLoading) {
@@ -356,14 +378,41 @@ export default function PartnerOffers() {
                       {/* Действия */}
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant={offer.isApproved ? "default" : "outline"}
-                            className={offer.isApproved ? "bg-green-600 hover:bg-green-700 text-white" : ""}
-                            onClick={() => handleRequestOffer(offer.id)}
-                          >
-                            {offer.isApproved ? "Получить ссылку" : "Запросить"}
-                          </Button>
+                          {(() => {
+                            const requestStatus = offerRequests[offer.id] || 'none';
+                            
+                            if (requestStatus === 'approved') {
+                              return (
+                                <Button
+                                  size="sm"
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                  onClick={() => handleRequestOffer(offer.id)}
+                                >
+                                  Забрать ссылку
+                                </Button>
+                              );
+                            } else if (requestStatus === 'pending') {
+                              return (
+                                <Button
+                                  size="sm"
+                                  disabled
+                                  className="bg-yellow-500 text-white cursor-not-allowed opacity-90"
+                                >
+                                  В ожидании
+                                </Button>
+                              );
+                            } else {
+                              return (
+                                <Button
+                                  size="sm"
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                                  onClick={() => handleRequestOffer(offer.id)}
+                                >
+                                  Запросить
+                                </Button>
+                              );
+                            }
+                          })()}
                           
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
