@@ -252,7 +252,28 @@ const AdvertiserOffers = () => {
                     <TableCell>{offer.cr || 0}%</TableCell>
                     <TableCell>${offer.payout} {offer.currency}</TableCell>
                     <TableCell>
-                      <Badge>{offer.status}</Badge>
+                      <Badge 
+                        variant={
+                          offer.status === 'active' ? 'default' :
+                          offer.status === 'paused' ? 'secondary' :
+                          offer.status === 'archived' ? 'destructive' :
+                          offer.status === 'draft' ? 'outline' :
+                          'default'
+                        }
+                        className={
+                          offer.status === 'active' ? 'bg-green-500 hover:bg-green-600 text-white' :
+                          offer.status === 'paused' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' :
+                          offer.status === 'archived' ? 'bg-red-500 hover:bg-red-600 text-white' :
+                          offer.status === 'draft' ? 'bg-gray-500 hover:bg-gray-600 text-white border-gray-600' :
+                          'bg-blue-500 hover:bg-blue-600 text-white'
+                        }
+                      >
+                        {offer.status === 'active' ? 'Активный' :
+                         offer.status === 'paused' ? 'Приостановлен' :
+                         offer.status === 'archived' ? 'Архив' :
+                         offer.status === 'draft' ? 'Черновик' :
+                         offer.status}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
