@@ -120,47 +120,46 @@ export default function AdvertiserProfile() {
     enabled: !!user
   });
 
-  const { data: apiTokens, isLoading: tokensLoading } = useQuery({
-    queryKey: ['/api/advertiser/profile/tokens'],
-    queryFn: async () => {
-      return await apiRequest('/api/advertiser/profile/tokens') as ApiToken[];
-    }
+  const { data: apiTokens, isLoading: tokensLoading } = useQuery<ApiToken[]>({
+    queryKey: ['/api/advertiser/profile/tokens']
   });
 
-  const { data: customDomains, isLoading: domainsLoading } = useQuery({
-    queryKey: ['/api/advertiser/profile/domains'],
-    queryFn: async () => {
-      return await apiRequest('/api/advertiser/profile/domains') as CustomDomain[];
-    }
+  const { data: customDomains, isLoading: domainsLoading } = useQuery<CustomDomain[]>({
+    queryKey: ['/api/advertiser/profile/domains']
   });
 
-  const { data: webhookSettings, isLoading: webhookLoading } = useQuery({
-    queryKey: ['/api/advertiser/profile/webhook'],
-    queryFn: async () => {
-      return await apiRequest('/api/advertiser/profile/webhook') as WebhookSettings;
-    }
+  const { data: webhookSettings, isLoading: webhookLoading } = useQuery<WebhookSettings>({
+    queryKey: ['/api/advertiser/profile/webhook']
   });
 
   // Initialize forms when data loads
   useEffect(() => {
-    if (profile) {
+    if (user) {
       setFormData({
-        ...profile,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '', 
+        email: user.email || '',
+        phone: user.phone || '',
+        company: user.company || '',
+        country: user.country || 'US',
+        language: user.language || 'en',
+        timezone: user.timezone || 'UTC',
+        currency: user.currency || 'USD',
         settings: {
-          brandName: profile.settings?.brandName || '',
-          brandDescription: profile.settings?.brandDescription || '',
-          brandLogo: profile.settings?.brandLogo || '',
-          vertical: profile.settings?.vertical || '',
-          partnerRules: profile.settings?.partnerRules || '',
+          brandName: user.settings?.brandName || '',
+          brandDescription: user.settings?.brandDescription || '',
+          brandLogo: user.settings?.brandLogo || '',
+          vertical: user.settings?.vertical || '',
+          partnerRules: user.settings?.partnerRules || '',
           notifications: {
-            email: profile.settings?.notifications?.email || false,
-            telegram: profile.settings?.notifications?.telegram || false,
-            sms: profile.settings?.notifications?.sms || false
+            email: user.settings?.notifications?.email || false,
+            telegram: user.settings?.notifications?.telegram || false,
+            sms: user.settings?.notifications?.sms || false
           }
         }
       });
     }
-  }, [profile]);
+  }, [user]);
 
   useEffect(() => {
     if (webhookSettings) {
@@ -175,10 +174,9 @@ export default function AdvertiserProfile() {
   // Mutations
   const updateProfileMutation = useMutation({
     mutationFn: async (data: Partial<AdvertiserProfile>) => {
-      return await apiRequest('/api/advertiser/profile/update', {
+      return apiRequest('/api/advertiser/profile', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: data
       });
     },
     onSuccess: () => {
@@ -200,10 +198,9 @@ export default function AdvertiserProfile() {
 
   const changePasswordMutation = useMutation({
     mutationFn: async (passwordData: { currentPassword: string; newPassword: string }) => {
-      return await apiRequest('/api/advertiser/profile/change-password', {
+      return apiRequest('/api/advertiser/profile/change-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(passwordData)
+        body: passwordData
       });
     },
     onSuccess: () => {
@@ -224,10 +221,9 @@ export default function AdvertiserProfile() {
 
   const generateTokenMutation = useMutation({
     mutationFn: async (tokenName: string) => {
-      return await apiRequest('/api/advertiser/profile/tokens/generate', {
+      return apiRequest('/api/advertiser/profile/tokens/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: tokenName })
+        body: { name: tokenName }
       });
     },
     onSuccess: () => {
@@ -248,7 +244,7 @@ export default function AdvertiserProfile() {
 
   const deleteTokenMutation = useMutation({
     mutationFn: async (tokenId: string) => {
-      return await apiRequest(`/api/advertiser/profile/tokens/${tokenId}`, {
+      return apiRequest(`/api/advertiser/profile/tokens/${tokenId}`, {
         method: 'DELETE'
       });
     },
@@ -270,10 +266,9 @@ export default function AdvertiserProfile() {
 
   const addDomainMutation = useMutation({
     mutationFn: async (domainData: { domain: string; type: string }) => {
-      return await apiRequest('/api/advertiser/profile/domains', {
+      return apiRequest('/api/advertiser/profile/domains', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(domainData)
+        body: domainData
       });
     },
     onSuccess: () => {
@@ -295,7 +290,7 @@ export default function AdvertiserProfile() {
 
   const verifyDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return await apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, {
+      return apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, {
         method: 'POST'
       });
     },
@@ -317,7 +312,7 @@ export default function AdvertiserProfile() {
 
   const deleteDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return await apiRequest(`/api/advertiser/profile/domains/${domainId}`, {
+      return apiRequest(`/api/advertiser/profile/domains/${domainId}`, {
         method: 'DELETE'
       });
     },
@@ -339,10 +334,9 @@ export default function AdvertiserProfile() {
 
   const updateWebhookMutation = useMutation({
     mutationFn: async (webhookData: WebhookSettings) => {
-      return await apiRequest('/api/advertiser/profile/webhook', {
+      return apiRequest('/api/advertiser/profile/webhook', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(webhookData)
+        body: webhookData
       });
     },
     onSuccess: () => {

@@ -1400,7 +1400,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Advertiser Profile Management Endpoints
   
   // Update advertiser profile
-  app.patch("/api/advertiser/profile/update", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+  app.patch("/api/advertiser/profile", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
       const updatedUser = await storage.updateUser(authUser.id, req.body);
