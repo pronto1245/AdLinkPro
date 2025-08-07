@@ -16,6 +16,7 @@ interface Offer {
   currency: string;
   countries: string[];
   createdAt: string;
+  logo?: string;
 }
 
 export default function AdvertiserOffersSimple() {
@@ -80,8 +81,19 @@ export default function AdvertiserOffersSimple() {
                     return (
                       <TableRow key={offer.id}>
                         <TableCell>
-                          <div className="font-medium">{offer.name}</div>
-                          <div className="text-xs text-gray-500">#{offer.id.slice(0, 8)}</div>
+                          <div className="flex items-center gap-3">
+                            {offer.logo && (
+                              <img 
+                                src={offer.logo} 
+                                alt={offer.name}
+                                className="w-10 h-10 rounded-lg object-cover"
+                              />
+                            )}
+                            <div>
+                              <div className="font-medium">{offer.name}</div>
+                              <div className="text-xs text-gray-500">#{offer.id.slice(0, 8)}</div>
+                            </div>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary">{offer.category}</Badge>

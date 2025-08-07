@@ -85,7 +85,7 @@ const MyOffersDragDrop: React.FC = () => {
   }, [offers]);
 
   const createOfferMutation = useMutation({
-    mutationFn: (payload: Partial<Offer>) => apiRequest('/api/advertiser/offers', { method: 'POST', body: payload }),
+    mutationFn: (payload: Partial<Offer>) => apiRequest('/api/advertiser/offers', 'POST', payload),
     onSuccess: () => { 
       toast({
         title: "Успех",
@@ -104,7 +104,7 @@ const MyOffersDragDrop: React.FC = () => {
 
   const updateOfferMutation = useMutation({
     mutationFn: (payload: Partial<Offer> & { id: string }) => 
-      apiRequest(`/api/advertiser/offers/${payload.id}`, { method: 'PUT', body: payload }),
+      apiRequest(`/api/advertiser/offers/${payload.id}`, 'PUT', payload),
     onSuccess: () => { 
       toast({
         title: "Успех",
@@ -122,7 +122,7 @@ const MyOffersDragDrop: React.FC = () => {
   });
 
   const deleteOfferMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/advertiser/offers/${id}`, { method: 'DELETE' }),
+    mutationFn: (id: string) => apiRequest(`/api/advertiser/offers/${id}`, 'DELETE'),
     onSuccess: () => { 
       toast({
         title: "Успех",
