@@ -333,8 +333,8 @@ export default function PartnerOffers() {
                 <TableRow>
                   <TableHead>Название</TableHead>
                   <TableHead>Категория</TableHead>
-                  <TableHead>Гео</TableHead>
                   <TableHead>Тип выплаты</TableHead>
+                  <TableHead>Гео</TableHead>
                   <TableHead>Сумма</TableHead>
                   <TableHead>CR</TableHead>
                   <TableHead className="text-right">Действия</TableHead>
@@ -379,6 +379,13 @@ export default function PartnerOffers() {
                         </Badge>
                       </TableCell>
 
+                      {/* Тип выплаты */}
+                      <TableCell>
+                        <Badge variant="outline" className="uppercase font-semibold">
+                          {offer.payoutType || 'CPA'}
+                        </Badge>
+                      </TableCell>
+
                       {/* Гео с флагами */}
                       <TableCell>
                         <div className="flex items-center gap-1 flex-wrap max-w-[100px]">
@@ -402,13 +409,6 @@ export default function PartnerOffers() {
                             </span>
                           )}
                         </div>
-                      </TableCell>
-
-                      {/* Тип выплаты */}
-                      <TableCell>
-                        <Badge variant="outline" className="uppercase font-semibold">
-                          {offer.payoutType || 'CPA'}
-                        </Badge>
                       </TableCell>
 
                       {/* Сумма с разбивкой по гео */}
