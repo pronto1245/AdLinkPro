@@ -152,14 +152,19 @@ export default function AdvertiserDashboard() {
 
   // Мутации для действий
   const exportMutation = useMutation({
-    mutationFn: (format: 'csv' | 'excel') => apiRequest('/api/advertiser/export', 'POST', { format, dateRange, filters }),
+    mutationFn: (format: 'csv' | 'excel') => apiRequest('/api/advertiser/export', {
+      method: 'POST',
+      body: { format, dateRange, filters }
+    }),
     onSuccess: () => {
       alert('Статистика экспортирована успешно');
     }
   });
 
   const markNotificationRead = useMutation({
-    mutationFn: (notificationId: string) => apiRequest(`/api/notifications/${notificationId}/read`, 'PATCH'),
+    mutationFn: (notificationId: string) => apiRequest(`/api/notifications/${notificationId}/read`, {
+      method: 'PATCH'
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/dashboard'] });
     }
