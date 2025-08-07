@@ -185,8 +185,7 @@ export default function AdvertiserProfile() {
     mutationFn: async (data: Partial<AdvertiserProfile>) => {
       return apiRequest('/api/advertiser/profile', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: data
       });
     },
     onSuccess: () => {
@@ -210,8 +209,7 @@ export default function AdvertiserProfile() {
     mutationFn: async (passwordData: { currentPassword: string; newPassword: string }) => {
       return apiRequest('/api/advertiser/profile/change-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(passwordData)
+        body: passwordData
       });
     },
     onSuccess: () => {
@@ -234,8 +232,7 @@ export default function AdvertiserProfile() {
     mutationFn: async (tokenName: string) => {
       return apiRequest('/api/advertiser/profile/tokens/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: tokenName })
+        body: { name: tokenName }
       });
     },
     onSuccess: () => {
@@ -257,8 +254,7 @@ export default function AdvertiserProfile() {
   const deleteTokenMutation = useMutation({
     mutationFn: async (tokenId: string) => {
       return apiRequest(`/api/advertiser/profile/tokens/${tokenId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
+        method: 'DELETE'
       });
     },
     onSuccess: () => {
@@ -281,8 +277,7 @@ export default function AdvertiserProfile() {
     mutationFn: async (domainData: { domain: string; type: string }) => {
       return apiRequest('/api/advertiser/profile/domains', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(domainData)
+        body: domainData
       });
     },
     onSuccess: () => {
@@ -305,8 +300,7 @@ export default function AdvertiserProfile() {
   const verifyDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
       return apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        method: 'POST'
       });
     },
     onSuccess: () => {
@@ -328,8 +322,7 @@ export default function AdvertiserProfile() {
   const deleteDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
       return apiRequest(`/api/advertiser/profile/domains/${domainId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
+        method: 'DELETE'
       });
     },
     onSuccess: () => {
@@ -352,8 +345,7 @@ export default function AdvertiserProfile() {
     mutationFn: async (webhookData: WebhookSettings) => {
       return apiRequest('/api/advertiser/profile/webhook', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(webhookData)
+        body: webhookData
       });
     },
     onSuccess: () => {
@@ -376,8 +368,7 @@ export default function AdvertiserProfile() {
     mutationFn: async (notificationsData: { email: boolean; telegram: boolean; sms: boolean }) => {
       return apiRequest('/api/advertiser/profile/notifications', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notifications: notificationsData })
+        body: { notifications: notificationsData }
       });
     },
     onSuccess: () => {
