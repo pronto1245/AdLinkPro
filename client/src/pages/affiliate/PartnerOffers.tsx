@@ -363,7 +363,7 @@ export default function PartnerOffers() {
                           )}
                           <div>
                             <div 
-                              className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors"
+                              className="font-medium cursor-pointer text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors"
                               onClick={() => navigate(`/affiliate/offers/${offer.id}`)}
                             >
                               {offer.name}
