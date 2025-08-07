@@ -3833,6 +3833,92 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // API Tokens Management
+  async getApiTokens(userId: string): Promise<any[]> {
+    // Mock implementation for now - in real app would query API tokens table
+    return [
+      {
+        id: 'token_1',
+        token: 'api_' + nanoid(32),
+        name: 'Main API Token',
+        lastUsed: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        isActive: true
+      }
+    ];
+  }
+
+  async generateApiToken(userId: string, name: string): Promise<any> {
+    const token = {
+      id: 'token_' + nanoid(8),
+      token: 'api_' + nanoid(32),
+      name,
+      lastUsed: null,
+      createdAt: new Date().toISOString(),
+      isActive: true
+    };
+    return token;
+  }
+
+  async deleteApiToken(userId: string, tokenId: string): Promise<void> {
+    // Mock implementation - would delete from API tokens table
+    return;
+  }
+
+  // Custom Domains Management
+  async getCustomDomains(userId: string): Promise<any[]> {
+    // Mock implementation for now - in real app would query custom domains table
+    return [
+      {
+        id: 'domain_1',
+        domain: 'track.example.com',
+        status: 'verified' as const,
+        type: 'cname' as const,
+        verificationValue: 'track-' + nanoid(16),
+        createdAt: new Date().toISOString(),
+        lastChecked: new Date().toISOString()
+      }
+    ];
+  }
+
+  async addCustomDomain(userId: string, domainData: any): Promise<any> {
+    const domain = {
+      id: 'domain_' + nanoid(8),
+      domain: domainData.domain,
+      status: 'pending' as const,
+      type: domainData.type,
+      verificationValue: 'verify-' + nanoid(16),
+      createdAt: new Date().toISOString(),
+      lastChecked: null
+    };
+    return domain;
+  }
+
+  async verifyCustomDomain(userId: string, domainId: string): Promise<any> {
+    // Mock implementation - would trigger domain verification
+    return { success: true };
+  }
+
+  async deleteCustomDomain(userId: string, domainId: string): Promise<void> {
+    // Mock implementation - would delete from custom domains table
+    return;
+  }
+
+  // Webhook Settings Management
+  async getWebhookSettings(userId: string): Promise<any> {
+    // Mock implementation for now - in real app would query webhook settings table
+    return {
+      defaultUrl: 'https://example.com/webhook',
+      ipWhitelist: ['127.0.0.1', '192.168.1.1'],
+      enabled: true
+    };
+  }
+
+  async updateWebhookSettings(userId: string, settings: any): Promise<any> {
+    // Mock implementation - would update webhook settings in database
+    return settings;
+  }
+
   // End of DatabaseStorage class
 }
 

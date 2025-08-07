@@ -123,24 +123,21 @@ export default function AdvertiserProfile() {
   const { data: apiTokens, isLoading: tokensLoading } = useQuery({
     queryKey: ['/api/advertiser/profile/tokens'],
     queryFn: async () => {
-      const response = await apiRequest('/api/advertiser/profile/tokens');
-      return response as ApiToken[];
+      return await apiRequest('/api/advertiser/profile/tokens') as ApiToken[];
     }
   });
 
   const { data: customDomains, isLoading: domainsLoading } = useQuery({
     queryKey: ['/api/advertiser/profile/domains'],
     queryFn: async () => {
-      const response = await apiRequest('/api/advertiser/profile/domains');
-      return response as CustomDomain[];
+      return await apiRequest('/api/advertiser/profile/domains') as CustomDomain[];
     }
   });
 
   const { data: webhookSettings, isLoading: webhookLoading } = useQuery({
     queryKey: ['/api/advertiser/profile/webhook'],
     queryFn: async () => {
-      const response = await apiRequest('/api/advertiser/profile/webhook');
-      return response as WebhookSettings;
+      return await apiRequest('/api/advertiser/profile/webhook') as WebhookSettings;
     }
   });
 
@@ -180,6 +177,7 @@ export default function AdvertiserProfile() {
     mutationFn: async (data: Partial<AdvertiserProfile>) => {
       return await apiRequest('/api/advertiser/profile/update', {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
     },
@@ -204,6 +202,7 @@ export default function AdvertiserProfile() {
     mutationFn: async (passwordData: { currentPassword: string; newPassword: string }) => {
       return await apiRequest('/api/advertiser/profile/change-password', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(passwordData)
       });
     },
@@ -227,6 +226,7 @@ export default function AdvertiserProfile() {
     mutationFn: async (tokenName: string) => {
       return await apiRequest('/api/advertiser/profile/tokens/generate', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: tokenName })
       });
     },
@@ -272,6 +272,7 @@ export default function AdvertiserProfile() {
     mutationFn: async (domainData: { domain: string; type: string }) => {
       return await apiRequest('/api/advertiser/profile/domains', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(domainData)
       });
     },
@@ -340,6 +341,7 @@ export default function AdvertiserProfile() {
     mutationFn: async (webhookData: WebhookSettings) => {
       return await apiRequest('/api/advertiser/profile/webhook', {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(webhookData)
       });
     },
