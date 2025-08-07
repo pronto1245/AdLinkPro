@@ -2,6 +2,12 @@
 This anti-fraud platform provides comprehensive financial security and real-time risk management for financial institutions, payment processors, and e-commerce. Key capabilities include AI-powered fraud detection, real-time risk assessment, analytics dashboards, automated blocking, and detailed audit trails. It supports device fingerprinting, IP analysis, behavioral patterns, and transaction monitoring to offer deep insights into fraud patterns, risk scores, and security metrics for effective prevention and compliance. The platform, rebranded as FraudGuard, is fully operational with robust security features, performance optimizations, and comprehensive integration across all modules.
 
 ## Recent Updates (August 2025)
+- ✅ **Full-Screen Layout Implementation (Aug 7, 2025)**: Successfully implemented full-screen layout across all advertiser pages
+  - Updated RoleBasedLayout.tsx to provide full-width container with small left menu margin
+  - Converted all advertiser pages (AdvertiserOffers, AdvertiserProfile, CreateOffer, AdvertiserDashboardNew, AdvertiserFinances, simple-dashboard, AdvertiserPartners) to use `w-full` instead of `container mx-auto`
+  - Fixed TypeScript LSP errors in API requests using proper apiRequest syntax
+  - Removed custom margin classes (`ml-16`, `ml-64`) from AdvertiserPartners.tsx for consistency
+  - All pages now properly expand to full screen width while maintaining responsive design
 - ✅ **AdvertiserOffers Complete Implementation (Aug 7, 2025)**: Successfully delivered comprehensive offers management page
   - Created full-featured AdvertiserOffers.tsx component (675 lines) with complete API integration
   - Implements comprehensive offer management with real data from `/api/advertiser/offers` endpoint
