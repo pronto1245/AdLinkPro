@@ -51,16 +51,99 @@ function formatCR(cr: number | undefined): string {
 // Функция для получения флага страны
 function getCountryFlag(countryCode: string): string {
   const flags: Record<string, string> = {
-    RU: "🇷🇺",
-    KZ: "🇰🇿", 
-    BY: "🇧🇾",
-    US: "🇺🇸",
-    DE: "🇩🇪",
-    FR: "🇫🇷",
-    UA: "🇺🇦",
-    EU: "🇪🇺"
+    RU: "🇷🇺", // Россия
+    KZ: "🇰🇿", // Казахстан
+    BY: "🇧🇾", // Беларусь
+    US: "🇺🇸", // США
+    DE: "🇩🇪", // Германия
+    FR: "🇫🇷", // Франция
+    UA: "🇺🇦", // Украина
+    EU: "🇪🇺", // Европейский союз
+    GB: "🇬🇧", // Великобритания
+    IN: "🇮🇳", // Индия
+    BR: "🇧🇷", // Бразилия
+    CA: "🇨🇦", // Канада
+    AU: "🇦🇺", // Австралия
+    JP: "🇯🇵", // Япония
+    CN: "🇨🇳", // Китай
+    IT: "🇮🇹", // Италия
+    ES: "🇪🇸", // Испания
+    NL: "🇳🇱", // Нидерланды
+    SE: "🇸🇪", // Швеция
+    NO: "🇳🇴", // Норвегия
+    DK: "🇩🇰", // Дания
+    FI: "🇫🇮", // Финляндия
+    PL: "🇵🇱", // Польша
+    CZ: "🇨🇿", // Чехия
+    AT: "🇦🇹", // Австрия
+    CH: "🇨🇭", // Швейцария
+    BE: "🇧🇪", // Бельгия
+    PT: "🇵🇹", // Португалия
+    GR: "🇬🇷", // Греция
+    TR: "🇹🇷", // Турция
+    MX: "🇲🇽", // Мексика
+    AR: "🇦🇷", // Аргентина
+    CL: "🇨🇱", // Чили
+    CO: "🇨🇴", // Колумбия
+    PE: "🇵🇪", // Перу
+    VE: "🇻🇪", // Венесуэла
+    ZA: "🇿🇦", // Южная Африка
+    EG: "🇪🇬", // Египет
+    NG: "🇳🇬", // Нигерия
+    KE: "🇰🇪", // Кения
+    MA: "🇲🇦", // Марокко
+    TH: "🇹🇭", // Таиланд
+    VN: "🇻🇳", // Вьетнам
+    ID: "🇮🇩", // Индонезия
+    MY: "🇲🇾", // Малайзия
+    SG: "🇸🇬", // Сингапур
+    PH: "🇵🇭", // Филиппины
+    KR: "🇰🇷", // Южная Корея
+    TW: "🇹🇼", // Тайвань
+    HK: "🇭🇰", // Гонконг
+    AE: "🇦🇪", // ОАЭ
+    SA: "🇸🇦", // Саудовская Аравия
+    IL: "🇮🇱", // Израиль
+    IR: "🇮🇷", // Иран
+    IQ: "🇮🇶", // Ирак
+    PK: "🇵🇰", // Пакистан
+    BD: "🇧🇩", // Бангладеш
+    LK: "🇱🇰", // Шри-Ланка
+    NP: "🇳🇵", // Непал
+    MM: "🇲🇲", // Мьянма
+    UZ: "🇺🇿", // Узбекистан
+    KG: "🇰🇬", // Киргизия
+    TJ: "🇹🇯", // Таджикистан
+    TM: "🇹🇲", // Туркменистан
+    AM: "🇦🇲", // Армения
+    AZ: "🇦🇿", // Азербайджан
+    GE: "🇬🇪", // Грузия
+    MD: "🇲🇩", // Молдова
+    RO: "🇷🇴", // Румыния
+    BG: "🇧🇬", // Болгария
+    RS: "🇷🇸", // Сербия
+    HR: "🇭🇷", // Хорватия
+    SI: "🇸🇮", // Словения
+    SK: "🇸🇰", // Словакия
+    HU: "🇭🇺", // Венгрия
+    LT: "🇱🇹", // Литва
+    LV: "🇱🇻", // Латвия
+    EE: "🇪🇪", // Эстония
+    IS: "🇮🇸", // Исландия
+    IE: "🇮🇪", // Ирландия
+    LU: "🇱🇺", // Люксембург
+    MT: "🇲🇹", // Мальта
+    CY: "🇨🇾", // Кипр
+    MK: "🇲🇰", // Македония
+    AL: "🇦🇱", // Албания
+    BA: "🇧🇦", // Босния и Герцеговина
+    ME: "🇲🇪", // Черногория
+    XK: "🇽🇰", // Косово
+    GLOBAL: "🌍", // Глобально
+    WORLD: "🌍", // Весь мир
+    WW: "🌍"    // Весь мир (сокращение)
   };
-  return flags[countryCode] || "🌍";
+  return flags[countryCode.toUpperCase()] || "🌍";
 }
 
 export default function PartnerOffers() {
@@ -233,15 +316,23 @@ export default function PartnerOffers() {
 
                       {/* Гео с флагами */}
                       <TableCell>
-                        <div className="flex gap-1 flex-wrap">
-                          {offer.countries?.slice(0, 3).map((country: string) => (
-                            <div key={country} className="flex items-center gap-1">
-                              <span className="text-lg">{getCountryFlag(country)}</span>
-                              <span className="text-xs">{country}</span>
-                            </div>
-                          ))}
-                          {offer.countries?.length > 3 && (
-                            <span className="text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1 flex-wrap max-w-[100px]">
+                          {Array.isArray(offer.countries) 
+                            ? offer.countries.slice(0, 3).map((country: string) => (
+                                <div key={country} className="flex items-center gap-0.5 bg-gray-50 rounded px-1 py-0.5">
+                                  <span className="text-sm leading-none">{getCountryFlag(country)}</span>
+                                  <span className="text-xs font-medium">{country}</span>
+                                </div>
+                              ))
+                            : (
+                                <div className="flex items-center gap-0.5 bg-gray-50 rounded px-1 py-0.5">
+                                  <span className="text-sm leading-none">{getCountryFlag(offer.countries)}</span>
+                                  <span className="text-xs font-medium">{offer.countries}</span>
+                                </div>
+                              )
+                          }
+                          {Array.isArray(offer.countries) && offer.countries.length > 3 && (
+                            <span className="text-xs text-muted-foreground bg-gray-100 rounded px-1 py-0.5">
                               +{offer.countries.length - 3}
                             </span>
                           )}
