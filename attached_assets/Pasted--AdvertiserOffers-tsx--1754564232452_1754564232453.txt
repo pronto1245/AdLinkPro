@@ -1,0 +1,185 @@
+// ✅ AdvertiserOffers.tsx: офферы рекламодателя с созданием, редактированием, фильтрацией, флагами, экспортом, массовыми действиями и превью лендингов
+
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
+import { Download, Edit, Flag, Plus, Trash2, Eye } from 'lucide-react';
+import OfferEditModal from './OfferEditModal';
+import { apiRequest } from '@/lib/api';
+import { formatNumber } from '@/lib/utils';
+
+const AdvertiserOffers = () => {
+  const queryClient = useQueryClient();
+  const [editOffer, setEditOffer] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
+
+  const { data: offers = [], isLoading } = useQuery({
+    queryKey: ['offers'],
+    queryFn: () => apiRequest('/offers'),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: any) =>
+      data.id
+        ? apiRequest(`/offers/${data.id}`, 'PATCH', data)
+        : apiRequest(`/offers`, 'POST', data),
+    onSuccess: () => {
+      toast.success('Оффер сохранён');
+      queryClient.invalidateQueries(['offers']);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (ids: string[]) => apiRequest(`/offers/bulk-delete`, 'POST', { ids }),
+    onSuccess: () => {
+      toast.success('Удалено');
+      queryClient.invalidateQueries(['offers']);
+      setSelectedOffers([]);
+    },
+  });
+
+  const handleExport = () => {
+    const csv = [
+      ['ID', 'Название', 'GEO', 'Категория', 'Payout', 'CR', 'Статус'],
+      ...offers.map(o => [o.id, o.name, o.geo.join(','), o.category, o.payout, o.cr, o.status]),
+    ]
+      .map(row => row.join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'offers.csv';
+    a.click();
+  };
+
+  const filtered = offers
+    .filter(o => o.name.toLowerCase().includes(search.toLowerCase()))
+    .filter(o => selectedStatus === 'all' || o.status === selectedStatus);
+
+  const toggleSelectOffer = (id: string) => {
+    setSelectedOffers(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const allSelected = filtered.length > 0 && filtered.every(o => selectedOffers.includes(o.id));
+
+  const toggleSelectAll = () => {
+    setSelectedOffers(allSelected ? [] : filtered.map(o => o.id));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-4">
+        <Input
+          placeholder="Поиск по названию..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-64"
+        />
+        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Статус" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Все статусы</SelectItem>
+            <SelectItem value="active">Активные</SelectItem>
+            <SelectItem value="paused">На паузе</SelectItem>
+            <SelectItem value="archived">В архиве</SelectItem>
+          </SelectContent>
+        </Select>
+        <div className="flex gap-2">
+          {selectedOffers.length > 0 && (
+            <Button variant="destructive" onClick={() => deleteMutation.mutate(selectedOffers)}>
+              <Trash2 className="w-4 h-4 mr-1" /> Удалить
+            </Button>
+          )}
+          <Button onClick={() => setEditOffer({})}>
+            <Plus className="w-4 h-4 mr-1" /> Новый оффер
+          </Button>
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="w-4 h-4 mr-2" /> Экспорт CSV
+          </Button>
+        </div>
+      </div>
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>
+              <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} />
+            </TableHead>
+            <TableHead>Оффер</TableHead>
+            <TableHead>GEO</TableHead>
+            <TableHead>Payout</TableHead>
+            <TableHead>CR</TableHead>
+            <TableHead>Категория</TableHead>
+            <TableHead>Статус</TableHead>
+            <TableHead></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filtered.map((offer) => (
+            <TableRow key={offer.id}>
+              <TableCell>
+                <Checkbox
+                  checked={selectedOffers.includes(offer.id)}
+                  onCheckedChange={() => toggleSelectOffer(offer.id)}
+                />
+              </TableCell>
+              <TableCell className="font-medium">{offer.name}</TableCell>
+              <TableCell className="flex flex-wrap gap-1">
+                {offer.geo.map((g: string) => (
+                  <Badge key={g} className="px-2">
+                    <Flag className="w-3 h-3 inline-block mr-1" /> {g}
+                  </Badge>
+                ))}
+              </TableCell>
+              <TableCell>{formatNumber(offer.payout)}</TableCell>
+              <TableCell>{formatNumber(offer.cr)}%</TableCell>
+              <TableCell>{offer.category}</TableCell>
+              <TableCell>
+                <Badge variant={offer.status === 'active' ? 'default' : 'outline'}>{offer.status}</Badge>
+              </TableCell>
+              <TableCell className="flex gap-2">
+                <Button size="sm" variant="ghost" onClick={() => setEditOffer(offer)}>
+                  <Edit className="w-4 h-4" />
+                </Button>
+                {offer.previewUrl && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => window.open(offer.previewUrl, '_blank')}
+                    title="Превью лендинга"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      {editOffer && (
+        <OfferEditModal
+          offer={editOffer}
+          onClose={() => setEditOffer(null)}
+          onSave={(updated) => updateMutation.mutate(updated)}
+        />
+      )}
+    </div>
+  );
+};
+
+export default AdvertiserOffers;
