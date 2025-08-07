@@ -1120,6 +1120,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Tracking domains endpoint for offer creation
+  app.get("/api/advertiser/tracking-domains", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      // Return common tracking domains
+      const trackingDomains = [
+        { id: '1', domain: 'track.example.com', isActive: true },
+        { id: '2', domain: 'tracker.example.com', isActive: true },
+        { id: '3', domain: 'affiliate-track.com', isActive: true }
+      ];
+      res.json(trackingDomains);
+    } catch (error) {
+      console.error("Get tracking domains error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Bulk operations for advertiser offers
   app.post("/api/advertiser/offers/bulk-update", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {

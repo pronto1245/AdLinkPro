@@ -427,10 +427,6 @@ export class DatabaseStorage implements IStorage {
     return offer;
   }
 
-  async deleteOffer(id: string): Promise<void> {
-    await db.delete(offers).where(eq(offers.id, id));
-  }
-
   // Received offers management
   async getReceivedOffers(advertiserId: string): Promise<ReceivedOffer[]> {
     return await db.select().from(receivedOffers).where(eq(receivedOffers.advertiserId, advertiserId));
