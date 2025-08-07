@@ -7,7 +7,8 @@ import jwt from "jsonwebtoken";
 import { 
   insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, insertReceivedOfferSchema,
   type User, users, offers, statistics, fraudAlerts, tickets, postbacks, postbackLogs, trackingClicks,
-  transactions, fraudReports, fraudBlocks, financialTransactions, financialSummaries, payoutRequests
+  transactions, fraudReports, fraudBlocks, financialTransactions, financialSummaries, payoutRequests,
+  offerAccessRequests, partnerOffers
 } from "@shared/schema";
 import { sql } from "drizzle-orm";
 import { eq, and, gte, lte, count, sum, desc } from "drizzle-orm";
@@ -7075,6 +7076,171 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       });
     } catch (error) {
       console.error('Cancel access request error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // =================== OFFER ACCESS REQUESTS API ===================
+  
+  // Partner requests access to an offer
+  app.post('/api/partner/offers/request', authenticateToken, async (req, res) => {
+    const { offerId, message } = req.body;
+    const userId = req.userId;
+
+    if (!offerId) {
+      return res.status(400).json({ error: 'Offer ID is required' });
+    }
+
+    try {
+      // Get offer details first to find advertiser
+      const offer = await storage.getOffer(offerId);
+      if (!offer) {
+        return res.status(404).json({ error: 'Offer not found' });
+      }
+
+      // Check if request already exists
+      const existingRequest = await db.select()
+        .from(offerAccessRequests)
+        .where(
+          and(
+            eq(offerAccessRequests.partnerId, userId),
+            eq(offerAccessRequests.offerId, offerId)
+          )
+        );
+
+      if (existingRequest.length > 0) {
+        return res.status(400).json({ error: 'Request already exists' });
+      }
+
+      // Create new access request
+      const [newRequest] = await db.insert(offerAccessRequests)
+        .values({
+          offerId,
+          partnerId: userId,
+          advertiserId: offer.advertiserId,
+          status: 'pending',
+          requestNote: message || null,
+          requestedAt: new Date()
+        })
+        .returning();
+
+      res.json(newRequest);
+    } catch (error) {
+      console.error('Error requesting offer access:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Advertiser responds to access request
+  app.post('/api/advertiser/access-requests/:requestId/respond', authenticateToken, async (req, res) => {
+    const { requestId } = req.params;
+    const { action, responseMessage } = req.body; // action: 'approve' | 'reject'
+    const userId = req.userId;
+
+    if (!action || !['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid action' });
+    }
+
+    try {
+      // Get the access request
+      const [request] = await db.select()
+        .from(offerAccessRequests)
+        .where(eq(offerAccessRequests.id, requestId));
+
+      if (!request) {
+        return res.status(404).json({ error: 'Request not found' });
+      }
+
+      // Check if current user is the advertiser who owns the offer
+      if (request.advertiserId !== userId) {
+        return res.status(403).json({ error: 'Not authorized' });
+      }
+
+      // Update the access request
+      const [updatedRequest] = await db.update(offerAccessRequests)
+        .set({
+          status: action === 'approve' ? 'approved' : 'rejected',
+          responseNote: responseMessage || null,
+          reviewedAt: new Date(),
+          reviewedBy: userId
+        })
+        .where(eq(offerAccessRequests.id, requestId))
+        .returning();
+
+      // If approved, create/update partner-offer relationship
+      if (action === 'approve') {
+        // Check if partner-offer relationship already exists
+        const existingPartnerOffer = await db.select()
+          .from(partnerOffers)
+          .where(
+            and(
+              eq(partnerOffers.partnerId, request.partnerId),
+              eq(partnerOffers.offerId, request.offerId)
+            )
+          );
+
+        if (existingPartnerOffer.length > 0) {
+          // Update existing relationship
+          await db.update(partnerOffers)
+            .set({ isApproved: true })
+            .where(
+              and(
+                eq(partnerOffers.partnerId, request.partnerId),
+                eq(partnerOffers.offerId, request.offerId)
+              )
+            );
+        } else {
+          // Create new relationship
+          await db.insert(partnerOffers)
+            .values({
+              partnerId: request.partnerId,
+              offerId: request.offerId,
+              isApproved: true
+            });
+        }
+      }
+
+      res.json(updatedRequest);
+    } catch (error) {
+      console.error('Error responding to access request:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get advertiser's access requests
+  app.get('/api/advertiser/access-requests', authenticateToken, async (req, res) => {
+    const userId = req.userId;
+
+    try {
+      const requests = await db.select({
+        id: offerAccessRequests.id,
+        offerId: offerAccessRequests.offerId,
+        partnerId: offerAccessRequests.partnerId,
+        status: offerAccessRequests.status,
+        requestNote: offerAccessRequests.requestNote,
+        responseNote: offerAccessRequests.responseNote,
+        requestedAt: offerAccessRequests.requestedAt,
+        reviewedAt: offerAccessRequests.reviewedAt,
+        // Offer details
+        offerName: offers.name,
+        offerCategory: offers.category,
+        offerPayout: offers.payout,
+        offerPayoutType: offers.payoutType,
+        // Partner details
+        partnerUsername: users.username,
+        partnerEmail: users.email,
+        partnerFirstName: users.firstName,
+        partnerLastName: users.lastName
+      })
+      .from(offerAccessRequests)
+      .leftJoin(offers, eq(offerAccessRequests.offerId, offers.id))
+      .leftJoin(users, eq(offerAccessRequests.partnerId, users.id))
+      .where(eq(offerAccessRequests.advertiserId, userId))
+      .orderBy(desc(offerAccessRequests.requestedAt));
+
+      res.json(requests);
+    } catch (error) {
+      console.error('Error fetching access requests:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });

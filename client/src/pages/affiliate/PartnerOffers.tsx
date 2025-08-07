@@ -178,27 +178,40 @@ export default function PartnerOffers() {
     });
   };
 
-  // Состояние запросов офферов
-  const [offerRequests, setOfferRequests] = useState<Record<string, 'none' | 'pending' | 'approved'>>({
-    '1': 'approved', // Первый оффер уже одобрен
-    '2': 'none',     // Второй не запрошен
-    '3': 'pending',  // Третий в ожидании
-    '4': 'none',     // Четвертый не запрошен
-  });
+  const handleRequestOffer = async (offerId: string, currentStatus?: string) => {
+    if (!currentStatus || currentStatus === 'none') {
+      try {
+        const response = await fetch('/api/partner/offers/request', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ offerId })
+        });
 
-  const handleRequestOffer = (offerId: string) => {
-    const currentStatus = offerRequests[offerId] || 'none';
-    
-    if (currentStatus === 'none') {
-      // Отправляем запрос
-      setOfferRequests(prev => ({
-        ...prev,
-        [offerId]: 'pending'
-      }));
-      toast({
-        title: "Запрос отправлен",
-        description: "Ваш запрос на доступ к офферу отправлен рекламодателю",
-      });
+        if (response.ok) {
+          toast({
+            title: "Запрос отправлен",
+            description: "Ваш запрос на доступ к офферу отправлен рекламодателю",
+          });
+          // Перезагружаем данные
+          window.location.reload();
+        } else {
+          const error = await response.json();
+          toast({
+            title: "Ошибка",
+            description: error.error || "Не удалось отправить запрос",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Ошибка",
+          description: "Произошла ошибка при отправке запроса",
+          variant: "destructive"
+        });
+      }
     } else if (currentStatus === 'approved') {
       // Переходим на страницу деталей оффера
       navigate(`/affiliate/offers/${offerId}`);
@@ -336,7 +349,7 @@ export default function PartnerOffers() {
                                     <Button
                                       size="sm"
                                       className="bg-green-600 hover:bg-green-700 text-white"
-                                      onClick={() => handleRequestOffer(offer.id)}
+                                      onClick={() => handleRequestOffer(offer.id, requestStatus)}
                                     >
                                       Забрать ссылку
                                     </Button>
@@ -356,7 +369,7 @@ export default function PartnerOffers() {
                                     <Button
                                       size="sm"
                                       className="bg-blue-600 hover:bg-blue-700 text-white"
-                                      onClick={() => handleRequestOffer(offer.id)}
+                                      onClick={() => handleRequestOffer(offer.id, requestStatus)}
                                     >
                                       Запросить
                                     </Button>
@@ -485,7 +498,7 @@ export default function PartnerOffers() {
                                   <Button
                                     size="sm"
                                     className="bg-green-600 hover:bg-green-700 text-white"
-                                    onClick={() => handleRequestOffer(offer.id)}
+                                    onClick={() => handleRequestOffer(offer.id, requestStatus)}
                                   >
                                     Забрать ссылку
                                   </Button>
@@ -505,7 +518,7 @@ export default function PartnerOffers() {
                                   <Button
                                     size="sm"
                                     className="bg-blue-600 hover:bg-blue-700 text-white"
-                                    onClick={() => handleRequestOffer(offer.id)}
+                                    onClick={() => handleRequestOffer(offer.id, requestStatus)}
                                   >
                                     Запросить
                                   </Button>

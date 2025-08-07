@@ -14,6 +14,7 @@ import {
   Download,
   ChevronLeft,
   Menu,
+  MessageSquare,
   Send
 } from 'lucide-react';
 
@@ -41,6 +42,12 @@ const sidebarItems = [
     href: '/advertiser/partners',
     icon: Users,
     description: 'Управление партнёрами'
+  },
+  {
+    title: 'Запросы доступа',
+    href: '/advertiser/access-requests',
+    icon: MessageSquare,
+    description: 'Обработка запросов партнёров на доступ к офферам'
   },
   {
     title: 'Запросы доступа',
