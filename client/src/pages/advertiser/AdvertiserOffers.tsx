@@ -36,7 +36,7 @@ const AdvertiserOffers = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const [editOffer, setEditOffer] = useState(null);
+  const [editOffer, setEditOffer] = useState<any>(null);
   const [confirmDelete, setConfirmDelete] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -171,14 +171,7 @@ const AdvertiserOffers = () => {
             Управление офферами и отслеживание статистики
           </p>
         </div>
-        <Button onClick={() => setEditOffer({
-          name: '',
-          category: '',
-          payout: '',
-          currency: 'USD',
-          payoutType: 'cpa',
-          status: 'active',
-        })}>
+        <Button onClick={() => navigate('/advertiser/offers/new')}>
           <Plus className="h-4 w-4 mr-2" />
           Создать оффер
         </Button>
