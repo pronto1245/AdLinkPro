@@ -451,6 +451,14 @@ const AdvertiserOffers = () => {
         </CardHeader>
         
         <CardContent>
+          {/* Отладочная информация */}
+          <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded">
+            <p className="text-sm">
+              Всего офферов: {offers.length} | Отфильтровано: {filteredOffers.length} | 
+              Loading: {isLoading ? 'да' : 'нет'}
+            </p>
+          </div>
+          
           {filteredOffers.length === 0 ? (
             <div className="text-center py-8">
               <Target className="h-12 w-12 mx-auto mb-4 text-gray-400" />
