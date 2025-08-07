@@ -3614,91 +3614,9 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async createOffer(offerData: any): Promise<any> {
-    try {
-      // Map only existing database fields
-      const mappedData = {
-        id: randomUUID(),
-        name: offerData.name,
-        description: offerData.description,
-        category: offerData.category,
-        logo: offerData.logo || '',
-        advertiserId: offerData.advertiserId,
-        payout: parseFloat(offerData.payout || '0'),
-        payoutType: offerData.payoutType || 'cpa',
-        currency: offerData.currency || 'USD',
-        countries: offerData.countries || [],
-        landingPageUrl: offerData.landingPageUrl || '',
-        landingPages: offerData.landingPages || [],
-        trafficSources: offerData.trafficSources || [],
-        allowedApplications: offerData.allowedApplications || [], // Новое поле для разрешенных приложений
-        deniedSources: offerData.deniedSources || [],
-        trafficRequirements: offerData.trafficRequirements || '',
-        dailyLimit: offerData.dailyLimit || null,
-        monthlyLimit: offerData.monthlyLimit || null,
-        partnerApprovalType: offerData.partnerApprovalType || 'auto',
-        antifraudEnabled: offerData.antifraudEnabled || false,
-        antifraudMethods: offerData.antifraudMethods || [],
-        kycRequired: offerData.kycRequired || false,
-        isPrivate: offerData.isPrivate || false,
-        kpiConditions: offerData.kpiConditions || null,
-        status: offerData.status || 'draft',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
 
-      const newOffer = await db
-        .insert(offers)
-        .values(mappedData)
-        .returning();
-      
-      return newOffer[0];
-    } catch (error) {
-      console.error('Error creating offer:', error);
-      throw error;
-    }
-  }
 
-  async updateOffer(offerId: string, updateData: any): Promise<any> {
-    try {
-      const updatedOffer = await db
-        .update(offers)
-        .set({ ...updateData, updatedAt: new Date() })
-        .where(eq(offers.id, offerId))
-        .returning();
-      
-      return updatedOffer[0];
-    } catch (error) {
-      console.error('Error updating offer:', error);
-      throw error;
-    }
-  }
 
-  async getOffer(offerId: string): Promise<any> {
-    try {
-      const offer = await db
-        .select({
-          id: offers.id,
-          name: offers.name,
-          description: offers.description,
-          category: offers.category,
-          status: offers.status,
-          payout: offers.payout,
-          payoutType: offers.payoutType,
-          currency: offers.currency,
-          createdAt: offers.createdAt,
-          updatedAt: offers.updatedAt
-        })
-        .from(offers)
-        .where(eq(offers.id, offerId))
-        .limit(1);
-      
-      return offer[0];
-    } catch (error) {
-      console.error('Error getting offer:', error);
-      throw error;
-    }
-  }
 
   async getOfferPartners(offerId: string): Promise<any[]> {
     try {
@@ -4276,12 +4194,7 @@ class MemStorage implements IStorage {
   async bulkBlockUsers(): Promise<any> { return { blocked: 0 }; }
   async bulkUnblockUsers(): Promise<any> { return { unblocked: 0 }; }
   async bulkDeleteUsers(): Promise<any> { return { deleted: 0 }; }
-  async getOffer(): Promise<any> { return null; }
-  async getOffers(): Promise<any[]> { return this.offers; }
-  async createOffer(): Promise<any> { return {}; }
-  async updateOffer(): Promise<any> { return {}; }
-  async deleteOffer(): Promise<void> {}
-  async getAllOffers(): Promise<any[]> { return this.offers; }
+  async getAllOffers(): Promise<any[]> { return []; }
   async deleteUser(): Promise<void> {}
   async getPartnerOffers(): Promise<any[]> { return []; }
   async createPartnerOffer(): Promise<any> { return {}; }
