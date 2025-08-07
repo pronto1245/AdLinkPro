@@ -19,6 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Search, 
   Eye, 
@@ -28,7 +34,12 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  MoreVertical,
+  BarChart3,
+  MousePointer,
+  Target,
+  Info
 } from "lucide-react";
 import { formatCountries } from "@/utils/countries";
 import { formatCR } from "@/utils/formatting";
@@ -247,12 +258,10 @@ export default function PartnerOffers() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Оффер</TableHead>
-                  <TableHead>Рекламодатель</TableHead>
                   <TableHead>Категория</TableHead>
                   <TableHead>Гео</TableHead>
-                  <TableHead>Выплата</TableHead>
+                  <TableHead>Сумма</TableHead>
                   <TableHead>CR</TableHead>
-                  <TableHead>Статус доступа</TableHead>
                   <TableHead className="text-right">Действия</TableHead>
                 </TableRow>
               </TableHeader>
@@ -261,43 +270,37 @@ export default function PartnerOffers() {
                   const categoryProps = getCategoryBadgeProps(offer.category);
                   return (
                     <TableRow key={offer.id} data-testid={`row-offer-${offer.id}`}>
+                      {/* Колонка Оффер - фото и название */}
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          {offer.logo && (
+                          {offer.logo ? (
                             <img 
                               src={offer.logo} 
                               alt={offer.name}
-                              className="w-8 h-8 rounded object-cover flex-shrink-0"
+                              className="w-10 h-10 rounded object-cover flex-shrink-0"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
                               }}
                             />
+                          ) : (
+                            <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center flex-shrink-0">
+                              <Target className="w-5 h-5 text-gray-500" />
+                            </div>
                           )}
                           <div className="min-w-0 flex-1">
                             <div className="font-medium" data-testid={`text-offer-name-${offer.id}`}>
                               {offer.name}
                             </div>
-                            {offer.description && (
-                              <div className="text-sm text-muted-foreground truncate max-w-xs">
-                                {typeof offer.description === 'string' 
-                                  ? offer.description 
-                                  : JSON.stringify(offer.description).slice(1, -1)
-                                }
+                            {offer.advertiser_name && (
+                              <div className="text-sm text-muted-foreground truncate">
+                                {offer.advertiser_name}
                               </div>
                             )}
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="min-w-0">
-                          <div className="font-medium truncate">{offer.advertiser_name}</div>
-                          {offer.advertiser_company && (
-                            <div className="text-sm text-muted-foreground truncate">
-                              {offer.advertiser_company}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
+
+                      {/* Колонка Категория */}
                       <TableCell>
                         <Badge 
                           className={categoryProps.className}
@@ -307,6 +310,8 @@ export default function PartnerOffers() {
                           <span className="truncate">{categoryProps.label}</span>
                         </Badge>
                       </TableCell>
+
+                      {/* Колонка Гео с флагами */}
                       <TableCell>
                         <div className="text-sm min-w-0">
                           <span className="truncate block">
@@ -314,46 +319,36 @@ export default function PartnerOffers() {
                           </span>
                         </div>
                       </TableCell>
+
+                      {/* Колонка Сумма */}
                       <TableCell>
-                        <div className="font-mono whitespace-nowrap">
+                        <div className="font-mono font-medium whitespace-nowrap">
                           {offer.payout} {offer.currency}
                         </div>
                       </TableCell>
+
+                      {/* Колонка CR */}
                       <TableCell>
-                        <div className="font-mono text-green-600 whitespace-nowrap">
+                        <div className="font-mono text-green-600 font-medium whitespace-nowrap">
                           {formatCR(offer.cr)}%
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="whitespace-nowrap">
-                          {getAccessStatusBadge(offer.accessStatus, offer.hasFullAccess)}
-                        </div>
-                      </TableCell>
+
+                      {/* Колонка Действия */}
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {/* Основная кнопка действия */}
                           {offer.hasFullAccess ? (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => copyToClipboard(`${window.location.origin}/offers/${offer.id}`, 'Ссылка на оффер')}
-                                title="Копировать ссылку"
-                                data-testid={`button-copy-${offer.id}`}
-                              >
-                                <Copy className="w-4 h-4" />
-                              </Button>
-                              {offer.previewUrl && (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => window.open(offer.previewUrl, '_blank')}
-                                  title="Предварительный просмотр"
-                                  data-testid={`button-preview-${offer.id}`}
-                                >
-                                  <ExternalLink className="w-4 h-4" />
-                                </Button>
-                              )}
-                            </>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => copyToClipboard(offer.partnerLink || `${window.location.origin}/offers/${offer.id}`, 'Ссылка на оффер')}
+                              title="Копировать ссылку"
+                              data-testid={`button-copy-${offer.id}`}
+                            >
+                              <Copy className="w-4 h-4 mr-2" />
+                              Получить ссылку
+                            </Button>
                           ) : offer.accessStatus === 'available' ? (
                             <Button
                               size="sm"
@@ -361,14 +356,14 @@ export default function PartnerOffers() {
                               title="Запросить доступ"
                               data-testid={`button-request-${offer.id}`}
                             >
-                              <Lock className="w-4 h-4 mr-1" />
+                              <Lock className="w-4 h-4 mr-2" />
                               Запросить
                             </Button>
                           ) : offer.accessStatus === 'pending' ? (
-                            <Badge variant="outline" className="text-yellow-600">
-                              <Clock className="w-3 h-3 mr-1" />
+                            <Button size="sm" variant="outline" disabled>
+                              <Clock className="w-4 h-4 mr-2" />
                               Ожидание
-                            </Badge>
+                            </Button>
                           ) : offer.accessStatus === 'rejected' ? (
                             <Button
                               size="sm"
@@ -382,13 +377,68 @@ export default function PartnerOffers() {
                           ) : (
                             <Button
                               size="sm"
-                              variant="ghost"
-                              title="Просмотр"
-                              data-testid={`button-view-${offer.id}`}
+                              onClick={() => handleRequestAccess(offer)}
+                              data-testid={`button-request-${offer.id}`}
                             >
-                              <Eye className="w-4 h-4" />
+                              Запросить
                             </Button>
                           )}
+
+                          {/* Меню с 3 точками */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Дополнительные действия"
+                                data-testid={`button-menu-${offer.id}`}
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  console.log('Детали оффера:', offer.id);
+                                  // TODO: Открыть модальное окно с деталями
+                                }}
+                                data-testid={`menu-details-${offer.id}`}
+                              >
+                                <Info className="w-4 h-4 mr-2" />
+                                Детали
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  console.log('Статистика оффера:', offer.id);
+                                  // TODO: Открыть страницу статистики
+                                }}
+                                data-testid={`menu-statistics-${offer.id}`}
+                              >
+                                <BarChart3 className="w-4 h-4 mr-2" />
+                                Статистика
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  console.log('Клики оффера:', offer.id);
+                                  // TODO: Показать статистику кликов
+                                }}
+                                data-testid={`menu-clicks-${offer.id}`}
+                              >
+                                <MousePointer className="w-4 h-4 mr-2" />
+                                Клики
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  console.log('Конверсии оффера:', offer.id);
+                                  // TODO: Показать статистику конверсий
+                                }}
+                                data-testid={`menu-conversions-${offer.id}`}
+                              >
+                                <Target className="w-4 h-4 mr-2" />
+                                Конверсии
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </TableCell>
                     </TableRow>
