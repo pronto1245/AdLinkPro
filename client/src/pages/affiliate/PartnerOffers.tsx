@@ -28,6 +28,7 @@ interface PartnerOffer {
   countries: any;
   landingPages: any[];
   createdAt: string;
+  geoPricing?: Record<string, number>; // Выплаты по гео
 }
 
 // Функция для получения свойств бейджа категории
@@ -221,7 +222,12 @@ export default function PartnerOffers() {
       kpiConditions: { countries: ["RU", "KZ"], minAge: 18 },
       countries: ["RU", "KZ", "BY"],
       landingPages: [],
-      createdAt: "2024-01-01"
+      createdAt: "2024-01-01",
+      geoPricing: {
+        "RU": 200,
+        "KZ": 180,
+        "BY": 150
+      }
     },
     {
       id: "2", 
@@ -229,17 +235,24 @@ export default function PartnerOffers() {
       description: "Профессиональная криптобиржа",
       logo: "https://via.placeholder.com/40x40/f59e0b/ffffff?text=CE",
       category: "crypto",
-      payout: "200",
-      payoutType: "cpa", 
+      payout: "75",
+      payoutType: "cpl", 
       currency: "USD",
       status: "active",
       isApproved: false,
       partnerLink: "",
       baseUrl: "",
       kpiConditions: { countries: ["US", "EU"], minDeposit: 100 },
-      countries: ["US", "DE", "FR"],
+      countries: ["US", "DE", "FR", "GB", "IT"],
       landingPages: [],
-      createdAt: "2024-01-02"
+      createdAt: "2024-01-02",
+      geoPricing: {
+        "US": 100,
+        "DE": 85,
+        "FR": 80,
+        "GB": 90,
+        "IT": 70
+      }
     },
     {
       id: "3",
@@ -247,8 +260,8 @@ export default function PartnerOffers() {
       description: "Премиальный сервис знакомств",
       logo: "https://via.placeholder.com/40x40/ec4899/ffffff?text=DP",
       category: "dating",
-      payout: "80",
-      payoutType: "cpa",
+      payout: "45",
+      payoutType: "cps",
       currency: "USD", 
       status: "active",
       isApproved: false,
@@ -258,6 +271,31 @@ export default function PartnerOffers() {
       countries: ["RU", "UA", "KZ"],
       landingPages: [],
       createdAt: "2024-01-03"
+    },
+    {
+      id: "4",
+      name: "FinTech Mobile",
+      description: "Мобильное финансовое приложение",
+      logo: "https://via.placeholder.com/40x40/10b981/ffffff?text=FT",
+      category: "finance",
+      payout: "120",
+      payoutType: "cpi",
+      currency: "USD", 
+      status: "active",
+      isApproved: false,
+      partnerLink: "",
+      baseUrl: "",
+      kpiConditions: { countries: ["IN", "BR", "MX"], minAge: 18 },
+      countries: ["IN", "BR", "MX", "ID", "TH"],
+      landingPages: [],
+      createdAt: "2024-01-04",
+      geoPricing: {
+        "IN": 50,
+        "BR": 80,
+        "MX": 90,
+        "ID": 45,
+        "TH": 55
+      }
     }
   ];
 
@@ -296,6 +334,7 @@ export default function PartnerOffers() {
                   <TableHead>Название</TableHead>
                   <TableHead>Категория</TableHead>
                   <TableHead>Гео</TableHead>
+                  <TableHead>Тип выплаты</TableHead>
                   <TableHead>Сумма</TableHead>
                   <TableHead>CR</TableHead>
                   <TableHead className="text-right">Действия</TableHead>
@@ -365,11 +404,34 @@ export default function PartnerOffers() {
                         </div>
                       </TableCell>
 
-                      {/* Сумма */}
+                      {/* Тип выплаты */}
                       <TableCell>
-                        <div className="font-mono font-medium">
-                          ${offer.payout} {offer.payoutType?.toUpperCase()}
-                        </div>
+                        <Badge variant="outline" className="uppercase font-semibold">
+                          {offer.payoutType || 'CPA'}
+                        </Badge>
+                      </TableCell>
+
+                      {/* Сумма с разбивкой по гео */}
+                      <TableCell>
+                        {offer.geoPricing ? (
+                          <div className="space-y-1">
+                            {Object.entries(offer.geoPricing).slice(0, 3).map(([geo, price]: [string, number]) => (
+                              <div key={geo} className="flex items-center gap-2 text-sm">
+                                <span className="text-xs">{getCountryFlag(geo)}</span>
+                                <span className="font-mono font-medium">${price}</span>
+                              </div>
+                            ))}
+                            {Object.keys(offer.geoPricing).length > 3 && (
+                              <span className="text-xs text-muted-foreground">
+                                +{Object.keys(offer.geoPricing).length - 3} гео
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="font-mono font-medium">
+                            ${offer.payout}
+                          </div>
+                        )}
                       </TableCell>
 
                       {/* CR */}
