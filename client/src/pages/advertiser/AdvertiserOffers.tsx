@@ -99,6 +99,7 @@ const AdvertiserOffers = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
   const [previewOffer, setPreviewOffer] = useState<Offer | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   // Загрузка офферов
   const { data: offers = [], isLoading, refetch } = useQuery({
@@ -611,6 +612,15 @@ const AdvertiserOffers = () => {
                               <ExternalLink className="h-4 w-4 mr-2" />
                               Превью лендингов
                             </DropdownMenuItem>
+                            {offer.landingPages && offer.landingPages.length > 0 && (
+                              <DropdownMenuItem 
+                                onClick={() => setPreviewUrl(offer.landingPages[0].url)}
+                                className="text-indigo-600"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                Превью iframe
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem 
                               onClick={() => deleteMutation.mutate([offer.id])}
                               className="text-red-600"
@@ -672,6 +682,23 @@ const AdvertiserOffers = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Превью iframe */}
+      {previewUrl && (
+        <Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
+          <DialogContent className="w-full max-w-4xl h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Предпросмотр лендинга</DialogTitle>
+            </DialogHeader>
+            <iframe
+              src={previewUrl}
+              className="w-full h-full border rounded"
+              title="Предпросмотр"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
