@@ -1,0 +1,124 @@
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-64">Загрузка...</div>;
+  }
+
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Профиль рекламодателя</h1>
+          <p className="text-muted-foreground">
+            Управление профилем, API-доступом, кастомным доменом и настройками
+          </p>
+        </div>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="account">Аккаунт</TabsTrigger>
+          <TabsTrigger value="api">API-доступ</TabsTrigger>
+          <TabsTrigger value="domain">Кастомный домен</TabsTrigger>
+          <TabsTrigger value="notifications">Уведомления</TabsTrigger>
+          <TabsTrigger value="security">Безопасность</TabsTrigger>
+        </TabsList>
+
+        {/* ACCOUNT TAB */}
+        <TabsContent value="account" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Информация аккаунта</h2>
+            <div className="space-x-2">
+              {isEditing ? (
+                <>
+                  <Button variant="outline" onClick={() => setIsEditing(false)}>Отмена</Button>
+                  <Button onClick={handleProfileSave} disabled={updateProfileMutation.isPending}>
+                    <Save className="h-4 w-4 mr-2" />
+                    Сохранить
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={() => setIsEditing(true)}>Редактировать</Button>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Основные данные */}
+            <Card>
+              <CardHeader><CardTitle>Основные данные</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Имя</Label>
+                    <Input value={formData.firstName || ''} onChange={(e) => handleInputChange('firstName', e.target.value)} disabled={!isEditing} />
+                  </div>
+                  <div>
+                    <Label>Фамилия</Label>
+                    <Input value={formData.lastName || ''} onChange={(e) => handleInputChange('lastName', e.target.value)} disabled={!isEditing} />
+                  </div>
+                </div>
+                <Label>Email</Label>
+                <Input type="email" value={formData.email || ''} onChange={(e) => handleInputChange('email', e.target.value)} disabled={!isEditing} />
+
+                <Label>Телефон</Label>
+                <Input value={formData.phone || ''} onChange={(e) => handleInputChange('phone', e.target.value)} disabled={!isEditing} />
+
+                <Label>Telegram</Label>
+                <Input value={formData.telegram || ''} onChange={(e) => handleInputChange('telegram', e.target.value)} disabled={!isEditing} />
+
+                <Label>Название компании</Label>
+                <Input value={formData.company || ''} onChange={(e) => handleInputChange('company', e.target.value)} disabled={!isEditing} />
+              </CardContent>
+            </Card>
+
+            {/* Региональные настройки */}
+            <Card>
+              <CardHeader><CardTitle>Региональные настройки</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <Label>Страна</Label>
+                <Input value={formData.country || ''} onChange={(e) => handleInputChange('country', e.target.value)} disabled={!isEditing} />
+
+                <Label>Язык интерфейса</Label>
+                <Select value={formData.language || 'en'} onValueChange={(v) => handleInputChange('language', v)} disabled={!isEditing}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {LANGUAGES.map(lang => <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+
+                <Label>Часовой пояс</Label>
+                <Select value={formData.timezone || 'UTC'} onValueChange={(v) => handleInputChange('timezone', v)} disabled={!isEditing}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {TIMEZONES.map(tz => <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+
+                <Label>Валюта</Label>
+                <Select value={formData.currency || 'USD'} onValueChange={(v) => handleInputChange('currency', v)} disabled={!isEditing}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {CURRENCIES.map(curr => <SelectItem key={curr.value} value={curr.value}>{curr.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Настройки бренда */}
+          <Card>
+            <CardHeader><CardTitle>Настройки бренда</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <Label>Название бренда</Label>
+              <Input value={formData.settings?.brandName || ''} onChange={(e) => handleSettingsChange('brandName', e.target.value)} disabled={!isEditing} />
+
+              <Label>Вертикаль</Label>
+              <Input value={formData.settings?.vertical || ''} onChange={(e) => handleSettingsChange('vertical', e.target.value)} disabled={!isEditing} />
+
+              <Label>Описание бренда</Label>
+              <Textarea rows={3} value={formData.settings?.brandDescription || ''} onChange={(e) => handleSettingsChange('brandDescription', e.target.value)} disabled={!isEditing} />
+
+              <Label>Правила для партнёров</Label>
+              <Textarea rows={4} value={formData.settings?.partnerRules || ''} onChange={(e) => handleSettingsChange('partnerRules', e.target.value)} disabled={!isEditing} />
+            </CardContent>
+          </Card>
+        </TabsContent>
