@@ -358,10 +358,11 @@ export default function PartnerOffers() {
                         <div className="flex items-center justify-end gap-2">
                           <Button
                             size="sm"
+                            variant={offer.isApproved ? "default" : "outline"}
+                            className={offer.isApproved ? "bg-green-600 hover:bg-green-700 text-white" : ""}
                             onClick={() => handleRequestOffer(offer.id)}
-                            disabled={offer.isApproved}
                           >
-                            {offer.isApproved ? "Одобрен" : "Запросить"}
+                            {offer.isApproved ? "Получить ссылку" : "Запросить"}
                           </Button>
                           
                           <DropdownMenu>
