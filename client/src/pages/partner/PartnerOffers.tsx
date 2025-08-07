@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Table,
   TableBody,
@@ -56,6 +56,7 @@ interface PartnerOffer {
   partnerLink?: string;
   previewUrl?: string;
   partnerApprovalType?: string;
+  accessRequestId?: string;
 }
 
 export default function PartnerOffers() {
@@ -65,6 +66,7 @@ export default function PartnerOffers() {
   const [selectedOffer, setSelectedOffer] = useState<PartnerOffer | null>(null);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: offers = [], isLoading } = useQuery<PartnerOffer[]>({
     queryKey: ["/api/partner/offers"],
@@ -124,84 +126,20 @@ export default function PartnerOffers() {
             Отклонено
           </Badge>
         );
-      case 'cancelled':
+      case 'available':
         return (
-          <Badge variant="outline" className="text-muted-foreground">
-            Отменено
+          <Badge className="bg-blue-500 hover:bg-blue-600 text-white">
+            <AlertCircle className="w-3 h-3 mr-1" />
+            Доступен
           </Badge>
         );
       default:
         return (
-          <Badge variant="outline" className="border-blue-200 text-blue-600">
-            <AlertCircle className="w-3 h-3 mr-1" />
-            Требует запрос
+          <Badge variant="outline">
+            {accessStatus}
           </Badge>
         );
     }
-  };
-
-  const getActionButton = (offer: PartnerOffer) => {
-    if (offer.hasFullAccess && offer.partnerLink) {
-      return (
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => copyToClipboard(offer.partnerLink!, "Ссылка партнера")}
-            data-testid={`button-copy-link-${offer.id}`}
-            title="Копировать партнерскую ссылку"
-          >
-            <Copy className="w-4 h-4" />
-          </Button>
-          {offer.previewUrl && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => window.open(offer.previewUrl, '_blank')}
-              data-testid={`button-preview-${offer.id}`}
-              title="Просмотр лендинга"
-            >
-              <Eye className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
-      );
-    }
-
-    if (offer.accessStatus === 'pending') {
-      return (
-        <Button size="sm" variant="outline" disabled>
-          <Clock className="w-4 h-4 mr-2" />
-          Ожидание ответа
-        </Button>
-      );
-    }
-
-    if (offer.accessStatus === 'rejected') {
-      return (
-        <Button 
-          size="sm" 
-          variant="outline"
-          onClick={() => handleRequestAccess(offer)}
-          data-testid={`button-retry-request-${offer.id}`}
-        >
-          Запросить повторно
-        </Button>
-      );
-    }
-
-    return (
-      <Button
-        size="sm"
-        variant="default"
-        className="bg-blue-500 hover:bg-blue-600 text-white"
-        onClick={() => handleRequestAccess(offer)}
-        data-testid={`button-request-access-${offer.id}`}
-      >
-        <Lock className="w-4 h-4 mr-2" />
-        Запросить доступ
-      </Button>
-    );
   };
 
   if (isLoading) {
@@ -213,65 +151,15 @@ export default function PartnerOffers() {
   }
 
   return (
-    <div className="space-y-6" data-testid="page-partner-offers">
+    <div className="space-y-6 w-full" data-testid="page-partner-offers">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Доступные офферы</h1>
           <p className="text-muted-foreground mt-2">
-            Просматривайте офферы и запрашивайте доступ к ссылкам лендингов
+            Просматривайте и запрашивайте доступ к офферам
           </p>
         </div>
       </div>
-
-      {/* Фильтры */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Фильтры поиска</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Input
-                placeholder="Поиск по названию или рекламодателю..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full"
-                data-testid="input-search-offers"
-              />
-            </div>
-            <div>
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger data-testid="select-category-filter">
-                  <SelectValue placeholder="Все категории" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-categories">Все категории</SelectItem>
-                  <SelectItem value="gaming">Игры</SelectItem>
-                  <SelectItem value="finance">Финансы</SelectItem>
-                  <SelectItem value="dating">Знакомства</SelectItem>
-                  <SelectItem value="crypto">Криптовалюты</SelectItem>
-                  <SelectItem value="ecommerce">E-commerce</SelectItem>
-                  <SelectItem value="health">Здоровье</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Select value={filterAccess} onValueChange={setFilterAccess}>
-                <SelectTrigger data-testid="select-access-filter">
-                  <SelectValue placeholder="Все статусы" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все статусы</SelectItem>
-                  <SelectItem value="approved">Доступ открыт</SelectItem>
-                  <SelectItem value="pending">Ожидание одобрения</SelectItem>
-                  <SelectItem value="available">Можно запросить</SelectItem>
-                  <SelectItem value="rejected">Отклонено</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Статистика */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -280,7 +168,7 @@ export default function PartnerOffers() {
             <div className="text-2xl font-bold text-green-600">
               {offers.filter(o => o.hasFullAccess).length}
             </div>
-            <p className="text-sm text-muted-foreground">Офферы с доступом</p>
+            <p className="text-sm text-muted-foreground">Доступно</p>
           </CardContent>
         </Card>
         <Card>
@@ -293,10 +181,10 @@ export default function PartnerOffers() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-600">
-              {offers.filter(o => o.accessStatus === 'available').length}
+            <div className="text-2xl font-bold text-red-600">
+              {offers.filter(o => o.accessStatus === 'rejected').length}
             </div>
-            <p className="text-sm text-muted-foreground">Доступны для запроса</p>
+            <p className="text-sm text-muted-foreground">Отклонено</p>
           </CardContent>
         </Card>
         <Card>
@@ -309,122 +197,231 @@ export default function PartnerOffers() {
         </Card>
       </div>
 
+      {/* Фильтры */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Поиск по названию оффера или рекламодателю..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8"
+              data-testid="input-search"
+            />
+          </div>
+        </div>
+        <Select value={filterCategory} onValueChange={setFilterCategory}>
+          <SelectTrigger className="w-full sm:w-[180px]" data-testid="select-category">
+            <SelectValue placeholder="Категория" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all-categories">Все категории</SelectItem>
+            <SelectItem value="gambling">Гемблинг</SelectItem>
+            <SelectItem value="dating">Знакомства</SelectItem>
+            <SelectItem value="finance">Финансы</SelectItem>
+            <SelectItem value="crypto">Крипто</SelectItem>
+            <SelectItem value="nutra">Нутра</SelectItem>
+            <SelectItem value="software">ПО</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterAccess} onValueChange={setFilterAccess}>
+          <SelectTrigger className="w-full sm:w-[180px]" data-testid="select-access">
+            <SelectValue placeholder="Статус доступа" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Все</SelectItem>
+            <SelectItem value="approved">Доступны</SelectItem>
+            <SelectItem value="pending">Ожидание</SelectItem>
+            <SelectItem value="available">Можно запросить</SelectItem>
+            <SelectItem value="rejected">Отклонено</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Таблица офферов */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Оффер</TableHead>
-                <TableHead>Рекламодатель</TableHead>
-                <TableHead>GEO</TableHead>
-                <TableHead>Категория</TableHead>
-                <TableHead>CR%</TableHead>
-                <TableHead>Выплата</TableHead>
-                <TableHead>Статус доступа</TableHead>
-                <TableHead className="text-right">Действия</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredOffers.map((offer) => (
-                <TableRow key={offer.id} data-testid={`row-offer-${offer.id}`}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-3">
-                      {offer.logo && (
-                        <img 
-                          src={offer.logo} 
-                          alt={offer.name}
-                          className="w-10 h-10 rounded-lg object-cover"
-                        />
-                      )}
-                      <div>
-                        <div className="font-medium" data-testid={`text-offer-name-${offer.id}`}>
-                          {offer.name}
-                        </div>
-                        {offer.description && (
-                          <div className="text-sm text-gray-500 truncate max-w-48">
-                            {typeof offer.description === 'object' ? 
-                              offer.description?.en || offer.description?.ru || 'Описание' : 
-                              offer.description}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div data-testid={`text-advertiser-${offer.id}`}>
-                      {offer.advertiser_name}
-                      {offer.advertiser_company && (
-                        <div className="text-sm text-muted-foreground">
-                          {offer.advertiser_company}
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1 flex-wrap">
-                      {formatCountries(offer.countries || []).slice(0, 3).map((country, index) => (
-                        <div key={`${offer.id}-country-${index}`} className="flex items-center gap-1">
-                          <span className="text-lg" title={country.name}>{country.flag}</span>
-                          <span className="text-xs font-mono bg-muted px-1 py-0.5 rounded">{country.code}</span>
-                        </div>
-                      ))}
-                      {formatCountries(offer.countries || []).length > 3 && (
-                        <span className="text-xs text-muted-foreground">
-                          +{formatCountries(offer.countries || []).length - 3}
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge {...getCategoryBadgeProps(offer.category)}>
-                      {typeof offer.category === 'object' ? 
-                        offer.category?.en || offer.category?.ru || 'Категория' : 
-                        offer.category}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {offer.hasFullAccess ? (
-                      formatCR(offer.cr) + "%"
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <span data-testid={`text-payout-${offer.id}`}>
-                      {offer.customPayout || offer.payout} {offer.currency}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {getAccessStatusBadge(offer.accessStatus, offer.hasFullAccess)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {getActionButton(offer)}
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Оффер</TableHead>
+                  <TableHead>Рекламодатель</TableHead>
+                  <TableHead>Категория</TableHead>
+                  <TableHead>Гео</TableHead>
+                  <TableHead>Выплата</TableHead>
+                  <TableHead>CR</TableHead>
+                  <TableHead>Статус доступа</TableHead>
+                  <TableHead className="text-right">Действия</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          
-          {filteredOffers.length === 0 && (
-            <div className="text-center py-8">
-              <div className="text-muted-foreground">Офферы не найдены</div>
-            </div>
-          )}
+              </TableHeader>
+              <TableBody>
+                {filteredOffers.map((offer) => {
+                  const categoryProps = getCategoryBadgeProps(offer.category);
+                  return (
+                    <TableRow key={offer.id} data-testid={`row-offer-${offer.id}`}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          {offer.logo && (
+                            <img 
+                              src={offer.logo} 
+                              alt={offer.name}
+                              className="w-8 h-8 rounded object-cover flex-shrink-0"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium" data-testid={`text-offer-name-${offer.id}`}>
+                              {offer.name}
+                            </div>
+                            {offer.description && (
+                              <div className="text-sm text-muted-foreground truncate max-w-xs">
+                                {typeof offer.description === 'string' 
+                                  ? offer.description 
+                                  : JSON.stringify(offer.description).slice(1, -1)
+                                }
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="min-w-0">
+                          <div className="font-medium truncate">{offer.advertiser_name}</div>
+                          {offer.advertiser_company && (
+                            <div className="text-sm text-muted-foreground truncate">
+                              {offer.advertiser_company}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          className={categoryProps.className}
+                          data-testid={`badge-category-${offer.id}`}
+                        >
+                          {categoryProps.icon && <categoryProps.icon className="w-3 h-3 mr-1 flex-shrink-0" />}
+                          <span className="truncate">{categoryProps.label}</span>
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm min-w-0">
+                          <span className="truncate block">
+                            {formatCountries(offer.countries)}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-mono whitespace-nowrap">
+                          {offer.payout} {offer.currency}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-mono text-green-600 whitespace-nowrap">
+                          {formatCR(offer.cr)}%
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="whitespace-nowrap">
+                          {getAccessStatusBadge(offer.accessStatus, offer.hasFullAccess)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {offer.hasFullAccess ? (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => copyToClipboard(`${window.location.origin}/offers/${offer.id}`, 'Ссылка на оффер')}
+                                title="Копировать ссылку"
+                                data-testid={`button-copy-${offer.id}`}
+                              >
+                                <Copy className="w-4 h-4" />
+                              </Button>
+                              {offer.previewUrl && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => window.open(offer.previewUrl, '_blank')}
+                                  title="Предварительный просмотр"
+                                  data-testid={`button-preview-${offer.id}`}
+                                >
+                                  <ExternalLink className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </>
+                          ) : offer.accessStatus === 'available' ? (
+                            <Button
+                              size="sm"
+                              onClick={() => handleRequestAccess(offer)}
+                              title="Запросить доступ"
+                              data-testid={`button-request-${offer.id}`}
+                            >
+                              <Lock className="w-4 h-4 mr-1" />
+                              Запросить
+                            </Button>
+                          ) : offer.accessStatus === 'pending' ? (
+                            <Badge variant="outline" className="text-yellow-600">
+                              <Clock className="w-3 h-3 mr-1" />
+                              Ожидание
+                            </Badge>
+                          ) : offer.accessStatus === 'rejected' ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleRequestAccess(offer)}
+                              title="Повторный запрос"
+                              data-testid={`button-retry-${offer.id}`}
+                            >
+                              Повторить
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              title="Просмотр"
+                              data-testid={`button-view-${offer.id}`}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Модальное окно запроса доступа */}
-      {selectedOffer && (
-        <RequestAccessModal
-          isOpen={isRequestModalOpen}
-          onClose={() => {
-            setIsRequestModalOpen(false);
-            setSelectedOffer(null);
-          }}
-          offer={selectedOffer}
-        />
+      {filteredOffers.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-8">
+            <div className="text-muted-foreground">
+              {searchQuery || filterCategory !== 'all-categories' || filterAccess !== 'all' 
+                ? 'Офферы не найдены по заданным фильтрам'
+                : 'Доступные офферы не найдены'
+              }
+            </div>
+          </CardContent>
+        </Card>
       )}
+
+      {/* Модальное окно запроса доступа */}
+      <RequestAccessModal
+        isOpen={isRequestModalOpen}
+        onClose={() => {
+          setIsRequestModalOpen(false);
+          setSelectedOffer(null);
+        }}
+        offer={selectedOffer}
+      />
     </div>
   );
 }

@@ -370,13 +370,17 @@ function Router() {
       
       <Route path="/affiliate/offers">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <PartnerOffers />
+          <RoleBasedLayout>
+            <PartnerOffers />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/affiliate/access-requests">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <AccessRequests />
+          <RoleBasedLayout>
+            <AccessRequests />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
@@ -395,12 +399,6 @@ function Router() {
       <Route path="/affiliate/postbacks">
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PostbackManagementAffiliate />
-        </ProtectedRoute>
-      </Route>
-      
-      <Route path="/affiliate/access-requests">
-        <ProtectedRoute allowedRoles={['affiliate']}>
-          <AccessRequests />
         </ProtectedRoute>
       </Route>
       
