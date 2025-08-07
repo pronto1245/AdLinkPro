@@ -107,6 +107,16 @@ const AdvertiserOffers = () => {
     queryFn: () => apiRequest('/api/advertiser/offers')
   });
 
+  // Отладка - логируем полученные данные
+  console.log("AdvertiserOffers render:", { 
+    offers: offers, 
+    offersLength: offers.length, 
+    isLoading, 
+    search,
+    selectedStatus,
+    selectedCategory
+  });
+
   // Мутация для обновления статуса оффера
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -175,13 +185,21 @@ const AdvertiserOffers = () => {
 
   // Фильтрация офферов
   const filteredOffers = offers.filter((offer: Offer) => {
-    const matchesSearch = offer.name.toLowerCase().includes(search.toLowerCase()) ||
-                         offer.description.ru.toLowerCase().includes(search.toLowerCase()) ||
-                         offer.description.en.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = offer.name?.toLowerCase().includes(search.toLowerCase()) ||
+                         (offer.description?.ru || '').toLowerCase().includes(search.toLowerCase()) ||
+                         (offer.description?.en || '').toLowerCase().includes(search.toLowerCase());
     const matchesStatus = selectedStatus === 'all' || offer.status === selectedStatus;
     const matchesCategory = selectedCategory === 'all' || offer.category === selectedCategory;
     
     return matchesSearch && matchesStatus && matchesCategory;
+  });
+
+  console.log("Filtered offers:", { 
+    totalOffers: offers.length, 
+    filteredCount: filteredOffers.length,
+    search,
+    selectedStatus, 
+    selectedCategory 
   });
 
   // Экспорт в CSV
