@@ -44,6 +44,17 @@ function getCategoryBadgeProps(category: string) {
   return categories[category?.toLowerCase()] || { label: category || "Другое", className: "bg-gray-100 text-gray-800" };
 }
 
+function getPayoutTypeBadgeProps(payoutType: string) {
+  const types: Record<string, { label: string; className: string }> = {
+    cpa: { label: "CPA", className: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-300" },
+    cpl: { label: "CPL", className: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-300" },
+    cps: { label: "CPS", className: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900 dark:text-purple-300" },
+    cpi: { label: "CPI", className: "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900 dark:text-orange-300" },
+    cpm: { label: "CPM", className: "bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-900 dark:text-pink-300" },
+  };
+  return types[payoutType?.toLowerCase()] || { label: payoutType?.toUpperCase() || "CPA", className: "bg-gray-100 text-gray-800 border-gray-300" };
+}
+
 // Функция для форматирования CR
 function formatCR(cr: number | undefined): string {
   if (cr === undefined || cr === null) return "0.00";
@@ -172,6 +183,8 @@ export default function PartnerOffers() {
     '1': 'approved', // Первый оффер уже одобрен
     '2': 'none',     // Второй не запрошен
     '3': 'pending',  // Третий в ожидании
+    '4': 'none',     // Четвертый не запрошен
+    '5': 'approved', // Пятый одобрен
   });
 
   const handleRequestOffer = (offerId: string) => {
@@ -296,6 +309,31 @@ export default function PartnerOffers() {
         "ID": 45,
         "TH": 55
       }
+    },
+    {
+      id: "5",
+      name: "Global Trading Pro",
+      description: "Международная торговая платформа",
+      logo: "https://via.placeholder.com/40x40/8b5cf6/ffffff?text=GT",
+      category: "finance",
+      payout: "300",
+      payoutType: "cpm",
+      currency: "USD", 
+      status: "active",
+      isApproved: true,
+      partnerLink: "https://example.com/affiliate/123",
+      baseUrl: "https://globaltradingpro.com",
+      kpiConditions: { countries: ["US", "GB", "DE"], minDeposit: 500 },
+      countries: ["US", "GB", "DE"],
+      landingPages: [
+        { id: "1", url: "https://globaltradingpro.com/landing1", name: "Landing 1" }
+      ],
+      createdAt: "2024-01-05",
+      geoPricing: {
+        "US": 500,
+        "GB": 350,
+        "DE": 280
+      }
     }
   ];
 
@@ -343,6 +381,7 @@ export default function PartnerOffers() {
               <TableBody>
                 {displayOffers.map((offer) => {
                   const categoryProps = getCategoryBadgeProps(offer.category);
+                  const payoutTypeProps = getPayoutTypeBadgeProps(offer.payoutType);
                   const cr = Math.random() * 10; // Тестовый CR
                   
                   return (
@@ -381,8 +420,8 @@ export default function PartnerOffers() {
 
                       {/* Тип выплаты */}
                       <TableCell>
-                        <Badge variant="outline" className="uppercase font-semibold">
-                          {offer.payoutType || 'CPA'}
+                        <Badge variant="outline" className={`uppercase font-semibold ${payoutTypeProps.className}`}>
+                          {payoutTypeProps.label}
                         </Badge>
                       </TableCell>
 
