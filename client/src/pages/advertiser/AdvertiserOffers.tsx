@@ -109,7 +109,7 @@ const AdvertiserOffers = () => {
   // Мутация для обновления статуса оффера
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      return apiRequest(`/api/advertiser/offers/${id}`, 'PATCH', { status });
+      return apiRequest(`/api/advertiser/offers/${id}`, { method: 'PATCH', body: { status } });
     },
     onSuccess: () => {
       toast({
@@ -131,7 +131,7 @@ const AdvertiserOffers = () => {
   const deleteMutation = useMutation({
     mutationFn: async (ids: string[]) => {
       return Promise.all(
-        ids.map(id => apiRequest(`/api/advertiser/offers/${id}`, 'DELETE'))
+        ids.map(id => apiRequest(`/api/advertiser/offers/${id}`, { method: 'DELETE' }))
       );
     },
     onSuccess: () => {
@@ -154,7 +154,7 @@ const AdvertiserOffers = () => {
   // Мутация для дублирования оффера
   const duplicateMutation = useMutation({
     mutationFn: async (offerId: string) => {
-      return apiRequest(`/api/advertiser/offers/${offerId}/duplicate`, 'POST');
+      return apiRequest(`/api/advertiser/offers/${offerId}/duplicate`, { method: 'POST' });
     },
     onSuccess: () => {
       toast({
@@ -207,7 +207,7 @@ const AdvertiserOffers = () => {
     ]);
 
     const csv = [headers, ...csvData]
-      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .map(row => row.map((cell: any) => `"${cell}"`).join(','))
       .join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -270,7 +270,7 @@ const AdvertiserOffers = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="w-full">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-gray-200 rounded w-1/4"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
@@ -280,7 +280,7 @@ const AdvertiserOffers = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="w-full space-y-6">
       {/* Заголовок */}
       <div className="flex items-center justify-between">
         <div>

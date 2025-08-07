@@ -30,17 +30,15 @@ export default function RoleBasedLayout({ children }: RoleBasedLayoutProps) {
           className="flex-1 overflow-auto transition-all duration-300 ease-in-out"
           style={{
             '--sidebar-width': `${sidebarWidth}px`,
+            width: `calc(100vw - ${sidebarWidth}px)`,
             maxWidth: `calc(100vw - ${sidebarWidth}px)`
           } as React.CSSProperties}
         >
-          <div className={cn(
-            "p-6",
-            collapsed ? "max-w-full" : "max-w-full"
-          )}>
-            <div className={cn(
-              "mx-auto transition-all duration-300",
-              collapsed ? "max-w-7xl" : "max-w-6xl"
-            )}>
+          <div className="w-full h-full">
+            <div className="w-full px-4 py-6" style={{ 
+              paddingLeft: '1rem',
+              paddingRight: '1rem'
+            }}>
               {children}
             </div>
           </div>

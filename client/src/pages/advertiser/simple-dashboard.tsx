@@ -61,7 +61,7 @@ export default function AdvertiserDashboard() {
   
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="w-full">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-gray-200 rounded w-1/4"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -76,7 +76,7 @@ export default function AdvertiserDashboard() {
 
   if (!dashboard) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="w-full">
         <div className="text-center">
           <p>Не удалось загрузить данные дашборда</p>
         </div>
@@ -85,7 +85,7 @@ export default function AdvertiserDashboard() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="w-full space-y-6">
         {/* Заголовок и фильтры */}
         <div className="flex items-center justify-between">
           <div>
