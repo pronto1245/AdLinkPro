@@ -738,7 +738,7 @@ export default function AdvertiserPartners() {
               <div>
                 <p className="text-sm text-gray-600">Общий доход</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  ${partners ? partners.reduce((acc, p) => acc + p.statistics.totalRevenue, 0).toLocaleString() : 0}
+                  ${partners ? partners.reduce((acc, p) => acc + (p.statistics?.totalRevenue || 0), 0).toLocaleString() : 0}
                 </p>
               </div>
               <DollarSign className="w-8 h-8 text-purple-500" />

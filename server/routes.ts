@@ -7245,6 +7245,18 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
+  // Demo endpoint to create test access request
+  app.post('/api/demo/create-access-request', async (req, res) => {
+    try {
+      const { partnerId, offerId, message } = req.body;
+      const accessRequest = await storage.createOfferAccessRequest(partnerId, offerId, message);
+      res.json({ success: true, request: accessRequest });
+    } catch (error) {
+      console.error('Error creating demo access request:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -50,12 +50,6 @@ const sidebarItems = [
     description: 'Обработка запросов партнёров на доступ к офферам'
   },
   {
-    title: 'Запросы доступа',
-    href: '/advertiser/access-requests',
-    icon: Send,
-    description: 'Запросы партнеров к офферам'
-  },
-  {
     title: 'Статистика',
     href: '/advertiser/analytics',
     icon: BarChart3,
