@@ -152,7 +152,7 @@ export default function OfferDetails() {
   const categoryProps = getCategoryBadgeProps(offerDetails.category);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* Заголовок с кнопкой назад */}
       <div className="flex items-center gap-4">
         <Button 

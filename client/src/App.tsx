@@ -366,7 +366,9 @@ function Router() {
       {/* Affiliate Routes - Specific routes first */}
       <Route path="/affiliate/offers/:id">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <OfferDetails />
+          <PartnerLayout>
+            <OfferDetails />
+          </PartnerLayout>
         </ProtectedRoute>
       </Route>
       
