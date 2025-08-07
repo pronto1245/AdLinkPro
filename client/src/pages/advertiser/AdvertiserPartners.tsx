@@ -1,949 +1,1125 @@
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/contexts/auth-context';
 import { useSidebar } from '@/contexts/sidebar-context';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
-import { ResponsiveCard } from '@/components/layout/ResponsiveCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/auth-context';
-
-import { apiRequest, queryClient } from '@/lib/queryClient';
-import { 
-  Users, 
-  Search, 
-  Filter, 
-  Download,
-  RefreshCw,
-  Calendar,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  DollarSign,
-  MousePointer,
-  Target,
-  Eye,
-  Bot,
-  Shield,
+import {
+  Plus,
+  Search,
+  Filter,
   Edit,
-  UserX,
-  Bell,
-  ExternalLink,
+  Trash2,
+  Eye,
+  Copy,
+  BarChart3,
+  Globe,
+  Users,
+  Settings,
+  Download,
+  Upload,
+  CheckCircle,
+  XCircle,
+  Clock,
   Star,
-  Activity,
+  DollarSign,
+  TrendingUp,
+  Calendar,
+  FileText,
+  Link as LinkIcon,
+  Share2,
+  Shield,
+  Zap,
+  UserPlus,
+  UserCheck,
+  UserX,
+  MessageSquare,
   Mail,
-  MessageCircle,
-  Globe
+  Phone,
+  MapPin,
+  Building,
+  Award,
+  Activity,
+  AlertCircle,
+  Target
 } from 'lucide-react';
 
-// Интерфейсы для данных партнёров
+// Типы данных для партнеров
 interface Partner {
   id: string;
-  partnerId: string;
   username: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
-  telegram?: string;
-  status: 'active' | 'inactive' | 'pending' | 'blocked';
-  offersCount: number;
-  clicks: number;
-  uniqueClicks: number;
-  leads: number;
-  conversions: number;
-  revenue: number;
-  payout: number;
-  profit: number;
-  cr: number;
-  epc: number;
-  roi: number;
-  fraudClicks: number;
-  botClicks: number;
-  fraudScore: number;
-  lastActivity: string;
-  registrationDate: string;
+  firstName: string;
+  lastName: string;
+  company?: string;
+  phone?: string;
   country: string;
+  language: string;
   timezone: string;
-  isTopPerformer: boolean;
-  riskLevel: 'low' | 'medium' | 'high';
-  payoutSettings: {
-    [offerId: string]: {
-      offerId: string;
-      offerName: string;
-      defaultPayout: number;
-      customPayout: number;
-      isActive: boolean;
-    };
+  status: 'active' | 'pending' | 'suspended' | 'blocked';
+  kycStatus: 'pending' | 'approved' | 'rejected';
+  balance: number;
+  holdAmount: number;
+  rating: number;
+  trafficSources: string[];
+  verticals: string[];
+  tier: 'bronze' | 'silver' | 'gold' | 'platinum';
+  registrationDate: string;
+  lastActivity: string;
+  statistics: {
+    totalClicks: number;
+    totalConversions: number;
+    totalRevenue: number;
+    averageCR: number;
+    averageEPC: number;
+    activeOffers: number;
+    completedOffers: number;
+  };
+  permissions: {
+    api: boolean;
+    statistics: boolean;
+    offers: boolean;
+    finances: boolean;
+  };
+  manager?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  notes: string;
+  tags: string[];
+  referralCode: string;
+  commissionRate: number;
+  paymentMethod: string;
+  paymentDetails: any;
+  documentsVerified: boolean;
+  lastPayment?: {
+    amount: number;
+    date: string;
+    status: string;
   };
 }
 
-interface PartnerFilters {
-  search: string;
-  status: string;
-  offerId: string;
-  minRevenue: string;
-  minCr: string;
-  minEpc: string;
-  activityDays: string;
-  riskLevel: string;
-  topPerformersOnly: boolean;
-}
+// Компонент для создания/редактирования партнера
+const PartnerForm: React.FC<{
+  partner?: Partner;
+  onSuccess: () => void;
+  onCancel: () => void;
+}> = ({ partner, onSuccess, onCancel }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  const [formData, setFormData] = useState({
+    username: partner?.username || '',
+    email: partner?.email || '',
+    firstName: partner?.firstName || '',
+    lastName: partner?.lastName || '',
+    company: partner?.company || '',
+    phone: partner?.phone || '',
+    country: partner?.country || 'US',
+    language: partner?.language || 'en',
+    timezone: partner?.timezone || 'UTC',
+    trafficSources: partner?.trafficSources || [],
+    verticals: partner?.verticals || [],
+    tier: partner?.tier || 'bronze',
+    commissionRate: partner?.commissionRate || 0,
+    permissions: partner?.permissions || {
+      api: false,
+      statistics: true,
+      offers: true,
+      finances: false
+    },
+    notes: partner?.notes || '',
+    tags: partner?.tags || []
+  });
 
-// Компонент карточки партнёра
-interface PartnerCardProps {
-  partner: Partner;
-  onEditPayout: (partnerId: string, offerId: string) => void;
-  onToggleStatus: (partnerId: string, status: string) => void;
-  onViewStatistics: (partnerId: string) => void;
-  onNotifyPartner: (partnerId: string, message: string) => void;
-  onRemoveFromOffer: (partnerId: string, offerId: string) => void;
-}
-
-const PartnerCard = ({ 
-  partner, 
-  onEditPayout, 
-  onToggleStatus, 
-  onViewStatistics, 
-  onNotifyPartner, 
-  onRemoveFromOffer 
-}: PartnerCardProps) => {
-  const [showDetails, setShowDetails] = useState(false);
-  const [editingPayout, setEditingPayout] = useState<string | null>(null);
-  const [newPayout, setNewPayout] = useState('');
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-gray-100 text-gray-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'blocked': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const mutation = useMutation({
+    mutationFn: (data: any) => {
+      const url = partner ? `/api/advertiser/partners/${partner.id}` : '/api/advertiser/partners';
+      const method = partner ? 'PUT' : 'POST';
+      return apiRequest(url, { method, body: data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/partners'] });
+      toast({
+        title: partner ? 'Партнер обновлен' : 'Партнер создан',
+        description: partner ? 'Данные партнера успешно обновлены' : 'Новый партнер добавлен в систему'
+      });
+      onSuccess();
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Ошибка',
+        description: error.message || 'Не удалось сохранить данные партнера',
+        variant: 'destructive'
+      });
     }
-  };
+  });
 
-  const getRiskColor = (level: string) => {
-    switch (level) {
-      case 'low': return 'text-green-600';
-      case 'medium': return 'text-yellow-600';
-      case 'high': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutation.mutate(formData);
   };
 
   return (
-    <Card className={`relative ${partner.isTopPerformer ? 'ring-2 ring-yellow-400' : ''}`}>
-      {partner.isTopPerformer && (
-        <div className="absolute top-2 right-2">
-          <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-        </div>
-      )}
-      
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <Users className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg">{partner.username}</h3>
-              <div className="flex items-center space-x-2">
-                <Badge className={getStatusColor(partner.status)}>
-                  {partner.status === 'active' && 'Активен'}
-                  {partner.status === 'inactive' && 'Неактивен'}
-                  {partner.status === 'pending' && 'На модерации'}
-                  {partner.status === 'blocked' && 'Заблокирован'}
-                </Badge>
-                <span className="text-sm text-muted-foreground">
-                  ID: {partner.partnerId}
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowDetails(!showDetails)}
-              data-testid={`button-details-${partner.id}`}
-              title="Подробнее о партнёре"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onViewStatistics(partner.id)}
-              data-testid={`button-statistics-${partner.id}`}
-              title="Статистика партнёра"
-            >
-              <TrendingUp className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Tabs defaultValue="basic" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="basic">Основное</TabsTrigger>
+            <TabsTrigger value="business">Бизнес</TabsTrigger>
+            <TabsTrigger value="permissions">Права</TabsTrigger>
+            <TabsTrigger value="settings">Настройки</TabsTrigger>
+          </TabsList>
 
-      <CardContent className="space-y-4">
-        {/* Основные метрики */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-lg font-bold">{partner.offersCount}</div>
-            <div className="text-xs text-muted-foreground">Офферы</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-bold">{partner.clicks.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">Клики</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-bold">{partner.leads.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">Лиды</div>
-          </div>
-          <div className="text-center">
-            <div className={`text-lg font-bold ${partner.cr < 1 ? 'text-red-600' : 'text-green-600'}`}>
-              {partner.cr.toFixed(2)}%
-            </div>
-            <div className="text-xs text-muted-foreground">CR</div>
-          </div>
-        </div>
-
-        {/* Финансовые метрики */}
-        <div className="grid grid-cols-3 gap-4 pt-2 border-t">
-          <div className="text-center">
-            <div className="text-lg font-bold text-green-600">
-              ${partner.revenue.toFixed(2)}
-            </div>
-            <div className="text-xs text-muted-foreground">Доход</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-bold text-red-600">
-              ${partner.payout.toFixed(2)}
-            </div>
-            <div className="text-xs text-muted-foreground">Выплата</div>
-          </div>
-          <div className="text-center">
-            <div className={`text-lg font-bold ${partner.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ${partner.profit.toFixed(2)}
-            </div>
-            <div className="text-xs text-muted-foreground">Прибыль</div>
-          </div>
-        </div>
-
-        {/* Алерты и предупреждения */}
-        {(partner.cr < 1 || partner.fraudScore > 50 || partner.botClicks > 10) && (
-          <div className="flex items-center space-x-2 p-2 bg-red-50 border border-red-200 rounded">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            <div className="text-sm text-red-800">
-              {partner.cr < 1 && 'Низкая конверсия • '}
-              {partner.fraudScore > 50 && 'Высокий риск фрода • '}
-              {partner.botClicks > 10 && 'Много ботов'}
-            </div>
-          </div>
-        )}
-
-        {/* Развёрнутая информация */}
-        {showDetails && (
-          <div className="space-y-4 pt-4 border-t">
-            {/* Контактная информация */}
-            <div>
-              <h4 className="font-medium mb-2">Контактная информация</h4>
-              <div className="space-y-1 text-sm">
-                <div className="flex items-center space-x-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>{partner.email}</span>
+          <TabsContent value="basic" className="space-y-4">
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="username">Имя пользователя *</Label>
+                  <Input
+                    id="username"
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    placeholder="partner123"
+                    required
+                    disabled={!!partner}
+                    data-testid="input-partner-username"
+                  />
                 </div>
-                {partner.telegram && (
-                  <div className="flex items-center space-x-2">
-                    <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                    <span>@{partner.telegram}</span>
-                  </div>
-                )}
-                <div className="flex items-center space-x-2">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <span>{partner.country}</span>
+
+                <div>
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="partner@example.com"
+                    required
+                    data-testid="input-partner-email"
+                  />
                 </div>
               </div>
-            </div>
 
-            {/* Настройки выплат по офферам */}
-            <div>
-              <h4 className="font-medium mb-2">Настройки выплат по офферам</h4>
-              <div className="space-y-2">
-                {Object.values(partner.payoutSettings).map((setting) => (
-                  <div key={setting.offerId} className="flex items-center justify-between p-2 border rounded">
-                    <div>
-                      <span className="text-sm font-medium">{setting.offerName}</span>
-                      <div className="text-xs text-muted-foreground">
-                        Базовая выплата: ${setting.defaultPayout}
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {editingPayout === setting.offerId ? (
-                        <div className="flex items-center space-x-2">
-                          <Input
-                            type="number"
-                            value={newPayout}
-                            onChange={(e) => setNewPayout(e.target.value)}
-                            className="w-20 h-8"
-                            step="0.01"
-                          />
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              onEditPayout(partner.id, setting.offerId);
-                              setEditingPayout(null);
-                              setNewPayout('');
-                            }}
-                            data-testid={`button-save-payout-${partner.id}-${setting.offerId}`}
-                          >
-                            ✓
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setEditingPayout(null);
-                              setNewPayout('');
-                            }}
-                          >
-                            ✕
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-bold text-green-600">
-                            ${setting.customPayout || setting.defaultPayout}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setEditingPayout(setting.offerId);
-                              setNewPayout((setting.customPayout || setting.defaultPayout).toString());
-                            }}
-                            data-testid={`button-edit-payout-${partner.id}-${setting.offerId}`}
-                            title="Изменить выплату"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onRemoveFromOffer(partner.id, setting.offerId)}
-                            data-testid={`button-remove-offer-${partner.id}-${setting.offerId}`}
-                            title="Отключить от оффера"
-                          >
-                            <UserX className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="firstName">Имя *</Label>
+                  <Input
+                    id="firstName"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    placeholder="Иван"
+                    required
+                    data-testid="input-partner-first-name"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="lastName">Фамилия *</Label>
+                  <Input
+                    id="lastName"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    placeholder="Иванов"
+                    required
+                    data-testid="input-partner-last-name"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="company">Компания</Label>
+                  <Input
+                    id="company"
+                    value={formData.company}
+                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                    placeholder="ООО Рога и Копыта"
+                    data-testid="input-partner-company"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="phone">Телефон</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="+7 (999) 123-45-67"
+                    data-testid="input-partner-phone"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="country">Страна</Label>
+                  <Select value={formData.country} onValueChange={(value) => setFormData({ ...formData, country: value })}>
+                    <SelectTrigger data-testid="select-partner-country">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="US">США</SelectItem>
+                      <SelectItem value="RU">Россия</SelectItem>
+                      <SelectItem value="UA">Украина</SelectItem>
+                      <SelectItem value="BY">Беларусь</SelectItem>
+                      <SelectItem value="KZ">Казахстан</SelectItem>
+                      <SelectItem value="DE">Германия</SelectItem>
+                      <SelectItem value="GB">Великобритания</SelectItem>
+                      <SelectItem value="CA">Канада</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="language">Язык</Label>
+                  <Select value={formData.language} onValueChange={(value) => setFormData({ ...formData, language: value })}>
+                    <SelectTrigger data-testid="select-partner-language">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="ru">Русский</SelectItem>
+                      <SelectItem value="es">Español</SelectItem>
+                      <SelectItem value="de">Deutsch</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="timezone">Часовой пояс</Label>
+                  <Select value={formData.timezone} onValueChange={(value) => setFormData({ ...formData, timezone: value })}>
+                    <SelectTrigger data-testid="select-partner-timezone">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="UTC">UTC</SelectItem>
+                      <SelectItem value="America/New_York">EST</SelectItem>
+                      <SelectItem value="Europe/London">GMT</SelectItem>
+                      <SelectItem value="Europe/Moscow">MSK</SelectItem>
+                      <SelectItem value="Asia/Shanghai">CST</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
+          </TabsContent>
 
-            {/* Действия с партнёром */}
-            <div className="flex items-center space-x-2 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onNotifyPartner(partner.id, 'quality_alert')}
-                data-testid={`button-notify-${partner.id}`}
-                title="Уведомить партнёра"
-              >
-                <Bell className="h-4 w-4 mr-1" />
-                Уведомить
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onViewStatistics(partner.id)}
-                data-testid={`button-full-stats-${partner.id}`}
-                title="Полная статистика"
-              >
-                <ExternalLink className="h-4 w-4 mr-1" />
-                Статистика
-              </Button>
-
-              <Select onValueChange={(value) => onToggleStatus(partner.id, value)}>
-                <SelectTrigger className="w-32 h-8" data-testid={`select-status-${partner.id}`}>
-                  <SelectValue placeholder="Действие" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Активировать</SelectItem>
-                  <SelectItem value="inactive">Деактивировать</SelectItem>
-                  <SelectItem value="blocked">Заблокировать</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Дополнительная статистика */}
-            <div className="grid grid-cols-2 gap-4 pt-2 border-t text-sm">
+          <TabsContent value="business" className="space-y-4">
+            <div className="grid gap-4">
               <div>
-                <div className="flex justify-between">
-                  <span>EPC:</span>
-                  <span className="font-medium">${partner.epc.toFixed(4)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>ROI:</span>
-                  <span className={`font-medium ${partner.roi >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {partner.roi.toFixed(2)}%
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Уники:</span>
-                  <span className="font-medium">{partner.uniqueClicks.toLocaleString()}</span>
+                <Label>Источники трафика</Label>
+                <div className="grid grid-cols-4 gap-2 mt-2">
+                  {['SEO', 'PPC', 'Social Media', 'Email', 'Display', 'Native', 'Push', 'Pop', 'SMS', 'Influencer', 'Affiliate', 'Direct'].map(source => (
+                    <label key={source} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.trafficSources.includes(source)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({ ...formData, trafficSources: [...formData.trafficSources, source] });
+                          } else {
+                            setFormData({ ...formData, trafficSources: formData.trafficSources.filter(s => s !== source) });
+                          }
+                        }}
+                        data-testid={`checkbox-traffic-${source.toLowerCase().replace(' ', '-')}`}
+                      />
+                      <span className="text-sm">{source}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
+
               <div>
-                <div className="flex justify-between">
-                  <span>Фрод:</span>
-                  <span className={`font-medium ${partner.fraudClicks > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                    {partner.fraudClicks}
-                  </span>
+                <Label>Вертикали</Label>
+                <div className="grid grid-cols-4 gap-2 mt-2">
+                  {['Gambling', 'Dating', 'Finance', 'Crypto', 'E-commerce', 'Mobile Apps', 'Games', 'Health', 'Education', 'Travel', 'Sports', 'Tech'].map(vertical => (
+                    <label key={vertical} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.verticals.includes(vertical)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({ ...formData, verticals: [...formData.verticals, vertical] });
+                          } else {
+                            setFormData({ ...formData, verticals: formData.verticals.filter(v => v !== vertical) });
+                          }
+                        }}
+                        data-testid={`checkbox-vertical-${vertical.toLowerCase().replace(' ', '-')}`}
+                      />
+                      <span className="text-sm">{vertical}</span>
+                    </label>
+                  ))}
                 </div>
-                <div className="flex justify-between">
-                  <span>Боты:</span>
-                  <span className={`font-medium ${partner.botClicks > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                    {partner.botClicks}
-                  </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="tier">Уровень партнера</Label>
+                  <Select value={formData.tier} onValueChange={(value) => setFormData({ ...formData, tier: value as any })}>
+                    <SelectTrigger data-testid="select-partner-tier">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bronze">🥉 Bronze</SelectItem>
+                      <SelectItem value="silver">🥈 Silver</SelectItem>
+                      <SelectItem value="gold">🥇 Gold</SelectItem>
+                      <SelectItem value="platinum">💎 Platinum</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="flex justify-between">
-                  <span>Риск:</span>
-                  <span className={`font-medium ${getRiskColor(partner.riskLevel)}`}>
-                    {partner.riskLevel === 'low' && 'Низкий'}
-                    {partner.riskLevel === 'medium' && 'Средний'}
-                    {partner.riskLevel === 'high' && 'Высокий'}
-                  </span>
+
+                <div>
+                  <Label htmlFor="commissionRate">Комиссия (%)</Label>
+                  <Input
+                    id="commissionRate"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={formData.commissionRate}
+                    onChange={(e) => setFormData({ ...formData, commissionRate: parseFloat(e.target.value) })}
+                    placeholder="0.0"
+                    data-testid="input-commission-rate"
+                  />
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="notes">Заметки</Label>
+                <Textarea
+                  id="notes"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Дополнительная информация о партнере"
+                  rows={3}
+                  data-testid="textarea-partner-notes"
+                />
               </div>
             </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          </TabsContent>
+
+          <TabsContent value="permissions" className="space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="permApi">API доступ</Label>
+                  <p className="text-sm text-gray-500">Разрешить использование API</p>
+                </div>
+                <Switch
+                  id="permApi"
+                  checked={formData.permissions.api}
+                  onCheckedChange={(checked) => setFormData({
+                    ...formData,
+                    permissions: { ...formData.permissions, api: checked }
+                  })}
+                  data-testid="switch-permission-api"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="permStats">Статистика</Label>
+                  <p className="text-sm text-gray-500">Доступ к подробной статистике</p>
+                </div>
+                <Switch
+                  id="permStats"
+                  checked={formData.permissions.statistics}
+                  onCheckedChange={(checked) => setFormData({
+                    ...formData,
+                    permissions: { ...formData.permissions, statistics: checked }
+                  })}
+                  data-testid="switch-permission-stats"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="permOffers">Офферы</Label>
+                  <p className="text-sm text-gray-500">Просмотр и подача заявок на офферы</p>
+                </div>
+                <Switch
+                  id="permOffers"
+                  checked={formData.permissions.offers}
+                  onCheckedChange={(checked) => setFormData({
+                    ...formData,
+                    permissions: { ...formData.permissions, offers: checked }
+                  })}
+                  data-testid="switch-permission-offers"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="permFinances">Финансы</Label>
+                  <p className="text-sm text-gray-500">Доступ к финансовой информации</p>
+                </div>
+                <Switch
+                  id="permFinances"
+                  checked={formData.permissions.finances}
+                  onCheckedChange={(checked) => setFormData({
+                    ...formData,
+                    permissions: { ...formData.permissions, finances: checked }
+                  })}
+                  data-testid="switch-permission-finances"
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-4">
+            <div className="grid gap-4">
+              <div>
+                <Label htmlFor="tags">Теги (через запятую)</Label>
+                <Input
+                  id="tags"
+                  value={formData.tags.join(', ')}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+                  })}
+                  placeholder="VIP, высокий объем, проверенный"
+                  data-testid="input-partner-tags"
+                />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <div className="flex justify-end space-x-2 pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            data-testid="button-cancel"
+          >
+            Отмена
+          </Button>
+          <Button
+            type="submit"
+            disabled={mutation.isPending}
+            data-testid="button-save-partner"
+          >
+            {mutation.isPending ? 'Сохранение...' : (partner ? 'Сохранить' : 'Создать')}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
 
+// Основной компонент управления партнерами
 export default function AdvertiserPartners() {
   const { user } = useAuth();
+  const { collapsed } = useSidebar();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Состояния для фильтров
-  const [filters, setFilters] = useState<PartnerFilters>({
-    search: '',
+  // Состояние фильтров и поиска
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
     status: 'all',
-    offerId: 'all',
-    minRevenue: '',
-    minCr: '',
-    minEpc: '',
-    activityDays: 'all',
-    riskLevel: 'all',
-    topPerformersOnly: false
+    tier: 'all',
+    kycStatus: 'all',
+    country: 'all'
   });
-
+  const [sortBy, setSortBy] = useState('registrationDate');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedPartners, setSelectedPartners] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [showForm, setShowForm] = useState(false);
+  const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
 
-  // Получение данных партнёров
-  const { data: partners = [], isLoading, refetch } = useQuery({
-    queryKey: ['/api/advertiser/partners', user?.id, filters],
-    queryFn: async (): Promise<Partner[]> => {
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.set(key, value.toString());
-      });
-      params.set('advertiserId', user?.id || '');
-      
-      const response = await fetch(`/api/advertiser/partners?${params}`);
-      if (!response.ok) {
-        throw new Error('Не удалось загрузить данные партнёров');
-      }
-      return response.json();
-    },
-    enabled: !!user?.id
-  });
+  // Загрузка данных партнеров
+  const { data: partners, isLoading, refetch } = useQuery({
+    queryKey: ['/api/advertiser/partners', searchTerm, filters, sortBy, sortOrder],
+    enabled: !!user
+  }) as { data: Partner[] | undefined; isLoading: boolean; refetch: () => void };
 
-  // Получение списка офферов для фильтра
-  const { data: offers = [] } = useQuery({
-    queryKey: ['/api/advertiser/offers', user?.id],
-    queryFn: async () => {
-      const response = await fetch(`/api/advertiser/offers`);
-      if (!response.ok) throw new Error('Ошибка загрузки офферов');
-      return response.json();
-    },
-    enabled: !!user?.id
-  });
-
-  // Мутации для действий с партнёрами
-  const editPayoutMutation = useMutation({
-    mutationFn: async ({ partnerId, offerId, newPayout }: { partnerId: string; offerId: string; newPayout: number }) => {
-      const response = await fetch(`/api/advertiser/partner/${partnerId}/payout`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ offerId, payout: newPayout })
-      });
-      if (!response.ok) throw new Error('Failed to update payout');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/partners'] });
-      toast({
-        title: "Выплата обновлена",
-        description: "Новая выплата для партнёра сохранена"
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось обновить выплату",
-        variant: "destructive"
-      });
-    }
-  });
-
+  // Мутации для действий с партнерами
   const statusMutation = useMutation({
-    mutationFn: async ({ partnerId, status }: { partnerId: string; status: string }) => {
-      const response = await fetch(`/api/advertiser/partner/${partnerId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      });
-      if (!response.ok) throw new Error('Failed to update status');
-      return response.json();
-    },
+    mutationFn: ({ partnerId, status }: { partnerId: string; status: string }) => apiRequest(`/api/advertiser/partners/${partnerId}/status`, {
+      method: 'PATCH',
+      body: { status }
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/partners'] });
-      toast({
-        title: "Статус обновлён",
-        description: "Статус партнёра изменён"
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось изменить статус",
-        variant: "destructive"
-      });
+      toast({ title: 'Статус изменен', description: 'Статус партнера успешно обновлен' });
     }
   });
 
-  const removeFromOfferMutation = useMutation({
-    mutationFn: async ({ partnerId, offerId }: { partnerId: string; offerId: string }) => {
-      const response = await fetch(`/api/advertiser/partner/${partnerId}/offers/${offerId}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) throw new Error('Failed to remove partner from offer');
-      return response.json();
-    },
+  const inviteMutation = useMutation({
+    mutationFn: (data: { email: string; message?: string }) => apiRequest('/api/advertiser/partners/invite', {
+      method: 'POST',
+      body: data
+    }),
+    onSuccess: () => {
+      toast({ title: 'Приглашение отправлено', description: 'Приглашение успешно отправлено на email' });
+      setShowInviteDialog(false);
+    }
+  });
+
+  const bulkMutation = useMutation({
+    mutationFn: ({ action, partnerIds }: { action: string; partnerIds: string[] }) => apiRequest('/api/advertiser/partners/bulk', {
+      method: 'POST',
+      body: { action, partnerIds }
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/partners'] });
-      toast({
-        title: "Партнёр отключён",
-        description: "Партнёр отключён от оффера"
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось отключить партнёра",
-        variant: "destructive"
-      });
+      setSelectedPartners([]);
+      toast({ title: 'Операция выполнена', description: 'Массовая операция успешно выполнена' });
     }
   });
 
-  const notifyMutation = useMutation({
-    mutationFn: async ({ partnerId, message }: { partnerId: string; message: string }) => {
-      const response = await fetch(`/api/advertiser/partner/${partnerId}/notify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
-      });
-      if (!response.ok) throw new Error('Failed to send notification');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Уведомление отправлено",
-        description: "Партнёр получит уведомление"
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось отправить уведомление",
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Фильтрация данных
-  const filteredPartners = useMemo(() => {
-    return partners.filter(partner => {
-      if (filters.search && !partner.username.toLowerCase().includes(filters.search.toLowerCase()) &&
-          !partner.email.toLowerCase().includes(filters.search.toLowerCase()) &&
-          !partner.partnerId.includes(filters.search)) {
-        return false;
-      }
-      if (filters.status && filters.status !== 'all' && partner.status !== filters.status) return false;
-      if (filters.minRevenue && partner.revenue < parseFloat(filters.minRevenue)) return false;
-      if (filters.minCr && partner.cr < parseFloat(filters.minCr)) return false;
-      if (filters.minEpc && partner.epc < parseFloat(filters.minEpc)) return false;
-      if (filters.riskLevel && filters.riskLevel !== 'all' && partner.riskLevel !== filters.riskLevel) return false;
-      if (filters.topPerformersOnly && !partner.isTopPerformer) return false;
-      if (filters.activityDays && filters.activityDays !== 'all') {
-        const daysSinceActivity = (Date.now() - new Date(partner.lastActivity).getTime()) / (1000 * 60 * 60 * 24);
-        if (daysSinceActivity > parseInt(filters.activityDays)) return false;
-      }
-      
-      return true;
-    });
-  }, [partners, filters]);
-
-  // Обработчики
-  const handleEditPayout = (partnerId: string, offerId: string) => {
-    // Логика будет реализована в компоненте карточки
-    console.log('Edit payout for partner:', partnerId, 'offer:', offerId);
+  // Функции для действий
+  const handleEdit = (partner: Partner) => {
+    setEditingPartner(partner);
+    setShowForm(true);
   };
 
-  const handleToggleStatus = (partnerId: string, status: string) => {
+  const handleStatusChange = (partnerId: string, status: string) => {
     statusMutation.mutate({ partnerId, status });
   };
 
-  const handleViewStatistics = (partnerId: string) => {
-    // Открыть статистику в новом окне или перейти на страницу
-    window.open(`/advertiser/partner-statistics?partnerId=${partnerId}`, '_blank');
+  const handleBulkAction = (action: string) => {
+    if (selectedPartners.length === 0) return;
+    bulkMutation.mutate({ action, partnerIds: selectedPartners });
   };
 
-  const handleNotifyPartner = (partnerId: string, message: string) => {
-    notifyMutation.mutate({ partnerId, message });
+  const copyReferralLink = (partner: Partner) => {
+    const url = `${window.location.origin}/register?ref=${partner.referralCode}`;
+    navigator.clipboard.writeText(url);
+    toast({ title: 'Скопировано', description: 'Реферальная ссылка скопирована в буфер обмена' });
   };
 
-  const handleRemoveFromOffer = (partnerId: string, offerId: string) => {
-    removeFromOfferMutation.mutate({ partnerId, offerId });
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      active: { label: 'Активен', variant: 'default' as const, color: 'bg-green-500' },
+      pending: { label: 'На модерации', variant: 'outline' as const, color: 'bg-yellow-500' },
+      suspended: { label: 'Приостановлен', variant: 'secondary' as const, color: 'bg-orange-500' },
+      blocked: { label: 'Заблокирован', variant: 'destructive' as const, color: 'bg-red-500' }
+    };
+    
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    return (
+      <Badge variant={config.variant} className="flex items-center gap-1">
+        <div className={`w-2 h-2 rounded-full ${config.color}`} />
+        {config.label}
+      </Badge>
+    );
   };
 
-  const handleExport = async (format: 'csv' | 'xlsx') => {
-    try {
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.set(key, value.toString());
-      });
-      params.set('advertiserId', user?.id || '');
-      params.set('format', format);
-      
-      const response = await fetch(`/api/advertiser/partners/export?${params}`);
-      if (!response.ok) throw new Error('Ошибка экспорта');
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `partners_${new Date().toISOString().split('T')[0]}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      toast({
-        title: "Экспорт выполнен",
-        description: `Файл ${format.toUpperCase()} успешно скачан`
-      });
-    } catch (error) {
-      toast({
-        title: "Ошибка экспорта",
-        description: "Не удалось выполнить экспорт данных",
-        variant: "destructive"
-      });
-    }
+  const getKycBadge = (kycStatus: string) => {
+    const statusConfig = {
+      pending: { label: 'На проверке', variant: 'outline' as const, icon: Clock },
+      approved: { label: 'Верифицирован', variant: 'default' as const, icon: CheckCircle },
+      rejected: { label: 'Отклонен', variant: 'destructive' as const, icon: XCircle }
+    };
+    
+    const config = statusConfig[kycStatus as keyof typeof statusConfig] || statusConfig.pending;
+    const Icon = config.icon;
+    
+    return (
+      <Badge variant={config.variant} className="flex items-center gap-1">
+        <Icon className="w-3 h-3" />
+        {config.label}
+      </Badge>
+    );
   };
 
-  const resetFilters = () => {
-    setFilters({
-      search: '',
-      status: 'all',
-      offerId: 'all',
-      minRevenue: '',
-      minCr: '',
-      minEpc: '',
-      activityDays: 'all',
-      riskLevel: 'all',
-      topPerformersOnly: false
-    });
+  const getTierIcon = (tier: string) => {
+    const tierConfig = {
+      bronze: '🥉',
+      silver: '🥈', 
+      gold: '🥇',
+      platinum: '💎'
+    };
+    return tierConfig[tier as keyof typeof tierConfig] || '🥉';
   };
+
+  const filteredPartners = partners?.filter(partner => {
+    if (searchTerm && !(
+      partner.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      partner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      `${partner.firstName} ${partner.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
+    )) return false;
+    if (filters.status !== 'all' && partner.status !== filters.status) return false;
+    if (filters.tier !== 'all' && partner.tier !== filters.tier) return false;
+    if (filters.kycStatus !== 'all' && partner.kycStatus !== filters.kycStatus) return false;
+    if (filters.country !== 'all' && partner.country !== filters.country) return false;
+    return true;
+  }) || [];
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-16 bg-gray-200 rounded" />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6" data-testid="partners-page">
-        {/* Заголовок */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Партнёры</h1>
-            <p className="text-muted-foreground">
-              Управление партнёрами, настройка выплат и анализ эффективности
-            </p>
-          </div>
-          
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => refetch()} data-testid="button-refresh">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Обновить
-            </Button>
-            
-            <Select onValueChange={(format) => handleExport(format as 'csv' | 'xlsx')}>
-              <SelectTrigger className="w-[140px]" data-testid="select-export">
-                <SelectValue placeholder="Экспорт" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="csv">CSV</SelectItem>
-                <SelectItem value="xlsx">Excel</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div className={`p-6 transition-all duration-300 ${collapsed ? 'ml-16' : 'ml-64'}`}>
+      {/* Заголовок */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Управление партнерами</h1>
+          <p className="text-gray-600">Управляйте вашими партнерами и их правами доступа</p>
         </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowInviteDialog(true)}
+            data-testid="button-invite-partner"
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Пригласить
+          </Button>
+          <Button
+            onClick={() => {
+              setEditingPartner(null);
+              setShowForm(true);
+            }}
+            data-testid="button-create-partner"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Добавить партнера
+          </Button>
+        </div>
+      </div>
 
-        {/* Панель фильтров */}
+      {/* Статистика */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                Фильтры и поиск
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={resetFilters}>
-                Сбросить
-              </Button>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Всего партнеров</p>
+                <p className="text-2xl font-bold text-blue-600">{partners?.length || 0}</p>
+              </div>
+              <Users className="w-8 h-8 text-blue-500" />
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Основная строка фильтров */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Поиск */}
-              <div className="space-y-2">
-                <Label>Поиск</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="По имени, email, ID..."
-                    value={filters.search}
-                    onChange={(e) => setFilters({...filters, search: e.target.value})}
-                    className="pl-10"
-                    data-testid="input-search"
-                  />
-                </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Активные</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {partners?.filter(p => p.status === 'active').length || 0}
+                </p>
               </div>
-
-              {/* Статус */}
-              <div className="space-y-2">
-                <Label>Статус</Label>
-                <Select value={filters.status} onValueChange={(value) => setFilters({...filters, status: value})}>
-                  <SelectTrigger data-testid="select-status">
-                    <SelectValue placeholder="Все статусы" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Все статусы</SelectItem>
-                    <SelectItem value="active">Активные</SelectItem>
-                    <SelectItem value="inactive">Неактивные</SelectItem>
-                    <SelectItem value="pending">На модерации</SelectItem>
-                    <SelectItem value="blocked">Заблокированные</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Оффер */}
-              <div className="space-y-2">
-                <Label>Оффер</Label>
-                <Select value={filters.offerId} onValueChange={(value) => setFilters({...filters, offerId: value})}>
-                  <SelectTrigger data-testid="select-offer">
-                    <SelectValue placeholder="Все офферы" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Все офферы</SelectItem>
-                    {offers.map((offer: any) => (
-                      <SelectItem key={offer.id} value={offer.id}>
-                        {offer.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Уровень риска */}
-              <div className="space-y-2">
-                <Label>Уровень риска</Label>
-                <Select value={filters.riskLevel} onValueChange={(value) => setFilters({...filters, riskLevel: value})}>
-                  <SelectTrigger data-testid="select-risk">
-                    <SelectValue placeholder="Все уровни" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Все уровни</SelectItem>
-                    <SelectItem value="low">Низкий</SelectItem>
-                    <SelectItem value="medium">Средний</SelectItem>
-                    <SelectItem value="high">Высокий</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Дополнительные фильтры */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {/* Минимальный доход */}
-              <div className="space-y-2">
-                <Label>Мин. доход ($)</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={filters.minRevenue}
-                  onChange={(e) => setFilters({...filters, minRevenue: e.target.value})}
-                  data-testid="input-min-revenue"
-                />
-              </div>
-
-              {/* Минимальный CR */}
-              <div className="space-y-2">
-                <Label>Мин. CR (%)</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  step="0.01"
-                  value={filters.minCr}
-                  onChange={(e) => setFilters({...filters, minCr: e.target.value})}
-                  data-testid="input-min-cr"
-                />
-              </div>
-
-              {/* Минимальный EPC */}
-              <div className="space-y-2">
-                <Label>Мин. EPC ($)</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  step="0.01"
-                  value={filters.minEpc}
-                  onChange={(e) => setFilters({...filters, minEpc: e.target.value})}
-                  data-testid="input-min-epc"
-                />
-              </div>
-
-              {/* Активность */}
-              <div className="space-y-2">
-                <Label>Активность (дни)</Label>
-                <Select value={filters.activityDays} onValueChange={(value) => setFilters({...filters, activityDays: value})}>
-                  <SelectTrigger data-testid="select-activity">
-                    <SelectValue placeholder="Все" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Все</SelectItem>
-                    <SelectItem value="1">За день</SelectItem>
-                    <SelectItem value="7">За неделю</SelectItem>
-                    <SelectItem value="30">За месяц</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Топ-партнёры */}
-              <div className="space-y-2">
-                <Label>Фильтры</Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="topPerformers"
-                    checked={filters.topPerformersOnly}
-                    onCheckedChange={(checked) => setFilters({...filters, topPerformersOnly: checked as boolean})}
-                    data-testid="checkbox-top-performers"
-                  />
-                  <Label htmlFor="topPerformers" className="text-sm">
-                    Только топ-партнёры
-                  </Label>
-                </div>
-              </div>
+              <UserCheck className="w-8 h-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
 
-        {/* Счётчики и режимы просмотра */}
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-muted-foreground">
-            Найдено партнёров: <span className="font-medium">{filteredPartners.length}</span>
-            {filteredPartners.filter(p => p.isTopPerformer).length > 0 && (
-              <span className="ml-4">
-                Топ-партнёров: <span className="font-medium text-yellow-600">
-                  {filteredPartners.filter(p => p.isTopPerformer).length}
-                </span>
-              </span>
-            )}
-          </div>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Общий доход</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  ${partners ? partners.reduce((acc, p) => acc + p.statistics.totalRevenue, 0).toLocaleString() : 0}
+                </p>
+              </div>
+              <DollarSign className="w-8 h-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
 
-          <div className="flex items-center space-x-2">
-            <Button
-              variant={viewMode === 'cards' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('cards')}
-              data-testid="button-view-cards"
-            >
-              Карточки
-            </Button>
-            <Button
-              variant={viewMode === 'table' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('table')}
-              data-testid="button-view-table"
-            >
-              Таблица
-            </Button>
-          </div>
-        </div>
-
-        {/* Список партнёров */}
-        {filteredPartners.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>Партнёры не найдены</p>
-            <p className="text-sm mt-2">Попробуйте изменить фильтры поиска</p>
-          </div>
-        ) : (
-          <div className={viewMode === 'cards' ? 'grid grid-cols-1 lg:grid-cols-2 gap-6' : 'space-y-4'}>
-            {filteredPartners.map((partner) => (
-              <PartnerCard
-                key={partner.id}
-                partner={partner}
-                onEditPayout={handleEditPayout}
-                onToggleStatus={handleToggleStatus}
-                onViewStatistics={handleViewStatistics}
-                onNotifyPartner={handleNotifyPartner}
-                onRemoveFromOffer={handleRemoveFromOffer}
-              />
-            ))}
-          </div>
-        )}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Средний рейтинг</p>
+                <p className="text-2xl font-bold text-orange-600">
+                  {partners ? (partners.reduce((acc, p) => acc + p.rating, 0) / partners.length).toFixed(1) : 0}
+                </p>
+              </div>
+              <Star className="w-8 h-8 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Фильтры и поиск */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-4">
+            <div className="flex-1 min-w-64">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Поиск по имени, email или логину..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                  data-testid="input-search-partners"
+                />
+              </div>
+            </div>
+
+            <Select value={filters.status} onValueChange={(value) => setFilters({ ...filters, status: value })}>
+              <SelectTrigger className="w-40" data-testid="select-filter-status">
+                <SelectValue placeholder="Статус" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все статусы</SelectItem>
+                <SelectItem value="active">Активные</SelectItem>
+                <SelectItem value="pending">На модерации</SelectItem>
+                <SelectItem value="suspended">Приостановленные</SelectItem>
+                <SelectItem value="blocked">Заблокированные</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filters.tier} onValueChange={(value) => setFilters({ ...filters, tier: value })}>
+              <SelectTrigger className="w-40" data-testid="select-filter-tier">
+                <SelectValue placeholder="Уровень" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все уровни</SelectItem>
+                <SelectItem value="bronze">🥉 Bronze</SelectItem>
+                <SelectItem value="silver">🥈 Silver</SelectItem>
+                <SelectItem value="gold">🥇 Gold</SelectItem>
+                <SelectItem value="platinum">💎 Platinum</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filters.kycStatus} onValueChange={(value) => setFilters({ ...filters, kycStatus: value })}>
+              <SelectTrigger className="w-40" data-testid="select-filter-kyc">
+                <SelectValue placeholder="KYC" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все KYC</SelectItem>
+                <SelectItem value="pending">На проверке</SelectItem>
+                <SelectItem value="approved">Верифицированы</SelectItem>
+                <SelectItem value="rejected">Отклонены</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Массовые действия */}
+          {selectedPartners.length > 0 && (
+            <div className="flex items-center gap-2 mt-4 p-3 bg-blue-50 rounded-lg">
+              <span className="text-sm text-blue-600">
+                Выбрано: {selectedPartners.length} партнеров
+              </span>
+              <div className="flex gap-2 ml-auto">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleBulkAction('activate')}
+                  data-testid="button-bulk-activate"
+                >
+                  <UserCheck className="w-4 h-4 mr-1" />
+                  Активировать
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleBulkAction('suspend')}
+                  data-testid="button-bulk-suspend"
+                >
+                  <UserX className="w-4 h-4 mr-1" />
+                  Приостановить
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleBulkAction('block')}
+                  data-testid="button-bulk-block"
+                >
+                  <Shield className="w-4 h-4 mr-1" />
+                  Заблокировать
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Таблица партнеров */}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">
+                  <input
+                    type="checkbox"
+                    checked={selectedPartners.length === filteredPartners.length && filteredPartners.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedPartners(filteredPartners.map(p => p.id));
+                      } else {
+                        setSelectedPartners([]);
+                      }
+                    }}
+                    data-testid="checkbox-select-all"
+                  />
+                </TableHead>
+                <TableHead>Партнер</TableHead>
+                <TableHead>Статус</TableHead>
+                <TableHead>Уровень</TableHead>
+                <TableHead>Статистика</TableHead>
+                <TableHead>Баланс</TableHead>
+                <TableHead>Регистрация</TableHead>
+                <TableHead className="w-32">Действия</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredPartners.map((partner) => (
+                <TableRow key={partner.id} className="hover:bg-gray-50">
+                  <TableCell>
+                    <input
+                      type="checkbox"
+                      checked={selectedPartners.includes(partner.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedPartners([...selectedPartners, partner.id]);
+                        } else {
+                          setSelectedPartners(selectedPartners.filter(id => id !== partner.id));
+                        }
+                      }}
+                      data-testid={`checkbox-partner-${partner.id}`}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                        {partner.firstName.charAt(0)}{partner.lastName.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-medium">{partner.firstName} {partner.lastName}</p>
+                        <p className="text-sm text-gray-500">@{partner.username}</p>
+                        <p className="text-sm text-gray-500">{partner.email}</p>
+                        {partner.company && (
+                          <p className="text-xs text-gray-400">{partner.company}</p>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      {getStatusBadge(partner.status)}
+                      {getKycBadge(partner.kycStatus)}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg">{getTierIcon(partner.tier)}</span>
+                      <div>
+                        <p className="font-medium capitalize">{partner.tier}</p>
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-3 h-3 text-yellow-500" />
+                          <span className="text-xs text-gray-600">{partner.rating}/5</span>
+                        </div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Клики:</span>
+                        <span className="font-medium">{partner.statistics.totalClicks.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">CR:</span>
+                        <span className="font-medium text-purple-600">{partner.statistics.averageCR}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">EPC:</span>
+                        <span className="font-medium text-blue-600">${partner.statistics.averageEPC}</span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Баланс:</span>
+                        <span className="font-medium text-green-600">${partner.balance.toFixed(2)}</span>
+                      </div>
+                      {partner.holdAmount > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Удержано:</span>
+                          <span className="font-medium text-orange-600">${partner.holdAmount.toFixed(2)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Доход:</span>
+                        <span className="font-medium">${partner.statistics.totalRevenue.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <p>{new Date(partner.registrationDate).toLocaleDateString('ru-RU')}</p>
+                      <p className="text-gray-500">{partner.country}</p>
+                      <p className="text-xs text-gray-400">
+                        Активность: {new Date(partner.lastActivity).toLocaleDateString('ru-RU')}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(partner)}
+                        title="Редактировать партнера"
+                        data-testid={`button-edit-${partner.id}`}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copyReferralLink(partner)}
+                        title="Скопировать реферальную ссылку"
+                        data-testid={`button-copy-ref-${partner.id}`}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => window.open(`/partner/${partner.id}/stats`, '_blank')}
+                        title="Статистика партнера"
+                        data-testid={`button-stats-${partner.id}`}
+                      >
+                        <BarChart3 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => window.open(`mailto:${partner.email}`, '_blank')}
+                        title="Написать письмо"
+                        data-testid={`button-email-${partner.id}`}
+                      >
+                        <Mail className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {filteredPartners.length === 0 && (
+            <div className="text-center py-12">
+              <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Нет партнеров</h3>
+              <p className="text-gray-500 mb-4">
+                {searchTerm || Object.values(filters).some(f => f !== 'all')
+                  ? 'По вашему запросу ничего не найдено'
+                  : 'Пригласите ваших первых партнеров'
+                }
+              </p>
+              <Button
+                onClick={() => setShowInviteDialog(true)}
+                data-testid="button-invite-first-partner"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Пригласить партнера
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Модальное окно для создания/редактирования */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingPartner ? 'Редактирование партнера' : 'Добавление нового партнера'}
+            </DialogTitle>
+          </DialogHeader>
+          <PartnerForm
+            partner={editingPartner || undefined}
+            onSuccess={() => setShowForm(false)}
+            onCancel={() => setShowForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Модальное окно для приглашения */}
+      <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Пригласить партнера</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              inviteMutation.mutate({
+                email: formData.get('email') as string,
+                message: formData.get('message') as string
+              });
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <Label htmlFor="inviteEmail">Email партнера *</Label>
+              <Input
+                id="inviteEmail"
+                name="email"
+                type="email"
+                placeholder="partner@example.com"
+                required
+                data-testid="input-invite-email"
+              />
+            </div>
+            <div>
+              <Label htmlFor="inviteMessage">Сообщение (необязательно)</Label>
+              <Textarea
+                id="inviteMessage"
+                name="message"
+                placeholder="Персональное сообщение для партнера"
+                rows={3}
+                data-testid="textarea-invite-message"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowInviteDialog(false)}
+                data-testid="button-cancel-invite"
+              >
+                Отмена
+              </Button>
+              <Button
+                type="submit"
+                disabled={inviteMutation.isPending}
+                data-testid="button-send-invite"
+              >
+                {inviteMutation.isPending ? 'Отправка...' : 'Отправить приглашение'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

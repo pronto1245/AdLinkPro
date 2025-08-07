@@ -1,1035 +1,1084 @@
-import { useState, useMemo } from "react";
-import { useAuth } from "@/contexts/auth-context";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Link } from "wouter";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { 
-  Target, 
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/contexts/auth-context';
+import { useSidebar } from '@/contexts/sidebar-context';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useToast } from '@/hooks/use-toast';
+import {
   Plus,
-  Settings,
-  Eye,
-  Edit,
-  Copy,
-  Download,
-  Upload,
   Search,
   Filter,
-  RefreshCw,
-  Calendar,
-  DollarSign,
-  TrendingUp,
-  Users,
+  Edit,
+  Trash2,
+  Eye,
+  Copy,
   BarChart3,
   Globe,
-  Shield,
-  AlertCircle,
+  Users,
+  Settings,
+  Download,
+  Upload,
+  PlayCircle,
+  PauseCircle,
+  Archive,
+  AlertTriangle,
   CheckCircle,
   Clock,
-  Trash2,
-  ExternalLink,
+  Target,
+  DollarSign,
+  TrendingUp,
+  Calendar,
   FileText,
-  Image as ImageIcon,
-  Link as LinkIcon
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+  Link as LinkIcon,
+  Share2,
+  Shield,
+  Zap
+} from 'lucide-react';
 
-// Form schema for offer creation/editing
-const offerFormSchema = z.object({
-  name: z.string().min(2, "Название должно содержать минимум 2 символа"),
-  description: z.string().optional(),
-  category: z.string().min(1, "Выберите категорию"),
-  payoutType: z.enum(["CPA", "RevShare", "CPL", "CPC", "CPI"]),
-  currency: z.enum(["USD", "EUR", "RUB", "GBP"]),
-  payoutAmount: z.string().refine(val => !isNaN(Number(val)) && Number(val) > 0, "Введите корректную сумму"),
-  trackingUrl: z.string().url("Введите корректный URL").optional(),
-  geoTargeting: z.array(z.string()).optional(),
-  isActive: z.boolean().default(true),
-  autoApproval: z.boolean().default(false),
-  antifraudEnabled: z.boolean().default(true),
-  trafficRequirements: z.string().optional(),
-  restrictions: z.string().optional(),
-  postbackUrl: z.string().url("Введите корректный URL").optional(),
-  moderatorComment: z.string().optional()
-});
-
-type OfferFormData = z.infer<typeof offerFormSchema>;
-
+// Типы данных для офферов
 interface Offer {
   id: string;
   name: string;
+  description: string;
+  url: string;
+  previewUrl?: string;
   category: string;
-  payoutType: string;
-  currency: string;
+  vertical: string;
+  status: 'active' | 'paused' | 'pending' | 'archived' | 'rejected';
+  payoutType: 'cpa' | 'cpl' | 'cpc' | 'cpm' | 'revshare';
   payoutAmount: number;
-  status: 'active' | 'inactive' | 'pending' | 'rejected';
+  currency: string;
+  countries: string[];
+  restrictions: string;
+  caps: {
+    daily?: number;
+    weekly?: number;
+    monthly?: number;
+    total?: number;
+  };
+  schedule: {
+    enabled: boolean;
+    startDate?: string;
+    endDate?: string;
+    timezone: string;
+  };
+  tracking: {
+    clickUrl: string;
+    impressionUrl?: string;
+    conversionUrl: string;
+    postbackUrl?: string;
+  };
+  creatives: {
+    banners: string[];
+    videos: string[];
+    texts: string[];
+    emails: string[];
+  };
+  requirements: {
+    traffic: string[];
+    quality: number;
+    approval: 'auto' | 'manual' | 'whitelist';
+  };
+  antifraud: {
+    enabled: boolean;
+    methods: string[];
+    strictness: 'low' | 'medium' | 'high';
+  };
+  statistics: {
+    clicks: number;
+    conversions: number;
+    cr: number;
+    epc: number;
+    revenue: number;
+    activePartners: number;
+  };
   createdAt: string;
-  partnersCount: number;
-  leads: number;
-  cr: number;
-  epc: number;
-  revenue: number;
-  geoTargeting: string[];
-  isActive: boolean;
-  trackingUrl?: string;
-  description?: string;
+  updatedAt: string;
+  createdBy: string;
+  isPrivate: boolean;
+  priority: number;
+  tags: string[];
 }
 
-interface OfferPartner {
-  id: string;
-  name: string;
-  traffic: number;
-  leads: number;
-  cr: number;
-  revenue: number;
-  status: string;
-  connectedAt: string;
-}
-
-const CATEGORIES = [
-  "Gaming", "Finance", "Dating", "E-commerce", "Health", 
-  "Education", "Travel", "Technology", "Entertainment", "Other"
-];
-
-const PAYOUT_TYPES = [
-  { value: "CPA", label: "CPA - Cost Per Action" },
-  { value: "RevShare", label: "RevShare - Revenue Share" },
-  { value: "CPL", label: "CPL - Cost Per Lead" },
-  { value: "CPC", label: "CPC - Cost Per Click" },
-  { value: "CPI", label: "CPI - Cost Per Install" }
-];
-
-const CURRENCIES = [
-  { value: "USD", label: "USD - US Dollar" },
-  { value: "EUR", label: "EUR - Euro" },
-  { value: "RUB", label: "RUB - Russian Ruble" },
-  { value: "GBP", label: "GBP - British Pound" }
-];
-
-const GEO_COUNTRIES = [
-  "US", "CA", "GB", "DE", "FR", "IT", "ES", "AU", "RU", "BR", "IN", "JP", "KR", "CN"
-];
-
-export default function OfferManagement() {
-  const { user } = useAuth();
+// Компонент для создания/редактирования оффера
+const OfferForm: React.FC<{
+  offer?: Offer;
+  onSuccess: () => void;
+  onCancel: () => void;
+}> = ({ offer, onSuccess, onCancel }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // State for filters and search
-  const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [payoutTypeFilter, setPayoutTypeFilter] = useState("");
-  const [geoFilter, setGeoFilter] = useState("");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [pageSize, setPageSize] = useState(25);
-  const [currentPage, setCurrentPage] = useState(1);
-  
-  // Dialog states
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showStatsDialog, setShowStatsDialog] = useState(false);
-  const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
+  const [formData, setFormData] = useState({
+    name: offer?.name || '',
+    description: offer?.description || '',
+    url: offer?.url || '',
+    previewUrl: offer?.previewUrl || '',
+    category: offer?.category || '',
+    vertical: offer?.vertical || '',
+    payoutType: offer?.payoutType || 'cpa',
+    payoutAmount: offer?.payoutAmount || 0,
+    currency: offer?.currency || 'USD',
+    countries: offer?.countries || [],
+    restrictions: offer?.restrictions || '',
+    caps: offer?.caps || {},
+    schedule: offer?.schedule || { enabled: false, timezone: 'UTC' },
+    tracking: offer?.tracking || { clickUrl: '', conversionUrl: '', postbackUrl: '' },
+    requirements: offer?.requirements || { traffic: [], quality: 80, approval: 'manual' },
+    antifraud: offer?.antifraud || { enabled: true, methods: [], strictness: 'medium' },
+    isPrivate: offer?.isPrivate || false,
+    priority: offer?.priority || 1,
+    tags: offer?.tags || []
+  });
 
-  // Form for offer creation/editing
-  const form = useForm<OfferFormData>({
-    resolver: zodResolver(offerFormSchema),
-    defaultValues: {
-      isActive: true,
-      autoApproval: false,
-      antifraudEnabled: true,
-      currency: "USD",
-      payoutType: "CPA"
+  const mutation = useMutation({
+    mutationFn: (data: any) => {
+      const url = offer ? `/api/advertiser/offers/${offer.id}` : '/api/advertiser/offers';
+      const method = offer ? 'PUT' : 'POST';
+      return apiRequest(url, { method, body: data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
+      toast({
+        title: offer ? 'Оффер обновлен' : 'Оффер создан',
+        description: offer ? 'Изменения успешно сохранены' : 'Новый оффер добавлен в систему'
+      });
+      onSuccess();
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Ошибка',
+        description: error.message || 'Не удалось сохранить оффер',
+        variant: 'destructive'
+      });
     }
   });
 
-  // Fetch offers data with filters
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutation.mutate(formData);
+  };
+
+  return (
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Tabs defaultValue="basic" className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="basic">Основное</TabsTrigger>
+            <TabsTrigger value="payout">Выплаты</TabsTrigger>
+            <TabsTrigger value="targeting">Таргетинг</TabsTrigger>
+            <TabsTrigger value="tracking">Трекинг</TabsTrigger>
+            <TabsTrigger value="settings">Настройки</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="basic" className="space-y-4">
+            <div className="grid gap-4">
+              <div>
+                <Label htmlFor="name">Название оффера *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Введите название оффера"
+                  required
+                  data-testid="input-offer-name"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="description">Описание</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Подробное описание оффера"
+                  rows={3}
+                  data-testid="textarea-offer-description"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="category">Категория *</Label>
+                  <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                    <SelectTrigger data-testid="select-offer-category">
+                      <SelectValue placeholder="Выберите категорию" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="gambling">Гемблинг</SelectItem>
+                      <SelectItem value="dating">Знакомства</SelectItem>
+                      <SelectItem value="finance">Финансы</SelectItem>
+                      <SelectItem value="crypto">Криптовалюты</SelectItem>
+                      <SelectItem value="ecommerce">E-commerce</SelectItem>
+                      <SelectItem value="mobile">Мобильные приложения</SelectItem>
+                      <SelectItem value="games">Игры</SelectItem>
+                      <SelectItem value="health">Здоровье</SelectItem>
+                      <SelectItem value="education">Образование</SelectItem>
+                      <SelectItem value="other">Другое</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="vertical">Вертикаль</Label>
+                  <Input
+                    id="vertical"
+                    value={formData.vertical}
+                    onChange={(e) => setFormData({ ...formData, vertical: e.target.value })}
+                    placeholder="Например: Casino, Forex"
+                    data-testid="input-offer-vertical"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="url">URL лендинга *</Label>
+                <Input
+                  id="url"
+                  type="url"
+                  value={formData.url}
+                  onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                  placeholder="https://example.com/landing"
+                  required
+                  data-testid="input-offer-url"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="previewUrl">URL превью</Label>
+                <Input
+                  id="previewUrl"
+                  type="url"
+                  value={formData.previewUrl}
+                  onChange={(e) => setFormData({ ...formData, previewUrl: e.target.value })}
+                  placeholder="https://example.com/preview"
+                  data-testid="input-offer-preview-url"
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="payout" className="space-y-4">
+            <div className="grid gap-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="payoutType">Тип выплаты *</Label>
+                  <Select value={formData.payoutType} onValueChange={(value) => setFormData({ ...formData, payoutType: value as any })}>
+                    <SelectTrigger data-testid="select-payout-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cpa">CPA (за действие)</SelectItem>
+                      <SelectItem value="cpl">CPL (за лид)</SelectItem>
+                      <SelectItem value="cpc">CPC (за клик)</SelectItem>
+                      <SelectItem value="cpm">CPM (за 1000 показов)</SelectItem>
+                      <SelectItem value="revshare">RevShare (%)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="payoutAmount">Размер выплаты *</Label>
+                  <Input
+                    id="payoutAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.payoutAmount}
+                    onChange={(e) => setFormData({ ...formData, payoutAmount: parseFloat(e.target.value) })}
+                    required
+                    data-testid="input-payout-amount"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="currency">Валюта</Label>
+                  <Select value={formData.currency} onValueChange={(value) => setFormData({ ...formData, currency: value })}>
+                    <SelectTrigger data-testid="select-currency">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="RUB">RUB</SelectItem>
+                      <SelectItem value="BTC">BTC</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label>Капы (лимиты)</Label>
+                <div className="grid grid-cols-4 gap-4 mt-2">
+                  <div>
+                    <Label htmlFor="dailyCap">Дневной</Label>
+                    <Input
+                      id="dailyCap"
+                      type="number"
+                      min="0"
+                      value={formData.caps.daily || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        caps: { ...formData.caps, daily: e.target.value ? parseInt(e.target.value) : undefined }
+                      })}
+                      placeholder="0"
+                      data-testid="input-daily-cap"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="weeklyCap">Недельный</Label>
+                    <Input
+                      id="weeklyCap"
+                      type="number"
+                      min="0"
+                      value={formData.caps.weekly || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        caps: { ...formData.caps, weekly: e.target.value ? parseInt(e.target.value) : undefined }
+                      })}
+                      placeholder="0"
+                      data-testid="input-weekly-cap"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="monthlyCap">Месячный</Label>
+                    <Input
+                      id="monthlyCap"
+                      type="number"
+                      min="0"
+                      value={formData.caps.monthly || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        caps: { ...formData.caps, monthly: e.target.value ? parseInt(e.target.value) : undefined }
+                      })}
+                      placeholder="0"
+                      data-testid="input-monthly-cap"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="totalCap">Общий</Label>
+                    <Input
+                      id="totalCap"
+                      type="number"
+                      min="0"
+                      value={formData.caps.total || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        caps: { ...formData.caps, total: e.target.value ? parseInt(e.target.value) : undefined }
+                      })}
+                      placeholder="0"
+                      data-testid="input-total-cap"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="targeting" className="space-y-4">
+            <div className="grid gap-4">
+              <div>
+                <Label>Страны (выберите одну или несколько)</Label>
+                <div className="grid grid-cols-4 gap-2 mt-2 max-h-40 overflow-y-auto border rounded p-2">
+                  {['US', 'GB', 'CA', 'AU', 'DE', 'FR', 'IT', 'ES', 'RU', 'UA', 'BY', 'KZ', 'BR', 'IN', 'CN', 'JP'].map(country => (
+                    <label key={country} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.countries.includes(country)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({ ...formData, countries: [...formData.countries, country] });
+                          } else {
+                            setFormData({ ...formData, countries: formData.countries.filter(c => c !== country) });
+                          }
+                        }}
+                        data-testid={`checkbox-country-${country}`}
+                      />
+                      <span className="text-sm">{country}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="restrictions">Ограничения и требования</Label>
+                <Textarea
+                  id="restrictions"
+                  value={formData.restrictions}
+                  onChange={(e) => setFormData({ ...formData, restrictions: e.target.value })}
+                  placeholder="Описание ограничений, требований к трафику и партнерам"
+                  rows={4}
+                  data-testid="textarea-restrictions"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="approval">Тип одобрения</Label>
+                  <Select value={formData.requirements.approval} onValueChange={(value) => setFormData({
+                    ...formData,
+                    requirements: { ...formData.requirements, approval: value as any }
+                  })}>
+                    <SelectTrigger data-testid="select-approval-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="auto">Автоматическое</SelectItem>
+                      <SelectItem value="manual">Ручное</SelectItem>
+                      <SelectItem value="whitelist">Только белый список</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="quality">Минимальное качество (%)</Label>
+                  <Input
+                    id="quality"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formData.requirements.quality}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      requirements: { ...formData.requirements, quality: parseInt(e.target.value) }
+                    })}
+                    data-testid="input-quality-requirement"
+                  />
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="tracking" className="space-y-4">
+            <div className="grid gap-4">
+              <div>
+                <Label htmlFor="clickUrl">URL для кликов *</Label>
+                <Input
+                  id="clickUrl"
+                  type="url"
+                  value={formData.tracking?.clickUrl || ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    tracking: { ...formData.tracking, clickUrl: e.target.value }
+                  })}
+                  placeholder="https://track.example.com/click?id={clickid}"
+                  required
+                  data-testid="input-click-url"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="conversionUrl">URL для конверсий *</Label>
+                <Input
+                  id="conversionUrl"
+                  type="url"
+                  value={formData.tracking?.conversionUrl || ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    tracking: { ...formData.tracking, conversionUrl: e.target.value }
+                  })}
+                  placeholder="https://track.example.com/conversion?id={clickid}"
+                  required
+                  data-testid="input-conversion-url"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="postbackUrl">Postback URL</Label>
+                <Input
+                  id="postbackUrl"
+                  type="url"
+                  value={formData.tracking?.postbackUrl || ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    tracking: { ...formData.tracking, postbackUrl: e.target.value }
+                  })}
+                  placeholder="https://partner.example.com/postback?id={clickid}&sum={sum}"
+                  data-testid="input-postback-url"
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-4">
+            <div className="grid gap-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="isPrivate"
+                  checked={formData.isPrivate}
+                  onCheckedChange={(checked) => setFormData({ ...formData, isPrivate: checked })}
+                  data-testid="switch-private-offer"
+                />
+                <Label htmlFor="isPrivate">Приватный оффер</Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="antifraudEnabled"
+                  checked={formData.antifraud.enabled}
+                  onCheckedChange={(checked) => setFormData({
+                    ...formData,
+                    antifraud: { ...formData.antifraud, enabled: checked }
+                  })}
+                  data-testid="switch-antifraud-enabled"
+                />
+                <Label htmlFor="antifraudEnabled">Включить антифрод</Label>
+              </div>
+
+              <div>
+                <Label htmlFor="priority">Приоритет (1-10)</Label>
+                <Input
+                  id="priority"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={formData.priority}
+                  onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
+                  data-testid="input-priority"
+                />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <div className="flex justify-end space-x-2 pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            data-testid="button-cancel"
+          >
+            Отмена
+          </Button>
+          <Button
+            type="submit"
+            disabled={mutation.isPending}
+            data-testid="button-save-offer"
+          >
+            {mutation.isPending ? 'Сохранение...' : (offer ? 'Сохранить' : 'Создать')}
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+// Основной компонент управления офферами
+export default function OfferManagement() {
+  const { user } = useAuth();
+  const { collapsed } = useSidebar();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Состояние фильтров и поиска
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
+    status: 'all',
+    category: 'all',
+    payoutType: 'all',
+    country: 'all'
+  });
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
+
+  // Загрузка данных офферов
   const { data: offers, isLoading, refetch } = useQuery({
-    queryKey: ['/api/advertiser/offers', search, categoryFilter, statusFilter, payoutTypeFilter, geoFilter, dateFrom, dateTo],
+    queryKey: ['/api/advertiser/offers', searchTerm, filters, sortBy, sortOrder],
     enabled: !!user
   }) as { data: Offer[] | undefined; isLoading: boolean; refetch: () => void };
 
-  // Fetch offer partners when viewing stats
-  const { data: offerPartners } = useQuery({
-    queryKey: ['/api/advertiser/offers', selectedOffer?.id, 'partners'],
-    enabled: !!selectedOffer && showStatsDialog
-  }) as { data: OfferPartner[] | undefined };
-
-  // Create offer mutation
-  const createOfferMutation = useMutation({
-    mutationFn: (data: OfferFormData) => apiRequest('/api/advertiser/offers', {
-      method: 'POST',
-      body: JSON.stringify(data)
+  // Мутации для действий с офферами
+  const deleteMutation = useMutation({
+    mutationFn: (offerId: string) => apiRequest(`/api/advertiser/offers/${offerId}`, {
+      method: 'DELETE'
     }),
     onSuccess: () => {
-      toast({ title: "Оффер создан", description: "Оффер отправлен на модерацию" });
-      setShowCreateDialog(false);
-      form.reset();
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
-    },
-    onError: () => {
-      toast({ title: "Ошибка", description: "Не удалось создать оффер", variant: "destructive" });
+      toast({ title: 'Оффер удален', description: 'Оффер успешно удален из системы' });
     }
   });
 
-  // Update offer mutation
-  const updateOfferMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<OfferFormData> }) => 
-      apiRequest(`/api/advertiser/offers/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data)
-      }),
+  const statusMutation = useMutation({
+    mutationFn: ({ offerId, status }: { offerId: string; status: string }) => apiRequest(`/api/advertiser/offers/${offerId}/status`, {
+      method: 'PATCH',
+      body: { status }
+    }),
     onSuccess: () => {
-      toast({ title: "Оффер обновлён", description: "Изменения сохранены успешно" });
-      setShowEditDialog(false);
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
-    },
-    onError: () => {
-      toast({ title: "Ошибка", description: "Не удалось обновить оффер", variant: "destructive" });
+      toast({ title: 'Статус изменен', description: 'Статус оффера успешно обновлен' });
     }
   });
 
-  // Toggle offer status mutation
-  const toggleOfferMutation = useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
-      apiRequest(`/api/advertiser/offers/${id}/toggle`, {
-        method: 'PATCH',
-        body: JSON.stringify({ isActive })
-      }),
+  const bulkMutation = useMutation({
+    mutationFn: ({ action, offerIds }: { action: string; offerIds: string[] }) => apiRequest('/api/advertiser/offers/bulk', {
+      method: 'POST',
+      body: { action, offerIds }
+    }),
     onSuccess: () => {
-      toast({ title: "Статус изменён", description: "Статус оффера обновлён" });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
+      setSelectedOffers([]);
+      toast({ title: 'Операция выполнена', description: 'Массовая операция успешно выполнена' });
     }
   });
 
-  // Export offers mutation
-  const exportMutation = useMutation({
-    mutationFn: () => apiRequest('/api/advertiser/offers/export'),
-    onSuccess: () => {
-      toast({ title: "Экспорт готов", description: "Файл с офферами загружен" });
-    }
-  });
-
-  // Copy tracking link to clipboard
-  const copyTrackingLink = (offer: Offer) => {
-    const trackingLink = `https://track.platform.com/click/${offer.id}?partner_id={PARTNER_ID}&subid={SUBID}`;
-    navigator.clipboard.writeText(trackingLink);
-    toast({ title: "Ссылка скопирована", description: "Tracking-ссылка скопирована в буфер обмена" });
+  // Функции для действий
+  const handleEdit = (offer: Offer) => {
+    setEditingOffer(offer);
+    setShowForm(true);
   };
 
-  // Filtered and paginated offers
-  const filteredOffers = useMemo(() => {
-    if (!offers) return [];
+  const handleDelete = async (offerId: string) => {
+    if (window.confirm('Вы уверены, что хотите удалить этот оффер?')) {
+      deleteMutation.mutate(offerId);
+    }
+  };
+
+  const handleStatusChange = (offerId: string, status: string) => {
+    statusMutation.mutate({ offerId, status });
+  };
+
+  const handleBulkAction = (action: string) => {
+    if (selectedOffers.length === 0) return;
+    bulkMutation.mutate({ action, offerIds: selectedOffers });
+  };
+
+  const copyTrackingUrl = (offer: Offer) => {
+    const url = `${offer.tracking.clickUrl}?subid={subid}&clickid={clickid}`;
+    navigator.clipboard.writeText(url);
+    toast({ title: 'Скопировано', description: 'Трекинговая ссылка скопирована в буфер обмена' });
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      active: { label: 'Активен', variant: 'default' as const, color: 'bg-green-500' },
+      paused: { label: 'Приостановлен', variant: 'secondary' as const, color: 'bg-yellow-500' },
+      pending: { label: 'На модерации', variant: 'outline' as const, color: 'bg-blue-500' },
+      archived: { label: 'Архивирован', variant: 'secondary' as const, color: 'bg-gray-500' },
+      rejected: { label: 'Отклонен', variant: 'destructive' as const, color: 'bg-red-500' }
+    };
     
-    return offers.filter(offer => {
-      const matchesSearch = offer.name.toLowerCase().includes(search.toLowerCase()) ||
-                           offer.category.toLowerCase().includes(search.toLowerCase());
-      const matchesCategory = !categoryFilter || offer.category === categoryFilter;
-      const matchesStatus = !statusFilter || offer.status === statusFilter;
-      const matchesPayoutType = !payoutTypeFilter || offer.payoutType === payoutTypeFilter;
-      const matchesGeo = !geoFilter || offer.geoTargeting.includes(geoFilter);
-      
-      return matchesSearch && matchesCategory && matchesStatus && matchesPayoutType && matchesGeo;
-    });
-  }, [offers, search, categoryFilter, statusFilter, payoutTypeFilter, geoFilter]);
-
-  const paginatedOffers = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return filteredOffers.slice(startIndex, startIndex + pageSize);
-  }, [filteredOffers, currentPage, pageSize]);
-
-  const totalPages = Math.ceil(filteredOffers.length / pageSize);
-
-  // Form submission handlers
-  const onCreateSubmit = (data: OfferFormData) => {
-    createOfferMutation.mutate(data);
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    return (
+      <Badge variant={config.variant} className="flex items-center gap-1">
+        <div className={`w-2 h-2 rounded-full ${config.color}`} />
+        {config.label}
+      </Badge>
+    );
   };
 
-  const onEditSubmit = (data: OfferFormData) => {
-    if (!selectedOffer) return;
-    updateOfferMutation.mutate({ id: selectedOffer.id, data });
-  };
+  const filteredOffers = offers?.filter(offer => {
+    if (searchTerm && !offer.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    if (filters.status !== 'all' && offer.status !== filters.status) return false;
+    if (filters.category !== 'all' && offer.category !== filters.category) return false;
+    if (filters.payoutType !== 'all' && offer.payoutType !== filters.payoutType) return false;
+    if (filters.country !== 'all' && !offer.countries.includes(filters.country)) return false;
+    return true;
+  }) || [];
 
-  // Edit offer handler
-  const handleEditOffer = (offer: Offer) => {
-    setSelectedOffer(offer);
-    form.reset({
-      name: offer.name,
-      description: offer.description,
-      category: offer.category,
-      payoutType: offer.payoutType as any,
-      currency: offer.currency as any,
-      payoutAmount: offer.payoutAmount.toString(),
-      trackingUrl: offer.trackingUrl,
-      geoTargeting: offer.geoTargeting,
-      isActive: offer.isActive
-    });
-    setShowEditDialog(true);
-  };
-
-  // View stats handler
-  const handleViewStats = (offer: Offer) => {
-    setSelectedOffer(offer);
-    setShowStatsDialog(true);
-  };
-
-  if (!user) {
-    return <div>Загрузка...</div>;
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-16 bg-gray-200 rounded" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Мои офферы</h1>
-            <p className="text-muted-foreground">Управление офферами и анализ эффективности</p>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" onClick={() => exportMutation.mutate()} data-testid="button-export-offers">
-              <Download className="h-4 w-4 mr-2" />
-              Экспорт
-            </Button>
-            
-            <Button variant="outline" size="icon" onClick={() => refetch()} data-testid="button-refresh">
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-            
-            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-              <DialogTrigger asChild>
-                <Button data-testid="button-create-offer">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Создать оффер
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Создать новый оффер</DialogTitle>
-                  <DialogDescription>
-                    Заполните информацию о новом оффере. После создания он будет отправлен на модерацию.
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onCreateSubmit)} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Basic Information */}
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Основная информация</h3>
-                        
-                        <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Название оффера *</FormLabel>
-                              <FormControl>
-                                <Input {...field} data-testid="input-offer-name" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="description"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Описание</FormLabel>
-                              <FormControl>
-                                <Textarea {...field} rows={3} data-testid="textarea-offer-description" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="category"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Категория *</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger data-testid="select-offer-category">
-                                    <SelectValue placeholder="Выберите категорию" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {CATEGORIES.map(category => (
-                                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      {/* Payout Information */}
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Выплаты</h3>
-                        
-                        <FormField
-                          control={form.control}
-                          name="payoutType"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Тип выплаты *</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger data-testid="select-payout-type">
-                                    <SelectValue placeholder="Выберите тип" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {PAYOUT_TYPES.map(type => (
-                                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="currency"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Валюта *</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger data-testid="select-currency">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {CURRENCIES.map(currency => (
-                                      <SelectItem key={currency.value} value={currency.value}>{currency.label}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="payoutAmount"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Ставка *</FormLabel>
-                                <FormControl>
-                                  <Input {...field} type="number" step="0.01" data-testid="input-payout-amount" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Advanced Settings */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">Дополнительные настройки</h3>
-                      
-                      <FormField
-                        control={form.control}
-                        name="trackingUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Базовая ссылка</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="https://example.com/landing" data-testid="input-tracking-url" />
-                            </FormControl>
-                            <FormDescription>URL лендинга для перенаправления трафика</FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="postbackUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Postback URL</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="https://your-tracking.com/postback" data-testid="input-postback-url" />
-                            </FormControl>
-                            <FormDescription>URL для получения конверсий (опционально)</FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="isActive"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                              <div className="space-y-0.5">
-                                <FormLabel className="text-base">Активный оффер</FormLabel>
-                                <FormDescription>Оффер будет доступен партнёрам</FormDescription>
-                              </div>
-                              <FormControl>
-                                <Switch checked={field.value} onCheckedChange={field.onChange} data-testid="switch-active" />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="autoApproval"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                              <div className="space-y-0.5">
-                                <FormLabel className="text-base">Автоапрув</FormLabel>
-                                <FormDescription>Автоматическое одобрение партнёров</FormDescription>
-                              </div>
-                              <FormControl>
-                                <Switch checked={field.value} onCheckedChange={field.onChange} data-testid="switch-auto-approval" />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="antifraudEnabled"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                              <div className="space-y-0.5">
-                                <FormLabel className="text-base">Антифрод</FormLabel>
-                                <FormDescription>Включить защиту от фрода</FormDescription>
-                              </div>
-                              <FormControl>
-                                <Switch checked={field.value} onCheckedChange={field.onChange} data-testid="switch-antifraud" />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="trafficRequirements"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Требования к трафику</FormLabel>
-                            <FormControl>
-                              <Textarea {...field} rows={2} placeholder="Опишите требования к качеству трафика..." data-testid="textarea-traffic-requirements" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="restrictions"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Ограничения</FormLabel>
-                            <FormControl>
-                              <Textarea {...field} rows={2} placeholder="Укажите запрещённые источники трафика..." data-testid="textarea-restrictions" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="moderatorComment"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Комментарий модератору</FormLabel>
-                            <FormControl>
-                              <Textarea {...field} rows={2} placeholder="Дополнительная информация для модерации..." data-testid="textarea-moderator-comment" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <DialogFooter>
-                      <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
-                        Отмена
-                      </Button>
-                      <Button type="submit" disabled={createOfferMutation.isPending} data-testid="button-submit-create">
-                        {createOfferMutation.isPending ? "Создание..." : "Создать оффер"}
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
-          </div>
+    <div className={`p-6 transition-all duration-300 ${collapsed ? 'ml-16' : 'ml-64'}`}>
+      {/* Заголовок */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Управление офферами</h1>
+          <p className="text-gray-600">Создавайте и управляйте вашими офферами</p>
         </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            data-testid="button-refresh"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Экспорт
+          </Button>
+          <Button
+            onClick={() => {
+              setEditingOffer(null);
+              setShowForm(true);
+            }}
+            data-testid="button-create-offer"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Создать оффер
+          </Button>
+        </div>
+      </div>
 
-        {/* Filters */}
+      {/* Статистика */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Фильтры и поиск
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Всего офферов</p>
+                <p className="text-2xl font-bold text-blue-600">{offers?.length || 0}</p>
+              </div>
+              <Target className="w-8 h-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Активные</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {offers?.filter(o => o.status === 'active').length || 0}
+                </p>
+              </div>
+              <CheckCircle className="w-8 h-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Общая конверсия</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {offers ? (offers.reduce((acc, o) => acc + o.statistics.cr, 0) / offers.length).toFixed(1) : 0}%
+                </p>
+              </div>
+              <TrendingUp className="w-8 h-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Общий доход</p>
+                <p className="text-2xl font-bold text-orange-600">
+                  ${offers ? offers.reduce((acc, o) => acc + o.statistics.revenue, 0).toLocaleString() : 0}
+                </p>
+              </div>
+              <DollarSign className="w-8 h-8 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Фильтры и поиск */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-4">
+            <div className="flex-1 min-w-64">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  placeholder="Поиск по названию..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Поиск по названию оффера..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
-                  data-testid="input-search"
+                  data-testid="input-search-offers"
                 />
               </div>
-              
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger data-testid="filter-category">
-                  <SelectValue placeholder="Категория" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Все категории</SelectItem>
-                  {CATEGORIES.map(category => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger data-testid="filter-status">
-                  <SelectValue placeholder="Статус" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Все статусы</SelectItem>
-                  <SelectItem value="active">Активные</SelectItem>
-                  <SelectItem value="inactive">Неактивные</SelectItem>
-                  <SelectItem value="pending">На модерации</SelectItem>
-                  <SelectItem value="rejected">Отклонённые</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select value={payoutTypeFilter} onValueChange={setPayoutTypeFilter}>
-                <SelectTrigger data-testid="filter-payout-type">
-                  <SelectValue placeholder="Тип выплаты" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Все типы</SelectItem>
-                  {PAYOUT_TYPES.map(type => (
-                    <SelectItem key={type.value} value={type.value}>{type.value}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={geoFilter} onValueChange={setGeoFilter}>
-                <SelectTrigger data-testid="filter-geo">
-                  <SelectValue placeholder="Гео" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Все страны</SelectItem>
-                  {GEO_COUNTRIES.map(country => (
-                    <SelectItem key={country} value={country}>{country}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Button 
-                variant="outline" 
+            </div>
+
+            <Select value={filters.status} onValueChange={(value) => setFilters({ ...filters, status: value })}>
+              <SelectTrigger className="w-40" data-testid="select-filter-status">
+                <SelectValue placeholder="Статус" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все статусы</SelectItem>
+                <SelectItem value="active">Активные</SelectItem>
+                <SelectItem value="paused">Приостановленные</SelectItem>
+                <SelectItem value="pending">На модерации</SelectItem>
+                <SelectItem value="archived">Архивированные</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filters.category} onValueChange={(value) => setFilters({ ...filters, category: value })}>
+              <SelectTrigger className="w-40" data-testid="select-filter-category">
+                <SelectValue placeholder="Категория" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все категории</SelectItem>
+                <SelectItem value="gambling">Гемблинг</SelectItem>
+                <SelectItem value="dating">Знакомства</SelectItem>
+                <SelectItem value="finance">Финансы</SelectItem>
+                <SelectItem value="crypto">Криптовалюты</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filters.payoutType} onValueChange={(value) => setFilters({ ...filters, payoutType: value })}>
+              <SelectTrigger className="w-40" data-testid="select-filter-payout">
+                <SelectValue placeholder="Тип выплаты" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все типы</SelectItem>
+                <SelectItem value="cpa">CPA</SelectItem>
+                <SelectItem value="cpl">CPL</SelectItem>
+                <SelectItem value="cpc">CPC</SelectItem>
+                <SelectItem value="revshare">RevShare</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Массовые действия */}
+          {selectedOffers.length > 0 && (
+            <div className="flex items-center gap-2 mt-4 p-3 bg-blue-50 rounded-lg">
+              <span className="text-sm text-blue-600">
+                Выбрано: {selectedOffers.length} офферов
+              </span>
+              <div className="flex gap-2 ml-auto">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleBulkAction('activate')}
+                  data-testid="button-bulk-activate"
+                >
+                  <PlayCircle className="w-4 h-4 mr-1" />
+                  Активировать
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleBulkAction('pause')}
+                  data-testid="button-bulk-pause"
+                >
+                  <PauseCircle className="w-4 h-4 mr-1" />
+                  Приостановить
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleBulkAction('archive')}
+                  data-testid="button-bulk-archive"
+                >
+                  <Archive className="w-4 h-4 mr-1" />
+                  Архивировать
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Таблица офферов */}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">
+                  <input
+                    type="checkbox"
+                    checked={selectedOffers.length === filteredOffers.length && filteredOffers.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedOffers(filteredOffers.map(o => o.id));
+                      } else {
+                        setSelectedOffers([]);
+                      }
+                    }}
+                    data-testid="checkbox-select-all"
+                  />
+                </TableHead>
+                <TableHead>Оффер</TableHead>
+                <TableHead>Категория</TableHead>
+                <TableHead>Выплата</TableHead>
+                <TableHead>Статус</TableHead>
+                <TableHead>Статистика</TableHead>
+                <TableHead>Партнеры</TableHead>
+                <TableHead>Дата создания</TableHead>
+                <TableHead className="w-32">Действия</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredOffers.map((offer) => (
+                <TableRow key={offer.id} className="hover:bg-gray-50">
+                  <TableCell>
+                    <input
+                      type="checkbox"
+                      checked={selectedOffers.includes(offer.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedOffers([...selectedOffers, offer.id]);
+                        } else {
+                          setSelectedOffers(selectedOffers.filter(id => id !== offer.id));
+                        }
+                      }}
+                      data-testid={`checkbox-offer-${offer.id}`}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <Target className="w-6 h-6 text-gray-500" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{offer.name}</p>
+                        <p className="text-sm text-gray-500 truncate max-w-xs">{offer.description}</p>
+                        {offer.isPrivate && (
+                          <Badge variant="outline" className="text-xs mt-1">
+                            <Shield className="w-3 h-3 mr-1" />
+                            Приватный
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{offer.category}</Badge>
+                    {offer.vertical && (
+                      <p className="text-xs text-gray-500 mt-1">{offer.vertical}</p>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <p className="font-medium text-green-600">
+                        {offer.payoutAmount} {offer.currency}
+                      </p>
+                      <p className="text-gray-500 uppercase">{offer.payoutType}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {getStatusBadge(offer.status)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Клики:</span>
+                        <span className="font-medium">{offer.statistics.clicks.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">CR:</span>
+                        <span className="font-medium text-purple-600">{offer.statistics.cr}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">EPC:</span>
+                        <span className="font-medium text-blue-600">${offer.statistics.epc}</span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-1">
+                      <Users className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm">{offer.statistics.activePartners}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <p>{new Date(offer.createdAt).toLocaleDateString('ru-RU')}</p>
+                      <p className="text-gray-500">{new Date(offer.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(offer)}
+                        title="Редактировать оффер"
+                        data-testid={`button-edit-${offer.id}`}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copyTrackingUrl(offer)}
+                        title="Скопировать трекинговую ссылку"
+                        data-testid={`button-copy-${offer.id}`}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => window.open(offer.previewUrl || offer.url, '_blank')}
+                        title="Предпросмотр оффера"
+                        data-testid={`button-preview-${offer.id}`}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(offer.id)}
+                        title="Удалить оффер"
+                        data-testid={`button-delete-${offer.id}`}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {filteredOffers.length === 0 && (
+            <div className="text-center py-12">
+              <Target className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Нет офферов</h3>
+              <p className="text-gray-500 mb-4">
+                {searchTerm || Object.values(filters).some(f => f !== 'all')
+                  ? 'По вашему запросу ничего не найдено'
+                  : 'Создайте ваш первый оффер'
+                }
+              </p>
+              <Button
                 onClick={() => {
-                  setSearch("");
-                  setCategoryFilter("");
-                  setStatusFilter("");
-                  setPayoutTypeFilter("");
-                  setGeoFilter("");
-                  setDateFrom("");
-                  setDateTo("");
+                  setEditingOffer(null);
+                  setShowForm(true);
                 }}
-                data-testid="button-clear-filters"
+                data-testid="button-create-first-offer"
               >
-                Очистить
+                <Plus className="w-4 h-4 mr-2" />
+                Создать оффер
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Offers Table */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Список офферов ({filteredOffers.length})</CardTitle>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Показать:</span>
-                <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
-                  <SelectTrigger className="w-20">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="25">25</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                    <SelectItem value="100">100</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-16 bg-gray-200 rounded animate-pulse"></div>
-                ))}
-              </div>
-            ) : (
-              <>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Название</TableHead>
-                      <TableHead>Категория</TableHead>
-                      <TableHead>Тип / Ставка</TableHead>
-                      <TableHead>Статус</TableHead>
-                      <TableHead>Партнёры</TableHead>
-                      <TableHead>Лиды</TableHead>
-                      <TableHead>CR%</TableHead>
-                      <TableHead>EPC</TableHead>
-                      <TableHead>Доход</TableHead>
-                      <TableHead>Действия</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedOffers.map((offer) => (
-                      <TableRow key={offer.id}>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="font-medium">{offer.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              Создан: {new Date(offer.createdAt).toLocaleDateString()}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{offer.category}</TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <Badge variant="outline">{offer.payoutType}</Badge>
-                            <div className="text-sm">{offer.payoutAmount} {offer.currency}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Badge variant={
-                              offer.status === 'active' ? 'default' :
-                              offer.status === 'pending' ? 'secondary' :
-                              offer.status === 'rejected' ? 'destructive' : 'outline'
-                            }>
-                              {offer.status === 'active' && <CheckCircle className="h-3 w-3 mr-1" />}
-                              {offer.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
-                              {offer.status === 'rejected' && <AlertCircle className="h-3 w-3 mr-1" />}
-                              {offer.status}
-                            </Badge>
-                            <Switch
-                              checked={offer.isActive}
-                              onCheckedChange={(checked) => 
-                                toggleOfferMutation.mutate({ id: offer.id, isActive: checked })
-                              }
-                              size="sm"
-                              data-testid={`switch-${offer.id}`}
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell>{offer.partnersCount}</TableCell>
-                        <TableCell>{offer.leads}</TableCell>
-                        <TableCell>{offer.cr.toFixed(2)}%</TableCell>
-                        <TableCell>${offer.epc.toFixed(2)}</TableCell>
-                        <TableCell>${offer.revenue.toFixed(2)}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleViewStats(offer)}
-                              data-testid={`button-stats-${offer.id}`}
-                              title="Статистика"
-                            >
-                              <BarChart3 className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleEditOffer(offer)}
-                              data-testid={`button-edit-${offer.id}`}
-                              title="Редактировать"
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => copyTrackingLink(offer)}
-                              data-testid={`button-copy-${offer.id}`}
-                              title="Копировать ссылку"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="text-sm text-muted-foreground">
-                      Показано {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, filteredOffers.length)} из {filteredOffers.length}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                        disabled={currentPage === 1}
-                      >
-                        Назад
-                      </Button>
-                      <span className="text-sm">Страница {currentPage} из {totalPages}</span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                        disabled={currentPage === totalPages}
-                      >
-                        Вперёд
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Edit Offer Dialog */}
-        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Редактировать оффер</DialogTitle>
-              <DialogDescription>
-                Внесите изменения в настройки оффера.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onEditSubmit)} className="space-y-4">
-                {/* Same form fields as create, but simplified for editing */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Название оффера</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Категория</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {CATEGORIES.map(category => (
-                              <SelectItem key={category} value={category}>{category}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Описание</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} rows={3} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="isActive"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                        <FormLabel className="text-sm">Активный</FormLabel>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)}>
-                    Отмена
-                  </Button>
-                  <Button type="submit" disabled={updateOfferMutation.isPending}>
-                    {updateOfferMutation.isPending ? "Сохранение..." : "Сохранить"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Stats Dialog */}
-        <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Статистика оффера: {selectedOffer?.name}</DialogTitle>
-              <DialogDescription>
-                Подробная аналитика по эффективности оффера
-              </DialogDescription>
-            </DialogHeader>
-            
-            {selectedOffer && (
-              <div className="space-y-6">
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-2xl font-bold">{selectedOffer.partnersCount}</div>
-                      <p className="text-xs text-muted-foreground">Партнёров</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-2xl font-bold">{selectedOffer.leads}</div>
-                      <p className="text-xs text-muted-foreground">Лидов</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-2xl font-bold">{selectedOffer.cr.toFixed(2)}%</div>
-                      <p className="text-xs text-muted-foreground">CR</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-2xl font-bold">${selectedOffer.revenue.toFixed(2)}</div>
-                      <p className="text-xs text-muted-foreground">Доход</p>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                {/* Partners Table */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Партнёры, работающие с оффером</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Партнёр</TableHead>
-                          <TableHead>Трафик</TableHead>
-                          <TableHead>Лиды</TableHead>
-                          <TableHead>CR%</TableHead>
-                          <TableHead>Доход</TableHead>
-                          <TableHead>Статус</TableHead>
-                          <TableHead>Подключён</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {offerPartners?.map((partner: any) => (
-                          <TableRow key={partner.id}>
-                            <TableCell className="font-medium">{partner.name}</TableCell>
-                            <TableCell>{partner.traffic}</TableCell>
-                            <TableCell>{partner.leads}</TableCell>
-                            <TableCell>{partner.cr}%</TableCell>
-                            <TableCell>${partner.revenue}</TableCell>
-                            <TableCell>
-                              <Badge variant={partner.status === 'active' ? 'default' : 'secondary'}>
-                                {partner.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{new Date(partner.connectedAt).toLocaleDateString()}</TableCell>
-                          </TableRow>
-                        )) || (
-                          <TableRow>
-                            <TableCell colSpan={7} className="text-center text-muted-foreground">
-                              Нет подключённых партнёров
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-            
-            <DialogFooter>
-              <Button onClick={() => setShowStatsDialog(false)}>Закрыть</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+      {/* Модальное окно для создания/редактирования */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingOffer ? 'Редактирование оффера' : 'Создание нового оффера'}
+            </DialogTitle>
+          </DialogHeader>
+          <OfferForm
+            offer={editingOffer || undefined}
+            onSuccess={() => setShowForm(false)}
+            onCancel={() => setShowForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
