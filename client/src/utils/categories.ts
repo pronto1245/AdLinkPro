@@ -1,111 +1,164 @@
-// Цветовое кодирование категорий офферов
-export const CATEGORY_COLORS: Record<string, { bg: string; text: string; border?: string }> = {
-  // Игровые категории
-  'casino': { bg: 'bg-purple-500', text: 'text-white' },
-  'betting': { bg: 'bg-orange-500', text: 'text-white' },
-  'poker': { bg: 'bg-red-600', text: 'text-white' },
-  'slots': { bg: 'bg-pink-500', text: 'text-white' },
-  'sports': { bg: 'bg-green-600', text: 'text-white' },
-  'esports': { bg: 'bg-cyan-500', text: 'text-white' },
-  'lottery': { bg: 'bg-yellow-500', text: 'text-white' },
-  
-  // Финансовые категории
-  'finance': { bg: 'bg-blue-600', text: 'text-white' },
-  'crypto': { bg: 'bg-amber-500', text: 'text-white' },
-  'forex': { bg: 'bg-emerald-600', text: 'text-white' },
-  'trading': { bg: 'bg-indigo-600', text: 'text-white' },
-  'investment': { bg: 'bg-teal-600', text: 'text-white' },
-  'banking': { bg: 'bg-slate-600', text: 'text-white' },
-  
-  // Технические категории
-  'mobile': { bg: 'bg-violet-500', text: 'text-white' },
-  'dating': { bg: 'bg-rose-500', text: 'text-white' },
-  'adult': { bg: 'bg-red-700', text: 'text-white' },
-  'health': { bg: 'bg-green-500', text: 'text-white' },
-  'beauty': { bg: 'bg-pink-400', text: 'text-white' },
-  'diet': { bg: 'bg-lime-500', text: 'text-white' },
-  'education': { bg: 'bg-blue-500', text: 'text-white' },
-  
-  // Потребительские категории
-  'shopping': { bg: 'bg-orange-400', text: 'text-white' },
-  'fashion': { bg: 'bg-fuchsia-500', text: 'text-white' },
-  'travel': { bg: 'bg-sky-500', text: 'text-white' },
-  'food': { bg: 'bg-red-500', text: 'text-white' },
-  'auto': { bg: 'bg-gray-600', text: 'text-white' },
-  'real estate': { bg: 'bg-stone-600', text: 'text-white' },
-  'insurance': { bg: 'bg-blue-700', text: 'text-white' },
-  
-  // Технические и веб
-  'software': { bg: 'bg-gray-700', text: 'text-white' },
-  'saas': { bg: 'bg-indigo-500', text: 'text-white' },
-  'hosting': { bg: 'bg-slate-500', text: 'text-white' },
-  'vpn': { bg: 'bg-emerald-500', text: 'text-white' },
-  'antivirus': { bg: 'bg-red-600', text: 'text-white' },
-  
-  // Развлечения
-  'streaming': { bg: 'bg-purple-600', text: 'text-white' },
-  'gaming': { bg: 'bg-cyan-600', text: 'text-white' },
-  'music': { bg: 'bg-pink-600', text: 'text-white' },
-  'news': { bg: 'bg-gray-500', text: 'text-white' },
-  
-  // Услуги
-  'delivery': { bg: 'bg-yellow-600', text: 'text-white' },
-  'taxi': { bg: 'bg-yellow-500', text: 'text-black' },
-  'utilities': { bg: 'bg-blue-400', text: 'text-white' },
-  'telecom': { bg: 'bg-purple-400', text: 'text-white' },
-  
-  // Русские названия категорий
-  'казино': { bg: 'bg-purple-500', text: 'text-white' },
-  'ставки': { bg: 'bg-orange-500', text: 'text-white' },
-  'покер': { bg: 'bg-red-600', text: 'text-white' },
-  'слоты': { bg: 'bg-pink-500', text: 'text-white' },
-  'спорт': { bg: 'bg-green-600', text: 'text-white' },
-  'киберспорт': { bg: 'bg-cyan-500', text: 'text-white' },
-  'лотерея': { bg: 'bg-yellow-500', text: 'text-white' },
-  'финансы': { bg: 'bg-blue-600', text: 'text-white' },
-  'криптовалюта': { bg: 'bg-amber-500', text: 'text-white' },
-  'форекс': { bg: 'bg-emerald-600', text: 'text-white' },
-  'трейдинг': { bg: 'bg-indigo-600', text: 'text-white' },
-  'инвестиции': { bg: 'bg-teal-600', text: 'text-white' },
-  'банкинг': { bg: 'bg-slate-600', text: 'text-white' },
-  'мобильные': { bg: 'bg-violet-500', text: 'text-white' },
-  'знакомства': { bg: 'bg-rose-500', text: 'text-white' },
-  'взрослые': { bg: 'bg-red-700', text: 'text-white' },
-  'здоровье': { bg: 'bg-green-500', text: 'text-white' },
-  'красота': { bg: 'bg-pink-400', text: 'text-white' },
-  'диеты': { bg: 'bg-lime-500', text: 'text-white' },
-  'образование': { bg: 'bg-blue-500', text: 'text-white' },
-  'покупки': { bg: 'bg-orange-400', text: 'text-white' },
-  'мода': { bg: 'bg-fuchsia-500', text: 'text-white' },
-  'путешествия': { bg: 'bg-sky-500', text: 'text-white' },
-  'еда': { bg: 'bg-red-500', text: 'text-white' },
-  'авто': { bg: 'bg-gray-600', text: 'text-white' },
-  'недвижимость': { bg: 'bg-stone-600', text: 'text-white' },
-  'страхование': { bg: 'bg-blue-700', text: 'text-white' },
-  'софт': { bg: 'bg-gray-700', text: 'text-white' },
-  'хостинг': { bg: 'bg-slate-500', text: 'text-white' },
-  'впн': { bg: 'bg-emerald-500', text: 'text-white' },
-  'антивирус': { bg: 'bg-red-600', text: 'text-white' },
-  'стриминг': { bg: 'bg-purple-600', text: 'text-white' },
-  'игры': { bg: 'bg-cyan-600', text: 'text-white' },
-  'музыка': { bg: 'bg-pink-600', text: 'text-white' },
-  'новости': { bg: 'bg-gray-500', text: 'text-white' },
-  'доставка': { bg: 'bg-yellow-600', text: 'text-white' },
-  'такси': { bg: 'bg-yellow-500', text: 'text-black' },
-  'коммунальные': { bg: 'bg-blue-400', text: 'text-white' },
-  'телеком': { bg: 'bg-purple-400', text: 'text-white' }
-};
+import { 
+  Gamepad2, 
+  Dices, 
+  Heart, 
+  TrendingUp, 
+  Shield, 
+  ShoppingCart, 
+  Smartphone,
+  Car,
+  GraduationCap,
+  Home,
+  Plane,
+  Utensils,
+  Music,
+  Camera,
+  Briefcase,
+  Package
+} from "lucide-react";
 
-// Функция для получения цвета категории
-export function getCategoryColor(category: string): { bg: string; text: string } {
-  const normalizedCategory = category?.toLowerCase().trim();
-  return CATEGORY_COLORS[normalizedCategory] || { bg: 'bg-gray-500', text: 'text-white' };
+interface CategoryProps {
+  label: string;
+  className: string;
+  icon?: any;
 }
 
-// Функция для создания Badge с цветом категории
-export function getCategoryBadgeProps(category: string) {
-  const colors = getCategoryColor(category);
-  return {
-    className: `${colors.bg} ${colors.text} hover:opacity-90 transition-opacity`
+const categoryMap: Record<string, CategoryProps> = {
+  // Gambling & Gaming
+  'gambling': {
+    label: 'Гемблинг',
+    className: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300',
+    icon: Dices
+  },
+  'gaming': {
+    label: 'Игры',
+    className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300',
+    icon: Gamepad2
+  },
+  'casino': {
+    label: 'Казино',
+    className: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300',
+    icon: Dices
+  },
+
+  // Dating & Social
+  'dating': {
+    label: 'Знакомства',
+    className: 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300',
+    icon: Heart
+  },
+  'social': {
+    label: 'Социальные',
+    className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300',
+    icon: Heart
+  },
+
+  // Finance & Trading
+  'finance': {
+    label: 'Финансы',
+    className: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300',
+    icon: TrendingUp
+  },
+  'trading': {
+    label: 'Трейдинг',
+    className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300',
+    icon: TrendingUp
+  },
+  'crypto': {
+    label: 'Криптовалюта',
+    className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300',
+    icon: TrendingUp
+  },
+
+  // Software & Tools
+  'software': {
+    label: 'ПО',
+    className: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300',
+    icon: Shield
+  },
+  'vpn': {
+    label: 'VPN',
+    className: 'bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-300',
+    icon: Shield
+  },
+  'antivirus': {
+    label: 'Антивирус',
+    className: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300',
+    icon: Shield
+  },
+
+  // E-commerce & Shopping
+  'ecommerce': {
+    label: 'E-commerce',
+    className: 'bg-teal-100 text-teal-800 dark:bg-teal-900/20 dark:text-teal-300',
+    icon: ShoppingCart
+  },
+  'shopping': {
+    label: 'Покупки',
+    className: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-300',
+    icon: ShoppingCart
+  },
+
+  // Mobile & Apps
+  'mobile': {
+    label: 'Мобильные',
+    className: 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-300',
+    icon: Smartphone
+  },
+  'app': {
+    label: 'Приложения',
+    className: 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/20 dark:text-fuchsia-300',
+    icon: Smartphone
+  },
+
+  // Other categories
+  'automotive': {
+    label: 'Автомобили',
+    className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300',
+    icon: Car
+  },
+  'education': {
+    label: 'Образование',
+    className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300',
+    icon: GraduationCap
+  },
+  'realestate': {
+    label: 'Недвижимость',
+    className: 'bg-brown-100 text-brown-800 dark:bg-brown-900/20 dark:text-brown-300',
+    icon: Home
+  },
+  'travel': {
+    label: 'Путешествия',
+    className: 'bg-sky-100 text-sky-800 dark:bg-sky-900/20 dark:text-sky-300',
+    icon: Plane
+  },
+  'food': {
+    label: 'Еда',
+    className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300',
+    icon: Utensils
+  },
+  'entertainment': {
+    label: 'Развлечения',
+    className: 'bg-rose-100 text-rose-800 dark:bg-rose-900/20 dark:text-rose-300',
+    icon: Music
+  },
+  'photography': {
+    label: 'Фотография',
+    className: 'bg-lime-100 text-lime-800 dark:bg-lime-900/20 dark:text-lime-300',
+    icon: Camera
+  },
+  'business': {
+    label: 'Бизнес',
+    className: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-900/20 dark:text-neutral-300',
+    icon: Briefcase
+  }
+};
+
+export function getCategoryBadgeProps(category: string): CategoryProps {
+  const normalizedCategory = category?.toLowerCase();
+  return categoryMap[normalizedCategory] || {
+    label: category || 'Другое',
+    className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300',
+    icon: Package
   };
 }

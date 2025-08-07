@@ -303,11 +303,11 @@ export default function PartnerOffers() {
                       {/* Колонка Категория */}
                       <TableCell>
                         <Badge 
-                          className={categoryProps.className}
+                          className={categoryProps?.className || "bg-gray-100 text-gray-800"}
                           data-testid={`badge-category-${offer.id}`}
                         >
-                          {categoryProps.icon && <categoryProps.icon className="w-3 h-3 mr-1 flex-shrink-0" />}
-                          <span className="truncate">{categoryProps.label}</span>
+                          {categoryProps?.icon && <categoryProps.icon className="w-3 h-3 mr-1 flex-shrink-0" />}
+                          <span className="truncate">{categoryProps?.label || offer.category}</span>
                         </Badge>
                       </TableCell>
 
@@ -470,7 +470,7 @@ export default function PartnerOffers() {
           setIsRequestModalOpen(false);
           setSelectedOffer(null);
         }}
-        offer={selectedOffer}
+        offer={selectedOffer || undefined}
       />
     </div>
   );

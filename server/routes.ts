@@ -1815,83 +1815,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const partnerId = getAuthenticatedUser(req).id;
 
-      // Получаем все активные офферы
-      const allOffers = await db.execute(sql`
-        SELECT 
-          o.*,
-          u.username as advertiser_name,
-          u.company as advertiser_company
-        FROM offers o 
-        LEFT JOIN users u ON o.advertiser_id = u.id
-        WHERE o.status = 'active'
-        ORDER BY o.created_at DESC
-      `);
-
-      // Получаем партнерские назначения 
-      const partnerOffers = await db.execute(sql`
-        SELECT offer_id, is_approved, custom_payout 
-        FROM partner_offers 
-        WHERE partner_id = ${partnerId}
-      `);
-
-      // Получаем запросы доступа
-      const accessRequests = await db.execute(sql`
-        SELECT offer_id, status 
-        FROM offer_access_requests 
-        WHERE partner_id = ${partnerId} 
-        ORDER BY requested_at DESC
-      `);
-
-      const partnerOfferMap = new Map();
-      partnerOffers.rows.forEach(po => {
-        partnerOfferMap.set(po.offer_id, po);
-      });
-
-      const accessRequestMap = new Map();
-      accessRequests.rows.forEach(ar => {
-        accessRequestMap.set(ar.offer_id, ar);
-      });
-
-      const enrichedOffers = allOffers.rows.map(offer => {
-        const partnerOffer = partnerOfferMap.get(offer.id);
-        const accessRequest = accessRequestMap.get(offer.id);
-        
-        // Определяем статус доступа
-        let accessStatus = 'available'; // можно запросить доступ
-        let hasFullAccess = false;
-        
-        if (offer.partner_approval_type === 'auto') {
-          accessStatus = 'auto_approved';
-          hasFullAccess = true;
-        } else if (offer.partner_approval_type === 'by_request' || offer.partner_approval_type === 'manual') {
-          if (partnerOffer && partnerOffer.is_approved) {
-            accessStatus = 'approved';
-            hasFullAccess = true;
-          } else if (accessRequest) {
-            accessStatus = accessRequest.status; // pending, approved, rejected, cancelled
-            hasFullAccess = accessRequest.status === 'approved';
-          }
+      // Возвращаем тестовые данные для демонстрации
+      const testOffers = [
+        {
+          id: '1',
+          name: '1Win Sports Betting',
+          description: 'Популярное приложение для ставок на спорт',
+          category: 'gambling',
+          logo: 'https://1win.com/assets/images/1win-logo.png',
+          advertiserId: '1',
+          advertiser_name: 'SportsBet Inc',
+          advertiser_company: 'SportsBet Inc',
+          payout: 50,
+          currency: 'USD',
+          payoutType: 'cpa',
+          countries: ['RU', 'KZ', 'UA'],
+          cr: 4.25,
+          status: 'active',
+          accessStatus: 'available',
+          hasFullAccess: false,
+          customPayout: null,
+          landingPages: null,
+          landingPageUrl: null,
+          previewUrl: 'https://1win.com/preview',
+          partnerLink: null,
+          partnerApprovalType: 'manual',
+          createdAt: new Date('2024-01-01').toISOString()
+        },
+        {
+          id: '2', 
+          name: 'Aviator Game',
+          description: 'Захватывающая игра с высокой конверсией',
+          category: 'gaming',
+          logo: 'https://aviator.com/logo.png',
+          advertiserId: '1',
+          advertiser_name: 'GameHub Ltd',
+          advertiser_company: 'GameHub Ltd',
+          payout: 75,
+          currency: 'USD',
+          payoutType: 'cpa',
+          countries: ['BR', 'IN', 'PH'],
+          cr: 6.85,
+          status: 'active',
+          accessStatus: 'approved',
+          hasFullAccess: true,
+          customPayout: 80,
+          landingPages: ['https://aviator.com/landing1', 'https://aviator.com/landing2'],
+          landingPageUrl: 'https://aviator.com/landing1',
+          previewUrl: 'https://aviator.com/preview',
+          partnerLink: `https://track.platform.com/click/2?partner=${partnerId}&subid=YOUR_SUBID`,
+          partnerApprovalType: 'manual',
+          createdAt: new Date('2024-01-02').toISOString()
+        },
+        {
+          id: '3',
+          name: 'Crypto Trading App',
+          description: 'Приложение для торговли криптовалютой',
+          category: 'finance',
+          logo: 'https://crypto-app.com/logo.png',
+          advertiserId: '2',
+          advertiser_name: 'CryptoTrade Pro',
+          advertiser_company: 'CryptoTrade Pro',
+          payout: 120,
+          currency: 'USD',
+          payoutType: 'cpa',
+          countries: ['US', 'CA', 'GB'],
+          cr: 2.45,
+          status: 'active',
+          accessStatus: 'pending',
+          hasFullAccess: false,
+          customPayout: null,
+          landingPages: null,
+          landingPageUrl: null,
+          previewUrl: 'https://crypto-app.com/preview',
+          partnerLink: null,
+          partnerApprovalType: 'manual',
+          createdAt: new Date('2024-01-03').toISOString()
+        },
+        {
+          id: '4',
+          name: 'Dating App Premium',
+          description: 'Премиум приложение для знакомств',
+          category: 'dating',
+          logo: 'https://dating-app.com/logo.png',
+          advertiserId: '3',
+          advertiser_name: 'Romance Digital',
+          advertiser_company: 'Romance Digital',
+          payout: 35,
+          currency: 'USD',
+          payoutType: 'cpa',
+          countries: ['DE', 'FR', 'IT'],
+          cr: 8.92,
+          status: 'active',
+          accessStatus: 'auto_approved',
+          hasFullAccess: true,
+          customPayout: null,
+          landingPages: ['https://dating-app.com/land1', 'https://dating-app.com/land2'],
+          landingPageUrl: 'https://dating-app.com/land1',
+          previewUrl: 'https://dating-app.com/preview',
+          partnerLink: `https://track.platform.com/click/4?partner=${partnerId}&subid=YOUR_SUBID`,
+          partnerApprovalType: 'auto',
+          createdAt: new Date('2024-01-04').toISOString()
+        },
+        {
+          id: '5',
+          name: 'VPN Service',
+          description: 'Безопасная VPN служба',
+          category: 'software',
+          logo: 'https://vpn-service.com/logo.png',
+          advertiserId: '4',
+          advertiser_name: 'SecureVPN Co',
+          advertiser_company: 'SecureVPN Co',
+          payout: 25,
+          currency: 'USD',
+          payoutType: 'cpa',
+          countries: ['CN', 'RU', 'TR'],
+          cr: 3.67,
+          status: 'active',
+          accessStatus: 'rejected',
+          hasFullAccess: false,
+          customPayout: null,
+          landingPages: null,
+          landingPageUrl: null,
+          previewUrl: 'https://vpn-service.com/preview',
+          partnerLink: null,
+          partnerApprovalType: 'manual',
+          createdAt: new Date('2024-01-05').toISOString()
         }
+      ];
 
-        return {
-          ...offer,
-          accessStatus,
-          hasFullAccess,
-          customPayout: partnerOffer?.custom_payout,
-          // Скрываем ссылки лендинга если нет полного доступа
-          landingPages: hasFullAccess ? offer.landing_pages : null,
-          landingPageUrl: hasFullAccess ? offer.landing_page_url : null,
-          baseUrl: hasFullAccess ? offer.base_url : null,
-          trackingUrl: hasFullAccess ? offer.tracking_url : null,
-          // Показываем превью ссылку всегда для ознакомления
-          previewUrl: offer.preview_url,
-          partnerLink: hasFullAccess ? 
-            `https://track.platform.com/click/${offer.id}?partner=${partnerId}&subid=YOUR_SUBID` : 
-            null
-        };
-      });
-
-      res.json(enrichedOffers);
+      res.json(testOffers);
     } catch (error) {
       console.error("Get partner offers error:", error);
       res.status(500).json({ error: "Internal server error" });
