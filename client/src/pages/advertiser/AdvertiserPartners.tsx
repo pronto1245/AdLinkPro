@@ -664,7 +664,7 @@ export default function AdvertiserPartners() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
+      <div className="w-full">
         <div className="animate-pulse space-y-4">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="h-16 bg-gray-200 rounded" />
@@ -675,9 +675,9 @@ export default function AdvertiserPartners() {
   }
 
   return (
-    <div className={`p-6 transition-all duration-300 ${collapsed ? 'ml-16' : 'ml-64'}`}>
+    <div className="w-full space-y-6">
       {/* Заголовок */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Управление партнерами</h1>
           <p className="text-gray-600">Управляйте вашими партнерами и их правами доступа</p>
@@ -705,7 +705,7 @@ export default function AdvertiserPartners() {
       </div>
 
       {/* Статистика */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -762,7 +762,7 @@ export default function AdvertiserPartners() {
       </div>
 
       {/* Фильтры и поиск */}
-      <Card className="mb-6">
+      <Card>
         <CardContent className="p-4">
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-64">
