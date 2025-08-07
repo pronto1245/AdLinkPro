@@ -34,6 +34,7 @@ import {
 import { useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
 import SortableItem from '@/components/ui/SortableItem';
 import { formatCountries } from '@/utils/countries';
+import { getCategoryBadgeProps } from '@/utils/categories';
 
 interface Offer {
   id: string;
@@ -583,8 +584,10 @@ const MyOffersDragDrop: React.FC = () => {
                             )}
                             <div>
                               <div className="font-medium">{offer.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {offer.category}
+                              <div className="text-sm">
+                                <Badge {...getCategoryBadgeProps(offer.category)}>
+                                  {offer.category}
+                                </Badge>
                               </div>
                             </div>
                           </div>
