@@ -497,8 +497,9 @@ const AdvertiserOffers = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredOffers.map((offer: Offer) => {
-                    console.log("Rendering offer:", offer.name, offer.id);
-                    return (
+                    console.log("FULL OFFER DATA:", JSON.stringify(offer, null, 2));
+                    try {
+                      return (
                     <TableRow key={offer.id} data-testid={`row-offer-${offer.id}`}>
                       <TableCell>
                         <Checkbox
@@ -510,71 +511,44 @@ const AdvertiserOffers = () => {
                       
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          {offer.logo ? (
-                            <img
-                              src={offer.logo}
-                              alt={offer.name}
-                              className="w-10 h-10 rounded object-cover"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
-                              <Target className="h-5 w-5 text-gray-400" />
-                            </div>
-                          )}
+                          <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
+                            <Target className="h-5 w-5 text-gray-400" />
+                          </div>
                           <div>
-                            <div className="font-medium">{offer.name}</div>
-                            <div className="text-sm text-muted-foreground line-clamp-1">
-                              {offer.description?.ru || offer.description?.en || 'Нет описания'}
+                            <div className="font-medium">{offer.name || 'Без названия'}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {(offer.description?.ru || offer.description?.en || 'Нет описания').substring(0, 50)}
                             </div>
                           </div>
                         </div>
                       </TableCell>
                       
                       <TableCell>
-                        <Badge variant="secondary">{offer.category}</Badge>
+                        <Badge variant="secondary">{offer.category || 'unknown'}</Badge>
                       </TableCell>
                       
                       <TableCell>
                         <div className="font-medium">
-                          {formatCurrency(offer.payout, offer.currency)}
+                          ${offer.payout || '0'} {offer.currency || 'USD'}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {offer.payoutType?.toUpperCase()}
+                          {(offer.payoutType || 'CPA').toUpperCase()}
                         </div>
                       </TableCell>
                       
                       <TableCell>
-                        <div className="flex flex-wrap gap-1 max-w-32">
-                          {(offer.countries || []).slice(0, 3).map((country: string) => (
-                            <Badge key={country} variant="outline" className="text-xs">
-                              {country.toUpperCase()}
-                            </Badge>
-                          ))}
-                          {(offer.countries || []).length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{(offer.countries || []).length - 3}
-                            </Badge>
-                          )}
+                        <div className="text-xs">
+                          {Array.isArray(offer.countries) 
+                            ? offer.countries.slice(0, 2).join(', ') 
+                            : offer.countries || 'N/A'}
                         </div>
                       </TableCell>
                       
                       <TableCell>
                         <div className="text-sm">
-                          <div className="flex items-center gap-1">
-                            <MousePointer className="h-3 w-3 text-purple-600" />
-                            <span>{(offer.clicks || 0).toLocaleString()}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3 text-green-600" />
-                            <span>{offer.conversions || 0}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <DollarSign className="h-3 w-3 text-red-600" />
-                            <span>${(offer.revenue || 0).toLocaleString()}</span>
-                          </div>
+                          <div>Клики: {(offer.clicks || 0)}</div>
+                          <div>Конв.: {offer.conversions || 0}</div>
+                          <div>Доход: ${(offer.revenue || 0)}</div>
                         </div>
                       </TableCell>
                       
@@ -606,49 +580,6 @@ const AdvertiserOffers = () => {
                               <Edit className="h-4 w-4 mr-2" />
                               Редактировать
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => duplicateMutation.mutate(offer.id)}>
-                              <Copy className="h-4 w-4 mr-2" />
-                              Дублировать
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            {offer.status === 'active' ? (
-                              <DropdownMenuItem 
-                                onClick={() => updateStatusMutation.mutate({ id: offer.id, status: 'paused' })}
-                              >
-                                <Pause className="h-4 w-4 mr-2" />
-                                Приостановить
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem 
-                                onClick={() => updateStatusMutation.mutate({ id: offer.id, status: 'active' })}
-                              >
-                                <Play className="h-4 w-4 mr-2" />
-                                Активировать
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem 
-                              onClick={() => updateStatusMutation.mutate({ id: offer.id, status: 'archived' })}
-                            >
-                              <Archive className="h-4 w-4 mr-2" />
-                              Архивировать
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => setPreviewOffer(offer)}
-                              className="text-blue-600"
-                            >
-                              <ExternalLink className="h-4 w-4 mr-2" />
-                              Превью лендингов
-                            </DropdownMenuItem>
-                            {offer.landingPages && offer.landingPages.length > 0 && (
-                              <DropdownMenuItem 
-                                onClick={() => setPreviewUrl(offer.landingPages[0].url)}
-                                className="text-indigo-600"
-                              >
-                                <Eye className="h-4 w-4 mr-2" />
-                                Превью iframe
-                              </DropdownMenuItem>
-                            )}
                             <DropdownMenuItem 
                               onClick={() => deleteMutation.mutate([offer.id])}
                               className="text-red-600"
@@ -661,6 +592,10 @@ const AdvertiserOffers = () => {
                       </TableCell>
                     </TableRow>
                     );
+                    } catch (error) {
+                      console.error("Error rendering offer:", offer.id, error);
+                      return null;
+                    }
                   })}
                 </TableBody>
               </Table>
