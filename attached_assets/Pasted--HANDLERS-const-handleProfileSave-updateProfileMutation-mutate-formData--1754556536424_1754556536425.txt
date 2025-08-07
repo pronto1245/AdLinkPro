@@ -1,0 +1,111 @@
+  // --- HANDLERS ---
+  const handleProfileSave = () => {
+    updateProfileMutation.mutate(formData);
+  };
+
+  const handlePasswordChange = () => {
+    if (newPassword.new !== newPassword.confirm) {
+      toast({
+        title: "Ошибка",
+        description: "Новые пароли не совпадают",
+        variant: "destructive"
+      });
+      return;
+    }
+    changePasswordMutation.mutate({
+      currentPassword: newPassword.current,
+      newPassword: newPassword.new
+    });
+  };
+
+  const handleTokenGenerate = () => {
+    const tokenName = window.prompt('Введите название токена:');
+    if (tokenName && tokenName.trim()) {
+      generateTokenMutation.mutate(tokenName.trim());
+    }
+  };
+
+  const handleCopyToken = async (token: string) => {
+    try {
+      await navigator.clipboard.writeText(token);
+      toast({
+        title: "Скопировано",
+        description: "API токен скопирован в буфер обмена"
+      });
+    } catch (error) {
+      const textArea = document.createElement('textarea');
+      textArea.value = token;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      toast({
+        title: "Скопировано",
+        description: "API токен скопирован в буфер обмена"
+      });
+    }
+  };
+
+  const handleToggleTokenVisibility = (tokenId: string) => {
+    setShowTokens(prev => ({
+      ...prev,
+      [tokenId]: !prev[tokenId]
+    }));
+  };
+
+  const handleDomainAdd = () => {
+    if (!domainForm.domain.trim()) {
+      toast({
+        title: "Ошибка",
+        description: "Введите домен",
+        variant: "destructive"
+      });
+      return;
+    }
+    addDomainMutation.mutate(domainForm);
+  };
+
+  const handleWebhookSave = () => {
+    updateWebhookMutation.mutate(webhookForm);
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSettingsChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        [field]: value
+      }
+    }));
+  };
+
+  const handleNotificationChange = (field: string, value: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        notifications: {
+          email: field === 'email' ? value : prev.settings?.notifications?.email || false,
+          telegram: field === 'telegram' ? value : prev.settings?.notifications?.telegram || false,
+          sms: field === 'sms' ? value : prev.settings?.notifications?.sms || false
+        }
+      }
+    }));
+  };
+
+  const getStatusBadge = (status: 'pending' | 'verified' | 'error') => {
+    const variants = {
+      pending: { color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300', text: 'Ожидание' },
+      verified: { color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', text: 'Проверен' },
+      error: { color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', text: 'Ошибка' }
+    };
+    const variant = variants[status];
+    return <Badge className={variant.color}>{variant.text}</Badge>;
+  };
