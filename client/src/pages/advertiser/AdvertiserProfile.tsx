@@ -382,18 +382,32 @@ export default function AdvertiserProfile() {
   };
 
   const handleTokenGenerate = () => {
-    const tokenName = prompt('Введите название токена:');
-    if (tokenName) {
-      generateTokenMutation.mutate(tokenName);
+    const tokenName = window.prompt('Введите название токена:');
+    if (tokenName && tokenName.trim()) {
+      generateTokenMutation.mutate(tokenName.trim());
     }
   };
 
-  const handleCopyToken = (token: string) => {
-    navigator.clipboard.writeText(token);
-    toast({
-      title: "Скопировано",
-      description: "API токен скопирован в буфер обмена"
-    });
+  const handleCopyToken = async (token: string) => {
+    try {
+      await navigator.clipboard.writeText(token);
+      toast({
+        title: "Скопировано",
+        description: "API токен скопирован в буфер обмена"
+      });
+    } catch (error) {
+      // Fallback for browsers without clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = token;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      toast({
+        title: "Скопировано",
+        description: "API токен скопирован в буфер обмена"
+      });
+    }
   };
 
   const handleToggleTokenVisibility = (tokenId: string) => {
@@ -477,23 +491,23 @@ export default function AdvertiserProfile() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="account" data-testid="tab-account" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-            <User className="h-4 w-4 mr-2 text-blue-500" />
+            <User className={`h-4 w-4 mr-2 ${activeTab === 'account' ? 'text-white' : 'text-blue-500'}`} />
             Аккаунт
           </TabsTrigger>
           <TabsTrigger value="api" data-testid="tab-api" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
-            <Key className="h-4 w-4 mr-2 text-green-500" />
+            <Key className={`h-4 w-4 mr-2 ${activeTab === 'api' ? 'text-white' : 'text-green-500'}`} />
             API-доступ
           </TabsTrigger>
           <TabsTrigger value="domain" data-testid="tab-domain" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
-            <Link className="h-4 w-4 mr-2 text-purple-500" />
+            <Link className={`h-4 w-4 mr-2 ${activeTab === 'domain' ? 'text-white' : 'text-purple-500'}`} />
             Кастомный домен
           </TabsTrigger>
           <TabsTrigger value="notifications" data-testid="tab-notifications" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            <Bell className="h-4 w-4 mr-2 text-orange-500" />
+            <Bell className={`h-4 w-4 mr-2 ${activeTab === 'notifications' ? 'text-white' : 'text-orange-500'}`} />
             Уведомления
           </TabsTrigger>
           <TabsTrigger value="security" data-testid="tab-security" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">
-            <Shield className="h-4 w-4 mr-2 text-red-500" />
+            <Shield className={`h-4 w-4 mr-2 ${activeTab === 'security' ? 'text-white' : 'text-red-500'}`} />
             Безопасность
           </TabsTrigger>
         </TabsList>
