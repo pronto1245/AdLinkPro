@@ -1171,7 +1171,7 @@ export default function MyOffers() {
                   </TableHeader>
                   <TableBody>
                     {partnerStats.map((stat: PartnerStats, index: number) => (
-                      <TableRow key={index}>
+                      <TableRow key={`partner-stat-${stat.date}-${stat.subId}-${index}`}>
                         <TableCell>{new Date(stat.date).toLocaleDateString('ru-RU')}</TableCell>
                         <TableCell>{stat.subId}</TableCell>
                         <TableCell>{stat.geo}</TableCell>

@@ -52,6 +52,7 @@ import AntiFraud from "@/pages/advertiser/AntiFraud";
 import AdvertiserDocuments from "@/pages/advertiser/AdvertiserDocuments";
 import PartnerDashboard from "@/pages/affiliate/PartnerDashboard";
 import { useAuth } from "./contexts/auth-context";
+import * as React from 'react';
 import Login from "@/pages/auth/login";
 
 
@@ -263,6 +264,17 @@ function Router() {
         <ProtectedRoute allowedRoles={['advertiser']}>
           <RoleBasedLayout>
             <MyOffers />
+          </RoleBasedLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/offers-drag">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <RoleBasedLayout>
+            {(() => {
+              const MyOffersDragDrop = React.lazy(() => import('@/pages/advertiser/MyOffersDragDrop'));
+              return <MyOffersDragDrop />;
+            })()}
           </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
