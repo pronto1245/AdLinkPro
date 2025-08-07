@@ -43,6 +43,7 @@ import PostbackManagementAffiliate from "@/pages/affiliate/PostbackManagement";
 import AdvertiserDashboardNew from "@/pages/advertiser/AdvertiserDashboard";
 import OfferManagement from "@/pages/advertiser/OfferManagement";
 import CreateOffer from "@/pages/advertiser/CreateOffer";
+import EditOffer from "@/pages/advertiser/EditOffer";
 import MyOffers from "@/pages/advertiser/MyOffers";
 import MyOffersDragDrop from "@/pages/advertiser/MyOffersDragDrop";
 import ReceivedOffers from "@/pages/advertiser/ReceivedOffers";
@@ -239,7 +240,9 @@ function Router() {
       
       <Route path="/advertiser/offers/:id/edit">
         <ProtectedRoute allowedRoles={['advertiser']}>
-          <SuperAdminOfferDetails />
+          <RoleBasedLayout>
+            <EditOffer />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       
