@@ -4,8 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, ExternalLink, Eye, CheckCircle } from "lucide-react";
+import { Copy, ExternalLink } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
@@ -68,7 +67,7 @@ export default function PartnerOffers() {
           <div>
             <h1 className="text-2xl font-bold">Партнерские офферы</h1>
             <p className="text-muted-foreground">
-              Готовые трек-ссылки для каждого лендинга
+              Просматривайте доступные офферы и получайте трек-ссылки
             </p>
           </div>
         </div>
@@ -95,46 +94,22 @@ export default function PartnerOffers() {
           <Badge variant="outline">{offers.length} доступных офферов</Badge>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ExternalLink className="h-5 w-5" />
-              Готовые трек-ссылки
-            </CardTitle>
-            <CardDescription>
-              Все ссылки уже сгенерированы под каждым лендингом. Просто скопируйте нужную ссылку.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-
-        <Tabs defaultValue="approved" className="w-full">
-          <TabsList>
-            <TabsTrigger value="approved" className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4" />
-              Одобренные ({approvedOffers.length})
-            </TabsTrigger>
-
-          </TabsList>
-
-          <TabsContent value="approved" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {approvedOffers.map((offer: PartnerOffer) => (
-                <OfferCard key={offer.id} offer={offer} copyToClipboard={copyToClipboard} user={user} />
-              ))}
-            </div>
-            {approvedOffers.length === 0 && (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-muted-foreground">
-                    У вас пока нет одобренных офферов. Обратитесь к рекламодателю для получения доступа.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-
-        </Tabs>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {approvedOffers.map((offer: PartnerOffer) => (
+              <OfferCard key={offer.id} offer={offer} copyToClipboard={copyToClipboard} user={user} />
+            ))}
+          </div>
+          {approvedOffers.length === 0 && (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <p className="text-muted-foreground">
+                  У вас пока нет одобренных офферов. Обратитесь к рекламодателю для получения доступа.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
   );
 }
