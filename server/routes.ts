@@ -1810,14 +1810,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get partner's available offers with auto-generated links
+  // Get all available offers for partner (including request access offers)
   app.get("/api/partner/offers", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
-      const authUser = getAuthenticatedUser(req);
-      const offersWithLinks = await storage.getPartnerOffersWithLinks(authUser.id);
-      res.json(offersWithLinks);
+      const partnerId = getAuthenticatedUser(req).id;
+
+      // Получаем все активные офферы
+      const allOffers = await db.execute(sql`
+        SELECT 
+          o.*,
+          u.username as advertiser_name,
+          u.company as advertiser_company
+        FROM offers o 
+        LEFT JOIN users u ON o.advertiser_id = u.id
+        WHERE o.status = 'active'
+        ORDER BY o.created_at DESC
+      `);
+
+      // Получаем партнерские назначения 
+      const partnerOffers = await db.execute(sql`
+        SELECT offer_id, is_approved, custom_payout 
+        FROM partner_offers 
+        WHERE partner_id = ${partnerId}
+      `);
+
+      // Получаем запросы доступа
+      const accessRequests = await db.execute(sql`
+        SELECT offer_id, status 
+        FROM offer_access_requests 
+        WHERE partner_id = ${partnerId} 
+        ORDER BY requested_at DESC
+      `);
+
+      const partnerOfferMap = new Map();
+      partnerOffers.rows.forEach(po => {
+        partnerOfferMap.set(po.offer_id, po);
+      });
+
+      const accessRequestMap = new Map();
+      accessRequests.rows.forEach(ar => {
+        accessRequestMap.set(ar.offer_id, ar);
+      });
+
+      const enrichedOffers = allOffers.rows.map(offer => {
+        const partnerOffer = partnerOfferMap.get(offer.id);
+        const accessRequest = accessRequestMap.get(offer.id);
+        
+        // Определяем статус доступа
+        let accessStatus = 'available'; // можно запросить доступ
+        let hasFullAccess = false;
+        
+        if (offer.partner_approval_type === 'auto') {
+          accessStatus = 'auto_approved';
+          hasFullAccess = true;
+        } else if (offer.partner_approval_type === 'by_request' || offer.partner_approval_type === 'manual') {
+          if (partnerOffer && partnerOffer.is_approved) {
+            accessStatus = 'approved';
+            hasFullAccess = true;
+          } else if (accessRequest) {
+            accessStatus = accessRequest.status; // pending, approved, rejected, cancelled
+            hasFullAccess = accessRequest.status === 'approved';
+          }
+        }
+
+        return {
+          ...offer,
+          accessStatus,
+          hasFullAccess,
+          customPayout: partnerOffer?.custom_payout,
+          // Скрываем ссылки лендинга если нет полного доступа
+          landingPages: hasFullAccess ? offer.landing_pages : null,
+          landingPageUrl: hasFullAccess ? offer.landing_page_url : null,
+          baseUrl: hasFullAccess ? offer.base_url : null,
+          trackingUrl: hasFullAccess ? offer.tracking_url : null,
+          // Показываем превью ссылку всегда для ознакомления
+          previewUrl: offer.preview_url,
+          partnerLink: hasFullAccess ? 
+            `https://track.platform.com/click/${offer.id}?partner=${partnerId}&subid=YOUR_SUBID` : 
+            null
+        };
+      });
+
+      res.json(enrichedOffers);
     } catch (error) {
-      console.error("Get partner offers with links error:", error);
+      console.error("Get partner offers error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -6644,6 +6720,41 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
 
   // ============ OFFER ACCESS REQUEST SYSTEM ============
 
+  // Get advertiser's access requests for their offers
+  app.get('/api/advertiser/access-requests', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const advertiserId = req.user!.id;
+
+      const requests = await db.execute(sql`
+        SELECT 
+          oar.id,
+          oar.offer_id,
+          o.name as offer_name,
+          oar.partner_id,
+          u.username as partner_username,
+          u.email as partner_email,
+          oar.status,
+          oar.request_note,
+          oar.partner_message,
+          oar.requested_at,
+          oar.reviewed_at,
+          oar.response_note,
+          oar.advertiser_response,
+          oar.expires_at
+        FROM offer_access_requests oar
+        LEFT JOIN offers o ON oar.offer_id = o.id
+        LEFT JOIN users u ON oar.partner_id = u.id
+        WHERE oar.advertiser_id = ${advertiserId}
+        ORDER BY oar.requested_at DESC
+      `);
+
+      res.json(requests.rows);
+    } catch (error) {
+      console.error('Get advertiser requests error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Partner requests access to a private offer
   app.post('/api/offers/:offerId/request-access', authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
@@ -6658,7 +6769,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       }
 
       // Check if offer requires approval
-      if (offer.partnerApprovalType !== 'manual') {
+      if (offer.partnerApprovalType !== 'manual' && offer.partnerApprovalType !== 'by_request') {
         return res.status(400).json({ error: 'This offer does not require approval' });
       }
 

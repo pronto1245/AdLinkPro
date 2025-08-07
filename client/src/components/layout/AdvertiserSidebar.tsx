@@ -13,7 +13,8 @@ import {
   FileText,
   Download,
   ChevronLeft,
-  Menu
+  Menu,
+  Send
 } from 'lucide-react';
 
 const sidebarItems = [
@@ -40,6 +41,12 @@ const sidebarItems = [
     href: '/advertiser/partners',
     icon: Users,
     description: 'Управление партнёрами'
+  },
+  {
+    title: 'Запросы доступа',
+    href: '/advertiser/access-requests',
+    icon: Send,
+    description: 'Запросы партнеров к офферам'
   },
   {
     title: 'Статистика',

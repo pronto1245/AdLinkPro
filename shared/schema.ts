@@ -111,7 +111,7 @@ export const offers = pgTable("offers", {
   
   // Partner approval and settings
   autoApprovePartners: boolean("auto_approve_partners").default(false),
-  partnerApprovalType: text("partner_approval_type").default('manual'), // 'auto', 'manual', 'by_request', 'whitelist_only'
+  partnerApprovalType: text("partner_approval_type").default('by_request'), // 'auto', 'manual', 'by_request', 'whitelist_only'
   
   // Anti-fraud settings
   antifraudEnabled: boolean("antifraud_enabled").default(true),

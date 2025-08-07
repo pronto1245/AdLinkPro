@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Send } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Loader2 } from "lucide-react";
 
 interface RequestAccessModalProps {
   isOpen: boolean;
@@ -22,137 +21,154 @@ interface RequestAccessModalProps {
   offer: {
     id: string;
     name: string;
-    advertiserName?: string;
+    advertiserId: string;
+    advertiser_name?: string;
+    advertiser_company?: string;
+    payout: string;
+    currency: string;
+    category: string;
   };
 }
 
 export function RequestAccessModal({ isOpen, onClose, offer }: RequestAccessModalProps) {
-  const [formData, setFormData] = useState({
-    requestNote: '',
-    partnerMessage: ''
-  });
-  
+  const [requestNote, setRequestNote] = useState("");
+  const [partnerMessage, setPartnerMessage] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const requestAccessMutation = useMutation({
-    mutationFn: async (data: { requestNote: string; partnerMessage: string }) => {
-      return apiRequest(`/api/offers/${offer.id}/request-access`, 'POST', data);
+    mutationFn: async (data: { offerId: string; requestNote?: string; partnerMessage?: string }) => {
+      await apiRequest(`/api/offers/${data.offerId}/request-access`, {
+        method: "POST",
+        body: JSON.stringify({
+          requestNote: data.requestNote,
+          partnerMessage: data.partnerMessage
+        })
+      });
     },
     onSuccess: () => {
       toast({
         title: "Запрос отправлен",
-        description: "Ваш запрос на доступ к офферу успешно отправлен рекламодателю",
+        description: "Ваш запрос на доступ к офферу был отправлен рекламодателю",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/partner/access-requests'] });
-      onClose();
-      setFormData({ requestNote: '', partnerMessage: '' });
+      queryClient.invalidateQueries({ queryKey: ["/api/partner/offers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/partner/access-requests"] });
+      handleClose();
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
+      const errorMessage = error.message || "Ошибка при отправке запроса";
       toast({
         title: "Ошибка",
-        description: error.message || "Не удалось отправить запрос",
+        description: errorMessage,
         variant: "destructive",
       });
-    }
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.partnerMessage.trim()) {
-      toast({
-        title: "Ошибка",
-        description: "Пожалуйста, добавьте сообщение для рекламодателя",
-        variant: "destructive",
-      });
-      return;
-    }
-    requestAccessMutation.mutate(formData);
+    if (!offer?.id) return;
+    
+    requestAccessMutation.mutate({
+      offerId: offer.id,
+      requestNote: requestNote.trim() || undefined,
+      partnerMessage: partnerMessage.trim() || undefined
+    });
   };
 
-  const handleChange = (field: keyof typeof formData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleClose = () => {
+    setRequestNote("");
+    setPartnerMessage("");
+    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[500px]" data-testid="modal-request-access">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Send className="w-5 h-5 text-blue-600" />
-            Запрос доступа к офферу
-          </DialogTitle>
+          <DialogTitle>Запросить доступ к офферу</DialogTitle>
           <DialogDescription>
-            Отправьте запрос рекламодателю для получения доступа к офферу "{offer.name}"
+            Отправьте запрос рекламодателю для получения полного доступа к офферу с ссылками лендингов
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="offer-info">Информация об оффере</Label>
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <p className="font-medium text-sm">{offer.name}</p>
-              {offer.advertiserName && (
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Рекламодатель: {offer.advertiserName}
-                </p>
-              )}
+        <div className="space-y-4 py-4">
+          {/* Информация об оффере */}
+          <div className="rounded-lg border p-4 bg-muted/50">
+            <h3 className="font-semibold text-lg mb-2" data-testid="text-offer-name">
+              {offer.name}
+            </h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <span className="text-muted-foreground">Рекламодатель:</span>
+                <div className="font-medium" data-testid="text-advertiser-name">
+                  {offer.advertiser_name}
+                  {offer.advertiser_company && (
+                    <span className="text-muted-foreground"> ({offer.advertiser_company})</span>
+                  )}
+                </div>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Выплата:</span>
+                <div className="font-medium" data-testid="text-offer-payout">
+                  {offer.payout} {offer.currency}
+                </div>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Категория:</span>
+                <div className="font-medium" data-testid="text-offer-category">
+                  {offer.category}
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="partnerMessage">
-              Сообщение рекламодателю <span className="text-red-500">*</span>
-            </Label>
-            <Textarea
-              id="partnerMessage"
-              data-testid="textarea-partner-message"
-              placeholder="Расскажите о себе, вашем опыте, трафике и планах работы с данным оффером..."
-              value={formData.partnerMessage}
-              onChange={(e) => handleChange('partnerMessage', e.target.value)}
-              rows={4}
-              className="resize-none"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="partnerMessage">Сообщение рекламодателю</Label>
+              <Textarea
+                id="partnerMessage"
+                placeholder="Расскажите о себе, ваших источниках трафика и планах по продвижению оффера..."
+                value={partnerMessage}
+                onChange={(e) => setPartnerMessage(e.target.value)}
+                rows={4}
+                data-testid="textarea-partner-message"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="requestNote">Дополнительная информация</Label>
-            <Textarea
-              id="requestNote"
-              data-testid="textarea-request-note"
-              placeholder="Дополнительные комментарии или вопросы (необязательно)"
-              value={formData.requestNote}
-              onChange={(e) => handleChange('requestNote', e.target.value)}
-              rows={2}
-              className="resize-none"
-            />
-          </div>
+            <div>
+              <Label htmlFor="requestNote">Дополнительная информация</Label>
+              <Textarea
+                id="requestNote"
+                placeholder="Укажите дополнительные детали или вопросы по офферу..."
+                value={requestNote}
+                onChange={(e) => setRequestNote(e.target.value)}
+                rows={3}
+                data-testid="textarea-request-note"
+              />
+            </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={requestAccessMutation.isPending}
-              data-testid="button-cancel-request"
-            >
-              Отмена
-            </Button>
-            <Button
-              type="submit"
-              disabled={requestAccessMutation.isPending}
-              data-testid="button-submit-request"
-            >
-              {requestAccessMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Отправить запрос
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={requestAccessMutation.isPending}
+                data-testid="button-cancel-request"
+              >
+                Отмена
+              </Button>
+              <Button
+                type="submit"
+                disabled={requestAccessMutation.isPending || !offer?.id}
+                data-testid="button-submit-request"
+              >
+                {requestAccessMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Отправить запрос
+              </Button>
+            </DialogFooter>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

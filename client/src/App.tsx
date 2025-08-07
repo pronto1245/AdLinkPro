@@ -55,6 +55,7 @@ import AntiFraud from "@/pages/advertiser/AntiFraud";
 import AdvertiserDocuments from "@/pages/advertiser/AdvertiserDocuments";
 import PartnerDashboard from "@/pages/affiliate/PartnerDashboard";
 import AccessRequests from "@/pages/partner/AccessRequests";
+import AdvertiserAccessRequests from '@/pages/advertiser/AccessRequests';
 import { useAuth } from "./contexts/auth-context";
 import * as React from 'react';
 import Login from "@/pages/auth/login";
@@ -322,6 +323,14 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
+      <Route path="/advertiser/access-requests">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <RoleBasedLayout>
+            <AdvertiserAccessRequests />
+          </RoleBasedLayout>
+        </ProtectedRoute>
+      </Route>
+      
       <Route path="/advertiser/antifraud">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <RoleBasedLayout key="advertiser-antifraud">
@@ -361,7 +370,13 @@ function Router() {
       
       <Route path="/affiliate/offers">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <AffiliateOffers />
+          <PartnerOffers />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/access-requests">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <AccessRequests />
         </ProtectedRoute>
       </Route>
       
