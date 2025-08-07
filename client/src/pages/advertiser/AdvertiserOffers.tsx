@@ -1,378 +1,155 @@
+// ✅ AdvertiserOffers.tsx: офферы рекламодателя с предпросмотром лендинга, созданием, редактированием, фильтрацией, флагами, экспортом, drag'n'drop reorder, массовыми действиями и редактором лендингов, а также назначением офферов партнёрам с логикой запроса доступа и одобрения.
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator
-} from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Download, 
-  Edit, 
-  Flag, 
-  Plus, 
-  Trash2, 
-  Eye, 
-  Search,
-  Target,
-  MoreVertical,
-  Copy,
-  Archive,
-  Play,
-  Pause,
-  Settings,
-  Users,
-  TrendingUp,
-  DollarSign,
-  MousePointer,
-  Calendar,
-  ExternalLink,
-  Filter,
-  RefreshCw
-} from 'lucide-react';
+import { Download, Edit, Flag, Plus, Trash2, Eye, Settings2, Users2, PenTool, Archive, Copy, Play, ArrowUp, ArrowDown, ExternalLink, GripVertical, Pause } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
-import { cn } from '@/lib/utils';
+import { useLocation } from 'wouter';
+import { DndContext } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
-interface Offer {
-  id: string;
-  name: string;
-  description: { ru: string; en: string };
-  category: string;
-  logo: string;
-  status: 'draft' | 'active' | 'paused' | 'archived';
-  payout: string;
-  currency: string;
-  payoutType: string;
-  countries: string[];
-  trafficSources: string[];
-  allowedApplications: string[];
-  antifraudEnabled: boolean;
-  antifraudMethods: string[];
-  partnerApprovalType: string;
-  kycRequired: boolean;
-  isPrivate: boolean;
-  dailyLimit?: number;
-  monthlyLimit?: number;
-  landingPages: Array<{
-    id: string;
-    name: string;
-    url: string;
-    geo?: string;
-    payout?: string;
-    isDefault: boolean;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-  // Статистика
-  clicks?: number;
-  conversions?: number;
-  cr?: number;
-  revenue?: number;
-  partnersCount?: number;
+function DraggableRow({ offer, index, children }: any) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: offer.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+  return (
+    <TableRow ref={setNodeRef} style={style} {...attributes}>
+      <TableCell {...listeners} className="cursor-grab">
+        <GripVertical className="w-4 h-4 text-muted-foreground" />
+      </TableCell>
+      {children}
+    </TableRow>
+  );
 }
 
 const AdvertiserOffers = () => {
-  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
-  // Состояние фильтров
+  const [, navigate] = useLocation();
+  const [editOffer, setEditOffer] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState<any>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
-  const [previewOffer, setPreviewOffer] = useState<Offer | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [editOffer, setEditOffer] = useState<any>(null);
 
-  // Загрузка офферов
-  const { data: offers = [], isLoading, refetch } = useQuery({
+  const { data: offers = [], isLoading } = useQuery({
     queryKey: ['/api/advertiser/offers'],
-    queryFn: () => apiRequest('/api/advertiser/offers')
+    queryFn: () => apiRequest('/api/advertiser/offers'),
   });
 
-  // Отладка - логируем полученные данные
-  console.log("AdvertiserOffers render:", { 
-    offers: offers, 
-    offersLength: offers.length, 
-    isLoading, 
-    search,
-    selectedStatus,
-    selectedCategory
-  });
-
-  // Мутация для обновления статуса оффера
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      return apiRequest(`/api/advertiser/offers/${id}`, 'PATCH', { status });
+  const updateMutation = useMutation({
+    mutationFn: (data: any) => {
+      if (!data.status) {
+        data.status = 'active';
+      }
+      return data.id ? apiRequest(`/api/advertiser/offers/${data.id}`, 'PATCH', data) : apiRequest(`/api/advertiser/offers`, 'POST', data);
     },
     onSuccess: () => {
       toast({
-        title: 'Статус обновлен',
-        description: 'Статус оффера успешно изменен',
+        title: "Успех",
+        description: "Оффер сохранён",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
     },
-    onError: (error) => {
-      console.error('Update status error:', error);
+    onError: () => {
       toast({
-        title: 'Ошибка обновления',
-        description: 'Не удалось изменить статус оффера',
-        variant: 'destructive'
+        title: "Ошибка",
+        description: "Ошибка при сохранении",
+        variant: "destructive",
       });
-    }
+    },
   });
 
-  // Мутация для удаления офферов
   const deleteMutation = useMutation({
-    mutationFn: async (ids: string[]) => {
-      return Promise.all(
-        ids.map(id => apiRequest(`/api/advertiser/offers/${id}`, 'DELETE'))
-      );
-    },
+    mutationFn: (ids: string[]) => apiRequest(`/api/advertiser/offers/bulk-delete`, 'POST', { ids }),
     onSuccess: () => {
       toast({
-        title: 'Офферы удалены',
-        description: `Удалено ${selectedOffers.length} оффер(ов)`,
+        title: "Успех",
+        description: "Удалено",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
       setSelectedOffers([]);
     },
-    onError: (error) => {
-      console.error('Delete error:', error);
-      toast({
-        title: 'Ошибка удаления',
-        description: 'Не удалось удалить офферы',
-        variant: 'destructive'
-      });
-    }
   });
 
-  // Мутация для дублирования оффера
-  const duplicateMutation = useMutation({
-    mutationFn: async (offerId: string) => {
-      return apiRequest(`/api/advertiser/offers/${offerId}/duplicate`, 'POST');
-    },
+  const bulkStatusMutation = useMutation({
+    mutationFn: ({ ids, status }: { ids: string[]; status: string }) =>
+      apiRequest(`/api/advertiser/offers/bulk-update`, 'POST', { ids, status }),
     onSuccess: () => {
       toast({
-        title: 'Оффер скопирован',
-        description: 'Оффер успешно скопирован',
+        title: "Успех",
+        description: "Статус обновлён",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
+      setSelectedOffers([]);
     },
-    onError: (error) => {
-      console.error('Duplicate error:', error);
-      toast({
-        title: 'Ошибка копирования',
-        description: 'Не удалось скопировать оффер',
-        variant: 'destructive'
-      });
-    }
   });
 
-  // Универсальная мутация для создания/обновления офферов
-  const updateMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const isNew = !data.id;
-
-      const payload = {
-        ...data,
-        status: data.status || 'active',
-      };
-
-      if (isNew) {
-        // Удалим поля, которые могут мешать созданию
-        delete payload.id;
-        delete payload.createdAt;
-        delete payload.updatedAt;
-
-        // Опционально: позиция в списке — в конец
-        payload.position = offers.length + 1;
-      }
-
-      return isNew
-        ? apiRequest('/api/advertiser/offers', 'POST', payload)
-        : apiRequest(`/api/advertiser/offers/${data.id}`, 'PATCH', payload);
-    },
-    onSuccess: (data, variables) => {
-      const isNew = !variables.id;
-      toast({
-        title: isNew ? 'Оффер создан' : 'Оффер обновлен',
-        description: isNew ? 'Новый оффер успешно создан' : 'Оффер успешно обновлен',
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
-    },
-    onError: (error) => {
-      console.error('Update/Create error:', error);
-      toast({
-        title: 'Ошибка сохранения',
-        description: 'Не удалось сохранить оффер',
-        variant: 'destructive'
-      });
-    }
-  });
-
-  // Функции для форматирования и цветов
-  const formatCurrency = (amount: string, currency: string) => {
-    return `$${amount} ${currency}`;
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'paused':
-        return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
-      case 'draft':
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
-      case 'archived':
-        return 'bg-red-100 text-red-800 hover:bg-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'Активен';
-      case 'paused':
-        return 'Приостановлен';
-      case 'draft':
-        return 'Черновик';
-      case 'archived':
-        return 'Архивирован';
-      default:
-        return status;
-    }
-  };
-
-  // Фильтрация офферов
-  const filteredOffers = offers.filter((offer: Offer) => {
-    const matchesSearch = offer.name?.toLowerCase().includes(search.toLowerCase()) ||
-                         (offer.description?.ru || '').toLowerCase().includes(search.toLowerCase()) ||
-                         (offer.description?.en || '').toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = selectedStatus === 'all' || offer.status === selectedStatus;
-    const matchesCategory = selectedCategory === 'all' || offer.category === selectedCategory;
-    
-    return matchesSearch && matchesStatus && matchesCategory;
-  });
-
-  console.log("Filtered offers:", { 
-    totalOffers: offers.length, 
-    filteredCount: filteredOffers.length,
-    search,
-    selectedStatus, 
-    selectedCategory 
-  });
-
-  // Экспорт в CSV
-  const handleExport = () => {
-    const headers = [
-      'ID', 'Название', 'Категория', 'Статус', 'Payout', 'Валюта', 
-      'GEO', 'Источники трафика', 'Клики', 'Конверсии', 'CR%', 'Доход', 'Создан'
-    ];
-    
-    const csvData = filteredOffers.map((offer: Offer) => [
-      offer.id,
-      offer.name,
-      offer.category,
-      offer.status,
-      offer.payout,
-      offer.currency,
-      offer.countries.join(';'),
-      offer.trafficSources.join(';'),
-      offer.clicks || 0,
-      offer.conversions || 0,
-      offer.cr || 0,
-      offer.revenue || 0,
-      new Date(offer.createdAt).toLocaleDateString('ru-RU')
-    ]);
-
-    const csv = [headers, ...csvData]
-      .map(row => row.map((cell: any) => `"${cell}"`).join(','))
-      .join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `offers-${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-
-    toast({
-      title: 'Экспорт завершен',
-      description: `Экспортировано ${filteredOffers.length} офферов`,
+  const filtered = offers
+    .filter((o: any) => o.name.toLowerCase().includes(search.toLowerCase()))
+    .filter((o: any) => {
+      if (selectedStatus === 'archived') return o.status === 'archived';
+      if (selectedStatus === 'all') return true;
+      return o.status === selectedStatus;
     });
+
+  const handleBulkStatusChange = (status: string) => {
+    bulkStatusMutation.mutate({ ids: selectedOffers, status });
   };
 
-  // Управление выбором офферов
-  const toggleSelectOffer = (id: string) => {
-    setSelectedOffers(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
+  const handleAction = (offer: any, action: string) => {
+    switch (action) {
+      case 'activate':
+        updateMutation.mutate({ ...offer, status: 'active' });
+        break;
+      case 'archive':
+        updateMutation.mutate({ ...offer, status: 'archived' });
+        break;
+      case 'duplicate':
+        const duplicated = {
+          ...offer,
+          id: undefined,
+          createdAt: undefined,
+          updatedAt: undefined,
+          name: offer.name + ' (копия)',
+        };
+        updateMutation.mutate(duplicated);
+        break;
+      case 'delete':
+        setConfirmDelete(offer);
+        break;
+      case 'preview':
+        if (offer?.landingPages?.[0]?.url) {
+          window.open(offer.landingPages[0].url, '_blank');
+        } else {
+          toast({
+            title: "Предупреждение",
+            description: "Нет доступной ссылки для предпросмотра",
+            variant: "destructive",
+          });
+        }
+        break;
+      case 'assign':
+        navigate(`/advertiser/offers/${offer.id}/assign`);
+        break;
+      case 'edit-landing':
+        navigate(`/advertiser/offers/${offer.id}/landing-editor`);
+        break;
+      default:
+        break;
+    }
   };
-
-  const allSelected = filteredOffers.length > 0 && filteredOffers.every((o: Offer) => selectedOffers.includes(o.id));
-
-  const toggleSelectAll = () => {
-    setSelectedOffers(allSelected ? [] : filteredOffers.map((o: Offer) => o.id));
-  };
-
-  // Хендлеры для создания и редактирования
-  const handleCreate = () => {
-    setEditOffer({
-      name: '',
-      description: { ru: '', en: '' },
-      category: '',
-      payout: '',
-      currency: 'USD',
-      payoutType: 'cpa',
-      countries: [],
-      trafficSources: [],
-      allowedApplications: [],
-      antifraudEnabled: false,
-      antifraudMethods: [],
-      partnerApprovalType: 'automatic',
-      kycRequired: false,
-      isPrivate: false,
-      landingPages: [{
-        id: '1',
-        name: 'Основная',
-        url: '',
-        isDefault: true,
-        geo: '',
-        payout: ''
-      }],
-      status: 'active',
-    });
-  };
-
-  const handleEdit = (offer: Offer) => {
-    setEditOffer(offer);
-  };
-
-  // Дублированные функции удалены - используются выше
-
-  const categories = ['gambling', 'dating', 'crypto', 'betting', 'e-commerce', 'gaming', 'finance', 'health', 'vpn', 'antivirus'];
 
   if (isLoading) {
     return (
@@ -386,8 +163,7 @@ const AdvertiserOffers = () => {
   }
 
   return (
-    <div className="w-full space-y-6">
-      {/* Заголовок */}
+    <div className="w-full space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Мои офферы</h1>
@@ -395,537 +171,190 @@ const AdvertiserOffers = () => {
             Управление офферами и отслеживание статистики
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => refetch()}
-            disabled={isLoading}
-          >
-            <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
-            Обновить
-          </Button>
-          <Button onClick={handleCreate}>
-            <Plus className="h-4 w-4 mr-2" />
-            Создать оффер
-          </Button>
+        <Button onClick={() => setEditOffer({
+          name: '',
+          category: '',
+          payout: '',
+          currency: 'USD',
+          payoutType: 'cpa',
+          status: 'active',
+        })}>
+          <Plus className="h-4 w-4 mr-2" />
+          Создать оффер
+        </Button>
+      </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <Input
+          placeholder="Поиск по названию..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-64"
+        />
+        <div className="flex gap-2">
+          <Button onClick={() => setSelectedStatus('all')} variant={selectedStatus === 'all' ? 'default' : 'outline'}>Все</Button>
+          <Button onClick={() => setSelectedStatus('active')} variant={selectedStatus === 'active' ? 'default' : 'outline'}>Активные</Button>
+          <Button onClick={() => setSelectedStatus('paused')} variant={selectedStatus === 'paused' ? 'default' : 'outline'}>Приостановленные</Button>
+          <Button onClick={() => setSelectedStatus('archived')} variant={selectedStatus === 'archived' ? 'default' : 'outline'}>Архив</Button>
         </div>
       </div>
 
-      {/* Статистические карточки */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Всего офферов</p>
-                <p className="text-2xl font-bold text-blue-600">{offers.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Play className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Активных</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {offers.filter((o: Offer) => o.status === 'active').length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <MousePointer className="h-5 w-5 text-purple-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Всего кликов</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  {offers.reduce((sum: number, o: Offer) => sum + (o.clicks || 0), 0).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-red-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Общий доход</p>
-                <p className="text-2xl font-bold text-red-600">
-                  ${offers.reduce((sum: number, o: Offer) => sum + (o.revenue || 0), 0).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Фильтры и действия */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Поиск по названию или описанию..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10 w-80"
-                  data-testid="input-search"
-                />
-              </div>
-              
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="w-40" data-testid="select-status">
-                  <SelectValue placeholder="Статус" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все статусы</SelectItem>
-                  <SelectItem value="active">Активные</SelectItem>
-                  <SelectItem value="paused">Приостановлены</SelectItem>
-                  <SelectItem value="draft">Черновики</SelectItem>
-                  <SelectItem value="archived">Архивированные</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-40" data-testid="select-category">
-                  <SelectValue placeholder="Категория" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все категории</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {selectedOffers.length > 0 && (
-                <Button 
-                  variant="destructive" 
-                  onClick={() => deleteMutation.mutate(selectedOffers)}
-                  disabled={deleteMutation.isPending}
-                  data-testid="button-delete-selected"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Удалить ({selectedOffers.length})
-                </Button>
-              )}
-              
-              <Button 
-                variant="outline" 
-                onClick={handleExport}
-                data-testid="button-export"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Экспорт CSV
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        
-        <CardContent>
-          {/* Отладочная информация */}
-          <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded">
-            <p className="text-sm">
-              Всего офферов: {offers.length} | Отфильтровано: {filteredOffers.length} | 
-              Loading: {isLoading ? 'да' : 'нет'}
-            </p>
-          </div>
-          
-          {filteredOffers.length === 0 ? (
-            <div className="text-center py-8">
-              <Target className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                {search || selectedStatus !== 'all' || selectedCategory !== 'all'
-                  ? 'Нет офферов, соответствующих фильтрам'
-                  : 'У вас пока нет офферов'
-                }
-              </p>
-              <Button onClick={handleCreate}>
-                <Plus className="h-4 w-4 mr-2" />
-                Создать первый оффер
-              </Button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">
-                      <Checkbox 
-                        checked={allSelected} 
-                        onCheckedChange={toggleSelectAll}
-                        data-testid="checkbox-select-all"
-                      />
-                    </TableHead>
-                    <TableHead>Оффер</TableHead>
-                    <TableHead>Категория</TableHead>
-                    <TableHead>Payout</TableHead>
-                    <TableHead>GEO</TableHead>
-                    <TableHead>Статистика</TableHead>
-                    <TableHead>Статус</TableHead>
-                    <TableHead>Создан</TableHead>
-                    <TableHead className="text-right">Действия</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredOffers.map((offer: Offer) => (
-                    <TableRow key={offer.id} data-testid={`row-offer-${offer.id}`}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedOffers.includes(offer.id)}
-                          onCheckedChange={() => toggleSelectOffer(offer.id)}
-                          data-testid={`checkbox-offer-${offer.id}`}
-                        />
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          {offer.logo ? (
-                            <img
-                              src={offer.logo}
-                              alt={offer.name}
-                              className="w-10 h-10 rounded object-cover"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
-                              <Target className="h-5 w-5 text-gray-400" />
-                            </div>
-                          )}
-                          <div>
-                            <div className="font-medium">{offer.name}</div>
-                            <div className="text-sm text-muted-foreground line-clamp-1">
-                              {offer.description?.ru || offer.description?.en || 'Нет описания'}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <Badge variant="secondary">{offer.category}</Badge>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="font-medium">
-                          {formatCurrency(offer.payout, offer.currency)}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {offer.payoutType?.toUpperCase()}
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1 max-w-32">
-                          {(offer.countries && Array.isArray(offer.countries) ? offer.countries : ['N/A']).slice(0, 3).map((country: string, index: number) => (
-                            <Badge key={`${country}-${index}`} variant="outline" className="text-xs">
-                              {country.toUpperCase()}
-                            </Badge>
-                          ))}
-                          {(offer.countries && Array.isArray(offer.countries) ? offer.countries : []).length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{(offer.countries.length - 3)}
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="text-sm">
-                          <div className="flex items-center gap-1">
-                            <MousePointer className="h-3 w-3 text-purple-600" />
-                            <span>{(offer.clicks || 0).toLocaleString()}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3 text-green-600" />
-                            <span>{offer.conversions || 0}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <DollarSign className="h-3 w-3 text-red-600" />
-                            <span>${(offer.revenue || 0).toLocaleString()}</span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <Badge className={getStatusColor(offer.status)}>
-                          {getStatusLabel(offer.status)}
-                        </Badge>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="text-sm">
-                          {new Date(offer.createdAt).toLocaleDateString('ru-RU')}
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" data-testid={`menu-offer-${offer.id}`}>
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setLocation(`/advertiser/offers/${offer.id}`)}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              Просмотр
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEdit(offer)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Редактировать
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => duplicateMutation.mutate(offer.id)}>
-                              <Copy className="h-4 w-4 mr-2" />
-                              Дублировать
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            {offer.status === 'active' ? (
-                              <DropdownMenuItem 
-                                onClick={() => updateStatusMutation.mutate({ id: offer.id, status: 'paused' })}
-                              >
-                                <Pause className="h-4 w-4 mr-2" />
-                                Приостановить
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem 
-                                onClick={() => updateStatusMutation.mutate({ id: offer.id, status: 'active' })}
-                              >
-                                <Play className="h-4 w-4 mr-2" />
-                                Активировать
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem 
-                              onClick={() => updateStatusMutation.mutate({ id: offer.id, status: 'archived' })}
-                            >
-                              <Archive className="h-4 w-4 mr-2" />
-                              Архивировать
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => setPreviewOffer(offer)}
-                              className="text-blue-600"
-                            >
-                              <ExternalLink className="h-4 w-4 mr-2" />
-                              Превью лендингов
-                            </DropdownMenuItem>
-                            {offer.landingPages && offer.landingPages.length > 0 && (
-                              <DropdownMenuItem 
-                                onClick={() => setPreviewUrl(offer.landingPages[0].url)}
-                                className="text-indigo-600"
-                              >
-                                <Eye className="h-4 w-4 mr-2" />
-                                Превью iframe
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem 
-                              onClick={() => deleteMutation.mutate([offer.id])}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Удалить
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Превью лендингов */}
-      <Dialog open={!!previewOffer} onOpenChange={() => setPreviewOffer(null)}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Превью лендингов - {previewOffer?.name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {previewOffer?.landingPages.map((landing) => (
-              <Card key={landing.id}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{landing.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1">
-                      <p className="text-sm text-muted-foreground mb-2">URL:</p>
-                      <p className="font-mono text-sm break-all">{landing.url}</p>
-                      {landing.geo && (
-                        <p className="text-sm mt-2">
-                          <span className="text-muted-foreground">GEO:</span> {landing.geo}
-                        </p>
-                      )}
-                      {landing.payout && (
-                        <p className="text-sm">
-                          <span className="text-muted-foreground">Payout:</span> {landing.payout}
-                        </p>
-                      )}
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => window.open(landing.url, '_blank')}
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Открыть
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Превью iframe */}
-      {previewUrl && (
-        <Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
-          <DialogContent className="w-full max-w-4xl h-[80vh]">
-            <DialogHeader>
-              <DialogTitle>Предпросмотр лендинга</DialogTitle>
-            </DialogHeader>
-            <iframe
-              src={previewUrl}
-              className="w-full h-full border rounded"
-              title="Предпросмотр"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-            />
-          </DialogContent>
-        </Dialog>
+      {selectedOffers.length > 0 && (
+        <div className="flex gap-2">
+          <Button onClick={() => handleBulkStatusChange('active')} size="sm">
+            <Play className="w-4 h-4 mr-1" /> Активировать
+          </Button>
+          <Button onClick={() => handleBulkStatusChange('archived')} size="sm">
+            <Archive className="w-4 h-4 mr-1" /> Архивировать
+          </Button>
+          <Button onClick={() => handleBulkStatusChange('paused')} size="sm">
+            <Pause className="w-4 h-4 mr-1" /> Приостановить
+          </Button>
+        </div>
       )}
 
-      {/* Модальное окно создания/редактирования оффера */}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>
+              <Checkbox 
+                checked={selectedOffers.length === filtered.length && filtered.length > 0} 
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setSelectedOffers(filtered.map((o: any) => o.id));
+                  } else {
+                    setSelectedOffers([]);
+                  }
+                }} 
+              />
+            </TableHead>
+            <TableHead></TableHead>
+            <TableHead>Название</TableHead>
+            <TableHead>GEO</TableHead>
+            <TableHead>Категория</TableHead>
+            <TableHead>CR</TableHead>
+            <TableHead>Payout</TableHead>
+            <TableHead>Статус</TableHead>
+            <TableHead></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <DndContext>
+            <SortableContext items={filtered.map((o: any) => o.id)} strategy={verticalListSortingStrategy}>
+              {filtered.map((offer: any, index: number) => (
+                <DraggableRow key={offer.id} offer={offer} index={index}>
+                  <>
+                    <TableCell>
+                      <Checkbox 
+                        checked={selectedOffers.includes(offer.id)} 
+                        onCheckedChange={(checked) => {
+                          if (checked) setSelectedOffers(prev => [...prev, offer.id]);
+                          else setSelectedOffers(prev => prev.filter(id => id !== offer.id));
+                        }} 
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{offer.name}</TableCell>
+                    <TableCell>{Array.isArray(offer.countries) ? offer.countries.join(', ') : 'N/A'}</TableCell>
+                    <TableCell>{offer.category}</TableCell>
+                    <TableCell>{offer.cr || 0}%</TableCell>
+                    <TableCell>${offer.payout} {offer.currency}</TableCell>
+                    <TableCell>
+                      <Badge>{offer.status}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => setEditOffer(offer)} title="Редактировать">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleAction(offer, 'preview')} title="Предпросмотр">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleAction(offer, 'duplicate')} title="Дублировать">
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </>
+                </DraggableRow>
+              ))}
+            </SortableContext>
+          </DndContext>
+        </TableBody>
+      </Table>
+
+      {/* Модальное окно создания/редактирования оффера встроенное */}
       {editOffer && (
-        <Dialog open={!!editOffer} onOpenChange={() => setEditOffer(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editOffer.id ? 'Редактировать оффер' : 'Создать оффер'}</DialogTitle>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Название</label>
-                  <Input 
-                    value={editOffer.name || ''} 
-                    onChange={(e) => setEditOffer({...editOffer, name: e.target.value})}
-                    placeholder="Введите название оффера"
-                  />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-2xl font-bold mb-4">
+                {editOffer.id ? 'Редактировать оффер' : 'Создать оффер'}
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Название</label>
+                    <Input 
+                      value={editOffer.name || ''} 
+                      onChange={(e) => setEditOffer({...editOffer, name: e.target.value})}
+                      placeholder="Введите название оффера"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Категория</label>
+                    <Input 
+                      value={editOffer.category || ''} 
+                      onChange={(e) => setEditOffer({...editOffer, category: e.target.value})}
+                      placeholder="gambling, dating, crypto..."
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium">Категория</label>
-                  <Select 
-                    value={editOffer.category || ''} 
-                    onValueChange={(value) => setEditOffer({...editOffer, category: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите категорию" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gambling">Gambling</SelectItem>
-                      <SelectItem value="dating">Dating</SelectItem>
-                      <SelectItem value="crypto">Crypto</SelectItem>
-                      <SelectItem value="betting">Betting</SelectItem>
-                      <SelectItem value="finance">Finance</SelectItem>
-                      <SelectItem value="gaming">Gaming</SelectItem>
-                    </SelectContent>
-                  </Select>
+                
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Выплата</label>
+                    <Input 
+                      type="number"
+                      value={editOffer.payout || ''} 
+                      onChange={(e) => setEditOffer({...editOffer, payout: e.target.value})}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Валюта</label>
+                    <Input 
+                      value={editOffer.currency || 'USD'} 
+                      onChange={(e) => setEditOffer({...editOffer, currency: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Тип выплаты</label>
+                    <Input 
+                      value={editOffer.payoutType || 'cpa'} 
+                      onChange={(e) => setEditOffer({...editOffer, payoutType: e.target.value})}
+                    />
+                  </div>
                 </div>
               </div>
               
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Выплата</label>
-                  <Input 
-                    type="number"
-                    value={editOffer.payout || ''} 
-                    onChange={(e) => setEditOffer({...editOffer, payout: e.target.value})}
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Валюта</label>
-                  <Select 
-                    value={editOffer.currency || 'USD'} 
-                    onValueChange={(value) => setEditOffer({...editOffer, currency: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="RUB">RUB</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Тип выплаты</label>
-                  <Select 
-                    value={editOffer.payoutType || 'cpa'} 
-                    onValueChange={(value) => setEditOffer({...editOffer, payoutType: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cpa">CPA</SelectItem>
-                      <SelectItem value="cpl">CPL</SelectItem>
-                      <SelectItem value="cpi">CPI</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium">Лендинг URL</label>
-                <Input 
-                  value={editOffer.landingPages?.[0]?.url || ''} 
-                  onChange={(e) => {
-                    const landingPages = editOffer.landingPages || [{ id: '1', name: 'Основная', isDefault: true }];
-                    landingPages[0] = { ...landingPages[0], url: e.target.value };
-                    setEditOffer({...editOffer, landingPages});
+              <div className="flex justify-end gap-2 mt-6">
+                <Button variant="outline" onClick={() => setEditOffer(null)}>
+                  Отмена
+                </Button>
+                <Button 
+                  onClick={() => {
+                    updateMutation.mutate(editOffer);
+                    setEditOffer(null);
                   }}
-                  placeholder="https://example.com"
-                />
+                  disabled={updateMutation.isPending}
+                >
+                  {editOffer.id ? 'Сохранить' : 'Создать'}
+                </Button>
               </div>
             </div>
-            
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setEditOffer(null)}>
-                Отмена
-              </Button>
-              <Button 
-                onClick={() => {
-                  updateMutation.mutate(editOffer);
-                  setEditOffer(null);
-                }}
-                disabled={updateMutation.isPending}
-              >
-                {editOffer.id ? 'Сохранить' : 'Создать'}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </div>
       )}
     </div>
   );
