@@ -3948,6 +3948,32 @@ class MemStorage implements IStorage {
       isDeleted: false,
       createdAt: new Date(),
       updatedAt: new Date()
+    },
+    {
+      id: '2',
+      username: 'advertiser1',
+      email: 'advertiser1@example.com', 
+      password: 'password123',
+      role: 'advertiser',
+      firstName: 'Тест',
+      lastName: 'Рекламодатель',
+      company: 'Тестовая Компания',
+      phone: '+79999999999',
+      isActive: true,
+      status: 'active',
+      userType: 'advertiser',
+      language: 'ru',
+      timezone: 'UTC',
+      currency: 'USD',
+      kycStatus: 'approved',
+      balance: '0.00',
+      holdAmount: '0.00',
+      registrationApproved: true,
+      documentsVerified: true,
+      isBlocked: false,
+      isDeleted: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   ];
   private offers: Offer[] = [];
@@ -4048,10 +4074,15 @@ class MemStorage implements IStorage {
   }
 
   async updateUser(id: string, data: Partial<InsertUser>): Promise<User> {
+    console.log("MemStorage.updateUser called:", id, data);
     const userIndex = this.users.findIndex(u => u.id === id);
-    if (userIndex === -1) throw new Error('User not found');
+    if (userIndex === -1) {
+      console.error("User not found in MemStorage:", id);
+      throw new Error('User not found');
+    }
     
     this.users[userIndex] = { ...this.users[userIndex], ...data, updatedAt: new Date() };
+    console.log("MemStorage user updated successfully:", this.users[userIndex]);
     return this.users[userIndex];
   }
 

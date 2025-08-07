@@ -1403,11 +1403,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/advertiser/profile", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
+      console.log("Updating profile for user:", authUser.id, "with data:", req.body);
       const updatedUser = await storage.updateUser(authUser.id, req.body);
+      console.log("Profile updated successfully:", updatedUser);
       res.json(updatedUser);
     } catch (error) {
       console.error("Update profile error:", error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ error: "Internal server error", details: error.message });
     }
   });
 
