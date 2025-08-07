@@ -18,6 +18,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { formatCountries } from '@/utils/countries';
 import { getCategoryBadgeProps } from '@/utils/categories';
 import { formatCR } from '@/utils/formatters';
+import OfferEditModal from '@/components/modals/OfferEditModal';
 
 function DraggableRow({ offer, index, children }: any) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: offer.id });
@@ -317,79 +318,16 @@ const AdvertiserOffers = () => {
         </TableBody>
       </Table>
 
-      {/* Модальное окно создания/редактирования оффера встроенное */}
+      {/* Модальное окно редактирования оффера */}
       {editOffer && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-4">
-                {editOffer.id ? 'Редактировать оффер' : 'Создать оффер'}
-              </h2>
-              
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">Название</label>
-                    <Input 
-                      value={editOffer.name || ''} 
-                      onChange={(e) => setEditOffer({...editOffer, name: e.target.value})}
-                      placeholder="Введите название оффера"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Категория</label>
-                    <Input 
-                      value={editOffer.category || ''} 
-                      onChange={(e) => setEditOffer({...editOffer, category: e.target.value})}
-                      placeholder="gambling, dating, crypto..."
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">Выплата</label>
-                    <Input 
-                      type="number"
-                      value={editOffer.payout || ''} 
-                      onChange={(e) => setEditOffer({...editOffer, payout: e.target.value})}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Валюта</label>
-                    <Input 
-                      value={editOffer.currency || 'USD'} 
-                      onChange={(e) => setEditOffer({...editOffer, currency: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Тип выплаты</label>
-                    <Input 
-                      value={editOffer.payoutType || 'cpa'} 
-                      onChange={(e) => setEditOffer({...editOffer, payoutType: e.target.value})}
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex justify-end gap-2 mt-6">
-                <Button variant="outline" onClick={() => setEditOffer(null)}>
-                  Отмена
-                </Button>
-                <Button 
-                  onClick={() => {
-                    updateMutation.mutate(editOffer);
-                    setEditOffer(null);
-                  }}
-                  disabled={updateMutation.isPending}
-                >
-                  {editOffer.id ? 'Сохранить' : 'Создать'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <OfferEditModal
+          offer={editOffer}
+          onClose={() => setEditOffer(null)}
+          onSave={(updatedOffer) => {
+            updateMutation.mutate(updatedOffer);
+            setEditOffer(null);
+          }}
+        />
       )}
     </div>
   );
