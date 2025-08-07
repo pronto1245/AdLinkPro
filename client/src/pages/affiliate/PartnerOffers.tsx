@@ -357,172 +357,299 @@ export default function PartnerOffers() {
                   const categoryProps = getCategoryBadgeProps(offer.category);
                   const payoutTypeProps = getPayoutTypeBadgeProps(offer.payoutType);
                   const cr = Math.random() * 10; // Тестовый CR
+                  const requestStatus = offerRequests[offer.id] || 'none';
                   
-                  return (
-                    <TableRow key={offer.id}>
-                      {/* Название с лого */}
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          {offer.logo ? (
-                            <img 
-                              src={offer.logo} 
-                              alt={offer.name}
-                              className="w-10 h-10 rounded object-cover flex-shrink-0"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
-                              <Target className="w-5 h-5 text-gray-500" />
+                  // Если есть geoPricing, создаем строку для каждого гео
+                  if (offer.geoPricing && Object.keys(offer.geoPricing).length > 0) {
+                    return Object.entries(offer.geoPricing).map(([geo, price]: [string, number], index) => (
+                      <TableRow key={`${offer.id}-${geo}`} className="hover:bg-gray-50/50">
+                        {/* Название - показываем только в первой строке */}
+                        <TableCell>
+                          {index === 0 ? (
+                            <div className="flex items-center gap-3">
+                              {offer.logo ? (
+                                <img 
+                                  src={offer.logo} 
+                                  alt={offer.name}
+                                  className="w-10 h-10 rounded object-cover flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
+                                  <Target className="w-5 h-5 text-gray-500" />
+                                </div>
+                              )}
+                              <div>
+                                <div 
+                                  className="font-medium cursor-pointer text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors"
+                                  onClick={() => navigate(`/affiliate/offers/${offer.id}`)}
+                                >
+                                  {offer.name}
+                                </div>
+                              </div>
                             </div>
-                          )}
-                          <div>
-                            <div 
-                              className="font-medium cursor-pointer text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors"
-                              onClick={() => navigate(`/affiliate/offers/${offer.id}`)}
-                            >
-                              {offer.name}
+                          ) : null}
+                        </TableCell>
+
+                        {/* Категория - показываем только в первой строке */}
+                        <TableCell>
+                          {index === 0 ? (
+                            <Badge className={categoryProps.className}>
+                              {categoryProps.label}
+                            </Badge>
+                          ) : null}
+                        </TableCell>
+
+                        {/* Тип выплаты - показываем только в первой строке */}
+                        <TableCell>
+                          {index === 0 ? (
+                            <Badge variant="outline" className={`uppercase font-semibold ${payoutTypeProps.className}`}>
+                              {payoutTypeProps.label}
+                            </Badge>
+                          ) : null}
+                        </TableCell>
+
+                        {/* Гео - показываем конкретное гео для каждой строки */}
+                        <TableCell>
+                          <div className="flex items-center gap-0.5 bg-gray-50 rounded px-1 py-0.5 w-fit">
+                            <span className="text-sm leading-none">{getCountryFlag(geo)}</span>
+                            <span className="text-xs font-medium">{geo}</span>
+                          </div>
+                        </TableCell>
+
+                        {/* Сумма - показываем сумму для конкретного гео */}
+                        <TableCell>
+                          <div className="font-mono font-medium">
+                            ${price}
+                          </div>
+                        </TableCell>
+
+                        {/* CR - показываем только в первой строке */}
+                        <TableCell>
+                          {index === 0 ? (
+                            <div className="font-mono text-green-600 font-medium">
+                              {formatCR(cr)}%
+                            </div>
+                          ) : null}
+                        </TableCell>
+
+                        {/* Действия - показываем только в первой строке */}
+                        <TableCell className="text-right">
+                          {index === 0 ? (
+                            <div className="flex items-center justify-end gap-2">
+                              {(() => {
+                                if (requestStatus === 'approved') {
+                                  return (
+                                    <Button
+                                      size="sm"
+                                      className="bg-green-600 hover:bg-green-700 text-white"
+                                      onClick={() => handleRequestOffer(offer.id)}
+                                    >
+                                      Забрать ссылку
+                                    </Button>
+                                  );
+                                } else if (requestStatus === 'pending') {
+                                  return (
+                                    <Button
+                                      size="sm"
+                                      disabled
+                                      className="bg-yellow-500 text-white cursor-not-allowed opacity-90"
+                                    >
+                                      В ожидании
+                                    </Button>
+                                  );
+                                } else {
+                                  return (
+                                    <Button
+                                      size="sm"
+                                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                                      onClick={() => handleRequestOffer(offer.id)}
+                                    >
+                                      Запросить
+                                    </Button>
+                                  );
+                                }
+                              })()}
+                              
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem>
+                                    <Target className="h-4 w-4 mr-2" />
+                                    Детали
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    <BarChart3 className="h-4 w-4 mr-2" />
+                                    Статистика
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    <MousePointer className="h-4 w-4 mr-2" />
+                                    Клики
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    <Zap className="h-4 w-4 mr-2" />
+                                    Конверсии
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          ) : null}
+                        </TableCell>
+                      </TableRow>
+                    ));
+                  } else {
+                    // Обычная строка для офферов без geoPricing
+                    return (
+                      <TableRow key={offer.id} className="hover:bg-gray-50/50">
+                        {/* Название с лого */}
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            {offer.logo ? (
+                              <img 
+                                src={offer.logo} 
+                                alt={offer.name}
+                                className="w-10 h-10 rounded object-cover flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
+                                <Target className="w-5 h-5 text-gray-500" />
+                              </div>
+                            )}
+                            <div>
+                              <div 
+                                className="font-medium cursor-pointer text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors"
+                                onClick={() => navigate(`/affiliate/offers/${offer.id}`)}
+                              >
+                                {offer.name}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </TableCell>
+                        </TableCell>
 
-                      {/* Категория */}
-                      <TableCell>
-                        <Badge className={categoryProps.className}>
-                          {categoryProps.label}
-                        </Badge>
-                      </TableCell>
+                        {/* Категория */}
+                        <TableCell>
+                          <Badge className={categoryProps.className}>
+                            {categoryProps.label}
+                          </Badge>
+                        </TableCell>
 
-                      {/* Тип выплаты */}
-                      <TableCell>
-                        <Badge variant="outline" className={`uppercase font-semibold ${payoutTypeProps.className}`}>
-                          {payoutTypeProps.label}
-                        </Badge>
-                      </TableCell>
+                        {/* Тип выплаты */}
+                        <TableCell>
+                          <Badge variant="outline" className={`uppercase font-semibold ${payoutTypeProps.className}`}>
+                            {payoutTypeProps.label}
+                          </Badge>
+                        </TableCell>
 
-                      {/* Гео с флагами */}
-                      <TableCell>
-                        <div className="flex items-center gap-1 flex-wrap max-w-[100px]">
-                          {Array.isArray(offer.countries) 
-                            ? offer.countries.slice(0, 3).map((country: string) => (
-                                <div key={country} className="flex items-center gap-0.5 bg-gray-50 rounded px-1 py-0.5">
-                                  <span className="text-sm leading-none">{getCountryFlag(country)}</span>
-                                  <span className="text-xs font-medium">{country}</span>
-                                </div>
-                              ))
-                            : (
-                                <div className="flex items-center gap-0.5 bg-gray-50 rounded px-1 py-0.5">
-                                  <span className="text-sm leading-none">{getCountryFlag(offer.countries)}</span>
-                                  <span className="text-xs font-medium">{offer.countries}</span>
-                                </div>
-                              )
-                          }
-                          {Array.isArray(offer.countries) && offer.countries.length > 3 && (
-                            <span className="text-xs text-muted-foreground bg-gray-100 rounded px-1 py-0.5">
-                              +{offer.countries.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-
-                      {/* Сумма с разбивкой по гео */}
-                      <TableCell>
-                        {offer.geoPricing ? (
-                          <div className="space-y-1">
-                            {Object.entries(offer.geoPricing).slice(0, 3).map(([geo, price]: [string, number]) => (
-                              <div key={geo} className="flex items-center gap-2 text-sm">
-                                <span className="text-xs">{getCountryFlag(geo)}</span>
-                                <span className="font-mono font-medium">${price}</span>
-                              </div>
-                            ))}
-                            {Object.keys(offer.geoPricing).length > 3 && (
-                              <span className="text-xs text-muted-foreground">
-                                +{Object.keys(offer.geoPricing).length - 3} гео
+                        {/* Гео */}
+                        <TableCell>
+                          <div className="flex items-center gap-1 flex-wrap max-w-[100px]">
+                            {Array.isArray(offer.countries) 
+                              ? offer.countries.slice(0, 3).map((country: string) => (
+                                  <div key={country} className="flex items-center gap-0.5 bg-gray-50 rounded px-1 py-0.5">
+                                    <span className="text-sm leading-none">{getCountryFlag(country)}</span>
+                                    <span className="text-xs font-medium">{country}</span>
+                                  </div>
+                                ))
+                              : (
+                                  <div className="flex items-center gap-0.5 bg-gray-50 rounded px-1 py-0.5">
+                                    <span className="text-sm leading-none">{getCountryFlag(offer.countries)}</span>
+                                    <span className="text-xs font-medium">{offer.countries}</span>
+                                  </div>
+                                )
+                            }
+                            {Array.isArray(offer.countries) && offer.countries.length > 3 && (
+                              <span className="text-xs text-muted-foreground bg-gray-100 rounded px-1 py-0.5">
+                                +{offer.countries.length - 3}
                               </span>
                             )}
                           </div>
-                        ) : (
+                        </TableCell>
+
+                        {/* Сумма */}
+                        <TableCell>
                           <div className="font-mono font-medium">
                             ${offer.payout}
                           </div>
-                        )}
-                      </TableCell>
+                        </TableCell>
 
-                      {/* CR */}
-                      <TableCell>
-                        <div className="font-mono text-green-600 font-medium">
-                          {formatCR(cr)}%
-                        </div>
-                      </TableCell>
+                        {/* CR */}
+                        <TableCell>
+                          <div className="font-mono text-green-600 font-medium">
+                            {formatCR(cr)}%
+                          </div>
+                        </TableCell>
 
-                      {/* Действия */}
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {(() => {
-                            const requestStatus = offerRequests[offer.id] || 'none';
+                        {/* Действия */}
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {(() => {
+                              if (requestStatus === 'approved') {
+                                return (
+                                  <Button
+                                    size="sm"
+                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                    onClick={() => handleRequestOffer(offer.id)}
+                                  >
+                                    Забрать ссылку
+                                  </Button>
+                                );
+                              } else if (requestStatus === 'pending') {
+                                return (
+                                  <Button
+                                    size="sm"
+                                    disabled
+                                    className="bg-yellow-500 text-white cursor-not-allowed opacity-90"
+                                  >
+                                    В ожидании
+                                  </Button>
+                                );
+                              } else {
+                                return (
+                                  <Button
+                                    size="sm"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    onClick={() => handleRequestOffer(offer.id)}
+                                  >
+                                    Запросить
+                                  </Button>
+                                );
+                              }
+                            })()}
                             
-                            if (requestStatus === 'approved') {
-                              return (
-                                <Button
-                                  size="sm"
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                  onClick={() => handleRequestOffer(offer.id)}
-                                >
-                                  Забрать ссылку
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
                                 </Button>
-                              );
-                            } else if (requestStatus === 'pending') {
-                              return (
-                                <Button
-                                  size="sm"
-                                  disabled
-                                  className="bg-yellow-500 text-white cursor-not-allowed opacity-90"
-                                >
-                                  В ожидании
-                                </Button>
-                              );
-                            } else {
-                              return (
-                                <Button
-                                  size="sm"
-                                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                                  onClick={() => handleRequestOffer(offer.id)}
-                                >
-                                  Запросить
-                                </Button>
-                              );
-                            }
-                          })()}
-                          
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <Target className="h-4 w-4 mr-2" />
-                                Детали
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <BarChart3 className="h-4 w-4 mr-2" />
-                                Статистика
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <MousePointer className="h-4 w-4 mr-2" />
-                                Клики
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Zap className="h-4 w-4 mr-2" />
-                                Конверсии
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem>
+                                  <Target className="h-4 w-4 mr-2" />
+                                  Детали
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <BarChart3 className="h-4 w-4 mr-2" />
+                                  Статистика
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <MousePointer className="h-4 w-4 mr-2" />
+                                  Клики
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Zap className="h-4 w-4 mr-2" />
+                                  Конверсии
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                }).flat()}
               </TableBody>
             </Table>
           </div>
