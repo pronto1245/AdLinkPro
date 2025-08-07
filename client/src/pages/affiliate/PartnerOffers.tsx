@@ -35,7 +35,7 @@ export default function PartnerOffers() {
   const { user } = useAuth();
 
   // Fetch partner offers with auto-generated links
-  const { data: offers = [], isLoading } = useQuery({
+  const { data: offers = [], isLoading } = useQuery<PartnerOffer[]>({
     queryKey: ["/api/partner/offers"],
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -60,7 +60,6 @@ export default function PartnerOffers() {
   }
 
   const approvedOffers = offers.filter((offer: PartnerOffer) => offer.isApproved);
-  const publicOffers = offers.filter((offer: PartnerOffer) => !offer.isApproved);
 
   if (!offers || offers.length === 0) {
     return (
@@ -114,10 +113,7 @@ export default function PartnerOffers() {
               <CheckCircle className="h-4 w-4" />
               Одобренные ({approvedOffers.length})
             </TabsTrigger>
-            <TabsTrigger value="public" className="flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              Публичные ({publicOffers.length})
-            </TabsTrigger>
+
           </TabsList>
 
           <TabsContent value="approved" className="space-y-4">
@@ -137,22 +133,7 @@ export default function PartnerOffers() {
             )}
           </TabsContent>
 
-          <TabsContent value="public" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {publicOffers.map((offer: PartnerOffer) => (
-                <OfferCard key={offer.id} offer={offer} copyToClipboard={copyToClipboard} user={user} />
-              ))}
-            </div>
-            {publicOffers.length === 0 && (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-muted-foreground">
-                    Публичные офферы недоступны.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
+
         </Tabs>
       </div>
   );
