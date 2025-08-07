@@ -3576,6 +3576,8 @@ export class DatabaseStorage implements IStorage {
 
   async getAdvertiserOffers(advertiserId: string, filters: any = {}): Promise<any[]> {
     try {
+      console.log("getAdvertiserOffers called with:", { advertiserId, filters });
+      
       // Get offers for this advertiser with basic data
       const advertiserOffers = await db
         .select({
@@ -3592,10 +3594,13 @@ export class DatabaseStorage implements IStorage {
           landingPages: offers.landingPages,
           landingPageUrl: offers.landingPageUrl,
           createdAt: offers.createdAt,
-          updatedAt: offers.updatedAt
+          updatedAt: offers.updatedAt,
+          advertiserId: offers.advertiserId
         })
         .from(offers)
         .where(eq(offers.advertiserId, advertiserId));
+
+      console.log("Raw advertiser offers from DB:", advertiserOffers.length, advertiserOffers.map(o => ({ id: o.id, name: o.name, advertiserId: o.advertiserId })));
 
       return advertiserOffers.map(offer => ({
         ...offer,
