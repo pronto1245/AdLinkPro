@@ -56,6 +56,9 @@ import AdvertiserDocuments from "@/pages/advertiser/AdvertiserDocuments";
 import PartnerDashboard from "@/pages/affiliate/PartnerDashboard";
 import AccessRequests from "@/pages/partner/AccessRequests";
 import AdvertiserAccessRequests from '@/pages/advertiser/AccessRequests';
+import { PartnerLayout } from "@/components/partner/PartnerLayout";
+import Statistics from "@/pages/affiliate/Statistics";
+import Finances from "@/pages/affiliate/Finances";
 import { useAuth } from "./contexts/auth-context";
 import * as React from 'react';
 import Login from "@/pages/auth/login";
@@ -368,49 +371,75 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
+      <Route path="/affiliate/statistics">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PartnerLayout>
+            <Statistics />
+          </PartnerLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/finances">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PartnerLayout>
+            <Finances />
+          </PartnerLayout>
+        </ProtectedRoute>
+      </Route>
+      
       <Route path="/affiliate/offers">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <RoleBasedLayout>
+          <PartnerLayout>
             <PartnerOffers />
-          </RoleBasedLayout>
+          </PartnerLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/affiliate/access-requests">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <RoleBasedLayout>
+          <PartnerLayout>
             <AccessRequests />
-          </RoleBasedLayout>
+          </PartnerLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/affiliate/creatives">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <CreativesAndTools />
+          <PartnerLayout>
+            <CreativesAndTools />
+          </PartnerLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/affiliate/team">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <AffiliateTeamManagement />
+          <PartnerLayout>
+            <AffiliateTeamManagement />
+          </PartnerLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/affiliate/postbacks">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <PostbackManagementAffiliate />
+          <PartnerLayout>
+            <PostbackManagementAffiliate />
+          </PartnerLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/affiliate/dashboard">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <PartnerDashboard />
+          <PartnerLayout>
+            <PartnerDashboard />
+          </PartnerLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/affiliate">
         <ProtectedRoute allowedRoles={['affiliate']}>
-          <PartnerDashboard />
+          <PartnerLayout>
+            <PartnerDashboard />
+          </PartnerLayout>
         </ProtectedRoute>
       </Route>
       
