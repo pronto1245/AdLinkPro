@@ -1013,25 +1013,201 @@ export default function CreateOffer() {
                                   className="rounded flex-shrink-0"
                                   title="Разные выплаты для URL"
                                 />
-                                <Input
-                                  placeholder="Сумма"
-                                  value={formData.hasGlobalPayoutSetting ? (landing.payout || '') : formData.globalPayout || ''}
-                                  onChange={(e) => {
-                                    if (formData.hasGlobalPayoutSetting) {
-                                      updateLandingPage(landing.id, 'payout', e.target.value);
-                                    } else {
-                                      setFormData(prev => ({ 
-                                        ...prev, 
-                                        globalPayout: e.target.value,
-                                        landingPages: prev.landingPages.map(lp => ({
-                                          ...lp,
-                                          payout: e.target.value
-                                        }))
-                                      }));
-                                    }
-                                  }}
-                                  className="w-full text-sm"
-                                />
+                                <div className="flex space-x-1">
+                                  <Input
+                                    placeholder="Сумма"
+                                    value={formData.hasGlobalPayoutSetting ? (landing.payout || '') : formData.globalPayout || ''}
+                                    onChange={(e) => {
+                                      if (formData.hasGlobalPayoutSetting) {
+                                        updateLandingPage(landing.id, 'payout', e.target.value);
+                                      } else {
+                                        setFormData(prev => ({ 
+                                          ...prev, 
+                                          globalPayout: e.target.value,
+                                          landingPages: prev.landingPages.map(lp => ({
+                                            ...lp,
+                                            payout: e.target.value
+                                          }))
+                                        }));
+                                      }
+                                    }}
+                                    className="flex-1 text-sm"
+                                  />
+                                  <Select 
+                                    value={formData.currency} 
+                                    onValueChange={(value: string) => setFormData(prev => ({ ...prev, currency: value }))}
+                                  >
+                                    <SelectTrigger className="w-20 text-sm">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {/* Приоритетные валюты */}
+                                      <SelectItem value="USD">USD</SelectItem>
+                                      <SelectItem value="EUR">EUR</SelectItem>
+                                      <SelectItem value="RUB">RUB</SelectItem>
+                                      
+                                      {/* Остальные валюты по алфавиту */}
+                                      <SelectItem value="AED">AED</SelectItem>
+                                      <SelectItem value="AFN">AFN</SelectItem>
+                                      <SelectItem value="ALL">ALL</SelectItem>
+                                      <SelectItem value="AMD">AMD</SelectItem>
+                                      <SelectItem value="ANG">ANG</SelectItem>
+                                      <SelectItem value="AOA">AOA</SelectItem>
+                                      <SelectItem value="ARS">ARS</SelectItem>
+                                      <SelectItem value="AUD">AUD</SelectItem>
+                                      <SelectItem value="AWG">AWG</SelectItem>
+                                      <SelectItem value="AZN">AZN</SelectItem>
+                                      <SelectItem value="BAM">BAM</SelectItem>
+                                      <SelectItem value="BBD">BBD</SelectItem>
+                                      <SelectItem value="BDT">BDT</SelectItem>
+                                      <SelectItem value="BGN">BGN</SelectItem>
+                                      <SelectItem value="BHD">BHD</SelectItem>
+                                      <SelectItem value="BIF">BIF</SelectItem>
+                                      <SelectItem value="BMD">BMD</SelectItem>
+                                      <SelectItem value="BND">BND</SelectItem>
+                                      <SelectItem value="BOB">BOB</SelectItem>
+                                      <SelectItem value="BRL">BRL</SelectItem>
+                                      <SelectItem value="BSD">BSD</SelectItem>
+                                      <SelectItem value="BTN">BTN</SelectItem>
+                                      <SelectItem value="BWP">BWP</SelectItem>
+                                      <SelectItem value="BYN">BYN</SelectItem>
+                                      <SelectItem value="BZD">BZD</SelectItem>
+                                      <SelectItem value="CAD">CAD</SelectItem>
+                                      <SelectItem value="CDF">CDF</SelectItem>
+                                      <SelectItem value="CHF">CHF</SelectItem>
+                                      <SelectItem value="CLP">CLP</SelectItem>
+                                      <SelectItem value="CNY">CNY</SelectItem>
+                                      <SelectItem value="COP">COP</SelectItem>
+                                      <SelectItem value="CRC">CRC</SelectItem>
+                                      <SelectItem value="CUC">CUC</SelectItem>
+                                      <SelectItem value="CUP">CUP</SelectItem>
+                                      <SelectItem value="CVE">CVE</SelectItem>
+                                      <SelectItem value="CZK">CZK</SelectItem>
+                                      <SelectItem value="DJF">DJF</SelectItem>
+                                      <SelectItem value="DKK">DKK</SelectItem>
+                                      <SelectItem value="DOP">DOP</SelectItem>
+                                      <SelectItem value="DZD">DZD</SelectItem>
+                                      <SelectItem value="EGP">EGP</SelectItem>
+                                      <SelectItem value="ERN">ERN</SelectItem>
+                                      <SelectItem value="ETB">ETB</SelectItem>
+                                      <SelectItem value="FJD">FJD</SelectItem>
+                                      <SelectItem value="FKP">FKP</SelectItem>
+                                      <SelectItem value="GBP">GBP</SelectItem>
+                                      <SelectItem value="GEL">GEL</SelectItem>
+                                      <SelectItem value="GGP">GGP</SelectItem>
+                                      <SelectItem value="GHS">GHS</SelectItem>
+                                      <SelectItem value="GIP">GIP</SelectItem>
+                                      <SelectItem value="GMD">GMD</SelectItem>
+                                      <SelectItem value="GNF">GNF</SelectItem>
+                                      <SelectItem value="GTQ">GTQ</SelectItem>
+                                      <SelectItem value="GYD">GYD</SelectItem>
+                                      <SelectItem value="HKD">HKD</SelectItem>
+                                      <SelectItem value="HNL">HNL</SelectItem>
+                                      <SelectItem value="HRK">HRK</SelectItem>
+                                      <SelectItem value="HTG">HTG</SelectItem>
+                                      <SelectItem value="HUF">HUF</SelectItem>
+                                      <SelectItem value="IDR">IDR</SelectItem>
+                                      <SelectItem value="ILS">ILS</SelectItem>
+                                      <SelectItem value="IMP">IMP</SelectItem>
+                                      <SelectItem value="INR">INR</SelectItem>
+                                      <SelectItem value="IQD">IQD</SelectItem>
+                                      <SelectItem value="IRR">IRR</SelectItem>
+                                      <SelectItem value="ISK">ISK</SelectItem>
+                                      <SelectItem value="JEP">JEP</SelectItem>
+                                      <SelectItem value="JMD">JMD</SelectItem>
+                                      <SelectItem value="JOD">JOD</SelectItem>
+                                      <SelectItem value="JPY">JPY</SelectItem>
+                                      <SelectItem value="KES">KES</SelectItem>
+                                      <SelectItem value="KGS">KGS</SelectItem>
+                                      <SelectItem value="KHR">KHR</SelectItem>
+                                      <SelectItem value="KMF">KMF</SelectItem>
+                                      <SelectItem value="KPW">KPW</SelectItem>
+                                      <SelectItem value="KRW">KRW</SelectItem>
+                                      <SelectItem value="KWD">KWD</SelectItem>
+                                      <SelectItem value="KYD">KYD</SelectItem>
+                                      <SelectItem value="KZT">KZT</SelectItem>
+                                      <SelectItem value="LAK">LAK</SelectItem>
+                                      <SelectItem value="LBP">LBP</SelectItem>
+                                      <SelectItem value="LKR">LKR</SelectItem>
+                                      <SelectItem value="LRD">LRD</SelectItem>
+                                      <SelectItem value="LSL">LSL</SelectItem>
+                                      <SelectItem value="LYD">LYD</SelectItem>
+                                      <SelectItem value="MAD">MAD</SelectItem>
+                                      <SelectItem value="MDL">MDL</SelectItem>
+                                      <SelectItem value="MGA">MGA</SelectItem>
+                                      <SelectItem value="MKD">MKD</SelectItem>
+                                      <SelectItem value="MMK">MMK</SelectItem>
+                                      <SelectItem value="MNT">MNT</SelectItem>
+                                      <SelectItem value="MOP">MOP</SelectItem>
+                                      <SelectItem value="MRU">MRU</SelectItem>
+                                      <SelectItem value="MUR">MUR</SelectItem>
+                                      <SelectItem value="MVR">MVR</SelectItem>
+                                      <SelectItem value="MWK">MWK</SelectItem>
+                                      <SelectItem value="MXN">MXN</SelectItem>
+                                      <SelectItem value="MYR">MYR</SelectItem>
+                                      <SelectItem value="MZN">MZN</SelectItem>
+                                      <SelectItem value="NAD">NAD</SelectItem>
+                                      <SelectItem value="NGN">NGN</SelectItem>
+                                      <SelectItem value="NIO">NIO</SelectItem>
+                                      <SelectItem value="NOK">NOK</SelectItem>
+                                      <SelectItem value="NPR">NPR</SelectItem>
+                                      <SelectItem value="NZD">NZD</SelectItem>
+                                      <SelectItem value="OMR">OMR</SelectItem>
+                                      <SelectItem value="PAB">PAB</SelectItem>
+                                      <SelectItem value="PEN">PEN</SelectItem>
+                                      <SelectItem value="PGK">PGK</SelectItem>
+                                      <SelectItem value="PHP">PHP</SelectItem>
+                                      <SelectItem value="PKR">PKR</SelectItem>
+                                      <SelectItem value="PLN">PLN</SelectItem>
+                                      <SelectItem value="PYG">PYG</SelectItem>
+                                      <SelectItem value="QAR">QAR</SelectItem>
+                                      <SelectItem value="RON">RON</SelectItem>
+                                      <SelectItem value="RSD">RSD</SelectItem>
+                                      <SelectItem value="RWF">RWF</SelectItem>
+                                      <SelectItem value="SAR">SAR</SelectItem>
+                                      <SelectItem value="SBD">SBD</SelectItem>
+                                      <SelectItem value="SCR">SCR</SelectItem>
+                                      <SelectItem value="SDG">SDG</SelectItem>
+                                      <SelectItem value="SEK">SEK</SelectItem>
+                                      <SelectItem value="SGD">SGD</SelectItem>
+                                      <SelectItem value="SHP">SHP</SelectItem>
+                                      <SelectItem value="SLE">SLE</SelectItem>
+                                      <SelectItem value="SOS">SOS</SelectItem>
+                                      <SelectItem value="SRD">SRD</SelectItem>
+                                      <SelectItem value="STN">STN</SelectItem>
+                                      <SelectItem value="SYP">SYP</SelectItem>
+                                      <SelectItem value="SZL">SZL</SelectItem>
+                                      <SelectItem value="THB">THB</SelectItem>
+                                      <SelectItem value="TJS">TJS</SelectItem>
+                                      <SelectItem value="TMT">TMT</SelectItem>
+                                      <SelectItem value="TND">TND</SelectItem>
+                                      <SelectItem value="TOP">TOP</SelectItem>
+                                      <SelectItem value="TRY">TRY</SelectItem>
+                                      <SelectItem value="TTD">TTD</SelectItem>
+                                      <SelectItem value="TVD">TVD</SelectItem>
+                                      <SelectItem value="TWD">TWD</SelectItem>
+                                      <SelectItem value="TZS">TZS</SelectItem>
+                                      <SelectItem value="UAH">UAH</SelectItem>
+                                      <SelectItem value="UGX">UGX</SelectItem>
+                                      <SelectItem value="UYU">UYU</SelectItem>
+                                      <SelectItem value="UZS">UZS</SelectItem>
+                                      <SelectItem value="VED">VED</SelectItem>
+                                      <SelectItem value="VES">VES</SelectItem>
+                                      <SelectItem value="VND">VND</SelectItem>
+                                      <SelectItem value="VUV">VUV</SelectItem>
+                                      <SelectItem value="WST">WST</SelectItem>
+                                      <SelectItem value="XAF">XAF</SelectItem>
+                                      <SelectItem value="XCD">XCD</SelectItem>
+                                      <SelectItem value="XDR">XDR</SelectItem>
+                                      <SelectItem value="XOF">XOF</SelectItem>
+                                      <SelectItem value="XPF">XPF</SelectItem>
+                                      <SelectItem value="YER">YER</SelectItem>
+                                      <SelectItem value="ZAR">ZAR</SelectItem>
+                                      <SelectItem value="ZMW">ZMW</SelectItem>
+                                      <SelectItem value="ZWL">ZWL</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
                               </div>
                             </div>
                             <div className="col-span-1 flex justify-center">
