@@ -273,7 +273,7 @@ const AdvertiserOffers = () => {
                       <div className="flex items-center gap-1 flex-wrap">
                         {formatCountries(offer.countries).slice(0, 3).map((country, index) => (
                           <div key={`${offer.id}-country-${index}`} className="flex items-center gap-1">
-                            <span className="text-lg" title={typeof country.name === 'object' ? country.name?.en || country.name?.ru || country.code : country.name}>{country.flag}</span>
+                            <span className="text-lg" title={country.name}>{country.flag}</span>
                             <span className="text-xs font-mono bg-muted px-1 py-0.5 rounded">{country.code}</span>
                           </div>
                         ))}

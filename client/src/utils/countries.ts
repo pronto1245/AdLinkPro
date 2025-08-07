@@ -75,6 +75,7 @@ export const COUNTRIES: Record<string, { code: string; flag: string; name: strin
   'moldova': { code: 'MD', flag: '🇲🇩', name: 'Moldova' },
   'albania': { code: 'AL', flag: '🇦🇱', name: 'Albania' },
   'algeria': { code: 'DZ', flag: '🇩🇿', name: 'Algeria' },
+  'angola': { code: 'AO', flag: '🇦🇴', name: 'Angola' },
   'andorra': { code: 'AD', flag: '🇦🇩', name: 'Andorra' },
   'afghanistan': { code: 'AF', flag: '🇦🇫', name: 'Afghanistan' },
   'bangladesh': { code: 'BD', flag: '🇧🇩', name: 'Bangladesh' },
@@ -163,6 +164,7 @@ export const COUNTRIES: Record<string, { code: string; flag: string; name: strin
   'md': { code: 'MD', flag: '🇲🇩', name: 'Moldova' },
   'al': { code: 'AL', flag: '🇦🇱', name: 'Albania' },
   'dz': { code: 'DZ', flag: '🇩🇿', name: 'Algeria' },
+  'ao': { code: 'AO', flag: '🇦🇴', name: 'Angola' },
   'ad': { code: 'AD', flag: '🇦🇩', name: 'Andorra' },
   'af': { code: 'AF', flag: '🇦🇫', name: 'Afghanistan' },
   'bd': { code: 'BD', flag: '🇧🇩', name: 'Bangladesh' },
@@ -192,8 +194,9 @@ export function getCountryInfo(countryInput: string): { code: string; flag: stri
   }
   
   // Поиск по коду (если передан код напрямую)
+  const inputUpper = input.toUpperCase();
   const countryByCode = Object.values(COUNTRIES).find(country => 
-    country.code.toLowerCase() === input.toUpperCase()
+    country.code === inputUpper
   );
   if (countryByCode) {
     return countryByCode;
@@ -208,9 +211,10 @@ export function getCountryInfo(countryInput: string): { code: string; flag: stri
     return countryByPartialName[1];
   }
   
-  // Если ничего не найдено, возвращаем с кодом как есть
+  // Если ничего не найдено, возвращаем с кодом как есть (но максимум 2 символа)
+  const fallbackCode = input.length <= 2 ? inputUpper : inputUpper.slice(0, 2);
   return {
-    code: input.toUpperCase(),
+    code: fallbackCode,
     flag: '🏳️', // generic flag
     name: countryInput
   };
