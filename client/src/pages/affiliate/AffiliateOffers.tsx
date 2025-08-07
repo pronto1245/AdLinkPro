@@ -13,6 +13,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import { RequestAccessModal } from '@/components/modals/RequestAccessModal';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -36,7 +37,8 @@ import {
   Calendar,
   DollarSign,
   Users,
-  ExternalLink
+  ExternalLink,
+  Send
 } from 'lucide-react';
 
 
@@ -55,6 +57,9 @@ interface PartnerOffer {
   isApproved: boolean;
   partnerLink: string;
   logo?: string;
+  partnerApprovalType?: 'auto' | 'manual';
+  advertiserName?: string;
+  hasAccessRequest?: boolean;
 }
 
 const OFFER_CATEGORIES = [
@@ -89,6 +94,10 @@ export default function AffiliateOffers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  
+  // Модальное окно запроса доступа
+  const [requestAccessModal, setRequestAccessModal] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState<PartnerOffer | null>(null);
 
   // Получаем доступные офферы партнера
   const { data: offers = [], isLoading } = useQuery({
@@ -129,6 +138,11 @@ export default function AffiliateOffers() {
       title: "Скопировано",
       description: `${label} скопированы в буфер обмена`,
     });
+  };
+
+  const handleRequestAccess = (offer: PartnerOffer) => {
+    setSelectedOffer(offer);
+    setRequestAccessModal(true);
   };
 
   if (isLoading) {
@@ -382,10 +396,19 @@ export default function AffiliateOffers() {
                                 </Link>
                               </DropdownMenuItem>
                               
-                              <DropdownMenuItem onClick={() => copyToClipboard(offer.partnerLink, 'Партнерская ссылка')}>
-                                <Copy className="h-4 w-4 mr-2 text-purple-600" />
-                                Копировать ссылку
-                              </DropdownMenuItem>
+                              {offer.partnerApprovalType === 'manual' && !offer.isApproved && !offer.hasAccessRequest && (
+                                <DropdownMenuItem onClick={() => handleRequestAccess(offer)}>
+                                  <Send className="h-4 w-4 mr-2 text-orange-600" />
+                                  Запросить доступ
+                                </DropdownMenuItem>
+                              )}
+                              
+                              {offer.partnerLink && (
+                                <DropdownMenuItem onClick={() => copyToClipboard(offer.partnerLink, 'Партнерская ссылка')}>
+                                  <Copy className="h-4 w-4 mr-2 text-purple-600" />
+                                  Копировать ссылку
+                                </DropdownMenuItem>
+                              )}
 
                               <DropdownMenuItem onClick={() => copyToClipboard(offer.id, 'ID оффера')}>
                                 <Copy className="h-4 w-4 mr-2 text-gray-600" />
@@ -418,6 +441,22 @@ export default function AffiliateOffers() {
             )}
           </CardContent>
         </Card>
+
+        {/* Request Access Modal */}
+        {selectedOffer && (
+          <RequestAccessModal
+            isOpen={requestAccessModal}
+            onClose={() => {
+              setRequestAccessModal(false);
+              setSelectedOffer(null);
+            }}
+            offer={{
+              id: selectedOffer.id,
+              name: selectedOffer.name,
+              advertiserName: selectedOffer.advertiserName
+            }}
+          />
+        )}
       </div>
   );
 }

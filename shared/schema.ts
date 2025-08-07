@@ -17,6 +17,7 @@ export const userTypeEnum = pgEnum('user_type', ['advertiser', 'affiliate', 'sta
 export const walletTypeEnum = pgEnum('wallet_type', ['platform', 'user']);
 export const cryptoCurrencyEnum = pgEnum('crypto_currency', ['BTC', 'ETH', 'USDT', 'USDC', 'TRX', 'LTC', 'BCH', 'XRP']);
 export const walletStatusEnum = pgEnum('wallet_status', ['active', 'suspended', 'maintenance']);
+export const accessRequestStatusEnum = pgEnum('access_request_status', ['pending', 'approved', 'rejected', 'cancelled']);
 
 // Users table  
 export const users: any = pgTable("users", {
@@ -157,6 +158,24 @@ export const partnerOffers = pgTable("partner_offers", {
   isApproved: boolean("is_approved").default(false),
   customPayout: decimal("custom_payout", { precision: 10, scale: 2 }),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Offer access requests (partner request access to specific offers)
+export const offerAccessRequests = pgTable("offer_access_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  offerId: varchar("offer_id").notNull().references(() => offers.id),
+  partnerId: varchar("partner_id").notNull().references(() => users.id), // Partner requesting access
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id), // Offer owner
+  status: accessRequestStatusEnum("status").notNull().default('pending'),
+  requestNote: text("request_note"), // Optional note from partner
+  responseNote: text("response_note"), // Optional note from advertiser
+  requestedAt: timestamp("requested_at").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  // Additional metadata
+  partnerMessage: text("partner_message"), // Custom message from partner
+  advertiserResponse: text("advertiser_response"), // Response from advertiser
+  expiresAt: timestamp("expires_at"), // Optional expiration date for access
 });
 
 // Tracking links
@@ -1022,6 +1041,7 @@ export const offersRelations = relations(offers, ({ one, many }) => ({
   trackingLinks: many(trackingLinks),
   statistics: many(statistics),
   fraudAlerts: many(fraudAlerts),
+  accessRequests: many(offerAccessRequests),
 }));
 
 export const partnerOffersRelations = relations(partnerOffers, ({ one }) => ({
@@ -1032,6 +1052,28 @@ export const partnerOffersRelations = relations(partnerOffers, ({ one }) => ({
   offer: one(offers, {
     fields: [partnerOffers.offerId],
     references: [offers.id],
+  }),
+}));
+
+export const offerAccessRequestsRelations = relations(offerAccessRequests, ({ one }) => ({
+  offer: one(offers, {
+    fields: [offerAccessRequests.offerId],
+    references: [offers.id],
+  }),
+  partner: one(users, {
+    fields: [offerAccessRequests.partnerId],
+    references: [users.id],
+    relationName: 'partnerRequests'
+  }),
+  advertiser: one(users, {
+    fields: [offerAccessRequests.advertiserId],
+    references: [users.id],
+    relationName: 'advertiserRequests'
+  }),
+  reviewer: one(users, {
+    fields: [offerAccessRequests.reviewedBy],
+    references: [users.id],
+    relationName: 'reviewerRequests'
   }),
 }));
 
@@ -1573,3 +1615,13 @@ export const insertOfferDomainSchema = createInsertSchema(offerDomains).omit({
 
 export type OfferDomain = typeof offerDomains.$inferSelect;
 export type InsertOfferDomain = z.infer<typeof insertOfferDomainSchema>;
+
+// Offer access requests schemas and types
+export const insertOfferAccessRequestSchema = createInsertSchema(offerAccessRequests).omit({
+  id: true,
+  requestedAt: true,
+  reviewedAt: true,
+});
+
+export type OfferAccessRequest = typeof offerAccessRequests.$inferSelect;
+export type InsertOfferAccessRequest = z.infer<typeof insertOfferAccessRequestSchema>;

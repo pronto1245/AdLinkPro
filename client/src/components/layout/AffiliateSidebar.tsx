@@ -15,7 +15,8 @@ import {
   Shield,
   ChevronLeft,
   Menu,
-  Building2
+  Building2,
+  Send
 } from 'lucide-react';
 
 const sidebarItems = [
@@ -30,6 +31,12 @@ const sidebarItems = [
     href: '/affiliate/offers',
     icon: Target,
     description: 'Доступные офферы'
+  },
+  {
+    title: 'Запросы доступа',
+    href: '/affiliate/access-requests',
+    icon: Send,
+    description: 'Запросы к приватным офферам'
   },
   {
     title: 'Ссылки',

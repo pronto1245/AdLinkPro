@@ -6642,6 +6642,266 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
+  // ============ OFFER ACCESS REQUEST SYSTEM ============
+
+  // Partner requests access to a private offer
+  app.post('/api/offers/:offerId/request-access', authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const partnerId = req.user!.id;
+      const { offerId } = req.params;
+      const { requestNote, partnerMessage } = req.body;
+
+      // Get offer details
+      const offer = await storage.getOffer(offerId);
+      if (!offer) {
+        return res.status(404).json({ error: 'Offer not found' });
+      }
+
+      // Check if offer requires approval
+      if (offer.partnerApprovalType !== 'manual') {
+        return res.status(400).json({ error: 'This offer does not require approval' });
+      }
+
+      // Check if request already exists
+      const existingRequest = await db.select()
+        .from(sql`offer_access_requests`)
+        .where(sql`offer_id = ${offerId} AND partner_id = ${partnerId}`)
+        .limit(1);
+
+      if (existingRequest.length > 0) {
+        return res.status(400).json({ error: 'Request already exists for this offer' });
+      }
+
+      // Create new access request
+      const requestData = {
+        id: randomUUID(),
+        offer_id: offerId,
+        partner_id: partnerId,
+        advertiser_id: offer.advertiserId,
+        status: 'pending',
+        request_note: requestNote || null,
+        partner_message: partnerMessage || null,
+        requested_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      };
+
+      await db.execute(sql`
+        INSERT INTO offer_access_requests 
+        (id, offer_id, partner_id, advertiser_id, status, request_note, partner_message, requested_at, expires_at)
+        VALUES (${requestData.id}, ${requestData.offer_id}, ${requestData.partner_id}, ${requestData.advertiser_id}, 
+                ${requestData.status}, ${requestData.request_note}, ${requestData.partner_message}, 
+                ${requestData.requested_at}, ${requestData.expires_at})
+      `);
+
+      // Send notification to advertiser
+      await notificationService.sendNotification({
+        userId: offer.advertiserId,
+        title: 'New Offer Access Request',
+        message: `Partner ${req.user!.username} requested access to offer "${offer.name}"`,
+        type: 'offer_request',
+        data: { offerId, requestId: requestData.id }
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'Access request submitted successfully',
+        requestId: requestData.id
+      });
+    } catch (error) {
+      console.error('Request access error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get access requests for an offer (advertiser view)
+  app.get('/api/offers/:offerId/access-requests', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const { offerId } = req.params;
+      const advertiserId = req.user!.id;
+
+      // Verify offer ownership
+      const offer = await storage.getOffer(offerId);
+      if (!offer || offer.advertiserId !== advertiserId) {
+        return res.status(404).json({ error: 'Offer not found or access denied' });
+      }
+
+      // Get all requests for this offer
+      const requests = await db.execute(sql`
+        SELECT 
+          oar.id, 
+          oar.partner_id, 
+          u.username as partner_username,
+          u.email as partner_email,
+          oar.status,
+          oar.request_note,
+          oar.partner_message,
+          oar.requested_at,
+          oar.reviewed_at,
+          oar.response_note,
+          oar.expires_at
+        FROM offer_access_requests oar
+        LEFT JOIN users u ON oar.partner_id = u.id
+        WHERE oar.offer_id = ${offerId}
+        ORDER BY oar.requested_at DESC
+      `);
+
+      res.json(requests.rows);
+    } catch (error) {
+      console.error('Get access requests error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get partner's own access requests
+  app.get('/api/partner/access-requests', authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const partnerId = req.user!.id;
+
+      const requests = await db.execute(sql`
+        SELECT 
+          oar.id,
+          oar.offer_id,
+          o.name as offer_name,
+          u.username as advertiser_name,
+          oar.status,
+          oar.request_note,
+          oar.partner_message,
+          oar.requested_at,
+          oar.reviewed_at,
+          oar.response_note,
+          oar.advertiser_response,
+          oar.expires_at
+        FROM offer_access_requests oar
+        LEFT JOIN offers o ON oar.offer_id = o.id
+        LEFT JOIN users u ON oar.advertiser_id = u.id
+        WHERE oar.partner_id = ${partnerId}
+        ORDER BY oar.requested_at DESC
+      `);
+
+      res.json(requests.rows);
+    } catch (error) {
+      console.error('Get partner requests error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Approve or reject access request
+  app.patch('/api/offers/:offerId/access-requests/:requestId', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const { offerId, requestId } = req.params;
+      const { action, responseNote, advertiserResponse } = req.body; // action: 'approve' | 'reject'
+      const advertiserId = req.user!.id;
+
+      // Verify offer ownership
+      const offer = await storage.getOffer(offerId);
+      if (!offer || offer.advertiserId !== advertiserId) {
+        return res.status(404).json({ error: 'Offer not found or access denied' });
+      }
+
+      // Get the request
+      const requestResult = await db.execute(sql`
+        SELECT * FROM offer_access_requests 
+        WHERE id = ${requestId} AND offer_id = ${offerId}
+        LIMIT 1
+      `);
+
+      if (requestResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Access request not found' });
+      }
+
+      const request = requestResult.rows[0];
+      if (request.status !== 'pending') {
+        return res.status(400).json({ error: 'Request has already been processed' });
+      }
+
+      // Update request status
+      const newStatus = action === 'approve' ? 'approved' : 'rejected';
+      await db.execute(sql`
+        UPDATE offer_access_requests 
+        SET status = ${newStatus},
+            reviewed_at = ${new Date().toISOString()},
+            reviewed_by = ${advertiserId},
+            response_note = ${responseNote || null},
+            advertiser_response = ${advertiserResponse || null}
+        WHERE id = ${requestId}
+      `);
+
+      // If approved, add partner to offer (if partner_offers table exists)
+      if (action === 'approve') {
+        try {
+          await db.execute(sql`
+            INSERT INTO partner_offers (id, partner_id, offer_id, status, assigned_at, assigned_by)
+            VALUES (${randomUUID()}, ${request.partner_id}, ${offerId}, 'active', ${new Date().toISOString()}, ${advertiserId})
+            ON CONFLICT DO NOTHING
+          `);
+        } catch (error) {
+          console.log('Note: partner_offers relation could not be created:', error.message);
+        }
+      }
+
+      // Send notification to partner
+      const partner = await storage.getUser(request.partner_id);
+      if (partner) {
+        await notificationService.sendNotification({
+          userId: partner.id,
+          title: `Offer Access ${action === 'approve' ? 'Approved' : 'Rejected'}`,
+          message: `Your request for offer "${offer.name}" has been ${action === 'approve' ? 'approved' : 'rejected'}`,
+          type: 'offer_response',
+          data: { offerId, requestId, status: newStatus }
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Request ${action === 'approve' ? 'approved' : 'rejected'} successfully`,
+        status: newStatus
+      });
+    } catch (error) {
+      console.error('Process access request error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Cancel access request (partner action)
+  app.patch('/api/partner/access-requests/:requestId/cancel', authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const { requestId } = req.params;
+      const partnerId = req.user!.id;
+
+      // Get the request
+      const requestResult = await db.execute(sql`
+        SELECT * FROM offer_access_requests 
+        WHERE id = ${requestId} AND partner_id = ${partnerId}
+        LIMIT 1
+      `);
+
+      if (requestResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Access request not found' });
+      }
+
+      const request = requestResult.rows[0];
+      if (request.status !== 'pending') {
+        return res.status(400).json({ error: 'Only pending requests can be cancelled' });
+      }
+
+      // Update request status
+      await db.execute(sql`
+        UPDATE offer_access_requests 
+        SET status = 'cancelled',
+            reviewed_at = ${new Date().toISOString()}
+        WHERE id = ${requestId}
+      `);
+
+      res.json({ 
+        success: true, 
+        message: 'Request cancelled successfully'
+      });
+    } catch (error) {
+      console.error('Cancel access request error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

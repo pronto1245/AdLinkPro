@@ -54,6 +54,7 @@ import AdvertiserTeamManagement from "@/pages/advertiser/TeamManagement";
 import AntiFraud from "@/pages/advertiser/AntiFraud";
 import AdvertiserDocuments from "@/pages/advertiser/AdvertiserDocuments";
 import PartnerDashboard from "@/pages/affiliate/PartnerDashboard";
+import AccessRequests from "@/pages/partner/AccessRequests";
 import { useAuth } from "./contexts/auth-context";
 import * as React from 'react';
 import Login from "@/pages/auth/login";
@@ -379,6 +380,12 @@ function Router() {
       <Route path="/affiliate/postbacks">
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PostbackManagementAffiliate />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/access-requests">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <AccessRequests />
         </ProtectedRoute>
       </Route>
       
