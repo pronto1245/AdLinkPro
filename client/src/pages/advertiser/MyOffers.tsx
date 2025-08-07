@@ -857,7 +857,7 @@ export default function MyOffers() {
                                   <div className="font-semibold text-xs mb-2">Все гео:</div>
                                   <div className="grid grid-cols-3 gap-2">
                                     {(offer.countries || ['global']).map((country, index) => (
-                                      <div key={index} className="flex items-center gap-1 text-xs">
+                                      <div key={`${offer.id}-country-${index}-${country}`} className="flex items-center gap-1 text-xs">
                                         <span className="text-sm">{getCountryFlag(country)}</span>
                                         <span className="font-mono">{getCountryCode(country)}</span>
                                       </div>
@@ -891,7 +891,7 @@ export default function MyOffers() {
                                   {offer.geoPricing && typeof offer.geoPricing === 'object' ? (
                                     <div className="space-y-1">
                                       {Object.entries(offer.geoPricing).map(([country, pricing]: [string, any]) => (
-                                        <div key={country} className="flex items-center justify-between gap-2 text-xs">
+                                        <div key={`${offer.id}-geo-pricing-${country}`} className="flex items-center justify-between gap-2 text-xs">
                                           <div className="flex items-center gap-1">
                                             <span className="text-sm">{getCountryFlag(country)}</span>
                                             <span className="font-mono">{getCountryCode(country)}</span>
@@ -905,7 +905,7 @@ export default function MyOffers() {
                                   ) : offer.countries && offer.countries.length > 1 ? (
                                     <div className="space-y-1">
                                       {offer.countries.map((country, index) => (
-                                        <div key={index} className="flex items-center justify-between gap-2 text-xs">
+                                        <div key={`${offer.id}-default-country-${index}-${country}`} className="flex items-center justify-between gap-2 text-xs">
                                           <div className="flex items-center gap-1">
                                             <span className="text-sm">{getCountryFlag(country)}</span>
                                             <span className="font-mono">{getCountryCode(country)}</span>
