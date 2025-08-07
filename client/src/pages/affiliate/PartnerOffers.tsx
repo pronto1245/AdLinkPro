@@ -184,7 +184,6 @@ export default function PartnerOffers() {
     '2': 'none',     // Второй не запрошен
     '3': 'pending',  // Третий в ожидании
     '4': 'none',     // Четвертый не запрошен
-    '5': 'approved', // Пятый одобрен
   });
 
   const handleRequestOffer = (offerId: string) => {
@@ -308,31 +307,6 @@ export default function PartnerOffers() {
         "MX": 90,
         "ID": 45,
         "TH": 55
-      }
-    },
-    {
-      id: "5",
-      name: "Global Trading Pro",
-      description: "Международная торговая платформа",
-      logo: "https://via.placeholder.com/40x40/8b5cf6/ffffff?text=GT",
-      category: "finance",
-      payout: "300",
-      payoutType: "cpm",
-      currency: "USD", 
-      status: "active",
-      isApproved: true,
-      partnerLink: "https://example.com/affiliate/123",
-      baseUrl: "https://globaltradingpro.com",
-      kpiConditions: { countries: ["US", "GB", "DE"], minDeposit: 500 },
-      countries: ["US", "GB", "DE"],
-      landingPages: [
-        { id: "1", url: "https://globaltradingpro.com/landing1", name: "Landing 1" }
-      ],
-      createdAt: "2024-01-05",
-      geoPricing: {
-        "US": 500,
-        "GB": 350,
-        "DE": 280
       }
     }
   ];
