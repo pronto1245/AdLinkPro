@@ -53,7 +53,7 @@ function Sidebar({ className }: SidebarProps) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [location] = useLocation();
-  const { isCollapsed, toggleSidebar } = useSidebar();
+  const { collapsed: isCollapsed, toggleCollapsed: toggleSidebar } = useSidebar();
 
   if (!user) return null;
 
@@ -86,7 +86,7 @@ function Sidebar({ className }: SidebarProps) {
 
   return (
     <aside className={cn(
-      "fixed inset-y-0 left-0 z-50 bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-600 transform transition-all duration-300 lg:translate-x-0",
+      "fixed inset-y-0 left-0 z-[60] bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-600 transform transition-all duration-300 lg:translate-x-0",
       isCollapsed ? "w-16" : "w-64",
       className
     )}>
