@@ -216,114 +216,8 @@ export default function PartnerOffers() {
     );
   }
 
-  // Тестовые данные для демонстрации
-  const testOffers: PartnerOffer[] = [
-    {
-      id: "1",
-      name: "1Win Казино",
-      description: "Популярное онлайн казино с широким выбором игр",
-      logo: "https://via.placeholder.com/40x40/9333ea/ffffff?text=1W",
-      category: "gambling",
-      payout: "150",
-      payoutType: "cpa",
-      currency: "USD",
-      status: "active",
-      isApproved: true,
-      partnerLink: "",
-      baseUrl: "",
-      kpiConditions: { countries: ["RU", "KZ"], minAge: 18 },
-      countries: ["RU", "KZ", "BY"],
-      landingPages: [],
-      createdAt: "2024-01-01",
-      geoPricing: {
-        "RU": 200,
-        "KZ": 180,
-        "BY": 150
-      }
-    },
-    {
-      id: "2", 
-      name: "Crypto Exchange Pro",
-      description: "Профессиональная криптобиржа",
-      logo: "https://via.placeholder.com/40x40/f59e0b/ffffff?text=CE",
-      category: "crypto",
-      payout: "75",
-      payoutType: "cpl", 
-      currency: "USD",
-      status: "active",
-      isApproved: false,
-      partnerLink: "",
-      baseUrl: "",
-      kpiConditions: { countries: ["US", "EU"], minDeposit: 100 },
-      countries: ["US", "DE", "FR", "GB", "IT"],
-      landingPages: [],
-      createdAt: "2024-01-02",
-      geoPricing: {
-        "US": 100,
-        "DE": 85,
-        "FR": 80,
-        "GB": 90,
-        "IT": 70
-      }
-    },
-    {
-      id: "3",
-      name: "Dating Premium",
-      description: "Премиальный сервис знакомств",
-      logo: "https://via.placeholder.com/40x40/ec4899/ffffff?text=DP",
-      category: "dating",
-      payout: "45",
-      payoutType: "cps",
-      currency: "USD", 
-      status: "active",
-      isApproved: false,
-      partnerLink: "",
-      baseUrl: "",
-      kpiConditions: { countries: ["RU", "UA"], minAge: 21 },
-      countries: ["RU", "UA", "KZ"],
-      landingPages: [],
-      createdAt: "2024-01-03"
-    },
-    {
-      id: "4",
-      name: "FinTech Mobile",
-      description: "Мобильное финансовое приложение",
-      logo: "https://via.placeholder.com/40x40/10b981/ffffff?text=FT",
-      category: "finance",
-      payout: "120",
-      payoutType: "cpi",
-      currency: "USD", 
-      status: "active",
-      isApproved: false,
-      partnerLink: "",
-      baseUrl: "",
-      kpiConditions: { countries: ["IN", "BR", "MX"], minAge: 18 },
-      countries: ["IN", "BR", "MX", "ID", "TH"],
-      landingPages: [],
-      createdAt: "2024-01-04",
-      geoPricing: {
-        "IN": 50,
-        "BR": 80,
-        "MX": 90,
-        "ID": 45,
-        "TH": 55
-      }
-    }
-  ];
-
-  // Используем тестовые данные если API не вернул данные
-  const displayOffers = offers.length > 0 ? offers : testOffers;
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary"></div>
-          <p>Загрузка офферов...</p>
-        </div>
-      </div>
-    );
-  }
+  // Используем реальные данные из API
+  const displayOffers = offers;
 
   return (
     <div className="space-y-6">
@@ -356,8 +250,8 @@ export default function PartnerOffers() {
                 {displayOffers.map((offer) => {
                   const categoryProps = getCategoryBadgeProps(offer.category);
                   const payoutTypeProps = getPayoutTypeBadgeProps(offer.payoutType);
-                  const cr = Math.random() * 10; // Тестовый CR
-                  const requestStatus = offerRequests[offer.id] || 'none';
+                  const cr = 0; // CR будет добавлен позже из реальной статистики
+                  const requestStatus = offer.accessStatus || (offer.hasFullAccess ? 'approved' : 'none');
                   
                   // Если есть geoPricing, создаем строку для каждого гео
                   if (offer.geoPricing && Object.keys(offer.geoPricing).length > 0) {
