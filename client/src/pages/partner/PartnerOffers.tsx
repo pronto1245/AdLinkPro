@@ -330,7 +330,7 @@ export default function PartnerOffers() {
                       {/* Колонка CR */}
                       <TableCell>
                         <div className="font-mono text-green-600 font-medium whitespace-nowrap">
-                          {formatCR(offer.cr)}%
+                          {formatCR(offer.cr || 0)}%
                         </div>
                       </TableCell>
 
@@ -470,7 +470,7 @@ export default function PartnerOffers() {
           setIsRequestModalOpen(false);
           setSelectedOffer(null);
         }}
-        offer={selectedOffer || undefined}
+        offer={selectedOffer}
       />
     </div>
   );
