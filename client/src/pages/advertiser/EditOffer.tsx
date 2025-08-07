@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
+import { useLocation, useParams } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,16 +12,11 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Save, X } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
-interface EditOfferProps {
-  params: {
-    id: string;
-  };
-}
-
-const EditOffer: React.FC<EditOfferProps> = ({ params }) => {
+const EditOffer: React.FC = () => {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const params = useParams();
   const offerId = params.id;
 
   // Загрузка данных оффера

@@ -936,10 +936,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const authUser = getAuthenticatedUser(req);
       const offerId = req.params.id;
       
-      // Verify offer ownership
+      // Verify offer ownership - advertiser can edit their own offers
       const existingOffer = await storage.getOffer(offerId);
-      if (!existingOffer || existingOffer.advertiserId !== authUser.id) {
-        return res.status(403).json({ error: "Access denied" });
+      console.log("Checking offer ownership:", { 
+        offerId, 
+        existingOffer: existingOffer ? { id: existingOffer.id, advertiserId: existingOffer.advertiserId } : null,
+        authUserId: authUser.id,
+        authUserRole: authUser.role
+      });
+      
+      if (!existingOffer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      // For advertisers, check if they own the offer OR if it was created by them (advertiserId matches)
+      if (authUser.role === 'advertiser' && existingOffer.advertiserId !== authUser.id) {
+        return res.status(403).json({ error: "Access denied - not your offer" });
       }
       
       const updatedOffer = await storage.updateOffer(offerId, req.body);
