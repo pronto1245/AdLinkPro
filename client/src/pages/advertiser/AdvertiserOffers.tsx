@@ -100,6 +100,7 @@ const AdvertiserOffers = () => {
   const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
   const [previewOffer, setPreviewOffer] = useState<Offer | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [editOffer, setEditOffer] = useState<any>(null);
 
   // Загрузка офферов
   const { data: offers = [], isLoading, refetch } = useQuery({
@@ -120,7 +121,7 @@ const AdvertiserOffers = () => {
   // Мутация для обновления статуса оффера
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      return apiRequest(`/api/advertiser/offers/${id}`, { method: 'PATCH', body: { status } });
+      return apiRequest(`/api/advertiser/offers/${id}`, 'PATCH', { status });
     },
     onSuccess: () => {
       toast({
@@ -129,7 +130,8 @@ const AdvertiserOffers = () => {
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Update status error:', error);
       toast({
         title: 'Ошибка обновления',
         description: 'Не удалось изменить статус оффера',
@@ -142,7 +144,7 @@ const AdvertiserOffers = () => {
   const deleteMutation = useMutation({
     mutationFn: async (ids: string[]) => {
       return Promise.all(
-        ids.map(id => apiRequest(`/api/advertiser/offers/${id}`, { method: 'DELETE' }))
+        ids.map(id => apiRequest(`/api/advertiser/offers/${id}`, 'DELETE'))
       );
     },
     onSuccess: () => {
@@ -153,7 +155,8 @@ const AdvertiserOffers = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
       setSelectedOffers([]);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Delete error:', error);
       toast({
         title: 'Ошибка удаления',
         description: 'Не удалось удалить офферы',
@@ -165,7 +168,7 @@ const AdvertiserOffers = () => {
   // Мутация для дублирования оффера
   const duplicateMutation = useMutation({
     mutationFn: async (offerId: string) => {
-      return apiRequest(`/api/advertiser/offers/${offerId}/duplicate`, { method: 'POST' });
+      return apiRequest(`/api/advertiser/offers/${offerId}/duplicate`, 'POST');
     },
     onSuccess: () => {
       toast({
@@ -174,10 +177,53 @@ const AdvertiserOffers = () => {
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Duplicate error:', error);
       toast({
         title: 'Ошибка копирования',
         description: 'Не удалось скопировать оффер',
+        variant: 'destructive'
+      });
+    }
+  });
+
+  // Универсальная мутация для создания/обновления офферов
+  const updateMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const isNew = !data.id;
+
+      const payload = {
+        ...data,
+        status: data.status || 'active',
+      };
+
+      if (isNew) {
+        // Удалим поля, которые могут мешать созданию
+        delete payload.id;
+        delete payload.createdAt;
+        delete payload.updatedAt;
+
+        // Опционально: позиция в списке — в конец
+        payload.position = offers.length + 1;
+      }
+
+      return isNew
+        ? apiRequest('/api/advertiser/offers', 'POST', payload)
+        : apiRequest(`/api/advertiser/offers/${data.id}`, 'PATCH', payload);
+    },
+    onSuccess: (data, variables) => {
+      const isNew = !variables.id;
+      toast({
+        title: isNew ? 'Оффер создан' : 'Оффер обновлен',
+        description: isNew ? 'Новый оффер успешно создан' : 'Оффер успешно обновлен',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
+    },
+    onError: (error) => {
+      console.error('Update/Create error:', error);
+      toast({
+        title: 'Ошибка сохранения',
+        description: 'Не удалось сохранить оффер',
         variant: 'destructive'
       });
     }
@@ -291,6 +337,39 @@ const AdvertiserOffers = () => {
     setSelectedOffers(allSelected ? [] : filteredOffers.map((o: Offer) => o.id));
   };
 
+  // Хендлеры для создания и редактирования
+  const handleCreate = () => {
+    setEditOffer({
+      name: '',
+      description: { ru: '', en: '' },
+      category: '',
+      payout: '',
+      currency: 'USD',
+      payoutType: 'cpa',
+      countries: [],
+      trafficSources: [],
+      allowedApplications: [],
+      antifraudEnabled: false,
+      antifraudMethods: [],
+      partnerApprovalType: 'automatic',
+      kycRequired: false,
+      isPrivate: false,
+      landingPages: [{
+        id: '1',
+        name: 'Основная',
+        url: '',
+        isDefault: true,
+        geo: '',
+        payout: ''
+      }],
+      status: 'active',
+    });
+  };
+
+  const handleEdit = (offer: Offer) => {
+    setEditOffer(offer);
+  };
+
   // Дублированные функции удалены - используются выше
 
   const categories = ['gambling', 'dating', 'crypto', 'betting', 'e-commerce', 'gaming', 'finance', 'health', 'vpn', 'antivirus'];
@@ -325,7 +404,7 @@ const AdvertiserOffers = () => {
             <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
             Обновить
           </Button>
-          <Button onClick={() => setLocation('/advertiser/offers/new')}>
+          <Button onClick={handleCreate}>
             <Plus className="h-4 w-4 mr-2" />
             Создать оффер
           </Button>
@@ -476,7 +555,7 @@ const AdvertiserOffers = () => {
                   : 'У вас пока нет офферов'
                 }
               </p>
-              <Button onClick={() => setLocation('/advertiser/offers/new')}>
+              <Button onClick={handleCreate}>
                 <Plus className="h-4 w-4 mr-2" />
                 Создать первый оффер
               </Button>
@@ -608,7 +687,7 @@ const AdvertiserOffers = () => {
                               <Eye className="h-4 w-4 mr-2" />
                               Просмотр
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setLocation(`/advertiser/offers/${offer.id}/edit`)}>
+                            <DropdownMenuItem onClick={() => handleEdit(offer)}>
                               <Edit className="h-4 w-4 mr-2" />
                               Редактировать
                             </DropdownMenuItem>
@@ -730,6 +809,121 @@ const AdvertiserOffers = () => {
               title="Предпросмотр"
               sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
             />
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Модальное окно создания/редактирования оффера */}
+      {editOffer && (
+        <Dialog open={!!editOffer} onOpenChange={() => setEditOffer(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editOffer.id ? 'Редактировать оффер' : 'Создать оффер'}</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Название</label>
+                  <Input 
+                    value={editOffer.name || ''} 
+                    onChange={(e) => setEditOffer({...editOffer, name: e.target.value})}
+                    placeholder="Введите название оффера"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Категория</label>
+                  <Select 
+                    value={editOffer.category || ''} 
+                    onValueChange={(value) => setEditOffer({...editOffer, category: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите категорию" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="gambling">Gambling</SelectItem>
+                      <SelectItem value="dating">Dating</SelectItem>
+                      <SelectItem value="crypto">Crypto</SelectItem>
+                      <SelectItem value="betting">Betting</SelectItem>
+                      <SelectItem value="finance">Finance</SelectItem>
+                      <SelectItem value="gaming">Gaming</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Выплата</label>
+                  <Input 
+                    type="number"
+                    value={editOffer.payout || ''} 
+                    onChange={(e) => setEditOffer({...editOffer, payout: e.target.value})}
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Валюта</label>
+                  <Select 
+                    value={editOffer.currency || 'USD'} 
+                    onValueChange={(value) => setEditOffer({...editOffer, currency: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="RUB">RUB</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Тип выплаты</label>
+                  <Select 
+                    value={editOffer.payoutType || 'cpa'} 
+                    onValueChange={(value) => setEditOffer({...editOffer, payoutType: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cpa">CPA</SelectItem>
+                      <SelectItem value="cpl">CPL</SelectItem>
+                      <SelectItem value="cpi">CPI</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Лендинг URL</label>
+                <Input 
+                  value={editOffer.landingPages?.[0]?.url || ''} 
+                  onChange={(e) => {
+                    const landingPages = editOffer.landingPages || [{ id: '1', name: 'Основная', isDefault: true }];
+                    landingPages[0] = { ...landingPages[0], url: e.target.value };
+                    setEditOffer({...editOffer, landingPages});
+                  }}
+                  placeholder="https://example.com"
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setEditOffer(null)}>
+                Отмена
+              </Button>
+              <Button 
+                onClick={() => {
+                  updateMutation.mutate(editOffer);
+                  setEditOffer(null);
+                }}
+                disabled={updateMutation.isPending}
+              >
+                {editOffer.id ? 'Сохранить' : 'Создать'}
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}
