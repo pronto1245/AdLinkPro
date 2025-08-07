@@ -1,0 +1,191 @@
+  // --- MUTATIONS ---
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: Partial<AdvertiserProfile>) => {
+      return apiRequest('/api/advertiser/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Профиль обновлен",
+        description: "Данные профиля успешно сохранены"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      setIsEditing(false);
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить профиль",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const changePasswordMutation = useMutation({
+    mutationFn: async (passwordData: { currentPassword: string; newPassword: string }) => {
+      return apiRequest('/api/advertiser/profile/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(passwordData)
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Пароль изменен",
+        description: "Пароль успешно обновлен"
+      });
+      setNewPassword({ current: '', new: '', confirm: '' });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось изменить пароль",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const generateTokenMutation = useMutation({
+    mutationFn: async (tokenName: string) => {
+      return apiRequest('/api/advertiser/profile/tokens/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: tokenName })
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Токен создан",
+        description: "Новый API токен успешно создан"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/tokens'] });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать токен",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const deleteTokenMutation = useMutation({
+    mutationFn: async (tokenId: string) => {
+      return apiRequest(`/api/advertiser/profile/tokens/${tokenId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Токен удален",
+        description: "API токен успешно удален"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/tokens'] });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить токен",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const addDomainMutation = useMutation({
+    mutationFn: async (domainData: { domain: string; type: string }) => {
+      return apiRequest('/api/advertiser/profile/domains', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(domainData)
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Домен добавлен",
+        description: "Кастомный домен добавлен и ожидает проверки"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
+      setDomainForm({ domain: '', type: 'cname' });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось добавить домен",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const verifyDomainMutation = useMutation({
+    mutationFn: async (domainId: string) => {
+      return apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Проверка запущена",
+        description: "Проверка домена выполняется"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось проверить домен",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const deleteDomainMutation = useMutation({
+    mutationFn: async (domainId: string) => {
+      return apiRequest(`/api/advertiser/profile/domains/${domainId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Домен удален",
+        description: "Кастомный домен успешно удален"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить домен",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const updateWebhookMutation = useMutation({
+    mutationFn: async (webhookData: WebhookSettings) => {
+      return apiRequest('/api/advertiser/profile/webhook', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(webhookData)
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Webhook обновлен",
+        description: "Настройки webhook успешно сохранены"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/webhook'] });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить webhook",
+        variant: "destructive"
+      });
+    }
+  });
