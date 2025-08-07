@@ -15,6 +15,7 @@ import { DndContext } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { formatCountries } from '@/utils/countries';
 
 function DraggableRow({ offer, index, children }: any) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: offer.id });
@@ -247,7 +248,21 @@ const AdvertiserOffers = () => {
                       />
                     </TableCell>
                     <TableCell className="font-medium">{offer.name}</TableCell>
-                    <TableCell>{Array.isArray(offer.countries) ? offer.countries.join(', ') : 'N/A'}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {formatCountries(offer.countries).slice(0, 3).map((country, index) => (
+                          <div key={`${offer.id}-country-${index}`} className="flex items-center gap-1">
+                            <span className="text-lg" title={country.name}>{country.flag}</span>
+                            <span className="text-xs font-mono bg-muted px-1 py-0.5 rounded">{country.code}</span>
+                          </div>
+                        ))}
+                        {formatCountries(offer.countries).length > 3 && (
+                          <span className="text-xs text-muted-foreground">
+                            +{formatCountries(offer.countries).length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{offer.category}</TableCell>
                     <TableCell>{offer.cr || 0}%</TableCell>
                     <TableCell>${offer.payout} {offer.currency}</TableCell>

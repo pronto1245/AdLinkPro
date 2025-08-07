@@ -33,6 +33,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
 import SortableItem from '@/components/ui/SortableItem';
+import { formatCountries } from '@/utils/countries';
 
 interface Offer {
   id: string;
@@ -313,14 +314,7 @@ const MyOffersDragDrop: React.FC = () => {
     // Здесь будет переход к странице статистики оффера
   };
 
-  const getCountryFlag = (countryCode: string) => {
-    const flags: Record<string, string> = {
-      US: '🇺🇸', GB: '🇬🇧', DE: '🇩🇪', FR: '🇫🇷', IT: '🇮🇹', ES: '🇪🇸',
-      RU: '🇷🇺', UA: '🇺🇦', PL: '🇵🇱', BR: '🇧🇷', IN: '🇮🇳', CN: '🇨🇳',
-      global: '🌍'
-    };
-    return flags[countryCode] || '🏳️';
-  };
+  // Удаляем старую функцию getCountryFlag, используем новую систему formatCountries
 
   const filteredOffers = offers.filter((offer: Offer) => {
     const statusMatch = filterStatus === 'all' || offer.status === filterStatus;
@@ -596,19 +590,16 @@ const MyOffersDragDrop: React.FC = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1">
-                            {(offer.countries || ['global']).slice(0, 3).map((country, index) => (
-                              <span 
-                                key={`${offer.id}-country-${index}-${country}`}
-                                className="text-lg"
-                                title={country}
-                              >
-                                {getCountryFlag(country)}
-                              </span>
+                          <div className="flex items-center gap-1 flex-wrap">
+                            {formatCountries(offer.countries).slice(0, 3).map((country, index) => (
+                              <div key={`${offer.id}-country-${index}`} className="flex items-center gap-1">
+                                <span className="text-lg" title={country.name}>{country.flag}</span>
+                                <span className="text-xs font-mono bg-muted px-1 py-0.5 rounded">{country.code}</span>
+                              </div>
                             ))}
-                            {(offer.countries?.length || 0) > 3 && (
+                            {formatCountries(offer.countries).length > 3 && (
                               <span className="text-xs text-muted-foreground">
-                                +{(offer.countries?.length || 0) - 3}
+                                +{formatCountries(offer.countries).length - 3}
                               </span>
                             )}
                           </div>

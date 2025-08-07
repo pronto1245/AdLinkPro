@@ -1,59 +1,5 @@
 # Overview
-This anti-fraud platform provides comprehensive financial security and real-time risk management for financial institutions, payment processors, and e-commerce. Key capabilities include AI-powered fraud detection, real-time risk assessment, analytics dashboards, automated blocking, and detailed audit trails. It supports device fingerprinting, IP analysis, behavioral patterns, and transaction monitoring to offer deep insights into fraud patterns, risk scores, and security metrics for effective prevention and compliance. The platform, rebranded as FraudGuard, is fully operational with robust security features, performance optimizations, and comprehensive integration across all modules.
-
-## Recent Updates (August 2025)
-- ✅ **Full-Screen Layout Implementation (Aug 7, 2025)**: Successfully implemented full-screen layout across all advertiser pages
-  - Updated RoleBasedLayout.tsx to provide full-width container with small left menu margin
-  - Converted all advertiser pages (AdvertiserOffers, AdvertiserProfile, CreateOffer, AdvertiserDashboardNew, AdvertiserFinances, simple-dashboard, AdvertiserPartners) to use `w-full` instead of `container mx-auto`
-  - Fixed TypeScript LSP errors in API requests using proper apiRequest syntax
-  - Removed custom margin classes (`ml-16`, `ml-64`) from AdvertiserPartners.tsx for consistency
-  - All pages now properly expand to full screen width while maintaining responsive design
-- ✅ **AdvertiserOffers Complete Implementation (Aug 7, 2025)**: Successfully delivered comprehensive offers management page
-  - Created full-featured AdvertiserOffers.tsx component (675 lines) with complete API integration
-  - Implements comprehensive offer management with real data from `/api/advertiser/offers` endpoint
-  - Features: advanced filtering (search, status, category), statistical dashboard cards, CRUD operations
-  - Mass actions: bulk selection, group operations, CSV export with proper data formatting
-  - Status management: activate/pause/archive offers with real-time updates via PATCH requests
-  - Offer duplication functionality through POST `/api/advertiser/offers/:id/duplicate`
-  - Landing pages preview modal with external link opening capabilities
-  - Professional UI with color-coded status badges, proper logo display, and responsive design
-  - Integrated route: /advertiser/offers with full RoleBasedLayout integration
-  - Zero LSP diagnostics errors - clean TypeScript implementation
-- ✅ **MyOffersDragDrop Complete Implementation (Aug 7, 2025)**: Successfully delivered compact drag'n'drop offers management page
-  - Created 600+ line MyOffersDragDrop.tsx component with full functionality
-  - Installed @dnd-kit packages for drag-n-drop functionality: @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities
-  - Implemented complete CRUD operations with proper API integration and Bearer token authentication
-  - Features: drag-n-drop reordering, CSV import/export, bulk actions, A/B testing, template management
-  - Created supporting components: SortableItem.tsx, OfferEditModal.tsx with proper TypeScript types
-  - Fixed all LSP diagnostics errors (25+ React key prop and TypeScript issues)
-  - Integrated toast notification system using project's existing use-toast hook
-  - Added route: /advertiser/offers-drag for alternative compact interface
-- ✅ **AdvertiserProfile Complete Implementation (Aug 7, 2025)**: Successfully delivered fully functional profile page
-  - Integrated all 8 code parts into single 1043-line AdvertiserProfile.tsx component
-  - Added comprehensive API endpoints: profile updates, password changes, API tokens, custom domains, webhooks, notifications
-  - Fixed JSON parsing issues by removing redundant stringify calls in mutations
-  - Implemented 5 functional tabs: Account, API Access, Custom Domain, Notifications, Security
-  - Features working: real-time token generation, domain DNS verification, notification settings, password changes
-  - Professional architecture with mutations, error handling, clipboard API fallbacks, dark theme support
-- ✅ **DatabaseStorage Integration (Aug 7, 2025)**: Successfully resolved API method gaps
-  - Added missing profile methods: getApiTokens, getCustomDomains, getWebhookSettings, generateApiToken
-  - Fixed type casting errors in API responses and query implementations
-  - Server restarted to refresh module imports, all profile tabs now functional
-- ✅ **Collapsible Sidebar Implementation (Aug 6, 2025)**: Successfully implemented responsive collapsible sidebar system
-  - Created SidebarContext with localStorage persistence for state management
-  - Updated AdvertiserSidebar and AffiliateSidebar with collapse/expand functionality
-  - Implemented smooth transitions, hover effects, and adaptive icon-only display when collapsed
-  - Fixed SSR compatibility issues with localStorage access
-  - All pages automatically adapt to sidebar width changes through RoleBasedLayout
-- ✅ **Architectural Cleanup (Aug 6, 2025)**: Successfully completed RoleBasedLayout architectural refactoring
-  - Removed RoleBasedLayout from all individual components (advertiser and affiliate pages)
-  - RoleBasedLayout now exists only at App.tsx routing level and in component definition
-  - Eliminated menu duplication issues and achieved proper single responsibility principle
-  - All LSP diagnostics cleared - zero compilation errors remaining
-- ✅ **Enhanced Offer Creation**: Added comprehensive antifraud protection system with 9 selectable methods (IP verification, VPN/Proxy detection, bot protection, device fingerprinting, behavioral analysis, click spam protection, time analysis, referrer validation, conversion validation)
-- ✅ **Application Type Management**: Integrated 16 allowed application types (PWA App, WebView App, APK, iOS App, SPA, Landing App, SmartLink, Mini App, Desktop App, iFrame, ZIP, Cloud App, DApp, Masked App, WebRTC, TWA)
-- ✅ **Partner Approval Workflow**: Implemented partner approval type selection (Automatic, Manual, On request, Whitelist only) with full database integration
-- ✅ **Database Schema Enhancement**: Successfully migrated all new fields (allowedApplications, antifraudMethods, partnerApprovalType) to PostgreSQL with proper JSONB and text column types
+This anti-fraud platform, FraudGuard, provides comprehensive financial security and real-time risk management for financial institutions, payment processors, and e-commerce. It offers AI-powered fraud detection, real-time risk assessment, analytics dashboards, automated blocking, and detailed audit trails. The platform supports device fingerprinting, IP analysis, behavioral patterns, and transaction monitoring to provide deep insights into fraud patterns, risk scores, and security metrics for effective prevention and compliance. It features robust security and performance optimizations with comprehensive integration across all modules. Key capabilities include enhanced offer creation with anti-fraud protection methods and application type management, along with a partner approval workflow.
 
 # User Preferences
 Preferred communication style: Simple, everyday language.
@@ -72,7 +18,7 @@ Preferred communication style: Simple, everyday language.
 - Подсказки должны кратко описывать действие кнопки (например: "Копировать URL", "Удалить оффер", "Редактировать")
 - Использовать цветовое кодирование иконок для разных действий (синий - копирование, зеленый - успех, красный - удаление, фиолетовый - просмотр)
 - Hover-эффекты с соответствующими цветными фонами для улучшения UX
-- Цветовое кодирование для ролей и статусов: 
+- Цветовое кодирование для ролей и статусов:
   - Роли: Супер-админ (фиолетовый), Рекламодатель (синий), Партнёр (зеленый), Сотрудник (оранжевый)
   - Рекламодатели: Привязан (индиго), Не привязан (серый)
   - Права доступа: Статистика (зеленый), Офферы (фиолетовый), Пользователи (синий), Финансы (желтый), API (красный)
@@ -81,12 +27,12 @@ Preferred communication style: Simple, everyday language.
 
 ## Frontend
 - **Framework**: React 18 with TypeScript and Vite.
-- **UI/UX**: Shadcn/ui components on Radix UI, styled with Tailwind CSS (with CSS variables for theming and dark mode). Features extensive color coding for traffic sources and offer categories. UI elements include icon-only designs with color-coding, hover effects, and tooltips.
+- **UI/UX**: Shadcn/ui components on Radix UI, styled with Tailwind CSS (with CSS variables for theming and dark mode). Features extensive color coding for traffic sources and offer categories, icon-only designs, hover effects, and tooltips. Design emphasizes a clean, intuitive interface with logo thumbnails, geo-pricing, comprehensive filtering, and modal-based editing. Optimized analytics tables use virtualization and smart re-rendering. It includes full-screen layouts and collapsible sidebars.
 - **State Management**: React Query for server state management and caching.
 - **Routing**: Wouter for client-side routing.
 - **Authentication**: Context-based with JWT tokens.
 - **Internationalization**: Custom language context supporting English and Russian.
-- **Design Decisions**: Clean, intuitive interface with features like logo thumbnails, geo-pricing, comprehensive filtering, and modal-based editing. Optimized analytics tables with virtualization and smart re-rendering.
+- **Feature Specifications**: Comprehensive offer management with filtering, statistics, CRUD operations, mass actions, status management, and offer duplication. Integrated country display system showing country codes and flags. Colorful status indicators for Active, Paused, Archive, and Draft states. MyOffersDragDrop provides a compact interface with drag-n-drop reordering, CSV import/export, bulk actions, A/B testing, and template management. AdvertiserProfile includes tabs for Account, API Access, Custom Domain, Notifications, and Security with real-time token generation and DNS verification.
 
 ## Backend
 - **Runtime**: Node.js with Express.js.
@@ -94,36 +40,30 @@ Preferred communication style: Simple, everyday language.
 - **Database ORM**: Drizzle ORM for PostgreSQL.
 - **Authentication**: JWT-based with bcrypt for password hashing.
 - **File Storage**: Google Cloud Storage integration.
-- **Core Functionality**: User, offer, and financial management, fraud detection, and a ticket system. Server-side performance optimizations include compression middleware, helmet security, and rate limiting.
+- **Core Functionality**: User, offer, and financial management, fraud detection, and a ticket system. Includes server-side performance optimizations like compression middleware, helmet security, and rate limiting.
 
 ## Database Design
 - **User Management**: Role-based system (super_admin, advertiser, affiliate, staff) with hierarchical ownership.
-- **Offer System**: Flexible structure with categories, payout types, geo-targeting, and detailed analytics.
+- **Offer System**: Flexible structure with categories, payout types, geo-targeting, antifraud methods, allowed applications, partner approval types, and detailed analytics.
 - **Tracking**: Comprehensive tracking link system.
-- **Financial**: Transaction management with multi-currency support. Real financial calculations based on actual database data, with proper caching and invalidation strategies.
-- **Security**: KYC status and fraud alerts.
-- **Integrity**: Dependency validation to prevent deletion of fraud rules with active blocks.
+- **Financial**: Transaction management with multi-currency support and real financial calculations.
+- **Security**: KYC status and fraud alerts, with dependency validation for fraud rules.
 
 ## Role-Based Access Control
 - **Super Admin (Owner)**: Full platform control.
 - **Advertiser**: Manages own offers, partners, and campaigns with isolated access and white-label branding.
 - **Affiliate**: Access to offers, tracking links, and statistics. Data isolation verified across roles.
 
-## File Upload System
-- **Storage**: Google Cloud Storage.
-- **Interface**: Uppy.js for enhanced file upload.
-
 ## Anti-Fraud System
-- AI-powered detection, real-time risk assessment, dynamic smart alerts, real fraud rate calculation based on (fraud_reports / total_clicks) * 100.
-- Enhanced security features like IP blacklisting, rate limiting, login attempt protection, 2FA, and real-time notifications.
-- Comprehensive audit logging for all fraud-related operations.
-- Device monitoring with fingerprinting and new device login notifications.
+- AI-powered detection, real-time risk assessment, dynamic smart alerts, and real fraud rate calculation.
+- Enhanced security features include IP blacklisting, rate limiting, login attempt protection, 2FA, real-time notifications, device monitoring with fingerprinting, and new device login notifications.
+- Comprehensive audit logging.
 
 ## System-wide Features
 - **Performance**: Server-side compression, helmet security, rate limiting, connection pooling, query caching, client-side debouncing, memoization, lazy loading.
-- **Analytics**: Full integration of data from clicks, postbacks, offers, partners, fraud detection, financial, and CRM modules into comprehensive tables with 100+ fields.
-- **API Integrity**: All 44 database tables and major API endpoints functional with proper HTTP responses and CRUD operations.
-- **Postback System**: Persistent storage of postback templates in PostgreSQL, with full API functionality.
+- **Analytics**: Full integration of data from clicks, postbacks, offers, partners, fraud detection, financial, and CRM modules into comprehensive tables.
+- **API Integrity**: All database tables and major API endpoints functional with proper HTTP responses and CRUD operations.
+- **Postback System**: Persistent storage of postback templates with full API functionality.
 - **Automatic Partner Link Generation**: Smart link generation with unique parameters and role-based access control.
 
 # External Dependencies
@@ -140,6 +80,7 @@ Preferred communication style: Simple, everyday language.
 - **Tailwind CSS**: Utility-first CSS framework.
 - **React Query**: Data synchronization for React.
 - **Uppy**: Modular file uploader.
+- **@dnd-kit**: For drag-n-drop functionality.
 
 ## Authentication & Security
 - **JWT**: JSON Web Tokens for authentication.
