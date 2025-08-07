@@ -1126,6 +1126,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const authUser = getAuthenticatedUser(req);
       const { ids, status } = req.body;
       
+      console.log("Bulk update request:", { authUserId: authUser.id, ids, status });
+      
       if (!Array.isArray(ids) || ids.length === 0) {
         return res.status(400).json({ error: "IDs array is required" });
       }
@@ -1136,9 +1138,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Verify all offers belong to this advertiser
       const offers = await Promise.all(ids.map(id => storage.getOffer(id)));
+      console.log("Bulk update debug:", { 
+        authUserId: authUser.id, 
+        requestedIds: ids,
+        offersFound: offers.map(o => o ? { id: o.id, advertiserId: o.advertiserId } : null)
+      });
+      
       const invalidOffers = offers.filter(offer => !offer || offer.advertiserId !== authUser.id);
       
       if (invalidOffers.length > 0) {
+        console.log("Invalid offers found:", invalidOffers);
         return res.status(403).json({ error: "Access denied to some offers" });
       }
       
