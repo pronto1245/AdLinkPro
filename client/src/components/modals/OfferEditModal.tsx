@@ -5,7 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { X, Plus } from 'lucide-react';
 
 interface OfferEditModalProps {
   offer: any;
@@ -15,14 +20,44 @@ interface OfferEditModalProps {
 
 const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave }) => {
   const { toast } = useToast();
+  
+  // Основная информация об оффере
   const [name, setName] = useState(offer.name || '');
-  const [payout, setPayout] = useState(offer.payout || '');
+  const [description, setDescription] = useState(offer.description || '');
+  const [url, setUrl] = useState(offer.url || '');
+  const [previewUrl, setPreviewUrl] = useState(offer.previewUrl || '');
   const [category, setCategory] = useState(offer.category || '');
+  const [vertical, setVertical] = useState(offer.vertical || '');
+  const [status, setStatus] = useState(offer.status || 'active');
+  
+  // Выплаты
+  const [payoutType, setPayoutType] = useState(offer.payoutType || 'cpa');
+  const [payout, setPayout] = useState(offer.payout || '');
+  const [currency, setCurrency] = useState(offer.currency || 'USD');
   const [cap, setCap] = useState(offer.cap || '');
   const [hold, setHold] = useState(offer.hold || '');
-  const [abtestLinks, setAbtestLinks] = useState(offer.abtestLinks || []);
+  
+  // Гео и таргетинг
+  const [countries, setCountries] = useState(offer.countries?.join(', ') || '');
+  const [languages, setLanguages] = useState(offer.languages?.join(', ') || '');
+  const [devices, setDevices] = useState(offer.devices?.join(', ') || 'desktop,mobile');
+  const [os, setOs] = useState(offer.os?.join(', ') || '');
+  
+  // Антифрод
+  const [antifraudMethods, setAntifraudMethods] = useState(offer.antifraudMethods || []);
+  const [allowedApplications, setAllowedApplications] = useState(offer.allowedApplications || []);
+  
+  // A/B тестирование
+  const [abtestLinks, setAbtestLinks] = useState(offer.abtestLinks || ['']);
+  
+  // Настройки партнеров
+  const [partnerApprovalType, setPartnerApprovalType] = useState(offer.partnerApprovalType || 'manual');
   const [partners, setPartners] = useState(offer.partners || []);
+  
+  // Дополнительные настройки
+  const [isPrivate, setIsPrivate] = useState(offer.isPrivate || false);
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
+  const [tags, setTags] = useState(offer.tags?.join(', ') || '');
 
   const handleSave = () => {
     if (!name.trim()) {
