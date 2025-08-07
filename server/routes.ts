@@ -1120,6 +1120,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk operations for advertiser offers
+  app.post("/api/advertiser/offers/bulk-update", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { ids, status } = req.body;
+      
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: "IDs array is required" });
+      }
+      
+      if (!status) {
+        return res.status(400).json({ error: "Status is required" });
+      }
+      
+      // Verify all offers belong to this advertiser
+      const offers = await Promise.all(ids.map(id => storage.getOffer(id)));
+      const invalidOffers = offers.filter(offer => !offer || offer.advertiserId !== authUser.id);
+      
+      if (invalidOffers.length > 0) {
+        return res.status(403).json({ error: "Access denied to some offers" });
+      }
+      
+      // Update all offers
+      const updatedOffers = await Promise.all(
+        ids.map(id => storage.updateOffer(id, { status }))
+      );
+      
+      // Clear cache
+      queryCache.clear();
+      
+      res.json({ success: true, updated: updatedOffers.length });
+    } catch (error) {
+      console.error("Bulk update offers error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/advertiser/offers/bulk-delete", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { ids } = req.body;
+      
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: "IDs array is required" });
+      }
+      
+      // Verify all offers belong to this advertiser
+      const offers = await Promise.all(ids.map(id => storage.getOffer(id)));
+      const invalidOffers = offers.filter(offer => !offer || offer.advertiserId !== authUser.id);
+      
+      if (invalidOffers.length > 0) {
+        return res.status(403).json({ error: "Access denied to some offers" });
+      }
+      
+      // Delete all offers
+      await Promise.all(ids.map(id => storage.deleteOffer(id)));
+      
+      // Clear cache
+      queryCache.clear();
+      
+      res.json({ success: true, deleted: ids.length });
+    } catch (error) {
+      console.error("Bulk delete offers error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // User management with hierarchy
   app.get("/api/users", authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
     try {
