@@ -44,6 +44,7 @@ import AdvertiserDashboardNew from "@/pages/advertiser/AdvertiserDashboard";
 import OfferManagement from "@/pages/advertiser/OfferManagement";
 import CreateOffer from "@/pages/advertiser/CreateOffer";
 import MyOffers from "@/pages/advertiser/MyOffers";
+import MyOffersDragDrop from "@/pages/advertiser/MyOffersDragDrop";
 import ReceivedOffers from "@/pages/advertiser/ReceivedOffers";
 import Finance from "@/pages/advertiser/Finance";
 import Analytics from "@/pages/advertiser/Analytics";
@@ -271,10 +272,7 @@ function Router() {
       <Route path="/advertiser/offers-drag">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <RoleBasedLayout>
-            {(() => {
-              const MyOffersDragDrop = React.lazy(() => import('@/pages/advertiser/MyOffersDragDrop'));
-              return <MyOffersDragDrop />;
-            })()}
+            <MyOffersDragDrop />
           </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
