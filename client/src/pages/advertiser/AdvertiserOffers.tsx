@@ -496,7 +496,9 @@ const AdvertiserOffers = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredOffers.map((offer: Offer) => (
+                  {filteredOffers.map((offer: Offer) => {
+                    console.log("Rendering offer:", offer.name, offer.id);
+                    return (
                     <TableRow key={offer.id} data-testid={`row-offer-${offer.id}`}>
                       <TableCell>
                         <Checkbox
@@ -525,7 +527,7 @@ const AdvertiserOffers = () => {
                           <div>
                             <div className="font-medium">{offer.name}</div>
                             <div className="text-sm text-muted-foreground line-clamp-1">
-                              {offer.description.ru || offer.description.en}
+                              {offer.description?.ru || offer.description?.en || 'Нет описания'}
                             </div>
                           </div>
                         </div>
@@ -546,14 +548,14 @@ const AdvertiserOffers = () => {
                       
                       <TableCell>
                         <div className="flex flex-wrap gap-1 max-w-32">
-                          {offer.countries.slice(0, 3).map((country: string) => (
+                          {(offer.countries || []).slice(0, 3).map((country: string) => (
                             <Badge key={country} variant="outline" className="text-xs">
                               {country.toUpperCase()}
                             </Badge>
                           ))}
-                          {offer.countries.length > 3 && (
+                          {(offer.countries || []).length > 3 && (
                             <Badge variant="outline" className="text-xs">
-                              +{offer.countries.length - 3}
+                              +{(offer.countries || []).length - 3}
                             </Badge>
                           )}
                         </div>
@@ -658,7 +660,8 @@ const AdvertiserOffers = () => {
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
