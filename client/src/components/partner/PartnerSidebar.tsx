@@ -44,13 +44,7 @@ const sidebarItems: SidebarItem[] = [
     badge: "12",
     badgeVariant: "secondary"
   },
-  {
-    title: "Запросы доступа",
-    href: "/affiliate/access-requests",
-    icon: FileText,
-    badge: "3",
-    badgeVariant: "destructive"
-  },
+
   {
     title: "Команда",
     href: "/affiliate/team",

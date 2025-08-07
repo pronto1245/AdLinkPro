@@ -464,14 +464,16 @@ export default function PartnerOffers() {
       )}
 
       {/* Модальное окно запроса доступа */}
-      <RequestAccessModal
-        isOpen={isRequestModalOpen}
-        onClose={() => {
-          setIsRequestModalOpen(false);
-          setSelectedOffer(null);
-        }}
-        offer={selectedOffer}
-      />
+      {selectedOffer && (
+        <RequestAccessModal
+          isOpen={isRequestModalOpen}
+          onClose={() => {
+            setIsRequestModalOpen(false);
+            setSelectedOffer(null);
+          }}
+          offer={selectedOffer}
+        />
+      )}
     </div>
   );
 }

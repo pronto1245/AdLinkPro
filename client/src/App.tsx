@@ -54,7 +54,6 @@ import AdvertiserTeamManagement from "@/pages/advertiser/TeamManagement";
 import AntiFraud from "@/pages/advertiser/AntiFraud";
 import AdvertiserDocuments from "@/pages/advertiser/AdvertiserDocuments";
 import PartnerDashboard from "@/pages/affiliate/PartnerDashboard";
-import AccessRequests from "@/pages/partner/AccessRequests";
 import AdvertiserAccessRequests from '@/pages/advertiser/AccessRequests';
 import { PartnerLayout } from "@/components/partner/PartnerLayout";
 import Statistics from "@/pages/affiliate/Statistics";
@@ -395,13 +394,7 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
-      <Route path="/affiliate/access-requests">
-        <ProtectedRoute allowedRoles={['affiliate']}>
-          <PartnerLayout>
-            <AccessRequests />
-          </PartnerLayout>
-        </ProtectedRoute>
-      </Route>
+
       
       <Route path="/affiliate/creatives">
         <ProtectedRoute allowedRoles={['affiliate']}>
