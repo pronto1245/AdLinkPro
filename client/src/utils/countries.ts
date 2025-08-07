@@ -149,7 +149,15 @@ export const COUNTRY_MAPPING: Record<string, { code: string; flag: string; name:
   'turkmenistan': { code: 'TM', flag: '🇹🇲', name: 'Turkmenistan' },
   'moldova': { code: 'MD', flag: '🇲🇩', name: 'Moldova' },
 
-  // Также добавляем прямые ISO коды
+  // Дополнительные страны
+  'albania': { code: 'AL', flag: '🇦🇱', name: 'Albania' },
+  'algeria': { code: 'DZ', flag: '🇩🇿', name: 'Algeria' },
+  'andorra': { code: 'AD', flag: '🇦🇩', name: 'Andorra' },
+  'albania': { code: 'AL', flag: '🇦🇱', name: 'Albania' },
+  'algeria': { code: 'DZ', flag: '🇩🇿', name: 'Algeria' },
+  'andorra': { code: 'AD', flag: '🇦🇩', name: 'Andorra' },
+
+  // ISO коды напрямую
   'ru': { code: 'RU', flag: '🇷🇺', name: 'Russia' },
   'ua': { code: 'UA', flag: '🇺🇦', name: 'Ukraine' },
   'by': { code: 'BY', flag: '🇧🇾', name: 'Belarus' },
@@ -219,7 +227,10 @@ export const COUNTRY_MAPPING: Record<string, { code: string; flag: string; name:
   'kg': { code: 'KG', flag: '🇰🇬', name: 'Kyrgyzstan' },
   'tj': { code: 'TJ', flag: '🇹🇯', name: 'Tajikistan' },
   'tm': { code: 'TM', flag: '🇹🇲', name: 'Turkmenistan' },
-  'md': { code: 'MD', flag: '🇲🇩', name: 'Moldova' }
+  'md': { code: 'MD', flag: '🇲🇩', name: 'Moldova' },
+  'al': { code: 'AL', flag: '🇦🇱', name: 'Albania' },
+  'dz': { code: 'DZ', flag: '🇩🇿', name: 'Algeria' },
+  'ad': { code: 'AD', flag: '🇦🇩', name: 'Andorra' }
 };
 
 // Функция для получения информации о стране по названию
