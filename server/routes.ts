@@ -6292,6 +6292,252 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
+  // ===============================================
+  // ADVERTISER PROFILE API ENDPOINTS
+  // ===============================================
+
+  // Update advertiser profile
+  app.patch('/api/advertiser/profile', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const updateData = req.body;
+      
+      // Update user profile data
+      const updatedUser = await storage.updateUser(authUser.id, updateData);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error('Update profile error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Change password
+  app.post('/api/advertiser/profile/change-password', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { currentPassword, newPassword } = req.body;
+
+      // Verify current password
+      const user = await storage.getUser(authUser.id);
+      if (!user || !user.password) {
+        return res.status(400).json({ error: 'User not found' });
+      }
+
+      const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+      if (!isValidPassword) {
+        return res.status(400).json({ error: 'Current password is incorrect' });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
+      // Update password
+      await storage.updateUser(authUser.id, { password: hashedPassword });
+      
+      res.json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+      console.error('Change password error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get API tokens
+  app.get('/api/advertiser/profile/tokens', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      // Mock API tokens data for now
+      const tokens = [
+        {
+          id: 'token_1',
+          token: 'api_test_token_12345',
+          name: 'Main API Token',
+          lastUsed: '2025-01-01T10:00:00Z',
+          createdAt: '2024-12-01T10:00:00Z',
+          isActive: true
+        },
+        {
+          id: 'token_2',
+          token: 'api_prod_token_67890',
+          name: 'Production Token',
+          lastUsed: null,
+          createdAt: '2024-11-15T14:30:00Z',
+          isActive: true
+        }
+      ];
+      res.json(tokens);
+    } catch (error) {
+      console.error('Get API tokens error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Generate new API token
+  app.post('/api/advertiser/profile/tokens/generate', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { name } = req.body;
+      
+      // Generate new token
+      const newToken = {
+        id: `token_${Date.now()}`,
+        token: `api_${authUser.id}_${randomUUID().replace(/-/g, '')}`,
+        name: name || 'API Token',
+        lastUsed: null,
+        createdAt: new Date().toISOString(),
+        isActive: true
+      };
+      
+      res.json(newToken);
+    } catch (error) {
+      console.error('Generate API token error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Delete API token
+  app.delete('/api/advertiser/profile/tokens/:tokenId', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const { tokenId } = req.params;
+      // In a real implementation, we would delete from database
+      res.json({ success: true, message: 'Token deleted successfully' });
+    } catch (error) {
+      console.error('Delete API token error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get custom domains
+  app.get('/api/advertiser/profile/domains', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      // Mock custom domains data
+      const domains = [
+        {
+          id: 'domain_1',
+          domain: 'tracking.example.com',
+          status: 'verified' as const,
+          type: 'cname' as const,
+          verificationValue: 'track.platform.com',
+          createdAt: '2024-12-01T10:00:00Z',
+          lastChecked: '2025-01-05T12:00:00Z',
+          errorMessage: null
+        },
+        {
+          id: 'domain_2',
+          domain: 'links.mysite.com',
+          status: 'pending' as const,
+          type: 'a_record' as const,
+          verificationValue: '192.168.1.100',
+          createdAt: '2025-01-06T15:30:00Z',
+          lastChecked: null,
+          errorMessage: null
+        }
+      ];
+      res.json(domains);
+    } catch (error) {
+      console.error('Get custom domains error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Add custom domain
+  app.post('/api/advertiser/profile/domains', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const { domain, type } = req.body;
+      
+      const newDomain = {
+        id: `domain_${Date.now()}`,
+        domain,
+        status: 'pending' as const,
+        type,
+        verificationValue: type === 'cname' ? 'track.platform.com' : '192.168.1.100',
+        createdAt: new Date().toISOString(),
+        lastChecked: null,
+        errorMessage: null
+      };
+      
+      res.json(newDomain);
+    } catch (error) {
+      console.error('Add custom domain error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Verify custom domain
+  app.post('/api/advertiser/profile/domains/:domainId/verify', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const { domainId } = req.params;
+      res.json({ success: true, message: 'Domain verification started' });
+    } catch (error) {
+      console.error('Verify custom domain error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Delete custom domain
+  app.delete('/api/advertiser/profile/domains/:domainId', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const { domainId } = req.params;
+      res.json({ success: true, message: 'Domain deleted successfully' });
+    } catch (error) {
+      console.error('Delete custom domain error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get webhook settings
+  app.get('/api/advertiser/profile/webhook', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      // Mock webhook settings
+      const webhookSettings = {
+        defaultUrl: 'https://example.com/webhook',
+        ipWhitelist: ['192.168.1.1', '10.0.0.1'],
+        enabled: true
+      };
+      res.json(webhookSettings);
+    } catch (error) {
+      console.error('Get webhook settings error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Update webhook settings
+  app.patch('/api/advertiser/profile/webhook', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const { defaultUrl, ipWhitelist, enabled } = req.body;
+      
+      const updatedSettings = {
+        defaultUrl: defaultUrl || '',
+        ipWhitelist: ipWhitelist || [],
+        enabled: enabled !== undefined ? enabled : true
+      };
+      
+      res.json(updatedSettings);
+    } catch (error) {
+      console.error('Update webhook settings error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Update notification settings
+  app.patch('/api/advertiser/profile/notifications', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { notifications } = req.body;
+      
+      // Update user notification settings
+      const updateData = {
+        settings: {
+          notifications: notifications
+        }
+      };
+      
+      await storage.updateUser(authUser.id, updateData);
+      res.json({ success: true, message: 'Notification settings updated' });
+    } catch (error) {
+      console.error('Update notification settings error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

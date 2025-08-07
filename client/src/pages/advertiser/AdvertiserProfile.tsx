@@ -9,11 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { AlertCircle, CheckCircle2, Copy, RefreshCw, Trash2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Copy, RefreshCw, Trash2, Eye, EyeOff, User, Building2, Globe, Save, Key, Bell, Shield, Link } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { User, Building2, Globe, Camera, Save, Key, Bell, Shield, Link, Eye, EyeOff } from 'lucide-react';
 
 interface AdvertiserProfile {
   id: string;
@@ -28,6 +27,7 @@ interface AdvertiserProfile {
   language: string;
   timezone: string;
   currency: string;
+  twoFactorEnabled?: boolean;
   settings?: {
     brandName?: string;
     brandDescription?: string;
@@ -100,21 +100,24 @@ export default function AdvertiserProfile() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
-  // State management
+
   const [activeTab, setActiveTab] = useState('account');
   const [isEditing, setIsEditing] = useState(false);
   const [showTokens, setShowTokens] = useState<{ [key: string]: boolean }>({});
   const [newPassword, setNewPassword] = useState({ current: '', new: '', confirm: '' });
   const [formData, setFormData] = useState<Partial<AdvertiserProfile>>({});
-  const [domainForm, setDomainForm] = useState({ domain: '', type: 'cname' as const });
+  const [domainForm, setDomainForm] = useState({ domain: '', type: 'cname' as 'cname' | 'a_record' });
   const [webhookForm, setWebhookForm] = useState<WebhookSettings>({
     defaultUrl: '',
     ipWhitelist: [],
     enabled: true
   });
+  const [notificationForm, setNotificationForm] = useState({
+    email: false,
+    telegram: false,
+    sms: false
+  });
 
-  // API queries
   const { data: profile, isLoading } = useQuery({
     queryKey: ['/api/auth/me'],
     enabled: !!user
@@ -132,31 +135,37 @@ export default function AdvertiserProfile() {
     queryKey: ['/api/advertiser/profile/webhook']
   });
 
-  // Initialize forms when data loads
   useEffect(() => {
     if (user) {
       setFormData({
         firstName: user.firstName || '',
         lastName: user.lastName || '', 
         email: user.email || '',
-        phone: user.phone || '',
+        phone: (user as any).phone || '',
         company: user.company || '',
-        country: user.country || 'US',
+        country: (user as any).country || 'US',
         language: user.language || 'en',
-        timezone: user.timezone || 'UTC',
-        currency: user.currency || 'USD',
+        timezone: (user as any).timezone || 'UTC',
+        currency: (user as any).currency || 'USD',
+        twoFactorEnabled: (user as any).twoFactorEnabled || false,
         settings: {
-          brandName: user.settings?.brandName || '',
-          brandDescription: user.settings?.brandDescription || '',
-          brandLogo: user.settings?.brandLogo || '',
-          vertical: user.settings?.vertical || '',
-          partnerRules: user.settings?.partnerRules || '',
+          brandName: (user as any).settings?.brandName || '',
+          brandDescription: (user as any).settings?.brandDescription || '',
+          brandLogo: (user as any).settings?.brandLogo || '',
+          vertical: (user as any).settings?.vertical || '',
+          partnerRules: (user as any).settings?.partnerRules || '',
           notifications: {
-            email: user.settings?.notifications?.email || false,
-            telegram: user.settings?.notifications?.telegram || false,
-            sms: user.settings?.notifications?.sms || false
+            email: (user as any).settings?.notifications?.email || false,
+            telegram: (user as any).settings?.notifications?.telegram || false,
+            sms: (user as any).settings?.notifications?.sms || false
           }
         }
+      });
+      
+      setNotificationForm({
+        email: (user as any).settings?.notifications?.email || false,
+        telegram: (user as any).settings?.notifications?.telegram || false,
+        sms: (user as any).settings?.notifications?.sms || false
       });
     }
   }, [user]);
@@ -171,12 +180,13 @@ export default function AdvertiserProfile() {
     }
   }, [webhookSettings]);
 
-  // Mutations
+  // --- MUTATIONS ---
   const updateProfileMutation = useMutation({
     mutationFn: async (data: Partial<AdvertiserProfile>) => {
       return apiRequest('/api/advertiser/profile', {
         method: 'PATCH',
-        body: data
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
       });
     },
     onSuccess: () => {
@@ -200,7 +210,8 @@ export default function AdvertiserProfile() {
     mutationFn: async (passwordData: { currentPassword: string; newPassword: string }) => {
       return apiRequest('/api/advertiser/profile/change-password', {
         method: 'POST',
-        body: passwordData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(passwordData)
       });
     },
     onSuccess: () => {
@@ -223,7 +234,8 @@ export default function AdvertiserProfile() {
     mutationFn: async (tokenName: string) => {
       return apiRequest('/api/advertiser/profile/tokens/generate', {
         method: 'POST',
-        body: { name: tokenName }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: tokenName })
       });
     },
     onSuccess: () => {
@@ -245,7 +257,8 @@ export default function AdvertiserProfile() {
   const deleteTokenMutation = useMutation({
     mutationFn: async (tokenId: string) => {
       return apiRequest(`/api/advertiser/profile/tokens/${tokenId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
       });
     },
     onSuccess: () => {
@@ -268,7 +281,8 @@ export default function AdvertiserProfile() {
     mutationFn: async (domainData: { domain: string; type: string }) => {
       return apiRequest('/api/advertiser/profile/domains', {
         method: 'POST',
-        body: domainData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(domainData)
       });
     },
     onSuccess: () => {
@@ -291,7 +305,8 @@ export default function AdvertiserProfile() {
   const verifyDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
       return apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, {
-        method: 'POST'
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
       });
     },
     onSuccess: () => {
@@ -313,7 +328,8 @@ export default function AdvertiserProfile() {
   const deleteDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
       return apiRequest(`/api/advertiser/profile/domains/${domainId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
       });
     },
     onSuccess: () => {
@@ -336,7 +352,8 @@ export default function AdvertiserProfile() {
     mutationFn: async (webhookData: WebhookSettings) => {
       return apiRequest('/api/advertiser/profile/webhook', {
         method: 'PATCH',
-        body: webhookData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(webhookData)
       });
     },
     onSuccess: () => {
@@ -355,7 +372,31 @@ export default function AdvertiserProfile() {
     }
   });
 
-  // Handlers
+  const updateNotificationsMutation = useMutation({
+    mutationFn: async (notificationsData: { email: boolean; telegram: boolean; sms: boolean }) => {
+      return apiRequest('/api/advertiser/profile/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notifications: notificationsData })
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Уведомления обновлены",
+        description: "Настройки уведомлений успешно сохранены"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить уведомления",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // --- HANDLERS ---
   const handleProfileSave = () => {
     updateProfileMutation.mutate(formData);
   };
@@ -390,7 +431,6 @@ export default function AdvertiserProfile() {
         description: "API токен скопирован в буфер обмена"
       });
     } catch (error) {
-      // Fallback for browsers without clipboard API
       const textArea = document.createElement('textarea');
       textArea.value = token;
       document.body.appendChild(textArea);
@@ -427,6 +467,10 @@ export default function AdvertiserProfile() {
     updateWebhookMutation.mutate(webhookForm);
   };
 
+  const handleSaveNotifications = () => {
+    updateNotificationsMutation.mutate(notificationForm);
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -450,8 +494,9 @@ export default function AdvertiserProfile() {
       settings: {
         ...prev.settings,
         notifications: {
-          ...prev.settings?.notifications,
-          [field]: value
+          email: field === 'email' ? value : prev.settings?.notifications?.email || false,
+          telegram: field === 'telegram' ? value : prev.settings?.notifications?.telegram || false,
+          sms: field === 'sms' ? value : prev.settings?.notifications?.sms || false
         }
       }
     }));
@@ -475,7 +520,7 @@ export default function AdvertiserProfile() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold" data-testid="page-title">Профиль рекламодателя</h1>
+          <h1 className="text-3xl font-bold">Профиль рекламодателя</h1>
           <p className="text-muted-foreground">
             Управление профилем, API-доступом, кастомным доменом и настройками
           </p>
@@ -484,58 +529,28 @@ export default function AdvertiserProfile() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="account" data-testid="tab-account" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-            <User className={`h-4 w-4 mr-2 ${activeTab === 'account' ? 'text-white' : 'text-blue-500'}`} />
-            Аккаунт
-          </TabsTrigger>
-          <TabsTrigger value="api" data-testid="tab-api" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
-            <Key className={`h-4 w-4 mr-2 ${activeTab === 'api' ? 'text-white' : 'text-green-500'}`} />
-            API-доступ
-          </TabsTrigger>
-          <TabsTrigger value="domain" data-testid="tab-domain" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
-            <Link className={`h-4 w-4 mr-2 ${activeTab === 'domain' ? 'text-white' : 'text-purple-500'}`} />
-            Кастомный домен
-          </TabsTrigger>
-          <TabsTrigger value="notifications" data-testid="tab-notifications" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            <Bell className={`h-4 w-4 mr-2 ${activeTab === 'notifications' ? 'text-white' : 'text-orange-500'}`} />
-            Уведомления
-          </TabsTrigger>
-          <TabsTrigger value="security" data-testid="tab-security" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">
-            <Shield className={`h-4 w-4 mr-2 ${activeTab === 'security' ? 'text-white' : 'text-red-500'}`} />
-            Безопасность
-          </TabsTrigger>
+          <TabsTrigger value="account" data-testid="tab-account">Аккаунт</TabsTrigger>
+          <TabsTrigger value="api" data-testid="tab-api">API-доступ</TabsTrigger>
+          <TabsTrigger value="domain" data-testid="tab-domain">Кастомный домен</TabsTrigger>
+          <TabsTrigger value="notifications" data-testid="tab-notifications">Уведомления</TabsTrigger>
+          <TabsTrigger value="security" data-testid="tab-security">Безопасность</TabsTrigger>
         </TabsList>
 
-        {/* Вкладка: Аккаунт */}
+        {/* ACCOUNT TAB */}
         <TabsContent value="account" className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold">Информация аккаунта</h2>
             <div className="space-x-2">
               {isEditing ? (
                 <>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsEditing(false)}
-                    data-testid="button-cancel"
-                  >
-                    Отмена
-                  </Button>
-                  <Button 
-                    onClick={handleProfileSave}
-                    disabled={updateProfileMutation.isPending}
-                    data-testid="button-save"
-                  >
+                  <Button variant="outline" onClick={() => setIsEditing(false)} data-testid="button-cancel-edit">Отмена</Button>
+                  <Button onClick={handleProfileSave} disabled={updateProfileMutation.isPending} data-testid="button-save-profile">
                     <Save className="h-4 w-4 mr-2" />
                     Сохранить
                   </Button>
                 </>
               ) : (
-                <Button 
-                  onClick={() => setIsEditing(true)}
-                  data-testid="button-edit"
-                >
-                  Редактировать
-                </Button>
+                <Button onClick={() => setIsEditing(true)} data-testid="button-edit-profile">Редактировать</Button>
               )}
             </div>
           </div>
@@ -543,161 +558,86 @@ export default function AdvertiserProfile() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Основные данные */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="h-5 w-5 mr-2" />
-                  Основные данные
-                </CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Основные данные</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="firstName">Имя</Label>
-                    <Input
-                      id="firstName"
-                      value={formData.firstName || ''}
-                      onChange={(e) => handleInputChange('firstName', e.target.value)}
-                      disabled={!isEditing}
-                      data-testid="input-firstName"
-                    />
+                    <Label>Имя</Label>
+                    <Input value={formData.firstName || ''} onChange={(e) => handleInputChange('firstName', e.target.value)} disabled={!isEditing} data-testid="input-first-name" />
                   </div>
                   <div>
-                    <Label htmlFor="lastName">Фамилия</Label>
-                    <Input
-                      id="lastName"
-                      value={formData.lastName || ''}
-                      onChange={(e) => handleInputChange('lastName', e.target.value)}
-                      disabled={!isEditing}
-                      data-testid="input-lastName"
-                    />
+                    <Label>Фамилия</Label>
+                    <Input value={formData.lastName || ''} onChange={(e) => handleInputChange('lastName', e.target.value)} disabled={!isEditing} data-testid="input-last-name" />
                   </div>
                 </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email || ''}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    disabled={!isEditing}
-                    data-testid="input-email"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Телефон</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone || ''}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    disabled={!isEditing}
-                    data-testid="input-phone"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="telegram">Telegram</Label>
-                  <Input
-                    id="telegram"
-                    value={formData.telegram || ''}
-                    onChange={(e) => handleInputChange('telegram', e.target.value)}
-                    disabled={!isEditing}
-                    data-testid="input-telegram"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="company">Название компании</Label>
-                  <Input
-                    id="company"
-                    value={formData.company || ''}
-                    onChange={(e) => handleInputChange('company', e.target.value)}
-                    disabled={!isEditing}
-                    data-testid="input-company"
-                  />
-                </div>
+                <Label>Email</Label>
+                <Input type="email" value={formData.email || ''} onChange={(e) => handleInputChange('email', e.target.value)} disabled={!isEditing} data-testid="input-email" />
+
+                <Label>Телефон</Label>
+                <Input value={formData.phone || ''} onChange={(e) => handleInputChange('phone', e.target.value)} disabled={!isEditing} data-testid="input-phone" />
+
+                <Label>Telegram</Label>
+                <Input value={formData.telegram || ''} onChange={(e) => handleInputChange('telegram', e.target.value)} disabled={!isEditing} data-testid="input-telegram" />
+
+                <Label>Название компании</Label>
+                <Input value={formData.company || ''} onChange={(e) => handleInputChange('company', e.target.value)} disabled={!isEditing} data-testid="input-company" />
               </CardContent>
             </Card>
 
             {/* Региональные настройки */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Globe className="h-5 w-5 mr-2" />
-                  Региональные настройки
-                </CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Региональные настройки</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="country">Страна</Label>
-                  <Input
-                    id="country"
-                    value={formData.country || ''}
-                    onChange={(e) => handleInputChange('country', e.target.value)}
-                    disabled={!isEditing}
-                    data-testid="input-country"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="language">Язык интерфейса</Label>
-                  <Select
-                    value={formData.language || 'en'}
-                    onValueChange={(value) => handleInputChange('language', value)}
-                    disabled={!isEditing}
-                  >
-                    <SelectTrigger data-testid="select-language">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LANGUAGES.map(lang => (
-                        <SelectItem key={lang.value} value={lang.value}>
-                          {lang.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="timezone">Часовой пояс</Label>
-                  <Select
-                    value={formData.timezone || 'UTC'}
-                    onValueChange={(value) => handleInputChange('timezone', value)}
-                    disabled={!isEditing}
-                  >
-                    <SelectTrigger data-testid="select-timezone">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TIMEZONES.map(tz => (
-                        <SelectItem key={tz.value} value={tz.value}>
-                          {tz.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="currency">Валюта</Label>
-                  <Select
-                    value={formData.currency || 'USD'}
-                    onValueChange={(value) => handleInputChange('currency', value)}
-                    disabled={!isEditing}
-                  >
-                    <SelectTrigger data-testid="select-currency">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CURRENCIES.map(curr => (
-                        <SelectItem key={curr.value} value={curr.value}>
-                          {curr.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Label>Страна</Label>
+                <Input value={formData.country || ''} onChange={(e) => handleInputChange('country', e.target.value)} disabled={!isEditing} data-testid="input-country" />
+
+                <Label>Язык интерфейса</Label>
+                <Select value={formData.language || 'en'} onValueChange={(v) => handleInputChange('language', v)} disabled={!isEditing}>
+                  <SelectTrigger data-testid="select-language"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {LANGUAGES.map(lang => <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+
+                <Label>Часовой пояс</Label>
+                <Select value={formData.timezone || 'UTC'} onValueChange={(v) => handleInputChange('timezone', v)} disabled={!isEditing}>
+                  <SelectTrigger data-testid="select-timezone"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {TIMEZONES.map(tz => <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+
+                <Label>Валюта</Label>
+                <Select value={formData.currency || 'USD'} onValueChange={(v) => handleInputChange('currency', v)} disabled={!isEditing}>
+                  <SelectTrigger data-testid="select-currency"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {CURRENCIES.map(curr => <SelectItem key={curr.value} value={curr.value}>{curr.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </CardContent>
             </Card>
           </div>
+
+          {/* Настройки бренда */}
+          <Card>
+            <CardHeader><CardTitle>Настройки бренда</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <Label>Название бренда</Label>
+              <Input value={formData.settings?.brandName || ''} onChange={(e) => handleSettingsChange('brandName', e.target.value)} disabled={!isEditing} data-testid="input-brand-name" />
+
+              <Label>Вертикаль</Label>
+              <Input value={formData.settings?.vertical || ''} onChange={(e) => handleSettingsChange('vertical', e.target.value)} disabled={!isEditing} data-testid="input-vertical" />
+
+              <Label>Описание бренда</Label>
+              <Textarea rows={3} value={formData.settings?.brandDescription || ''} onChange={(e) => handleSettingsChange('brandDescription', e.target.value)} disabled={!isEditing} data-testid="textarea-brand-description" />
+
+              <Label>Правила для партнёров</Label>
+              <Textarea rows={4} value={formData.settings?.partnerRules || ''} onChange={(e) => handleSettingsChange('partnerRules', e.target.value)} disabled={!isEditing} data-testid="textarea-partner-rules" />
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        {/* Вкладка: API-доступ */}
+        {/* API ACCESS TAB */}
         <TabsContent value="api" className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold">API-доступ</h2>
@@ -707,6 +647,7 @@ export default function AdvertiserProfile() {
             </Button>
           </div>
 
+          {/* API TOKENS */}
           <Card>
             <CardHeader>
               <CardTitle>API токены</CardTitle>
@@ -720,47 +661,32 @@ export default function AdvertiserProfile() {
                   <div>Загрузка токенов...</div>
                 ) : apiTokens && apiTokens.length > 0 ? (
                   apiTokens.map(token => (
-                    <div key={token.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={token.id} className="flex items-center justify-between p-4 border rounded-lg" data-testid={`token-${token.id}`}>
                       <div className="space-y-1">
-                        <div className="font-medium">{token.name}</div>
+                        <div className="font-medium" data-testid={`token-name-${token.id}`}>{token.name}</div>
                         <div className="text-sm text-muted-foreground">
                           Создан: {new Date(token.createdAt).toLocaleDateString()}
                           {token.lastUsed && ` • Последнее использование: ${new Date(token.lastUsed).toLocaleDateString()}`}
                         </div>
-                        <div className="font-mono text-sm bg-muted p-2 rounded">
+                        <div className="font-mono text-sm bg-muted p-2 rounded" data-testid={`token-value-${token.id}`}>
                           {showTokens[token.id] ? token.token : '••••••••••••••••••••••••••••••••'}
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleToggleTokenVisibility(token.id)}
-                          data-testid={`button-toggle-visibility-${token.id}`}
-                        >
+                        <Button size="sm" variant="outline" onClick={() => handleToggleTokenVisibility(token.id)} data-testid={`button-toggle-token-${token.id}`} title="Показать/скрыть токен">
                           {showTokens[token.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleCopyToken(token.token)}
-                          data-testid={`button-copy-token-${token.id}`}
-                        >
+                        <Button size="sm" variant="outline" onClick={() => handleCopyToken(token.token)} data-testid={`button-copy-token-${token.id}`} title="Копировать токен">
                           <Copy className="h-4 w-4" />
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => deleteTokenMutation.mutate(token.id)}
-                          data-testid={`button-delete-token-${token.id}`}
-                        >
+                        <Button size="sm" variant="destructive" onClick={() => deleteTokenMutation.mutate(token.id)} data-testid={`button-delete-token-${token.id}`} title="Удалить токен">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
+                  <div className="text-center py-8 text-muted-foreground" data-testid="empty-tokens">
                     У вас пока нет API токенов
                   </div>
                 )}
@@ -768,11 +694,12 @@ export default function AdvertiserProfile() {
             </CardContent>
           </Card>
 
+          {/* WEBHOOK */}
           <Card>
             <CardHeader>
               <CardTitle>Webhook настройки</CardTitle>
               <CardDescription>
-                URL по умолчанию для postback'ов и IP белый список
+                URL по умолчанию для постбеков и IP-белый список
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -786,23 +713,27 @@ export default function AdvertiserProfile() {
                   data-testid="input-webhook-url"
                 />
               </div>
+
               <div>
-                <Label htmlFor="ipWhitelist">IP белый список</Label>
+                <Label htmlFor="ipWhitelist">IP-белый список</Label>
                 <Textarea
                   id="ipWhitelist"
-                  value={webhookForm.ipWhitelist?.join('\n') || ''}
-                  onChange={(e) => setWebhookForm(prev => ({ 
-                    ...prev, 
-                    ipWhitelist: e.target.value.split('\n').filter(ip => ip.trim()) 
-                  }))}
-                  placeholder="192.168.1.1&#10;10.0.0.1"
+                  value={webhookForm.ipWhitelist.join('\n')}
+                  onChange={(e) =>
+                    setWebhookForm(prev => ({
+                      ...prev,
+                      ipWhitelist: e.target.value.split('\n').map(ip => ip.trim()).filter(Boolean)
+                    }))
+                  }
+                  placeholder="192.168.1.1\n10.0.0.1"
                   rows={4}
                   data-testid="textarea-ip-whitelist"
                 />
                 <div className="text-sm text-muted-foreground mt-1">
-                  Укажите IP-адреса, с которых разрешены API-запросы (по одному на строку)
+                  Один IP на строку
                 </div>
               </div>
+
               <div className="flex items-center space-x-2">
                 <Switch
                   id="webhookEnabled"
@@ -810,21 +741,23 @@ export default function AdvertiserProfile() {
                   onCheckedChange={(checked) => setWebhookForm(prev => ({ ...prev, enabled: checked }))}
                   data-testid="switch-webhook-enabled"
                 />
-                <Label htmlFor="webhookEnabled">Включить webhook</Label>
+                <Label htmlFor="webhookEnabled">Включить Webhook</Label>
               </div>
+
               <Button onClick={handleWebhookSave} data-testid="button-save-webhook">
-                Сохранить настройки webhook
+                Сохранить настройки Webhook
               </Button>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Вкладка: Кастомный домен */}
+        {/* DOMAIN TAB */}
         <TabsContent value="domain" className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold">Кастомный домен</h2>
           </div>
 
+          {/* Форма добавления домена */}
           <Card>
             <CardHeader>
               <CardTitle>Подключение кастомного домена</CardTitle>
@@ -840,22 +773,22 @@ export default function AdvertiserProfile() {
                     id="customDomain"
                     value={domainForm.domain}
                     onChange={(e) => setDomainForm(prev => ({ ...prev, domain: e.target.value }))}
-                    placeholder="trk.brandname.com"
-                    data-testid="input-custom-domain"
+                    placeholder="example.com"
+                    data-testid="input-domain"
                   />
                 </div>
                 <div>
                   <Label htmlFor="domainType">Тип записи</Label>
                   <Select
                     value={domainForm.type}
-                    onValueChange={(value: 'a_record' | 'cname') => setDomainForm(prev => ({ ...prev, type: value }))}
+                    onValueChange={(value: 'cname' | 'a_record') => setDomainForm(prev => ({ ...prev, type: value }))}
                   >
                     <SelectTrigger data-testid="select-domain-type">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="cname">CNAME</SelectItem>
-                      <SelectItem value="a_record">A запись</SelectItem>
+                      <SelectItem value="a_record">A Record</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -866,6 +799,7 @@ export default function AdvertiserProfile() {
             </CardContent>
           </Card>
 
+          {/* Список подключённых доменов */}
           <Card>
             <CardHeader>
               <CardTitle>Подключенные домены</CardTitle>
@@ -876,56 +810,49 @@ export default function AdvertiserProfile() {
                   <div>Загрузка доменов...</div>
                 ) : customDomains && customDomains.length > 0 ? (
                   customDomains.map(domain => (
-                    <div key={domain.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={domain.id} className="flex items-center justify-between p-4 border rounded-lg" data-testid={`domain-${domain.id}`}>
                       <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <div className="font-medium">{domain.domain}</div>
+                        <div className="flex items-center space-x-3">
+                          <div className="font-medium" data-testid={`domain-name-${domain.id}`}>{domain.domain}</div>
                           {getStatusBadge(domain.status)}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           Добавлен: {new Date(domain.createdAt).toLocaleDateString()}
+                          {domain.lastChecked && ` • Проверка: ${new Date(domain.lastChecked).toLocaleDateString()}`}
                         </div>
+
                         {domain.status === 'pending' && (
-                          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                            <div className="font-medium text-sm mb-2">Инструкция по настройке DNS:</div>
-                            <div className="text-sm space-y-1">
-                              <div>Тип: <code className="bg-muted px-1 rounded">{domain.type.toUpperCase()}</code></div>
-                              <div>Имя: <code className="bg-muted px-1 rounded">@</code></div>
-                              <div>Значение: <code className="bg-muted px-1 rounded">{domain.verificationValue}</code></div>
+                          <div className="text-sm mt-1">
+                            <div className="font-medium">DNS-инструкция:</div>
+                            <div>Создайте {domain.type === 'cname' ? 'CNAME' : 'A'} запись:</div>
+                            <div className="font-mono bg-muted p-2 rounded mt-1" data-testid={`dns-instruction-${domain.id}`}>
+                              {domain.type === 'cname'
+                                ? `${domain.domain} CNAME ${domain.verificationValue}`
+                                : `${domain.domain} A ${domain.verificationValue}`}
                             </div>
                           </div>
                         )}
+
                         {domain.status === 'error' && domain.errorMessage && (
-                          <div className="text-sm text-red-600 dark:text-red-400">
+                          <div className="text-sm text-red-600" data-testid={`domain-error-${domain.id}`}>
                             Ошибка: {domain.errorMessage}
                           </div>
                         )}
                       </div>
+
                       <div className="flex items-center space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => verifyDomainMutation.mutate(domain.id)}
-                          disabled={domain.status === 'verified'}
-                          data-testid={`button-verify-domain-${domain.id}`}
-                        >
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Проверить
+                        <Button size="sm" variant="outline" onClick={() => verifyDomainMutation.mutate(domain.id)} data-testid={`button-verify-domain-${domain.id}`} title="Проверить домен">
+                          <RefreshCw className="h-4 w-4" />
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => deleteDomainMutation.mutate(domain.id)}
-                          data-testid={`button-delete-domain-${domain.id}`}
-                        >
+                        <Button size="sm" variant="destructive" onClick={() => deleteDomainMutation.mutate(domain.id)} data-testid={`button-delete-domain-${domain.id}`} title="Удалить домен">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    У вас пока нет подключенных доменов
+                  <div className="text-center py-8 text-muted-foreground" data-testid="empty-domains">
+                    У вас пока нет подключённых доменов
                   </div>
                 )}
               </div>
@@ -933,115 +860,150 @@ export default function AdvertiserProfile() {
           </Card>
         </TabsContent>
 
-        {/* Вкладка: Уведомления */}
+        {/* NOTIFICATIONS TAB */}
         <TabsContent value="notifications" className="space-y-6">
-          <h2 className="text-2xl font-semibold">Настройки уведомлений</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Уведомления</h2>
+          </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>Типы уведомлений</CardTitle>
+              <CardTitle>Настройка уведомлений</CardTitle>
               <CardDescription>
-                Выберите, какие уведомления вы хотите получать
+                Выберите, по каким каналам получать уведомления от платформы
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="emailNotifications">Email уведомления</Label>
-                  <div className="text-sm text-muted-foreground">
-                    Получать уведомления на электронную почту
-                  </div>
+                  <Label htmlFor="notif-email">Email</Label>
+                  <p className="text-muted-foreground text-sm">
+                    Уведомления на вашу почту ({formData.email})
+                  </p>
                 </div>
                 <Switch
-                  id="emailNotifications"
-                  checked={formData.settings?.notifications?.email || false}
-                  onCheckedChange={(checked) => handleNotificationChange('email', checked)}
+                  id="notif-email"
+                  checked={notificationForm.email}
+                  onCheckedChange={(checked) =>
+                    setNotificationForm(prev => ({ ...prev, email: checked }))
+                  }
                   data-testid="switch-email-notifications"
                 />
               </div>
+
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="telegramNotifications">Telegram уведомления</Label>
-                  <div className="text-sm text-muted-foreground">
-                    Получать уведомления в Telegram
-                  </div>
+                  <Label htmlFor="notif-telegram">Telegram</Label>
+                  <p className="text-muted-foreground text-sm">
+                    Уведомления в Telegram-бот (если подключён)
+                  </p>
                 </div>
                 <Switch
-                  id="telegramNotifications"
-                  checked={formData.settings?.notifications?.telegram || false}
-                  onCheckedChange={(checked) => handleNotificationChange('telegram', checked)}
+                  id="notif-telegram"
+                  checked={notificationForm.telegram}
+                  onCheckedChange={(checked) =>
+                    setNotificationForm(prev => ({ ...prev, telegram: checked }))
+                  }
                   data-testid="switch-telegram-notifications"
                 />
               </div>
+
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="smsNotifications">SMS уведомления</Label>
-                  <div className="text-sm text-muted-foreground">
-                    Получать SMS уведомления на телефон
-                  </div>
+                  <Label htmlFor="notif-sms">SMS</Label>
+                  <p className="text-muted-foreground text-sm">
+                    SMS-уведомления (если активны)
+                  </p>
                 </div>
                 <Switch
-                  id="smsNotifications"
-                  checked={formData.settings?.notifications?.sms || false}
-                  onCheckedChange={(checked) => handleNotificationChange('sms', checked)}
+                  id="notif-sms"
+                  checked={notificationForm.sms}
+                  onCheckedChange={(checked) =>
+                    setNotificationForm(prev => ({ ...prev, sms: checked }))
+                  }
                   data-testid="switch-sms-notifications"
                 />
               </div>
-              <Button onClick={handleProfileSave} data-testid="button-save-notifications">
-                Сохранить настройки уведомлений
-              </Button>
+
+              <div className="flex justify-end">
+                <Button onClick={handleSaveNotifications} data-testid="button-save-notifications">
+                  Сохранить уведомления
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Вкладка: Безопасность */}
+        {/* SECURITY TAB */}
         <TabsContent value="security" className="space-y-6">
-          <h2 className="text-2xl font-semibold">Настройки безопасности</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Безопасность</h2>
+          </div>
 
+          {/* Смена пароля */}
           <Card>
             <CardHeader>
-              <CardTitle>Смена пароля</CardTitle>
+              <CardTitle>Сменить пароль</CardTitle>
               <CardDescription>
-                Обновите пароль для входа в систему
+                Мы рекомендуем использовать уникальный и сложный пароль
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="currentPassword">Текущий пароль</Label>
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  value={newPassword.current}
-                  onChange={(e) => setNewPassword(prev => ({ ...prev, current: e.target.value }))}
-                  data-testid="input-current-password"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="currentPassword">Текущий пароль</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    value={newPassword.current}
+                    onChange={(e) => setNewPassword(prev => ({ ...prev, current: e.target.value }))}
+                    data-testid="input-current-password"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="newPassword">Новый пароль</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword.new}
+                    onChange={(e) => setNewPassword(prev => ({ ...prev, new: e.target.value }))}
+                    data-testid="input-new-password"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirmPassword">Повторите пароль</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={newPassword.confirm}
+                    onChange={(e) => setNewPassword(prev => ({ ...prev, confirm: e.target.value }))}
+                    data-testid="input-confirm-password"
+                  />
+                </div>
               </div>
+
+              <Button onClick={handlePasswordChange} data-testid="button-change-password">
+                Обновить пароль
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Статус 2FA */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Двухфакторная аутентификация (2FA)</CardTitle>
+              <CardDescription>
+                Ваша безопасность важна. Мы рекомендуем включить 2FA.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between">
               <div>
-                <Label htmlFor="newPassword">Новый пароль</Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={newPassword.new}
-                  onChange={(e) => setNewPassword(prev => ({ ...prev, new: e.target.value }))}
-                  data-testid="input-new-password"
-                />
+                <p className="text-sm text-muted-foreground" data-testid="text-2fa-status">
+                  Статус: <strong>{formData?.twoFactorEnabled ? 'Включена' : 'Отключена'}</strong>
+                </p>
               </div>
-              <div>
-                <Label htmlFor="confirmPassword">Подтвердите новый пароль</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={newPassword.confirm}
-                  onChange={(e) => setNewPassword(prev => ({ ...prev, confirm: e.target.value }))}
-                  data-testid="input-confirm-password"
-                />
-              </div>
-              <Button 
-                onClick={handlePasswordChange}
-                disabled={changePasswordMutation.isPending}
-                data-testid="button-change-password"
-              >
-                Изменить пароль
+              <Button variant="outline" disabled data-testid="button-toggle-2fa">
+                {formData?.twoFactorEnabled ? 'Отключить 2FA' : 'Включить 2FA'}
               </Button>
             </CardContent>
           </Card>
