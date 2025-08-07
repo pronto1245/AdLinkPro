@@ -1,0 +1,70 @@
+        {/* NOTIFICATIONS TAB */}
+        <TabsContent value="notifications" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Уведомления</h2>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Настройка уведомлений</CardTitle>
+              <CardDescription>
+                Выберите, по каким каналам получать уведомления от платформы
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="notif-email">Email</Label>
+                  <p className="text-muted-foreground text-sm">
+                    Уведомления на вашу почту ({form.email})
+                  </p>
+                </div>
+                <Switch
+                  id="notif-email"
+                  checked={notificationForm.email}
+                  onCheckedChange={(checked) =>
+                    setNotificationForm(prev => ({ ...prev, email: checked }))
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="notif-telegram">Telegram</Label>
+                  <p className="text-muted-foreground text-sm">
+                    Уведомления в Telegram-бот (если подключён)
+                  </p>
+                </div>
+                <Switch
+                  id="notif-telegram"
+                  checked={notificationForm.telegram}
+                  onCheckedChange={(checked) =>
+                    setNotificationForm(prev => ({ ...prev, telegram: checked }))
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="notif-sms">SMS</Label>
+                  <p className="text-muted-foreground text-sm">
+                    SMS-уведомления (если активны)
+                  </p>
+                </div>
+                <Switch
+                  id="notif-sms"
+                  checked={notificationForm.sms}
+                  onCheckedChange={(checked) =>
+                    setNotificationForm(prev => ({ ...prev, sms: checked }))
+                  }
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <Button onClick={handleSaveNotifications}>
+                  Сохранить уведомления
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
