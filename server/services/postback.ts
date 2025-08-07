@@ -405,7 +405,8 @@ export class PostbackService {
 }
 
 // Initialize retry scheduler (runs every 5 minutes)
-if (typeof setInterval !== 'undefined') {
+// TEMPORARILY DISABLED due to database timeout issues
+if (false && typeof setInterval !== 'undefined') {
   setInterval(() => {
     PostbackService.retryFailedPostbacks().catch(console.error);
   }, 5 * 60 * 1000); // 5 minutes
