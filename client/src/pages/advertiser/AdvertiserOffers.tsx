@@ -17,6 +17,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { formatCountries } from '@/utils/countries';
 import { getCategoryBadgeProps } from '@/utils/categories';
+import { formatCR } from '@/utils/formatters';
 
 function DraggableRow({ offer, index, children }: any) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: offer.id });
@@ -269,7 +270,7 @@ const AdvertiserOffers = () => {
                         {offer.category}
                       </Badge>
                     </TableCell>
-                    <TableCell>{offer.cr || 0}%</TableCell>
+                    <TableCell>{formatCR(offer.cr)}%</TableCell>
                     <TableCell>${offer.payout} {offer.currency}</TableCell>
                     <TableCell>
                       <Badge 
