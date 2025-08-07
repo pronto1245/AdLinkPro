@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -149,6 +150,7 @@ function getCountryFlag(countryCode: string): string {
 export default function PartnerOffers() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const [, navigate] = useLocation();
 
   // Fetch partner offers with auto-generated links  
   const { data: offers = [], isLoading } = useQuery<PartnerOffer[]>({
@@ -185,11 +187,8 @@ export default function PartnerOffers() {
         description: "Ваш запрос на доступ к офферу отправлен рекламодателю",
       });
     } else if (currentStatus === 'approved') {
-      // Забираем ссылку
-      toast({
-        title: "Ссылка получена",
-        description: "Трекинговая ссылка скопирована в буфер обмена",
-      });
+      // Переходим на страницу деталей оффера
+      navigate(`/affiliate/offers/${offerId}`);
     }
   };
 
