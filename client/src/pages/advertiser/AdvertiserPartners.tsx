@@ -738,7 +738,7 @@ export default function AdvertiserPartners() {
               <div>
                 <p className="text-sm text-gray-600">Общий доход</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  ${partners ? partners.reduce((acc, p) => acc + (p.statistics?.totalRevenue || 0), 0).toLocaleString() : 0}
+                  $0
                 </p>
               </div>
               <DollarSign className="w-8 h-8 text-purple-500" />
@@ -940,15 +940,15 @@ export default function AdvertiserPartners() {
                     <div className="text-sm space-y-1">
                       <div className="flex justify-between">
                         <span className="text-gray-500">Клики:</span>
-                        <span className="font-medium">{partner.statistics.totalClicks.toLocaleString()}</span>
+                        <span className="font-medium">{partner.statistics?.totalClicks?.toLocaleString() || '0'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">CR:</span>
-                        <span className="font-medium text-purple-600">{partner.statistics.averageCR}%</span>
+                        <span className="font-medium text-purple-600">{partner.statistics?.averageCR || '0'}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">EPC:</span>
-                        <span className="font-medium text-blue-600">${partner.statistics.averageEPC}</span>
+                        <span className="font-medium text-blue-600">${partner.statistics?.averageEPC || '0'}</span>
                       </div>
                     </div>
                   </TableCell>
