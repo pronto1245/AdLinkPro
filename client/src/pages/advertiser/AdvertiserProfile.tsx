@@ -13,6 +13,7 @@ import { AlertCircle, CheckCircle2, Copy, RefreshCw, Trash2, Eye, EyeOff, User, 
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
+import DomainVerification from '@/components/advertiser/DomainVerification';
 
 interface AdvertiserProfile {
   id: string;
@@ -106,7 +107,7 @@ export default function AdvertiserProfile() {
   const [showTokens, setShowTokens] = useState<{ [key: string]: boolean }>({});
   const [newPassword, setNewPassword] = useState({ current: '', new: '', confirm: '' });
   const [formData, setFormData] = useState<Partial<AdvertiserProfile>>({});
-  const [domainForm, setDomainForm] = useState({ domain: '', type: 'cname' as 'cname' | 'a_record' });
+
   const [webhookForm, setWebhookForm] = useState<WebhookSettings>({
     defaultUrl: '',
     ipWhitelist: [],
@@ -127,9 +128,7 @@ export default function AdvertiserProfile() {
     queryKey: ['/api/advertiser/api-tokens']
   });
 
-  const { data: customDomains, isLoading: domainsLoading } = useQuery<CustomDomain[]>({
-    queryKey: ['/api/advertiser/domains']
-  });
+
 
   const { data: webhookSettings, isLoading: webhookLoading } = useQuery<WebhookSettings>({
     queryKey: ['/api/advertiser/profile/webhook']
@@ -273,73 +272,7 @@ export default function AdvertiserProfile() {
     }
   });
 
-  const addDomainMutation = useMutation({
-    mutationFn: async (domainData: { domain: string; type: string }) => {
-      return apiRequest('/api/advertiser/domains', {
-        method: 'POST',
-        body: domainData
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Домен добавлен",
-        description: "Кастомный домен добавлен и ожидает проверки"
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/domains'] });
-      setDomainForm({ domain: '', type: 'cname' });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось добавить домен",
-        variant: "destructive"
-      });
-    }
-  });
 
-  const verifyDomainMutation = useMutation({
-    mutationFn: async (domainId: string) => {
-      return apiRequest(`/api/advertiser/domains/${domainId}/verify`, {
-        method: 'POST'
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Проверка запущена",
-        description: "Проверка домена выполняется"
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/domains'] });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось проверить домен",
-        variant: "destructive"
-      });
-    }
-  });
-
-  const deleteDomainMutation = useMutation({
-    mutationFn: async (domainId: string) => {
-      return apiRequest(`/api/advertiser/domains/${domainId}`, {
-        method: 'DELETE'
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Домен удален",
-        description: "Кастомный домен успешно удален"
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/domains'] });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось удалить домен",
-        variant: "destructive"
-      });
-    }
-  });
 
   const updateWebhookMutation = useMutation({
     mutationFn: async (webhookData: WebhookSettings) => {
@@ -442,17 +375,7 @@ export default function AdvertiserProfile() {
     }));
   };
 
-  const handleDomainAdd = () => {
-    if (!domainForm.domain.trim()) {
-      toast({
-        title: "Ошибка",
-        description: "Введите домен",
-        variant: "destructive"
-      });
-      return;
-    }
-    addDomainMutation.mutate(domainForm);
-  };
+
 
   const handleWebhookSave = () => {
     updateWebhookMutation.mutate(webhookForm);
@@ -745,110 +668,10 @@ export default function AdvertiserProfile() {
         {/* DOMAIN TAB */}
         <TabsContent value="domain" className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Кастомный домен</h2>
+            <h2 className="text-2xl font-semibold">DNS-подтверждение доменов</h2>
           </div>
-
-          {/* Форма добавления домена */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Подключение кастомного домена</CardTitle>
-              <CardDescription>
-                Используйте собственный домен для генерации партнёрских ссылок
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
-                  <Label htmlFor="customDomain">Домен</Label>
-                  <Input
-                    id="customDomain"
-                    value={domainForm.domain}
-                    onChange={(e) => setDomainForm(prev => ({ ...prev, domain: e.target.value }))}
-                    placeholder="example.com"
-                    data-testid="input-domain"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="domainType">Тип записи</Label>
-                  <Select
-                    value={domainForm.type}
-                    onValueChange={(value: 'cname' | 'a_record') => setDomainForm(prev => ({ ...prev, type: value }))}
-                  >
-                    <SelectTrigger data-testid="select-domain-type">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cname">CNAME</SelectItem>
-                      <SelectItem value="a_record">A Record</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <Button onClick={handleDomainAdd} data-testid="button-add-domain">
-                Добавить домен
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Список подключённых доменов */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Подключенные домены</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {domainsLoading ? (
-                  <div>Загрузка доменов...</div>
-                ) : customDomains && customDomains.length > 0 ? (
-                  customDomains.map(domain => (
-                    <div key={domain.id} className="flex items-center justify-between p-4 border rounded-lg" data-testid={`domain-${domain.id}`}>
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-3">
-                          <div className="font-medium" data-testid={`domain-name-${domain.id}`}>{domain.domain}</div>
-                          {getStatusBadge(domain.status)}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Добавлен: {new Date(domain.createdAt).toLocaleDateString()}
-                          {domain.lastChecked && ` • Проверка: ${new Date(domain.lastChecked).toLocaleDateString()}`}
-                        </div>
-
-                        {domain.status === 'pending' && (
-                          <div className="text-sm mt-1">
-                            <div className="font-medium">DNS-инструкция:</div>
-                            <div>Создайте {domain.type === 'cname' ? 'CNAME' : 'A'} запись:</div>
-                            <div className="font-mono bg-muted p-2 rounded mt-1" data-testid={`dns-instruction-${domain.id}`}>
-                              {domain.type === 'cname'
-                                ? `${domain.domain} CNAME ${domain.verificationValue}`
-                                : `${domain.domain} A ${domain.verificationValue}`}
-                            </div>
-                          </div>
-                        )}
-
-                        {domain.status === 'error' && domain.errorMessage && (
-                          <div className="text-sm text-red-600" data-testid={`domain-error-${domain.id}`}>
-                            Ошибка: {domain.errorMessage}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Button size="sm" variant="outline" onClick={() => verifyDomainMutation.mutate(domain.id)} data-testid={`button-verify-domain-${domain.id}`} title="Проверить домен">
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="destructive" onClick={() => deleteDomainMutation.mutate(domain.id)} data-testid={`button-delete-domain-${domain.id}`} title="Удалить домен">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground" data-testid="empty-domains">
-                    У вас пока нет подключённых доменов
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          
+          <DomainVerification />
         </TabsContent>
 
         {/* NOTIFICATIONS TAB */}

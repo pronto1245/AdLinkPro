@@ -223,6 +223,13 @@ export interface IStorage {
   getModerationTemplates(): Promise<any[]>;
   createModerationTemplate(data: any): Promise<any>;
   
+  // DNS Domain verification methods
+  getDomain(id: string): Promise<any>;
+  getDomainByName(domain: string): Promise<any>;
+  createDomain(domain: any): Promise<any>;
+  updateDomain(id: string, data: any): Promise<any>;
+  deleteDomain(id: string): Promise<void>;
+  
   // KYC documents
   getKycDocuments(): Promise<any[]>;
   updateKycDocument(id: string, data: any): Promise<any>;
@@ -4778,6 +4785,88 @@ class MemStorage implements IStorage {
       return newFile;
     } catch (error) {
       console.error('Error saving creative file:', error);
+      throw error;
+    }
+  }
+
+  // DNS Domain verification methods implementation
+  async getDomain(id: string): Promise<any> {
+    try {
+      const [domain] = await db
+        .select()
+        .from(customDomains)
+        .where(eq(customDomains.id, id));
+      return domain;
+    } catch (error) {
+      console.error('Error getting domain:', error);
+      throw error;
+    }
+  }
+
+  async getDomainByName(domain: string): Promise<any> {
+    try {
+      const [existingDomain] = await db
+        .select()
+        .from(customDomains)
+        .where(eq(customDomains.domain, domain));
+      return existingDomain;
+    } catch (error) {
+      console.error('Error getting domain by name:', error);
+      throw error;
+    }
+  }
+
+  async createDomain(domainData: any): Promise<any> {
+    try {
+      const [newDomain] = await db
+        .insert(customDomains)
+        .values({
+          domain: domainData.domain,
+          advertiserId: domainData.advertiserId,
+          status: domainData.status || 'pending',
+          type: 'txt_record', // DNS TXT verification method
+          verificationValue: domainData.verificationCode,
+          createdAt: new Date(),
+          lastChecked: null
+        })
+        .returning();
+      return newDomain;
+    } catch (error) {
+      console.error('Error creating domain:', error);
+      throw error;
+    }
+  }
+
+  async updateDomain(id: string, data: any): Promise<any> {
+    try {
+      const updateData: any = {
+        ...data,
+        lastChecked: new Date()
+      };
+
+      if (data.verifiedAt) {
+        updateData.verifiedAt = data.verifiedAt;
+      }
+
+      const [updatedDomain] = await db
+        .update(customDomains)
+        .set(updateData)
+        .where(eq(customDomains.id, id))
+        .returning();
+      return updatedDomain;
+    } catch (error) {
+      console.error('Error updating domain:', error);
+      throw error;
+    }
+  }
+
+  async deleteDomain(id: string): Promise<void> {
+    try {
+      await db
+        .delete(customDomains)
+        .where(eq(customDomains.id, id));
+    } catch (error) {
+      console.error('Error deleting domain:', error);
       throw error;
     }
   }
