@@ -25,6 +25,8 @@ export function CreativeUploader({
 }: CreativeUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadComplete, setUploadComplete] = useState(false);
   const { toast } = useToast();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,9 +59,11 @@ export function CreativeUploader({
 
       console.log('✅ Валидация файла пройдена');
       setSelectedFile(file);
+      setUploadComplete(false);
+      setUploadProgress(0);
       
       // Автоматически начинаем загрузку
-      handleUpload();
+      setTimeout(() => handleUpload(), 100);
     }
   };
 
@@ -71,16 +75,19 @@ export function CreativeUploader({
 
     console.log('🚀 Начало загрузки файла:', selectedFile.name);
     setUploading(true);
+    setUploadProgress(10);
     
     try {
       let uploadURL: string;
       
       if (onGetUploadParameters) {
         console.log('📡 Получение upload URL через кастомный метод...');
+        setUploadProgress(20);
         // Используем кастомный метод получения URL (для CreateOffer)
         const params = await onGetUploadParameters();
         uploadURL = params.url;
         console.log('✅ Upload URL получен:', uploadURL.substring(0, 50) + '...');
+        setUploadProgress(40);
       } else {
         console.log('📡 Получение upload URL через стандартный метод...');
         // Используем стандартный метод (для OfferDetails)
@@ -107,7 +114,8 @@ export function CreativeUploader({
         uploadURL = data.uploadURL;
       }
 
-      console.log('Uploading file to:', uploadURL);
+      console.log('📤 Загрузка файла в облако...');
+      setUploadProgress(60);
 
       // Загружаем файл напрямую в облачное хранилище
       const fileUploadResponse = await fetch(uploadURL, {
@@ -119,14 +127,18 @@ export function CreativeUploader({
       });
 
       console.log('File upload response status:', fileUploadResponse.status);
+      setUploadProgress(80);
 
       if (!fileUploadResponse.ok) {
         throw new Error(`Failed to upload file: ${fileUploadResponse.status}`);
       }
 
+      setUploadProgress(100);
+      setUploadComplete(true);
+
       toast({
-        title: "Креативы загружены",
-        description: "ZIP архив успешно загружен в облачное хранилище",
+        title: "✅ Креативы загружены",
+        description: `Файл "${selectedFile.name}" успешно загружен`,
       });
 
       // Формируем результат в формате Uppy для совместимости
@@ -142,16 +154,22 @@ export function CreativeUploader({
       // Вызываем callback с результатом
       onComplete?.(result);
       
-      // Очищаем выбранный файл
-      setSelectedFile(null);
+      // Через 2 секунды убираем файл из интерфейса
+      setTimeout(() => {
+        setSelectedFile(null);
+        setUploadProgress(0);
+        setUploadComplete(false);
+      }, 2000);
 
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('❌ Ошибка загрузки:', error);
+      setUploadProgress(0);
       toast({
-        title: "Ошибка загрузки",
+        title: "❌ Ошибка загрузки",
         description: "Не удалось загрузить креативы. Попробуйте еще раз.",
         variant: "destructive",
       });
+      setSelectedFile(null);
     } finally {
       setUploading(false);
     }
@@ -208,53 +226,65 @@ export function CreativeUploader({
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-gray-900/50">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  uploadComplete ? 'bg-green-100 dark:bg-green-900/30' : uploading ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-gray-100 dark:bg-gray-800'
+                }`}>
+                  {uploadComplete ? (
+                    <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  ) : (
+                    <FileText className={`w-5 h-5 ${uploading ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`} />
+                  )}
                 </div>
                 <div>
                   <h4 className="font-medium">{selectedFile.name}</h4>
                   <p className="text-sm text-muted-foreground">
                     {formatFileSize(selectedFile.size)}
+                    {uploading && ` • Загрузка ${uploadProgress}%`}
+                    {uploadComplete && ' • ✅ Загружено'}
                   </p>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedFile(null)}
-                disabled={uploading}
-                title="Удалить файл"
-              >
-                <X className="w-4 h-4" />
-              </Button>
+              {!uploading && !uploadComplete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedFile(null)}
+                  title="Удалить файл"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
             </div>
 
-            <div className="flex gap-2">
-              <Button
-                onClick={handleUpload}
-                disabled={uploading}
-                className="bg-green-600 hover:bg-green-700 text-white flex-1"
-              >
-                {uploading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Загрузка...
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4 mr-2" />
-                    Загрузить креативы
-                  </>
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setSelectedFile(null)}
-                disabled={uploading}
-              >
-                Отмена
-              </Button>
-            </div>
+            {uploading && (
+              <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            )}
+
+            {uploadComplete && (
+              <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="flex items-center justify-center gap-2 text-green-700 dark:text-green-300">
+                  <Check className="w-4 h-4" />
+                  <span className="font-medium">Файл успешно загружен!</span>
+                </div>
+              </div>
+            )}
+
+            {!uploading && !uploadComplete && (
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleUpload}
+                  className="bg-green-600 hover:bg-green-700 text-white flex-1"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Загрузить
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
