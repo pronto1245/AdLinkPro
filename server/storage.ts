@@ -3,6 +3,7 @@ import {
   postbacks, postbackLogs, postbackTemplates, tickets, fraudAlerts, customRoles, userRoleAssignments,
   cryptoWallets, cryptoTransactions, fraudReports, fraudRules, 
   deviceTracking, ipAnalysis, fraudBlocks, receivedOffers, offerAccessRequests, userNotifications,
+  creativeFiles,
   type User, type InsertUser, type Offer, type InsertOffer,
   type PartnerOffer, type InsertPartnerOffer, type TrackingLink, type InsertTrackingLink,
   type Transaction, type InsertTransaction, type Postback, type InsertPostback,
@@ -473,6 +474,9 @@ export class DatabaseStorage implements IStorage {
   async deleteOffer(id: string): Promise<void> {
     // First delete all related data to avoid foreign key constraint violations
     try {
+      // Delete creative files first (new constraint violation fix)
+      await db.delete(creativeFiles).where(eq(creativeFiles.offerId, id));
+      
       // Delete offer access requests first (this was causing the constraint violation)
       await db.delete(offerAccessRequests).where(eq(offerAccessRequests.offerId, id));
       
