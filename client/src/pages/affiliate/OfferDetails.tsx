@@ -92,7 +92,7 @@ export default function OfferDetails() {
 
   // Загрузка актуальных данных оффера
   const { data: offer, isLoading: offerLoading, error: offerError } = useQuery({
-    queryKey: ["/api/partner/offers", offerId],
+    queryKey: [`/api/partner/offers/${offerId}`],
     enabled: !!offerId,
     staleTime: 1 * 60 * 1000, // 1 минута
   });
