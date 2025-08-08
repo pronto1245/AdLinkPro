@@ -5567,5 +5567,7 @@ class MemStorage implements IStorage {
 }
 
 // Use MemStorage for quick fix - switch back to DatabaseStorage once methods are properly implemented
-export const storage = new MemStorage();
+// КРИТИЧНО: Используем DatabaseStorage для консистентности данных
+// MemStorage вызывает foreign key constraint ошибки из-за рассинхронизации
+export const storage = new DatabaseStorage();
 
