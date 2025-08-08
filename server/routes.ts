@@ -1861,6 +1861,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Фильтруем офферы и проверяем доступность для партнера
       const availableOffers = [];
+      // Фильтруем офферы и проверяем доступность для партнера
       for (const offer of allOffers) {
         if (offer.status !== 'active' || offer.isArchived || offer.isBlocked) {
           continue;
@@ -1904,11 +1905,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: offer.status || 'active',
           accessStatus,
           hasFullAccess,
-          customPayout: partnerOffer?.customPayout,
           partnerLink,
-          partnerApprovalType: 'manual',
-          createdAt: offer.createdAt || new Date().toISOString(),
-          geoPricing: offer.geoPricing ? JSON.parse(offer.geoPricing) : null
+          createdAt: offer.createdAt
         });
       }
       
