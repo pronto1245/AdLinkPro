@@ -256,7 +256,12 @@ const AdvertiserOffers = () => {
                           <img 
                             src={offer.logo} 
                             alt={offer.name}
-                            className="w-10 h-10 rounded-lg object-cover"
+                            className="w-10 h-10 rounded-lg object-cover border border-gray-200"
+                            onError={(e) => {
+                              console.log('Logo failed to load:', offer.logo);
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                            }}
                           />
                         )}
                         <div>
@@ -270,16 +275,16 @@ const AdvertiserOffers = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1 flex-wrap">
-                        {parseCountries(offer.countries).slice(0, 3).map((country, index) => (
-                          <div key={`${offer.id}-country-${index}`} className="flex items-center gap-1">
-                            <span className="text-lg" title={country.name}>{country.flag}</span>
-                            <span className="text-xs font-mono bg-muted px-1 py-0.5 rounded">{country.code}</span>
+                      <div className="flex items-center gap-1 flex-wrap max-w-32">
+                        {parseCountries(offer.countries || offer.geoTargeting).slice(0, 2).map((country, index) => (
+                          <div key={`${offer.id}-country-${index}`} className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
+                            <span className="text-sm" title={country.name}>{country.flag}</span>
+                            <span className="text-xs font-mono text-gray-600 dark:text-gray-300">{country.code}</span>
                           </div>
                         ))}
-                        {parseCountries(offer.countries).length > 3 && (
-                          <span className="text-xs text-muted-foreground">
-                            +{parseCountries(offer.countries).length - 3}
+                        {parseCountries(offer.countries || offer.geoTargeting).length > 2 && (
+                          <span className="text-xs text-muted-foreground bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md">
+                            +{parseCountries(offer.countries || offer.geoTargeting).length - 2}
                           </span>
                         )}
                       </div>
