@@ -103,7 +103,7 @@ export default function AccessRequestsManager() {
   // Mutation для создания запроса доступа
   const createRequestMutation = useMutation({
     mutationFn: async (data: { offerId: string; message?: string }) => {
-      return await apiRequest("/api/partner/offers/request", "POST", data);
+      return await apiRequest("/api/partner/offer-access-request", "POST", data);
     },
     onSuccess: () => {
       toast({

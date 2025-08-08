@@ -7388,7 +7388,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       .leftJoin(offers, eq(offerAccessRequests.offerId, offers.id))
       .leftJoin(users, eq(offerAccessRequests.advertiserId, users.id))
       .where(eq(offerAccessRequests.partnerId, userId))
-      .orderBy(desc(offerAccessRequests.requestedAt));
+      .orderBy(sql`${offerAccessRequests.requestedAt} DESC`);
 
       // Transform to match the expected format
       const formattedRequests = requests.map(req => ({
@@ -7543,7 +7543,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       .leftJoin(offers, eq(offerAccessRequests.offerId, offers.id))
       .leftJoin(users, eq(offerAccessRequests.partnerId, users.id))
       .where(eq(offerAccessRequests.advertiserId, userId))
-      .orderBy(desc(offerAccessRequests.requestedAt));
+      .orderBy(sql`${offerAccessRequests.requestedAt} DESC`);
 
       // Transform to match the expected format
       const formattedRequests = requests.map(req => ({
