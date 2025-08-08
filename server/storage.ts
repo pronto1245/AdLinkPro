@@ -4221,6 +4221,52 @@ class MemStorage implements IStorage {
       updatedAt: new Date('2025-08-01')
     },
     {
+      id: 'bdntytd33',
+      name: 'FR | BonRush | reg | 170$',
+      description: {
+        ru: 'Французский оффер BonRush с выплатой 170$ за регистрацию',
+        en: 'French BonRush offer with $170 registration payout'
+      },
+      category: 'gambling',
+      logo: '/objects/uploads/23206cd0-c2ee-48bf-bdb5-4f4234d74946',
+      countries: ['france'],
+      landingPageUrl: 'https://bonrush-fr.com/landing?offer=bdntytd33',
+      landingPages: [
+        {
+          id: 'bdntytd33_1',
+          name: 'Основная FR',
+          url: 'https://bonrush-fr.com/landing?offer=bdntytd33',
+          geo: 'france',
+          payout: '170',
+          hasCustomGeo: false,
+          hasCustomPayout: false,
+          isDefault: true
+        }
+      ],
+      payout: '170',
+      payoutType: 'cpa',
+      currency: 'USD',
+      payoutByGeo: {},
+      trafficSources: ['Facebook Ads', 'Google Ads', 'Native'],
+      allowedApplications: ['WebView App', 'PWA App', 'Mobile App'],
+      partnerApprovalType: 'manual',
+      autoApprovePartners: false,
+      dailyLimit: null,
+      monthlyLimit: null,
+      antifraudEnabled: true,
+      antifraudMethods: ['ip_check', 'vpn_detection'],
+      kycRequired: false,
+      isPrivate: false,
+      kpiConditions: {
+        ru: 'Качественный трафик, регистрация с депозитом',
+        en: 'Quality traffic, registration with deposit'
+      },
+      advertiserId: '2',
+      status: 'active',
+      createdAt: new Date('2025-08-08'),
+      updatedAt: new Date('2025-08-08')
+    },
+    {
       id: '2',
       name: 'Sports Betting Pro',
       description: {
@@ -5225,6 +5271,8 @@ class MemStorage implements IStorage {
     };
     // Add to mock offers array
     this.offers.push(newOffer);
+    console.log(`✅ Оффер добавлен в storage! Всего офферов: ${this.offers.length}`);
+    console.log(`Последний оффер: ${newOffer.id} - ${newOffer.name}`);
     
     // Офферы создаются, но не автоматически одобряются - партнеры должны запрашивать доступ
     
@@ -5467,6 +5515,9 @@ class MemStorage implements IStorage {
     const accessRequests = await this.getOfferAccessRequests(partnerId);
     
     // Return ALL active offers - показываем все офферы, но ссылки только для одобренных
+    console.log(`Total offers in storage: ${this.offers.length}`);
+    this.offers.forEach(offer => console.log(`Offer: ${offer.id} - ${offer.name} - Status: ${offer.status}`));
+    
     return this.offers
       .filter(offer => offer.status === 'active')
       .map(offer => {
