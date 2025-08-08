@@ -103,6 +103,7 @@ export default function OfferDetails() {
   console.log('OfferDetails Debug:', {
     offerId,
     accessRequests: accessRequests.length,
+    rawFirstRequest: accessRequests[0],
     allRequests: accessRequests.map((req: any) => ({ 
       id: req.id, 
       offerId: req.offerId, 
