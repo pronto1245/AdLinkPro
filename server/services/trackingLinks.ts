@@ -60,27 +60,38 @@ export class TrackingLinkService {
     const { originalUrl, advertiserId, partnerId, offerId, subid } = params;
     
     try {
+      // Check if originalUrl is a valid URL
+      if (!originalUrl || typeof originalUrl !== 'string' || originalUrl.length < 4) {
+        console.warn('Invalid original URL provided:', originalUrl);
+        // Return a default landing page URL with custom domain
+        const verifiedDomains = await this.getVerifiedCustomDomains(advertiserId);
+        const customDomain = verifiedDomains.length > 0 ? verifiedDomains[0] : 'track.example.com';
+        const fallbackUrl = new URL(`https://${customDomain}/landing`);
+        if (subid) fallbackUrl.searchParams.set('subid', subid);
+        fallbackUrl.searchParams.set('partner_id', partnerId);
+        fallbackUrl.searchParams.set('offer_id', offerId);
+        return fallbackUrl.toString();
+      }
+
       // Get advertiser's verified custom domains
       const verifiedDomains = await this.getVerifiedCustomDomains(advertiserId);
       
-      if (verifiedDomains.length === 0) {
-        // No custom domain - return original URL with subid parameter
-        const url = new URL(originalUrl);
-        if (subid) {
-          url.searchParams.set('subid', subid);
-        }
-        url.searchParams.set('partner_id', partnerId);
-        url.searchParams.set('offer_id', offerId);
-        return url.toString();
+      // Try to parse as URL, if fails, treat as path
+      let url: URL;
+      try {
+        url = new URL(originalUrl);
+      } catch {
+        // If originalUrl is not a valid URL, create one with custom domain or example domain
+        const customDomain = verifiedDomains.length > 0 ? verifiedDomains[0] : 'example.com';
+        url = new URL(`https://${customDomain}${originalUrl.startsWith('/') ? originalUrl : '/' + originalUrl}`);
       }
-
-      // Use first verified custom domain
-      const customDomain = verifiedDomains[0];
-      const url = new URL(originalUrl);
       
-      // Replace domain with custom domain
-      url.hostname = customDomain;
-      url.protocol = 'https:';
+      if (verifiedDomains.length > 0) {
+        // Use first verified custom domain
+        const customDomain = verifiedDomains[0];
+        url.hostname = customDomain;
+        url.protocol = 'https:';
+      }
       
       // Add tracking parameters
       if (subid) {
@@ -92,19 +103,10 @@ export class TrackingLinkService {
       return url.toString();
     } catch (error) {
       console.error('Error transforming landing URL:', error);
-      // Return original URL with basic parameters on error
-      try {
-        const url = new URL(originalUrl);
-        if (subid) {
-          url.searchParams.set('subid', subid);
-        }
-        url.searchParams.set('partner_id', partnerId);  
-        url.searchParams.set('offer_id', offerId);
-        return url.toString();
-      } catch {
-        // If URL is invalid, return original
-        return originalUrl;
-      }
+      // Return a safe fallback URL
+      const customDomain = 'track.example.com'; // Safe fallback
+      const fallbackUrl = `https://${customDomain}/landing?offer_id=${offerId}&partner_id=${partnerId}${subid ? `&subid=${subid}` : ''}`;
+      return fallbackUrl;
     }
   }
 

@@ -178,7 +178,7 @@ const LandingPagesCard = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ExternalLink className="w-5 h-5" />
-          Лендинг страницы с кастомным доменом ({landingPages.length})
+          Лендинг страницы ({landingPages.length})
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -192,21 +192,19 @@ const LandingPagesCard = ({
                     <Badge variant="default" className="text-xs">По умолчанию</Badge>
                   )}
                   <Badge variant="outline" className="text-xs">{landing.type}</Badge>
-                  {transformedUrls[landing.id] && (
-                    <Badge variant="secondary" className="text-xs">С кастомным доменом</Badge>
-                  )}
+                  <Badge variant="secondary" className="text-xs">Готовая ссылка</Badge>
                 </div>
                 <div className="space-y-1">
-                  <code className="text-xs text-muted-foreground block">
-                    Оригинал: {landing.url}
-                  </code>
-                  {transformedUrls[landing.id] && (
+                  {transformedUrls[landing.id] ? (
                     <code className="text-sm text-green-600 dark:text-green-400 block font-medium">
-                      С доменом: {transformedUrls[landing.id]}
+                      {transformedUrls[landing.id]}
                     </code>
-                  )}
-                  {loading[landing.id] && (
-                    <span className="text-xs text-muted-foreground">⏳ Подготавливаем ссылку с кастомным доменом...</span>
+                  ) : loading[landing.id] ? (
+                    <span className="text-xs text-muted-foreground">⏳ Подготавливаем ссылку...</span>
+                  ) : (
+                    <code className="text-sm text-muted-foreground">
+                      Ссылка будет готова через секунду...
+                    </code>
                   )}
                 </div>
               </div>

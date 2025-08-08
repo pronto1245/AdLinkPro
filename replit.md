@@ -1,17 +1,17 @@
 # Overview
 This is a comprehensive affiliate marketing platform providing advertisers with intelligent offer management, real-time analytics, partner relationships, financial transactions, and anti-fraud protection. The platform features role-based access control (super-admin, advertiser, affiliate, staff), comprehensive offer management with creative file handling, real-time statistics and analytics, financial management with payouts and transactions, partner approval workflows, and multi-layered security. All data flows are reactive and live - status changes, conversion rates, financial metrics, and fraud alerts update in real-time across all user interfaces.
 
-**Latest Update (Aug 8, 2025)**: ✅ СИСТЕМА ПОЛНОСТЬЮ ИСПРАВЛЕНА И ПРОТЕСТИРОВАНА!
+**Latest Update (Aug 8, 2025)**: ✅ КАСТОМНЫЕ ДОМЕНЫ ДЛЯ ЛЕНДИНГ СТРАНИЦ ПОЛНОСТЬЮ РЕАЛИЗОВАНЫ!
 
-**КРИТИЧЕСКИЕ ИСПРАВЛЕНИЯ ВЫПОЛНЕНЫ:**
-- ✅ Исправлены все ошибки с отсутствующими методами в DatabaseStorage
-- ✅ Добавлены методы: getAvailableOffers, getOfferAccessRequestsByAdvertiser, getOfferById  
-- ✅ Исправлены foreign key constraint ошибки
-- ✅ Полный цикл работы системы протестирован и функционирует
-- ✅ Рекламодатели могут одобрять запросы партнеров
-- ✅ Партнеры получают готовые трекинговые ссылки после одобрения
-- ✅ Все данные корректно сохраняются в PostgreSQL
-- ✅ КРИТИЧНО: Полностью скрыты все ссылки от партнеров до одобрения рекламодателем
+**РЕАЛИЗОВАННЫЕ ВОЗМОЖНОСТИ КАСТОМНЫХ ДОМЕНОВ:**
+- ✅ API эндпоинт `/api/partner/transform-landing-url` для трансформации лендинг URL
+- ✅ Метод `TrackingLinkService.transformLandingUrl` для серверной обработки
+- ✅ Клиентская функция `transformLandingUrl` в queryClient.ts
+- ✅ Компонент `LandingPagesCard` с автоматической трансформацией URL
+- ✅ Обработка невалидных URL с fallback механизмом
+- ✅ Полное скрытие оригинальных лендинг URL от партнеров
+- ✅ Показ только готовых ссылок с кастомным доменом и subid
+- ✅ Интеграция с существующей системой верификации доменов
 
 **КРИТИЧНАЯ ЛОГИКА СИСТЕМЫ (НЕ ЛОМАТЬ!):**
 
@@ -21,7 +21,9 @@ This is a comprehensive affiliate marketing platform providing advertisers with 
 4. **Рекламодатель одобряет запрос** - в своей панели управления
 5. **ПОСЛЕ одобрения появляются готовые ссылки** - автоматически сгенерированные с кастомным доменом и clickid
 
-Формат готовых ссылок: `https://track.example.com/click?offer=${offerId}&partner=${partnerId}&clickid=partner_${partnerId}_${offerId}_{subid}`
+**ФОРМАТЫ ГОТОВЫХ ССЫЛОК:**
+- Трекинг ссылки: `https://track.example.com/click?offer=${offerId}&partner=${partnerId}&clickid=partner_${partnerId}_${offerId}_{subid}`
+- Лендинг страницы: `https://custom-domain.com/landing?offer_id=${offerId}&partner_id=${partnerId}&subid=${subid}`
 
 **СИСТЕМА БЕЗОПАСНОСТИ ПОЛНОСТЬЮ РАБОТАЕТ:**
 - ✅ LinkGenerator.tsx скрывает все ссылки до одобрения (isApproved проверка)
