@@ -5122,6 +5122,105 @@ class MemStorage implements IStorage {
     console.log(`Mock delete received offer ${id}`);
   }
 
+  // Offer management methods for MemStorage
+  async createOffer(offerData: InsertOffer): Promise<Offer> {
+    const newOffer: Offer = {
+      id: Math.random().toString(36).substr(2, 9),
+      ...offerData,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    // Add to mock offers array
+    this.offers.push(newOffer);
+    return newOffer;
+  }
+
+  async getAdvertiserOffers(advertiserId: string, filters?: any): Promise<Offer[]> {
+    return this.offers.filter(offer => offer.advertiserId === advertiserId);
+  }
+
+  async updateOffer(id: string, data: Partial<InsertOffer>): Promise<Offer> {
+    const offerIndex = this.offers.findIndex(offer => offer.id === id);
+    if (offerIndex === -1) {
+      throw new Error('Offer not found');
+    }
+    
+    const updatedOffer = {
+      ...this.offers[offerIndex],
+      ...data,
+      updatedAt: new Date()
+    };
+    
+    this.offers[offerIndex] = updatedOffer;
+    return updatedOffer;
+  }
+
+  async deleteOffer(id: string): Promise<void> {
+    const offerIndex = this.offers.findIndex(offer => offer.id === id);
+    if (offerIndex !== -1) {
+      this.offers.splice(offerIndex, 1);
+    }
+  }
+
+  async getOfferById(id: string): Promise<Offer | undefined> {
+    return this.offers.find(offer => offer.id === id);
+  }
+
+  async duplicateOffer(offerId: string, advertiserId: string): Promise<Offer> {
+    const originalOffer = await this.getOfferById(offerId);
+    if (!originalOffer) {
+      throw new Error('Original offer not found');
+    }
+
+    const duplicatedOffer: Offer = {
+      ...originalOffer,
+      id: Math.random().toString(36).substr(2, 9),
+      name: `${originalOffer.name} (копия)`,
+      status: 'draft',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.offers.push(duplicatedOffer);
+    return duplicatedOffer;
+  }
+
+  async bulkUpdateOffers(offerIds: string[], updates: Partial<InsertOffer>): Promise<void> {
+    offerIds.forEach(id => {
+      const offerIndex = this.offers.findIndex(offer => offer.id === id);
+      if (offerIndex !== -1) {
+        this.offers[offerIndex] = {
+          ...this.offers[offerIndex],
+          ...updates,
+          updatedAt: new Date()
+        };
+      }
+    });
+  }
+
+  async getOfferCategories(): Promise<any[]> {
+    return [
+      { id: 'gambling', name: 'Gambling', color: '#ff6b6b' },
+      { id: 'dating', name: 'Dating', color: '#ff8cc8' },
+      { id: 'finance', name: 'Finance', color: '#4ecdc4' },
+      { id: 'gaming', name: 'Gaming', color: '#45b7d1' },
+      { id: 'health', name: 'Health', color: '#96ceb4' },
+      { id: 'crypto', name: 'Crypto', color: '#feca57' },
+      { id: 'e-commerce', name: 'E-commerce', color: '#ff9ff3' },
+      { id: 'travel', name: 'Travel', color: '#54a0ff' }
+    ];
+  }
+
+  async getOfferStatistics(offerId: string, filters?: any): Promise<any> {
+    return {
+      clicks: Math.floor(Math.random() * 10000),
+      conversions: Math.floor(Math.random() * 500),
+      revenue: Math.floor(Math.random() * 50000),
+      cr: (Math.random() * 10).toFixed(2),
+      epc: (Math.random() * 5).toFixed(2)
+    };
+  }
+
 
 
 }
