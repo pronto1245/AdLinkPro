@@ -32,12 +32,19 @@ interface CustomDomain {
   status: 'pending' | 'verifying' | 'verified' | 'failed' | 'expired';
   type: 'a_record' | 'cname';
   verificationValue: string;
-  verificationRecord: string;
-  sslStatus: 'none' | 'pending' | 'issued' | 'expired';
-  isActive: boolean;
-  lastChecked: string | null;
-  errorMessage: string | null;
+  targetValue?: string;
+  sslStatus?: 'none' | 'pending' | 'issued' | 'expired';
+  isActive?: boolean;
+  lastChecked?: string | null;
+  errorMessage?: string | null;
   createdAt: string;
+  verifiedAt?: string | null;
+  advertiserId?: string;
+  dnsInstructions?: {
+    type: string;
+    host: string;
+    value: string;
+  };
 }
 
 interface DNSInstructions {
@@ -311,6 +318,12 @@ export function CustomDomainManager() {
                             SSL
                           </Badge>
                         )}
+                        {domain.status === 'verified' && !domain.sslStatus && (
+                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                            <Zap className="h-3 w-3 mr-1" />
+                            Готов
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
@@ -358,7 +371,7 @@ export function CustomDomainManager() {
                                   <Label className="text-sm font-semibold">Тип записи</Label>
                                   <div className="flex items-center gap-2 mt-1">
                                     <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">
-                                      {domain.type.toUpperCase()}
+                                      {domain.dnsInstructions?.type || (domain.type === 'cname' ? 'CNAME' : 'A')}
                                     </code>
                                   </div>
                                 </div>
@@ -366,13 +379,13 @@ export function CustomDomainManager() {
                                   <Label className="text-sm font-semibold">Имя/Host</Label>
                                   <div className="flex items-center gap-2 mt-1">
                                     <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm break-all">
-                                      {domain.type === 'cname' ? domain.domain : `verify-${domain.domain}`}
+                                      {domain.dnsInstructions?.host || (domain.type === 'cname' ? domain.domain.split('.')[0] : '@')}
                                     </code>
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      onClick={() => handleCopyToClipboard(domain.type === 'cname' ? domain.domain : `verify-${domain.domain}`)}
-                                      title="Скопировать"
+                                      onClick={() => handleCopyToClipboard(domain.dnsInstructions?.host || (domain.type === 'cname' ? domain.domain.split('.')[0] : '@'))}
+                                      title="Скопировать хост"
                                     >
                                       <Copy className="h-3 w-3" />
                                     </Button>
@@ -382,15 +395,13 @@ export function CustomDomainManager() {
                                   <Label className="text-sm font-semibold">Значение</Label>
                                   <div className="flex items-center gap-2 mt-1">
                                     <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm break-all">
-                                      {domain.type === 'cname' ? 'track.partner-system.com' : domain.verificationValue}
+                                      {domain.dnsInstructions?.value || domain.verificationValue}
                                     </code>
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      onClick={() => handleCopyToClipboard(
-                                        domain.type === 'cname' ? 'track.partner-system.com' : domain.verificationValue
-                                      )}
-                                      title="Скопировать"
+                                      onClick={() => handleCopyToClipboard(domain.dnsInstructions?.value || domain.verificationValue)}
+                                      title="Скопировать значение"
                                     >
                                       <Copy className="h-3 w-3" />
                                     </Button>
@@ -403,20 +414,38 @@ export function CustomDomainManager() {
                                   <Info className="h-4 w-4" />
                                   <AlertDescription>
                                     {domain.type === 'cname' 
-                                      ? `Добавьте CNAME запись в DNS настройках вашего домена. После добавления записи нажмите "Проверить домен".`
-                                      : `Добавьте TXT запись для верификации. После добавления записи нажмите "Проверить домен".`
+                                      ? `Добавьте CNAME запись в DNS настройках вашего домена. Это позволит использовать ваш собственный домен для трекинговых ссылок с белым лейблом.`
+                                      : `Добавьте A запись в DNS настройках вашего домена. После добавления записи нажмите "Проверить домен".`
                                     }
                                   </AlertDescription>
                                 </Alert>
+
+                                {/* Пример трекинговой ссылки */}
+                                <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                                  <h5 className="font-medium mb-2 text-green-800 dark:text-green-200">
+                                    После настройки ваши трекинговые ссылки будут выглядеть так:
+                                  </h5>
+                                  <code className="text-sm bg-white dark:bg-gray-800 px-3 py-2 rounded border block">
+                                    https://{domain.domain}/click?offer=123&clickid=partner_abc123
+                                  </code>
+                                  <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+                                    Белый лейбл повышает доверие пользователей и улучшает конверсию!
+                                  </p>
+                                </div>
 
                                 <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                                   <h5 className="font-medium mb-2">Пошаговая инструкция:</h5>
                                   <ol className="list-decimal list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400">
                                     <li>Войдите в панель управления DNS вашего провайдера домена (GoDaddy, Namecheap, Cloudflare и т.д.)</li>
-                                    <li>Найдите раздел "DNS Records" или "DNS управление"</li>
-                                    <li>Добавьте новую {domain.type.toUpperCase()} запись с указанными выше параметрами</li>
-                                    <li>Сохраните изменения (может потребоваться 5-30 минут для распространения)</li>
-                                    <li>Вернитесь сюда и нажмите "Проверить домен"</li>
+                                    <li>Найдите раздел "DNS Records", "DNS управление" или "Zone File"</li>
+                                    <li>Добавьте новую {domain.dnsInstructions?.type || domain.type.toUpperCase()} запись:</li>
+                                    <li className="ml-4">
+                                      • Тип: <strong>{domain.dnsInstructions?.type || domain.type.toUpperCase()}</strong><br/>
+                                      • Имя/Host: <strong>{domain.dnsInstructions?.host || (domain.type === 'cname' ? domain.domain.split('.')[0] : '@')}</strong><br/>
+                                      • Значение: <strong>{domain.dnsInstructions?.value || domain.verificationValue}</strong>
+                                    </li>
+                                    <li>Сохраните изменения (распространение DNS может занять 5-30 минут)</li>
+                                    <li>Вернитесь сюда и нажмите "Проверить домен" для верификации</li>
                                   </ol>
                                 </div>
                                 
