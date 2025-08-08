@@ -333,14 +333,6 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
-      <Route path="/advertiser/access-requests">
-        <ProtectedRoute allowedRoles={['advertiser']}>
-          <RoleBasedLayout>
-            <AdvertiserAccessRequests />
-          </RoleBasedLayout>
-        </ProtectedRoute>
-      </Route>
-      
       <Route path="/advertiser/antifraud">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <RoleBasedLayout key="advertiser-antifraud">

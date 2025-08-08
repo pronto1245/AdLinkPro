@@ -2013,7 +2013,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Одобрить/отклонить запрос доступа
+  // Ответить на запрос доступа (новый эндпоинт)
+  app.post("/api/advertiser/access-requests/:id/respond", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const advertiserId = getAuthenticatedUser(req).id;
+      const requestId = req.params.id;
+      const { action, message } = req.body;
+      
+      if (!['approve', 'reject'].includes(action)) {
+        return res.status(400).json({ error: "Invalid action" });
+      }
+      
+      // Получаем запрос и проверяем права
+      const requests = await storage.getOfferAccessRequests();
+      const request = requests.find(r => r.id === requestId);
+      if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+      
+      // Проверяем, что оффер принадлежит рекламодателю
+      const offer = await storage.getOffer(request.offerId);
+      if (!offer || offer.advertiserId !== advertiserId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const status = action === 'approve' ? 'approved' : 'rejected';
+      
+      // Обновляем статус запроса
+      const updatedRequest = await storage.updateOfferAccessRequest(requestId, {
+        status,
+        responseNote: message || null,
+        updatedAt: new Date()
+      });
+      
+      // Если одобрено, создаем связь партнер-оффер
+      if (status === 'approved') {
+        const existingPartnerOffers = await storage.getPartnerOffers(request.partnerId, request.offerId);
+        if (existingPartnerOffers.length === 0) {
+          await storage.createPartnerOffer({
+            id: randomUUID(),
+            partnerId: request.partnerId,
+            offerId: request.offerId,
+            isApproved: true,
+            customPayout: null,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+        }
+      }
+      
+      res.json(updatedRequest);
+    } catch (error) {
+      console.error("Respond to access request error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Одобрить/отклонить запрос доступа (старый эндпоинт)
   app.patch("/api/advertiser/access-requests/:id", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {
       const advertiserId = getAuthenticatedUser(req).id;

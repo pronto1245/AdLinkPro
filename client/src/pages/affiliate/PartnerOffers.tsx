@@ -179,10 +179,7 @@ export default function PartnerOffers() {
   // Mutation для запроса доступа к офферу
   const requestAccessMutation = useMutation({
     mutationFn: async (data: { offerId: string; message?: string }) => {
-      return await apiRequest("/api/partner/offer-access-request", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      return await apiRequest("/api/partner/offer-access-request", "POST", data);
     },
     onSuccess: () => {
       toast({

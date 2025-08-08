@@ -1,125 +1,216 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { apiRequest } from "@/lib/queryClient";
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Clock, User, Calendar, MessageSquare } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ru } from "date-fns/locale";
+import { 
+  Check, 
+  X, 
+  Search, 
+  Filter, 
+  Eye, 
+  MessageSquare,
+  Clock,
+  UserCheck,
+  UserX,
+  Calendar,
+  Target,
+  CheckCircle,
+  XCircle,
+  MoreHorizontal
+} from "lucide-react";
 
-interface AccessRequest {
+interface OfferAccessRequest {
   id: string;
   offerId: string;
   partnerId: string;
   advertiserId: string;
   status: 'pending' | 'approved' | 'rejected';
-  requestNote: string | null;
-  responseNote: string | null;
+  message?: string;
+  responseMessage?: string;
   requestedAt: string;
-  reviewedAt: string | null;
-  // Offer details
-  offerName: string;
-  offerCategory: string;
-  offerPayout: string;
-  offerPayoutType: 'CPA' | 'CPL' | 'CPS' | 'CPI';
-  // Partner details
-  partnerUsername: string;
-  partnerEmail: string;
-  partnerFirstName: string | null;
-  partnerLastName: string | null;
+  respondedAt?: string;
+  
+  // Связанные данные
+  offer: {
+    id: string;
+    name: string;
+    category: string;
+    payoutType: string;
+    logo?: string;
+  };
+  partner: {
+    id: string;
+    username: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    company?: string;
+  };
 }
 
 export default function AdvertiserAccessRequests() {
-  const [selectedRequest, setSelectedRequest] = useState<AccessRequest | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedRequest, setSelectedRequest] = useState<OfferAccessRequest | null>(null);
+  const [showResponseDialog, setShowResponseDialog] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
+  const [responseAction, setResponseAction] = useState<'approve' | 'reject'>('approve');
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch access requests
-  const { data: requests = [], isLoading } = useQuery<AccessRequest[]>({
+  // Загрузка запросов доступа
+  const { data: requests = [], isLoading } = useQuery({
     queryKey: ["/api/advertiser/access-requests"],
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
-  // Respond to access request mutation
-  const respondMutation = useMutation({
-    mutationFn: async ({ requestId, action, responseMessage }: {
-      requestId: string;
-      action: 'approve' | 'reject';
-      responseMessage?: string;
+  // Mutation для ответа на запрос доступа
+  const respondToRequestMutation = useMutation({
+    mutationFn: async (data: { 
+      requestId: string; 
+      action: 'approve' | 'reject'; 
+      message?: string 
     }) => {
-      const response = await fetch(`/api/advertiser/access-requests/${requestId}/respond`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ action, responseMessage })
+      return await apiRequest(`/api/advertiser/access-requests/${data.requestId}/respond`, "POST", {
+        action: data.action,
+        message: data.message
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || `Failed to ${action} request`);
-      }
-
-      return response.json();
     },
     onSuccess: (data, variables) => {
       toast({
-        title: variables.action === 'approve' ? "Запрос одобрен" : "Запрос отклонён",
-        description: `Партнёр получит уведомление о вашем решении`,
+        title: variables.action === 'approve' ? "Запрос одобрен" : "Запрос отклонен",
+        description: variables.action === 'approve' 
+          ? "Партнер получил доступ к офферу" 
+          : "Запрос был отклонен",
+        variant: "default",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/advertiser/access-requests"] });
+      setShowResponseDialog(false);
       setSelectedRequest(null);
       setResponseMessage("");
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
         title: "Ошибка",
-        description: error.message,
+        description: error.message || "Не удалось обработать запрос",
         variant: "destructive",
       });
     },
   });
 
-  const handleResponse = (action: 'approve' | 'reject') => {
+  // Фильтрация и поиск запросов
+  const filteredRequests = useMemo(() => {
+    return requests.filter((request: OfferAccessRequest) => {
+      const matchesSearch = 
+        request.offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.partner.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.partner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (request.partner.company && request.partner.company.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesStatus = statusFilter === "all" || request.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [requests, searchTerm, statusFilter]);
+
+  // Обработчики
+  const handleResponseClick = (request: OfferAccessRequest, action: 'approve' | 'reject') => {
+    setSelectedRequest(request);
+    setResponseAction(action);
+    setShowResponseDialog(true);
+  };
+
+  const handleSubmitResponse = () => {
     if (!selectedRequest) return;
     
-    respondMutation.mutate({
+    respondToRequestMutation.mutate({
       requestId: selectedRequest.id,
-      action,
-      responseMessage: responseMessage.trim() || undefined
+      action: responseAction,
+      message: responseMessage.trim() || undefined
     });
   };
 
-  const getStatusBadge = (status: AccessRequest['status']) => {
+  // Получение свойств значка статуса
+  const getStatusBadgeProps = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800"><Clock className="w-3 h-3 mr-1" />В ожидании</Badge>;
+        return {
+          className: "bg-yellow-100 text-yellow-800 border-yellow-200",
+          icon: Clock,
+          label: "Ожидает"
+        };
       case 'approved':
-        return <Badge variant="secondary" className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Одобрен</Badge>;
+        return {
+          className: "bg-green-100 text-green-800 border-green-200",
+          icon: CheckCircle,
+          label: "Одобрено"
+        };
       case 'rejected':
-        return <Badge variant="secondary" className="bg-red-100 text-red-800"><XCircle className="w-3 h-3 mr-1" />Отклонён</Badge>;
+        return {
+          className: "bg-red-100 text-red-800 border-red-200",
+          icon: XCircle,
+          label: "Отклонено"
+        };
+      default:
+        return {
+          className: "bg-gray-100 text-gray-800 border-gray-200",
+          icon: Clock,
+          label: status
+        };
     }
   };
 
-  const getPayoutTypeBadge = (type: string) => {
-    const colors = {
-      'CPA': 'bg-blue-100 text-blue-800',
-      'CPL': 'bg-green-100 text-green-800', 
-      'CPS': 'bg-purple-100 text-purple-800',
-      'CPI': 'bg-orange-100 text-orange-800'
-    };
-    return <Badge variant="secondary" className={colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800'}>{type}</Badge>;
-  };
-
-  const formatPartnerName = (request: AccessRequest) => {
-    const fullName = [request.partnerFirstName, request.partnerLastName].filter(Boolean).join(' ');
-    return fullName || request.partnerUsername;
+  // Форматирование даты
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return `Сегодня в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
+    } else if (diffDays === 1) {
+      return `Вчера в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
+    } else {
+      return date.toLocaleDateString('ru-RU', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
   };
 
   if (isLoading) {
@@ -127,242 +218,347 @@ export default function AdvertiserAccessRequests() {
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary"></div>
-          <p>Загрузка запросов...</p>
+          <p>Загрузка запросов доступа...</p>
         </div>
       </div>
     );
   }
 
-  const pendingRequests = requests.filter(r => r.status === 'pending');
-  const reviewedRequests = requests.filter(r => r.status !== 'pending');
-
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+      {/* Заголовок и метрики */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Запросы доступа</h1>
-          <p className="text-muted-foreground mt-2">
-            Управление запросами партнёров на доступ к вашим офферам
+          <h1 className="text-3xl font-bold">Запросы доступа</h1>
+          <p className="text-muted-foreground">
+            Управление запросами партнеров на доступ к офферам
           </p>
         </div>
         
-        <div className="flex gap-4 text-sm">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">{pendingRequests.length}</div>
-            <div className="text-muted-foreground">Ожидают</div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">
+                {requests.filter((r: OfferAccessRequest) => r.status === 'pending').length}
+              </div>
+              <div className="text-xs text-muted-foreground">Ожидают</div>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{requests.filter(r => r.status === 'approved').length}</div>
-            <div className="text-muted-foreground">Одобрено</div>
+          <div className="flex items-center gap-2">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {requests.filter((r: OfferAccessRequest) => r.status === 'approved').length}
+              </div>
+              <div className="text-xs text-muted-foreground">Одобрено</div>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">{requests.filter(r => r.status === 'rejected').length}</div>
-            <div className="text-muted-foreground">Отклонено</div>
+          <div className="flex items-center gap-2">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">
+                {requests.filter((r: OfferAccessRequest) => r.status === 'rejected').length}
+              </div>
+              <div className="text-xs text-muted-foreground">Отклонено</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {requests.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center text-muted-foreground">
-              <MessageSquare className="mx-auto h-12 w-12 mb-4" />
-              <p className="text-lg font-medium">Запросов пока нет</p>
-              <p className="text-sm">Когда партнёры будут запрашивать доступ к вашим офферам, они появятся здесь</p>
+      {/* Фильтры и поиск */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Поиск по офферу, партнеру, email или компании..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+                data-testid="input-search-requests"
+              />
             </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          {/* Pending Requests */}
-          {pendingRequests.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-yellow-600 flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                Ожидают решения ({pendingRequests.length})
-              </h2>
-              
-              <div className="grid gap-4">
-                {pendingRequests.map((request) => (
-                  <Card key={request.id} className="border-yellow-200">
-                    <CardContent className="pt-6">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1 space-y-3">
-                          <div className="flex items-center gap-3">
-                            <User className="w-4 h-4 text-muted-foreground" />
-                            <span className="font-medium">{formatPartnerName(request)}</span>
-                            <Badge variant="outline">{request.partnerEmail}</Badge>
-                          </div>
-                          
-                          <div className="flex items-center gap-4">
-                            <div>
-                              <span className="text-sm text-muted-foreground">Оффер:</span>
-                              <span className="ml-2 font-medium">{request.offerName}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              {getPayoutTypeBadge(request.offerPayoutType)}
-                              <Badge variant="secondary">{request.offerCategory}</Badge>
-                            </div>
-                          </div>
-                          
-                          {request.requestNote && (
-                            <div className="bg-muted p-3 rounded-lg">
-                              <span className="text-sm text-muted-foreground">Сообщение партнёра:</span>
-                              <p className="text-sm mt-1">{request.requestNote}</p>
-                            </div>
-                          )}
-                          
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar className="w-4 h-4" />
-                            <span>Запрошено {formatDistanceToNow(new Date(request.requestedAt), { addSuffix: true, locale: ru })}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex gap-2 ml-4">
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => setSelectedRequest(request)}
-                            disabled={respondMutation.isPending}
-                          >
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Отклонить
-                          </Button>
-                          <Button 
-                            size="sm"
-                            onClick={() => setSelectedRequest(request)}
-                            disabled={respondMutation.isPending}
-                          >
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            Одобрить
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2" data-testid="button-filter-status">
+                  <Filter className="h-4 w-4" />
+                  {statusFilter === "all" ? "Все статусы" : 
+                   statusFilter === "pending" ? "Ожидают" :
+                   statusFilter === "approved" ? "Одобрено" : "Отклонено"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+                  Все статусы
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("pending")}>
+                  Ожидают
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("approved")}>
+                  Одобрено
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("rejected")}>
+                  Отклонено
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </CardContent>
+      </Card>
 
-          {/* Reviewed Requests */}
-          {reviewedRequests.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <CheckCircle className="w-5 h-5" />
-                История решений ({reviewedRequests.length})
-              </h2>
-              
-              <div className="grid gap-4">
-                {reviewedRequests.map((request) => (
-                  <Card key={request.id} className="opacity-75">
-                    <CardContent className="pt-6">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1 space-y-3">
-                          <div className="flex items-center gap-3">
-                            <User className="w-4 h-4 text-muted-foreground" />
-                            <span className="font-medium">{formatPartnerName(request)}</span>
-                            <Badge variant="outline">{request.partnerEmail}</Badge>
-                            {getStatusBadge(request.status)}
-                          </div>
-                          
-                          <div className="flex items-center gap-4">
-                            <div>
-                              <span className="text-sm text-muted-foreground">Оффер:</span>
-                              <span className="ml-2 font-medium">{request.offerName}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              {getPayoutTypeBadge(request.offerPayoutType)}
-                              <Badge variant="secondary">{request.offerCategory}</Badge>
-                            </div>
-                          </div>
-                          
-                          {request.responseNote && (
-                            <div className="bg-muted p-3 rounded-lg">
-                              <span className="text-sm text-muted-foreground">Ваш ответ:</span>
-                              <p className="text-sm mt-1">{request.responseNote}</p>
-                            </div>
-                          )}
-                          
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar className="w-4 h-4" />
-                            <span>
-                              Решение принято {formatDistanceToNow(new Date(request.reviewedAt!), { addSuffix: true, locale: ru })}
-                            </span>
-                          </div>
-                        </div>
+      {/* Таблица запросов */}
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Оффер</TableHead>
+                  <TableHead>Партнер</TableHead>
+                  <TableHead>Статус</TableHead>
+                  <TableHead>Дата запроса</TableHead>
+                  <TableHead>Сообщение</TableHead>
+                  <TableHead className="text-right">Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredRequests.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <Target className="h-8 w-8" />
+                        <p>Запросы не найдены</p>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredRequests.map((request: OfferAccessRequest) => {
+                    const statusProps = getStatusBadgeProps(request.status);
+                    const StatusIcon = statusProps.icon;
+                    
+                    return (
+                      <TableRow key={request.id} className="hover:bg-gray-50/50">
+                        {/* Оффер */}
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            {request.offer.logo ? (
+                              <img 
+                                src={request.offer.logo} 
+                                alt={request.offer.name}
+                                className="w-10 h-10 rounded object-cover flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
+                                <Target className="w-5 h-5 text-gray-500" />
+                              </div>
+                            )}
+                            <div>
+                              <div className="font-medium">{request.offer.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {request.offer.category} • {request.offer.payoutType}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
 
-      {/* Response Dialog */}
-      <Dialog open={!!selectedRequest} onOpenChange={() => setSelectedRequest(null)}>
-        <DialogContent>
+                        {/* Партнер */}
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{request.partner.username}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {request.partner.firstName && request.partner.lastName ? 
+                                `${request.partner.firstName} ${request.partner.lastName}` : 
+                                request.partner.email
+                              }
+                            </div>
+                            {request.partner.company && (
+                              <div className="text-xs text-muted-foreground">
+                                {request.partner.company}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+
+                        {/* Статус */}
+                        <TableCell>
+                          <Badge variant="outline" className={statusProps.className}>
+                            <StatusIcon className="w-3 h-3 mr-1" />
+                            {statusProps.label}
+                          </Badge>
+                        </TableCell>
+
+                        {/* Дата запроса */}
+                        <TableCell>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Calendar className="w-4 h-4 text-muted-foreground" />
+                            {formatDate(request.requestedAt)}
+                          </div>
+                        </TableCell>
+
+                        {/* Сообщение */}
+                        <TableCell>
+                          {request.message ? (
+                            <div className="max-w-xs truncate text-sm" title={request.message}>
+                              {request.message}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Без сообщения</span>
+                          )}
+                        </TableCell>
+
+                        {/* Действия */}
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {request.status === 'pending' ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                  onClick={() => handleResponseClick(request, 'approve')}
+                                  data-testid={`button-approve-${request.id}`}
+                                  title="Одобрить запрос"
+                                >
+                                  <Check className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleResponseClick(request, 'reject')}
+                                  data-testid={`button-reject-${request.id}`}
+                                  title="Отклонить запрос"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                {request.respondedAt && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatDate(request.respondedAt)}
+                                  </span>
+                                )}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" data-testid={`button-menu-${request.id}`}>
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => setSelectedRequest(request)}>
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      Детали
+                                    </DropdownMenuItem>
+                                    {request.responseMessage && (
+                                      <DropdownMenuItem>
+                                        <MessageSquare className="h-4 w-4 mr-2" />
+                                        Ответ
+                                      </DropdownMenuItem>
+                                    )}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Диалог ответа на запрос */}
+      <Dialog open={showResponseDialog} onOpenChange={setShowResponseDialog}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {selectedRequest && (
-                <span>
-                  Ответ на запрос от {formatPartnerName(selectedRequest)}
-                </span>
-              )}
+              {responseAction === 'approve' ? 'Одобрить запрос' : 'Отклонить запрос'}
             </DialogTitle>
-            <DialogDescription>
-              {selectedRequest && (
-                <>
-                  Оффер: <strong>{selectedRequest.offerName}</strong>
-                  <br />
-                  Партнёр получит уведомление о вашем решении
-                </>
-              )}
-            </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
-            {selectedRequest?.requestNote && (
-              <div>
-                <Label>Сообщение партнёра:</Label>
-                <div className="bg-muted p-3 rounded-lg text-sm mt-1">
-                  {selectedRequest.requestNote}
+            {selectedRequest && (
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  {selectedRequest.offer.logo ? (
+                    <img 
+                      src={selectedRequest.offer.logo} 
+                      alt={selectedRequest.offer.name}
+                      className="w-8 h-8 rounded object-cover"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded bg-gray-200 flex items-center justify-center">
+                      <Target className="w-4 h-4 text-gray-500" />
+                    </div>
+                  )}
+                  <div>
+                    <div className="font-medium">{selectedRequest.offer.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Запрос от {selectedRequest.partner.username}
+                    </div>
+                  </div>
                 </div>
+                
+                {selectedRequest.message && (
+                  <div className="mt-2">
+                    <div className="text-sm font-medium text-gray-700 mb-1">Сообщение партнера:</div>
+                    <div className="text-sm text-gray-600">{selectedRequest.message}</div>
+                  </div>
+                )}
               </div>
             )}
             
             <div>
-              <Label htmlFor="response">Ваш ответ (необязательно):</Label>
+              <label className="text-sm font-medium block mb-2">
+                Ответное сообщение (необязательно)
+              </label>
               <Textarea
-                id="response"
-                placeholder="Добавьте комментарий к своему решению..."
                 value={responseMessage}
                 onChange={(e) => setResponseMessage(e.target.value)}
-                className="mt-1"
+                placeholder={responseAction === 'approve' 
+                  ? "Добро пожаловать! Желаем успешного трафика..." 
+                  : "К сожалению, ваш запрос не может быть одобрен..."
+                }
+                rows={3}
+                data-testid="textarea-response-message"
               />
             </div>
+            
+            <div className="flex gap-2 pt-2">
+              <Button 
+                onClick={handleSubmitResponse}
+                disabled={respondToRequestMutation.isPending}
+                className={responseAction === 'approve' ? 
+                  "bg-green-600 hover:bg-green-700" : 
+                  "bg-red-600 hover:bg-red-700"
+                }
+                data-testid="button-submit-response"
+              >
+                {respondToRequestMutation.isPending ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary mr-2" />
+                ) : responseAction === 'approve' ? (
+                  <UserCheck className="h-4 w-4 mr-2" />
+                ) : (
+                  <UserX className="h-4 w-4 mr-2" />
+                )}
+                {responseAction === 'approve' ? 'Одобрить' : 'Отклонить'}
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowResponseDialog(false);
+                  setResponseMessage("");
+                }}
+                data-testid="button-cancel-response"
+              >
+                Отмена
+              </Button>
+            </div>
           </div>
-          
-          <DialogFooter>
-            <Button 
-              variant="destructive" 
-              onClick={() => handleResponse('reject')}
-              disabled={respondMutation.isPending}
-            >
-              <XCircle className="w-4 h-4 mr-1" />
-              Отклонить запрос
-            </Button>
-            <Button 
-              onClick={() => handleResponse('approve')}
-              disabled={respondMutation.isPending}
-            >
-              <CheckCircle className="w-4 h-4 mr-1" />
-              Одобрить запрос
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

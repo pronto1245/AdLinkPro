@@ -557,26 +557,57 @@ export class DatabaseStorage implements IStorage {
 
   // Получить запросы доступа для рекламодателя
   async getAdvertiserAccessRequests(advertiserId: string): Promise<any[]> {
-    const requests = await db
-      .select({
-        id: offerAccessRequests.id,
-        offerId: offerAccessRequests.offerId,
-        partnerId: offerAccessRequests.partnerId,
-        status: offerAccessRequests.status,
-        message: offerAccessRequests.message,
-        createdAt: offerAccessRequests.createdAt,
-        updatedAt: offerAccessRequests.updatedAt,
-        offerName: offers.name,
-        partnerName: sql<string>`COALESCE(${users.firstName} || ' ' || ${users.lastName}, ${users.username})`,
-        partnerEmail: users.email,
-      })
-      .from(offerAccessRequests)
-      .leftJoin(offers, eq(offerAccessRequests.offerId, offers.id))
-      .leftJoin(users, eq(offerAccessRequests.partnerId, users.id))
-      .where(eq(offers.advertiserId, advertiserId))
-      .orderBy(desc(offerAccessRequests.createdAt));
-    
-    return requests;
+    try {
+      // Получаем базовые данные запросов
+      const baseRequests = await db
+        .select()
+        .from(offerAccessRequests)
+        .innerJoin(offers, eq(offerAccessRequests.offerId, offers.id))
+        .where(eq(offers.advertiserId, advertiserId))
+        .orderBy(desc(offerAccessRequests.createdAt));
+      
+      // Обогащаем данными офферов и партнеров
+      const enrichedRequests = await Promise.all(
+        baseRequests.map(async (req) => {
+          const offer = await this.getOffer(req.offer_access_requests.offerId);
+          const partner = await this.getUser(req.offer_access_requests.partnerId);
+          
+          return {
+            id: req.offer_access_requests.id,
+            offerId: req.offer_access_requests.offerId,
+            partnerId: req.offer_access_requests.partnerId,
+            advertiserId: req.offer_access_requests.advertiserId,
+            status: req.offer_access_requests.status,
+            message: req.offer_access_requests.requestNote,
+            responseMessage: req.offer_access_requests.responseNote,
+            requestedAt: req.offer_access_requests.createdAt,
+            respondedAt: req.offer_access_requests.updatedAt,
+            
+            offer: offer ? {
+              id: offer.id,
+              name: offer.name,
+              category: offer.category,
+              payoutType: offer.payoutType,
+              logo: offer.logo
+            } : null,
+            
+            partner: partner ? {
+              id: partner.id,
+              username: partner.username,
+              firstName: partner.firstName,
+              lastName: partner.lastName,
+              email: partner.email,
+              company: partner.company
+            } : null
+          };
+        })
+      );
+      
+      return enrichedRequests;
+    } catch (error) {
+      console.error('Error getting advertiser access requests:', error);
+      return [];
+    }
   }
 
   // Generate automatic partner link for an offer based on its base_url
