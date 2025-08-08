@@ -29,6 +29,8 @@ export function CreativeUploader({
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    console.log('File selected:', file ? file.name : 'none');
+    
     if (file) {
       // Проверяем, что это ZIP файл
       if (!file.name.toLowerCase().endsWith('.zip')) {
@@ -50,6 +52,7 @@ export function CreativeUploader({
         return;
       }
 
+      console.log('File validation passed, setting selected file');
       setSelectedFile(file);
     }
   };
@@ -68,6 +71,8 @@ export function CreativeUploader({
       } else {
         // Используем стандартный метод (для OfferDetails)
         const token = localStorage.getItem('auth_token');
+        console.log('Getting upload URL with token:', token ? 'present' : 'missing');
+        
         const uploadResponse = await fetch('/api/objects/upload', {
           method: 'POST',
           headers: {
@@ -76,13 +81,19 @@ export function CreativeUploader({
           },
         });
 
+        console.log('Upload URL response status:', uploadResponse.status);
+        
         if (!uploadResponse.ok) {
-          throw new Error('Failed to get upload URL');
+          const errorText = await uploadResponse.text();
+          console.error('Upload URL error:', errorText);
+          throw new Error(`Failed to get upload URL: ${uploadResponse.status}`);
         }
 
         const data = await uploadResponse.json();
         uploadURL = data.uploadURL;
       }
+
+      console.log('Uploading file to:', uploadURL);
 
       // Загружаем файл напрямую в облачное хранилище
       const fileUploadResponse = await fetch(uploadURL, {
@@ -93,8 +104,10 @@ export function CreativeUploader({
         },
       });
 
+      console.log('File upload response status:', fileUploadResponse.status);
+
       if (!fileUploadResponse.ok) {
-        throw new Error('Failed to upload file');
+        throw new Error(`Failed to upload file: ${fileUploadResponse.status}`);
       }
 
       toast({
