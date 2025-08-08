@@ -74,6 +74,12 @@ export interface IStorage {
   getCreativeFilesByOfferId(offerId: string): Promise<any[]>;
   saveCreativeFile(data: any): Promise<any>;
   
+  // Custom domains management
+  getCustomDomains(userId: string): Promise<any[]>;
+  addCustomDomain(userId: string, domainData: any): Promise<any>;
+  verifyCustomDomain(userId: string, domainId: string): Promise<any>;
+  deleteCustomDomain(userId: string, domainId: string): Promise<void>;
+  
   // Partner offer management
   getPartnerOffers(partnerId?: string, offerId?: string): Promise<PartnerOffer[]>;
   createPartnerOffer(partnerOffer: InsertPartnerOffer): Promise<PartnerOffer>;
@@ -185,10 +191,6 @@ export interface IStorage {
   getApiTokens(userId: string): Promise<any[]>;
   generateApiToken(userId: string, name: string): Promise<any>;
   deleteApiToken(userId: string, tokenId: string): Promise<void>;
-  getCustomDomains(userId: string): Promise<any[]>;
-  addCustomDomain(userId: string, domain: string, type: string): Promise<any>;
-  verifyCustomDomain(userId: string, domainId: string): Promise<any>;
-  deleteCustomDomain(userId: string, domainId: string): Promise<void>;
   getWebhookSettings(userId: string): Promise<any>;
   updateWebhookSettings(userId: string, settings: any): Promise<any>;
   
@@ -4382,41 +4384,7 @@ class MemStorage implements IStorage {
     // Mock deletion - in real implementation would delete from database
   }
 
-  async getCustomDomains(userId: string): Promise<any[]> {
-    return [
-      {
-        id: '1',
-        domain: 'track.example.com',
-        type: 'cname',
-        status: 'verified',
-        verificationValue: 'track.platform.com',
-        createdAt: '2025-08-01T10:00:00Z'
-      }
-    ];
-  }
 
-  async addCustomDomain(userId: string, domain: string, type: string): Promise<any> {
-    const verificationValue = type === 'cname' ? 'track.platform.com' : '192.168.1.1';
-    return {
-      id: randomUUID(),
-      domain,
-      type,
-      status: 'pending',
-      verificationValue,
-      createdAt: new Date().toISOString()
-    };
-  }
-
-  async verifyCustomDomain(userId: string, domainId: string): Promise<any> {
-    return {
-      verified: Math.random() > 0.5, // Random success for demo
-      status: 'verified'
-    };
-  }
-
-  async deleteCustomDomain(userId: string, domainId: string): Promise<void> {
-    // Mock deletion - in real implementation would delete from database
-  }
 
   async getWebhookSettings(userId: string): Promise<any> {
     return {
@@ -4634,7 +4602,7 @@ class MemStorage implements IStorage {
     return this.createApiToken(userId, { name });
   }
 
-  async getCustomDomains(userId: string): Promise<CustomDomain[]> {
+  async getCustomDomainsOld(userId: string): Promise<CustomDomain[]> {
     try {
       return await db
         .select()
@@ -4647,7 +4615,7 @@ class MemStorage implements IStorage {
     }
   }
 
-  async addCustomDomain(userId: string, domain: string, type: string): Promise<CustomDomain> {
+  async addCustomDomainOld(userId: string, domain: string, type: string): Promise<CustomDomain> {
     try {
       const verificationValue = type === 'cname' 
         ? `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'affiliate-tracker.replit.app'}`
@@ -4900,15 +4868,44 @@ class MemStorage implements IStorage {
 
   // Methods for API compatibility
   async getCustomDomains(userId: string): Promise<any[]> {
-    return this.getDomains(userId);
+    try {
+      return await db
+        .select()
+        .from(customDomains)
+        .where(eq(customDomains.advertiserId, userId))
+        .orderBy(desc(customDomains.createdAt));
+    } catch (error) {
+      console.error('Error getting custom domains:', error);
+      throw error;
+    }
   }
 
   async addCustomDomain(userId: string, domainData: any): Promise<any> {
-    return this.createDomain({
-      advertiserId: userId,
-      domain: domainData.domain,
-      type: domainData.type || 'cname'
-    });
+    try {
+      const verificationValue = domainData.type === 'cname' 
+        ? `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'affiliate-tracker.replit.app'}`
+        : '123.456.789.0'; // A record IP
+      
+      const targetValue = process.env.REPLIT_DOMAINS?.split(',')[0] || 'affiliate-tracker.replit.app';
+      
+      const [newDomain] = await db
+        .insert(customDomains)
+        .values({
+          domain: domainData.domain,
+          advertiserId: userId,
+          type: domainData.type as 'a_record' | 'cname',
+          verificationValue,
+          targetValue,
+          status: 'pending',
+          nextCheck: new Date(Date.now() + 5 * 60 * 1000), // Check in 5 minutes
+        })
+        .returning();
+      
+      return newDomain;
+    } catch (error) {
+      console.error('Error adding custom domain:', error);
+      throw error;
+    }
   }
 
   async verifyCustomDomain(userId: string, domainId: string): Promise<any> {
