@@ -585,16 +585,16 @@ export default function OfferDetails() {
           <div>
             <h4 className="font-medium mb-2">KPI условия</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {offerDetails.kpiConditions.minDeposit && (
+              {offer?.kpiConditions?.minDeposit && (
                 <div className="p-3 bg-green-50 rounded-lg dark:bg-green-900/20">
                   <p className="text-sm text-muted-foreground">Мин. депозит</p>
-                  <p className="font-semibold text-green-600">${offerDetails.kpiConditions.minDeposit}</p>
+                  <p className="font-semibold text-green-600">${offer.kpiConditions.minDeposit}</p>
                 </div>
               )}
-              {offerDetails.kpiConditions.minAge && (
+              {offer?.kpiConditions?.minAge && (
                 <div className="p-3 bg-blue-50 rounded-lg dark:bg-blue-900/20">
                   <p className="text-sm text-muted-foreground">Мин. возраст</p>
-                  <p className="font-semibold text-blue-600">{offerDetails.kpiConditions.minAge}+</p>
+                  <p className="font-semibold text-blue-600">{offer.kpiConditions.minAge}+</p>
                 </div>
               )}
             </div>
@@ -605,7 +605,7 @@ export default function OfferDetails() {
           <div>
             <h4 className="font-medium mb-2">Разрешенные источники трафика</h4>
             <div className="flex flex-wrap gap-2">
-              {offerDetails.kpiConditions.allowedTrafficTypes?.map((type) => (
+              {offer?.kpiConditions?.allowedTrafficTypes?.map((type: string) => (
                 <Badge key={type} variant="secondary">{type}</Badge>
               ))}
             </div>
@@ -616,7 +616,7 @@ export default function OfferDetails() {
           <div>
             <h4 className="font-medium mb-2">Запрещенные источники</h4>
             <div className="flex flex-wrap gap-2">
-              {offerDetails.restrictions.forbidden_sources?.map((source) => (
+              {offer?.restrictions?.forbidden_sources?.map((source: string) => (
                 <Badge key={source} variant="destructive">{source}</Badge>
               ))}
             </div>
@@ -627,7 +627,7 @@ export default function OfferDetails() {
           <div>
             <h4 className="font-medium mb-2">Разрешенные площадки</h4>
             <div className="flex flex-wrap gap-2">
-              {offerDetails.restrictions.allowed_sources?.map((source) => (
+              {offer?.restrictions?.allowed_sources?.map((source: string) => (
                 <Badge key={source} variant="outline" className="border-green-600 text-green-600">{source}</Badge>
               ))}
             </div>
