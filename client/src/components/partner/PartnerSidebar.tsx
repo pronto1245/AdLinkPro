@@ -61,11 +61,7 @@ const sidebarItems: SidebarItem[] = [
     href: "/affiliate/postbacks",
     icon: Settings,
   },
-  {
-    title: "Креативы",
-    href: "/affiliate/creatives",
-    icon: FileText,
-  },
+
 
 ];
 

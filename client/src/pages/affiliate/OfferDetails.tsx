@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, Lock } from "lucide-react";
+import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, Lock, FileText, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -214,6 +214,33 @@ export default function OfferDetails() {
     });
   };
 
+  const downloadCreatives = async (creativesUrl: string) => {
+    try {
+      // Используем API endpoint для скачивания креативов с проверкой доступа
+      const downloadUrl = `/api/partner/offers/${offerId}/creatives/download`;
+      
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `creatives-${offerId}.zip`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Скачивание началось",
+        description: "ZIP архив с креативами начал скачиваться",
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Ошибка скачивания",
+        description: "Не удалось скачать креативы",
+        variant: "destructive",
+      });
+    }
+  };
+
   const categoryProps = getCategoryBadgeProps(offerDetails.category);
 
   return (
@@ -315,6 +342,39 @@ export default function OfferDetails() {
             <p className="text-sm text-muted-foreground mt-2">
               Замените {"{{"}<code>subid</code>{"}"} на ваш уникальный идентификатор трафика
             </p>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {/* Креативы - только для одобренных */}
+      {isApproved && offer?.creativesUrl ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Креативы
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-gray-900/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h4 className="font-medium">Архив с креативами</h4>
+                  <p className="text-sm text-muted-foreground">ZIP архив с рекламными материалами</p>
+                </div>
+              </div>
+              <Button
+                onClick={() => downloadCreatives(offer.creativesUrl)}
+                className="bg-green-600 hover:bg-green-700 text-white"
+                title="Скачать креативы"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Скачать
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ) : null}

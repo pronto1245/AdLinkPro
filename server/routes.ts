@@ -7960,6 +7960,43 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       res.status(500).json({ error: 'Failed to update offer creatives' });
     }
   });
+
+  // Endpoint для скачивания креативов партнерами
+  app.get("/api/partner/offers/:offerId/creatives/download", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const offerId = req.params.offerId;
+      const partnerId = (req as any).user.id;
+      
+      // Проверяем, что партнер имеет доступ к офферу
+      const accessRequest = await db.select()
+        .from(offerAccessRequests)
+        .where(
+          and(
+            eq(offerAccessRequests.offerId, offerId),
+            eq(offerAccessRequests.partnerId, partnerId),
+            eq(offerAccessRequests.status, 'approved')
+          )
+        )
+        .limit(1);
+
+      if (accessRequest.length === 0) {
+        return res.status(403).json({ error: "Доступ к офферу не одобрен" });
+      }
+
+      // Получаем URL креативов из оффера
+      const offer = await storage.getOffer(offerId);
+      if (!offer || !offer.creativesUrl) {
+        return res.status(404).json({ error: "Креативы не найдены" });
+      }
+
+      // Перенаправляем на URL файла в облачном хранилище
+      res.redirect(302, offer.creativesUrl);
+      
+    } catch (error) {
+      console.error("Download creatives error:", error);
+      res.status(500).json({ error: "Ошибка при скачивании креативов" });
+    }
+  });
   
   return httpServer;
 }
