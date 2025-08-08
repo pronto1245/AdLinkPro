@@ -1968,11 +1968,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Access denied to this offer" });
       }
 
-      // Return offer with enhanced details
+      // Проверяем доступ партнера к офферу
+      let hasAccess = false;
+      let accessRequest = null;
+      
+      // Ищем запрос доступа для данного партнера и оффера
+      try {
+        const requests = await db.select()
+          .from(offerAccessRequests)
+          .where(
+            and(
+              eq(offerAccessRequests.offerId, offerId),
+              eq(offerAccessRequests.partnerId, authUser.id)
+            )
+          );
+        
+        if (requests.length > 0) {
+          accessRequest = requests[0];
+          hasAccess = accessRequest.status === 'approved';
+        }
+      } catch (error) {
+        console.error('Error checking access request:', error);
+      }
+      
+      // Если оффер публичный, партнер автоматически имеет доступ
+      if (!offer.isPrivate) {
+        hasAccess = true;
+      }
+      
+      // Return offer with enhanced details including creatives for approved partners
       res.json({
         ...offer,
-        isApproved: partnerOffers.length > 0 || !offer.isPrivate,
-        partnerLink: `https://track.platform.com/click/${offerId}?partner=${authUser.id}&subid=YOUR_SUBID`
+        isApproved: hasAccess,
+        partnerLink: hasAccess ? `https://track.platform.com/click/${offerId}?partner=${authUser.id}&subid=YOUR_SUBID` : null,
+        // Добавляем креативы только для одобренных партнеров
+        creatives: hasAccess ? offer.creatives : null,
+        creativesUrl: hasAccess ? offer.creativesUrl : null,
+        landingPages: hasAccess ? offer.landingPages : []
       });
     } catch (error) {
       console.error("Get partner offer error:", error);
