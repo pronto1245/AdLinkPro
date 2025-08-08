@@ -503,7 +503,7 @@ export default function PartnerOffers() {
                                   <Button
                                     size="sm"
                                     className="bg-green-600 hover:bg-green-700 text-white"
-                                    onClick={() => handleRequestOffer(offer.id, requestStatus)}
+                                    onClick={() => navigate(`/affiliate/offers/${offer.id}`)}
                                   >
                                     Забрать ссылку
                                   </Button>

@@ -443,25 +443,38 @@ export default function AccessRequestsManager() {
 
                         {/* Действия */}
                         <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" data-testid={`button-menu-${request.id}`}>
-                                <MoreHorizontal className="h-4 w-4" />
+                          <div className="flex items-center justify-end gap-2">
+                            {request.status === 'approved' && request.offer && (
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                                onClick={() => window.location.href = `/affiliate/offers/${request.offer?.id}`}
+                                data-testid={`button-get-link-${request.id}`}
+                              >
+                                Забрать ссылку
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setSelectedRequest(request)}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                Детали
-                              </DropdownMenuItem>
-                              {request.status === 'approved' && request.offer && (
-                                <DropdownMenuItem onClick={() => window.open(`/partner/offers/${request.offer?.id}`, '_blank')}>
-                                  <Globe className="h-4 w-4 mr-2" />
-                                  Перейти к офферу
+                            )}
+                            
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" data-testid={`button-menu-${request.id}`}>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setSelectedRequest(request)}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Детали
                                 </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                                {request.status === 'approved' && request.offer && (
+                                  <DropdownMenuItem onClick={() => window.location.href = `/affiliate/offers/${request.offer?.id}`}>
+                                    <Globe className="h-4 w-4 mr-2" />
+                                    Перейти к офферу
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
