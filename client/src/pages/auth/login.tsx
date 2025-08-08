@@ -75,24 +75,24 @@ export default function Login() {
               <div className="space-y-2">
                 <button
                   type="button"
-                  onClick={() => { setUsername('superadmin'); setPassword('admin'); }}
+                  onClick={() => { setUsername('superadmin'); setPassword('password123'); }}
                   className="block w-full text-left p-2 text-blue-700 hover:bg-blue-100 rounded text-xs"
                 >
-                  <strong>👑 Супер-админ:</strong> superadmin / admin
+                  <strong>👑 Супер-админ:</strong> superadmin / password123
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setUsername('advertiser1'); setPassword('admin'); }}
+                  onClick={() => { setUsername('advertiser1'); setPassword('password123'); }}
                   className="block w-full text-left p-2 text-blue-700 hover:bg-blue-100 rounded text-xs"
                 >
-                  <strong>🏢 Рекламодатель:</strong> advertiser1 / admin
+                  <strong>🏢 Рекламодатель:</strong> advertiser1 / password123
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setUsername('test_affiliate'); setPassword('admin'); }}
+                  onClick={() => { setUsername('test_affiliate'); setPassword('password123'); }}
                   className="block w-full text-left p-2 text-blue-700 hover:bg-blue-100 rounded text-xs"
                 >
-                  <strong>🤝 Партнер:</strong> test_affiliate / admin
+                  <strong>🤝 Партнер:</strong> test_affiliate / password123
                 </button>
               </div>
             </div>
