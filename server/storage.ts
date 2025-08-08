@@ -2,7 +2,7 @@ import {
   users, offers, partnerOffers, trackingLinks, trackingClicks, statistics, transactions, 
   postbacks, postbackLogs, postbackTemplates, tickets, fraudAlerts, customRoles, userRoleAssignments,
   cryptoWallets, cryptoTransactions, fraudReports, fraudRules, 
-  deviceTracking, ipAnalysis, fraudBlocks, receivedOffers, offerAccessRequests,
+  deviceTracking, ipAnalysis, fraudBlocks, receivedOffers, offerAccessRequests, userNotifications,
   type User, type InsertUser, type Offer, type InsertOffer,
   type PartnerOffer, type InsertPartnerOffer, type TrackingLink, type InsertTrackingLink,
   type Transaction, type InsertTransaction, type Postback, type InsertPostback,
@@ -11,7 +11,7 @@ import {
   type FraudReport, type InsertFraudReport, type FraudRule, type InsertFraudRule,
   type DeviceTracking, type InsertDeviceTracking, type IpAnalysis, type InsertIpAnalysis,
   type FraudBlock, type InsertFraudBlock, type ReceivedOffer, type InsertReceivedOffer,
-  type OfferAccessRequest, type InsertOfferAccessRequest
+  type OfferAccessRequest, type InsertOfferAccessRequest, type UserNotification, type InsertUserNotification
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lt, lte, count, sum, sql, isNotNull, like, ilike, or, inArray, ne } from "drizzle-orm";
@@ -323,6 +323,13 @@ export interface IStorage {
     smartAlerts: any[];
     teamMembers?: any[];
   }>;
+
+  // Notifications management
+  getNotificationsByUserId(userId: string): Promise<UserNotification[]>;
+  createNotification(notification: InsertUserNotification): Promise<UserNotification>;
+  markNotificationAsRead(notificationId: string, userId: string): Promise<void>;
+  markAllNotificationsAsRead(userId: string): Promise<void>;
+  deleteNotification(notificationId: string, userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3983,6 +3990,58 @@ export class DatabaseStorage implements IStorage {
     return settings;
   }
 
+  // Notifications management
+  async getNotificationsByUserId(userId: string): Promise<UserNotification[]> {
+    return await db
+      .select()
+      .from(userNotifications)
+      .where(eq(userNotifications.userId, userId))
+      .orderBy(sql`${userNotifications.createdAt} DESC`);
+  }
+
+  async createNotification(notification: InsertUserNotification): Promise<UserNotification> {
+    const [newNotification] = await db
+      .insert(userNotifications)
+      .values(notification)
+      .returning();
+    
+    // Отправить уведомление через WebSocket, если функция доступна
+    if (typeof (global as any).sendWebSocketNotification === 'function') {
+      (global as any).sendWebSocketNotification(notification.userId, {
+        type: 'notification',
+        data: newNotification
+      });
+    }
+    
+    return newNotification;
+  }
+
+  async markNotificationAsRead(notificationId: string, userId: string): Promise<void> {
+    await db
+      .update(userNotifications)
+      .set({ isRead: true, updatedAt: new Date() })
+      .where(and(
+        eq(userNotifications.id, notificationId),
+        eq(userNotifications.userId, userId)
+      ));
+  }
+
+  async markAllNotificationsAsRead(userId: string): Promise<void> {
+    await db
+      .update(userNotifications)
+      .set({ isRead: true, updatedAt: new Date() })
+      .where(eq(userNotifications.userId, userId));
+  }
+
+  async deleteNotification(notificationId: string, userId: string): Promise<void> {
+    await db
+      .delete(userNotifications)
+      .where(and(
+        eq(userNotifications.id, notificationId),
+        eq(userNotifications.userId, userId)
+      ));
+  }
+
   // End of DatabaseStorage class
 }
 
@@ -4582,6 +4641,33 @@ class MemStorage implements IStorage {
       id: '1',
       updatedAt: new Date().toISOString()
     };
+  }
+
+  // Notifications management - Mock implementation
+  async getNotificationsByUserId(userId: string): Promise<UserNotification[]> {
+    return [];
+  }
+
+  async createNotification(notification: InsertUserNotification): Promise<UserNotification> {
+    const newNotification: UserNotification = {
+      id: nanoid(),
+      ...notification,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return newNotification;
+  }
+
+  async markNotificationAsRead(notificationId: string, userId: string): Promise<void> {
+    // Mock implementation
+  }
+
+  async markAllNotificationsAsRead(userId: string): Promise<void> {
+    // Mock implementation
+  }
+
+  async deleteNotification(notificationId: string, userId: string): Promise<void> {
+    // Mock implementation
   }
 
 }

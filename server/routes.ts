@@ -7791,6 +7791,55 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     console.log('Skipping access-requests routes - module not found');
   }
 
+  // API маршруты для уведомлений
+  app.get('/api/notifications', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const notifications = await storage.getNotificationsByUserId(userId);
+      res.json(notifications);
+    } catch (error) {
+      console.error('Error getting notifications:', error);
+      res.status(500).json({ error: 'Failed to get notifications' });
+    }
+  });
+
+  app.put('/api/notifications/:id/read', authenticateToken, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      
+      await storage.markNotificationAsRead(id, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      res.status(500).json({ error: 'Failed to mark notification as read' });
+    }
+  });
+
+  app.delete('/api/notifications/:id', authenticateToken, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      
+      await storage.deleteNotification(id, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      res.status(500).json({ error: 'Failed to delete notification' });
+    }
+  });
+
+  app.put('/api/notifications/mark-all-read', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      await storage.markAllNotificationsAsRead(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      res.status(500).json({ error: 'Failed to mark all notifications as read' });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Добавляем WebSocket сервер для уведомлений
