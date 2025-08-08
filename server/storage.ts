@@ -5226,33 +5226,7 @@ class MemStorage implements IStorage {
     // Add to mock offers array
     this.offers.push(newOffer);
     
-    console.log(`Creating offer: ${newOffer.name} with approval type: ${offerData.partnerApprovalType}`);
-    
-    // Auto-create access requests for all partners if offer allows auto approval OR is not private
-    if (offerData.partnerApprovalType === 'auto' || offerData.autoApprovePartners || !offerData.isPrivate) {
-      const allPartners = this.users.filter(user => user.role === 'affiliate');
-      console.log(`Auto-approving offer for ${allPartners.length} partners`);
-      
-      for (const partner of allPartners) {
-        const existingRequest = this.offerAccessRequests.find(req => 
-          req.partnerId === partner.id && req.offerId === newOffer.id
-        );
-        
-        if (!existingRequest) {
-          const newAccessRequest = {
-            id: Math.random().toString(36).substr(2, 9),
-            partnerId: partner.id,
-            offerId: newOffer.id,
-            status: 'approved',
-            createdAt: new Date(),
-            approvedAt: new Date()
-          };
-          
-          this.offerAccessRequests.push(newAccessRequest);
-          console.log(`Created access request for partner ${partner.id} to offer ${newOffer.id}`);
-        }
-      }
-    }
+    // Офферы создаются, но не автоматически одобряются - партнеры должны запрашивать доступ
     
     return newOffer;
   }
@@ -5449,9 +5423,9 @@ class MemStorage implements IStorage {
       id: '2',
       partnerId: '3',
       offerId: '2',
-      status: 'approved',
+      status: 'pending',
       createdAt: new Date('2025-08-02'),
-      approvedAt: new Date('2025-08-02')
+      approvedAt: null
     }
   ];
 
@@ -5488,48 +5462,29 @@ class MemStorage implements IStorage {
 
   // Partner available offers with access control
   async getAvailableOffers(partnerId: string): Promise<any[]> {
-    console.log(`Getting available offers for partner ${partnerId}`);
-    console.log(`Total offers in storage: ${this.offers.length}`);
-    
     // Get partner's access requests
     const accessRequests = await this.getOfferAccessRequests(partnerId);
-    console.log(`Partner has ${accessRequests.length} access requests`);
     
-    const approvedOfferIds = accessRequests
-      .filter(req => req.status === 'approved')
-      .map(req => req.offerId);
-
-    console.log(`Approved offer IDs: ${approvedOfferIds.join(', ')}`);
-
-    // Return ALL active offers (both approved and available for request)
-    const availableOffers = this.offers
-      .filter(offer => {
-        const isActive = offer.status === 'active';
-        console.log(`Offer ${offer.id} (${offer.name}) - Active: ${isActive}`);
-        return isActive;
-      })
+    // Return ALL active offers - показываем все офферы, но ссылки только для одобренных
+    return this.offers
+      .filter(offer => offer.status === 'active')
       .map(offer => {
         const accessRequest = accessRequests.find(req => req.offerId === offer.id);
         const isApproved = accessRequest?.status === 'approved';
         const accessStatus = accessRequest?.status || 'available';
-        
-        console.log(`Offer ${offer.id} - Access Status: ${accessStatus}, Approved: ${isApproved}`);
         
         return {
           ...offer,
           isApproved,
           accessStatus,
           canRequestAccess: !accessRequest || accessRequest.status === 'rejected',
+          // Ссылки генерируются только после одобрения
           trackingLink: isApproved 
-            ? `https://track.example.com/click?offer=${offer.id}&partner=${partnerId}&subid={subid}`
+            ? `https://track.example.com/click?offer=${offer.id}&partner=${partnerId}&clickid=partner_${partnerId}_${offer.id}_{subid}`
             : null,
-          // Add automatic approval for non-private offers
-          autoApproved: (!offer.isPrivate && offer.partnerApprovalType === 'auto') || offer.autoApprovePartners
+          readyToUse: isApproved
         };
       });
-      
-    console.log(`Returning ${availableOffers.length} offers to partner`);
-    return availableOffers;
   }
 
   // Additional partner methods
