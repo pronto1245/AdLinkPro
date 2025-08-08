@@ -10,13 +10,8 @@ export class CreativeService {
   // Получить все креативы для оффера
   async getOfferCreatives(offerId: string) {
     const creativesData = await db
-      .select({
-        file: creativeFiles,
-        set: creativeSets,
-      })
+      .select()
       .from(creativeFiles)
-      .leftJoin(creativeSetFiles, eq(creativeFiles.id, creativeSetFiles.fileId))
-      .leftJoin(creativeSets, eq(creativeSetFiles.setId, creativeSets.id))
       .where(and(
         eq(creativeFiles.offerId, offerId),
         eq(creativeFiles.isActive, true)
