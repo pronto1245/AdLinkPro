@@ -7903,14 +7903,15 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   };
 
-  // Creative upload and download routes - import ObjectStorageService
+  // Creative upload and download routes - import ObjectStorageService and archiver
   const { ObjectStorageService } = await import('./objectStorage');
   const objectStorageService = new ObjectStorageService();
+  const archiver = (await import('archiver')).default;
 
   // Get upload URL for creatives
-  app.post('/api/creatives/upload-url', async (req, res) => {
+  app.post('/api/creatives/upload-url', authenticateToken, async (req, res) => {
     try {
-      const uploadURL = await objectStorageService.getCreativeUploadURL();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
       res.json({ uploadURL });
     } catch (error) {
       console.error('Error getting creative upload URL:', error);
@@ -8087,8 +8088,37 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       
       // Получаем оффер
       const offer = await storage.getOffer(offerId);
-      if (!offer || !offer.creativesUrl) {
-        return res.status(404).json({ error: "Креативы не найдены" });
+      if (!offer) {
+        return res.status(404).json({ error: "Оффер не найден" });
+      }
+
+      // Проверяем, есть ли креативы в базе данных
+      const creativeService = new CreativeService();
+      const creatives = await creativeService.getOfferCreatives(offerId);
+      
+      if (creatives.length === 0) {
+        // Если креативов нет, создаём демонстрационный архив
+        console.log('No creatives found, creating demo archive');
+        
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="demo-creatives-${offerId}.zip"`);
+        
+        const archive = archiver('zip', { zlib: { level: 9 } });
+        archive.pipe(res);
+        
+        // Добавляем демонстрационные файлы
+        archive.append('Это демонстрационный файл креативов для оффера.\nЗагрузите реальные креативы через интерфейс рекламодателя.', { 
+          name: 'README.txt' 
+        });
+        archive.append('Banner 300x250\nДля этого оффера пока не загружены креативы', { 
+          name: 'banner-300x250.txt' 
+        });
+        archive.append('Landing Page URL: ' + (offer.landingPageUrl || 'Not specified'), { 
+          name: 'landing-info.txt' 
+        });
+        
+        await archive.finalize();
+        return;
       }
 
       // Логика доступа по ролям:
