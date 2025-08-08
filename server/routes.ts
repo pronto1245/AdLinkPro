@@ -38,6 +38,19 @@ declare global {
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
+// Advertiser role middleware  
+const requireAdvertiser = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
+  if (req.user.role !== 'advertiser') {
+    return res.status(403).json({ error: 'Advertiser role required' });
+  }
+  
+  next();
+};
+
 // Auth middleware
 const authenticateToken = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.log('=== AUTHENTICATING TOKEN ===');
