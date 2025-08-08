@@ -34,6 +34,7 @@ interface PartnerOffer {
   accessStatus: 'available' | 'pending' | 'approved' | 'rejected';
   hasFullAccess: boolean;
   advertiserName?: string;
+  rejectReason?: string;
 }
 
 // Функция для получения свойств бейджа категории
@@ -355,6 +356,7 @@ export default function PartnerOffers() {
                                       size="sm"
                                       className="bg-green-600 hover:bg-green-700 text-white"
                                       onClick={() => handleRequestOffer(offer.id, requestStatus)}
+                                      title="Доступ одобрен - получить ссылку"
                                     >
                                       Забрать ссылку
                                     </Button>
@@ -365,8 +367,20 @@ export default function PartnerOffers() {
                                       size="sm"
                                       disabled
                                       className="bg-yellow-500 text-white cursor-not-allowed opacity-90"
+                                      title="Запрос отправлен, ожидает рассмотрения рекламодателем"
                                     >
                                       В ожидании
+                                    </Button>
+                                  );
+                                } else if (requestStatus === 'rejected') {
+                                  return (
+                                    <Button
+                                      size="sm"
+                                      disabled
+                                      className="bg-red-500 text-white cursor-not-allowed opacity-90"
+                                      title={`Доступ отклонен${offer.rejectReason ? `: ${offer.rejectReason}` : ''}`}
+                                    >
+                                      Отклонен
                                     </Button>
                                   );
                                 } else {
@@ -375,6 +389,7 @@ export default function PartnerOffers() {
                                       size="sm"
                                       className="bg-blue-600 hover:bg-blue-700 text-white"
                                       onClick={() => handleRequestOffer(offer.id, requestStatus)}
+                                      title="Запросить доступ к офферу"
                                     >
                                       Запросить
                                     </Button>
@@ -504,6 +519,7 @@ export default function PartnerOffers() {
                                     size="sm"
                                     className="bg-green-600 hover:bg-green-700 text-white"
                                     onClick={() => navigate(`/affiliate/offers/${offer.id}`)}
+                                    title="Доступ одобрен - получить ссылку"
                                   >
                                     Забрать ссылку
                                   </Button>
@@ -514,8 +530,20 @@ export default function PartnerOffers() {
                                     size="sm"
                                     disabled
                                     className="bg-yellow-500 text-white cursor-not-allowed opacity-90"
+                                    title="Запрос отправлен, ожидает рассмотрения рекламодателем"
                                   >
                                     В ожидании
+                                  </Button>
+                                );
+                              } else if (requestStatus === 'rejected') {
+                                return (
+                                  <Button
+                                    size="sm"
+                                    disabled
+                                    className="bg-red-500 text-white cursor-not-allowed opacity-90"
+                                    title={`Доступ отклонен${offer.rejectReason ? `: ${offer.rejectReason}` : ''}`}
+                                  >
+                                    Отклонен
                                   </Button>
                                 );
                               } else {
@@ -524,6 +552,7 @@ export default function PartnerOffers() {
                                     size="sm"
                                     className="bg-blue-600 hover:bg-blue-700 text-white"
                                     onClick={() => handleRequestOffer(offer.id, requestStatus)}
+                                    title="Запросить доступ к офферу"
                                   >
                                     Запросить
                                   </Button>

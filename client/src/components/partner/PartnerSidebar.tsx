@@ -10,8 +10,7 @@ import {
   LogOut,
   Home,
   ChevronLeft,
-  ChevronRight,
-  Send
+  ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,11 +65,7 @@ const sidebarItems: SidebarItem[] = [
     href: "/affiliate/creatives",
     icon: FileText,
   },
-  {
-    title: "Запросы доступа",
-    href: "/affiliate/access-requests",
-    icon: Send,
-  }
+
 ];
 
 interface PartnerSidebarProps {

@@ -7048,6 +7048,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           po.status as partner_offer_status,
           oar.status as access_request_status,
           oar.id as access_request_id,
+          oar.response_note as reject_reason,
           CASE 
             WHEN o.partner_approval_type = 'auto' THEN 'auto_approved'
             WHEN po.status = 'active' THEN 'approved' 
@@ -7090,7 +7091,8 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         hasFullAccess: offer.has_full_access,
         partnerApprovalType: offer.partner_approval_type,
         previewUrl: offer.preview_url,
-        accessRequestId: offer.access_request_id
+        accessRequestId: offer.access_request_id,
+        rejectReason: offer.reject_reason
       }));
 
       res.json(offers);
