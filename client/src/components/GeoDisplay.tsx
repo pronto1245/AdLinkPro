@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { parseCountries } from '@/utils/countries';
@@ -112,6 +112,9 @@ const GeoDisplay: React.FC<GeoDisplayProps> = ({
                 <X className="h-4 w-4" />
               </Button>
             </DialogTitle>
+            <DialogDescription>
+              Подробная информация по странам и выплатам для данного оффера
+            </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-2 max-h-80 overflow-y-auto">
