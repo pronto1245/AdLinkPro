@@ -4090,6 +4090,21 @@ export class DatabaseStorage implements IStorage {
       ));
   }
 
+  // === OFFERS METHODS ===
+  
+  async getOfferById(id: string): Promise<any | undefined> {
+    try {
+      const [offer] = await db
+        .select()
+        .from(offers)
+        .where(eq(offers.id, id));
+      return offer;
+    } catch (error) {
+      console.error('Error getting offer by id:', error);
+      return undefined;
+    }
+  }
+
   // === PARTNER OFFERS METHODS ===
   
   async getOfferAccessRequestsByAdvertiser(advertiserId: string): Promise<any[]> {
