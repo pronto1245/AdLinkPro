@@ -7961,36 +7961,70 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
-  // Endpoint для скачивания креативов партнерами
-  app.get("/api/partner/offers/:offerId/creatives/download", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+  // Endpoint для скачивания креативов (доступ по ролям)
+  app.get("/api/partner/offers/:offerId/creatives/download", authenticateToken, async (req, res) => {
     try {
       const offerId = req.params.offerId;
-      const partnerId = (req as any).user.id;
+      const userId = (req as any).user.id;
+      const userRole = (req as any).user.role;
       
-      // Проверяем, что партнер имеет доступ к офферу
-      const accessRequest = await db.select()
-        .from(offerAccessRequests)
-        .where(
-          and(
-            eq(offerAccessRequests.offerId, offerId),
-            eq(offerAccessRequests.partnerId, partnerId),
-            eq(offerAccessRequests.status, 'approved')
-          )
-        )
-        .limit(1);
-
-      if (accessRequest.length === 0) {
-        return res.status(403).json({ error: "Доступ к офферу не одобрен" });
-      }
-
-      // Получаем URL креативов из оффера
+      console.log(`Creative download request: offerId=${offerId}, userId=${userId}, role=${userRole}`);
+      
+      // Получаем оффер
       const offer = await storage.getOffer(offerId);
       if (!offer || !offer.creativesUrl) {
         return res.status(404).json({ error: "Креативы не найдены" });
       }
 
-      // Перенаправляем на URL файла в облачном хранилище
-      res.redirect(302, offer.creativesUrl);
+      // Логика доступа по ролям:
+      let hasAccess = false;
+      
+      if (userRole === 'super_admin') {
+        // Супер-админ имеет доступ ко всем креативам
+        hasAccess = true;
+        console.log('Access granted: super_admin');
+      } else if (userRole === 'advertiser') {
+        // Рекламодатель имеет доступ к креативам своих офферов
+        hasAccess = offer.ownerId === userId;
+        console.log(`Access check for advertiser: offer.ownerId=${offer.ownerId}, userId=${userId}, hasAccess=${hasAccess}`);
+      } else if (userRole === 'affiliate') {
+        // Партнер имеет доступ только к одобренным офферам
+        const accessRequest = await db.select()
+          .from(offerAccessRequests)
+          .where(
+            and(
+              eq(offerAccessRequests.offerId, offerId),
+              eq(offerAccessRequests.partnerId, userId),
+              eq(offerAccessRequests.status, 'approved')
+            )
+          )
+          .limit(1);
+
+        hasAccess = accessRequest.length > 0;
+        console.log(`Access check for affiliate: accessRequest found=${hasAccess}`);
+      }
+
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Доступ к креативам запрещен" });
+      }
+
+      // Получаем файл и отправляем его как скачивание
+      try {
+        const response = await fetch(offer.creativesUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch creative: ${response.status}`);
+        }
+        
+        const buffer = await response.arrayBuffer();
+        
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="creatives-${offerId}.zip"`);
+        res.send(Buffer.from(buffer));
+        
+      } catch (fetchError) {
+        console.error('Error fetching creative file:', fetchError);
+        return res.status(500).json({ error: "Ошибка при получении файла креативов" });
+      }
       
     } catch (error) {
       console.error("Download creatives error:", error);

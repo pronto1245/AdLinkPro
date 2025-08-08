@@ -220,20 +220,41 @@ export default function OfferDetails() {
 
   const downloadCreatives = async (creativesUrl: string) => {
     try {
-      // Используем API endpoint для скачивания креативов с проверкой доступа
-      const downloadUrl = `/api/partner/offers/${offerId}/creatives/download`;
-      
+      // Используем fetch с токеном авторизации для скачивания креативов
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/partner/offers/${offerId}/creatives/download`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          toast({
+            title: "Доступ запрещен",
+            description: "У вас нет доступа к креативам этого оффера",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Получаем blob и создаем URL для скачивания
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = downloadUrl;
+      link.href = url;
       link.download = `creatives-${offerId}.zip`;
-      link.target = '_blank';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
       
       toast({
         title: "Скачивание началось",
-        description: "ZIP архив с креативами начал скачиваться",
+        description: "ZIP архив с креативами успешно скачивается",
       });
     } catch (error) {
       console.error('Download error:', error);
