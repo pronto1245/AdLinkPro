@@ -945,10 +945,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             offerId: offer.id,
             fileName: 'creatives.zip', // Стандартное имя для архива креативов
             originalName: 'creatives.zip', // Обязательное поле
-            fileType: 'application/zip',
-            fileSize: 0, // Размер неизвестен, но не критично
+            fileType: 'archive',
+            mimeType: 'application/zip',
+            fileSize: 1024, // Примерный размер
             filePath: objectPath,
-            uploadedAt: new Date(),
             uploadedBy: authUser.id,
             isActive: true
           };
