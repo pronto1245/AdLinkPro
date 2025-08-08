@@ -58,14 +58,14 @@ export function CustomDomainManager() {
 
   // Получаем список доменов
   const { data: domains = [], isLoading } = useQuery({
-    queryKey: ['/api/custom-domains'],
+    queryKey: ['/api/advertiser/profile/domains'],
     staleTime: 30000
   });
 
   // Добавление домена
   const addDomainMutation = useMutation({
     mutationFn: async (data: { domain: string; type: 'cname' | 'a_record' }) => {
-      return apiRequest('/api/custom-domains', {
+      return apiRequest('/api/advertiser/profile/domains', {
         method: 'POST',
         body: data
       });
@@ -76,7 +76,7 @@ export function CustomDomainManager() {
         description: "Кастомный домен успешно добавлен. Следуйте инструкциям для верификации."
       });
       setNewDomain('');
-      queryClient.invalidateQueries({ queryKey: ['/api/custom-domains'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     },
     onError: (error: any) => {
       toast({
@@ -90,7 +90,7 @@ export function CustomDomainManager() {
   // Верификация домена
   const verifyDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return apiRequest(`/api/custom-domains/${domainId}/verify`, {
+      return apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, {
         method: 'POST'
       });
     },
@@ -107,7 +107,7 @@ export function CustomDomainManager() {
           variant: "destructive"
         });
       }
-      queryClient.invalidateQueries({ queryKey: ['/api/custom-domains'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     },
     onError: () => {
       toast({
@@ -121,7 +121,7 @@ export function CustomDomainManager() {
   // Удаление домена
   const deleteDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return apiRequest(`/api/custom-domains/${domainId}`, {
+      return apiRequest(`/api/advertiser/profile/domains/${domainId}`, {
         method: 'DELETE'
       });
     },
@@ -130,16 +130,16 @@ export function CustomDomainManager() {
         title: "Домен удален",
         description: "Кастомный домен успешно удален"
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/custom-domains'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     }
   });
 
   // Получение инструкций
   const { data: instructions } = useQuery({
-    queryKey: ['/api/custom-domains', selectedDomain?.id, 'instructions'],
+    queryKey: ['/api/advertiser/domains', selectedDomain?.id, 'instructions'],
     enabled: !!selectedDomain,
     queryFn: () => 
-      apiRequest(`/api/custom-domains/${selectedDomain?.id}/instructions`)
+      apiRequest(`/api/advertiser/domains/${selectedDomain?.id}/instructions`)
   });
 
   const handleAddDomain = () => {
@@ -372,12 +372,12 @@ export function CustomDomainManager() {
                                   <Label className="text-sm font-semibold">Имя/Host</Label>
                                   <div className="flex items-center gap-2 mt-1">
                                     <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm break-all">
-                                      {domain.verificationRecord}
+                                      {domain.type === 'cname' ? domain.domain : `verify-${domain.domain}`}
                                     </code>
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      onClick={() => handleCopyToClipboard(domain.verificationRecord)}
+                                      onClick={() => handleCopyToClipboard(domain.type === 'cname' ? domain.domain : `verify-${domain.domain}`)}
                                       title="Скопировать"
                                     >
                                       <Copy className="h-3 w-3" />
@@ -388,13 +388,13 @@ export function CustomDomainManager() {
                                   <Label className="text-sm font-semibold">Значение</Label>
                                   <div className="flex items-center gap-2 mt-1">
                                     <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm break-all">
-                                      {domain.type === 'cname' ? 'platform-verify.com' : domain.verificationValue}
+                                      {domain.type === 'cname' ? 'track.partner-system.com' : domain.verificationValue}
                                     </code>
                                     <Button
                                       size="sm"
                                       variant="ghost"
                                       onClick={() => handleCopyToClipboard(
-                                        domain.type === 'cname' ? 'platform-verify.com' : domain.verificationValue
+                                        domain.type === 'cname' ? 'track.partner-system.com' : domain.verificationValue
                                       )}
                                       title="Скопировать"
                                     >
@@ -404,15 +404,37 @@ export function CustomDomainManager() {
                                 </div>
                               </div>
                               
-                              <Alert>
-                                <Info className="h-4 w-4" />
-                                <AlertDescription>
-                                  {domain.type === 'cname' 
-                                    ? `Добавьте CNAME запись в DNS настройках вашего домена. После добавления записи нажмите "Проверить домен".`
-                                    : `Добавьте TXT запись для верификации. После добавления записи нажмите "Проверить домен".`
-                                  }
-                                </AlertDescription>
-                              </Alert>
+                              <div className="space-y-3">
+                                <Alert>
+                                  <Info className="h-4 w-4" />
+                                  <AlertDescription>
+                                    {domain.type === 'cname' 
+                                      ? `Добавьте CNAME запись в DNS настройках вашего домена. После добавления записи нажмите "Проверить домен".`
+                                      : `Добавьте TXT запись для верификации. После добавления записи нажмите "Проверить домен".`
+                                    }
+                                  </AlertDescription>
+                                </Alert>
+
+                                <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                  <h5 className="font-medium mb-2">Пошаговая инструкция:</h5>
+                                  <ol className="list-decimal list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                                    <li>Войдите в панель управления DNS вашего провайдера домена (GoDaddy, Namecheap, Cloudflare и т.д.)</li>
+                                    <li>Найдите раздел "DNS Records" или "DNS управление"</li>
+                                    <li>Добавьте новую {domain.type.toUpperCase()} запись с указанными выше параметрами</li>
+                                    <li>Сохраните изменения (может потребоваться 5-30 минут для распространения)</li>
+                                    <li>Вернитесь сюда и нажмите "Проверить домен"</li>
+                                  </ol>
+                                </div>
+                                
+                                {domain.type === 'cname' && (
+                                  <div className="p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
+                                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                                      <strong>Важно:</strong> CNAME запись должна указывать на track.partner-system.com, 
+                                      а имя записи должно точно совпадать с вашим доменом {domain.domain}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
                             </div>
 
                             {/* Пример трекинговой ссылки */}
