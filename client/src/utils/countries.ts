@@ -55,6 +55,120 @@ const countries: Record<string, Country> = {
   'VE': { code: 'VE', name: 'Венесуэла', flag: '🇻🇪' },
 };
 
+// Карта названий стран к кодам для конвертации
+const countryNameToCode: Record<string, string> = {
+  // Русские названия
+  'россия': 'RU',
+  'сша': 'US',
+  'америка': 'US',
+  'великобритания': 'GB',
+  'англия': 'GB',
+  'германия': 'DE',
+  'франция': 'FR',
+  'италия': 'IT',
+  'казахстан': 'KZ',
+  'украина': 'UA',
+  'бразилия': 'BR',
+  'индия': 'IN',
+  'филиппины': 'PH',
+  'канада': 'CA',
+  'китай': 'CN',
+  'турция': 'TR',
+  'япония': 'JP',
+  'южная корея': 'KR',
+  'корея': 'KR',
+  'австралия': 'AU',
+  'мексика': 'MX',
+  'аргентина': 'AR',
+  'испания': 'ES',
+  'португалия': 'PT',
+  'нидерланды': 'NL',
+  'швеция': 'SE',
+  'норвегия': 'NO',
+  'дания': 'DK',
+  'финляндия': 'FI',
+  'польша': 'PL',
+  'чехия': 'CZ',
+  'венгрия': 'HU',
+  'австрия': 'AT',
+  'швейцария': 'CH',
+  'бельгия': 'BE',
+  'ирландия': 'IE',
+  'израиль': 'IL',
+  'оаэ': 'AE',
+  'саудовская аравия': 'SA',
+  'таиланд': 'TH',
+  'вьетнам': 'VN',
+  'индонезия': 'ID',
+  'малайзия': 'MY',
+  'сингапур': 'SG',
+  'юар': 'ZA',
+  'нигерия': 'NG',
+  'египет': 'EG',
+  'чили': 'CL',
+  'колумбия': 'CO',
+  'перу': 'PE',
+  'венесуэла': 'VE',
+  
+  // Английские названия
+  'russia': 'RU',
+  'united states': 'US',
+  'usa': 'US',
+  'america': 'US',
+  'united kingdom': 'GB',
+  'uk': 'GB',
+  'britain': 'GB',
+  'england': 'GB',
+  'germany': 'DE',
+  'france': 'FR',
+  'italy': 'IT',
+  'kazakhstan': 'KZ',
+  'ukraine': 'UA',
+  'brazil': 'BR',
+  'india': 'IN',
+  'philippines': 'PH',
+  'canada': 'CA',
+  'china': 'CN',
+  'turkey': 'TR',
+  'japan': 'JP',
+  'south korea': 'KR',
+  'korea': 'KR',
+  'australia': 'AU',
+  'mexico': 'MX',
+  'argentina': 'AR',
+  'spain': 'ES',
+  'portugal': 'PT',
+  'netherlands': 'NL',
+  'sweden': 'SE',
+  'norway': 'NO',
+  'denmark': 'DK',
+  'finland': 'FI',
+  'poland': 'PL',
+  'czech republic': 'CZ',
+  'czechia': 'CZ',
+  'hungary': 'HU',
+  'austria': 'AT',
+  'switzerland': 'CH',
+  'belgium': 'BE',
+  'ireland': 'IE',
+  'israel': 'IL',
+  'uae': 'AE',
+  'united arab emirates': 'AE',
+  'saudi arabia': 'SA',
+  'thailand': 'TH',
+  'vietnam': 'VN',
+  'indonesia': 'ID',
+  'malaysia': 'MY',
+  'singapore': 'SG',
+  'south africa': 'ZA',
+  'nigeria': 'NG',
+  'egypt': 'EG',
+  'chile': 'CL',
+  'colombia': 'CO',
+  'peru': 'PE',
+  'venezuela': 'VE',
+};
+
 export function getCountryName(code: string): string {
   return countries[code]?.name || code;
 }
@@ -65,6 +179,19 @@ export function getCountryFlag(code: string): string {
 
 export function getCountryInfo(code: string): Country {
   return countries[code] || { code, name: code, flag: '🌍' };
+}
+
+// Функция для конвертации названия страны в код
+export function getCountryCodeByName(name: string): string {
+  if (!name) return '';
+  
+  // Если это уже код (2 буквы в верхнем регистре)
+  if (name.length === 2 && name === name.toUpperCase()) {
+    return name;
+  }
+  
+  const normalizedName = name.toLowerCase().trim();
+  return countryNameToCode[normalizedName] || name.toUpperCase();
 }
 
 export function formatCountries(countries: any): string {
@@ -102,7 +229,7 @@ export function parseCountries(countries: any): Country[] {
     ];
   }
 
-  // Если это строка, парсим как JSON или разбиваем по запятым
+  // Если это строка, парсим как JSON или разбиваем по запятым/пробелам
   if (typeof countries === 'string') {
     try {
       const parsed = JSON.parse(countries);
@@ -110,10 +237,14 @@ export function parseCountries(countries: any): Country[] {
         return parseCountries(parsed);
       }
     } catch {
-      // Если не JSON, то может быть строка с кодами через запятую
-      const codes = countries.split(',').map(c => c.trim()).filter(c => c);
-      if (codes.length > 0) {
-        return codes.map(code => getCountryInfo(code));
+      // Если не JSON, то может быть строка с названиями/кодами через запятую или пробелы
+      const items = countries.split(/[,\s]+/).map(c => c.trim()).filter(c => c);
+      if (items.length > 0) {
+        return items.map(item => {
+          // Пытаемся конвертировать название в код
+          const code = getCountryCodeByName(item);
+          return getCountryInfo(code);
+        });
       }
     }
   }
@@ -125,9 +256,13 @@ export function parseCountries(countries: any): Country[] {
     ];
   }
   
-  // Если это простой массив строк (коды стран)
+  // Если это простой массив строк (коды или названия стран)
   if (countries.length > 0 && typeof countries[0] === 'string') {
-    return countries.map(countryCode => getCountryInfo(countryCode));
+    return countries.map(item => {
+      // Пытаемся конвертировать название в код
+      const code = getCountryCodeByName(item);
+      return getCountryInfo(code);
+    });
   }
   
   // Если это массив объектов с полями code, flag, name
@@ -139,6 +274,8 @@ export function parseCountries(countries: any): Country[] {
         flag: country.flag || getCountryFlag(country.code)
       };
     }
-    return getCountryInfo(country.toString());
+    // Пытаемся конвертировать в код
+    const code = getCountryCodeByName(country.toString());
+    return getCountryInfo(code);
   });
 }

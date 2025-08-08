@@ -5724,15 +5724,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Serve private objects endpoint
   app.get("/objects/:objectPath(*)", async (req, res) => {
+    console.log('=== OBJECT REQUEST ===');
+    console.log('Requested path:', req.path);
+    console.log('Object path param:', req.params.objectPath);
+    
     const objectStorageService = new ObjectStorageService();
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      console.log('Object file found, downloading...');
       objectStorageService.downloadObject(objectFile, res);
     } catch (error) {
-      console.error("Error checking object access:", error);
+      console.error("Error serving object:", error);
       if (error instanceof Error && error.name === 'ObjectNotFoundError') {
+        console.log('Object not found, returning 404');
         return res.sendStatus(404);
       }
+      console.log('Server error, returning 500');
       return res.sendStatus(500);
     }
   });

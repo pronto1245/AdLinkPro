@@ -252,17 +252,33 @@ const AdvertiserOffers = () => {
                     </TableCell>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
-                        {offer.logo && (
-                          <img 
-                            src={offer.logo} 
-                            alt={offer.name}
-                            className="w-10 h-10 rounded-lg object-cover border border-gray-200"
-                            onError={(e) => {
-                              console.log('Logo failed to load:', offer.logo);
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                            }}
-                          />
+                        {offer.logo ? (
+                          <div className="relative w-10 h-10">
+                            <img 
+                              src={offer.logo} 
+                              alt={offer.name}
+                              className="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
+                              onLoad={() => console.log('Logo loaded successfully:', offer.logo)}
+                              onError={(e) => {
+                                console.log('Logo failed to load:', offer.logo);
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                // Показываем placeholder
+                                const placeholder = target.nextElementSibling as HTMLElement;
+                                if (placeholder) placeholder.style.display = 'flex';
+                              }}
+                            />
+                            <div 
+                              className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg items-center justify-center text-white text-xs font-bold hidden"
+                              style={{ display: 'none' }}
+                            >
+                              {offer.name?.substring(0, 2).toUpperCase()}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                            {offer.name?.substring(0, 2).toUpperCase()}
+                          </div>
                         )}
                         <div>
                           <div className="font-medium">{offer.name}</div>
@@ -276,15 +292,15 @@ const AdvertiserOffers = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 flex-wrap max-w-32">
-                        {parseCountries(offer.countries || offer.geoTargeting).slice(0, 2).map((country, index) => (
-                          <div key={`${offer.id}-country-${index}`} className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
+                        {parseCountries(offer.countries || offer.geoTargeting).slice(0, 3).map((country, index) => (
+                          <div key={`${offer.id}-country-${index}`} className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md border border-blue-200 dark:border-blue-800">
                             <span className="text-sm" title={country.name}>{country.flag}</span>
-                            <span className="text-xs font-mono text-gray-600 dark:text-gray-300">{country.code}</span>
+                            <span className="text-xs font-mono font-semibold text-blue-700 dark:text-blue-300">{country.code}</span>
                           </div>
                         ))}
-                        {parseCountries(offer.countries || offer.geoTargeting).length > 2 && (
-                          <span className="text-xs text-muted-foreground bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md">
-                            +{parseCountries(offer.countries || offer.geoTargeting).length - 2}
+                        {parseCountries(offer.countries || offer.geoTargeting).length > 3 && (
+                          <span className="text-xs text-muted-foreground bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600">
+                            +{parseCountries(offer.countries || offer.geoTargeting).length - 3}
                           </span>
                         )}
                       </div>
