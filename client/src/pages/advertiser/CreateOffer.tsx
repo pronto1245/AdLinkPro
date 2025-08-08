@@ -505,6 +505,15 @@ export default function CreateOffer() {
         payout: data.hasGlobalPayoutSetting 
           ? (data.landingPages.find(lp => lp.isDefault)?.payout || data.landingPages[0]?.payout || '0')
           : (data.globalPayout || '0'),
+        // Создаём payoutByGeo только если есть индивидуальные выплаты по странам
+        payoutByGeo: data.hasGlobalPayoutSetting 
+          ? data.landingPages.reduce((acc, lp) => {
+              if (lp.geo && lp.payout && lp.geo.trim() !== '' && lp.payout !== '') {
+                acc[lp.geo.toLowerCase()] = parseFloat(lp.payout) || 0;
+              }
+              return acc;
+            }, {} as Record<string, number>)
+          : {},
         payoutType: data.payoutType,
         currency: data.currency,
         trafficSources: data.trafficSources,
@@ -1133,13 +1142,12 @@ export default function CreateOffer() {
                                       if (formData.hasGlobalPayoutSetting) {
                                         updateLandingPage(landing.id, 'payout', e.target.value);
                                       } else {
+                                        // ВАЖНО: применяем глобальную выплату только к новым лендингам, 
+                                        // но НЕ перезаписываем уже существующие индивидуальные выплаты
                                         setFormData(prev => ({ 
                                           ...prev, 
-                                          globalPayout: e.target.value,
-                                          landingPages: prev.landingPages.map(lp => ({
-                                            ...lp,
-                                            payout: e.target.value
-                                          }))
+                                          globalPayout: e.target.value
+                                          // НЕ применяем глобальную выплату ко всем лендингам автоматически
                                         }));
                                       }
                                     }}
