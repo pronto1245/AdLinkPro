@@ -2002,12 +2002,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Получить запросы доступа для рекламодателя
+  // Получить запросы доступа для рекламодателя (используем прямой API вместо storage)
   app.get("/api/advertiser/access-requests", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {
-      const advertiserId = getAuthenticatedUser(req).id;
-      const requests = await storage.getAdvertiserAccessRequests(advertiserId);
-      res.json(requests);
+      const userId = req.user?.id || req.userId;
+      
+      // Вызываем уже исправленный endpoint выше
+      const requests = await db.select({
+        id: offerAccessRequests.id,
+        offerId: offerAccessRequests.offerId,
+        partnerId: offerAccessRequests.partnerId,
+        status: offerAccessRequests.status,
+        requestNote: offerAccessRequests.requestNote,
+        responseNote: offerAccessRequests.responseNote,
+        requestedAt: offerAccessRequests.requestedAt,
+        reviewedAt: offerAccessRequests.reviewedAt,
+        // Offer details
+        offerName: offers.name,
+        offerCategory: offers.category,
+        offerPayout: offers.payout,
+        offerPayoutType: offers.payoutType,
+        // Partner details
+        partnerUsername: users.username,
+        partnerEmail: users.email,
+        partnerFirstName: users.firstName,
+        partnerLastName: users.lastName
+      })
+      .from(offerAccessRequests)
+      .leftJoin(offers, eq(offerAccessRequests.offerId, offers.id))
+      .leftJoin(users, eq(offerAccessRequests.partnerId, users.id))
+      .where(eq(offerAccessRequests.advertiserId, userId))
+      .orderBy(sql`${offerAccessRequests.requestedAt} DESC`);
+
+      // Transform to match the expected format
+      const formattedRequests = requests.map(req => ({
+        id: req.id,
+        offerId: req.offerId,
+        partnerId: req.partnerId,
+        status: req.status,
+        requestNote: req.requestNote,
+        responseNote: req.responseNote,
+        requestedAt: req.requestedAt,
+        reviewedAt: req.reviewedAt,
+        offer: {
+          id: req.offerId,
+          name: req.offerName,
+          category: req.offerCategory,
+          payoutType: req.offerPayoutType,
+          payoutAmount: req.offerPayout,
+          currency: 'USD'
+        },
+        partner: {
+          id: req.partnerId,
+          username: req.partnerUsername,
+          email: req.partnerEmail,
+          firstName: req.partnerFirstName,
+          lastName: req.partnerLastName
+        }
+      }));
+
+      res.json(formattedRequests);
     } catch (error) {
       console.error("Get advertiser access requests error:", error);
       res.status(500).json({ error: "Internal server error" });
