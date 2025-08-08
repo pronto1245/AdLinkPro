@@ -275,7 +275,7 @@ export default function OfferDetails() {
     }
   };
 
-  const categoryProps = getCategoryBadgeProps(offer.category);
+  const categoryProps = getCategoryBadgeProps(offer?.category || 'other');
   
   // Дополняем страны Арменией если её нет в списке
   const countryNames: Record<string, string> = {
@@ -300,6 +300,32 @@ export default function OfferDetails() {
     }
   };
 
+  // Проверяем, что у нас есть данные для отображения
+  if (!offer) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => navigate("/affiliate/offers")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Назад к офферам
+          </Button>
+          <h1 className="text-2xl font-bold">Загрузка...</h1>
+        </div>
+        <div className="flex items-center justify-center p-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Загружаем данные оффера...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Заголовок с кнопкой назад */}
@@ -321,20 +347,20 @@ export default function OfferDetails() {
         <CardHeader>
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
-              {offer.name.substring(0, 2).toUpperCase()}
+              {offer?.name ? offer.name.substring(0, 2).toUpperCase() : 'OF'}
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <CardTitle className="text-xl">{offer.name}</CardTitle>
+                <CardTitle className="text-xl">{offer?.name || 'Загрузка...'}</CardTitle>
                 <Badge className={categoryProps.className}>
                   {categoryProps.label}
                 </Badge>
-                {getStatusBadge(offer.status)}
+                {getStatusBadge(offer?.status || 'draft')}
               </div>
               <p className="text-muted-foreground">
-                {typeof offer.description === 'object' 
-                  ? (offer.description.ru || offer.description.en || 'Описание не указано')
-                  : (offer.description || 'Описание не указано')
+                {typeof offer?.description === 'object' 
+                  ? (offer.description?.ru || offer.description?.en || 'Описание не указано')
+                  : (offer?.description || 'Описание не указано')
                 }
               </p>
             </div>
@@ -345,21 +371,23 @@ export default function OfferDetails() {
             <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg dark:bg-green-900/20">
               <DollarSign className="w-5 h-5 text-green-600" />
               <div>
-                <p className="font-semibold text-green-600">${offer.payout} {offer.currency}</p>
-                <p className="text-sm text-muted-foreground">Выплата за {offer.payoutType.toUpperCase()}</p>
+                <p className="font-semibold text-green-600">${offer?.payout || '0'} {offer?.currency || 'USD'}</p>
+                <p className="text-sm text-muted-foreground">Выплата за {(offer?.payoutType || 'CPA').toUpperCase()}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg dark:bg-blue-900/20">
               <Globe className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="font-semibold text-blue-600">{offer.countries?.length || 0} стран</p>
+                <p className="font-semibold text-blue-600">{offer?.countries?.length || 0} стран</p>
                 <p className="text-sm text-muted-foreground">Доступные гео</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg dark:bg-purple-900/20">
               <Building2 className="w-5 h-5 text-purple-600" />
               <div>
-                <p className="font-semibold text-purple-600">ID {offer.advertiserId?.substring(0, 8)}...</p>
+                <p className="font-semibold text-purple-600">
+                  {offer?.advertiserId ? `ID ${offer.advertiserId.substring(0, 8)}...` : 'Рекламодатель'}
+                </p>
                 <p className="text-sm text-muted-foreground">Рекламодатель</p>
               </div>
             </div>
@@ -367,7 +395,7 @@ export default function OfferDetails() {
               <Calendar className="w-5 h-5 text-orange-600" />
               <div>
                 <p className="font-semibold text-orange-600">
-                  {new Date(offer.createdAt).toLocaleDateString('ru-RU')}
+                  {offer?.createdAt ? new Date(offer.createdAt).toLocaleDateString('ru-RU') : ''}
                 </p>
                 <p className="text-sm text-muted-foreground">Дата создания</p>
               </div>
