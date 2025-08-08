@@ -5171,19 +5171,57 @@ class MemStorage implements IStorage {
 
   // Offer management methods for MemStorage
   async createOffer(offerData: InsertOffer): Promise<Offer> {
+    const offerId = Math.random().toString(36).substr(2, 9);
     const newOffer: Offer = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: offerId,
       ...offerData,
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    // Add to mock offers array
+    
+    // Add to mock offers array (for backward compatibility with existing API logic)
     this.offers.push(newOffer);
-    console.log(`✅ Оффер добавлен в storage! Всего офферов: ${this.offers.length}`);
+    console.log(`✅ Оффер добавлен в MemStorage! Всего офферов: ${this.offers.length}`);
     console.log(`Последний оффер: ${newOffer.id} - ${newOffer.name}`);
     
-    // Офферы создаются, но не автоматически одобряются - партнеры должны запрашивать доступ
+    // КРИТИЧНО: СИНХРОНИЗАЦИЯ С БАЗОЙ ДАННЫХ
+    // Добавляем оффер одновременно в базу данных для foreign key constraints
+    try {
+      const dbOfferData = {
+        id: offerId,
+        name: newOffer.name,
+        description: typeof newOffer.description === 'string' 
+          ? JSON.stringify({ ru: newOffer.description, en: newOffer.description })
+          : JSON.stringify(newOffer.description || { ru: '', en: '' }),
+        category: newOffer.category,
+        advertiserId: newOffer.advertiserId,
+        payout: newOffer.payout ? parseFloat(newOffer.payout.toString()) : 0,
+        payoutType: newOffer.payoutType,
+        currency: newOffer.currency || 'USD',
+        countries: Array.isArray(newOffer.countries) ? newOffer.countries : [],
+        status: (newOffer.status || 'draft') as any,
+        landingPageUrl: newOffer.landingPageUrl,
+        kycRequired: newOffer.kycRequired || false,
+        isPrivate: newOffer.isPrivate || false,
+        createdAt: newOffer.createdAt,
+        updatedAt: newOffer.updatedAt
+      };
+
+      // Импортируем необходимые модули
+      const { db } = await import('./db');
+      const { offers } = await import('../shared/schema');
+      
+      console.log(`🔄 Синхронизация оффера ${offerId} с базой данных...`);
+      console.log(`📊 Данные для вставки:`, JSON.stringify(dbOfferData, null, 2));
+      
+      await db.insert(offers).values(dbOfferData);
+      console.log(`✅ Оффер ${offerId} успешно синхронизирован с базой данных`);
+    } catch (dbError) {
+      console.error(`❌ Ошибка синхронизации оффера ${offerId} с базой:`, dbError);
+      // НЕ прерываем процесс - оффер остается в MemStorage для совместимости
+    }
     
+    // Офферы создаются, но не автоматически одобряются - партнеры должны запрашивать доступ
     return newOffer;
   }
 
