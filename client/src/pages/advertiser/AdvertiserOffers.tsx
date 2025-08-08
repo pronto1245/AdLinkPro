@@ -27,7 +27,7 @@ const OfferImageDisplay = ({ offer }: { offer: any }) => {
   const [imageError, setImageError] = useState(false);
   const [logoError, setLogoError] = useState(false);
 
-  // Приоритет: 1) image 2) logo 3) ничего не показываем
+  // Приоритет: 1) image 2) logo 3) placeholder с инициалами
   
   // Если есть image и нет ошибки загрузки
   if (offer.image && !imageError) {
@@ -61,8 +61,12 @@ const OfferImageDisplay = ({ offer }: { offer: any }) => {
     );
   }
 
-  // Если нет ни image, ни logo - не показываем ничего
-  return null;
+  // Placeholder с инициалами (когда нет ни image, ни logo, или они не загрузились)
+  return (
+    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
+      {offer.name?.substring(0, 2).toUpperCase() || 'OF'}
+    </div>
+  );
 };
 
 function DraggableRow({ offer, index, children }: any) {

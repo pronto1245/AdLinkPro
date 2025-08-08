@@ -24,6 +24,7 @@ interface OfferFormData {
   description: { ru: string; en: string };
   category: string;
   logo: string;
+  image: string;
   
   // GEO и устройства
   geoTargeting: string[];
@@ -218,6 +219,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
     },
     category: offer.category || '',
     logo: offer.logo || '',
+    image: offer.image || '',
     
     // GEO и устройства
     geoTargeting: offer.geoTargeting || [],
@@ -563,10 +565,23 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                       maxNumberOfFiles={1}
                       maxFileSize={5242880}
                       onGetUploadParameters={async () => {
-                        // Здесь должен быть запрос к API для получения URL загрузки
+                        const token = localStorage.getItem('auth_token');
+                        const response = await fetch('/api/objects/upload', {
+                          method: 'POST',
+                          headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                          },
+                        });
+                        
+                        if (!response.ok) {
+                          throw new Error(`Не удалось получить URL: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
                         return {
                           method: 'PUT' as const,
-                          url: '/api/upload-placeholder'
+                          url: data.uploadURL,
                         };
                       }}
                       onComplete={(result) => {
@@ -611,6 +626,81 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
                           Удалить логотип
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Загрузка основного изображения */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Основное изображение оффера</Label>
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+                    <ObjectUploader
+                      maxNumberOfFiles={1}
+                      maxFileSize={10485760}
+                      onGetUploadParameters={async () => {
+                        const token = localStorage.getItem('auth_token');
+                        const response = await fetch('/api/objects/upload', {
+                          method: 'POST',
+                          headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                          },
+                        });
+                        
+                        if (!response.ok) {
+                          throw new Error(`Не удалось получить URL: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        return {
+                          method: 'PUT' as const,
+                          url: data.uploadURL,
+                        };
+                      }}
+                      onComplete={(result) => {
+                        if (result.successful && result.successful[0]) {
+                          const uploadURL = result.successful[0].uploadURL;
+                          if (uploadURL) {
+                            const objectPath = uploadURL.split('uploads/')[1]?.split('?')[0];
+                            if (objectPath) {
+                              const finalURL = `/objects/uploads/${objectPath}`;
+                              setFormData(prev => ({ ...prev, image: finalURL }));
+                              toast({
+                                title: "Успех",
+                                description: "Изображение успешно загружено"
+                              });
+                            }
+                          }
+                        }
+                      }}
+                      buttonClassName="w-full"
+                    >
+                      <Image className="h-4 w-4 mr-2" />
+                      Загрузить изображение
+                    </ObjectUploader>
+                    
+                    {formData.image && (
+                      <div className="mt-4 space-y-2">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Image className="h-4 w-4" />
+                          Предварительный просмотр:
+                        </div>
+                        <img 
+                          src={formData.image} 
+                          alt="Изображение оффера" 
+                          className="w-32 h-20 object-cover rounded-lg border border-border"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setFormData(prev => ({ ...prev, image: '' }))}
+                          data-testid="button-remove-image"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Удалить изображение
                         </Button>
                       </div>
                     )}
@@ -1034,7 +1124,6 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                         <Switch
                           checked={formData.trafficSources.includes(source)}
                           onCheckedChange={() => toggleTrafficSource(source)}
-                          size="sm"
                         />
                         <span className="text-xs">{source}</span>
                       </label>
@@ -1062,7 +1151,6 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                         <Switch
                           checked={formData.allowedApplications.includes(appType)}
                           onCheckedChange={() => toggleAllowedApplication(appType)}
-                          size="sm"
                         />
                         <span className="text-xs">{appType}</span>
                       </label>
