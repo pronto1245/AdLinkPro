@@ -59,7 +59,12 @@ const OfferImageDisplay = ({ offer }: { offer: any }) => {
     );
   }
 
-  // Placeholder с инициалами
+  // Placeholder с инициалами - показываем только если было попытка загрузить изображение
+  // Для новых офферов без изображений вообще не показываем placeholder
+  if (!offer.image && !offer.logo) {
+    return null;
+  }
+
   return (
     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
       {offer.name?.substring(0, 2).toUpperCase() || 'OF'}
