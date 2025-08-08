@@ -4173,7 +4173,100 @@ class MemStorage implements IStorage {
       updatedAt: new Date()
     }
   ];
-  private offers: Offer[] = [];
+  private offers: Offer[] = [
+    {
+      id: '1',
+      name: 'Casino Premium',
+      description: {
+        ru: 'Премиум казино оффер с высокими выплатами',
+        en: 'Premium casino offer with high payouts'
+      },
+      category: 'gambling',
+      logo: 'https://via.placeholder.com/40x40/ff6b6b/ffffff?text=CA',
+      countries: ['russia', 'ukraine', 'kazakhstan'],
+      landingPageUrl: 'https://casino.example.com/landing?offer=1',
+      landingPages: [
+        {
+          id: '1',
+          name: 'Основная',
+          url: 'https://casino.example.com/landing?offer=1',
+          geo: 'russia',
+          payout: '',
+          hasCustomGeo: false,
+          hasCustomPayout: false,
+          isDefault: true
+        }
+      ],
+      payout: '250',
+      payoutType: 'cpa',
+      currency: 'USD',
+      payoutByGeo: {},
+      trafficSources: ['Facebook Ads', 'Google Ads', 'Push'],
+      allowedApplications: ['WebView App', 'PWA App'],
+      partnerApprovalType: 'auto',
+      autoApprovePartners: true,
+      dailyLimit: 100,
+      monthlyLimit: 3000,
+      antifraudEnabled: true,
+      antifraudMethods: ['ip_check', 'vpn_detection'],
+      kycRequired: false,
+      isPrivate: false,
+      kpiConditions: {
+        ru: 'Высокий CR, качественный трафик',
+        en: 'High CR, quality traffic'
+      },
+      advertiserId: '2',
+      status: 'active',
+      createdAt: new Date('2025-08-01'),
+      updatedAt: new Date('2025-08-01')
+    },
+    {
+      id: '2',
+      name: 'Sports Betting Pro',
+      description: {
+        ru: 'Спортивные ставки с лучшими коэффициентами',
+        en: 'Sports betting with best odds'
+      },
+      category: 'gambling',
+      logo: 'https://via.placeholder.com/40x40/45b7d1/ffffff?text=SP',
+      countries: ['russia', 'belarus'],
+      landingPageUrl: 'https://sports.example.com/landing?offer=2',
+      landingPages: [
+        {
+          id: '2',
+          name: 'Спорт',
+          url: 'https://sports.example.com/landing?offer=2',
+          geo: 'russia',
+          payout: '',
+          hasCustomGeo: false,
+          hasCustomPayout: false,
+          isDefault: true
+        }
+      ],
+      payout: '180',
+      payoutType: 'cpa',
+      currency: 'USD',
+      payoutByGeo: {},
+      trafficSources: ['Facebook Ads', 'Instagram', 'YouTube'],
+      allowedApplications: ['iOS App', 'Android App'],
+      partnerApprovalType: 'auto',
+      autoApprovePartners: true,
+      dailyLimit: 50,
+      monthlyLimit: 1500,
+      antifraudEnabled: true,
+      antifraudMethods: ['device_fingerprint', 'behavior_analysis'],
+      kycRequired: true,
+      isPrivate: false,
+      kpiConditions: {
+        ru: 'Активные игроки, минимум 3 депозита',
+        en: 'Active players, minimum 3 deposits'
+      },
+      advertiserId: '2',
+      status: 'active',
+      createdAt: new Date('2025-08-02'),
+      updatedAt: new Date('2025-08-02')
+    }
+  ];
   private statistics: any[] = [];
   private postbacks: any[] = [];
   private fraudReports: any[] = [];
@@ -5349,9 +5442,9 @@ class MemStorage implements IStorage {
       id: '2',
       partnerId: '3',
       offerId: '2',
-      status: 'pending',
-      createdAt: new Date('2025-08-05'),
-      approvedAt: null
+      status: 'approved',
+      createdAt: new Date('2025-08-02'),
+      approvedAt: new Date('2025-08-02')
     }
   ];
 

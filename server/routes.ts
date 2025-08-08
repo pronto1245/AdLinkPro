@@ -2241,8 +2241,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
       
+      console.log(`Getting available offers for partner ${partnerId}`);
+      
       // Используем правильный метод для получения доступных офферов
       const availableOffers = await storage.getAvailableOffers(partnerId);
+      
+      console.log(`Found ${availableOffers.length} available offers`);
       
       // Генерируем готовые ссылки для всех доступных офферов
       const offersWithLinks = availableOffers.map(offer => {
