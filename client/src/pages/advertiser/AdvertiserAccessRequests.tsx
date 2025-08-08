@@ -55,10 +55,10 @@ interface OfferAccessRequest {
   partnerId: string;
   advertiserId: string;
   status: 'pending' | 'approved' | 'rejected';
-  requestNote?: string;
-  responseNote?: string;
-  requestedAt: string;
-  reviewedAt?: string;
+  message?: string;
+  createdAt: string;
+  approvedAt?: string | null;
+  updatedAt: string;
   
   // Обогащенные данные из API
   partnerName: string;
@@ -122,7 +122,7 @@ export default function AdvertiserAccessRequests() {
 
   // Фильтрация и поиск запросов
   const filteredRequests = useMemo(() => {
-    return requests.filter((request: OfferAccessRequest) => {
+    return (requests as OfferAccessRequest[]).filter((request: OfferAccessRequest) => {
       const matchesSearch = 
         request.offerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         request.partnerUsername.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -230,7 +230,7 @@ export default function AdvertiserAccessRequests() {
           <div className="flex items-center gap-2">
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600">
-                {requests.filter((r: OfferAccessRequest) => r.status === 'pending').length}
+                {(requests as OfferAccessRequest[]).filter((r: OfferAccessRequest) => r.status === 'pending').length}
               </div>
               <div className="text-xs text-muted-foreground">Ожидают</div>
             </div>
@@ -238,7 +238,7 @@ export default function AdvertiserAccessRequests() {
           <div className="flex items-center gap-2">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {requests.filter((r: OfferAccessRequest) => r.status === 'approved').length}
+                {(requests as OfferAccessRequest[]).filter((r: OfferAccessRequest) => r.status === 'approved').length}
               </div>
               <div className="text-xs text-muted-foreground">Одобрено</div>
             </div>
@@ -246,7 +246,7 @@ export default function AdvertiserAccessRequests() {
           <div className="flex items-center gap-2">
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">
-                {requests.filter((r: OfferAccessRequest) => r.status === 'rejected').length}
+                {(requests as OfferAccessRequest[]).filter((r: OfferAccessRequest) => r.status === 'rejected').length}
               </div>
               <div className="text-xs text-muted-foreground">Отклонено</div>
             </div>
@@ -366,7 +366,7 @@ export default function AdvertiserAccessRequests() {
                         <TableCell>
                           <div className="flex items-center gap-2 text-sm">
                             <Calendar className="w-4 h-4 text-muted-foreground" />
-                            {formatDate(request.requestedAt)}
+                            {formatDate(request.createdAt)}
                           </div>
                         </TableCell>
 
@@ -407,9 +407,9 @@ export default function AdvertiserAccessRequests() {
                               </>
                             ) : (
                               <div className="flex items-center gap-2">
-                                {request.respondedAt && (
+                                {request.approvedAt && (
                                   <span className="text-xs text-muted-foreground">
-                                    {formatDate(request.respondedAt)}
+                                    {formatDate(request.approvedAt)}
                                   </span>
                                 )}
                                 <DropdownMenu>
@@ -423,7 +423,7 @@ export default function AdvertiserAccessRequests() {
                                       <Eye className="h-4 w-4 mr-2" />
                                       Детали
                                     </DropdownMenuItem>
-                                    {request.responseMessage && (
+                                    {request.message && (
                                       <DropdownMenuItem>
                                         <MessageSquare className="h-4 w-4 mr-2" />
                                         Ответ
@@ -458,21 +458,13 @@ export default function AdvertiserAccessRequests() {
             {selectedRequest && (
               <div className="p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3 mb-2">
-                  {selectedRequest.offer.logo ? (
-                    <img 
-                      src={selectedRequest.offer.logo} 
-                      alt={selectedRequest.offer.name}
-                      className="w-8 h-8 rounded object-cover"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded bg-gray-200 flex items-center justify-center">
-                      <Target className="w-4 h-4 text-gray-500" />
-                    </div>
-                  )}
+                  <div className="w-8 h-8 rounded bg-gray-200 flex items-center justify-center">
+                    <Target className="w-4 h-4 text-gray-500" />
+                  </div>
                   <div>
-                    <div className="font-medium">{selectedRequest.offer.name}</div>
+                    <div className="font-medium">{selectedRequest.offerName}</div>
                     <div className="text-sm text-muted-foreground">
-                      Запрос от {selectedRequest.partner.username}
+                      Запрос от {selectedRequest.partnerUsername}
                     </div>
                   </div>
                 </div>
