@@ -65,14 +65,7 @@ export function CustomDomainManager() {
   // Добавление домена
   const addDomainMutation = useMutation({
     mutationFn: async (data: { domain: string; type: 'cname' | 'a_record' }) => {
-      return fetch('/api/advertiser/profile/domains', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(data)
-      }).then(res => res.json());
+      return apiRequest('/api/advertiser/profile/domains', 'POST', data);
     },
     onSuccess: () => {
       toast({
@@ -94,12 +87,7 @@ export function CustomDomainManager() {
   // Верификация домена
   const verifyDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return fetch(`/api/advertiser/profile/domains/${domainId}/verify`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      }).then(res => res.json());
+      return apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, 'POST');
     },
     onSuccess: (data: any, domainId: string) => {
       if (data.success) {
@@ -128,12 +116,7 @@ export function CustomDomainManager() {
   // Удаление домена
   const deleteDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return fetch(`/api/advertiser/profile/domains/${domainId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      }).then(res => res.json());
+      return apiRequest(`/api/advertiser/profile/domains/${domainId}`, 'DELETE');
     },
     onSuccess: () => {
       toast({
