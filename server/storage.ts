@@ -3729,6 +3729,7 @@ export class DatabaseStorage implements IStorage {
           payout: offers.payout,
           payoutType: offers.payoutType,
           currency: offers.currency,
+          payoutByGeo: offers.payoutByGeo,
           countries: offers.countries,
           landingPages: offers.landingPages,
           landingPageUrl: offers.landingPageUrl,
