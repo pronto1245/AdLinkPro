@@ -90,6 +90,13 @@ export default function OfferDetails() {
   const { toast } = useToast();
   const offerId = params.id;
 
+  // Загрузка актуальных данных оффера
+  const { data: offer, isLoading: offerLoading, error: offerError } = useQuery({
+    queryKey: ["/api/partner/offers", offerId],
+    enabled: !!offerId,
+    staleTime: 1 * 60 * 1000, // 1 минута
+  });
+
   // Загрузка статуса запроса доступа для текущего оффера
   const { data: accessRequests = [] } = useQuery({
     queryKey: ["/api/partner/access-requests"],
@@ -154,61 +161,50 @@ export default function OfferDetails() {
     }
   };
 
-  // Тестовые данные для детального оффера
-  const offerDetails: OfferDetails = {
-    id: offerId || "1",
-    name: "1Win Казино",
-    description: "Популярное онлайн казино с широким выбором игр, слотов и живых дилеров. Высокие выплаты и бонусы для новых игроков. Лицензированная платформа с мгновенными выводами средств.",
-    logo: "https://via.placeholder.com/80x80/9333ea/ffffff?text=1W",
-    category: "gambling",
-    payout: "150",
-    payoutType: "cpa",
-    currency: "USD",
-    status: "active",
-    countries: ["RU", "KZ", "BY"],
-    creatives: "/creatives/1win-casino-pack.zip",
-    creativesUrl: "https://storage.googleapis.com/replit-objstore-test/creatives/1win-casino-pack.zip",
-    landingPages: [
-      {
-        id: "1",
-        name: "Главная страница",
-        url: "https://1win-casino.com/main",
-        type: "main",
-        isDefault: true
-      },
-      {
-        id: "2", 
-        name: "Страница регистрации",
-        url: "https://1win-casino.com/register",
-        type: "registration",
-        isDefault: false
-      },
-      {
-        id: "3",
-        name: "Промо-страница",
-        url: "https://1win-casino.com/promo-bonus",
-        type: "promo",
-        isDefault: false
-      }
-    ],
-    kpiConditions: {
-      minDeposit: 50,
-      minAge: 18,
-      countries: ["RU", "KZ", "BY"],
-      allowedTrafficTypes: ["contextual", "social", "email"]
-    },
-    restrictions: {
-      forbidden_sources: ["adult", "fraud", "incentive"],
-      allowed_sources: ["google", "facebook", "telegram", "email"],
-      geo_restrictions: []
-    },
-    trackingLink: `https://track.partner.com/${offerId}/{{subid}}`,
-    createdAt: "2024-01-15T10:30:00Z",
-    advertiserInfo: {
-      name: "1Win Gaming",
-      company: "1Win Entertainment Ltd"
-    }
-  };
+  // Обработка загрузки данных
+  if (offerLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => navigate("/affiliate/offers")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Назад к офферам
+          </Button>
+          <h1 className="text-2xl font-bold">Загрузка...</h1>
+        </div>
+        <div className="text-center p-8">
+          <p>Загружаем данные оффера...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (offerError || !offer) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => navigate("/affiliate/offers")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Назад к офферам
+          </Button>
+          <h1 className="text-2xl font-bold">Ошибка</h1>
+        </div>
+        <div className="text-center p-8">
+          <p>Оффер не найден или произошла ошибка при загрузке</p>
+        </div>
+      </div>
+    );
+  }
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -279,7 +275,30 @@ export default function OfferDetails() {
     }
   };
 
-  const categoryProps = getCategoryBadgeProps(offerDetails.category);
+  const categoryProps = getCategoryBadgeProps(offer.category);
+  
+  // Дополняем страны Арменией если её нет в списке
+  const countryNames: Record<string, string> = {
+    'armenia': '🇦🇲 Армения',
+    'RU': '🇷🇺 Россия', 'US': '🇺🇸 США', 'DE': '🇩🇪 Германия', 'FR': '🇫🇷 Франция', 'IT': '🇮🇹 Италия',
+    'ES': '🇪🇸 Испания', 'UK': '🇬🇧 Великобритания', 'CA': '🇨🇦 Канада', 'AU': '🇦🇺 Австралия',
+    'BR': '🇧🇷 Бразилия', 'MX': '🇲🇽 Мексика', 'IN': '🇮🇳 Индия', 'JP': '🇯🇵 Япония', 'KR': '🇰🇷 Южная Корея',
+    'KZ': '🇰🇿 Казахстан', 'BY': '🇧🇾 Беларусь', 'UA': '🇺🇦 Украина', 'PL': '🇵🇱 Польша', 'TR': '🇹🇷 Турция'
+  };
+  
+  // Получаем статус оффера
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge variant="outline" className="text-green-600 border-green-600">Активен</Badge>;
+      case 'paused':
+        return <Badge variant="outline" className="text-yellow-600 border-yellow-600">Приостановлен</Badge>;
+      case 'archived':
+        return <Badge variant="outline" className="text-gray-600 border-gray-600">Архивирован</Badge>;
+      default:
+        return <Badge variant="outline" className="text-blue-600 border-blue-600">Черновик</Badge>;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -301,22 +320,23 @@ export default function OfferDetails() {
       <Card>
         <CardHeader>
           <div className="flex items-start gap-4">
-            <img 
-              src={offerDetails.logo} 
-              alt={offerDetails.name}
-              className="w-16 h-16 rounded-lg object-cover"
-            />
+            <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
+              {offer.name.substring(0, 2).toUpperCase()}
+            </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <CardTitle className="text-xl">{offerDetails.name}</CardTitle>
+                <CardTitle className="text-xl">{offer.name}</CardTitle>
                 <Badge className={categoryProps.className}>
                   {categoryProps.label}
                 </Badge>
-                <Badge variant="outline" className="text-green-600 border-green-600">
-                  Активен
-                </Badge>
+                {getStatusBadge(offer.status)}
               </div>
-              <p className="text-muted-foreground">{offerDetails.description}</p>
+              <p className="text-muted-foreground">
+                {typeof offer.description === 'object' 
+                  ? (offer.description.ru || offer.description.en || 'Описание не указано')
+                  : (offer.description || 'Описание не указано')
+                }
+              </p>
             </div>
           </div>
         </CardHeader>
@@ -325,21 +345,21 @@ export default function OfferDetails() {
             <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg dark:bg-green-900/20">
               <DollarSign className="w-5 h-5 text-green-600" />
               <div>
-                <p className="font-semibold text-green-600">${offerDetails.payout}</p>
-                <p className="text-sm text-muted-foreground">Выплата за {offerDetails.payoutType.toUpperCase()}</p>
+                <p className="font-semibold text-green-600">${offer.payout} {offer.currency}</p>
+                <p className="text-sm text-muted-foreground">Выплата за {offer.payoutType.toUpperCase()}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg dark:bg-blue-900/20">
               <Globe className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="font-semibold text-blue-600">{offerDetails.countries.length} стран</p>
+                <p className="font-semibold text-blue-600">{offer.countries?.length || 0} стран</p>
                 <p className="text-sm text-muted-foreground">Доступные гео</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg dark:bg-purple-900/20">
               <Building2 className="w-5 h-5 text-purple-600" />
               <div>
-                <p className="font-semibold text-purple-600">{offerDetails.advertiserInfo.name}</p>
+                <p className="font-semibold text-purple-600">ID {offer.advertiserId?.substring(0, 8)}...</p>
                 <p className="text-sm text-muted-foreground">Рекламодатель</p>
               </div>
             </div>
@@ -347,7 +367,7 @@ export default function OfferDetails() {
               <Calendar className="w-5 h-5 text-orange-600" />
               <div>
                 <p className="font-semibold text-orange-600">
-                  {new Date(offerDetails.createdAt).toLocaleDateString('ru-RU')}
+                  {new Date(offer.createdAt).toLocaleDateString('ru-RU')}
                 </p>
                 <p className="text-sm text-muted-foreground">Дата создания</p>
               </div>
@@ -367,11 +387,11 @@ export default function OfferDetails() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg dark:bg-gray-900/50">
-              <code className="flex-1 text-sm font-mono">{offerDetails.trackingLink}</code>
+              <code className="flex-1 text-sm font-mono">{offer.partnerLink || `https://track.platform.com/click/${offer.id}?partner=${currentRequest?.partnerId}&subid=YOUR_SUBID`}</code>
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => copyToClipboard(offerDetails.trackingLink, "Трекинговая ссылка")}
+                onClick={() => copyToClipboard(offer.partnerLink || `https://track.platform.com/click/${offer.id}?partner=${currentRequest?.partnerId}&subid=YOUR_SUBID`, "Трекинговая ссылка")}
                 title="Копировать ссылку"
               >
                 <Copy className="w-4 h-4" />
@@ -385,7 +405,7 @@ export default function OfferDetails() {
       ) : null}
 
       {/* Креативы - только для одобренных */}
-      {isApproved && offerDetails?.creatives ? (
+      {isApproved && (offer.creatives || offer.creativesUrl) ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -405,7 +425,7 @@ export default function OfferDetails() {
                 </div>
               </div>
               <Button
-                onClick={() => downloadCreatives(offerDetails.creatives)}
+                onClick={() => downloadCreatives(offer.creatives || offer.creativesUrl)}
                 className="bg-green-600 hover:bg-green-700 text-white"
                 title="Скачать креативы"
               >
@@ -427,12 +447,12 @@ export default function OfferDetails() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {offerDetails.countries.map((country) => (
+            {(offer.countries || []).map((country: string) => (
               <div key={country} className="flex items-center gap-2 p-2 border rounded-lg">
-                <span className="text-lg">{getCountryFlag(country)}</span>
-                <span className="font-medium">{getCountryName(country)}</span>
+                <span className="text-lg">{countryNames[country] ? countryNames[country].split(' ')[0] : getCountryFlag(country)}</span>
+                <span className="font-medium">{countryNames[country] ? countryNames[country].split(' ')[1] : getCountryName(country)}</span>
                 <Badge variant="secondary" className="ml-auto text-xs">
-                  {country}
+                  {country.toUpperCase()}
                 </Badge>
               </div>
             ))}
@@ -446,12 +466,12 @@ export default function OfferDetails() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ExternalLink className="w-5 h-5" />
-              Лендинг страницы ({offerDetails.landingPages.length})
+              Лендинг страницы ({(offer.landingPages || []).length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {offerDetails.landingPages.map((landing) => (
+              {(offer.landingPages || []).map((landing: any) => (
                 <div key={landing.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
