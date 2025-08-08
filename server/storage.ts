@@ -232,6 +232,12 @@ export interface IStorage {
   updateDomain(id: string, data: any): Promise<any>;
   deleteDomain(id: string): Promise<void>;
   
+  // Custom Domains methods
+  getCustomDomains(advertiserId: string): Promise<any[]>;
+  addCustomDomain(advertiserId: string, data: { domain: string; type: string }): Promise<any>;
+  verifyCustomDomain(advertiserId: string, domainId: string): Promise<any>;
+  deleteCustomDomain(advertiserId: string, domainId: string): Promise<void>;
+  
   // KYC documents
   getKycDocuments(): Promise<any[]>;
   updateKycDocument(id: string, data: any): Promise<any>;
@@ -2423,6 +2429,71 @@ export class DatabaseStorage implements IStorage {
         .where(eq(cryptoWallets.id, id));
     } catch (error) {
       console.error('Error deleting crypto wallet:', error);
+      throw error;
+    }
+  }
+
+  // Custom Domains implementation
+  async getCustomDomains(advertiserId: string): Promise<any[]> {
+    try {
+      const domains = await db.select().from(customDomains).where(eq(customDomains.advertiserId, advertiserId));
+      return domains;
+    } catch (error) {
+      console.error('Error fetching custom domains:', error);
+      throw error;
+    }
+  }
+
+  async addCustomDomain(advertiserId: string, data: { domain: string; type: string }): Promise<any> {
+    try {
+      const [domain] = await db.insert(customDomains).values({
+        advertiserId,
+        domain: data.domain,
+        type: data.type,
+        verificationValue: `replit-verify-${Math.random().toString(36).substring(7)}`,
+        targetValue: 'track.replit.app' // Default target
+      }).returning();
+      return domain;
+    } catch (error) {
+      console.error('Error adding custom domain:', error);
+      throw error;
+    }
+  }
+
+  async verifyCustomDomain(advertiserId: string, domainId: string): Promise<any> {
+    try {
+      const [domain] = await db.select().from(customDomains).where(
+        and(eq(customDomains.id, domainId), eq(customDomains.advertiserId, advertiserId))
+      );
+      
+      if (!domain) {
+        throw new Error('Domain not found');
+      }
+
+      // Mock verification - в реальной системе здесь будет DNS проверка
+      const [updatedDomain] = await db.update(customDomains)
+        .set({ 
+          status: 'verified', 
+          lastChecked: new Date(),
+          updatedAt: new Date() 
+        })
+        .where(eq(customDomains.id, domainId))
+        .returning();
+        
+      return updatedDomain;
+    } catch (error) {
+      console.error('Error verifying custom domain:', error);
+      throw error;
+    }
+  }
+
+  async deleteCustomDomain(advertiserId: string, domainId: string): Promise<void> {
+    try {
+      await db.delete(customDomains).where(
+        and(eq(customDomains.id, domainId), eq(customDomains.advertiserId, advertiserId))
+      );
+    } catch (error) {
+      console.error('Error deleting custom domain:', error);
       throw error;
     }
   }

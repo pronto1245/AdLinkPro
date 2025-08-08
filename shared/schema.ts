@@ -1686,22 +1686,23 @@ export const insertOfferAccessRequestSchema = createInsertSchema(offerAccessRequ
 export type OfferAccessRequest = typeof offerAccessRequests.$inferSelect;
 export type InsertOfferAccessRequest = z.infer<typeof insertOfferAccessRequestSchema>;
 
+// Custom domains types
+export type CustomDomain = typeof customDomains.$inferSelect;
+export type InsertCustomDomain = typeof customDomains.$inferInsert;
+
 
 // Custom Domains table for white-label tracking
 export const customDomains = pgTable("custom_domains", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
-  domain: text("domain").notNull().unique(),
-  status: text("status").$type<'pending' | 'verifying' | 'verified' | 'failed' | 'expired'>().default('pending'),
-  type: text("type").$type<'a_record' | 'cname'>().default('cname'),
-  verificationValue: text("verification_value").notNull(),
-  verificationRecord: text("verification_record"), // DNS record name
-  sslStatus: text("ssl_status").$type<'none' | 'pending' | 'issued' | 'expired'>().default('none'),
-  sslCertificate: text("ssl_certificate"),
-  isActive: boolean("is_active").default(false),
-  lastChecked: timestamp("last_checked"),
+  domain: varchar("domain", { length: 255 }).notNull(),
+  advertiserId: varchar("advertiser_id", { length: 255 }).notNull().references(() => users.id),
+  type: varchar("type", { length: 50 }).notNull(),
+  status: varchar("status", { length: 50 }).notNull().default('pending'),
+  verificationValue: varchar("verification_value", { length: 255 }).notNull(),
+  targetValue: varchar("target_value", { length: 255 }).notNull(),
   errorMessage: text("error_message"),
-  notes: text("notes"),
+  lastChecked: timestamp("last_checked"),
+  nextCheck: timestamp("next_check"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
