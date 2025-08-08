@@ -1,7 +1,17 @@
 # Overview
 This is a comprehensive affiliate marketing platform providing advertisers with intelligent offer management, real-time analytics, partner relationships, financial transactions, and anti-fraud protection. The platform features role-based access control (super-admin, advertiser, affiliate, staff), comprehensive offer management with creative file handling, real-time statistics and analytics, financial management with payouts and transactions, partner approval workflows, and multi-layered security. All data flows are reactive and live - status changes, conversion rates, financial metrics, and fraud alerts update in real-time across all user interfaces.
 
-**Latest Update (Aug 8, 2025)**: Automatic tracking link system completed! Replaced manual "Link Generator" with automatic "Ready Tracking Links" display. Partners now see pre-generated tracking links with clickid automatically inserted (format: https://domain.com/click?offer=123&clickid=partner_abc123). No manual configuration required - partners get ready-to-use links immediately upon offer approval. DNS verification system also fully implemented for custom domain support.
+**Latest Update (Aug 8, 2025)**: КРИТИЧНАЯ ЛОГИКА СИСТЕМЫ (НЕ ЛОМАТЬ!):
+
+1. **Рекламодатель создает офферы** - через стандартную форму создания
+2. **Все офферы видны партнерам** - полная информация, но БЕЗ трекинговых ссылок
+3. **Партнер запрашивает доступ** - через кнопку "Запросить доступ" 
+4. **Рекламодатель одобряет запрос** - в своей панели управления
+5. **ПОСЛЕ одобрения появляются готовые ссылки** - автоматически сгенерированные с кастомным доменом и clickid
+
+Формат готовых ссылок: `https://track.example.com/click?offer=${offerId}&partner=${partnerId}&clickid=partner_${partnerId}_${offerId}_{subid}`
+
+ВАЖНО: НЕ делать автоматическое одобрение при создании офферов! Партнеры должны запрашивать доступ вручную.
 
 # User Preferences
 Preferred communication style: Simple, everyday language.
