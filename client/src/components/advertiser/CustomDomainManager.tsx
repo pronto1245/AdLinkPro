@@ -67,18 +67,19 @@ export function CustomDomainManager() {
     mutationFn: async (data: { domain: string; type: 'cname' | 'a_record' }) => {
       return apiRequest('/api/advertiser/profile/domains', 'POST', data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
-        title: "Домен добавлен",
-        description: "Кастомный домен успешно добавлен. Следуйте инструкциям для верификации."
+        title: "✅ Домен успешно добавлен",
+        description: `Домен ${data.domain} добавлен и ожидает верификации. Перейдите к инструкциям DNS для настройки.`
       });
       setNewDomain('');
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     },
     onError: (error: any) => {
+      console.error('Domain add error:', error);
       toast({
-        title: "Ошибка",
-        description: error?.message || "Не удалось добавить домен",
+        title: "❌ Ошибка добавления домена",
+        description: error?.message || "Не удалось добавить домен. Проверьте правильность ввода и попробуйте снова.",
         variant: "destructive"
       });
     }

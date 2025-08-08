@@ -4021,23 +4021,14 @@ export class DatabaseStorage implements IStorage {
 
   // Custom Domains Management
   async getCustomDomains(userId: string): Promise<any[]> {
-    // Mock implementation for now - in real app would query custom domains table
-    return [
-      {
-        id: 'domain_1',
-        domain: 'track.example.com',
-        status: 'verified' as const,
-        type: 'cname' as const,
-        verificationValue: 'track-' + nanoid(16),
-        createdAt: new Date().toISOString(),
-        lastChecked: new Date().toISOString()
-      }
-    ];
+    // Return domains for this specific user from memory
+    return this.customDomains.filter(domain => domain.userId === userId);
   }
 
   async addCustomDomain(userId: string, domainData: any): Promise<any> {
     const domain = {
       id: 'domain_' + nanoid(8),
+      userId,
       domain: domainData.domain,
       status: 'pending' as const,
       type: domainData.type,
@@ -4045,6 +4036,9 @@ export class DatabaseStorage implements IStorage {
       createdAt: new Date().toISOString(),
       lastChecked: null
     };
+    
+    // Add to memory storage
+    this.customDomains.push(domain);
     return domain;
   }
 
@@ -4054,8 +4048,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteCustomDomain(userId: string, domainId: string): Promise<void> {
-    // Mock implementation - would delete from custom domains table
-    return;
+    // Remove domain from memory storage
+    const index = this.customDomains.findIndex(d => d.id === domainId && d.userId === userId);
+    if (index !== -1) {
+      this.customDomains.splice(index, 1);
+    }
   }
 
   // Webhook Settings Management
@@ -4186,6 +4183,7 @@ class MemStorage implements IStorage {
   private statistics: any[] = [];
   private postbacks: any[] = [];
   private fraudReports: any[] = [];
+  private customDomains: any[] = [];
   // Постбеки в памяти
   private postbackTemplates: any[] = [
     {
