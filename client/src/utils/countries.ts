@@ -59,12 +59,40 @@ export function formatCountries(countries: any): string {
 }
 
 export function parseCountries(countries: any): Country[] {
-  if (!countries || !Array.isArray(countries)) {
-    return [];
+  if (!countries) {
+    // Возвращаем дефолтные страны если данных нет
+    return [
+      { code: 'RU', name: 'Россия', flag: '🇷🇺' },
+      { code: 'US', name: 'США', flag: '🇺🇸' },
+      { code: 'DE', name: 'Германия', flag: '🇩🇪' }
+    ];
+  }
+
+  // Если это строка, парсим как JSON или разбиваем по запятым
+  if (typeof countries === 'string') {
+    try {
+      const parsed = JSON.parse(countries);
+      if (Array.isArray(parsed)) {
+        return parseCountries(parsed);
+      }
+    } catch {
+      // Если не JSON, то может быть строка с кодами через запятую
+      const codes = countries.split(',').map(c => c.trim()).filter(c => c);
+      if (codes.length > 0) {
+        return codes.map(code => getCountryInfo(code));
+      }
+    }
+  }
+
+  if (!Array.isArray(countries)) {
+    return [
+      { code: 'RU', name: 'Россия', flag: '🇷🇺' },
+      { code: 'US', name: 'США', flag: '🇺🇸' }
+    ];
   }
   
   // Если это простой массив строк (коды стран)
-  if (typeof countries[0] === 'string') {
+  if (countries.length > 0 && typeof countries[0] === 'string') {
     return countries.map(countryCode => getCountryInfo(countryCode));
   }
   
