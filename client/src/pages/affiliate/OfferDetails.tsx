@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
 interface OfferDetails {
   id: string;
@@ -87,26 +88,49 @@ export default function OfferDetails() {
   const { toast } = useToast();
   const offerId = params.id;
 
-  // Состояние запросов офферов (синхронизировано с PartnerOffers)
-  const [offerRequests, setOfferRequests] = useState<Record<string, 'none' | 'pending' | 'approved'>>({
-    '1': 'approved', // Первый оффер уже одобрен
-    '2': 'none',     // Второй не запрошен
-    '3': 'pending',  // Третий в ожидании
+  // Загрузка статуса запроса доступа для текущего оффера
+  const { data: accessRequests = [] } = useQuery({
+    queryKey: ["/api/partner/access-requests"],
+    staleTime: 2 * 60 * 1000,
   });
 
-  const requestStatus = offerRequests[offerId || '1'] || 'none';
+  // Находим запрос для текущего оффера
+  const currentRequest = accessRequests.find((req: any) => req.offerId === offerId);
+  const requestStatus = currentRequest?.status || 'none';
   const isApproved = requestStatus === 'approved';
 
-  const handleRequestAccess = () => {
+  const handleRequestAccess = async () => {
     if (offerId && requestStatus === 'none') {
-      setOfferRequests(prev => ({
-        ...prev,
-        [offerId]: 'pending'
-      }));
-      toast({
-        title: "Запрос отправлен",
-        description: "Ваш запрос на доступ к офферу отправлен рекламодателю",
-      });
+      try {
+        const response = await fetch("/api/partner/offer-access-request", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
+          },
+          body: JSON.stringify({
+            offerId,
+            message: "Запрос доступа к офферу"
+          })
+        });
+
+        if (response.ok) {
+          toast({
+            title: "Запрос отправлен",
+            description: "Ваш запрос на доступ к офферу отправлен рекламодателю",
+          });
+          // Обновляем кеш запросов
+          window.location.reload();
+        } else {
+          throw new Error("Ошибка отправки запроса");
+        }
+      } catch (error) {
+        toast({
+          title: "Ошибка",
+          description: "Не удалось отправить запрос. Попробуйте еще раз.",
+          variant: "destructive"
+        });
+      }
     }
   };
 
