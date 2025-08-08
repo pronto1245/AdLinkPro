@@ -1068,11 +1068,16 @@ export const creativeSetFiles = pgTable("creative_set_files", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+
+
+
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   offers: many(offers),
   partnerOffers: many(partnerOffers),
   trackingLinks: many(trackingLinks),
+  customDomains: many(customDomains),
   statistics: many(statistics),
   transactions: many(transactions),
   postbacks: many(postbacks),
@@ -1682,24 +1687,31 @@ export type OfferAccessRequest = typeof offerAccessRequests.$inferSelect;
 export type InsertOfferAccessRequest = z.infer<typeof insertOfferAccessRequestSchema>;
 
 
-// Custom Domains table
+// Custom Domains table for white-label tracking
 export const customDomains = pgTable("custom_domains", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  domain: text("domain").notNull().unique(),
   advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
-  status: domainStatusEnum("status").default('pending'),
-  type: domainTypeEnum("type").default('cname'),
+  domain: text("domain").notNull().unique(),
+  status: text("status").$type<'pending' | 'verifying' | 'verified' | 'failed' | 'expired'>().default('pending'),
+  type: text("type").$type<'a_record' | 'cname'>().default('cname'),
   verificationValue: text("verification_value").notNull(),
-  targetValue: text("target_value"), // What the domain should point to
-  sslEnabled: boolean("ssl_enabled").default(false),
-  sslCertificateExpiry: timestamp("ssl_certificate_expiry"),
+  verificationRecord: text("verification_record"), // DNS record name
+  sslStatus: text("ssl_status").$type<'none' | 'pending' | 'issued' | 'expired'>().default('none'),
+  sslCertificate: text("ssl_certificate"),
+  isActive: boolean("is_active").default(false),
   lastChecked: timestamp("last_checked"),
-  nextCheck: timestamp("next_check"),
   errorMessage: text("error_message"),
-  settings: jsonb("settings"), // Additional domain settings
+  notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+export const customDomainsRelations = relations(customDomains, ({ one }) => ({
+  advertiser: one(users, {
+    fields: [customDomains.advertiserId],
+    references: [users.id],
+  }),
+}));
 
 // API Tokens table
 export const apiTokens = pgTable("api_tokens", {

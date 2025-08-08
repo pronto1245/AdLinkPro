@@ -14,6 +14,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import DomainVerification from '@/components/advertiser/DomainVerification';
+import { CustomDomainManager } from '@/components/advertiser/CustomDomainManager';
 
 interface AdvertiserProfile {
   id: string;
@@ -671,7 +672,7 @@ export default function AdvertiserProfile() {
             <h2 className="text-2xl font-semibold">DNS-подтверждение доменов</h2>
           </div>
           
-          <DomainVerification />
+          <CustomDomainManager />
         </TabsContent>
 
         {/* NOTIFICATIONS TAB */}

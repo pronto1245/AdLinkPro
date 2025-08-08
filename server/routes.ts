@@ -8,7 +8,7 @@ import {
   insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, insertReceivedOfferSchema,
   type User, users, offers, statistics, fraudAlerts, tickets, postbacks, postbackLogs, trackingClicks,
   transactions, fraudReports, fraudBlocks, financialTransactions, financialSummaries, payoutRequests,
-  offerAccessRequests, partnerOffers, creativeFiles
+  offerAccessRequests, partnerOffers, creativeFiles, customDomains
 } from "@shared/schema";
 import { sql } from "drizzle-orm";
 import { eq, and, gte, lte, count, sum, desc } from "drizzle-orm";
