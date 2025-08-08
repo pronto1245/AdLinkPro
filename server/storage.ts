@@ -4092,6 +4092,44 @@ export class DatabaseStorage implements IStorage {
 
   // === PARTNER OFFERS METHODS ===
   
+  async getOfferAccessRequestsByAdvertiser(advertiserId: string): Promise<any[]> {
+    try {
+      const accessRequests = await db
+        .select({
+          id: offerAccessRequests.id,
+          offerId: offerAccessRequests.offerId,
+          partnerId: offerAccessRequests.partnerId,
+          advertiserId: offerAccessRequests.advertiserId,
+          status: offerAccessRequests.status,
+          requestNote: offerAccessRequests.requestNote,
+          responseNote: offerAccessRequests.responseNote,
+          requestedAt: offerAccessRequests.requestedAt,
+          reviewedAt: offerAccessRequests.reviewedAt,
+          reviewedBy: offerAccessRequests.reviewedBy,
+          partnerMessage: offerAccessRequests.partnerMessage,
+          advertiserResponse: offerAccessRequests.advertiserResponse,
+          expiresAt: offerAccessRequests.expiresAt,
+          // Partner info
+          partnerUsername: sql`(SELECT username FROM ${users} WHERE id = ${offerAccessRequests.partnerId})`.as('partnerUsername'),
+          partnerEmail: sql`(SELECT email FROM ${users} WHERE id = ${offerAccessRequests.partnerId})`.as('partnerEmail'),
+          // Offer info
+          offerName: sql`(SELECT name FROM ${offers} WHERE id = ${offerAccessRequests.offerId})`.as('offerName'),
+          offerCategory: sql`(SELECT category FROM ${offers} WHERE id = ${offerAccessRequests.offerId})`.as('offerCategory'),
+          offerPayout: sql`(SELECT payout FROM ${offers} WHERE id = ${offerAccessRequests.offerId})`.as('offerPayout'),
+          offerPayoutType: sql`(SELECT payout_type FROM ${offers} WHERE id = ${offerAccessRequests.offerId})`.as('offerPayoutType')
+        })
+        .from(offerAccessRequests)
+        .where(eq(offerAccessRequests.advertiserId, advertiserId))
+        .orderBy(desc(offerAccessRequests.requestedAt));
+
+      console.log(`Found ${accessRequests.length} access requests for advertiser ${advertiserId}`);
+      return accessRequests;
+    } catch (error) {
+      console.error('Error getting advertiser access requests:', error);
+      return [];
+    }
+  }
+  
   async getAvailableOffers(partnerId: string): Promise<any[]> {
     try {
       // Get all active offers from database
