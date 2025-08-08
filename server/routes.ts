@@ -1642,6 +1642,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Transform landing page URL with custom domain and subid
+  app.post("/api/partner/transform-landing-url", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const { originalUrl, offerId, subid } = req.body;
+      const partnerId = getAuthenticatedUser(req).id;
+
+      if (!originalUrl || !offerId) {
+        return res.status(400).json({ error: "Original URL and offer ID are required" });
+      }
+
+      // Get offer to find advertiser ID
+      const offer = await storage.getOfferById(offerId);
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+
+      const transformedUrl = await TrackingLinkService.transformLandingUrl({
+        originalUrl,
+        advertiserId: offer.advertiserId,
+        partnerId,
+        offerId,
+        subid
+      });
+
+      res.json({ transformedUrl });
+    } catch (error) {
+      console.error("Error transforming landing URL:", error);
+      res.status(500).json({ error: "Failed to transform landing URL" });
+    }
+  });
+
   // Click handling endpoint
   app.get("/click", async (req, res) => {
     try {

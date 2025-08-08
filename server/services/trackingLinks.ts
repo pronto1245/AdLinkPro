@@ -49,6 +49,65 @@ export class TrackingLinkService {
     return domains.map(d => d.domain);
   }
 
+  // Transform landing page URL with custom domain and subid
+  static async transformLandingUrl(params: {
+    originalUrl: string;
+    advertiserId: string;
+    partnerId: string;
+    offerId: string;
+    subid?: string;
+  }): Promise<string> {
+    const { originalUrl, advertiserId, partnerId, offerId, subid } = params;
+    
+    try {
+      // Get advertiser's verified custom domains
+      const verifiedDomains = await this.getVerifiedCustomDomains(advertiserId);
+      
+      if (verifiedDomains.length === 0) {
+        // No custom domain - return original URL with subid parameter
+        const url = new URL(originalUrl);
+        if (subid) {
+          url.searchParams.set('subid', subid);
+        }
+        url.searchParams.set('partner_id', partnerId);
+        url.searchParams.set('offer_id', offerId);
+        return url.toString();
+      }
+
+      // Use first verified custom domain
+      const customDomain = verifiedDomains[0];
+      const url = new URL(originalUrl);
+      
+      // Replace domain with custom domain
+      url.hostname = customDomain;
+      url.protocol = 'https:';
+      
+      // Add tracking parameters
+      if (subid) {
+        url.searchParams.set('subid', subid);
+      }
+      url.searchParams.set('partner_id', partnerId);
+      url.searchParams.set('offer_id', offerId);
+      
+      return url.toString();
+    } catch (error) {
+      console.error('Error transforming landing URL:', error);
+      // Return original URL with basic parameters on error
+      try {
+        const url = new URL(originalUrl);
+        if (subid) {
+          url.searchParams.set('subid', subid);
+        }
+        url.searchParams.set('partner_id', partnerId);  
+        url.searchParams.set('offer_id', offerId);
+        return url.toString();
+      } catch {
+        // If URL is invalid, return original
+        return originalUrl;
+      }
+    }
+  }
+
   // Generate automatic tracking link for partner (simplified)
   static async generatePartnerTrackingLink(offerId: string, partnerId: string): Promise<string> {
     try {

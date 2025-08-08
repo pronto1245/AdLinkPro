@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { LinkGenerator } from "@/components/partner/LinkGenerator";
+import { transformLandingUrl } from "@/lib/queryClient";
 
 interface OfferDetails {
   id: string;
@@ -84,6 +85,158 @@ function getCategoryBadgeProps(category: string) {
   
   return categories[category] || { label: category, className: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300" };
 }
+
+const countryNames: Record<string, string> = {
+  'US': '🇺🇸 США',
+  'RU': '🇷🇺 Россия',
+  'DE': '🇩🇪 Германия',
+  'FR': '🇫🇷 Франция',
+  'IT': '🇮🇹 Италия',
+  'ES': '🇪🇸 Испания',
+  'PT': '🇵🇹 Португалия',
+  'BR': '🇧🇷 Бразилия',
+  'IN': '🇮🇳 Индия',
+  'ID': '🇮🇩 Индонезия',
+  'MY': '🇲🇾 Малайзия',
+  'TH': '🇹🇭 Таиланд',
+  'VN': '🇻🇳 Вьетнам',
+  'PH': '🇵🇭 Филиппины',
+  'KR': '🇰🇷 Южная Корея',
+  'JP': '🇯🇵 Япония',
+  'CN': '🇨🇳 Китай',
+  'AU': '🇦🇺 Австралия',
+  'CA': '🇨🇦 Канада',
+  'GB': '🇬🇧 Великобритания',
+  'UA': '🇺🇦 Украина',
+  'PL': '🇵🇱 Польша',
+  'TR': '🇹🇷 Турция',
+  'MX': '🇲🇽 Мексика',
+  'AR': '🇦🇷 Аргентина',
+  'CL': '🇨🇱 Чили',
+  'CO': '🇨🇴 Колумбия',
+  'PE': '🇵🇪 Перу'
+};
+
+// Component for displaying landing pages with custom domain transformation
+const LandingPagesCard = ({ 
+  landingPages, 
+  offerId, 
+  onCopyUrl 
+}: { 
+  landingPages: any[];
+  offerId: string;
+  onCopyUrl: (url: string, type: string) => void;
+}) => {
+  const [transformedUrls, setTransformedUrls] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+
+  const getTransformedUrl = async (landing: any) => {
+    if (transformedUrls[landing.id]) {
+      return transformedUrls[landing.id];
+    }
+
+    if (loading[landing.id]) {
+      return landing.url; // Return original while loading
+    }
+
+    try {
+      setLoading(prev => ({ ...prev, [landing.id]: true }));
+      const transformedUrl = await transformLandingUrl({
+        originalUrl: landing.url,
+        offerId,
+        subid: `partner_${offerId}_landing`
+      });
+      setTransformedUrls(prev => ({ ...prev, [landing.id]: transformedUrl }));
+      return transformedUrl;
+    } catch (error) {
+      console.error('Failed to transform landing URL:', error);
+      return landing.url; // Fallback to original
+    } finally {
+      setLoading(prev => ({ ...prev, [landing.id]: false }));
+    }
+  };
+
+  const handleCopyUrl = async (landing: any) => {
+    const url = await getTransformedUrl(landing);
+    onCopyUrl(url, "URL лендинга с кастомным доменом");
+  };
+
+  const handleOpenUrl = async (landing: any) => {
+    const url = await getTransformedUrl(landing);
+    window.open(url, '_blank');
+  };
+
+  useEffect(() => {
+    // Pre-transform URLs for better UX
+    landingPages.forEach(landing => {
+      getTransformedUrl(landing);
+    });
+  }, [landingPages, offerId]);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ExternalLink className="w-5 h-5" />
+          Лендинг страницы с кастомным доменом ({landingPages.length})
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {landingPages.map((landing: any) => (
+            <div key={landing.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-medium">{landing.name}</h4>
+                  {landing.isDefault && (
+                    <Badge variant="default" className="text-xs">По умолчанию</Badge>
+                  )}
+                  <Badge variant="outline" className="text-xs">{landing.type}</Badge>
+                  {transformedUrls[landing.id] && (
+                    <Badge variant="secondary" className="text-xs">С кастомным доменом</Badge>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <code className="text-xs text-muted-foreground block">
+                    Оригинал: {landing.url}
+                  </code>
+                  {transformedUrls[landing.id] && (
+                    <code className="text-sm text-green-600 dark:text-green-400 block font-medium">
+                      С доменом: {transformedUrls[landing.id]}
+                    </code>
+                  )}
+                  {loading[landing.id] && (
+                    <span className="text-xs text-muted-foreground">⏳ Подготавливаем ссылку с кастомным доменом...</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleCopyUrl(landing)}
+                  title="Копировать URL с кастомным доменом"
+                  disabled={loading[landing.id]}
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleOpenUrl(landing)}
+                  title="Открыть в новой вкладке"
+                  disabled={loading[landing.id]}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 export default function OfferDetails() {
   const params = useParams();
@@ -480,50 +633,11 @@ export default function OfferDetails() {
 
       {/* Лендинг страницы - условно для одобренных или кнопка запроса */}
       {isApproved ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ExternalLink className="w-5 h-5" />
-              Лендинг страницы ({(offer.landingPages || []).length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {(offer.landingPages || []).map((landing: any) => (
-                <div key={landing.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium">{landing.name}</h4>
-                      {landing.isDefault && (
-                        <Badge variant="default" className="text-xs">По умолчанию</Badge>
-                      )}
-                      <Badge variant="outline" className="text-xs">{landing.type}</Badge>
-                    </div>
-                    <code className="text-sm text-muted-foreground">{landing.url}</code>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => copyToClipboard(landing.url, "URL лендинга")}
-                      title="Копировать URL"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => window.open(landing.url, '_blank')}
-                      title="Открыть в новой вкладке"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <LandingPagesCard 
+          landingPages={offer.landingPages || []} 
+          offerId={offer.id}
+          onCopyUrl={copyToClipboard}
+        />
       ) : (
         <Card>
           <CardHeader>
