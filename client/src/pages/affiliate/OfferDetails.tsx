@@ -20,6 +20,8 @@ interface OfferDetails {
   currency: string;
   status: string;
   countries: string[];
+  creatives?: string;
+  creativesUrl?: string;
   landingPages: Array<{
     id: string;
     name: string;
@@ -164,6 +166,8 @@ export default function OfferDetails() {
     currency: "USD",
     status: "active",
     countries: ["RU", "KZ", "BY"],
+    creatives: "/creatives/1win-casino-pack.zip",
+    creativesUrl: "https://storage.googleapis.com/replit-objstore-test/creatives/1win-casino-pack.zip",
     landingPages: [
       {
         id: "1",
@@ -347,7 +351,7 @@ export default function OfferDetails() {
       ) : null}
 
       {/* Креативы - только для одобренных */}
-      {isApproved && offer?.creativesUrl ? (
+      {isApproved && offerDetails?.creatives ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -367,7 +371,7 @@ export default function OfferDetails() {
                 </div>
               </div>
               <Button
-                onClick={() => downloadCreatives(offer.creativesUrl)}
+                onClick={() => downloadCreatives(offerDetails.creatives)}
                 className="bg-green-600 hover:bg-green-700 text-white"
                 title="Скачать креативы"
               >
