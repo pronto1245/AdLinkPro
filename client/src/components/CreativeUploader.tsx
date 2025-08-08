@@ -29,11 +29,13 @@ export function CreativeUploader({
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    console.log('File selected:', file ? file.name : 'none');
+    console.log('🔍 Файл выбран:', file ? file.name : 'none');
+    console.log('🔍 Размер файла:', file ? file.size : 0);
     
     if (file) {
       // Проверяем, что это ZIP файл
       if (!file.name.toLowerCase().endsWith('.zip')) {
+        console.log('❌ Не ZIP файл');
         toast({
           title: "Неверный формат файла",
           description: "Пожалуйста, выберите ZIP архив с креативами",
@@ -44,6 +46,7 @@ export function CreativeUploader({
 
       // Проверяем размер файла
       if (file.size > maxFileSize) {
+        console.log('❌ Файл слишком большой');
         toast({
           title: "Файл слишком большой",
           description: `Максимальный размер файла ${formatFileSize(maxFileSize)}`,
@@ -52,26 +55,37 @@ export function CreativeUploader({
         return;
       }
 
-      console.log('File validation passed, setting selected file');
+      console.log('✅ Валидация файла пройдена');
       setSelectedFile(file);
+      
+      // Автоматически начинаем загрузку
+      handleUpload();
     }
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile) {
+      console.log('❌ Нет выбранного файла');
+      return;
+    }
 
+    console.log('🚀 Начало загрузки файла:', selectedFile.name);
     setUploading(true);
+    
     try {
       let uploadURL: string;
       
       if (onGetUploadParameters) {
+        console.log('📡 Получение upload URL через кастомный метод...');
         // Используем кастомный метод получения URL (для CreateOffer)
         const params = await onGetUploadParameters();
         uploadURL = params.url;
+        console.log('✅ Upload URL получен:', uploadURL.substring(0, 50) + '...');
       } else {
+        console.log('📡 Получение upload URL через стандартный метод...');
         // Используем стандартный метод (для OfferDetails)
         const token = localStorage.getItem('auth_token');
-        console.log('Getting upload URL with token:', token ? 'present' : 'missing');
+        console.log('🔑 Токен присутствует:', token ? 'да' : 'нет');
         
         const uploadResponse = await fetch('/api/objects/upload', {
           method: 'POST',
@@ -170,17 +184,6 @@ export function CreativeUploader({
               <p className="text-sm text-muted-foreground mb-4">
                 Максимальный размер файла: {formatFileSize(maxFileSize)}
               </p>
-              <label htmlFor="creative-upload" className="cursor-pointer inline-block">
-                <Button 
-                  type="button" 
-                  className={`bg-blue-600 hover:bg-blue-700 text-white transition-colors ${buttonClassName || ''}`}
-                  data-testid="button-upload-creative"
-                  title="Выбрать ZIP файл с креативами"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Выбрать файл
-                </Button>
-              </label>
               <input
                 id="creative-upload"
                 type="file"
@@ -189,6 +192,16 @@ export function CreativeUploader({
                 className="hidden"
                 data-testid="input-file-creative"
               />
+              <Button 
+                type="button" 
+                onClick={() => document.getElementById('creative-upload')?.click()}
+                className={`bg-blue-600 hover:bg-blue-700 text-white transition-colors ${buttonClassName || ''}`}
+                data-testid="button-upload-creative"
+                title="Выбрать ZIP файл с креативами"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Выбрать файл
+              </Button>
             </div>
           </div>
         ) : (
