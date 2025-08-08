@@ -101,11 +101,23 @@ const AdvertiserOffers = () => {
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
+  const [localOffers, setLocalOffers] = useState<any[]>([]);
 
   const { data: offers = [], isLoading } = useQuery({
     queryKey: ['/api/advertiser/offers'],
     queryFn: () => apiRequest('/api/advertiser/offers'),
   });
+
+  // Обновляем локальное состояние при загрузке данных с сервера
+  React.useEffect(() => {
+    if (offers && offers.length > 0) {
+      // Сортируем по дате создания (новые сверху) при первой загрузке
+      const sorted = [...offers].sort((a: any, b: any) => 
+        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+      );
+      setLocalOffers(sorted);
+    }
+  }, [offers]);
 
   const updateMutation = useMutation({
     mutationFn: (data: any) => {
@@ -186,9 +198,8 @@ const AdvertiserOffers = () => {
     },
   });
 
-  // Сортируем офферы по дате создания (новые сверху), затем фильтруем
-  const filtered = offers
-    .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+  // Используем локальное состояние для фильтрации (уже отсортированное)
+  const filtered = localOffers
     .filter((o: any) => o.name.toLowerCase().includes(search.toLowerCase()))
     .filter((o: any) => {
       if (selectedStatus === 'archived') return o.status === 'archived';
@@ -204,19 +215,24 @@ const AdvertiserOffers = () => {
       return;
     }
 
-    const oldIndex = filtered.findIndex((offer: any) => offer.id === active.id);
-    const newIndex = filtered.findIndex((offer: any) => offer.id === over.id);
+    const oldIndex = localOffers.findIndex((offer: any) => offer.id === active.id);
+    const newIndex = localOffers.findIndex((offer: any) => offer.id === over.id);
 
     if (oldIndex !== -1 && newIndex !== -1) {
-      const newOrder = arrayMove(filtered, oldIndex, newIndex);
+      const newOrder = arrayMove(localOffers, oldIndex, newIndex);
       
-      // Обновляем порядок на сервере (можно добавить API endpoint для сохранения порядка)
+      // Обновляем локальное состояние немедленно
+      setLocalOffers(newOrder);
+      
       console.log('Reordered offers:', newOrder.map(o => ({ id: o.id, name: o.name })));
       
       toast({
         title: "Порядок изменён",
-        description: `Оффер "${active.id}" перемещён`,
+        description: `Оффер перемещён`,
       });
+      
+      // TODO: Здесь можно добавить сохранение порядка на сервер
+      // apiRequest('/api/advertiser/offers/reorder', 'POST', { order: newOrder.map(o => o.id) });
     }
   };
 
@@ -350,35 +366,35 @@ const AdvertiserOffers = () => {
         </div>
       )}
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-8" title="Перетащите для изменения порядка">
-              <GripVertical className="w-4 h-4 text-muted-foreground" />
-            </TableHead>
-            <TableHead>
-              <Checkbox 
-                checked={selectedOffers.length === filtered.length && filtered.length > 0} 
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    setSelectedOffers(filtered.map((o: any) => o.id));
-                  } else {
-                    setSelectedOffers([]);
-                  }
-                }} 
-              />
-            </TableHead>
-            <TableHead>Название</TableHead>
-            <TableHead>GEO</TableHead>
-            <TableHead>Категория</TableHead>
-            <TableHead>CR</TableHead>
-            <TableHead>Payout</TableHead>
-            <TableHead>Статус</TableHead>
-            <TableHead>Действия</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <DndContext onDragEnd={handleDragEnd}>
+      <DndContext onDragEnd={handleDragEnd}>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-8" title="Перетащите для изменения порядка">
+                <GripVertical className="w-4 h-4 text-muted-foreground" />
+              </TableHead>
+              <TableHead>
+                <Checkbox 
+                  checked={selectedOffers.length === filtered.length && filtered.length > 0} 
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedOffers(filtered.map((o: any) => o.id));
+                    } else {
+                      setSelectedOffers([]);
+                    }
+                  }} 
+                />
+              </TableHead>
+              <TableHead>Название</TableHead>
+              <TableHead>GEO</TableHead>
+              <TableHead>Категория</TableHead>
+              <TableHead>CR</TableHead>
+              <TableHead>Payout</TableHead>
+              <TableHead>Статус</TableHead>
+              <TableHead>Действия</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             <SortableContext items={filtered.map((o: any) => o.id)} strategy={verticalListSortingStrategy}>
               {filtered.map((offer: any, index: number) => (
                 <DraggableRow key={offer.id} offer={offer} index={index}>
@@ -482,9 +498,9 @@ const AdvertiserOffers = () => {
                 </DraggableRow>
               ))}
             </SortableContext>
-          </DndContext>
-        </TableBody>
-      </Table>
+          </TableBody>
+        </Table>
+      </DndContext>
 
       {/* Модальное окно редактирования оффера */}
       {editOffer && (
