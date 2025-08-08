@@ -65,10 +65,14 @@ export function CustomDomainManager() {
   // Добавление домена
   const addDomainMutation = useMutation({
     mutationFn: async (data: { domain: string; type: 'cname' | 'a_record' }) => {
-      return apiRequest('/api/advertiser/profile/domains', {
+      return fetch('/api/advertiser/profile/domains', {
         method: 'POST',
-        body: data
-      });
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(data)
+      }).then(res => res.json());
     },
     onSuccess: () => {
       toast({
@@ -90,9 +94,12 @@ export function CustomDomainManager() {
   // Верификация домена
   const verifyDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, {
-        method: 'POST'
-      });
+      return fetch(`/api/advertiser/profile/domains/${domainId}/verify`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      }).then(res => res.json());
     },
     onSuccess: (data: any, domainId: string) => {
       if (data.success) {
@@ -121,9 +128,12 @@ export function CustomDomainManager() {
   // Удаление домена
   const deleteDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return apiRequest(`/api/advertiser/profile/domains/${domainId}`, {
-        method: 'DELETE'
-      });
+      return fetch(`/api/advertiser/profile/domains/${domainId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      }).then(res => res.json());
     },
     onSuccess: () => {
       toast({
@@ -134,13 +144,13 @@ export function CustomDomainManager() {
     }
   });
 
-  // Получение инструкций
-  const { data: instructions } = useQuery({
-    queryKey: ['/api/advertiser/domains', selectedDomain?.id, 'instructions'],
-    enabled: !!selectedDomain,
-    queryFn: () => 
-      apiRequest(`/api/advertiser/domains/${selectedDomain?.id}/instructions`)
-  });
+  // Получение инструкций - убираем, так как инструкции уже есть в компоненте
+  // const { data: instructions } = useQuery({
+  //   queryKey: ['/api/advertiser/domains', selectedDomain?.id, 'instructions'],
+  //   enabled: !!selectedDomain,
+  //   queryFn: () => 
+  //     apiRequest(`/api/advertiser/domains/${selectedDomain?.id}/instructions`)
+  // });
 
   const handleAddDomain = () => {
     if (!newDomain.trim()) {
@@ -289,14 +299,14 @@ export function CustomDomainManager() {
 
           {/* Список доменов */}
           <div className="space-y-4">
-            {domains.length === 0 ? (
+            {!Array.isArray(domains) || domains.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Globe className="h-12 w-12 mx-auto mb-4 opacity-20" />
                 <p>У вас пока нет кастомных доменов</p>
                 <p className="text-sm">Добавьте домен выше, чтобы начать использовать белый лейбл</p>
               </div>
             ) : (
-              domains.map((domain: CustomDomain) => (
+              (domains as CustomDomain[]).map((domain: CustomDomain) => (
                 <Card key={domain.id} className="border-l-4 border-l-blue-500">
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between mb-4">
