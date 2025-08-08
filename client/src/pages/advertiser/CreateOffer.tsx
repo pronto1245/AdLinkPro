@@ -416,7 +416,10 @@ export default function CreateOffer() {
   // Функции для работы с креативами
   const handleCreativeUpload = async () => {
     try {
+      console.log('🔄 Получение upload URL для креативов...');
       const token = localStorage.getItem('auth_token');
+      console.log('🔑 Токен присутствует:', !!token);
+      
       const response = await fetch('/api/objects/upload', {
         method: 'POST',
         headers: {
@@ -425,35 +428,62 @@ export default function CreateOffer() {
         },
       });
       
+      console.log('📡 Статус ответа API:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to get upload URL');
+        const errorText = await response.text();
+        console.error('❌ Ошибка API:', errorText);
+        throw new Error(`Не удалось получить URL: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('✅ Upload URL успешно получен');
+      console.log('🔗 URL начинается с:', data.uploadURL?.substring(0, 50) + '...');
+      
       return {
         method: 'PUT' as const,
         url: data.uploadURL,
       };
     } catch (error) {
-      console.error('Error getting upload URL:', error);
+      console.error('💥 Ошибка получения upload URL:', error);
+      toast({
+        title: "Ошибка загрузки",
+        description: "Не удалось получить URL для загрузки креативов",
+        variant: "destructive",
+      });
       throw error;
     }
   };
 
   const handleCreativeComplete = async (result: any) => {
+    console.log('📦 Завершение загрузки креативов:', result);
     if (result.successful && result.successful.length > 0) {
       const uploadedFile = result.successful[0];
+      console.log('📁 Данные загруженного файла:', uploadedFile);
+      
       // Uppy хранит URL загрузки в uploadURL
       const creativeUrl = uploadedFile.uploadURL || uploadedFile.url;
+      console.log('🔗 URL креативов:', creativeUrl);
+      
       setFormData(prev => ({
         ...prev,
         creatives: creativeUrl,
         creativesUrl: creativeUrl
       }));
       setCreativesUploaded(true);
+      
+      console.log('✅ Креативы успешно сохранены в форму');
+      
       toast({
         title: 'Креативы загружены',
         description: 'ZIP архив с креативами успешно загружен',
+      });
+    } else {
+      console.error('❌ Неуспешная загрузка креативов:', result);
+      toast({
+        title: 'Ошибка загрузки',
+        description: 'Не удалось загрузить креативы. Попробуйте снова.',
+        variant: 'destructive',
       });
     }
   };
