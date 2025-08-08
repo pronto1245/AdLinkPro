@@ -159,7 +159,7 @@ export class TrackingLinkService {
       whereCondition = and(
         eq(trackingLinks.partnerId, partnerId),
         eq(trackingLinks.offerId, offerId)
-      );
+      ) as any;
     }
 
     return await db
