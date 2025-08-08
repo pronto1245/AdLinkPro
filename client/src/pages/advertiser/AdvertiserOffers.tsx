@@ -27,6 +27,8 @@ const OfferImageDisplay = ({ offer }: { offer: any }) => {
   const [imageError, setImageError] = useState(false);
   const [logoError, setLogoError] = useState(false);
 
+  // Приоритет: 1) image 2) logo 3) ничего не показываем
+  
   // Если есть image и нет ошибки загрузки
   if (offer.image && !imageError) {
     return (
@@ -36,14 +38,14 @@ const OfferImageDisplay = ({ offer }: { offer: any }) => {
         className="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
         onLoad={() => console.log('Offer image loaded successfully:', offer.image)}
         onError={() => {
-          console.log('Offer image failed to load:', offer.image);
+          console.log('Offer image failed to load, trying logo:', offer.image);
           setImageError(true);
         }}
       />
     );
   }
 
-  // Если есть logo и нет ошибки загрузки (или image не загрузился)
+  // Если нет image или он не загрузился, но есть logo
   if (offer.logo && !logoError) {
     return (
       <img 
@@ -59,17 +61,8 @@ const OfferImageDisplay = ({ offer }: { offer: any }) => {
     );
   }
 
-  // Placeholder с инициалами - показываем только если было попытка загрузить изображение
-  // Для новых офферов без изображений вообще не показываем placeholder
-  if (!offer.image && !offer.logo) {
-    return null;
-  }
-
-  return (
-    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
-      {offer.name?.substring(0, 2).toUpperCase() || 'OF'}
-    </div>
-  );
+  // Если нет ни image, ни logo - не показываем ничего
+  return null;
 };
 
 function DraggableRow({ offer, index, children }: any) {
