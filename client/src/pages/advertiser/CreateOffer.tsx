@@ -416,10 +416,23 @@ export default function CreateOffer() {
   // Функции для работы с креативами
   const handleCreativeUpload = async () => {
     try {
-      const response = await apiRequest('/api/creatives/upload-url', 'POST');
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/objects/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get upload URL');
+      }
+      
+      const data = await response.json();
       return {
         method: 'PUT' as const,
-        url: response.uploadURL,
+        url: data.uploadURL,
       };
     } catch (error) {
       console.error('Error getting upload URL:', error);
