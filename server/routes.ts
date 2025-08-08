@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { ObjectStorageService } from "./objectStorage";
+import { ObjectStorageService, objectStorageClient } from "./objectStorage";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { 
@@ -8295,12 +8295,27 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
             console.log('Processing creative file:', { fileName: creativeFile.fileName, filePath: creativeFile.filePath });
             
             if (creativeFile.filePath) {
-              // Получаем файл из object storage
-              const file = await objectStorageService.getObjectEntityFile(creativeFile.filePath);
-              const stream = file.createReadStream();
+              // Получаем файл напрямую из object storage используя полный путь
+              const filePath = creativeFile.filePath;
+              const pathParts = filePath.split("/");
+              if (pathParts.length < 3) continue;
               
-              // Добавляем файл в архив
-              archive.append(stream, { name: creativeFile.originalName || creativeFile.fileName });
+              const bucketName = pathParts[1];
+              const objectName = pathParts.slice(2).join("/");
+              
+              const bucket = objectStorageClient.bucket(bucketName);
+              const file = bucket.file(objectName);
+              
+              // Проверяем существование файла
+              const [exists] = await file.exists();
+              if (exists) {
+                const stream = file.createReadStream();
+                // Добавляем файл в архив
+                archive.append(stream, { name: creativeFile.originalName || creativeFile.fileName });
+                console.log('Successfully added file to archive:', creativeFile.fileName);
+              } else {
+                console.log('File does not exist in storage:', creativeFile.filePath);
+              }
             }
           } catch (fileError) {
             console.error('Error processing individual file:', fileError);
