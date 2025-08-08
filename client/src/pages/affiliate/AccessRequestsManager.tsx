@@ -90,7 +90,7 @@ export default function AccessRequestsManager() {
 
   // Загрузка запросов доступа партнера
   const { data: requests = [], isLoading, refetch } = useQuery({
-    queryKey: ["/api/access-requests/partner"],
+    queryKey: ["/api/partner/access-requests"],
     staleTime: 2 * 60 * 1000,
   });
 
@@ -111,7 +111,7 @@ export default function AccessRequestsManager() {
         description: "Ваш запрос на доступ к офферу был отправлен рекламодателю",
         variant: "default",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/access-requests/partner"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/partner/access-requests"] });
       setShowRequestDialog(false);
       setNewRequestOfferId("");
       setRequestMessage("");
@@ -127,7 +127,7 @@ export default function AccessRequestsManager() {
 
   // Фильтрация и поиск запросов
   const filteredRequests = useMemo(() => {
-    return requests.filter((request: AccessRequest) => {
+    return (requests as AccessRequest[]).filter((request: AccessRequest) => {
       const matchesSearch = 
         request.offer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         request.advertiser?.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -257,7 +257,7 @@ export default function AccessRequestsManager() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <div className="text-2xl font-bold text-blue-600">
-                {requests.length}
+                {(requests as AccessRequest[]).length}
               </div>
               <div className="text-sm text-muted-foreground">Всего запросов</div>
             </div>
@@ -267,7 +267,7 @@ export default function AccessRequestsManager() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <div className="text-2xl font-bold text-yellow-600">
-                {requests.filter((r: AccessRequest) => r.status === 'pending').length}
+                {(requests as AccessRequest[]).filter((r: AccessRequest) => r.status === 'pending').length}
               </div>
               <div className="text-sm text-muted-foreground">Ожидает</div>
             </div>
@@ -277,7 +277,7 @@ export default function AccessRequestsManager() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <div className="text-2xl font-bold text-green-600">
-                {requests.filter((r: AccessRequest) => r.status === 'approved').length}
+                {(requests as AccessRequest[]).filter((r: AccessRequest) => r.status === 'approved').length}
               </div>
               <div className="text-sm text-muted-foreground">Одобрено</div>
             </div>
@@ -287,7 +287,7 @@ export default function AccessRequestsManager() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <div className="text-2xl font-bold text-red-600">
-                {requests.filter((r: AccessRequest) => r.status === 'rejected').length}
+                {(requests as AccessRequest[]).filter((r: AccessRequest) => r.status === 'rejected').length}
               </div>
               <div className="text-sm text-muted-foreground">Отклонено</div>
             </div>
@@ -492,7 +492,7 @@ export default function AccessRequestsManager() {
                 data-testid="select-offer"
               >
                 <option value="">Выберите оффер...</option>
-                {availableOffers.map((offer: any) => (
+                {(availableOffers as any[]).map((offer: any) => (
                   <option key={offer.id} value={offer.id}>
                     {offer.name} - {offer.payoutAmount} {offer.currency}
                   </option>

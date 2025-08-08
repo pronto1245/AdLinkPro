@@ -7357,6 +7357,74 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
+  // Get partner's access requests
+  app.get('/api/partner/access-requests', authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    const userId = req.user?.id || req.userId;
+
+    try {
+      const requests = await db.select({
+        id: offerAccessRequests.id,
+        offerId: offerAccessRequests.offerId,
+        advertiserId: offerAccessRequests.advertiserId,
+        status: offerAccessRequests.status,
+        requestNote: offerAccessRequests.requestNote,
+        responseNote: offerAccessRequests.responseNote,
+        requestedAt: offerAccessRequests.requestedAt,
+        reviewedAt: offerAccessRequests.reviewedAt,
+        // Offer details
+        offerName: offers.name,
+        offerCategory: offers.category,
+        offerPayout: offers.payout,
+        offerPayoutType: offers.payoutType,
+        offerDescription: offers.description,
+        // Advertiser details
+        advertiserUsername: users.username,
+        advertiserEmail: users.email,
+        advertiserFirstName: users.firstName,
+        advertiserLastName: users.lastName,
+        advertiserCompany: users.company
+      })
+      .from(offerAccessRequests)
+      .leftJoin(offers, eq(offerAccessRequests.offerId, offers.id))
+      .leftJoin(users, eq(offerAccessRequests.advertiserId, users.id))
+      .where(eq(offerAccessRequests.partnerId, userId))
+      .orderBy(desc(offerAccessRequests.requestedAt));
+
+      // Transform to match the expected format
+      const formattedRequests = requests.map(req => ({
+        id: req.id,
+        offerId: req.offerId,
+        advertiserId: req.advertiserId,
+        status: req.status,
+        requestNote: req.requestNote,
+        responseNote: req.responseNote,
+        requestedAt: req.requestedAt,
+        reviewedAt: req.reviewedAt,
+        offer: {
+          id: req.offerId,
+          name: req.offerName,
+          category: req.offerCategory,
+          payoutType: req.offerPayoutType,
+          payoutAmount: req.offerPayout,
+          currency: 'USD',
+          description: req.offerDescription
+        },
+        advertiser: {
+          id: req.advertiserId,
+          username: req.advertiserUsername,
+          company: req.advertiserCompany,
+          firstName: req.advertiserFirstName,
+          lastName: req.advertiserLastName
+        }
+      }));
+
+      res.json(formattedRequests);
+    } catch (error) {
+      console.error('Error getting partner access requests:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Advertiser responds to access request
   app.post('/api/advertiser/access-requests/:requestId/respond', authenticateToken, requireRole(['advertiser']), async (req, res) => {
     const { requestId } = req.params;
@@ -7447,8 +7515,8 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   });
 
   // Get advertiser's access requests
-  app.get('/api/advertiser/access-requests', authenticateToken, async (req, res) => {
-    const userId = req.userId;
+  app.get('/api/advertiser/access-requests', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    const userId = req.user?.id || req.userId;
 
     try {
       const requests = await db.select({
@@ -7477,7 +7545,34 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       .where(eq(offerAccessRequests.advertiserId, userId))
       .orderBy(desc(offerAccessRequests.requestedAt));
 
-      res.json(requests);
+      // Transform to match the expected format
+      const formattedRequests = requests.map(req => ({
+        id: req.id,
+        offerId: req.offerId,
+        partnerId: req.partnerId,
+        status: req.status,
+        requestNote: req.requestNote,
+        responseNote: req.responseNote,
+        requestedAt: req.requestedAt,
+        reviewedAt: req.reviewedAt,
+        offer: {
+          id: req.offerId,
+          name: req.offerName,
+          category: req.offerCategory,
+          payoutType: req.offerPayoutType,
+          payoutAmount: req.offerPayout,
+          currency: 'USD'
+        },
+        partner: {
+          id: req.partnerId,
+          username: req.partnerUsername,
+          email: req.partnerEmail,
+          firstName: req.partnerFirstName,
+          lastName: req.partnerLastName
+        }
+      }));
+
+      res.json(formattedRequests);
     } catch (error) {
       console.error('Error fetching access requests:', error);
       res.status(500).json({ error: 'Internal server error' });
