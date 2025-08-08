@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Download, Edit, Flag, Plus, Trash2, Eye, Settings2, Users2, PenTool, Archive, Copy, Play, ArrowUp, ArrowDown, ExternalLink, GripVertical, Pause } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
@@ -43,6 +44,7 @@ const AdvertiserOffers = () => {
   const [, navigate] = useLocation();
   const [editOffer, setEditOffer] = useState<any>(null);
   const [confirmDelete, setConfirmDelete] = useState<any>(null);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -77,14 +79,45 @@ const AdvertiserOffers = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (ids: string[]) => apiRequest(`/api/advertiser/offers/bulk-delete`, 'POST', { ids }),
+    mutationFn: (offerId: string) => apiRequest(`/api/advertiser/offers/${offerId}`, 'DELETE'),
     onSuccess: () => {
       toast({
         title: "Успех",
-        description: "Удалено",
+        description: "Оффер удалён",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
+      setConfirmDelete(null);
+      setSelectedOffers([]);
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Ошибка при удалении",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (offerIds: string[]) => {
+      const promises = offerIds.map(id => apiRequest(`/api/advertiser/offers/${id}`, 'DELETE'));
+      return Promise.all(promises);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Успех",
+        description: `Удалено ${selectedOffers.length} офферов`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
       setSelectedOffers([]);
+      setConfirmBulkDelete(false);
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Ошибка при массовом удалении",
+        variant: "destructive",
+      });
     },
   });
 
@@ -207,6 +240,14 @@ const AdvertiserOffers = () => {
           </Button>
           <Button onClick={() => handleBulkStatusChange('paused')} size="sm">
             <Pause className="w-4 h-4 mr-1" /> Приостановить
+          </Button>
+          <Button 
+            onClick={() => setConfirmBulkDelete(true)} 
+            size="sm" 
+            variant="destructive"
+            title={`Удалить выбранные офферы (${selectedOffers.length})`}
+          >
+            <Trash2 className="w-4 h-4 mr-1" /> Удалить ({selectedOffers.length})
           </Button>
         </div>
       )}
@@ -375,14 +416,20 @@ const AdvertiserOffers = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => setEditOffer(offer)} title="Редактировать">
+                        <Button size="sm" variant="ghost" onClick={() => setEditOffer(offer)} title="Редактировать оффер">
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleAction(offer, 'preview')} title="Предпросмотр">
+                        <Button size="sm" variant="ghost" onClick={() => handleAction(offer, 'preview')} title="Предпросмотр оффера">
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleAction(offer, 'duplicate')} title="Дублировать">
-                          <Copy className="w-4 h-4" />
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => setConfirmDelete(offer)} 
+                          title="Удалить оффер"
+                          className="hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -405,6 +452,54 @@ const AdvertiserOffers = () => {
           }}
         />
       )}
+
+      {/* Диалог подтверждения удаления одного оффера */}
+      <AlertDialog open={!!confirmDelete} onOpenChange={() => setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Подтвердите удаление</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите удалить оффер "{confirmDelete?.name}"?
+              <br />
+              <span className="text-red-600 font-medium">Это действие необратимо.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => confirmDelete && deleteMutation.mutate(confirmDelete.id)}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Удаление...' : 'Удалить'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Диалог подтверждения массового удаления */}
+      <AlertDialog open={confirmBulkDelete} onOpenChange={() => setConfirmBulkDelete(false)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Подтвердите массовое удаление</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите удалить {selectedOffers.length} выбранных офферов?
+              <br />
+              <span className="text-red-600 font-medium">Это действие необратимо.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => bulkDeleteMutation.mutate(selectedOffers)}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={bulkDeleteMutation.isPending}
+            >
+              {bulkDeleteMutation.isPending ? 'Удаление...' : `Удалить ${selectedOffers.length} офферов`}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

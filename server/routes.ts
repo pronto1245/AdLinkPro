@@ -987,6 +987,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete offer route
+  app.delete("/api/advertiser/offers/:id", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerId = req.params.id;
+      
+      // Verify offer ownership
+      const existingOffer = await storage.getOffer(offerId);
+      if (!existingOffer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      if (existingOffer.advertiserId !== authUser.id) {
+        return res.status(403).json({ error: "Access denied - not your offer" });
+      }
+      
+      // Perform deletion
+      await storage.deleteOffer(offerId);
+      
+      // Clear cache
+      queryCache.clear();
+      
+      res.status(200).json({ message: "Offer deleted successfully" });
+    } catch (error) {
+      console.error("Delete offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/advertiser/offers/:id/partners", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
