@@ -209,8 +209,12 @@ const AdvertiserOffers = () => {
             Управление офферами и отслеживание статистики
           </p>
         </div>
-        <Button onClick={() => navigate('/advertiser/offers/new')}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button 
+          onClick={() => navigate('/advertiser/offers/new')}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+          title="Создать новый оффер"
+        >
+          <Plus className="h-4 w-4 mr-2 text-white" />
           Создать оффер
         </Button>
       </div>
@@ -232,22 +236,38 @@ const AdvertiserOffers = () => {
 
       {selectedOffers.length > 0 && (
         <div className="flex gap-2">
-          <Button onClick={() => handleBulkStatusChange('active')} size="sm">
-            <Play className="w-4 h-4 mr-1" /> Активировать
+          <Button 
+            onClick={() => handleBulkStatusChange('active')} 
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 text-white"
+            title="Активировать выбранные офферы"
+          >
+            <Play className="w-4 h-4 mr-1 text-white" /> Активировать
           </Button>
-          <Button onClick={() => handleBulkStatusChange('archived')} size="sm">
-            <Archive className="w-4 h-4 mr-1" /> Архивировать
+          <Button 
+            onClick={() => handleBulkStatusChange('archived')} 
+            size="sm"
+            className="bg-gray-600 hover:bg-gray-700 text-white"
+            title="Архивировать выбранные офферы"
+          >
+            <Archive className="w-4 h-4 mr-1 text-white" /> Архивировать
           </Button>
-          <Button onClick={() => handleBulkStatusChange('paused')} size="sm">
-            <Pause className="w-4 h-4 mr-1" /> Приостановить
+          <Button 
+            onClick={() => handleBulkStatusChange('paused')} 
+            size="sm"
+            className="bg-yellow-600 hover:bg-yellow-700 text-white"
+            title="Приостановить выбранные офферы"
+          >
+            <Pause className="w-4 h-4 mr-1 text-white" /> Приостановить
           </Button>
           <Button 
             onClick={() => setConfirmBulkDelete(true)} 
             size="sm" 
             variant="destructive"
+            className="bg-red-600 hover:bg-red-700 text-white"
             title={`Удалить выбранные офферы (${selectedOffers.length})`}
           >
-            <Trash2 className="w-4 h-4 mr-1" /> Удалить ({selectedOffers.length})
+            <Trash2 className="w-4 h-4 mr-1 text-white" /> Удалить ({selectedOffers.length})
           </Button>
         </div>
       )}
@@ -416,11 +436,23 @@ const AdvertiserOffers = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => setEditOffer(offer)} title="Редактировать оффер">
-                          <Edit className="w-4 h-4" />
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => setEditOffer(offer)} 
+                          title="Редактировать оффер"
+                          className="hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
+                        >
+                          <Edit className="w-4 h-4 text-blue-500" />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleAction(offer, 'preview')} title="Предпросмотр оффера">
-                          <Eye className="w-4 h-4" />
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => handleAction(offer, 'preview')} 
+                          title="Предпросмотр оффера"
+                          className="hover:bg-purple-100 hover:text-purple-600 dark:hover:bg-purple-900/20 dark:hover:text-purple-400"
+                        >
+                          <Eye className="w-4 h-4 text-purple-500" />
                         </Button>
                         <Button 
                           size="sm" 
@@ -429,7 +461,7 @@ const AdvertiserOffers = () => {
                           title="Удалить оффер"
                           className="hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
                       </div>
                     </TableCell>
