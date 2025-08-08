@@ -564,7 +564,7 @@ export class DatabaseStorage implements IStorage {
         .from(offerAccessRequests)
         .innerJoin(offers, eq(offerAccessRequests.offerId, offers.id))
         .where(eq(offers.advertiserId, advertiserId))
-        .orderBy(sql`${offerAccessRequests.createdAt} DESC`);
+        .orderBy(desc(offerAccessRequests.createdAt));
       
       // Обогащаем данными офферов и партнеров
       const enrichedRequests = await Promise.all(

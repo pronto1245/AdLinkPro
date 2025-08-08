@@ -7290,7 +7290,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   // Partner requests access to an offer
   app.post('/api/partner/offers/request', authenticateToken, async (req, res) => {
     const { offerId, message } = req.body;
-    const userId = req.userId;
+    const userId = req.user?.id || req.userId;
 
     if (!offerId) {
       return res.status(400).json({ error: 'Offer ID is required' });
@@ -7301,6 +7301,12 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       const offer = await storage.getOffer(offerId);
       if (!offer) {
         return res.status(404).json({ error: 'Offer not found' });
+      }
+
+      // Проверяем, что партнер находится у рекламодателя в списке
+      const isAssigned = await storage.isPartnerAssignedToAdvertiser(userId, offer.advertiserId);
+      if (!isAssigned) {
+        return res.status(403).json({ error: "Партнер не находится в списке у данного рекламодателя" });
       }
 
       // Check if request already exists
@@ -7315,6 +7321,21 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
 
       if (existingRequest.length > 0) {
         return res.status(400).json({ error: 'Request already exists' });
+      }
+
+      // Проверяем, есть ли уже доступ к офферу
+      const existingAccess = await db.select()
+        .from(partnerOffers)
+        .where(
+          and(
+            eq(partnerOffers.partnerId, userId),
+            eq(partnerOffers.offerId, offerId),
+            eq(partnerOffers.isApproved, true)
+          )
+        );
+
+      if (existingAccess.length > 0) {
+        return res.status(400).json({ error: 'Access already granted' });
       }
 
       // Create new access request
@@ -7337,10 +7358,10 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   });
 
   // Advertiser responds to access request
-  app.post('/api/advertiser/access-requests/:requestId/respond', authenticateToken, async (req, res) => {
+  app.post('/api/advertiser/access-requests/:requestId/respond', authenticateToken, requireRole(['advertiser']), async (req, res) => {
     const { requestId } = req.params;
     const { action, responseMessage } = req.body; // action: 'approve' | 'reject'
-    const userId = req.userId;
+    const userId = req.user?.id || req.userId;
 
     if (!action || !['approve', 'reject'].includes(action)) {
       return res.status(400).json({ error: 'Invalid action' });
@@ -7359,6 +7380,10 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       // Check if current user is the advertiser who owns the offer
       if (request.advertiserId !== userId) {
         return res.status(403).json({ error: 'Not authorized' });
+      }
+
+      if (request.status !== 'pending') {
+        return res.status(400).json({ error: 'Request already processed' });
       }
 
       // Update the access request
@@ -7387,7 +7412,10 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         if (existingPartnerOffer.length > 0) {
           // Update existing relationship
           await db.update(partnerOffers)
-            .set({ isApproved: true })
+            .set({ 
+              isApproved: true,
+              updatedAt: new Date()
+            })
             .where(
               and(
                 eq(partnerOffers.partnerId, request.partnerId),
@@ -7398,11 +7426,17 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           // Create new relationship
           await db.insert(partnerOffers)
             .values({
+              id: randomUUID(),
               partnerId: request.partnerId,
               offerId: request.offerId,
-              isApproved: true
+              isApproved: true,
+              createdAt: new Date(),
+              updatedAt: new Date()
             });
         }
+
+        // Log successful approval
+        console.log(`Access request ${requestId} approved. Partner ${request.partnerId} granted access to offer ${request.offerId}`);
       }
 
       res.json(updatedRequest);
@@ -7467,13 +7501,40 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     try {
       const partnerId = req.user.id;
       
-      // Получаем все публичные офферы
-      const publicOffers = await db
+      // Получаем рекламодателей, у которых этот партнер в списке
+      const advertisersList = await db
+        .select({
+          advertiserId: users.id,
+          advertiserName: users.username,
+          advertiserFirstName: users.firstName,
+          advertiserLastName: users.lastName
+        })
+        .from(users)
+        .where(and(
+          eq(users.role, 'advertiser'),
+          eq(users.isActive, true)
+        ));
+      
+      // Проверяем, у каких рекламодателей партнер в списке
+      const partnersWithAccess = [];
+      for (const advertiser of advertisersList) {
+        const isAssigned = await storage.isPartnerAssignedToAdvertiser(partnerId, advertiser.advertiserId);
+        if (isAssigned) {
+          partnersWithAccess.push(advertiser.advertiserId);
+        }
+      }
+      
+      if (partnersWithAccess.length === 0) {
+        return res.json([]);
+      }
+      
+      // Получаем офферы от рекламодателей, у которых партнер в списке
+      const availableOffers = await db
         .select()
         .from(offers)
         .where(and(
           eq(offers.status, 'active'),
-          eq(offers.isPrivate, false)
+          sql`${offers.advertiserId} IN (${partnersWithAccess.map(id => `'${id}'`).join(',')})`
         ));
       
       // Получаем офферы, к которым у партнера уже есть доступ
@@ -7485,12 +7546,12 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       const requestedOfferIds = existingRequests.map(r => r.offerId);
       
       // Фильтруем офферы - исключаем те, к которым уже есть доступ или запрос
-      const availableOffers = publicOffers.filter(offer => 
+      const filteredOffers = availableOffers.filter(offer => 
         !existingOfferIds.includes(offer.id) && 
         !requestedOfferIds.includes(offer.id)
       );
       
-      res.json(availableOffers);
+      res.json(filteredOffers);
     } catch (error) {
       console.error("Get available offers error:", error);
       res.status(500).json({ error: "Internal server error" });
