@@ -95,7 +95,9 @@ export default function OfferDetails() {
   });
 
   // Находим запрос для текущего оффера
-  const currentRequest = accessRequests.find((req: any) => req.offerId === offerId);
+  const currentRequest = accessRequests.find((req: any) => 
+    req.offerId === offerId || req.offer_id === offerId
+  );
   const requestStatus = currentRequest?.status || 'none';
   const isApproved = requestStatus === 'approved';
 
@@ -106,7 +108,7 @@ export default function OfferDetails() {
     rawFirstRequest: accessRequests[0],
     allRequests: accessRequests.map((req: any) => ({ 
       id: req.id, 
-      offerId: req.offerId, 
+      offerId: req.offerId || req.offer_id, 
       status: req.status,
       offer: req.offer?.id 
     })),
