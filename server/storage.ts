@@ -4174,52 +4174,7 @@ class MemStorage implements IStorage {
     }
   ];
   private offers: Offer[] = [
-    {
-      id: 'bdntytd33',
-      name: 'FR | BonRush | reg | 170$',
-      description: {
-        ru: 'Французский оффер BonRush с выплатой 170$ за регистрацию',
-        en: 'French BonRush offer with $170 registration payout'
-      },
-      category: 'gambling',
-      logo: '/objects/uploads/23206cd0-c2ee-48bf-bdb5-4f4234d74946',
-      countries: ['france'],
-      landingPageUrl: 'https://bonrush-fr.com/landing?offer=bdntytd33',
-      landingPages: [
-        {
-          id: 'bdntytd33_1',
-          name: 'Основная FR',
-          url: 'https://bonrush-fr.com/landing?offer=bdntytd33',
-          geo: 'france',
-          payout: '170',
-          hasCustomGeo: false,
-          hasCustomPayout: false,
-          isDefault: true
-        }
-      ],
-      payout: '170',
-      payoutType: 'cpa',
-      currency: 'USD',
-      payoutByGeo: {},
-      trafficSources: ['Facebook Ads', 'Google Ads', 'Native'],
-      allowedApplications: ['WebView App', 'PWA App', 'Mobile App'],
-      partnerApprovalType: 'manual',
-      autoApprovePartners: false,
-      dailyLimit: null,
-      monthlyLimit: null,
-      antifraudEnabled: true,
-      antifraudMethods: ['ip_check', 'vpn_detection'],
-      kycRequired: false,
-      isPrivate: false,
-      kpiConditions: {
-        ru: 'Качественный трафик, регистрация с депозитом',
-        en: 'Quality traffic, registration with deposit'
-      },
-      advertiserId: '2',
-      status: 'active',
-      createdAt: new Date('2025-08-08'),
-      updatedAt: new Date('2025-08-08')
-    }
+    // ОЧИЩЕНО - все офферы теперь создаются через API и сохраняются в базу данных
   ];
   private statistics: any[] = [];
   private postbacks: any[] = [];
