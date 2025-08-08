@@ -888,6 +888,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         payout: req.body.payout ? req.body.payout.toString() : '0',
         payoutType: req.body.payoutType,
         currency: req.body.currency,
+        // Добавляем payoutByGeo для индивидуальных выплат по странам
+        payoutByGeo: req.body.payoutByGeo || null,
         
         // Conditions (only fields that exist in DB)
         trafficSources: req.body.trafficSources || [],
