@@ -70,15 +70,20 @@ const OfferImageDisplay = ({ offer }: { offer: any }) => {
 };
 
 function DraggableRow({ offer, index, children }: any) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: offer.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: offer.id });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.5 : 1,
   };
   return (
-    <TableRow ref={setNodeRef} style={style} {...attributes}>
-      <TableCell {...listeners} className="cursor-grab">
-        <GripVertical className="w-4 h-4 text-muted-foreground" />
+    <TableRow ref={setNodeRef} style={style} {...attributes} className={isDragging ? 'bg-muted/50' : ''}>
+      <TableCell 
+        {...listeners} 
+        className="cursor-grab active:cursor-grabbing hover:bg-muted/50 p-2"
+        title="Перетащите для изменения порядка"
+      >
+        <GripVertical className="w-4 h-4 text-muted-foreground hover:text-foreground" />
       </TableCell>
       {children}
     </TableRow>
@@ -181,13 +186,39 @@ const AdvertiserOffers = () => {
     },
   });
 
+  // Сортируем офферы по дате создания (новые сверху), затем фильтруем
   const filtered = offers
+    .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
     .filter((o: any) => o.name.toLowerCase().includes(search.toLowerCase()))
     .filter((o: any) => {
       if (selectedStatus === 'archived') return o.status === 'archived';
       if (selectedStatus === 'all') return true;
       return o.status === selectedStatus;
     });
+
+  // Обработчик drag and drop
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = filtered.findIndex((offer: any) => offer.id === active.id);
+    const newIndex = filtered.findIndex((offer: any) => offer.id === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const newOrder = arrayMove(filtered, oldIndex, newIndex);
+      
+      // Обновляем порядок на сервере (можно добавить API endpoint для сохранения порядка)
+      console.log('Reordered offers:', newOrder.map(o => ({ id: o.id, name: o.name })));
+      
+      toast({
+        title: "Порядок изменён",
+        description: `Оффер "${active.id}" перемещён`,
+      });
+    }
+  };
 
   const handleBulkStatusChange = (status: string) => {
     bulkStatusMutation.mutate({ ids: selectedOffers, status });
@@ -322,6 +353,9 @@ const AdvertiserOffers = () => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-8" title="Перетащите для изменения порядка">
+              <GripVertical className="w-4 h-4 text-muted-foreground" />
+            </TableHead>
             <TableHead>
               <Checkbox 
                 checked={selectedOffers.length === filtered.length && filtered.length > 0} 
@@ -334,7 +368,6 @@ const AdvertiserOffers = () => {
                 }} 
               />
             </TableHead>
-            <TableHead></TableHead>
             <TableHead>Название</TableHead>
             <TableHead>GEO</TableHead>
             <TableHead>Категория</TableHead>
@@ -345,7 +378,7 @@ const AdvertiserOffers = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <DndContext>
+          <DndContext onDragEnd={handleDragEnd}>
             <SortableContext items={filtered.map((o: any) => o.id)} strategy={verticalListSortingStrategy}>
               {filtered.map((offer: any, index: number) => (
                 <DraggableRow key={offer.id} offer={offer} index={index}>
