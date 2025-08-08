@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Role Switcher</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .current { background: #28a745; }
+        .info { margin: 20px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Role Switcher для тестирования</h1>
+    
+    <div class="info">
+        <p><strong>Текущая роль:</strong> <span id="currentRole">Загрузка...</span></p>
+        <p><strong>Текущий пользователь:</strong> <span id="currentUser">Загрузка...</span></p>
+    </div>
+    
+    <h3>Переключиться на:</h3>
+    <button onclick="switchToAdvertiser()">Рекламодатель (advertiser1)</button>
+    <button onclick="switchToPartner()">Партнер (partner1)</button>
+    
+    <div style="margin-top: 20px;">
+        <h3>Быстрые ссылки:</h3>
+        <a href="/advertiser/offers">Офферы рекламодателя</a> | 
+        <a href="/affiliate/offers">Офферы партнера</a> | 
+        <a href="/advertiser/access-requests">Запросы доступа</a>
+    </div>
+    
+    <script>
+        // Токены для переключения
+        const tokens = {
+            advertiser: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBhYWIzNzIxLTA3ODktNDljNi1hMDhjLThkZmRmZTZmNmFiNiIsInVzZXJuYW1lIjoiYWR2ZXJ0aXNlcjEiLCJyb2xlIjoiYWR2ZXJ0aXNlciIsImFkdmVydGlzZXJJZCI6bnVsbCwiaWF0IjoxNzU0NTk3MjE2LCJleHAiOjE3NTQ2ODM2MTZ9.mVL1dDTlJCKKPD69zr7D2RgQqVcHWAWjJ8R9_Fk0Vt4',
+            partner: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA0YjA2Yzg3LWM2Y2YtNDQwOS1hZjY0LTNlMGE1NTZhNzNlNSIsInVzZXJuYW1lIjoicGFydG5lcjEiLCJyb2xlIjoiYWZmaWxpYXRlIiwiYWR2ZXJ0aXNlcklkIjpudWxsLCJpYXQiOjE3NTQ1OTUxODAsImV4cCI6MTc1NDY4MTU4MH0.DUOFKOOFZdpx4q8CNYEm3nO-yGJy0Ml1J-6BDzSgK8E'
+        };
+        
+        function switchToAdvertiser() {
+            localStorage.setItem('token', tokens.advertiser);
+            updateCurrentInfo();
+            alert('Переключено на роль рекламодателя');
+        }
+        
+        function switchToPartner() {
+            localStorage.setItem('token', tokens.partner);
+            updateCurrentInfo();
+            alert('Переключено на роль партнера');
+        }
+        
+        async function updateCurrentInfo() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    document.getElementById('currentRole').textContent = 'Нет токена';
+                    document.getElementById('currentUser').textContent = 'Неизвестен';
+                    return;
+                }
+                
+                const response = await fetch('/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('currentRole').textContent = user.role === 'advertiser' ? 'Рекламодатель' : user.role === 'affiliate' ? 'Партнер' : user.role;
+                    document.getElementById('currentUser').textContent = user.username;
+                } else {
+                    document.getElementById('currentRole').textContent = 'Ошибка авторизации';
+                    document.getElementById('currentUser').textContent = 'Неизвестен';
+                }
+            } catch (error) {
+                document.getElementById('currentRole').textContent = 'Ошибка загрузки';
+                document.getElementById('currentUser').textContent = 'Неизвестен';
+            }
+        }
+        
+        // Обновляем информацию при загрузке
+        updateCurrentInfo();
+    </script>
+</body>
+</html>
