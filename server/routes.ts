@@ -8166,15 +8166,50 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       
       console.log('Offer details:', { id: offer.id, name: offer.name, creativesUrl: offer.creativesUrl, creatives: offer.creatives });
 
+      // Проверка доступа по ролям СНАЧАЛА
+      let hasAccess = false;
+      
+      if (userRole === 'super_admin') {
+        // Супер-админ имеет доступ ко всем креативам
+        hasAccess = true;
+        console.log('Access granted: super_admin');
+      } else if (userRole === 'advertiser') {
+        // Рекламодатель имеет доступ к креативам своих офферов
+        hasAccess = offer.ownerId === userId;
+        console.log(`Access check for advertiser: offer.ownerId=${offer.ownerId}, userId=${userId}, hasAccess=${hasAccess}`);
+      } else if (userRole === 'affiliate') {
+        // Партнер имеет доступ только к одобренным офферам
+        const accessRequest = await db.select()
+          .from(offerAccessRequests)
+          .where(
+            and(
+              eq(offerAccessRequests.offerId, offerId),
+              eq(offerAccessRequests.partnerId, userId),
+              eq(offerAccessRequests.status, 'approved')
+            )
+          )
+          .limit(1);
+
+        hasAccess = accessRequest.length > 0;
+        console.log(`Access check for affiliate: userId=${userId}, hasAccess=${hasAccess}, accessRequests=${accessRequest.length}`);
+      }
+
+      if (!hasAccess) {
+        console.log('Access denied for user:', { userId, userRole, offerId });
+        return res.status(403).send('Forbidden');
+      }
+
+      console.log('Access granted, proceeding with download');
+
       // Проверяем, есть ли креативы в таблице creative_files для этого оффера
       console.log('Checking creative files directly from database for offerId:', offerId);
-      const creativeFiles = await db
+      const foundCreativeFiles = await db
         .select()
         .from(creativeFiles)
         .where(eq(creativeFiles.offerId, offerId));
-      console.log('Checking creative files from database:', { count: creativeFiles.length, files: creativeFiles });
+      console.log('Checking creative files from database:', { count: foundCreativeFiles.length, files: foundCreativeFiles });
       
-      if (!creativeFiles || creativeFiles.length === 0) {
+      if (!foundCreativeFiles || foundCreativeFiles.length === 0) {
         // Если креативов нет, создаём демонстрационный архив
         console.log('No creatives found, creating demo archive');
         
@@ -8200,7 +8235,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       }
 
       // Если есть креативы в базе данных, скачиваем их из object storage
-      console.log('Found creative files, downloading from object storage:', creativeFiles);
+      console.log('Found creative files, downloading from object storage:', foundCreativeFiles);
       
       try {
         const objectStorageService = new ObjectStorageService();
@@ -8213,7 +8248,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         archive.pipe(res);
         
         // Добавляем каждый файл из object storage в архив
-        for (const creativeFile of creativeFiles) {
+        for (const creativeFile of foundCreativeFiles) {
           try {
             console.log('Processing creative file:', { fileName: creativeFile.fileName, filePath: creativeFile.filePath });
             
@@ -8238,40 +8273,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         // Fallback to demo archive if object storage fails
       }
 
-      // Логика доступа по ролям:
-      let hasAccess = false;
-      
-      if (userRole === 'super_admin') {
-        // Супер-админ имеет доступ ко всем креативам
-        hasAccess = true;
-        console.log('Access granted: super_admin');
-      } else if (userRole === 'advertiser') {
-        // Рекламодатель имеет доступ к креативам своих офферов
-        hasAccess = offer.ownerId === userId;
-        console.log(`Access check for advertiser: offer.ownerId=${offer.ownerId}, userId=${userId}, hasAccess=${hasAccess}`);
-      } else if (userRole === 'affiliate') {
-        // Партнер имеет доступ только к одобренным офферам
-        const accessRequest = await db.select()
-          .from(offerAccessRequests)
-          .where(
-            and(
-              eq(offerAccessRequests.offerId, offerId),
-              eq(offerAccessRequests.partnerId, userId),
-              eq(offerAccessRequests.status, 'approved')
-            )
-          )
-          .limit(1);
-
-        hasAccess = accessRequest.length > 0;
-        console.log(`Access check for affiliate: offerId=${offerId}, partnerId=${userId}, accessRequests=${accessRequest.length}, hasAccess=${hasAccess}`);
-        if (accessRequest.length > 0) {
-          console.log('Found approved access request:', accessRequest[0]);
-        }
-      }
-
-      if (!hasAccess) {
-        return res.status(403).json({ error: "Доступ к креативам запрещен" });
-      }
+      // Fallback демо-архив если возникли ошибки с object storage
 
       // Если есть креативы, используем CreativeService для создания архива
       try {
