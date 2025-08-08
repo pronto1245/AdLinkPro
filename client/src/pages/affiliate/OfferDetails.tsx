@@ -104,26 +104,32 @@ export default function OfferDetails() {
   });
 
   // Находим запрос для текущего оффера
-  const currentRequest = accessRequests.find((req: any) => 
-    req.offerId === offerId || req.offer_id === offerId
-  );
-  const requestStatus = currentRequest?.status || 'none';
-  const isApproved = requestStatus === 'approved';
+  const currentRequest = accessRequests.find((req: any) => {
+    const reqOfferId = req.offerId || req.offer_id;
+    return reqOfferId === offerId;
+  });
+  
+  // Получаем статус из самого оффера (если он публичный) или из запроса доступа
+  const requestStatus = currentRequest?.status || (offer?.isApproved ? 'approved' : 'none');
+  const isApproved = requestStatus === 'approved' || offer?.isApproved === true;
 
   // Отладка статуса  
   console.log('OfferDetails Debug:', {
     offerId,
     accessRequests: accessRequests.length,
-    rawFirstRequest: accessRequests[0],
-    allRequests: accessRequests.map((req: any) => ({ 
-      id: req.id, 
-      offerId: req.offerId || req.offer_id, 
-      status: req.status,
-      offer: req.offer?.id 
-    })),
     currentRequest,
     requestStatus,
-    isApproved
+    isApproved,
+    offerIsApproved: offer?.isApproved,
+    offerIsPrivate: offer?.isPrivate,
+    allMatchingRequests: accessRequests.filter((req: any) => {
+      const reqOfferId = req.offerId || req.offer_id;
+      return reqOfferId === offerId;
+    }).map((req: any) => ({ 
+      id: req.id, 
+      offerId: req.offerId || req.offer_id, 
+      status: req.status 
+    }))
   });
 
   const handleRequestAccess = async () => {
