@@ -5221,6 +5221,98 @@ class MemStorage implements IStorage {
     };
   }
 
+  // Additional required methods for offers
+  async getOffer(id: string): Promise<Offer | undefined> {
+    return this.offers.find(offer => offer.id === id);
+  }
+
+  async bulkDeleteOffers(offerIds: string[]): Promise<void> {
+    offerIds.forEach(id => {
+      const offerIndex = this.offers.findIndex(offer => offer.id === id);
+      if (offerIndex !== -1) {
+        this.offers.splice(offerIndex, 1);
+      }
+    });
+  }
+
+  async getOfferByIdWithDetails(id: string): Promise<any> {
+    const offer = this.offers.find(offer => offer.id === id);
+    if (!offer) return undefined;
+
+    return {
+      ...offer,
+      statistics: await this.getOfferStatistics(id),
+      partnerRequests: [],
+      activePartners: Math.floor(Math.random() * 50)
+    };
+  }
+
+  async archiveOffer(id: string): Promise<void> {
+    const offerIndex = this.offers.findIndex(offer => offer.id === id);
+    if (offerIndex !== -1) {
+      this.offers[offerIndex] = {
+        ...this.offers[offerIndex],
+        status: 'archived',
+        updatedAt: new Date()
+      };
+    }
+  }
+
+  async pauseOffer(id: string): Promise<void> {
+    const offerIndex = this.offers.findIndex(offer => offer.id === id);
+    if (offerIndex !== -1) {
+      this.offers[offerIndex] = {
+        ...this.offers[offerIndex],
+        status: 'paused',
+        updatedAt: new Date()
+      };
+    }
+  }
+
+  async activateOffer(id: string): Promise<void> {
+    const offerIndex = this.offers.findIndex(offer => offer.id === id);
+    if (offerIndex !== -1) {
+      this.offers[offerIndex] = {
+        ...this.offers[offerIndex],
+        status: 'active',
+        updatedAt: new Date()
+      };
+    }
+  }
+
+  // Partner access and affiliate methods
+  async getPartnerOffers(partnerId: string, filters?: any): Promise<any[]> {
+    // Mock implementation - return available offers for partners
+    return this.offers
+      .filter(offer => offer.status === 'active')
+      .map(offer => ({
+        ...offer,
+        isApproved: Math.random() > 0.5,
+        trackingLink: `https://track.example.com/click?offer=${offer.id}&partner=${partnerId}&subid={subid}`
+      }));
+  }
+
+  async requestOfferAccess(partnerId: string, offerId: string, message?: string): Promise<any> {
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      partnerId,
+      offerId,
+      message: message || '',
+      status: 'pending',
+      createdAt: new Date()
+    };
+  }
+
+  async approvePartnerAccess(requestId: string): Promise<void> {
+    // Mock implementation
+    console.log(`Approved partner access request ${requestId}`);
+  }
+
+  async rejectPartnerAccess(requestId: string, reason?: string): Promise<void> {
+    // Mock implementation
+    console.log(`Rejected partner access request ${requestId}: ${reason}`);
+  }
+
 
 
 }
