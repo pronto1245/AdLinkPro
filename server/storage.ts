@@ -5313,6 +5313,149 @@ class MemStorage implements IStorage {
     console.log(`Rejected partner access request ${requestId}: ${reason}`);
   }
 
+  // Partner access requests management
+  private offerAccessRequests: any[] = [
+    {
+      id: '1',
+      partnerId: '3',
+      offerId: '1',
+      status: 'approved',
+      createdAt: new Date('2025-08-01'),
+      approvedAt: new Date('2025-08-01')
+    },
+    {
+      id: '2',
+      partnerId: '3',
+      offerId: '2',
+      status: 'pending',
+      createdAt: new Date('2025-08-05'),
+      approvedAt: null
+    }
+  ];
+
+  async getOfferAccessRequests(partnerId: string): Promise<any[]> {
+    return this.offerAccessRequests.filter(request => request.partnerId === partnerId);
+  }
+
+  async createOfferAccessRequest(data: any): Promise<any> {
+    const newRequest = {
+      id: Math.random().toString(36).substr(2, 9),
+      partnerId: data.partnerId,
+      offerId: data.offerId,
+      status: 'pending',
+      message: data.message || '',
+      createdAt: new Date(),
+      approvedAt: null
+    };
+    this.offerAccessRequests.push(newRequest);
+    return newRequest;
+  }
+
+  async updateOfferAccessRequest(id: string, data: any): Promise<any> {
+    const requestIndex = this.offerAccessRequests.findIndex(req => req.id === id);
+    if (requestIndex !== -1) {
+      this.offerAccessRequests[requestIndex] = {
+        ...this.offerAccessRequests[requestIndex],
+        ...data,
+        updatedAt: new Date()
+      };
+      return this.offerAccessRequests[requestIndex];
+    }
+    return null;
+  }
+
+  // Partner available offers with access control
+  async getAvailableOffers(partnerId: string): Promise<any[]> {
+    // Get partner's access requests
+    const accessRequests = await this.getOfferAccessRequests(partnerId);
+    const approvedOfferIds = accessRequests
+      .filter(req => req.status === 'approved')
+      .map(req => req.offerId);
+
+    // Return offers that are either approved for this partner or public
+    return this.offers
+      .filter(offer => 
+        offer.status === 'active' && 
+        (approvedOfferIds.includes(offer.id) || !offer.isPrivate)
+      )
+      .map(offer => {
+        const accessRequest = accessRequests.find(req => req.offerId === offer.id);
+        return {
+          ...offer,
+          isApproved: accessRequest?.status === 'approved',
+          accessStatus: accessRequest?.status || 'not_requested',
+          trackingLink: accessRequest?.status === 'approved' 
+            ? `https://track.example.com/click?offer=${offer.id}&partner=${partnerId}&subid={subid}`
+            : null
+        };
+      });
+  }
+
+  // Additional partner methods
+  async getPartnerStatistics(partnerId: string, filters?: any): Promise<any> {
+    return {
+      totalClicks: Math.floor(Math.random() * 10000),
+      conversions: Math.floor(Math.random() * 500),
+      revenue: Math.floor(Math.random() * 5000),
+      activeOffers: Math.floor(Math.random() * 10) + 1,
+      pendingRequests: this.offerAccessRequests.filter(req => 
+        req.partnerId === partnerId && req.status === 'pending'
+      ).length
+    };
+  }
+
+  async getPartnerDashboard(partnerId: string, filters?: any): Promise<any> {
+    const statistics = await this.getPartnerStatistics(partnerId, filters);
+    const availableOffers = await this.getAvailableOffers(partnerId);
+    
+    return {
+      statistics,
+      availableOffers: availableOffers.slice(0, 5), // Top 5 offers
+      recentActivity: [
+        { type: 'conversion', description: 'Новая конверсия в оффере Casino Premium', time: '2 часа назад' },
+        { type: 'approval', description: 'Одобрен доступ к офферу Sports Betting', time: '1 день назад' },
+        { type: 'click', description: '100 кликов по офферу Dating Premium', time: '2 дня назад' }
+      ],
+      topOffers: availableOffers
+        .filter(offer => offer.isApproved)
+        .slice(0, 3)
+        .map(offer => ({
+          ...offer,
+          clicks: Math.floor(Math.random() * 1000),
+          conversions: Math.floor(Math.random() * 50),
+          revenue: Math.floor(Math.random() * 1000)
+        }))
+    };
+  }
+
+  // Tracking links management
+  async generateTrackingLink(partnerId: string, offerId: string, customParams?: any): Promise<string> {
+    const offer = this.offers.find(o => o.id === offerId);
+    if (!offer) throw new Error('Offer not found');
+
+    const accessRequests = await this.getOfferAccessRequests(partnerId);
+    const hasAccess = accessRequests.some(req => 
+      req.offerId === offerId && req.status === 'approved'
+    );
+
+    if (!hasAccess && offer.isPrivate) {
+      throw new Error('Access denied to this offer');
+    }
+
+    const baseParams = new URLSearchParams({
+      offer: offerId,
+      partner: partnerId,
+      subid: '{subid}',
+      sub1: '{sub1}',
+      sub2: '{sub2}',
+      sub3: '{sub3}',
+      sub4: '{sub4}',
+      ...(customParams || {})
+    });
+
+    return `https://track.example.com/click?${baseParams.toString()}`;
+  }
+
 
 
 }
