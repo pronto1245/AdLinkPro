@@ -1,7 +1,7 @@
 # Overview
 This is a comprehensive affiliate marketing platform providing advertisers with intelligent offer management, real-time analytics, partner relationships, financial transactions, and anti-fraud protection. The platform features role-based access control (super-admin, advertiser, affiliate, staff), comprehensive offer management with creative file handling, real-time statistics and analytics, financial management with payouts and transactions, partner approval workflows, and multi-layered security. All data flows are reactive and live - status changes, conversion rates, financial metrics, and fraud alerts update in real-time across all user interfaces.
 
-**Latest Update (Aug 8, 2025)**: DNS verification system fully implemented - replaced old custom domain management with secure DNS TXT verification. AdvertiserProfile now uses DomainVerification component for DNS-based domain ownership validation. Storage methods and API routes updated to support DNS verification workflow.
+**Latest Update (Aug 8, 2025)**: Automatic tracking link system completed! Replaced manual "Link Generator" with automatic "Ready Tracking Links" display. Partners now see pre-generated tracking links with clickid automatically inserted (format: https://domain.com/click?offer=123&clickid=partner_abc123). No manual configuration required - partners get ready-to-use links immediately upon offer approval. DNS verification system also fully implemented for custom domain support.
 
 # User Preferences
 Preferred communication style: Simple, everyday language.

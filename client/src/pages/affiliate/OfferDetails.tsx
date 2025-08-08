@@ -414,7 +414,7 @@ export default function OfferDetails() {
         </CardContent>
       </Card>
 
-      {/* Генератор партнёрских ссылок - только для одобренных офферов */}
+      {/* Готовые трекинговые ссылки - только для одобренных офферов */}
       {isApproved ? (
         <LinkGenerator offerId={offer.id} offerName={offer.name} />
       ) : null}
