@@ -222,10 +222,14 @@ export default function OfferDetails() {
     try {
       // Используем fetch с токеном авторизации для скачивания креативов
       const token = localStorage.getItem('token');
+      console.log('Download request - token available:', !!token);
+      console.log('Making request to:', `/api/partner/offers/${offerId}/creatives/download`);
+      
       const response = await fetch(`/api/partner/offers/${offerId}/creatives/download`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
