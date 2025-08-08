@@ -16,6 +16,7 @@ import { db, queryCache } from "./db";
 import { z } from "zod";
 import express from "express";
 import { randomUUID } from "crypto";
+import { nanoid } from "nanoid";
 import { notificationService } from "./services/notification";
 import { auditLog, checkIPBlacklist, rateLimiter, loginRateLimiter, recordFailedLogin, trackDevice, detectFraud, getAuditLogs } from "./middleware/security";
 import { PostbackService } from "./services/postback";
@@ -922,6 +923,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Creating offer with data:", JSON.stringify(offerData, null, 2));
       
       const offer = await storage.createOffer(offerData);
+      
+      // Сохраняем креативы в базу данных если они были загружены
+      if (req.body.creatives || req.body.creativesUrl) {
+        console.log("💾 Сохранение креативов в базу данных...");
+        console.log("🔗 Creatives URL:", req.body.creatives || req.body.creativesUrl);
+        
+        try {
+          const creativesUrl = req.body.creatives || req.body.creativesUrl;
+          
+          // Извлекаем путь из URL если это полный URL от Google Cloud Storage
+          let objectPath = creativesUrl;
+          if (creativesUrl.startsWith('https://storage.googleapis.com/')) {
+            const url = new URL(creativesUrl);
+            objectPath = url.pathname; // Получаем путь без домена
+          }
+          
+          // Создаем запись о креативе в базе данных
+          const creativeData = {
+            id: nanoid(), // Генерируем уникальный ID
+            offerId: offer.id,
+            fileName: 'creatives.zip', // Стандартное имя для архива креативов
+            fileType: 'application/zip',
+            fileSize: 0, // Размер неизвестен, но не критично
+            filePath: objectPath,
+            uploadedAt: new Date(),
+            uploadedBy: authUser.id,
+            isActive: true
+          };
+          
+          console.log("📁 Данные креатива для сохранения:", creativeData);
+          
+          // Сохраняем в таблицу creative_files
+          await db.insert(creativeFiles).values(creativeData);
+          
+          console.log("✅ Креатив успешно сохранен в базу данных");
+        } catch (creativeError) {
+          console.error("❌ Ошибка сохранения креатива:", creativeError);
+          // Не прерываем создание оффера из-за ошибки с креативами
+        }
+      }
       
       // Clear cache
       queryCache.clear();
