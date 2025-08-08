@@ -1,17 +1,23 @@
 # Overview
-This anti-fraud platform, FraudGuard, provides comprehensive financial security and real-time risk management for financial institutions, payment processors, and e-commerce. It offers AI-powered fraud detection, real-time risk assessment, analytics dashboards, automated blocking, and detailed audit trails. The platform supports device fingerprinting, IP analysis, behavioral patterns, and transaction monitoring to provide deep insights into fraud patterns, risk scores, and security metrics for effective prevention and compliance. It features robust security and performance optimizations with comprehensive integration across all modules. Key capabilities include enhanced offer creation with anti-fraud protection methods and application type management, along with a partner approval workflow.
+This is a comprehensive affiliate marketing platform providing advertisers with intelligent offer management, real-time analytics, partner relationships, financial transactions, and anti-fraud protection. The platform features role-based access control (super-admin, advertiser, affiliate, staff), comprehensive offer management with creative file handling, real-time statistics and analytics, financial management with payouts and transactions, partner approval workflows, and multi-layered security. All data flows are reactive and live - status changes, conversion rates, financial metrics, and fraud alerts update in real-time across all user interfaces.
 
 # User Preferences
 Preferred communication style: Simple, everyday language.
 
 ## Development Guidelines (КРИТИЧНО - всегда применять):
-При выполнении вёрстки страницы обязательно сразу предусматривать и привязывать всю функциональную логику:
+**РЕАКТИВНОСТЬ И ЖИВЫЕ ДАННЫЕ:**
+- Все таблицы (офферы, статистика, финансы, креативы) ДОЛЖНЫ подтягивать данные с сервера
+- Формы (регистрация, постбек, добавление реквизитов) ДОЛЖНЫ отправлять данные в API и получать реальные ответы
+- Где API ещё нет — используй мок-серверы, но сразу оставляй структуру под продовые эндпоинты
+- Логика ДОЛЖНА быть реактивной и живой — меняется статус оффера, падает CR — это видно в панели
+
+**ФУНКЦИОНАЛЬНАЯ ПРИВЯЗКА:**
 - Какие данные страница должна получать (откуда — API, endpoint, query params)
 - Какие действия пользователь может выполнять (нажатия, фильтры, изменения, кнопки)
 - Что должно обновляться / перерисовываться динамически
 - Какие функции, хендлеры и вызовы должны быть уже подключены или зарезервированы под будущую логику
 - Какие стороны завязаны на эту страницу (например, статистика, роли, офферы, финансы)
-- НЕ делать "голую" вёрстку — страница должна быть сразу связана с реальными данными и действиями, даже если используются мок-данные временно
+- НЕ делать "голую" вёрстку — страница должна быть сразу связана с реальными данными и действиями
 
 ## UI/UX Design Rules (ВАЖНО - соблюдать во всех будущих изменениях):
 - Все кнопки с иконками ОБЯЗАТЕЛЬНО должны иметь атрибут title с подсказкой на русском языке

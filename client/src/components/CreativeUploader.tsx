@@ -170,19 +170,25 @@ export function CreativeUploader({
               <p className="text-sm text-muted-foreground mb-4">
                 Максимальный размер файла: {formatFileSize(maxFileSize)}
               </p>
-              <label htmlFor="creative-upload" className="cursor-pointer">
-                <Button type="button" className={`bg-blue-600 hover:bg-blue-700 text-white ${buttonClassName || ''}`}>
+              <label htmlFor="creative-upload" className="cursor-pointer inline-block">
+                <Button 
+                  type="button" 
+                  className={`bg-blue-600 hover:bg-blue-700 text-white transition-colors ${buttonClassName || ''}`}
+                  data-testid="button-upload-creative"
+                  title="Выбрать ZIP файл с креативами"
+                >
                   <Upload className="w-4 h-4 mr-2" />
                   Выбрать файл
                 </Button>
-                <input
-                  id="creative-upload"
-                  type="file"
-                  accept=".zip"
-                  onChange={handleFileSelect}
-                  className="hidden"
-                />
               </label>
+              <input
+                id="creative-upload"
+                type="file"
+                accept=".zip"
+                onChange={handleFileSelect}
+                className="hidden"
+                data-testid="input-file-creative"
+              />
             </div>
           </div>
         ) : (
