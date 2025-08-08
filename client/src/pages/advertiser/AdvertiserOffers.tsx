@@ -254,15 +254,15 @@ const AdvertiserOffers = () => {
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
                         {/* Приоритет: 1) Картинка оффера 2) Логотип 3) Placeholder */}
-                        {(offer.imageUrl || offer.image) ? (
+                        {offer.image ? (
                           <div className="relative w-10 h-10">
                             <img 
-                              src={offer.imageUrl || offer.image} 
+                              src={offer.image} 
                               alt={offer.name}
                               className="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
-                              onLoad={() => console.log('Offer image loaded successfully:', offer.imageUrl || offer.image)}
+                              onLoad={() => console.log('Offer image loaded successfully:', offer.image)}
                               onError={(e) => {
-                                console.log('Offer image failed to load, trying logo:', offer.imageUrl || offer.image);
+                                console.log('Offer image failed to load, trying logo:', offer.image);
                                 const target = e.target as HTMLImageElement;
                                 target.style.display = 'none';
                                 // Показываем логотип или placeholder
@@ -339,6 +339,7 @@ const AdvertiserOffers = () => {
                         payout={offer.payout}
                         currency={offer.currency}
                         offerId={offer.id}
+                        payoutByGeo={offer.payoutByGeo}
                       />
                     </TableCell>
                     <TableCell>

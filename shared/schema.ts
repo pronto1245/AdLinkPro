@@ -77,6 +77,7 @@ export const offers = pgTable("offers", {
   name: text("name").notNull(),
   description: jsonb("description"), // Multilingual: { "en": "English text", "ru": "Russian text" }
   logo: text("logo"), // Logo URL
+  image: text("image"), // Offer image URL
   category: text("category").notNull(),
   vertical: text("vertical"), // Industry vertical
   goals: jsonb("goals"), // Offer goals/objectives - Multilingual
@@ -96,6 +97,7 @@ export const offers = pgTable("offers", {
   
   // Geo and pricing
   geoPricing: jsonb("geo_pricing"), // Array of geo-specific pricing
+  payoutByGeo: jsonb("payout_by_geo"), // Object with country-specific payouts
   
   // Creative assets
   creatives: text("creatives"), // Path to zip archive with creative materials

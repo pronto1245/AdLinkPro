@@ -10,6 +10,7 @@ interface GeoDisplayProps {
   payout?: number;
   currency?: string;
   offerId?: string;
+  payoutByGeo?: Record<string, number>;
 }
 
 interface CountryPayout {
@@ -25,7 +26,8 @@ const GeoDisplay: React.FC<GeoDisplayProps> = ({
   geoTargeting, 
   payout = 0, 
   currency = 'USD',
-  offerId 
+  offerId,
+  payoutByGeo 
 }) => {
   const [showModal, setShowModal] = useState(false);
   
@@ -34,13 +36,21 @@ const GeoDisplay: React.FC<GeoDisplayProps> = ({
   const thirdCountry = allCountries[2];
   const remainingCount = allCountries.length - 3;
   
-  // В реальном приложении эти данные должны приходить из API
+  // Получаем выплаты по странам из данных оффера
   const getCountryPayouts = (): CountryPayout[] => {
-    return allCountries.map(country => ({
-      ...country,
-      payout: payout, // В реальности каждая страна может иметь свою ставку
-      currency: currency
-    }));
+    return allCountries.map(country => {
+      // Ищем выплату для этой страны в payoutByGeo
+      const countryPayout = payoutByGeo?.[country.code.toLowerCase()] || 
+                           payoutByGeo?.[country.code.toUpperCase()] ||
+                           payoutByGeo?.[country.name.toLowerCase()] ||
+                           payout;
+      
+      return {
+        ...country,
+        payout: countryPayout || payout,
+        currency: currency
+      };
+    });
   };
 
   return (
@@ -147,7 +157,7 @@ const GeoDisplay: React.FC<GeoDisplayProps> = ({
             <div className="flex justify-between items-center text-sm font-medium">
               <span>Общая сумма:</span>
               <span className="text-green-600 dark:text-green-400">
-                ${(payout * allCountries.length).toFixed(2)} {currency}
+                ${getCountryPayouts().reduce((sum, country) => sum + country.payout, 0).toFixed(2)} {currency}
               </span>
             </div>
           </div>

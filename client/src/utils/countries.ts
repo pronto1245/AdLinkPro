@@ -438,8 +438,6 @@ const countryNameToCode: Record<string, string> = {
   'македония': 'MK',
   'montenegro': 'ME',
   'черногория': 'ME',
-  'albania': 'AL',
-  'албания': 'AL',
   'kosova': 'XK',
   'kosovo': 'XK',
   'косово': 'XK',
