@@ -34,6 +34,7 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: Context-based with JWT tokens.
 - **Internationalization**: Custom language context supporting English and Russian.
 - **Feature Specifications**: Comprehensive offer management with filtering, statistics, CRUD operations, mass actions, status management, and offer duplication. Integrated country display system showing country codes and flags. Colorful status indicators for Active, Paused, Archive, and Draft states. Color-coded category system with distinct badges for 50+ categories (Gaming, Finance, Dating, etc.). Enhanced CR (conversion rate) formatting with ceil rounding to 2 decimals (4.858477373333 → 4.86). MyOffersDragDrop provides a compact interface with drag-n-drop reordering, CSV import/export, bulk actions, A/B testing, and template management. AdvertiserProfile includes tabs for Account, API Access, Custom Domain, Notifications, and Security with real-time token generation and DNS verification. Complete notification system with real-time WebSocket support and partner/advertiser access.
+- **Creative Management System**: Complete role-based creative file management with ZIP archive upload/download functionality. CreativeUploader component with drag-n-drop interface, file validation (ZIP only, 50MB max), and cloud storage integration. Role-specific offer details pages for super-admin, advertiser, and partner with appropriate access controls.
 
 ## Backend
 - **Runtime**: Node.js with Express.js.

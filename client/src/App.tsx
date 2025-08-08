@@ -30,7 +30,7 @@ import AnalyticsNew from "@/pages/super-admin/analytics-new";
 import PartnerOffers from '@/pages/affiliate/PartnerOffers';
 import AffiliateOffers from '@/pages/affiliate/AffiliateOffers';
 import OfferDetails from '@/pages/affiliate/OfferDetails';
-import AdvertiserOfferDetails from '@/pages/advertiser/OfferDetails';
+
 import SuperAdminSupport from "@/pages/super-admin/support";
 import UserAnalytics from "@/pages/super-admin/user-analytics";
 import PostbackManagementSuperAdmin from "@/pages/super-admin/postback-management";
@@ -48,6 +48,7 @@ import PartnerNotifications from "./pages/affiliate/PartnerNotifications";
 import AdvertiserDashboardNew from "@/pages/advertiser/AdvertiserDashboard";
 import OfferManagement from "@/pages/advertiser/OfferManagement";
 import CreateOffer from "@/pages/advertiser/CreateOffer";
+import AdvertiserOfferDetails from "@/pages/advertiser/OfferDetails";
 import EditOffer from "@/pages/advertiser/EditOffer";
 import MyOffers from "@/pages/advertiser/MyOffers";
 import MyOffersDragDrop from "@/pages/advertiser/MyOffersDragDrop";
