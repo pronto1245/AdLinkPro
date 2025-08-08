@@ -99,10 +99,16 @@ export default function OfferDetails() {
   const requestStatus = currentRequest?.status || 'none';
   const isApproved = requestStatus === 'approved';
 
-  // Отладка статуса
+  // Отладка статуса  
   console.log('OfferDetails Debug:', {
     offerId,
     accessRequests: accessRequests.length,
+    allRequests: accessRequests.map((req: any) => ({ 
+      id: req.id, 
+      offerId: req.offerId, 
+      status: req.status,
+      offer: req.offer?.id 
+    })),
     currentRequest,
     requestStatus,
     isApproved
