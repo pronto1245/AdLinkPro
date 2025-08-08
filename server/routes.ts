@@ -7964,6 +7964,119 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
+  // API для получения креативов оффера (для рекламодателей)
+  app.get('/api/advertiser/offers/:offerId/creatives', authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const { offerId } = req.params;
+      const userId = (req as any).user?.id;
+      const userRole = (req as any).user?.role;
+
+      // Проверяем права доступа
+      if (userRole !== 'advertiser' && userRole !== 'super_admin') {
+        return res.status(403).json({ error: 'Доступ запрещен' });
+      }
+
+      // Для рекламодателя проверяем владение оффером
+      if (userRole === 'advertiser') {
+        const offer = await storage.getOffer(offerId);
+        console.log('Advertiser creative access check:', {
+          offerId,
+          userId,
+          offer: offer ? { id: offer.id, ownerId: offer.ownerId, advertiserId: offer.advertiserId } : null
+        });
+        if (!offer || (offer.ownerId !== userId && offer.advertiserId !== userId)) {
+          return res.status(403).json({ error: 'Доступ к офферу запрещен' });
+        }
+      }
+
+      // Получаем креативы из базы данных
+      const creativeService = new CreativeService();
+      const creatives = await creativeService.getOfferCreatives(offerId);
+
+      res.json({ 
+        success: true, 
+        creatives: creatives.map(creative => ({
+          id: creative.id,
+          fileName: creative.fileName,
+          originalName: creative.originalName,
+          fileType: creative.fileType,
+          mimeType: creative.mimeType,
+          fileSize: creative.fileSize,
+          dimensions: creative.dimensions,
+          duration: creative.duration,
+          description: creative.description,
+          tags: creative.tags,
+          createdAt: creative.createdAt
+        }))
+      });
+
+    } catch (error) {
+      console.error('Error fetching offer creatives:', error);
+      res.status(500).json({ error: 'Ошибка при получении креативов' });
+    }
+  });
+
+  // API для загрузки новых креативов (для рекламодателей)
+  app.post('/api/advertiser/offers/:offerId/creatives/upload', authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const { offerId } = req.params;
+      const userId = (req as any).user?.id;
+      const userRole = (req as any).user?.role;
+      const { files } = req.body;
+
+      // Проверяем права доступа
+      if (userRole !== 'advertiser' && userRole !== 'super_admin') {
+        return res.status(403).json({ error: 'Доступ запрещен' });
+      }
+
+      // Для рекламодателя проверяем владение оффером
+      if (userRole === 'advertiser') {
+        const offer = await storage.getOffer(offerId);
+        console.log('Advertiser creative upload access check:', {
+          offerId,
+          userId,
+          offer: offer ? { id: offer.id, ownerId: offer.ownerId, advertiserId: offer.advertiserId } : null
+        });
+        if (!offer || (offer.ownerId !== userId && offer.advertiserId !== userId)) {
+          return res.status(403).json({ error: 'Доступ к офферу запрещен' });
+        }
+      }
+
+      // Сохраняем информацию о загруженных файлах
+      const creativeService = new CreativeService();
+      const savedCreatives = [];
+
+      for (const fileData of files) {
+        const creative = await creativeService.saveCreativeFile({
+          offerId,
+          fileName: fileData.fileName,
+          originalName: fileData.originalName,
+          fileType: fileData.fileType,
+          mimeType: fileData.mimeType,
+          fileSize: fileData.fileSize,
+          filePath: fileData.filePath,
+          publicUrl: fileData.publicUrl,
+          dimensions: fileData.dimensions,
+          duration: fileData.duration,
+          description: fileData.description,
+          tags: fileData.tags || [],
+          uploadedBy: userId
+        });
+        savedCreatives.push(creative);
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Загружено ${savedCreatives.length} креативов`,
+        creatives: savedCreatives
+      });
+
+    } catch (error) {
+      console.error('Error uploading creatives:', error);
+      res.status(500).json({ error: 'Ошибка при загрузке креативов' });
+    }
+  });
+
   // Endpoint для скачивания креативов (доступ по ролям)
   app.get("/api/partner/offers/:offerId/creatives/download", authenticateToken, async (req, res) => {
     try {

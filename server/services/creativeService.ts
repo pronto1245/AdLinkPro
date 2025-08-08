@@ -40,8 +40,20 @@ export class CreativeService {
     const [file] = await db
       .insert(creativeFiles)
       .values({
-        id: randomUUID(),
-        ...data,
+        offerId: data.offerId,
+        fileName: data.fileName,
+        originalName: data.originalName,
+        fileType: data.fileType,
+        mimeType: data.mimeType,
+        fileSize: data.fileSize,
+        filePath: data.filePath,
+        publicUrl: data.publicUrl,
+        dimensions: data.dimensions,
+        duration: data.duration,
+        description: data.description,
+        tags: data.tags || [],
+        uploadedBy: data.uploadedBy,
+        isActive: true
       })
       .returning();
 
@@ -119,10 +131,10 @@ export class CreativeService {
 
     archive.pipe(res);
 
-    // Группируем файлы по типам
-    const imageFiles = creatives.filter(c => c.file.fileType === 'image');
-    const videoFiles = creatives.filter(c => c.file.fileType === 'video');
-    const documentFiles = creatives.filter(c => c.file.fileType === 'document');
+    // Группируем файлы по типам (исправляем доступ к свойствам)
+    const imageFiles = creatives.filter(c => c.fileType && c.fileType.startsWith('image'));
+    const videoFiles = creatives.filter(c => c.fileType && c.fileType.startsWith('video'));
+    const documentFiles = creatives.filter(c => c.fileType && c.fileType.includes('document'));
 
     // Создаем README файл
     const readmeContent = `CREATIVE PACK FOR ${offer.name}
@@ -152,48 +164,48 @@ Generated: ${new Date().toISOString()}
     // Для демонстрации добавляем описания файлов
     // В реальной системе здесь будут настоящие файлы из object storage
     imageFiles.forEach((creative, index) => {
-      const fileInfo = `Файл: ${creative.file.originalName}
-Тип: ${creative.file.mimeType}
-Размер: ${creative.file.fileSize} байт
-Разрешение: ${creative.file.dimensions || 'Не указано'}
-Описание: ${creative.file.description || 'Без описания'}
-Теги: ${creative.file.tags?.join(', ') || 'Нет тегов'}
-Загружен: ${creative.file.createdAt}
+      const fileInfo = `Файл: ${creative.originalName}
+Тип: ${creative.mimeType}
+Размер: ${creative.fileSize} байт
+Разрешение: ${creative.dimensions || 'Не указано'}
+Описание: ${creative.description || 'Без описания'}
+Теги: ${creative.tags?.join(', ') || 'Нет тегов'}
+Загружен: ${creative.createdAt}
 
 ДЕМО: В реальной системе здесь будет файл изображения.
-Для получения оригинального файла используйте путь: ${creative.file.filePath}`;
+Для получения оригинального файла используйте путь: ${creative.filePath}`;
 
-      archive.append(fileInfo, { name: `images/${creative.file.originalName}.info.txt` });
+      archive.append(fileInfo, { name: `images/${creative.originalName}.info.txt` });
     });
 
     videoFiles.forEach((creative, index) => {
-      const fileInfo = `Файл: ${creative.file.originalName}
-Тип: ${creative.file.mimeType}
-Размер: ${creative.file.fileSize} байт
-Разрешение: ${creative.file.dimensions || 'Не указано'}
-Длительность: ${creative.file.duration ? `${creative.file.duration} секунд` : 'Не указано'}
-Описание: ${creative.file.description || 'Без описания'}
-Теги: ${creative.file.tags?.join(', ') || 'Нет тегов'}
-Загружен: ${creative.file.createdAt}
+      const fileInfo = `Файл: ${creative.originalName}
+Тип: ${creative.mimeType}
+Размер: ${creative.fileSize} байт
+Разрешение: ${creative.dimensions || 'Не указано'}
+Длительность: ${creative.duration ? `${creative.duration} секунд` : 'Не указано'}
+Описание: ${creative.description || 'Без описания'}
+Теги: ${creative.tags?.join(', ') || 'Нет тегов'}
+Загружен: ${creative.createdAt}
 
 ДЕМО: В реальной системе здесь будет видео файл.
-Для получения оригинального файла используйте путь: ${creative.file.filePath}`;
+Для получения оригинального файла используйте путь: ${creative.filePath}`;
 
-      archive.append(fileInfo, { name: `videos/${creative.file.originalName}.info.txt` });
+      archive.append(fileInfo, { name: `videos/${creative.originalName}.info.txt` });
     });
 
     documentFiles.forEach((creative, index) => {
-      const fileInfo = `Файл: ${creative.file.originalName}
-Тип: ${creative.file.mimeType}
-Размер: ${creative.file.fileSize} байт
-Описание: ${creative.file.description || 'Без описания'}
-Теги: ${creative.file.tags?.join(', ') || 'Нет тегов'}
-Загружен: ${creative.file.createdAt}
+      const fileInfo = `Файл: ${creative.originalName}
+Тип: ${creative.mimeType}
+Размер: ${creative.fileSize} байт
+Описание: ${creative.description || 'Без описания'}
+Теги: ${creative.tags?.join(', ') || 'Нет тегов'}
+Загружен: ${creative.createdAt}
 
 ДЕМО: В реальной системе здесь будет документ.
-Для получения оригинального файла используйте путь: ${creative.file.filePath}`;
+Для получения оригинального файла используйте путь: ${creative.filePath}`;
 
-      archive.append(fileInfo, { name: `documents/${creative.file.originalName}.info.txt` });
+      archive.append(fileInfo, { name: `documents/${creative.originalName}.info.txt` });
     });
 
     // Обновляем счетчик скачиваний
