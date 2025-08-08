@@ -4090,6 +4090,52 @@ export class DatabaseStorage implements IStorage {
       ));
   }
 
+  // === PARTNER OFFERS METHODS ===
+  
+  async getAvailableOffers(partnerId: string): Promise<any[]> {
+    try {
+      // Get all active offers from database
+      const activeOffers = await db
+        .select()
+        .from(offers)
+        .where(eq(offers.status, 'active'));
+
+      // Get partner's access requests
+      const accessRequests = await db
+        .select()
+        .from(offerAccessRequests)
+        .where(eq(offerAccessRequests.partnerId, partnerId));
+
+      console.log(`Total offers in database: ${activeOffers.length}`);
+      
+      // Map offers with access status
+      return activeOffers.map(offer => {
+        const accessRequest = accessRequests.find(req => req.offerId === offer.id);
+        const isApproved = accessRequest?.status === 'approved';
+        const accessStatus = accessRequest?.status || 'available';
+        
+        const canRequestAccess = !accessRequest && accessStatus === 'available';
+        
+        console.log(`Offer ${offer.id}: accessRequest=${!!accessRequest}, accessStatus=${accessStatus}, canRequestAccess=${canRequestAccess}`);
+        
+        return {
+          ...offer,
+          isApproved,
+          accessStatus,
+          canRequestAccess,
+          // Ссылки генерируются только после одобрения
+          trackingLink: isApproved 
+            ? `https://track.example.com/click?offer=${offer.id}&partner=${partnerId}&clickid=partner_${partnerId}_${offer.id}_{subid}`
+            : null,
+          readyToUse: isApproved
+        };
+      });
+    } catch (error) {
+      console.error('Error getting available offers:', error);
+      return [];
+    }
+  }
+
   // End of DatabaseStorage class
 }
 
