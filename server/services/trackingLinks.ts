@@ -49,6 +49,43 @@ export class TrackingLinkService {
     return domains.map(d => d.domain);
   }
 
+  // Generate automatic tracking link for partner (simplified)
+  static async generatePartnerTrackingLink(offerId: string, partnerId: string): Promise<string> {
+    try {
+      // Get offer details and advertiser info
+      const [offer] = await db
+        .select({
+          id: offers.id,
+          advertiserId: offers.advertiserId,
+          landingPages: offers.landingPages,
+          name: offers.name
+        })
+        .from(offers)
+        .where(eq(offers.id, offerId));
+
+      if (!offer) {
+        throw new Error('Offer not found');
+      }
+
+      // Get advertiser's verified custom domains
+      const verifiedDomains = await this.getVerifiedCustomDomains(offer.advertiserId);
+      
+      // Use first verified custom domain if available, otherwise use platform domain
+      const baseDomain = verifiedDomains.length > 0 
+        ? `https://${verifiedDomains[0]}` 
+        : 'https://trk.platform.com';
+
+      // Generate the tracking link with partner's clickid
+      const trackingLink = `${baseDomain}/click?offer=${offerId}&clickid=${partnerId}`;
+      
+      return trackingLink;
+    } catch (error) {
+      console.error('Error generating partner tracking link:', error);
+      // Fallback to platform domain
+      return `https://trk.platform.com/click?offer=${offerId}&clickid=${partnerId}`;
+    }
+  }
+
   // Generate tracking link with custom domain support
   static async generateTrackingLink(params: GenerateTrackingLinkParams): Promise<TrackingLinkResult> {
     const { partnerId, offerId, ...subIds } = params;
@@ -58,7 +95,7 @@ export class TrackingLinkService {
       .select({
         id: offers.id,
         advertiserId: offers.advertiserId,
-        url: offers.url,
+        landingPages: offers.landingPages,
         name: offers.name
       })
       .from(offers)
@@ -212,8 +249,8 @@ export class TrackingLinkService {
         offerId: trackingLinks.offerId,
         url: trackingLinks.url,
         isActive: trackingLinks.isActive,
-        // Offer details
-        targetUrl: offers.url,
+        // Offer details  
+        targetUrl: offers.landingPages,
         offerName: offers.name,
         advertiserId: offers.advertiserId
       })

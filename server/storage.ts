@@ -1003,8 +1003,71 @@ export class DatabaseStorage implements IStorage {
     await db.delete(users).where(eq(users.id, id));
   }
 
-  async getAllOffers(): Promise<(Offer & { advertiserName?: string })[]> {
-    console.log("getAllOffers called - getting from database");
+  async getAllOffers(partnerId?: string): Promise<(Offer & { advertiserName?: string })[]> {
+    console.log("getAllOffers called - getting from database", { partnerId });
+    
+    if (partnerId) {
+      // Возвращаем офферы доступные партнеру через partner_offers
+      const availableOffers = await db
+        .select({
+          id: offers.id,
+          number: offers.number,
+          name: offers.name,
+          description: offers.description,
+          logo: offers.logo,
+          category: offers.category,
+          vertical: offers.vertical,
+          goals: offers.goals,
+          advertiserId: offers.advertiserId,
+          payout: offers.payout,
+          payoutType: offers.payoutType,
+          currency: offers.currency,
+          countries: offers.countries,
+          geoTargeting: offers.geoTargeting,
+          landingPages: offers.landingPages,
+          geoPricing: offers.geoPricing,
+          kpiConditions: offers.kpiConditions,
+          trafficSources: offers.trafficSources,
+          allowedApps: offers.allowedApps,
+          dailyLimit: offers.dailyLimit,
+          monthlyLimit: offers.monthlyLimit,
+          antifraudEnabled: offers.antifraudEnabled,
+          autoApprovePartners: offers.autoApprovePartners,
+          status: offers.status,
+          moderationStatus: offers.moderationStatus,
+          moderationComment: offers.moderationComment,
+          trackingUrl: offers.trackingUrl,
+          landingPageUrl: offers.landingPageUrl,
+          previewUrl: offers.previewUrl,
+          restrictions: offers.restrictions,
+          fraudRestrictions: offers.fraudRestrictions,
+          macros: offers.macros,
+          kycRequired: offers.kycRequired,
+          isPrivate: offers.isPrivate,
+          smartlinkEnabled: offers.smartlinkEnabled,
+          isBlocked: offers.isBlocked,
+          blockedReason: offers.blockedReason,
+          isArchived: offers.isArchived,
+          regionVisibility: offers.regionVisibility,
+          createdAt: offers.createdAt,
+          updatedAt: offers.updatedAt,
+          advertiserName: sql<string>`COALESCE(${users.firstName} || ' ' || ${users.lastName}, 'Unknown')`,
+        })
+        .from(offers)
+        .innerJoin(partnerOffers, and(
+          eq(partnerOffers.offerId, offers.id),
+          eq(partnerOffers.partnerId, partnerId),
+          eq(partnerOffers.isApproved, true)
+        ))
+        .leftJoin(users, eq(offers.advertiserId, users.id))
+        .where(eq(offers.status, 'active'))
+        .orderBy(offers.createdAt);
+        
+      console.log("Found partner offers:", availableOffers.length);
+      return availableOffers;
+    }
+    
+    // Возвращаем все офферы (для админов)
     const offersWithAdvertisers = await db
       .select({
         id: offers.id,

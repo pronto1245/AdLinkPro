@@ -1387,11 +1387,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const offerIds = partnerOffers.map(po => po.offerId);
         
         const allOffers = await storage.getAllOffers();
+        let filteredOffers;
         if (offerIds.length > 0) {
-          offers = allOffers.filter((offer: any) => offerIds.includes(offer.id) || !offer.isPrivate);
+          filteredOffers = allOffers.filter((offer: any) => offerIds.includes(offer.id) || !offer.isPrivate);
         } else {
-          offers = allOffers.filter((offer: any) => !offer.isPrivate);
+          filteredOffers = allOffers.filter((offer: any) => !offer.isPrivate);
         }
+        
+        // Add automatic tracking links for approved offers
+        offers = await Promise.all(filteredOffers.map(async (offer: any) => {
+          // Check if partner has access to this offer
+          const hasAccess = offerIds.includes(offer.id) || !offer.isPrivate;
+          
+          if (hasAccess) {
+            // Generate automatic tracking link with partner's clickid
+            const trackingLink = await TrackingLinkService.generatePartnerTrackingLink(offer.id, authUser.id);
+            return {
+              ...offer,
+              trackingLink, // Ready-to-use tracking link with clickid
+              hasAccess: true
+            };
+          }
+          
+          return {
+            ...offer,
+            hasAccess: false
+          };
+        }));
       } else if (authUser.role === 'staff') {
         // Staff can see offers of their owner (the advertiser who created them)
         if (authUser.ownerId) {
@@ -2196,12 +2218,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all available offers for partner (including request access offers)
+  // Get all available offers for partner with AUTOMATIC tracking links
   app.get("/api/partner/offers", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
       const partnerId = getAuthenticatedUser(req).id;
       
-      // Получаем все активные офферы из базы данных
+      // Отключаем HTTP кеширование
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      
+      // Получаем все активные офферы из базы данных (все офферы для фильтрации)
       const allOffers = await storage.getAllOffers();
       
       // Получаем существующие запросы доступа и связи партнера
@@ -2237,7 +2264,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Уже есть связь с партнером
           accessStatus = partnerOffer.isApproved ? 'approved' : 'pending';
           hasFullAccess = partnerOffer.isApproved;
-          partnerLink = partnerOffer.isApproved ? `https://track.platform.com/click/${offer.id}?partner=${partnerId}&subid=YOUR_SUBID` : null;
+          
+          // 🎯 АВТОМАТИЧЕСКАЯ ГЕНЕРАЦИЯ ГОТОВОЙ ССЫЛКИ С CLICKID
+          if (partnerOffer.isApproved) {
+            try {
+              partnerLink = await TrackingLinkService.generatePartnerTrackingLink(offer.id, partnerId);
+            } catch (error) {
+              console.error('Error generating partner tracking link for offer', offer.id, error);
+              partnerLink = `https://trk.platform.com/click?offer=${offer.id}&clickid=${partnerId}`;
+            }
+          }
         } else if (accessRequest) {
           // Есть запрос на доступ
           accessStatus = accessRequest.status;
@@ -2253,6 +2289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           advertiserName: offer.advertiserName,
           payout: offer.payout || 0,
           currency: offer.currency || 'USD',
+          trackingLink: partnerLink, // Добавляем готовую ссылку с clickid
           payoutType: offer.payoutType || 'cpa',
           countries: offer.countries || ['RU'],
           status: offer.status || 'active',
@@ -2315,11 +2352,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Access denied to this offer" });
       }
 
+      // 🎯 АВТОМАТИЧЕСКАЯ ГЕНЕРАЦИЯ ГОТОВОЙ ССЫЛКИ С CLICKID
+      let partnerLink = null;
+      if (hasAccess) {
+        try {
+          partnerLink = await TrackingLinkService.generatePartnerTrackingLink(offerId, authUser.id);
+        } catch (error) {
+          console.error('Error generating partner tracking link for offer', offerId, error);
+          partnerLink = `https://trk.platform.com/click?offer=${offerId}&clickid=${authUser.id}`;
+        }
+      }
+
       // Return offer with enhanced details - include creatives for approved partners
       res.json({
         ...offer,
         isApproved: hasAccess,
-        partnerLink: `https://track.platform.com/click/${offerId}?partner=${authUser.id}&subid=YOUR_SUBID`,
+        partnerLink, // Готовая ссылка с автоматическим clickid
         // Only include creative data for partners with access
         creatives: hasAccess ? offer.creatives : undefined,
         creativesUrl: hasAccess ? offer.creativesUrl : undefined,

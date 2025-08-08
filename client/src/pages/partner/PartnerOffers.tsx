@@ -65,6 +65,7 @@ interface PartnerOffer {
   hasFullAccess: boolean;
   customPayout?: string;
   partnerLink?: string;
+  trackingLink?: string; // НОВОЕ ПОЛЕ - готовая ссылка с clickid
   previewUrl?: string;
   partnerApprovalType?: string;
   accessRequestId?: string;
@@ -338,7 +339,18 @@ export default function PartnerOffers() {
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           {/* Основная кнопка действия */}
-                          {offer.hasFullAccess ? (
+                          {offer.hasFullAccess && offer.trackingLink ? (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => copyToClipboard(offer.trackingLink!, 'Готовая ссылка')}
+                              title="Скопировать готовую ссылку с clickid"
+                              data-testid={`button-copy-tracking-${offer.id}`}
+                            >
+                              <Copy className="w-4 h-4 mr-2" />
+                              Готовая ссылка
+                            </Button>
+                          ) : offer.hasFullAccess ? (
                             <Button
                               size="sm"
                               variant="default"
