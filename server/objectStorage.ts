@@ -110,6 +110,30 @@ export class ObjectStorageService {
     });
   }
 
+  // Gets the upload URL for images (logos, offer images, etc.)
+  async getImageUploadURL(): Promise<string> {
+    const privateObjectDir = this.getPrivateObjectDir();
+    if (!privateObjectDir) {
+      throw new Error(
+        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' " +
+          "tool and set PRIVATE_OBJECT_DIR env var."
+      );
+    }
+
+    const objectId = randomUUID();
+    const fullPath = `${privateObjectDir}/uploads/${objectId}`;
+
+    const { bucketName, objectName } = parseObjectPath(fullPath);
+
+    // Sign URL for PUT method with TTL
+    return signObjectURL({
+      bucketName,
+      objectName,
+      method: "PUT",
+      ttlSec: 900,
+    });
+  }
+
   // Gets the creative file from the object path.
   async getCreativeFile(creativePath: string): Promise<File> {
     if (!creativePath.startsWith("/creatives/")) {

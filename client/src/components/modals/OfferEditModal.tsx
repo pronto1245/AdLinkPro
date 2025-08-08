@@ -598,7 +598,8 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                               
                               // Извлекаем ID объекта из пути вида /bucket-name/.private/uploads/uuid
                               const pathParts = path.split('/');
-                              const uploadsIndex = pathParts.indexOf('uploads');
+                              const uploadsIndex = pathParts.findIndex(part => part === 'uploads');
+                              
                               if (uploadsIndex !== -1 && pathParts[uploadsIndex + 1]) {
                                 const objectId = pathParts[uploadsIndex + 1];
                                 const finalURL = `/objects/uploads/${objectId}`;
@@ -607,6 +608,13 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                                 toast({
                                   title: "Успех",
                                   description: "Логотип успешно загружен"
+                                });
+                              } else {
+                                console.error('Could not find uploads folder in path:', pathParts);
+                                toast({
+                                  title: "Ошибка",
+                                  description: "Не удалось извлечь ID логотипа из URL",
+                                  variant: "destructive"
                                 });
                               }
                             } catch (error) {
@@ -693,7 +701,8 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                               
                               // Извлекаем ID объекта из пути вида /bucket-name/.private/uploads/uuid
                               const pathParts = path.split('/');
-                              const uploadsIndex = pathParts.indexOf('uploads');
+                              const uploadsIndex = pathParts.findIndex(part => part === 'uploads');
+                              
                               if (uploadsIndex !== -1 && pathParts[uploadsIndex + 1]) {
                                 const objectId = pathParts[uploadsIndex + 1];
                                 const finalURL = `/objects/uploads/${objectId}`;
@@ -702,6 +711,13 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                                 toast({
                                   title: "Успех",
                                   description: "Изображение успешно загружено"
+                                });
+                              } else {
+                                console.error('Could not find uploads folder in path:', pathParts);
+                                toast({
+                                  title: "Ошибка",
+                                  description: "Не удалось извлечь ID изображения из URL",
+                                  variant: "destructive"
                                 });
                               }
                             } catch (error) {
