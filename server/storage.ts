@@ -5427,6 +5427,7 @@ class MemStorage implements IStorage {
       createdAt: new Date('2025-08-02'),
       approvedAt: null
     }
+    // Для нового оффера "bdntytd33" запросов пока нет - партнер должен их создать
   ];
 
   async getOfferAccessRequests(partnerId: string): Promise<any[]> {
@@ -5473,11 +5474,15 @@ class MemStorage implements IStorage {
         const isApproved = accessRequest?.status === 'approved';
         const accessStatus = accessRequest?.status || 'available';
         
+        const canRequestAccess = !accessRequest && accessStatus === 'available';
+        
+        console.log(`Offer ${offer.id}: accessRequest=${!!accessRequest}, accessStatus=${accessStatus}, canRequestAccess=${canRequestAccess}`);
+        
         return {
           ...offer,
           isApproved,
           accessStatus,
-          canRequestAccess: !accessRequest || accessRequest.status === 'rejected',
+          canRequestAccess,
           // Ссылки генерируются только после одобрения
           trackingLink: isApproved 
             ? `https://track.example.com/click?offer=${offer.id}&partner=${partnerId}&clickid=partner_${partnerId}_${offer.id}_{subid}`

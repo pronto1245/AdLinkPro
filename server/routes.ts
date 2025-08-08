@@ -2365,17 +2365,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "You are not assigned to this advertiser" });
       }
       
-      // Проверяем, есть ли уже запрос
-      const existingRequests = await storage.getOfferAccessRequests(partnerId, offerId);
-      if (existingRequests.length > 0) {
-        return res.status(400).json({ error: "Access request already exists" });
+      // Проверяем, есть ли уже запрос для конкретного оффера
+      const allRequests = await storage.getOfferAccessRequests(partnerId);
+      const existingRequest = allRequests.find(req => req.offerId === offerId);
+      if (existingRequest) {
+        return res.status(400).json({ 
+          error: "Access request already exists",
+          requestStatus: existingRequest.status 
+        });
       }
       
-      // Проверяем, есть ли уже доступ
-      const partnerOffers = await storage.getPartnerOffers(partnerId, offerId);
-      if (partnerOffers.length > 0) {
-        return res.status(400).json({ error: "Access already granted" });
-      }
+      // Убираем проверку getPartnerOffers - она может не существовать для новых офферов
+      console.log(`Creating access request for partner ${partnerId} to offer ${offerId}`);
       
       // Создаем запрос
       const request = await storage.createOfferAccessRequest({
