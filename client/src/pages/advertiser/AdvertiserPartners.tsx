@@ -752,7 +752,7 @@ export default function AdvertiserPartners() {
               <div>
                 <p className="text-sm text-gray-600">Средний рейтинг</p>
                 <p className="text-2xl font-bold text-orange-600">
-                  {partners ? (partners.reduce((acc, p) => acc + p.rating, 0) / partners.length).toFixed(1) : 0}
+                  {partners && partners.length > 0 ? (partners.reduce((acc, p) => acc + (p.rating || 0), 0) / partners.length).toFixed(1) : '0.0'}
                 </p>
               </div>
               <Star className="w-8 h-8 text-orange-500" />
@@ -956,17 +956,17 @@ export default function AdvertiserPartners() {
                     <div className="text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-500">Баланс:</span>
-                        <span className="font-medium text-green-600">${partner.balance.toFixed(2)}</span>
+                        <span className="font-medium text-green-600">${(partner.balance || 0).toFixed(2)}</span>
                       </div>
-                      {partner.holdAmount > 0 && (
+                      {(partner.holdAmount || 0) > 0 && (
                         <div className="flex justify-between">
                           <span className="text-gray-500">Удержано:</span>
-                          <span className="font-medium text-orange-600">${partner.holdAmount.toFixed(2)}</span>
+                          <span className="font-medium text-orange-600">${(partner.holdAmount || 0).toFixed(2)}</span>
                         </div>
                       )}
                       <div className="flex justify-between">
                         <span className="text-gray-500">Доход:</span>
-                        <span className="font-medium">${partner.statistics.totalRevenue.toLocaleString()}</span>
+                        <span className="font-medium">${partner.statistics?.totalRevenue?.toLocaleString() || '0'}</span>
                       </div>
                     </div>
                   </TableCell>

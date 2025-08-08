@@ -57,3 +57,26 @@ export function formatCountries(countries: any): string {
     return country.toString();
   }).join(', ');
 }
+
+export function parseCountries(countries: any): Country[] {
+  if (!countries || !Array.isArray(countries)) {
+    return [];
+  }
+  
+  // Если это простой массив строк (коды стран)
+  if (typeof countries[0] === 'string') {
+    return countries.map(countryCode => getCountryInfo(countryCode));
+  }
+  
+  // Если это массив объектов с полями code, flag, name
+  return countries.map(country => {
+    if (typeof country === 'object' && country.code) {
+      return {
+        code: country.code,
+        name: country.name || getCountryName(country.code),
+        flag: country.flag || getCountryFlag(country.code)
+      };
+    }
+    return getCountryInfo(country.toString());
+  });
+}

@@ -15,7 +15,7 @@ import { DndContext } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { formatCountries } from '@/utils/countries';
+import { parseCountries } from '@/utils/countries';
 import { getCategoryBadgeProps } from '@/utils/categories';
 import { formatCR } from '@/utils/formatters';
 import OfferEditModal from '@/components/modals/OfferEditModal';
@@ -271,15 +271,15 @@ const AdvertiserOffers = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 flex-wrap">
-                        {formatCountries(offer.countries).slice(0, 3).map((country, index) => (
+                        {parseCountries(offer.countries).slice(0, 3).map((country, index) => (
                           <div key={`${offer.id}-country-${index}`} className="flex items-center gap-1">
                             <span className="text-lg" title={country.name}>{country.flag}</span>
                             <span className="text-xs font-mono bg-muted px-1 py-0.5 rounded">{country.code}</span>
                           </div>
                         ))}
-                        {formatCountries(offer.countries).length > 3 && (
+                        {parseCountries(offer.countries).length > 3 && (
                           <span className="text-xs text-muted-foreground">
-                            +{formatCountries(offer.countries).length - 3}
+                            +{parseCountries(offer.countries).length - 3}
                           </span>
                         )}
                       </div>
