@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "./contexts/auth-context";
 import { LanguageProvider } from "./contexts/language-context";
 import { SidebarProvider } from "./contexts/sidebar-context";
+import { NotificationProvider } from "@/components/NotificationToast";
+import { WebSocketManager } from "@/components/WebSocketManager";
 import RoleBasedLayout from "./components/layout/RoleBasedLayout";
 import NotFound from "./pages/NotFound";
 import Dashboard from "@/pages/super-admin/dashboard";
@@ -482,10 +484,13 @@ function App() {
       <TooltipProvider>
         <LanguageProvider>
           <AuthProvider>
-            <SidebarProvider>
-              <Toaster />
-              <Router />
-            </SidebarProvider>
+            <NotificationProvider>
+              <SidebarProvider>
+                <Toaster />
+                <WebSocketManager />
+                <Router />
+              </SidebarProvider>
+            </NotificationProvider>
           </AuthProvider>
         </LanguageProvider>
       </TooltipProvider>

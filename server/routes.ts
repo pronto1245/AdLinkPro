@@ -7792,5 +7792,67 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   }
 
   const httpServer = createServer(app);
+  
+  // Добавляем WebSocket сервер для уведомлений
+  const { WebSocketServer, WebSocket } = await import('ws');
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Хранилище подключений по userId
+  const userConnections = new Map();
+  
+  wss.on('connection', (ws, req) => {
+    console.log('WebSocket connection established');
+    let userId = null;
+    
+    ws.on('message', async (data) => {
+      try {
+        const message = JSON.parse(data.toString());
+        
+        if (message.type === 'auth' && message.token) {
+          // Аутентификация пользователя через токен
+          const jwt = await import('jsonwebtoken');
+          try {
+            const decoded = jwt.default.verify(message.token, process.env.JWT_SECRET || 'your-secret-key') as any;
+            userId = decoded.id;
+            userConnections.set(userId, ws);
+            console.log(`User ${userId} authenticated via WebSocket`);
+            
+            ws.send(JSON.stringify({
+              type: 'auth_success',
+              message: 'Authenticated successfully'
+            }));
+          } catch (error) {
+            console.error('WebSocket auth error:', error);
+            ws.send(JSON.stringify({
+              type: 'auth_error',
+              message: 'Invalid token'
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    });
+    
+    ws.on('close', () => {
+      if (userId) {
+        userConnections.delete(userId);
+        console.log(`User ${userId} disconnected from WebSocket`);
+      }
+    });
+    
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
+  });
+  
+  // Функция для отправки уведомлений через WebSocket
+  global.sendWebSocketNotification = (userId: string, message: any) => {
+    const connection = userConnections.get(userId);
+    if (connection && connection.readyState === WebSocket.OPEN) {
+      connection.send(JSON.stringify(message));
+    }
+  };
+  
   return httpServer;
 }

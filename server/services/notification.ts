@@ -166,6 +166,19 @@ export async function notifyOfferAccessRequest(
       status: 'sent'
     });
 
+    // Отправляем WebSocket уведомление
+    if (global.sendWebSocketNotification) {
+      global.sendWebSocketNotification(advertiser.id, {
+        type: 'offer_access_request',
+        data: {
+          partnerUsername: partner.username,
+          offerName: offer.name,
+          requestMessage
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+
     console.log(`Offer access request notification sent to advertiser ${advertiser.username}`);
   } catch (error) {
     console.error('Error sending offer access request notification:', error);
@@ -196,6 +209,20 @@ export async function notifyOfferAccessApproved(
       status: 'sent'
     });
 
+    // Отправляем WebSocket уведомление
+    if (global.sendWebSocketNotification) {
+      global.sendWebSocketNotification(partner.id, {
+        type: 'offer_access_response',
+        data: {
+          status: 'approved',
+          offerName: offer.name,
+          advertiserUsername: advertiser.username,
+          responseMessage
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+
     console.log(`Offer access approved notification sent to partner ${partner.username}`);
   } catch (error) {
     console.error('Error sending offer access approved notification:', error);
@@ -225,6 +252,20 @@ export async function notifyOfferAccessRejected(
       channel: 'system',
       status: 'sent'
     });
+
+    // Отправляем WebSocket уведомление
+    if (global.sendWebSocketNotification) {
+      global.sendWebSocketNotification(partner.id, {
+        type: 'offer_access_response',
+        data: {
+          status: 'rejected',
+          offerName: offer.name,
+          advertiserUsername: advertiser.username,
+          responseMessage
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
 
     console.log(`Offer access rejected notification sent to partner ${partner.username}`);
   } catch (error) {
