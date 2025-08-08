@@ -44,12 +44,24 @@ const GeoDisplay: React.FC<GeoDisplayProps> = ({
     console.log('allCountries:', allCountries.map(c => c.code));
     
     return allCountries.map(country => {
+      // Преобразуем код страны в полное название для поиска в payoutByGeo
+      const countryNameMap: { [key: string]: string } = {
+        'AF': 'afghanistan',
+        'AL': 'albania', 
+        'DZ': 'algeria',
+        'AD': 'andorra',
+        'AO': 'angola'
+      };
+      
+      const countryKey = countryNameMap[country.code] || country.code.toLowerCase();
+      
       // Ищем выплату для этой страны в payoutByGeo
-      const countryPayout = payoutByGeo?.[country.code.toLowerCase()] || 
+      const countryPayout = payoutByGeo?.[countryKey] || 
+                           payoutByGeo?.[country.code.toLowerCase()] || 
                            payoutByGeo?.[country.code.toUpperCase()] ||
                            payoutByGeo?.[country.name.toLowerCase()];
       
-      console.log(`Country ${country.name} (${country.code}): payoutByGeo lookup result:`, countryPayout);
+      console.log(`Country ${country.name} (${country.code}): looking for key "${countryKey}", payoutByGeo lookup result:`, countryPayout);
       
       const finalPayout = countryPayout || payout;
       console.log(`Final payout for ${country.name}:`, finalPayout);
