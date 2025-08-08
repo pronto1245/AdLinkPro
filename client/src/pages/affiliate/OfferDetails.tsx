@@ -122,6 +122,9 @@ export default function OfferDetails() {
     isApproved,
     offerIsApproved: offer?.isApproved,
     offerIsPrivate: offer?.isPrivate,
+    offerCreatives: offer?.creatives,
+    offerCreativesUrl: offer?.creativesUrl,
+    hasCreatives: !!(offer?.creatives || offer?.creativesUrl),
     allMatchingRequests: accessRequests.filter((req: any) => {
       const reqOfferId = req.offerId || req.offer_id;
       return reqOfferId === offerId;
@@ -439,7 +442,7 @@ export default function OfferDetails() {
       ) : null}
 
       {/* Креативы - только для одобренных */}
-      {isApproved && (offer.creatives || offer.creativesUrl) ? (
+      {isApproved ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
