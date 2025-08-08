@@ -585,16 +585,36 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                         };
                       }}
                       onComplete={(result) => {
+                        console.log('Logo upload result:', result);
                         if (result.successful && result.successful[0]) {
                           const uploadURL = result.successful[0].uploadURL;
+                          console.log('Logo upload URL:', uploadURL);
                           if (uploadURL) {
-                            const objectPath = uploadURL.split('uploads/')[1]?.split('?')[0];
-                            if (objectPath) {
-                              const finalURL = `/objects/uploads/${objectPath}`;
-                              setFormData(prev => ({ ...prev, logo: finalURL }));
+                            // Парсим URL для извлечения пути объекта
+                            try {
+                              const url = new URL(uploadURL);
+                              const path = url.pathname;
+                              console.log('Parsed path:', path);
+                              
+                              // Извлекаем ID объекта из пути вида /bucket-name/.private/uploads/uuid
+                              const pathParts = path.split('/');
+                              const uploadsIndex = pathParts.indexOf('uploads');
+                              if (uploadsIndex !== -1 && pathParts[uploadsIndex + 1]) {
+                                const objectId = pathParts[uploadsIndex + 1];
+                                const finalURL = `/objects/uploads/${objectId}`;
+                                console.log('Final logo URL:', finalURL);
+                                setFormData(prev => ({ ...prev, logo: finalURL }));
+                                toast({
+                                  title: "Успех",
+                                  description: "Логотип успешно загружен"
+                                });
+                              }
+                            } catch (error) {
+                              console.error('Error parsing logo upload URL:', error);
                               toast({
-                                title: "Успех",
-                                description: "Логотип успешно загружен"
+                                title: "Ошибка",
+                                description: "Не удалось обработать URL логотипа",
+                                variant: "destructive"
                               });
                             }
                           }
@@ -660,16 +680,36 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                         };
                       }}
                       onComplete={(result) => {
+                        console.log('Image upload result:', result);
                         if (result.successful && result.successful[0]) {
                           const uploadURL = result.successful[0].uploadURL;
+                          console.log('Image upload URL:', uploadURL);
                           if (uploadURL) {
-                            const objectPath = uploadURL.split('uploads/')[1]?.split('?')[0];
-                            if (objectPath) {
-                              const finalURL = `/objects/uploads/${objectPath}`;
-                              setFormData(prev => ({ ...prev, image: finalURL }));
+                            // Парсим URL для извлечения пути объекта
+                            try {
+                              const url = new URL(uploadURL);
+                              const path = url.pathname;
+                              console.log('Parsed path:', path);
+                              
+                              // Извлекаем ID объекта из пути вида /bucket-name/.private/uploads/uuid
+                              const pathParts = path.split('/');
+                              const uploadsIndex = pathParts.indexOf('uploads');
+                              if (uploadsIndex !== -1 && pathParts[uploadsIndex + 1]) {
+                                const objectId = pathParts[uploadsIndex + 1];
+                                const finalURL = `/objects/uploads/${objectId}`;
+                                console.log('Final image URL:', finalURL);
+                                setFormData(prev => ({ ...prev, image: finalURL }));
+                                toast({
+                                  title: "Успех",
+                                  description: "Изображение успешно загружено"
+                                });
+                              }
+                            } catch (error) {
+                              console.error('Error parsing image upload URL:', error);
                               toast({
-                                title: "Успех",
-                                description: "Изображение успешно загружено"
+                                title: "Ошибка",
+                                description: "Не удалось обработать URL изображения",
+                                variant: "destructive"
                               });
                             }
                           }
