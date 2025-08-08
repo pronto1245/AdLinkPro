@@ -193,12 +193,17 @@ export const trackingLinks = pgTable("tracking_links", {
   offerId: varchar("offer_id").notNull().references(() => offers.id),
   trackingCode: text("tracking_code").notNull().unique(),
   url: text("url").notNull(),
+  customDomain: text("custom_domain"), // Custom domain for white-label links
   subId1: text("sub_id_1"),
   subId2: text("sub_id_2"),
   subId3: text("sub_id_3"),
   subId4: text("sub_id_4"),
   subId5: text("sub_id_5"),
+  isActive: boolean("is_active").default(true),
+  clickCount: integer("click_count").default(0),
+  lastClickAt: timestamp("last_click_at"),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Tracking clicks for postback system

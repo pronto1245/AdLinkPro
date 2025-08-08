@@ -23,6 +23,7 @@ import { PostbackService } from "./services/postback";
 import conversionRoutes from "./routes/conversion";
 import archiver from "archiver";
 import { CreativeService } from "./services/creativeService";
+import { TrackingLinkService } from "./services/trackingLinks";
 
 
 // Extend Express Request to include user property
@@ -1526,7 +1527,141 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Tracking links
+  // Modern Tracking Links API with Custom Domain Support
+  
+  // Get partner's tracking links  
+  app.get("/api/partner/tracking-links", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { offerId } = req.query;
+      
+      const links = await TrackingLinkService.getPartnerTrackingLinks(
+        authUser.id, 
+        offerId as string | undefined
+      );
+      
+      res.json(links);
+    } catch (error) {
+      console.error("Get partner tracking links error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Generate new tracking link with custom domain support
+  app.post("/api/partner/tracking-links", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { offerId, subId1, subId2, subId3, subId4, subId5 } = req.body;
+      
+      if (!offerId) {
+        return res.status(400).json({ error: "offerId is required" });
+      }
+      
+      // Check if affiliate has access to this offer
+      const partnerOffers = await storage.getPartnerOffers(authUser.id, offerId);
+      const offer = await storage.getOffer(offerId);
+      
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      if (offer.isPrivate && partnerOffers.length === 0) {
+        return res.status(403).json({ error: "Access denied to this offer" });
+      }
+      
+      // Generate link using modern service
+      const linkResult = await TrackingLinkService.generateTrackingLink({
+        partnerId: authUser.id,
+        offerId,
+        subId1,
+        subId2,
+        subId3,
+        subId4,
+        subId5
+      });
+      
+      res.status(201).json(linkResult);
+    } catch (error) {
+      console.error("Generate tracking link error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Deactivate tracking link
+  app.delete("/api/partner/tracking-links/:linkId", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { linkId } = req.params;
+      
+      const result = await TrackingLinkService.deactivateLink(linkId, authUser.id);
+      
+      if (!result) {
+        return res.status(404).json({ error: "Link not found or access denied" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Deactivate link error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Click handling endpoint
+  app.get("/click", async (req, res) => {
+    try {
+      const { offer_id, partner_id, clickid, ...subIds } = req.query;
+      
+      if (!offer_id || !partner_id || !clickid) {
+        return res.status(400).json({ error: "Missing required parameters" });
+      }
+      
+      // Get offer details
+      const offer = await storage.getOffer(offer_id as string);
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      // Log the click
+      await db.insert(trackingClicks).values({
+        clickId: clickid as string,
+        partnerId: partner_id as string,
+        offerId: offer_id as string,
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        referer: req.get('Referer'),
+        subId1: subIds.sub1 as string || null,
+        subId2: subIds.sub2 as string || null,
+        subId3: subIds.sub3 as string || null,
+        subId4: subIds.sub4 as string || null,
+        subId5: subIds.sub5 as string || null,
+      });
+      
+      // Increment click count if tracking code provided
+      if (req.query.tracking_code) {
+        await TrackingLinkService.incrementClickCount(req.query.tracking_code as string);
+      }
+      
+      // Redirect to target URL
+      res.redirect(offer.url);
+    } catch (error) {
+      console.error("Click handling error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get advertiser tracking analytics
+  app.get("/api/advertiser/tracking-analytics", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const links = await TrackingLinkService.getAdvertiserTrackingLinks(authUser.id);
+      res.json(links);
+    } catch (error) {
+      console.error("Get advertiser tracking analytics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Legacy tracking links endpoint (backwards compatibility)
   app.get("/api/tracking-links", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);

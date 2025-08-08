@@ -8,6 +8,7 @@ import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalL
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { LinkGenerator } from "@/components/partner/LinkGenerator";
 
 interface OfferDetails {
   id: string;
@@ -413,32 +414,9 @@ export default function OfferDetails() {
         </CardContent>
       </Card>
 
-      {/* Трекинговая ссылка - только для одобренных офферов */}
+      {/* Генератор партнёрских ссылок - только для одобренных офферов */}
       {isApproved ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5" />
-              Трекинговая ссылка
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg dark:bg-gray-900/50">
-              <code className="flex-1 text-sm font-mono">{offer.partnerLink || `https://track.platform.com/click/${offer.id}?partner=${currentRequest?.partnerId}&subid=YOUR_SUBID`}</code>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => copyToClipboard(offer.partnerLink || `https://track.platform.com/click/${offer.id}?partner=${currentRequest?.partnerId}&subid=YOUR_SUBID`, "Трекинговая ссылка")}
-                title="Копировать ссылку"
-              >
-                <Copy className="w-4 h-4" />
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              Замените {"{{"}<code>subid</code>{"}"} на ваш уникальный идентификатор трафика
-            </p>
-          </CardContent>
-        </Card>
+        <LinkGenerator offerId={offer.id} offerName={offer.name} />
       ) : null}
 
       {/* Креативы - только для одобренных */}
