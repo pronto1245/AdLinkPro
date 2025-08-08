@@ -221,10 +221,19 @@ export default function OfferDetails() {
   const downloadCreatives = async (creativesUrl: string) => {
     try {
       // Используем fetch с токеном авторизации для скачивания креативов
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       console.log('Download request - token available:', !!token);
       console.log('Making request to:', `/api/partner/offers/${offerId}/creatives/download`);
       
+      if (!token) {
+        toast({
+          title: "Ошибка авторизации",
+          description: "Токен не найден. Пожалуйста, войдите в систему заново",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const response = await fetch(`/api/partner/offers/${offerId}/creatives/download`, {
         method: 'GET',
         headers: {
