@@ -19,6 +19,7 @@ import { parseCountries } from '@/utils/countries';
 import { getCategoryBadgeProps } from '@/utils/categories';
 import { formatCR } from '@/utils/formatters';
 import OfferEditModal from '@/components/modals/OfferEditModal';
+import GeoDisplay from '@/components/GeoDisplay';
 
 function DraggableRow({ offer, index, children }: any) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: offer.id });
@@ -291,19 +292,13 @@ const AdvertiserOffers = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1 flex-wrap max-w-32">
-                        {parseCountries(offer.countries || offer.geoTargeting).slice(0, 3).map((country, index) => (
-                          <div key={`${offer.id}-country-${index}`} className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md border border-blue-200 dark:border-blue-800">
-                            <span className="text-sm" title={country.name}>{country.flag}</span>
-                            <span className="text-xs font-mono font-semibold text-blue-700 dark:text-blue-300">{country.code}</span>
-                          </div>
-                        ))}
-                        {parseCountries(offer.countries || offer.geoTargeting).length > 3 && (
-                          <span className="text-xs text-muted-foreground bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600">
-                            +{parseCountries(offer.countries || offer.geoTargeting).length - 3}
-                          </span>
-                        )}
-                      </div>
+                      <GeoDisplay 
+                        countries={offer.countries}
+                        geoTargeting={offer.geoTargeting}
+                        payout={offer.payout}
+                        currency={offer.currency}
+                        offerId={offer.id}
+                      />
                     </TableCell>
                     <TableCell>
                       <Badge {...getCategoryBadgeProps(offer.category)}>
