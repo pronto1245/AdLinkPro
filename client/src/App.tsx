@@ -58,6 +58,8 @@ import AdvertiserTeamManagement from "@/pages/advertiser/TeamManagement";
 import AntiFraud from "@/pages/advertiser/AntiFraud";
 import AdvertiserDocuments from "@/pages/advertiser/AdvertiserDocuments";
 import PartnerDashboard from "@/pages/affiliate/PartnerDashboard";
+import PartnerProfile from "@/pages/affiliate/PartnerProfile";
+import PartnerSettings from "@/pages/affiliate/PartnerSettings";
 import AdvertiserAccessRequests from '@/pages/advertiser/AdvertiserAccessRequests';
 
 import { PartnerLayout } from "@/components/partner/PartnerLayout";
@@ -433,6 +435,22 @@ function Router() {
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PartnerLayout>
             <PostbackManagementAffiliate />
+          </PartnerLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/profile">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PartnerLayout>
+            <PartnerProfile />
+          </PartnerLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/settings">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PartnerLayout>
+            <PartnerSettings />
           </PartnerLayout>
         </ProtectedRoute>
       </Route>
