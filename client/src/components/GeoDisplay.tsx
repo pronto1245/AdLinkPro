@@ -38,16 +38,25 @@ const GeoDisplay: React.FC<GeoDisplayProps> = ({
   
   // Получаем выплаты по странам из данных оффера
   const getCountryPayouts = (): CountryPayout[] => {
+    console.log('=== GeoDisplay Debug ===');
+    console.log('payoutByGeo:', payoutByGeo);
+    console.log('payout fallback:', payout);
+    console.log('allCountries:', allCountries.map(c => c.code));
+    
     return allCountries.map(country => {
       // Ищем выплату для этой страны в payoutByGeo
       const countryPayout = payoutByGeo?.[country.code.toLowerCase()] || 
                            payoutByGeo?.[country.code.toUpperCase()] ||
-                           payoutByGeo?.[country.name.toLowerCase()] ||
-                           payout;
+                           payoutByGeo?.[country.name.toLowerCase()];
+      
+      console.log(`Country ${country.name} (${country.code}): payoutByGeo lookup result:`, countryPayout);
+      
+      const finalPayout = countryPayout || payout;
+      console.log(`Final payout for ${country.name}:`, finalPayout);
       
       return {
         ...country,
-        payout: countryPayout || payout,
+        payout: finalPayout,
         currency: currency
       };
     });
