@@ -1961,20 +1961,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if partner has access to this offer
-      const partnerOffers = await storage.getPartnerOffers(authUser.id, offerId);
-      
-      // For private offers, partner must be approved
-      if (offer.isPrivate && partnerOffers.length === 0) {
-        return res.status(403).json({ error: "Access denied to this offer" });
-      }
-
-      // Проверяем доступ партнера к офферу
       let hasAccess = false;
       let accessRequest = null;
       
-      // Ищем запрос доступа для данного партнера и оффера
+      // Check access through offer_access_requests table
       try {
-        const requests = await db.select()
+        const accessRequests = await db.select()
           .from(offerAccessRequests)
           .where(
             and(
@@ -1983,27 +1975,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
             )
           );
         
-        if (requests.length > 0) {
-          accessRequest = requests[0];
+        if (accessRequests.length > 0) {
+          accessRequest = accessRequests[0];
           hasAccess = accessRequest.status === 'approved';
         }
       } catch (error) {
-        console.error('Error checking access request:', error);
+        console.error('Error checking offer access request:', error);
       }
       
-      // Если оффер публичный, партнер автоматически имеет доступ
+      // For public offers, partner automatically has access
       if (!offer.isPrivate) {
         hasAccess = true;
       }
       
-      // Return offer with enhanced details including creatives for approved partners
+      // For private offers without approved access, deny
+      if (offer.isPrivate && !hasAccess) {
+        return res.status(403).json({ error: "Access denied to this offer" });
+      }
+
+      // Return offer with enhanced details - include creatives for approved partners
       res.json({
         ...offer,
         isApproved: hasAccess,
-        partnerLink: hasAccess ? `https://track.platform.com/click/${offerId}?partner=${authUser.id}&subid=YOUR_SUBID` : null,
-        // Добавляем креативы только для одобренных партнеров
-        creatives: hasAccess ? offer.creatives : null,
-        creativesUrl: hasAccess ? offer.creativesUrl : null,
+        partnerLink: `https://track.platform.com/click/${offerId}?partner=${authUser.id}&subid=YOUR_SUBID`,
+        // Only include creative data for partners with access
+        creatives: hasAccess ? offer.creatives : undefined,
+        creativesUrl: hasAccess ? offer.creativesUrl : undefined,
         landingPages: hasAccess ? offer.landingPages : []
       });
     } catch (error) {
