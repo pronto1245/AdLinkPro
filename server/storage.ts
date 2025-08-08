@@ -2,7 +2,7 @@ import {
   users, offers, partnerOffers, trackingLinks, trackingClicks, statistics, transactions, 
   postbacks, postbackLogs, postbackTemplates, tickets, fraudAlerts, customRoles, userRoleAssignments,
   cryptoWallets, cryptoTransactions, fraudReports, fraudRules, 
-  deviceTracking, ipAnalysis, fraudBlocks, receivedOffers,
+  deviceTracking, ipAnalysis, fraudBlocks, receivedOffers, offerAccessRequests,
   type User, type InsertUser, type Offer, type InsertOffer,
   type PartnerOffer, type InsertPartnerOffer, type TrackingLink, type InsertTrackingLink,
   type Transaction, type InsertTransaction, type Postback, type InsertPostback,
@@ -10,7 +10,8 @@ import {
   type CryptoWallet, type InsertCryptoWallet, type CryptoTransaction, type InsertCryptoTransaction,
   type FraudReport, type InsertFraudReport, type FraudRule, type InsertFraudRule,
   type DeviceTracking, type InsertDeviceTracking, type IpAnalysis, type InsertIpAnalysis,
-  type FraudBlock, type InsertFraudBlock, type ReceivedOffer, type InsertReceivedOffer
+  type FraudBlock, type InsertFraudBlock, type ReceivedOffer, type InsertReceivedOffer,
+  type OfferAccessRequest, type InsertOfferAccessRequest
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lt, lte, count, sum, sql, isNotNull, like, ilike, or, inArray, ne } from "drizzle-orm";
@@ -518,6 +519,64 @@ export class DatabaseStorage implements IStorage {
     }
     
     return await query;
+  }
+
+  // Создать запрос на доступ к офферу
+  async createOfferAccessRequest(data: InsertOfferAccessRequest): Promise<OfferAccessRequest> {
+    const [request] = await db
+      .insert(offerAccessRequests)
+      .values(data)
+      .returning();
+    return request;
+  }
+
+  // Одобрить/отклонить запрос на доступ к офферу
+  async updateOfferAccessRequest(id: string, data: Partial<InsertOfferAccessRequest>): Promise<OfferAccessRequest> {
+    const [request] = await db
+      .update(offerAccessRequests)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(offerAccessRequests.id, id))
+      .returning();
+    return request;
+  }
+
+  // Проверить, есть ли партнер в списке партнеров рекламодателя
+  async isPartnerAssignedToAdvertiser(partnerId: string, advertiserId: string): Promise<boolean> {
+    const partner = await db
+      .select()
+      .from(users)
+      .where(and(
+        eq(users.id, partnerId),
+        eq(users.ownerId, advertiserId),
+        eq(users.role, 'affiliate')
+      ))
+      .limit(1);
+    
+    return partner.length > 0;
+  }
+
+  // Получить запросы доступа для рекламодателя
+  async getAdvertiserAccessRequests(advertiserId: string): Promise<any[]> {
+    const requests = await db
+      .select({
+        id: offerAccessRequests.id,
+        offerId: offerAccessRequests.offerId,
+        partnerId: offerAccessRequests.partnerId,
+        status: offerAccessRequests.status,
+        message: offerAccessRequests.message,
+        createdAt: offerAccessRequests.createdAt,
+        updatedAt: offerAccessRequests.updatedAt,
+        offerName: offers.name,
+        partnerName: sql<string>`COALESCE(${users.firstName} || ' ' || ${users.lastName}, ${users.username})`,
+        partnerEmail: users.email,
+      })
+      .from(offerAccessRequests)
+      .leftJoin(offers, eq(offerAccessRequests.offerId, offers.id))
+      .leftJoin(users, eq(offerAccessRequests.partnerId, users.id))
+      .where(eq(offers.advertiserId, advertiserId))
+      .orderBy(desc(offerAccessRequests.createdAt));
+    
+    return requests;
   }
 
   // Generate automatic partner link for an offer based on its base_url

@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Target, BarChart3, MousePointer, Zap } from "lucide-react";
+import { MoreHorizontal, Target, BarChart3, MousePointer, Zap, Send, Clock, CheckCircle, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
+import { apiRequest } from "@/lib/queryClient";
 
 
 interface PartnerOffer {
@@ -21,14 +22,18 @@ interface PartnerOffer {
   payoutType: string;
   currency: string;
   status: string;
-  isApproved: boolean;
-  partnerLink: string;
-  baseUrl: string;
-  kpiConditions: any;
+  isApproved?: boolean;
+  partnerLink?: string;
+  baseUrl?: string;
+  kpiConditions?: any;
   countries: any;
-  landingPages: any[];
+  landingPages?: any[];
   createdAt: string;
-  geoPricing?: Record<string, number>; // Выплаты по гео
+  geoPricing?: Record<string, number>;
+  // Новые поля для системы запросов доступа
+  accessStatus: 'available' | 'pending' | 'approved' | 'rejected';
+  hasFullAccess: boolean;
+  advertiserName?: string;
 }
 
 // Функция для получения свойств бейджа категории
@@ -163,11 +168,37 @@ export default function PartnerOffers() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [, navigate] = useLocation();
+  const queryClient = useQueryClient();
 
   // Fetch partner offers with auto-generated links  
   const { data: offers = [], isLoading } = useQuery<PartnerOffer[]>({
     queryKey: ["/api/partner/offers"],
     staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Mutation для запроса доступа к офферу
+  const requestAccessMutation = useMutation({
+    mutationFn: async (data: { offerId: string; message?: string }) => {
+      return await apiRequest("/api/partner/offer-access-request", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Запрос отправлен",
+        description: "Ваш запрос на доступ к офферу был отправлен рекламодателю",
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/partner/offers"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось отправить запрос",
+        variant: "destructive",
+      });
+    },
   });
 
   const copyToClipboard = (text: string, label: string) => {
@@ -178,43 +209,20 @@ export default function PartnerOffers() {
     });
   };
 
-  const handleRequestOffer = async (offerId: string, currentStatus?: string) => {
-    if (!currentStatus || currentStatus === 'none') {
-      try {
-        const response = await fetch('/api/partner/offers/request', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({ offerId })
-        });
-
-        if (response.ok) {
-          toast({
-            title: "Запрос отправлен",
-            description: "Ваш запрос на доступ к офферу отправлен рекламодателю",
-          });
-          // Перезагружаем данные
-          window.location.reload();
-        } else {
-          const error = await response.json();
-          toast({
-            title: "Ошибка",
-            description: error.error || "Не удалось отправить запрос",
-            variant: "destructive"
-          });
-        }
-      } catch (error) {
-        toast({
-          title: "Ошибка",
-          description: "Произошла ошибка при отправке запроса",
-          variant: "destructive"
-        });
+  // Обработка запроса доступа к офферу
+  const handleRequestOffer = (offerId: string, currentStatus: string) => {
+    if (currentStatus === 'approved') {
+      // Если доступ уже одобрен, копируем ссылку или переходим к получению ссылки
+      const offer = offers.find(o => o.id === offerId);
+      if (offer?.partnerLink) {
+        copyToClipboard(offer.partnerLink, "Партнерская ссылка");
+      } else {
+        // Переходим на страницу деталей оффера для получения ссылки
+        navigate(`/affiliate/offers/${offerId}`);
       }
-    } else if (currentStatus === 'approved') {
-      // Переходим на страницу деталей оффера
-      navigate(`/affiliate/offers/${offerId}`);
+    } else if (currentStatus !== 'pending') {
+      // Отправляем запрос на доступ
+      requestAccessMutation.mutate({ offerId });
     }
   };
 

@@ -1857,51 +1857,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const partnerOfferMap = new Map(partnerOffers.map(po => [po.offerId, po]));
       const requestMap = new Map(offerAccessRequests.map(req => [req.offerId, req]));
       
-      // Обрабатываем все офферы
-      const offersWithDetails = allOffers
-        .filter(offer => offer.status === 'active' && !offer.isArchived && !offer.isBlocked)
-        .map(offer => {
-          const partnerOffer = partnerOfferMap.get(offer.id);
-          const accessRequest = requestMap.get(offer.id);
-          
-          let accessStatus = 'available'; // По умолчанию доступен для запроса
-          let hasFullAccess = false;
-          let partnerLink = null;
-          
-          if (partnerOffer) {
-            // Уже есть связь с партнером
-            accessStatus = partnerOffer.isApproved ? 'approved' : 'pending';
-            hasFullAccess = partnerOffer.isApproved;
-            partnerLink = partnerOffer.isApproved ? `https://track.platform.com/click/${offer.id}?partner=${partnerId}&subid=YOUR_SUBID` : null;
-          } else if (accessRequest) {
-            // Есть запрос на доступ
-            accessStatus = accessRequest.status;
-          }
-          
-          return {
-            id: offer.id,
-            name: offer.name,
-            description: offer.description || 'Описание оффера',
-            category: offer.category || 'other',
-            logo: offer.logo || 'https://via.placeholder.com/40x40/8b5cf6/ffffff?text=OF',
-            advertiserId: offer.advertiserId,
-            advertiserName: offer.advertiserName,
-            payout: offer.payout || 0,
-            currency: offer.currency || 'USD',
-            payoutType: offer.payoutType || 'cpa',
-            countries: offer.countries || ['RU'],
-            status: offer.status || 'active',
-            accessStatus,
-            hasFullAccess,
-            customPayout: partnerOffer?.customPayout,
-            partnerLink,
-            partnerApprovalType: 'manual',
-            createdAt: offer.createdAt || new Date().toISOString(),
-            geoPricing: offer.geoPricing ? JSON.parse(offer.geoPricing) : null
-          };
+      // Фильтруем офферы и проверяем доступность для партнера
+      const availableOffers = [];
+      for (const offer of allOffers) {
+        if (offer.status !== 'active' || offer.isArchived || offer.isBlocked) {
+          continue;
+        }
+        
+        // Проверяем, есть ли партнер в списке у рекламодателя
+        const isAssigned = await storage.isPartnerAssignedToAdvertiser(partnerId, offer.advertiserId);
+        if (!isAssigned) {
+          continue; // Партнер не в списке рекламодателя
+        }
+        
+        const partnerOffer = partnerOfferMap.get(offer.id);
+        const accessRequest = requestMap.get(offer.id);
+        
+        let accessStatus = 'available'; // По умолчанию доступен для запроса
+        let hasFullAccess = false;
+        let partnerLink = null;
+        
+        if (partnerOffer) {
+          // Уже есть связь с партнером
+          accessStatus = partnerOffer.isApproved ? 'approved' : 'pending';
+          hasFullAccess = partnerOffer.isApproved;
+          partnerLink = partnerOffer.isApproved ? `https://track.platform.com/click/${offer.id}?partner=${partnerId}&subid=YOUR_SUBID` : null;
+        } else if (accessRequest) {
+          // Есть запрос на доступ
+          accessStatus = accessRequest.status;
+        }
+        
+        availableOffers.push({
+          id: offer.id,
+          name: offer.name,
+          description: offer.description || 'Описание оффера',
+          category: offer.category || 'other',
+          logo: offer.logo || 'https://via.placeholder.com/40x40/8b5cf6/ffffff?text=OF',
+          advertiserId: offer.advertiserId,
+          advertiserName: offer.advertiserName,
+          payout: offer.payout || 0,
+          currency: offer.currency || 'USD',
+          payoutType: offer.payoutType || 'cpa',
+          countries: offer.countries || ['RU'],
+          status: offer.status || 'active',
+          accessStatus,
+          hasFullAccess,
+          customPayout: partnerOffer?.customPayout,
+          partnerLink,
+          partnerApprovalType: 'manual',
+          createdAt: offer.createdAt || new Date().toISOString(),
+          geoPricing: offer.geoPricing ? JSON.parse(offer.geoPricing) : null
         });
+      }
       
-      res.json(offersWithDetails);
+      res.json(availableOffers);
     } catch (error) {
       console.error("Get partner offers error:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -1936,6 +1945,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Get partner offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Создать запрос на доступ к офферу
+  app.post("/api/partner/offer-access-request", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const partnerId = getAuthenticatedUser(req).id;
+      const { offerId, message } = req.body;
+      
+      if (!offerId) {
+        return res.status(400).json({ error: "Offer ID is required" });
+      }
+      
+      // Получаем оффер
+      const offer = await storage.getOffer(offerId);
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      // Проверяем, есть ли партнер в списке у рекламодателя
+      const isAssigned = await storage.isPartnerAssignedToAdvertiser(partnerId, offer.advertiserId);
+      if (!isAssigned) {
+        return res.status(403).json({ error: "You are not assigned to this advertiser" });
+      }
+      
+      // Проверяем, есть ли уже запрос
+      const existingRequests = await storage.getOfferAccessRequests(partnerId, offerId);
+      if (existingRequests.length > 0) {
+        return res.status(400).json({ error: "Access request already exists" });
+      }
+      
+      // Проверяем, есть ли уже доступ
+      const partnerOffers = await storage.getPartnerOffers(partnerId, offerId);
+      if (partnerOffers.length > 0) {
+        return res.status(400).json({ error: "Access already granted" });
+      }
+      
+      // Создаем запрос
+      const request = await storage.createOfferAccessRequest({
+        id: randomUUID(),
+        partnerId,
+        offerId,
+        status: 'pending',
+        message: message || '',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      
+      res.status(201).json(request);
+    } catch (error) {
+      console.error("Create offer access request error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Получить запросы доступа для рекламодателя
+  app.get("/api/advertiser/access-requests", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const advertiserId = getAuthenticatedUser(req).id;
+      const requests = await storage.getAdvertiserAccessRequests(advertiserId);
+      res.json(requests);
+    } catch (error) {
+      console.error("Get advertiser access requests error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Одобрить/отклонить запрос доступа
+  app.patch("/api/advertiser/access-requests/:id", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const advertiserId = getAuthenticatedUser(req).id;
+      const requestId = req.params.id;
+      const { status, rejectReason } = req.body;
+      
+      if (!['approved', 'rejected'].includes(status)) {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+      
+      // Получаем запрос и проверяем права
+      const requests = await storage.getOfferAccessRequests();
+      const request = requests.find(r => r.id === requestId);
+      if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+      
+      // Проверяем, что оффер принадлежит рекламодателю
+      const offer = await storage.getOffer(request.offerId);
+      if (!offer || offer.advertiserId !== advertiserId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      // Обновляем статус запроса
+      const updatedRequest = await storage.updateOfferAccessRequest(requestId, {
+        status,
+        rejectReason: status === 'rejected' ? rejectReason : null,
+        updatedAt: new Date()
+      });
+      
+      // Если одобрено, создаем связь партнер-оффер
+      if (status === 'approved') {
+        const existingPartnerOffers = await storage.getPartnerOffers(request.partnerId, request.offerId);
+        if (existingPartnerOffers.length === 0) {
+          await storage.createPartnerOffer({
+            id: randomUUID(),
+            partnerId: request.partnerId,
+            offerId: request.offerId,
+            isApproved: true,
+            customPayout: null,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+        }
+      }
+      
+      res.json(updatedRequest);
+    } catch (error) {
+      console.error("Update access request error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
