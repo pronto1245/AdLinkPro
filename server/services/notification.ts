@@ -136,3 +136,98 @@ export class NotificationService {
 }
 
 export const notificationService = NotificationService.getInstance();
+
+// Import dependencies for additional notification functions
+import { db } from '../db';
+import { userNotifications } from '@shared/schema';
+import type { User } from '@shared/schema';
+
+// Уведомление рекламодателю о новом запросе доступа к офферу
+export async function notifyOfferAccessRequest(
+  advertiser: User, 
+  partner: User, 
+  offer: any, 
+  requestMessage?: string
+) {
+  try {
+    await db.insert(userNotifications).values({
+      userId: advertiser.id,
+      type: 'offer_access_request',
+      title: 'Новый запрос доступа к офферу',
+      message: `Партнёр ${partner.username} запросил доступ к офферу "${offer.name}"`,
+      data: { 
+        partnerId: partner.id, 
+        partnerUsername: partner.username,
+        offerId: offer.id, 
+        offerName: offer.name,
+        requestMessage 
+      },
+      channel: 'system',
+      status: 'sent'
+    });
+
+    console.log(`Offer access request notification sent to advertiser ${advertiser.username}`);
+  } catch (error) {
+    console.error('Error sending offer access request notification:', error);
+  }
+}
+
+// Уведомление партнёру об одобрении запроса доступа
+export async function notifyOfferAccessApproved(
+  partner: User, 
+  advertiser: User, 
+  offer: any, 
+  responseMessage?: string
+) {
+  try {
+    await db.insert(userNotifications).values({
+      userId: partner.id,
+      type: 'offer_access_approved',
+      title: 'Запрос доступа одобрен',
+      message: `Ваш запрос доступа к офферу "${offer.name}" одобрен`,
+      data: { 
+        advertiserId: advertiser.id,
+        advertiserUsername: advertiser.username,
+        offerId: offer.id, 
+        offerName: offer.name,
+        responseMessage 
+      },
+      channel: 'system',
+      status: 'sent'
+    });
+
+    console.log(`Offer access approved notification sent to partner ${partner.username}`);
+  } catch (error) {
+    console.error('Error sending offer access approved notification:', error);
+  }
+}
+
+// Уведомление партнёру об отклонении запроса доступа
+export async function notifyOfferAccessRejected(
+  partner: User, 
+  advertiser: User, 
+  offer: any, 
+  responseMessage?: string
+) {
+  try {
+    await db.insert(userNotifications).values({
+      userId: partner.id,
+      type: 'offer_access_rejected',
+      title: 'Запрос доступа отклонён',
+      message: `Ваш запрос доступа к офферу "${offer.name}" отклонён`,
+      data: { 
+        advertiserId: advertiser.id,
+        advertiserUsername: advertiser.username,
+        offerId: offer.id, 
+        offerName: offer.name,
+        responseMessage 
+      },
+      channel: 'system',
+      status: 'sent'
+    });
+
+    console.log(`Offer access rejected notification sent to partner ${partner.username}`);
+  } catch (error) {
+    console.error('Error sending offer access rejected notification:', error);
+  }
+}

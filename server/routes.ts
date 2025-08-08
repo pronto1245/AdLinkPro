@@ -2116,6 +2116,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       }
+
+      // Send notification to partner
+      try {
+        const partner = await storage.getUser(request.partnerId);
+        const advertiser = await storage.getUser(advertiserId);
+        
+        if (partner && advertiser && offer) {
+          if (status === 'approved') {
+            const { notifyOfferAccessApproved } = await import('./services/notification');
+            await notifyOfferAccessApproved(partner, advertiser, offer, message);
+          } else {
+            const { notifyOfferAccessRejected } = await import('./services/notification');
+            await notifyOfferAccessRejected(partner, advertiser, offer, message);
+          }
+        }
+      } catch (notifyError) {
+        console.error('Failed to send notification:', notifyError);
+      }
       
       res.json(updatedRequest);
     } catch (error) {
@@ -2169,6 +2187,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
             updatedAt: new Date()
           });
         }
+      }
+
+      // Send notification to partner
+      try {
+        const partner = await storage.getUser(request.partnerId);
+        const advertiser = await storage.getUser(advertiserId);
+        
+        if (partner && advertiser && offer) {
+          if (status === 'approved') {
+            const { notifyOfferAccessApproved } = await import('./services/notification');
+            await notifyOfferAccessApproved(partner, advertiser, offer, rejectReason);
+          } else {
+            const { notifyOfferAccessRejected } = await import('./services/notification');
+            await notifyOfferAccessRejected(partner, advertiser, offer, rejectReason);
+          }
+        }
+      } catch (notifyError) {
+        console.error('Failed to send notification:', notifyError);
+      }
+
+      // Send notification to partner
+      try {
+        const partner = await storage.getUser(request.partnerId);
+        const advertiser = await storage.getUser(advertiserId);
+        
+        if (partner && advertiser && offer) {
+          if (status === 'approved') {
+            const { notifyOfferAccessApproved } = await import('./services/notification');
+            await notifyOfferAccessApproved(partner, advertiser, offer, rejectReason);
+          } else {
+            const { notifyOfferAccessRejected } = await import('./services/notification');
+            await notifyOfferAccessRejected(partner, advertiser, offer, rejectReason);
+          }
+        }
+      } catch (notifyError) {
+        console.error('Failed to send notification:', notifyError);
       }
       
       res.json(updatedRequest);
@@ -7403,6 +7457,19 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           requestedAt: new Date()
         })
         .returning();
+
+      // Send notification to advertiser
+      try {
+        const partner = await storage.getUser(userId);
+        const advertiser = await storage.getUser(offer.advertiserId);
+        
+        if (partner && advertiser) {
+          const { notifyOfferAccessRequest } = await import('./services/notification');
+          await notifyOfferAccessRequest(advertiser, partner, offer, message);
+        }
+      } catch (notifyError) {
+        console.error('Failed to send notification:', notifyError);
+      }
 
       res.json(newRequest);
     } catch (error) {
