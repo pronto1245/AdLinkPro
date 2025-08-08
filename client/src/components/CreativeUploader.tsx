@@ -5,11 +5,24 @@ import { Upload, FileText, X, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CreativeUploaderProps {
-  offerId: string;
-  onComplete?: (creativePath: string) => void;
+  offerId?: string;
+  maxNumberOfFiles?: number;
+  maxFileSize?: number;
+  onGetUploadParameters?: () => Promise<{ method: 'PUT'; url: string }>;
+  onComplete?: (result: any) => void;
+  uploaded?: boolean;
+  buttonClassName?: string;
 }
 
-export function CreativeUploader({ offerId, onComplete }: CreativeUploaderProps) {
+export function CreativeUploader({ 
+  offerId, 
+  maxNumberOfFiles = 1,
+  maxFileSize = 50 * 1024 * 1024,
+  onGetUploadParameters,
+  onComplete,
+  uploaded = false,
+  buttonClassName 
+}: CreativeUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
@@ -27,11 +40,11 @@ export function CreativeUploader({ offerId, onComplete }: CreativeUploaderProps)
         return;
       }
 
-      // Проверяем размер файла (максимум 50MB)
-      if (file.size > 50 * 1024 * 1024) {
+      // Проверяем размер файла
+      if (file.size > maxFileSize) {
         toast({
           title: "Файл слишком большой",
-          description: "Максимальный размер файла 50MB",
+          description: `Максимальный размер файла ${formatFileSize(maxFileSize)}`,
           variant: "destructive",
         });
         return;
@@ -46,21 +59,30 @@ export function CreativeUploader({ offerId, onComplete }: CreativeUploaderProps)
 
     setUploading(true);
     try {
-      // Сначала получаем presigned URL для загрузки
-      const token = localStorage.getItem('token');
-      const uploadResponse = await fetch('/api/objects/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      let uploadURL: string;
+      
+      if (onGetUploadParameters) {
+        // Используем кастомный метод получения URL (для CreateOffer)
+        const params = await onGetUploadParameters();
+        uploadURL = params.url;
+      } else {
+        // Используем стандартный метод (для OfferDetails)
+        const token = localStorage.getItem('auth_token');
+        const uploadResponse = await fetch('/api/objects/upload', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
 
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to get upload URL');
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to get upload URL');
+        }
+
+        const data = await uploadResponse.json();
+        uploadURL = data.uploadURL;
       }
-
-      const { uploadURL } = await uploadResponse.json();
 
       // Загружаем файл напрямую в облачное хранилище
       const fileUploadResponse = await fetch(uploadURL, {
@@ -75,16 +97,23 @@ export function CreativeUploader({ offerId, onComplete }: CreativeUploaderProps)
         throw new Error('Failed to upload file');
       }
 
-      // Извлекаем путь файла из uploadURL
-      const creativePath = new URL(uploadURL).pathname;
-
       toast({
         title: "Креативы загружены",
         description: "ZIP архив успешно загружен в облачное хранилище",
       });
 
-      // Вызываем callback с путем к файлу
-      onComplete?.(creativePath);
+      // Формируем результат в формате Uppy для совместимости
+      const result = {
+        successful: [{
+          uploadURL: uploadURL,
+          name: selectedFile.name,
+          size: selectedFile.size
+        }],
+        failed: []
+      };
+
+      // Вызываем callback с результатом
+      onComplete?.(result);
       
       // Очищаем выбранный файл
       setSelectedFile(null);
@@ -126,10 +155,10 @@ export function CreativeUploader({ offerId, onComplete }: CreativeUploaderProps)
                 Выберите ZIP архив с креативами
               </h4>
               <p className="text-sm text-muted-foreground mb-4">
-                Максимальный размер файла: 50MB
+                Максимальный размер файла: {formatFileSize(maxFileSize)}
               </p>
               <label htmlFor="creative-upload" className="cursor-pointer">
-                <Button type="button" className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Button type="button" className={`bg-blue-600 hover:bg-blue-700 text-white ${buttonClassName || ''}`}>
                   <Upload className="w-4 h-4 mr-2" />
                   Выбрать файл
                 </Button>
@@ -199,7 +228,7 @@ export function CreativeUploader({ offerId, onComplete }: CreativeUploaderProps)
 
         <div className="text-xs text-muted-foreground">
           <p>• Поддерживаются только ZIP архивы</p>
-          <p>• Максимальный размер файла: 50MB</p>
+          <p>• Максимальный размер файла: {formatFileSize(maxFileSize)}</p>
           <p>• Архив должен содержать изображения, баннеры и другие рекламные материалы</p>
         </div>
       </CardContent>
