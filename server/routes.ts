@@ -944,6 +944,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             id: nanoid(), // Генерируем уникальный ID
             offerId: offer.id,
             fileName: 'creatives.zip', // Стандартное имя для архива креативов
+            originalName: 'creatives.zip', // Обязательное поле
             fileType: 'application/zip',
             fileSize: 0, // Размер неизвестен, но не критично
             filePath: objectPath,
