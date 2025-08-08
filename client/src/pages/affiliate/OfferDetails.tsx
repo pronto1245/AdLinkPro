@@ -266,8 +266,8 @@ export default function OfferDetails() {
       window.URL.revokeObjectURL(url);
       
       toast({
-        title: "Скачивание началось",
-        description: "ZIP архив с креативами успешно скачивается",
+        title: "Архив скачан",
+        description: "ZIP-архив с креативами готов к использованию",
       });
     } catch (error) {
       console.error('Download error:', error);

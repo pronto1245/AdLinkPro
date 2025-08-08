@@ -20,6 +20,7 @@ import { notificationService } from "./services/notification";
 import { auditLog, checkIPBlacklist, rateLimiter, loginRateLimiter, recordFailedLogin, trackDevice, detectFraud, getAuditLogs } from "./middleware/security";
 import { PostbackService } from "./services/postback";
 import conversionRoutes from "./routes/conversion";
+import archiver from "archiver";
 
 
 // Extend Express Request to include user property
@@ -8013,23 +8014,41 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         return res.status(403).json({ error: "Доступ к креативам запрещен" });
       }
 
-      // Для демонстрации отправляем простой текстовый файл как креативы
+      // Создаем настоящий ZIP-архив с креативами
       try {
-        console.log('Creating demo creative file for offer:', offerId);
+        console.log('Creating demo creative ZIP archive for offer:', offerId);
         
-        const creativeContent = `
-=== CREATIVE PACK FOR ${offer.name} ===
+        // Устанавливаем правильные заголовки для ZIP
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="creatives-${offerId}.zip"`);
+        
+        // Создаем ZIP архив
+        const archive = archiver('zip', {
+          zlib: { level: 9 } // максимальное сжатие
+        });
+
+        // Обработка ошибок архивации
+        archive.on('error', (err) => {
+          console.error('Archive error:', err);
+          if (!res.headersSent) {
+            res.status(500).json({ error: "Ошибка при создании архива" });
+          }
+        });
+
+        // Pipe архив в response
+        archive.pipe(res);
+
+        // Добавляем файлы в архив
+        const offerInfo = `=== CREATIVE PACK FOR ${offer.name} ===
 Offer ID: ${offerId}
 Created: ${new Date().toISOString()}
+Advertiser: ${offer.ownerId}
 
 INCLUDED MATERIALS:
-- Banner 1200x600px (large banner)
-- Banner 728x90px (leaderboard)  
-- Banner 300x300px (square)
-- Banner 320x50px (mobile)
-- Landing page screenshots
+- Banner formats in various sizes
+- Landing page templates
 - Marketing copy variations
-- Brand guidelines
+- Brand guidelines and assets
 
 INSTRUCTIONS:
 1. Use provided banners according to placement requirements
@@ -8037,18 +8056,90 @@ INSTRUCTIONS:
 3. Test all creative materials before campaign launch
 4. Contact advertiser for additional formats if needed
 
-For questions about these creatives, please contact the advertiser support team.
-        `;
+For questions about these creatives, please contact the advertiser support team.`;
+
+        archive.append(offerInfo, { name: 'README.txt' });
         
-        res.setHeader('Content-Type', 'text/plain');
-        res.setHeader('Content-Disposition', `attachment; filename="creatives-${offerId}.txt"`);
-        res.send(creativeContent);
+        // Добавляем демо-баннеры как текстовые описания
+        const bannerSizes = [
+          { name: 'banner_1200x600.txt', content: `Banner 1200x600px for ${offer.name}\nFormat: JPG/PNG\nDimensions: 1200x600 pixels\nUsage: Large display banners, hero sections\n\nThis banner should feature:\n- Main offer text: "${offer.name}"\n- Call-to-action button\n- Brand colors and logo\n- High-quality graphics` },
+          { name: 'banner_728x90.txt', content: `Leaderboard Banner 728x90px for ${offer.name}\nFormat: JPG/PNG\nDimensions: 728x90 pixels\nUsage: Top/bottom page placement\n\nThis banner should feature:\n- Compact offer text\n- Clear CTA\n- Brand elements` },
+          { name: 'banner_300x300.txt', content: `Square Banner 300x300px for ${offer.name}\nFormat: JPG/PNG\nDimensions: 300x300 pixels\nUsage: Social media, sidebar ads\n\nThis banner should feature:\n- Centered design\n- Bold text\n- Eye-catching graphics` },
+          { name: 'banner_320x50.txt', content: `Mobile Banner 320x50px for ${offer.name}\nFormat: JPG/PNG\nDimensions: 320x50 pixels\nUsage: Mobile advertising\n\nThis banner should feature:\n- Mobile-optimized text\n- Touch-friendly CTA\n- Minimal design` }
+        ];
+
+        bannerSizes.forEach(banner => {
+          archive.append(banner.content, { name: `banners/${banner.name}` });
+        });
+
+        // Добавляем маркетинговые материалы
+        const marketingCopy = `MARKETING COPY FOR ${offer.name}
+
+HEADLINES:
+- "Discover ${offer.name} - Start Today!"
+- "Join Thousands Using ${offer.name}"
+- "Get Started with ${offer.name} Now"
+
+DESCRIPTIONS:
+- Short: "${offer.name} - Your gateway to success"
+- Medium: "Experience the best of ${offer.name} with our proven platform"
+- Long: "Join our community and discover why ${offer.name} is the top choice for users worldwide"
+
+CALL-TO-ACTION BUTTONS:
+- "Get Started"
+- "Join Now" 
+- "Learn More"
+- "Sign Up Free"
+- "Try Today"
+
+SOCIAL MEDIA POSTS:
+- "Ready to transform your experience? Try ${offer.name} today! 🚀"
+- "Join the ${offer.name} community and see the difference! ✨"
+- "Don't miss out on ${offer.name} - start your journey now! 💫"`;
+
+        archive.append(marketingCopy, { name: 'marketing/copy.txt' });
+
+        // Добавляем брендинг-гайдлайны
+        const brandGuidelines = `BRAND GUIDELINES FOR ${offer.name}
+
+LOGO USAGE:
+- Always use original logo files
+- Maintain clear space around logo
+- Do not distort or modify logo colors
+- Minimum size: 50px height for digital use
+
+COLOR PALETTE:
+- Primary: As specified by advertiser
+- Secondary: Complementary colors only
+- Background: White or light neutral tones recommended
+
+TYPOGRAPHY:
+- Use clean, readable fonts
+- Avoid decorative fonts for body text
+- Ensure good contrast for accessibility
+
+IMAGE GUIDELINES:
+- High resolution: minimum 300 DPI for print
+- Web optimized: JPG for photos, PNG for graphics
+- Consistent style and color treatment
+- Professional quality images only
+
+MESSAGING TONE:
+- Professional yet approachable
+- Clear and direct
+- Focused on user benefits
+- Compliant with advertising standards`;
+
+        archive.append(brandGuidelines, { name: 'guidelines/brand.txt' });
+
+        // Завершаем архив
+        archive.finalize();
         
-        console.log('Demo creative file sent successfully');
+        console.log('Demo creative ZIP archive sent successfully');
         
       } catch (fetchError) {
-        console.error('Error creating creative file:', fetchError);
-        return res.status(500).json({ error: "Ошибка при создании файла креативов" });
+        console.error('Error creating creative archive:', fetchError);
+        return res.status(500).json({ error: "Ошибка при создании архива креативов" });
       }
       
     } catch (error) {
