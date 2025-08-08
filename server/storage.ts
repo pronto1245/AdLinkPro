@@ -4100,7 +4100,7 @@ class MemStorage implements IStorage {
       id: '1',
       username: 'superadmin',
       email: 'admin@example.com', 
-      password: 'admin',
+      password: 'password123',
       role: 'super_admin',
       firstName: 'Super',
       lastName: 'Admin',
@@ -4138,6 +4138,32 @@ class MemStorage implements IStorage {
       currency: 'USD',
       kycStatus: 'approved',
       balance: '0.00',
+      holdAmount: '0.00',
+      registrationApproved: true,
+      documentsVerified: true,
+      isBlocked: false,
+      isDeleted: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: '3',
+      username: 'test_affiliate',
+      email: 'affiliate@example.com', 
+      password: 'password123',
+      role: 'affiliate',
+      firstName: 'Тест',
+      lastName: 'Партнер',
+      company: 'Партнерская Компания',
+      phone: '+79888888888',
+      isActive: true,
+      status: 'active',
+      userType: 'partner',
+      language: 'ru',
+      timezone: 'UTC',
+      currency: 'USD',
+      kycStatus: 'approved',
+      balance: '1250.00',
       holdAmount: '0.00',
       registrationApproved: true,
       documentsVerified: true,
@@ -4931,6 +4957,169 @@ class MemStorage implements IStorage {
       console.error('Error deleting domain:', error);
       throw error;
     }
+  }
+
+  // Advertiser Dashboard implementation for MemStorage
+  async getAdvertiserDashboard(advertiserId: string, filters: {
+    dateFrom?: Date;
+    dateTo?: Date;
+  }): Promise<{
+    metrics: {
+      offersCount: number;
+      activeOffers: number;
+      pendingOffers: number;
+      rejectedOffers: number;
+      totalBudget: number;
+      totalSpent: number;
+      revenue: number;
+      postbacksSent: number;
+      postbacksReceived: number;
+      partnersCount: number;
+      avgCR: number;
+      epc: number;
+      postbackErrors: number;
+      fraudActivity: number;
+    };
+    chartData: {
+      traffic: any[];
+      conversions: any[];
+      spending: any[];
+      postbacks: any[];
+      fraud: any[];
+    };
+    topOffers: any[];
+    offerStatusDistribution: {
+      pending: number;
+      active: number;
+      hidden: number;
+      archived: number;
+    };
+    notifications: any[];
+  }> {
+    // Mock dashboard data for advertiser
+    return {
+      metrics: {
+        offersCount: 15,
+        activeOffers: 12,
+        pendingOffers: 2,
+        rejectedOffers: 1,
+        totalBudget: 50000,
+        totalSpent: 23450,
+        revenue: 34750,
+        postbacksSent: 1245,
+        postbacksReceived: 1198,
+        partnersCount: 28,
+        avgCR: 3.45,
+        epc: 2.78,
+        postbackErrors: 12,
+        fraudActivity: 3
+      },
+      chartData: {
+        traffic: [
+          { date: '2025-08-01', clicks: 1250, impressions: 15430 },
+          { date: '2025-08-02', clicks: 1180, impressions: 14560 },
+          { date: '2025-08-03', clicks: 1340, impressions: 16230 }
+        ],
+        conversions: [
+          { date: '2025-08-01', conversions: 42, revenue: 1260 },
+          { date: '2025-08-02', conversions: 38, revenue: 1140 },
+          { date: '2025-08-03', conversions: 45, revenue: 1350 }
+        ],
+        spending: [
+          { date: '2025-08-01', spent: 890, budget: 1000 },
+          { date: '2025-08-02', spent: 780, budget: 1000 },
+          { date: '2025-08-03', spent: 920, budget: 1000 }
+        ],
+        postbacks: [
+          { date: '2025-08-01', sent: 42, received: 40, errors: 2 },
+          { date: '2025-08-02', sent: 38, received: 37, errors: 1 },
+          { date: '2025-08-03', sent: 45, received: 44, errors: 1 }
+        ],
+        fraud: [
+          { date: '2025-08-01', blocked: 5, suspicious: 12 },
+          { date: '2025-08-02', blocked: 3, suspicious: 8 },
+          { date: '2025-08-03', blocked: 4, suspicious: 10 }
+        ]
+      },
+      topOffers: [
+        { id: '1', name: 'Premium Casino', revenue: 12450, cr: 4.2, epc: 3.1 },
+        { id: '2', name: 'Sports Betting', revenue: 8930, cr: 3.8, epc: 2.7 },
+        { id: '3', name: 'Dating Premium', revenue: 6780, cr: 2.9, epc: 2.1 }
+      ],
+      offerStatusDistribution: {
+        pending: 2,
+        active: 12,
+        hidden: 0,
+        archived: 1
+      },
+      notifications: [
+        { id: '1', type: 'success', message: 'Новый партнер подключен к офферу Casino Premium', time: '2 минуты назад' },
+        { id: '2', type: 'warning', message: 'Снижение CR на оффере Sports Betting', time: '15 минут назад' }
+      ]
+    };
+  }
+
+  // Received offers management for MemStorage
+  async getReceivedOffers(advertiserId: string): Promise<ReceivedOffer[]> {
+    // Mock received offers data
+    return [
+      {
+        id: '1',
+        advertiserId: advertiserId,
+        offerId: 'offer_001',
+        offerName: 'Premium Casino Offer',
+        originalAdvertiserId: 'adv_001',
+        originalAdvertiserName: 'Casino Corp',
+        status: 'active',
+        approvedAt: new Date('2025-08-01'),
+        createdAt: new Date('2025-07-28'),
+        updatedAt: new Date('2025-08-01')
+      },
+      {
+        id: '2',
+        advertiserId: advertiserId,
+        offerId: 'offer_002',
+        offerName: 'Sports Betting Premium',
+        originalAdvertiserId: 'adv_002',
+        originalAdvertiserName: 'Sports Bet Inc',
+        status: 'pending',
+        approvedAt: null,
+        createdAt: new Date('2025-08-03'),
+        updatedAt: new Date('2025-08-03')
+      }
+    ];
+  }
+
+  async createReceivedOffer(receivedOffer: InsertReceivedOffer): Promise<ReceivedOffer> {
+    const newOffer: ReceivedOffer = {
+      id: Math.random().toString(36).substr(2, 9),
+      ...receivedOffer,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return newOffer;
+  }
+
+  async updateReceivedOffer(id: string, data: Partial<InsertReceivedOffer>): Promise<ReceivedOffer> {
+    // Mock update implementation
+    const mockOffer: ReceivedOffer = {
+      id: id,
+      advertiserId: data.advertiserId || '2',
+      offerId: data.offerId || 'offer_001',
+      offerName: data.offerName || 'Updated Offer',
+      originalAdvertiserId: data.originalAdvertiserId || 'adv_001',
+      originalAdvertiserName: data.originalAdvertiserName || 'Original Corp',
+      status: data.status || 'active',
+      approvedAt: data.approvedAt || new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return mockOffer;
+  }
+
+  async deleteReceivedOffer(id: string): Promise<void> {
+    // Mock delete implementation
+    console.log(`Mock delete received offer ${id}`);
   }
 
 
