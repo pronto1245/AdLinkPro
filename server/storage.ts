@@ -3596,18 +3596,27 @@ export class DatabaseStorage implements IStorage {
         .from(offers)
         .where(eq(offers.advertiserId, advertiserId));
 
-      console.log("Raw advertiser offers from DB:", advertiserOffers.length, advertiserOffers.map(o => ({ id: o.id, name: o.name, advertiserId: o.advertiserId })));
+      console.log("Raw advertiser offers from DB:", advertiserOffers.length, advertiserOffers.map(o => ({ id: o.id, name: o.name, advertiserId: o.advertiserId, countries: o.countries })));
 
-      return advertiserOffers.map(offer => ({
-        ...offer,
-        partnersCount: Math.floor(Math.random() * 10) + 1,
-        leads: Math.floor(Math.random() * 100) + 10,
-        cr: Math.random() * 10 + 1,
-        epc: Math.random() * 50 + 5,
-        revenue: Math.random() * 1000 + 100,
-        geoTargeting: ['US', 'CA', 'GB'],
-        isActive: offer.status === 'active'
-      }));
+      return advertiserOffers.map(offer => {
+        // Убедимся, что страны обработаны правильно
+        let processedCountries = offer.countries;
+        if (!processedCountries || processedCountries.length === 0) {
+          processedCountries = ['RU', 'US', 'DE']; // Дефолтные страны
+        }
+
+        return {
+          ...offer,
+          countries: processedCountries,
+          partnersCount: Math.floor(Math.random() * 10) + 1,
+          leads: Math.floor(Math.random() * 100) + 10,
+          cr: Math.random() * 10 + 1,
+          epc: Math.random() * 50 + 5,
+          revenue: Math.random() * 1000 + 100,
+          geoTargeting: ['US', 'CA', 'GB'],
+          isActive: offer.status === 'active'
+        };
+      });
     } catch (error) {
       console.error('Error getting advertiser offers:', error);
       throw error;
