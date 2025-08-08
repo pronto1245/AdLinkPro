@@ -8367,6 +8367,113 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       res.status(500).json({ error: "Ошибка при скачивании креативов" });
     }
   });
+
+  // Custom Domains Management API
+  app.get("/api/advertiser/domains", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const domains = await storage.getCustomDomains(userId);
+      res.json(domains);
+    } catch (error) {
+      console.error("Get custom domains error:", error);
+      res.status(500).json({ error: "Failed to fetch custom domains" });
+    }
+  });
+
+  app.post("/api/advertiser/domains", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { domain, type } = req.body;
+
+      if (!domain || !type) {
+        return res.status(400).json({ error: "Domain and type are required" });
+      }
+
+      // Basic domain validation
+      const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.([a-zA-Z]{2,}\.)*[a-zA-Z]{2,}$/;
+      if (!domainRegex.test(domain)) {
+        return res.status(400).json({ error: "Invalid domain format" });
+      }
+
+      const newDomain = await storage.addCustomDomain(userId, domain, type);
+      res.json(newDomain);
+    } catch (error) {
+      console.error("Add custom domain error:", error);
+      if (error.message?.includes('unique constraint')) {
+        res.status(400).json({ error: "Domain already exists" });
+      } else {
+        res.status(500).json({ error: "Failed to add custom domain" });
+      }
+    }
+  });
+
+  app.post("/api/advertiser/domains/:domainId/verify", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { domainId } = req.params;
+
+      const verifiedDomain = await storage.verifyCustomDomain(userId, domainId);
+      res.json(verifiedDomain);
+    } catch (error) {
+      console.error("Verify custom domain error:", error);
+      res.status(500).json({ error: "Failed to verify custom domain" });
+    }
+  });
+
+  app.delete("/api/advertiser/domains/:domainId", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { domainId } = req.params;
+
+      await storage.deleteCustomDomain(userId, domainId);
+      res.json({ success: true, message: "Domain deleted successfully" });
+    } catch (error) {
+      console.error("Delete custom domain error:", error);
+      res.status(500).json({ error: "Failed to delete custom domain" });
+    }
+  });
+
+  // API Tokens Management
+  app.get("/api/advertiser/api-tokens", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const tokens = await storage.getApiTokens(userId);
+      res.json(tokens);
+    } catch (error) {
+      console.error("Get API tokens error:", error);
+      res.status(500).json({ error: "Failed to fetch API tokens" });
+    }
+  });
+
+  app.post("/api/advertiser/api-tokens", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { name, permissions, ipWhitelist, expiresAt } = req.body;
+
+      if (!name) {
+        return res.status(400).json({ error: "Token name is required" });
+      }
+
+      const newToken = await storage.generateApiToken(userId, name);
+      res.json(newToken);
+    } catch (error) {
+      console.error("Generate API token error:", error);
+      res.status(500).json({ error: "Failed to generate API token" });
+    }
+  });
+
+  app.delete("/api/advertiser/api-tokens/:tokenId", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { tokenId } = req.params;
+
+      await storage.deleteApiToken(userId, tokenId);
+      res.json({ success: true, message: "Token deleted successfully" });
+    } catch (error) {
+      console.error("Delete API token error:", error);
+      res.status(500).json({ error: "Failed to delete API token" });
+    }
+  });
   
   return httpServer;
 }

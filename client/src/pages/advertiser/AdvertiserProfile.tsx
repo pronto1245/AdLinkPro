@@ -124,11 +124,11 @@ export default function AdvertiserProfile() {
   });
 
   const { data: apiTokens, isLoading: tokensLoading } = useQuery<ApiToken[]>({
-    queryKey: ['/api/advertiser/profile/tokens']
+    queryKey: ['/api/advertiser/api-tokens']
   });
 
   const { data: customDomains, isLoading: domainsLoading } = useQuery<CustomDomain[]>({
-    queryKey: ['/api/advertiser/profile/domains']
+    queryKey: ['/api/advertiser/domains']
   });
 
   const { data: webhookSettings, isLoading: webhookLoading } = useQuery<WebhookSettings>({
@@ -230,7 +230,7 @@ export default function AdvertiserProfile() {
 
   const generateTokenMutation = useMutation({
     mutationFn: async (tokenName: string) => {
-      return apiRequest('/api/advertiser/profile/tokens/generate', {
+      return apiRequest('/api/advertiser/api-tokens', {
         method: 'POST',
         body: { name: tokenName }
       });
@@ -240,7 +240,7 @@ export default function AdvertiserProfile() {
         title: "Токен создан",
         description: "Новый API токен успешно создан"
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/tokens'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/api-tokens'] });
     },
     onError: () => {
       toast({
@@ -253,7 +253,7 @@ export default function AdvertiserProfile() {
 
   const deleteTokenMutation = useMutation({
     mutationFn: async (tokenId: string) => {
-      return apiRequest(`/api/advertiser/profile/tokens/${tokenId}`, {
+      return apiRequest(`/api/advertiser/api-tokens/${tokenId}`, {
         method: 'DELETE'
       });
     },
@@ -262,7 +262,7 @@ export default function AdvertiserProfile() {
         title: "Токен удален",
         description: "API токен успешно удален"
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/tokens'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/api-tokens'] });
     },
     onError: () => {
       toast({
@@ -275,7 +275,7 @@ export default function AdvertiserProfile() {
 
   const addDomainMutation = useMutation({
     mutationFn: async (domainData: { domain: string; type: string }) => {
-      return apiRequest('/api/advertiser/profile/domains', {
+      return apiRequest('/api/advertiser/domains', {
         method: 'POST',
         body: domainData
       });
@@ -285,13 +285,13 @@ export default function AdvertiserProfile() {
         title: "Домен добавлен",
         description: "Кастомный домен добавлен и ожидает проверки"
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/domains'] });
       setDomainForm({ domain: '', type: 'cname' });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Ошибка",
-        description: "Не удалось добавить домен",
+        description: error.message || "Не удалось добавить домен",
         variant: "destructive"
       });
     }
@@ -299,7 +299,7 @@ export default function AdvertiserProfile() {
 
   const verifyDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, {
+      return apiRequest(`/api/advertiser/domains/${domainId}/verify`, {
         method: 'POST'
       });
     },
@@ -308,7 +308,7 @@ export default function AdvertiserProfile() {
         title: "Проверка запущена",
         description: "Проверка домена выполняется"
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/domains'] });
     },
     onError: () => {
       toast({
@@ -321,7 +321,7 @@ export default function AdvertiserProfile() {
 
   const deleteDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return apiRequest(`/api/advertiser/profile/domains/${domainId}`, {
+      return apiRequest(`/api/advertiser/domains/${domainId}`, {
         method: 'DELETE'
       });
     },
@@ -330,7 +330,7 @@ export default function AdvertiserProfile() {
         title: "Домен удален",
         description: "Кастомный домен успешно удален"
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/domains'] });
     },
     onError: () => {
       toast({

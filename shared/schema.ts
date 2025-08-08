@@ -18,6 +18,8 @@ export const walletTypeEnum = pgEnum('wallet_type', ['platform', 'user']);
 export const cryptoCurrencyEnum = pgEnum('crypto_currency', ['BTC', 'ETH', 'USDT', 'USDC', 'TRX', 'LTC', 'BCH', 'XRP']);
 export const walletStatusEnum = pgEnum('wallet_status', ['active', 'suspended', 'maintenance']);
 export const accessRequestStatusEnum = pgEnum('access_request_status', ['pending', 'approved', 'rejected', 'cancelled']);
+export const domainStatusEnum = pgEnum('domain_status', ['pending', 'verified', 'error']);
+export const domainTypeEnum = pgEnum('domain_type', ['a_record', 'cname']);
 
 // Users table  
 export const users: any = pgTable("users", {
@@ -1675,6 +1677,40 @@ export type OfferAccessRequest = typeof offerAccessRequests.$inferSelect;
 export type InsertOfferAccessRequest = z.infer<typeof insertOfferAccessRequestSchema>;
 
 
+// Custom Domains table
+export const customDomains = pgTable("custom_domains", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  domain: text("domain").notNull().unique(),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  status: domainStatusEnum("status").default('pending'),
+  type: domainTypeEnum("type").default('cname'),
+  verificationValue: text("verification_value").notNull(),
+  targetValue: text("target_value"), // What the domain should point to
+  sslEnabled: boolean("ssl_enabled").default(false),
+  sslCertificateExpiry: timestamp("ssl_certificate_expiry"),
+  lastChecked: timestamp("last_checked"),
+  nextCheck: timestamp("next_check"),
+  errorMessage: text("error_message"),
+  settings: jsonb("settings"), // Additional domain settings
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// API Tokens table
+export const apiTokens = pgTable("api_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  token: text("token").notNull().unique(),
+  name: text("name").notNull(),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  permissions: jsonb("permissions"), // Array of allowed permissions
+  ipWhitelist: jsonb("ip_whitelist"), // Array of allowed IPs
+  lastUsed: timestamp("last_used"),
+  expiresAt: timestamp("expires_at"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Creative Files Types
 export type CreativeFile = typeof creativeFiles.$inferSelect;
 export type InsertCreativeFile = typeof creativeFiles.$inferInsert;
@@ -1682,3 +1718,23 @@ export type CreativeSet = typeof creativeSets.$inferSelect;
 export type InsertCreativeSet = typeof creativeSets.$inferInsert;
 export type CreativeSetFile = typeof creativeSetFiles.$inferSelect;
 export type InsertCreativeSetFile = typeof creativeSetFiles.$inferInsert;
+
+// Custom Domains Types
+export const insertCustomDomainSchema = createInsertSchema(customDomains).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type CustomDomain = typeof customDomains.$inferSelect;
+export type InsertCustomDomain = z.infer<typeof insertCustomDomainSchema>;
+
+// API Tokens Types
+export const insertApiTokenSchema = createInsertSchema(apiTokens).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type ApiToken = typeof apiTokens.$inferSelect;
+export type InsertApiToken = z.infer<typeof insertApiTokenSchema>;

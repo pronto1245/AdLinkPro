@@ -3,7 +3,7 @@ import {
   postbacks, postbackLogs, postbackTemplates, tickets, fraudAlerts, customRoles, userRoleAssignments,
   cryptoWallets, cryptoTransactions, fraudReports, fraudRules, 
   deviceTracking, ipAnalysis, fraudBlocks, receivedOffers, offerAccessRequests, userNotifications,
-  creativeFiles,
+  creativeFiles, customDomains, apiTokens,
   type User, type InsertUser, type Offer, type InsertOffer,
   type PartnerOffer, type InsertPartnerOffer, type TrackingLink, type InsertTrackingLink,
   type Transaction, type InsertTransaction, type Postback, type InsertPostback,
@@ -12,7 +12,8 @@ import {
   type FraudReport, type InsertFraudReport, type FraudRule, type InsertFraudRule,
   type DeviceTracking, type InsertDeviceTracking, type IpAnalysis, type InsertIpAnalysis,
   type FraudBlock, type InsertFraudBlock, type ReceivedOffer, type InsertReceivedOffer,
-  type OfferAccessRequest, type InsertOfferAccessRequest, type UserNotification, type InsertUserNotification
+  type OfferAccessRequest, type InsertOfferAccessRequest, type UserNotification, type InsertUserNotification,
+  type CustomDomain, type InsertCustomDomain, type ApiToken, type InsertApiToken
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lt, lte, count, sum, sql, isNotNull, like, ilike, or, inArray, ne } from "drizzle-orm";
@@ -4599,42 +4600,96 @@ class MemStorage implements IStorage {
     return this.createApiToken(userId, { name });
   }
 
-  async getCustomDomains(userId: string): Promise<any[]> {
-    return [
-      {
-        id: '1',
-        domain: 'track.example.com',
-        status: 'active',
-        sslEnabled: true,
-        createdAt: '2025-08-01T12:00:00Z',
-        verifiedAt: '2025-08-01T14:00:00Z'
+  async getCustomDomains(userId: string): Promise<CustomDomain[]> {
+    try {
+      return await db
+        .select()
+        .from(customDomains)
+        .where(eq(customDomains.advertiserId, userId))
+        .orderBy(desc(customDomains.createdAt));
+    } catch (error) {
+      console.error('Error getting custom domains:', error);
+      throw error;
+    }
+  }
+
+  async addCustomDomain(userId: string, domain: string, type: string): Promise<CustomDomain> {
+    try {
+      const verificationValue = type === 'cname' 
+        ? `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'affiliate-tracker.replit.app'}`
+        : '123.456.789.0'; // A record IP
+      
+      const targetValue = process.env.REPLIT_DOMAINS?.split(',')[0] || 'affiliate-tracker.replit.app';
+      
+      const [newDomain] = await db
+        .insert(customDomains)
+        .values({
+          domain,
+          advertiserId: userId,
+          type: type as 'a_record' | 'cname',
+          verificationValue,
+          targetValue,
+          status: 'pending',
+          nextCheck: new Date(Date.now() + 5 * 60 * 1000), // Check in 5 minutes
+        })
+        .returning();
+      
+      return newDomain;
+    } catch (error) {
+      console.error('Error adding custom domain:', error);
+      throw error;
+    }
+  }
+
+  async verifyCustomDomain(userId: string, domainId: string): Promise<CustomDomain> {
+    try {
+      const domain = await db
+        .select()
+        .from(customDomains)
+        .where(and(
+          eq(customDomains.id, domainId),
+          eq(customDomains.advertiserId, userId)
+        ))
+        .limit(1);
+
+      if (!domain.length) {
+        throw new Error('Domain not found');
       }
-    ];
-  }
 
-  async addCustomDomain(userId: string, domainData: any): Promise<any> {
-    return {
-      id: Math.random().toString(36).substr(2, 9),
-      domain: domainData.domain,
-      type: domainData.type || 'cname',
-      status: 'pending',
-      verificationValue: '123.456.789.0',
-      createdAt: new Date().toISOString(),
-      lastChecked: null,
-      errorMessage: null
-    };
-  }
+      // Simulate DNS verification (in real app, would check actual DNS records)
+      const isVerified = Math.random() > 0.3; // 70% success rate for demo
+      
+      const [updatedDomain] = await db
+        .update(customDomains)
+        .set({
+          status: isVerified ? 'verified' : 'error',
+          lastChecked: new Date(),
+          nextCheck: isVerified ? null : new Date(Date.now() + 10 * 60 * 1000),
+          errorMessage: isVerified ? null : 'DNS record not found or incorrect',
+          updatedAt: new Date()
+        })
+        .where(eq(customDomains.id, domainId))
+        .returning();
 
-  async verifyCustomDomain(userId: string, domainId: string): Promise<any> {
-    return {
-      id: domainId,
-      status: 'verified',
-      verifiedAt: new Date().toISOString()
-    };
+      return updatedDomain;
+    } catch (error) {
+      console.error('Error verifying custom domain:', error);
+      throw error;
+    }
   }
 
   async deleteCustomDomain(userId: string, domainId: string): Promise<void> {
-    // Mock implementation - remove domain for user
+    try {
+      await db
+        .delete(customDomains)
+        .where(and(
+          eq(customDomains.id, domainId),
+          eq(customDomains.advertiserId, userId)
+        ));
+    } catch (error) {
+      console.error('Error deleting custom domain:', error);
+      throw error;
+    }
   }
 
   async getWebhookSettings(userId: string): Promise<any> {
