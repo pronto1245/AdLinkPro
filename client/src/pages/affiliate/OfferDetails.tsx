@@ -99,6 +99,15 @@ export default function OfferDetails() {
   const requestStatus = currentRequest?.status || 'none';
   const isApproved = requestStatus === 'approved';
 
+  // Отладка статуса
+  console.log('OfferDetails Debug:', {
+    offerId,
+    accessRequests: accessRequests.length,
+    currentRequest,
+    requestStatus,
+    isApproved
+  });
+
   const handleRequestAccess = async () => {
     if (offerId && requestStatus === 'none') {
       try {
