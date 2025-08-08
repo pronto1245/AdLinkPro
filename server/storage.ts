@@ -5463,6 +5463,7 @@ class MemStorage implements IStorage {
       id: '1',
       partnerId: '3',
       offerId: '1',
+      advertiserId: '2',
       status: 'approved',
       createdAt: new Date('2025-08-01'),
       approvedAt: new Date('2025-08-01')
@@ -5471,15 +5472,24 @@ class MemStorage implements IStorage {
       id: '2',
       partnerId: '3',
       offerId: '2',
+      advertiserId: '2',
       status: 'pending',
       createdAt: new Date('2025-08-02'),
       approvedAt: null
     }
-    // Для нового оффера "bdntytd33" запросов пока нет - партнер должен их создать
+    // Для нового оффера "bdntytd33" запросы создаются динамически
   ];
 
   async getOfferAccessRequests(partnerId: string): Promise<any[]> {
     return this.offerAccessRequests.filter(request => request.partnerId === partnerId);
+  }
+
+  // Новый метод для получения запросов по рекламодателю
+  async getOfferAccessRequestsByAdvertiser(advertiserId: string): Promise<any[]> {
+    const requests = this.offerAccessRequests.filter(request => request.advertiserId === advertiserId);
+    console.log(`Запросы доступа для рекламодателя ${advertiserId}: ${requests.length}`);
+    requests.forEach(req => console.log(`- Запрос ${req.id}: partner=${req.partnerId}, offer=${req.offerId}, status=${req.status}`));
+    return requests;
   }
 
   async createOfferAccessRequest(data: any): Promise<any> {
@@ -5487,12 +5497,15 @@ class MemStorage implements IStorage {
       id: Math.random().toString(36).substr(2, 9),
       partnerId: data.partnerId,
       offerId: data.offerId,
+      advertiserId: data.advertiserId, // ВАЖНО: сохраняем advertiserId
       status: 'pending',
-      message: data.message || '',
+      message: data.requestNote || data.message || '',
       createdAt: new Date(),
-      approvedAt: null
+      approvedAt: null,
+      updatedAt: new Date()
     };
     this.offerAccessRequests.push(newRequest);
+    console.log(`✅ Запрос доступа создан: partnerId=${data.partnerId}, offerId=${data.offerId}, advertiserId=${data.advertiserId}`);
     return newRequest;
   }
 
