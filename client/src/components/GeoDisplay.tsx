@@ -38,10 +38,6 @@ const GeoDisplay: React.FC<GeoDisplayProps> = ({
   
   // Получаем выплаты по странам из данных оффера
   const getCountryPayouts = (): CountryPayout[] => {
-    console.log('=== GeoDisplay Debug ===');
-    console.log('payoutByGeo:', payoutByGeo);
-    console.log('payout fallback:', payout);
-    console.log('allCountries:', allCountries.map(c => c.code));
     
     return allCountries.map(country => {
       // Преобразуем код страны в полное название для поиска в payoutByGeo
@@ -50,7 +46,82 @@ const GeoDisplay: React.FC<GeoDisplayProps> = ({
         'AL': 'albania', 
         'DZ': 'algeria',
         'AD': 'andorra',
-        'AO': 'angola'
+        'AO': 'angola',
+        'AM': 'armenia',
+        'AR': 'argentina',
+        'AU': 'australia',
+        'AT': 'austria',
+        'AZ': 'azerbaijan',
+        'BH': 'bahrain',
+        'BD': 'bangladesh',
+        'BY': 'belarus',
+        'BE': 'belgium',
+        'BR': 'brazil',
+        'BG': 'bulgaria',
+        'CA': 'canada',
+        'CN': 'china',
+        'CO': 'colombia',
+        'HR': 'croatia',
+        'CZ': 'czech',
+        'DK': 'denmark',
+        'EG': 'egypt',
+        'EE': 'estonia',
+        'FI': 'finland',
+        'FR': 'france',
+        'DE': 'germany',
+        'GR': 'greece',
+        'HU': 'hungary',
+        'IS': 'iceland',
+        'IN': 'india',
+        'ID': 'indonesia',
+        'IR': 'iran',
+        'IQ': 'iraq',
+        'IE': 'ireland',
+        'IL': 'israel',
+        'IT': 'italy',
+        'JP': 'japan',
+        'JO': 'jordan',
+        'KZ': 'kazakhstan',
+        'KE': 'kenya',
+        'KW': 'kuwait',
+        'LV': 'latvia',
+        'LB': 'lebanon',
+        'LT': 'lithuania',
+        'LU': 'luxembourg',
+        'MY': 'malaysia',
+        'MX': 'mexico',
+        'MD': 'moldova',
+        'MC': 'monaco',
+        'MA': 'morocco',
+        'NL': 'netherlands',
+        'NZ': 'new_zealand',
+        'NO': 'norway',
+        'PK': 'pakistan',
+        'PE': 'peru',
+        'PH': 'philippines',
+        'PL': 'poland',
+        'PT': 'portugal',
+        'QA': 'qatar',
+        'RO': 'romania',
+        'RU': 'russia',
+        'SA': 'saudi_arabia',
+        'RS': 'serbia',
+        'SG': 'singapore',
+        'SK': 'slovakia',
+        'SI': 'slovenia',
+        'ZA': 'south_africa',
+        'KR': 'south_korea',
+        'ES': 'spain',
+        'LK': 'sri_lanka',
+        'SE': 'sweden',
+        'CH': 'switzerland',
+        'TH': 'thailand',
+        'TR': 'turkey',
+        'UA': 'ukraine',
+        'AE': 'united_arab_emirates',
+        'GB': 'united_kingdom',
+        'US': 'united_states',
+        'VN': 'vietnam'
       };
       
       const countryKey = countryNameMap[country.code] || country.code.toLowerCase();
@@ -61,10 +132,7 @@ const GeoDisplay: React.FC<GeoDisplayProps> = ({
                            payoutByGeo?.[country.code.toUpperCase()] ||
                            payoutByGeo?.[country.name.toLowerCase()];
       
-      console.log(`Country ${country.name} (${country.code}): looking for key "${countryKey}", payoutByGeo lookup result:`, countryPayout);
-      
       const finalPayout = countryPayout || payout;
-      console.log(`Final payout for ${country.name}:`, finalPayout);
       
       return {
         ...country,
