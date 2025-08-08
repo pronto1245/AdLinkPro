@@ -8091,12 +8091,13 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       if (!offer) {
         return res.status(404).json({ error: "Оффер не найден" });
       }
-
-      // Проверяем, есть ли креативы в базе данных
-      const creativeService = new CreativeService();
-      const creatives = await creativeService.getOfferCreatives(offerId);
       
-      if (creatives.length === 0) {
+      console.log('Offer details:', { id: offer.id, name: offer.name, creativesUrl: offer.creativesUrl, creatives: offer.creatives });
+
+      // Проверяем, есть ли креативы в базе данных через поле creativesUrl
+      console.log('Checking offer creatives. Offer creativesUrl:', offer.creativesUrl);
+      
+      if (!offer.creativesUrl) {
         // Если креативов нет, создаём демонстрационный архив
         console.log('No creatives found, creating demo archive');
         
@@ -8156,9 +8157,27 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         return res.status(403).json({ error: "Доступ к креативам запрещен" });
       }
 
-      // Используем CreativeService для создания архива
+      // Если есть креативы, используем CreativeService для создания архива
       try {
-        console.log('Creating creative archive for offer:', offerId);
+        console.log('Creating real creative archive for offer:', offerId);
+        
+        // Для реальных креативов возвращаем файл из object storage
+        if (offer.creativesUrl) {
+          const creativePath = offer.creativesUrl;
+          console.log('Fetching creative from storage:', creativePath);
+          
+          try {
+            const creativeFile = await objectStorageService.getObjectEntityFile(creativePath);
+            res.setHeader('Content-Type', 'application/zip');
+            res.setHeader('Content-Disposition', `attachment; filename="creatives-${offerId}.zip"`);
+            await objectStorageService.downloadObject(creativeFile, res);
+            console.log('Real creative archive sent successfully');
+            return;
+          } catch (storageError) {
+            console.error('Error fetching from storage, falling back to demo:', storageError);
+            // Fallback to demo archive if storage fails
+          }
+        }
         
         const creativeService = new CreativeService();
         await creativeService.createCreativeArchive(offerId, res);
