@@ -5487,6 +5487,13 @@ class MemStorage implements IStorage {
       });
   }
 
+  // Check if partner is assigned to advertiser (для совместимости с routes)
+  async isPartnerAssignedToAdvertiser(partnerId: string, advertiserId: string): Promise<boolean> {
+    // В данной архитектуре все партнеры могут видеть все офферы
+    // Логика разграничения идет через систему запросов доступа
+    return true;
+  }
+
   // Additional partner methods
   async getPartnerStatistics(partnerId: string, filters?: any): Promise<any> {
     return {
