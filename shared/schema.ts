@@ -97,6 +97,10 @@ export const offers = pgTable("offers", {
   // Geo and pricing
   geoPricing: jsonb("geo_pricing"), // Array of geo-specific pricing
   
+  // Creative assets
+  creatives: text("creatives"), // Path to zip archive with creative materials
+  creativesUrl: text("creatives_url"), // Direct download URL for creatives
+  
   // Device and OS targeting
   allowedApps: jsonb("allowed_apps"), // Array of allowed apps or app types
   

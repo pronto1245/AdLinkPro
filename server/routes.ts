@@ -7902,6 +7902,66 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       connection.send(JSON.stringify(message));
     }
   };
+
+  // Import ObjectStorageService from objectStorage module
+  const { ObjectStorageService } = await import('./objectStorage');
+  
+  // Creative upload and download routes
+  const objectStorageService = new ObjectStorageService();
+
+  // Get upload URL for creatives
+  app.post('/api/creatives/upload-url', authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const uploadURL = await objectStorageService.getCreativeUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error('Error getting creative upload URL:', error);
+      res.status(500).json({ error: 'Failed to get upload URL' });
+    }
+  });
+
+  // Download creatives
+  app.get('/api/creatives/:creativePath(*)', authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const creativePath = `/${req.params.creativePath}`;
+      const creativeFile = await objectStorageService.getCreativeFile(creativePath);
+      await objectStorageService.downloadObject(creativeFile, res);
+    } catch (error) {
+      console.error('Error downloading creative:', error);
+      if (error instanceof Error && error.message === 'Object not found') {
+        return res.status(404).json({ error: 'Creative not found' });
+      }
+      res.status(500).json({ error: 'Failed to download creative' });
+    }
+  });
+
+  // Update offer with creative path
+  app.put('/api/offers/:offerId/creatives', authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const { offerId } = req.params;
+      const { creativeUrl } = req.body;
+      
+      if (!creativeUrl) {
+        return res.status(400).json({ error: 'Creative URL is required' });
+      }
+
+      const normalizedPath = objectStorageService.normalizeCreativePath(creativeUrl);
+      
+      // Update offer with creative path
+      await db.update(offers)
+        .set({ 
+          creatives: normalizedPath,
+          creativesUrl: normalizedPath,
+          updatedAt: new Date()
+        })
+        .where(eq(offers.id, offerId));
+
+      res.json({ creativePath: normalizedPath });
+    } catch (error) {
+      console.error('Error updating offer creatives:', error);
+      res.status(500).json({ error: 'Failed to update offer creatives' });
+    }
+  });
   
   return httpServer;
 }

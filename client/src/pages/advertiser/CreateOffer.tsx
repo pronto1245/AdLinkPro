@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { Plus, Minus, Upload, Image, Globe, DollarSign, Target, Settings, ArrowLeft, Save, Eye, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ObjectUploader } from '@/components/ObjectUploader';
+import { CreativeUploader } from '@/components/CreativeUploader';
 // import { useAuth } from '@/contexts/AuthContext';
 
 import { apiRequest } from '@/lib/queryClient';
@@ -73,6 +74,12 @@ interface OfferFormData {
   
   // Мета данные
   kpi: string;
+  
+  // Креативы
+  creatives?: string;
+  creativesUrl?: string;
+  
+  // Статус
   status: 'draft' | 'active' | 'paused' | 'on_request';
 }
 
@@ -119,6 +126,12 @@ const initialFormData: OfferFormData = {
   
   // Мета данные
   kpi: '',
+  
+  // Креативы
+  creatives: '',
+  creativesUrl: '',
+  
+  // Статус
   status: 'draft'
 };
 
@@ -397,6 +410,38 @@ export default function CreateOffer() {
   const [formData, setFormData] = useState<OfferFormData>(initialFormData);
   const [activeTab, setActiveTab] = useState('basic');
   const [newTag, setNewTag] = useState('');
+  const [creativesUploaded, setCreativesUploaded] = useState(false);
+  const [creativeUploadProgress, setCreativeUploadProgress] = useState(0);
+
+  // Функции для работы с креативами
+  const handleCreativeUpload = async () => {
+    try {
+      const response = await apiRequest('/api/creatives/upload-url', 'POST');
+      return {
+        method: 'PUT' as const,
+        url: response.uploadURL,
+      };
+    } catch (error) {
+      console.error('Error getting upload URL:', error);
+      throw error;
+    }
+  };
+
+  const handleCreativeComplete = async (result: any) => {
+    if (result.successful && result.successful.length > 0) {
+      const uploadedFile = result.successful[0];
+      setFormData(prev => ({
+        ...prev,
+        creatives: uploadedFile.uploadURL,
+        creativesUrl: uploadedFile.uploadURL
+      }));
+      setCreativesUploaded(true);
+      toast({
+        title: 'Креативы загружены',
+        description: 'Файл с креативами успешно загружен',
+      });
+    }
+  };
 
   // Мутация для создания оффера
   const createOfferMutation = useMutation({
@@ -427,6 +472,8 @@ export default function CreateOffer() {
         kycRequired: data.kycRequired,
         isPrivate: data.isPrivate,
         kpiConditions: { en: data.kpi, ru: data.kpi },
+        creatives: data.creatives,
+        creativesUrl: data.creativesUrl,
         advertiserId: getUserId(),
         status: data.status
       };
@@ -814,6 +861,22 @@ export default function CreateOffer() {
                         data-testid="input-kpi"
                       />
                     </div>
+                  </div>
+
+                  {/* Креативы */}
+                  <div>
+                    <Label>Креативные материалы</Label>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Загрузите ZIP архив с рекламными материалами для партнеров
+                    </p>
+                    <CreativeUploader
+                      maxNumberOfFiles={1}
+                      maxFileSize={52428800} // 50MB для ZIP архивов
+                      onGetUploadParameters={handleCreativeUpload}
+                      onComplete={handleCreativeComplete}
+                      uploaded={creativesUploaded}
+                      buttonClassName="w-full max-w-sm"
+                    />
                   </div>
 
                   <div>
