@@ -8167,9 +8167,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           console.log('Fetching creative from storage:', creativePath);
           
           try {
-            const creativeFile = await objectStorageService.getObjectEntityFile(creativePath);
-            res.setHeader('Content-Type', 'application/zip');
-            res.setHeader('Content-Disposition', `attachment; filename="creatives-${offerId}.zip"`);
+            const creativeFile = await objectStorageService.getCreativeFile(creativePath);
             await objectStorageService.downloadObject(creativeFile, res);
             console.log('Real creative archive sent successfully');
             return;
