@@ -5734,10 +5734,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
       console.log('Object file found, downloading...');
-      objectStorageService.downloadObject(objectFile, res);
+      
+      // Check if it's an image based on path or content type
+      const isImage = req.path.includes('uploads/') || req.path.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+      
+      objectStorageService.downloadObject(objectFile, res, 3600, isImage);
     } catch (error) {
       console.error("Error serving object:", error);
-      if (error instanceof Error && error.name === 'ObjectNotFoundError') {
+      if (error instanceof Error && error.message.includes('ObjectNotFoundError')) {
         console.log('Object not found, returning 404');
         return res.sendStatus(404);
       }

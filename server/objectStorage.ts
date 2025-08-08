@@ -48,18 +48,24 @@ export class ObjectStorageService {
   }
 
   // Downloads an object to the response.
-  async downloadObject(file: File, res: Response, cacheTtlSec: number = 3600) {
+  async downloadObject(file: File, res: Response, cacheTtlSec: number = 3600, isImage: boolean = false) {
     try {
       // Get file metadata
       const [metadata] = await file.getMetadata();
       
-      // Set appropriate headers
-      res.set({
-        "Content-Type": metadata.contentType || "application/zip",
+      // Set appropriate headers based on content type
+      const headers: any = {
+        "Content-Type": metadata.contentType || (isImage ? "image/jpeg" : "application/zip"),
         "Content-Length": metadata.size,
-        "Cache-Control": `private, max-age=${cacheTtlSec}`,
-        "Content-Disposition": "attachment; filename=\"creatives.zip\"",
-      });
+        "Cache-Control": `${isImage ? 'public' : 'private'}, max-age=${cacheTtlSec}`,
+      };
+      
+      // Only add Content-Disposition for non-image files
+      if (!isImage) {
+        headers["Content-Disposition"] = "attachment; filename=\"creatives.zip\"";
+      }
+      
+      res.set(headers);
 
       // Stream the file to the response
       const stream = file.createReadStream();
@@ -119,6 +125,42 @@ export class ObjectStorageService {
     const bucket = objectStorageClient.bucket(bucketName);
     const objectFile = bucket.file(objectName);
     const [exists] = await objectFile.exists();
+    if (!exists) {
+      throw new ObjectNotFoundError();
+    }
+    return objectFile;
+  }
+
+  // Gets any object file from the object path (for logos, images, etc)
+  async getObjectEntityFile(objectPath: string): Promise<File> {
+    console.log('Getting object entity file for path:', objectPath);
+    
+    if (!objectPath.startsWith("/objects/")) {
+      console.log('Path does not start with /objects/, throwing error');
+      throw new ObjectNotFoundError();
+    }
+
+    // Extract the actual file path from /objects/...
+    const filePath = objectPath.slice("/objects/".length);
+    console.log('Extracted file path:', filePath);
+    
+    let entityDir = this.getPrivateObjectDir();
+    if (!entityDir.endsWith("/")) {
+      entityDir = `${entityDir}/`;
+    }
+    
+    const fullObjectPath = `${entityDir}${filePath}`;
+    console.log('Full object path:', fullObjectPath);
+    
+    const { bucketName, objectName } = parseObjectPath(fullObjectPath);
+    console.log('Bucket:', bucketName, 'Object:', objectName);
+    
+    const bucket = objectStorageClient.bucket(bucketName);
+    const objectFile = bucket.file(objectName);
+    const [exists] = await objectFile.exists();
+    
+    console.log('File exists:', exists);
+    
     if (!exists) {
       throw new ObjectNotFoundError();
     }
