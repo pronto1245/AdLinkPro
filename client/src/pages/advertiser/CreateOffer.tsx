@@ -430,15 +430,17 @@ export default function CreateOffer() {
   const handleCreativeComplete = async (result: any) => {
     if (result.successful && result.successful.length > 0) {
       const uploadedFile = result.successful[0];
+      // Uppy хранит URL загрузки в uploadURL
+      const creativeUrl = uploadedFile.uploadURL || uploadedFile.url;
       setFormData(prev => ({
         ...prev,
-        creatives: uploadedFile.uploadURL,
-        creativesUrl: uploadedFile.uploadURL
+        creatives: creativeUrl,
+        creativesUrl: creativeUrl
       }));
       setCreativesUploaded(true);
       toast({
         title: 'Креативы загружены',
-        description: 'Файл с креативами успешно загружен',
+        description: 'ZIP архив с креативами успешно загружен',
       });
     }
   };

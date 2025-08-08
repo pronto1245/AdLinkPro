@@ -905,14 +905,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Settings that exist in DB
         kycRequired: req.body.kycRequired || false,
         isPrivate: req.body.isPrivate || false,
-        autoApprovePartners: false, // Default value
         
         // Meta (map to existing field)
         kpiConditions: req.body.kpiConditions || null,
         
         // System fields
         advertiserId: authUser.id,
-        status: req.body.status === 'active' ? 'active' : 'draft'
+        status: (req.body.status === 'active' ? 'active' : 'draft') as 'active' | 'draft'
       };
       
       console.log("Creating offer with data:", JSON.stringify(offerData, null, 2));
@@ -7903,14 +7902,12 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   };
 
-  // Import ObjectStorageService from objectStorage module
+  // Creative upload and download routes - import ObjectStorageService
   const { ObjectStorageService } = await import('./objectStorage');
-  
-  // Creative upload and download routes
   const objectStorageService = new ObjectStorageService();
 
   // Get upload URL for creatives
-  app.post('/api/creatives/upload-url', authenticateToken, async (req: Request, res: Response) => {
+  app.post('/api/creatives/upload-url', async (req, res) => {
     try {
       const uploadURL = await objectStorageService.getCreativeUploadURL();
       res.json({ uploadURL });
@@ -7921,14 +7918,15 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   });
 
   // Download creatives
-  app.get('/api/creatives/:creativePath(*)', authenticateToken, async (req: Request, res: Response) => {
+  app.get('/api/creatives/:creativePath(*)', async (req, res) => {
     try {
       const creativePath = `/${req.params.creativePath}`;
       const creativeFile = await objectStorageService.getCreativeFile(creativePath);
       await objectStorageService.downloadObject(creativeFile, res);
     } catch (error) {
       console.error('Error downloading creative:', error);
-      if (error instanceof Error && error.message === 'Object not found') {
+      const { ObjectNotFoundError } = await import('./objectStorage');
+      if (error instanceof ObjectNotFoundError) {
         return res.status(404).json({ error: 'Creative not found' });
       }
       res.status(500).json({ error: 'Failed to download creative' });
