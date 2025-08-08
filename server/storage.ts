@@ -69,6 +69,10 @@ export interface IStorage {
   updateReceivedOffer(id: string, data: Partial<InsertReceivedOffer>): Promise<ReceivedOffer>;
   deleteReceivedOffer(id: string): Promise<void>;
   
+  // Creative files management
+  getCreativeFilesByOfferId(offerId: string): Promise<any[]>;
+  saveCreativeFile(data: any): Promise<any>;
+  
   // Partner offer management
   getPartnerOffers(partnerId?: string, offerId?: string): Promise<PartnerOffer[]>;
   createPartnerOffer(partnerOffer: InsertPartnerOffer): Promise<PartnerOffer>;
@@ -4676,6 +4680,51 @@ class MemStorage implements IStorage {
 
   async deleteNotification(notificationId: string, userId: string): Promise<void> {
     // Mock implementation
+  }
+
+  // Creative files management
+  async getCreativeFilesByOfferId(offerId: string): Promise<any[]> {
+    try {
+      const files = await db
+        .select()
+        .from(creativeFiles)
+        .where(eq(creativeFiles.offerId, offerId));
+      return files;
+    } catch (error) {
+      console.error('Error getting creative files:', error);
+      return [];
+    }
+  }
+
+  async saveCreativeFile(data: any): Promise<any> {
+    try {
+      const [newFile] = await db
+        .insert(creativeFiles)
+        .values({
+          id: nanoid(),
+          offerId: data.offerId,
+          fileName: data.fileName,
+          originalName: data.originalName,
+          fileType: data.fileType,
+          mimeType: data.mimeType,
+          fileSize: data.fileSize,
+          filePath: data.filePath,
+          publicUrl: data.publicUrl,
+          dimensions: data.dimensions,
+          duration: data.duration,
+          description: data.description,
+          tags: data.tags || [],
+          isActive: true,
+          uploadedBy: data.uploadedBy,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      return newFile;
+    } catch (error) {
+      console.error('Error saving creative file:', error);
+      throw error;
+    }
   }
 
 }

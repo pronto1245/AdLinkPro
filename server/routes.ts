@@ -8166,10 +8166,11 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       
       console.log('Offer details:', { id: offer.id, name: offer.name, creativesUrl: offer.creativesUrl, creatives: offer.creatives });
 
-      // Проверяем, есть ли креативы в базе данных через поле creativesUrl
-      console.log('Checking offer creatives. Offer creativesUrl:', offer.creativesUrl);
+      // Проверяем, есть ли креативы в таблице creative_files для этого оффера
+      const creativeFiles = await storage.getCreativeFilesByOfferId(offerId);
+      console.log('Checking creative files from database:', { count: creativeFiles.length, files: creativeFiles });
       
-      if (!offer.creativesUrl) {
+      if (!creativeFiles || creativeFiles.length === 0) {
         // Если креативов нет, создаём демонстрационный архив
         console.log('No creatives found, creating demo archive');
         
@@ -8192,6 +8193,45 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         
         await archive.finalize();
         return;
+      }
+
+      // Если есть креативы в базе данных, скачиваем их из object storage
+      console.log('Found creative files, downloading from object storage:', creativeFiles);
+      
+      try {
+        const objectStorageService = new ObjectStorageService();
+        
+        // Создаем ZIP архив с реальными файлами
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="creatives-${offerId}.zip"`);
+        
+        const archive = archiver('zip', { zlib: { level: 9 } });
+        archive.pipe(res);
+        
+        // Добавляем каждый файл из object storage в архив
+        for (const creativeFile of creativeFiles) {
+          try {
+            console.log('Processing creative file:', { fileName: creativeFile.fileName, filePath: creativeFile.filePath });
+            
+            if (creativeFile.filePath) {
+              // Получаем файл из object storage
+              const file = await objectStorageService.getObjectEntityFile(creativeFile.filePath);
+              const stream = file.createReadStream();
+              
+              // Добавляем файл в архив
+              archive.append(stream, { name: creativeFile.originalName || creativeFile.fileName });
+            }
+          } catch (fileError) {
+            console.error('Error processing individual file:', fileError);
+            // Пропускаем файлы с ошибками, но продолжаем обработку
+          }
+        }
+        
+        await archive.finalize();
+        return;
+      } catch (storageError) {
+        console.error('Error downloading from object storage:', storageError);
+        // Fallback to demo archive if object storage fails
       }
 
       // Логика доступа по ролям:
