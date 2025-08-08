@@ -92,14 +92,14 @@ export default function OfferDetails() {
   const offerId = params.id;
 
   // Загрузка актуальных данных оффера
-  const { data: offer, isLoading: offerLoading, error: offerError } = useQuery({
+  const { data: offer, isLoading: offerLoading, error: offerError } = useQuery<any>({
     queryKey: [`/api/partner/offers/${offerId}`],
     enabled: !!offerId,
     staleTime: 1 * 60 * 1000, // 1 минута
   });
 
   // Загрузка статуса запроса доступа для текущего оффера
-  const { data: accessRequests = [] } = useQuery({
+  const { data: accessRequests = [] } = useQuery<any[]>({
     queryKey: ["/api/partner/access-requests"],
     staleTime: 2 * 60 * 1000,
   });
@@ -110,9 +110,9 @@ export default function OfferDetails() {
     return reqOfferId === offerId;
   });
   
-  // Получаем статус из самого оффера (если он публичный) или из запроса доступа
-  const requestStatus = currentRequest?.status || (offer?.isApproved ? 'approved' : 'none');
-  const isApproved = requestStatus === 'approved' || offer?.isApproved === true;
+  // КРИТИЧНО: Доступ только после одобрения запроса рекламодателем
+  const requestStatus = currentRequest?.status || 'none';
+  const isApproved = requestStatus === 'approved';
 
   // Отладка статуса  
   console.log('OfferDetails Debug:', {
@@ -414,10 +414,13 @@ export default function OfferDetails() {
         </CardContent>
       </Card>
 
-      {/* Готовые трекинговые ссылки - только для одобренных офферов */}
-      {isApproved ? (
-        <LinkGenerator offerId={offer.id} offerName={offer.name} />
-      ) : null}
+      {/* Готовые трекинговые ссылки - КРИТИЧНО: только после одобрения */}
+      <LinkGenerator 
+        offerId={offer?.id} 
+        offerName={offer?.name}
+        isApproved={isApproved}
+        accessStatus={requestStatus}
+      />
 
       {/* Креативы - только для одобренных */}
       {isApproved ? (

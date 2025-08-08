@@ -338,8 +338,8 @@ export default function PartnerOffers() {
                       {/* Колонка Действия */}
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {/* Основная кнопка действия */}
-                          {offer.hasFullAccess && offer.trackingLink ? (
+                          {/* Основная кнопка действия - ссылки показываем ТОЛЬКО после одобрения */}
+                          {offer.accessStatus === 'approved' && offer.trackingLink ? (
                             <Button
                               size="sm"
                               variant="default"
@@ -350,7 +350,7 @@ export default function PartnerOffers() {
                               <Copy className="w-4 h-4 mr-2" />
                               Готовая ссылка
                             </Button>
-                          ) : offer.hasFullAccess ? (
+                          ) : offer.accessStatus === 'approved' ? (
                             <Button
                               size="sm"
                               variant="default"
