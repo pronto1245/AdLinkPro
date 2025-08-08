@@ -1988,8 +1988,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: randomUUID(),
         partnerId,
         offerId,
+        advertiserId: offer.advertiserId, // Добавляем advertiserId из оффера
         status: 'pending',
-        message: message || '',
+        requestNote: message || null,
         createdAt: new Date(),
         updatedAt: new Date()
       });
@@ -7460,6 +7461,49 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       res.status(500).json({ error: 'Internal server error' });
     }
   });
+
+  // Get available offers for partner access requests
+  app.get('/api/partner/offers/available', authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const partnerId = req.user.id;
+      
+      // Получаем все публичные офферы
+      const publicOffers = await db
+        .select()
+        .from(offers)
+        .where(and(
+          eq(offers.status, 'active'),
+          eq(offers.isPrivate, false)
+        ));
+      
+      // Получаем офферы, к которым у партнера уже есть доступ
+      const existingPartnerOffers = await storage.getPartnerOffersByPartner(partnerId);
+      const existingOfferIds = existingPartnerOffers.map(po => po.offerId);
+      
+      // Получаем существующие запросы доступа
+      const existingRequests = await storage.getOfferAccessRequests(partnerId);
+      const requestedOfferIds = existingRequests.map(r => r.offerId);
+      
+      // Фильтруем офферы - исключаем те, к которым уже есть доступ или запрос
+      const availableOffers = publicOffers.filter(offer => 
+        !existingOfferIds.includes(offer.id) && 
+        !requestedOfferIds.includes(offer.id)
+      );
+      
+      res.json(availableOffers);
+    } catch (error) {
+      console.error("Get available offers error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Интегрируем новые маршруты для запросов доступа
+  try {
+    const { setupAccessRequestsRoutes } = await import('./api/access-requests');
+    setupAccessRequestsRoutes(app);
+  } catch (error) {
+    console.log('Skipping access-requests routes - module not found');
+  }
 
   const httpServer = createServer(app);
   return httpServer;

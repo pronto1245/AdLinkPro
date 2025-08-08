@@ -564,7 +564,7 @@ export class DatabaseStorage implements IStorage {
         .from(offerAccessRequests)
         .innerJoin(offers, eq(offerAccessRequests.offerId, offers.id))
         .where(eq(offers.advertiserId, advertiserId))
-        .orderBy(desc(offerAccessRequests.createdAt));
+        .orderBy(sql`${offerAccessRequests.createdAt} DESC`);
       
       // Обогащаем данными офферов и партнеров
       const enrichedRequests = await Promise.all(
@@ -608,6 +608,35 @@ export class DatabaseStorage implements IStorage {
       console.error('Error getting advertiser access requests:', error);
       return [];
     }
+  }
+
+  // Получить партнеров для оффера (дублирующий метод для совместимости)
+  async getPartnerOffers(partnerId?: string, offerId?: string): Promise<any[]> {
+    let query = db.select().from(partnerOffers);
+    
+    if (partnerId && offerId) {
+      query = query.where(
+        and(
+          eq(partnerOffers.partnerId, partnerId),
+          eq(partnerOffers.offerId, offerId)
+        )
+      );
+    } else if (partnerId) {
+      query = query.where(eq(partnerOffers.partnerId, partnerId));
+    } else if (offerId) {
+      query = query.where(eq(partnerOffers.offerId, offerId));
+    }
+    
+    return await query;
+  }
+
+  // Создать связь партнер-оффер
+  async createPartnerOffer(data: any): Promise<any> {
+    const [partnerOffer] = await db
+      .insert(partnerOffers)
+      .values(data)
+      .returning();
+    return partnerOffer;
   }
 
   // Generate automatic partner link for an offer based on its base_url
