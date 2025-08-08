@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface SidebarItem {
   title: string;
@@ -95,7 +96,7 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
               <span className="text-white font-bold text-sm">P</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-sm">Партнер</span>
+              <span className="text-lg font-bold">Партнер</span>
               <span className="text-xs text-muted-foreground">{user?.username}</span>
             </div>
           </div>
@@ -125,7 +126,7 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                "flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
                 isActive
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground"
@@ -153,7 +154,7 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
         <Link
           href="/affiliate/notifications"
           className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground",
+            "flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground",
           )}
           title={collapsed ? "Уведомления" : undefined}
         >
@@ -165,6 +166,15 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
             </>
           )}
         </Link>
+        
+        {/* Theme toggle */}
+        <div className={cn(
+          "flex items-center gap-3 px-3 py-2",
+          collapsed && "justify-center"
+        )}>
+          {!collapsed && <span className="font-medium text-muted-foreground">Тема</span>}
+          <ThemeToggle />
+        </div>
         
         <Button
           variant="ghost"

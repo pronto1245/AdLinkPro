@@ -20,6 +20,7 @@ import {
   Send
 } from 'lucide-react';
 import { useSidebar } from '@/contexts/sidebar-context';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface MenuItem {
   labelKey: string;
@@ -160,6 +161,19 @@ function Sidebar({ className }: SidebarProps) {
             );
           })}
         </nav>
+        
+        {/* Footer with theme toggle */}
+        <div className="p-3 border-t border-slate-200 dark:border-gray-600">
+          <div className={cn(
+            "flex items-center",
+            isCollapsed ? "justify-center" : "justify-between"
+          )}>
+            {!isCollapsed && (
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Тема</span>
+            )}
+            <ThemeToggle />
+          </div>
+        </div>
       </div>
     </aside>
   );

@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "./contexts/auth-context";
 import { LanguageProvider } from "./contexts/language-context";
 import { SidebarProvider } from "./contexts/sidebar-context";
+import { ThemeProvider } from "./contexts/theme-context";
 import { NotificationProvider } from "@/components/NotificationToast";
 import { WebSocketManager } from "@/components/WebSocketManager";
 import RoleBasedLayout from "./components/layout/RoleBasedLayout";
@@ -491,17 +492,19 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <LanguageProvider>
-          <AuthProvider>
-            <NotificationProvider>
-              <SidebarProvider>
-                <Toaster />
-                <WebSocketManager />
-                <Router />
-              </SidebarProvider>
-            </NotificationProvider>
-          </AuthProvider>
-        </LanguageProvider>
+        <ThemeProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <NotificationProvider>
+                <SidebarProvider>
+                  <Toaster />
+                  <WebSocketManager />
+                  <Router />
+                </SidebarProvider>
+              </NotificationProvider>
+            </AuthProvider>
+          </LanguageProvider>
+        </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

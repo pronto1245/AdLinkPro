@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 export function TopNavigation() {
   const { user, logout } = useAuth();
@@ -55,6 +56,8 @@ export function TopNavigation() {
 
         {/* Right side - User menu items */}
         <div className="flex items-center space-x-2">
+          {/* Theme Toggle */}
+          <ThemeToggle />
           {/* Email */}
           <div className="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
             <Mail className="h-4 w-4" />
