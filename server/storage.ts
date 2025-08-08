@@ -4019,41 +4019,7 @@ export class DatabaseStorage implements IStorage {
     return;
   }
 
-  // Custom Domains Management
-  async getCustomDomains(userId: string): Promise<any[]> {
-    // Return domains for this specific user from memory
-    return this.customDomains.filter(domain => domain.userId === userId);
-  }
 
-  async addCustomDomain(userId: string, domainData: any): Promise<any> {
-    const domain = {
-      id: 'domain_' + nanoid(8),
-      userId,
-      domain: domainData.domain,
-      status: 'pending' as const,
-      type: domainData.type,
-      verificationValue: 'verify-' + nanoid(16),
-      createdAt: new Date().toISOString(),
-      lastChecked: null
-    };
-    
-    // Add to memory storage
-    this.customDomains.push(domain);
-    return domain;
-  }
-
-  async verifyCustomDomain(userId: string, domainId: string): Promise<any> {
-    // Mock implementation - would trigger domain verification
-    return { success: true };
-  }
-
-  async deleteCustomDomain(userId: string, domainId: string): Promise<void> {
-    // Remove domain from memory storage
-    const index = this.customDomains.findIndex(d => d.id === domainId && d.userId === userId);
-    if (index !== -1) {
-      this.customDomains.splice(index, 1);
-    }
-  }
 
   // Webhook Settings Management
   async getWebhookSettings(userId: string): Promise<any> {
@@ -4930,6 +4896,28 @@ class MemStorage implements IStorage {
       console.error('Error deleting domain:', error);
       throw error;
     }
+  }
+
+  // Methods for API compatibility
+  async getCustomDomains(userId: string): Promise<any[]> {
+    return this.getDomains(userId);
+  }
+
+  async addCustomDomain(userId: string, domainData: any): Promise<any> {
+    return this.createDomain({
+      advertiserId: userId,
+      domain: domainData.domain,
+      type: domainData.type || 'cname'
+    });
+  }
+
+  async verifyCustomDomain(userId: string, domainId: string): Promise<any> {
+    // Mock implementation - in real app would trigger DNS verification
+    return { success: true };
+  }
+
+  async deleteCustomDomain(userId: string, domainId: string): Promise<void> {
+    await this.deleteDomain(domainId);
   }
 
 }
