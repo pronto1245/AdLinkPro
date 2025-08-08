@@ -473,6 +473,9 @@ export class DatabaseStorage implements IStorage {
   async deleteOffer(id: string): Promise<void> {
     // First delete all related data to avoid foreign key constraint violations
     try {
+      // Delete offer access requests first (this was causing the constraint violation)
+      await db.delete(offerAccessRequests).where(eq(offerAccessRequests.offerId, id));
+      
       // Delete statistics (using correct column name)
       await db.delete(statistics).where(eq(statistics.offerId, id));
       
