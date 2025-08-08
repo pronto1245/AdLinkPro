@@ -1846,14 +1846,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const partnerId = getAuthenticatedUser(req).id;
       
-      // Получаем офферы партнера из базы данных
-      const partnerOffers = await storage.getPartnerOffers(partnerId);
+      // Получаем все активные офферы из базы данных
+      const allOffers = await storage.getAllOffers();
       
-      // Получаем детали офферов
-      const offersWithDetails = await Promise.all(
-        partnerOffers.map(async (partnerOffer) => {
-          const offer = await storage.getOffer(partnerOffer.offerId);
-          if (!offer) return null;
+      // Получаем существующие запросы доступа и связи партнера
+      const partnerOffers = await storage.getPartnerOffers(partnerId);
+      const offerAccessRequests = await storage.getOfferAccessRequests(partnerId);
+      
+      // Создаем карты для быстрого поиска
+      const partnerOfferMap = new Map(partnerOffers.map(po => [po.offerId, po]));
+      const requestMap = new Map(offerAccessRequests.map(req => [req.offerId, req]));
+      
+      // Обрабатываем все офферы
+      const offersWithDetails = allOffers
+        .filter(offer => offer.status === 'active' && !offer.isArchived && !offer.isBlocked)
+        .map(offer => {
+          const partnerOffer = partnerOfferMap.get(offer.id);
+          const accessRequest = requestMap.get(offer.id);
+          
+          let accessStatus = 'available'; // По умолчанию доступен для запроса
+          let hasFullAccess = false;
+          let partnerLink = null;
+          
+          if (partnerOffer) {
+            // Уже есть связь с партнером
+            accessStatus = partnerOffer.isApproved ? 'approved' : 'pending';
+            hasFullAccess = partnerOffer.isApproved;
+            partnerLink = partnerOffer.isApproved ? `https://track.platform.com/click/${offer.id}?partner=${partnerId}&subid=YOUR_SUBID` : null;
+          } else if (accessRequest) {
+            // Есть запрос на доступ
+            accessStatus = accessRequest.status;
+          }
           
           return {
             id: offer.id,
@@ -1862,25 +1885,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             category: offer.category || 'other',
             logo: offer.logo || 'https://via.placeholder.com/40x40/8b5cf6/ffffff?text=OF',
             advertiserId: offer.advertiserId,
+            advertiserName: offer.advertiserName,
             payout: offer.payout || 0,
             currency: offer.currency || 'USD',
             payoutType: offer.payoutType || 'cpa',
             countries: offer.countries || ['RU'],
             status: offer.status || 'active',
-            accessStatus: partnerOffer.isApproved ? 'approved' : 'pending',
-            hasFullAccess: partnerOffer.isApproved,
-            customPayout: partnerOffer.customPayout,
-            partnerLink: partnerOffer.isApproved ? `https://track.platform.com/click/${offer.id}?partner=${partnerId}&subid=YOUR_SUBID` : null,
+            accessStatus,
+            hasFullAccess,
+            customPayout: partnerOffer?.customPayout,
+            partnerLink,
             partnerApprovalType: 'manual',
             createdAt: offer.createdAt || new Date().toISOString(),
             geoPricing: offer.geoPricing ? JSON.parse(offer.geoPricing) : null
           };
-        })
-      );
+        });
       
-      const validOffers = offersWithDetails.filter(offer => offer !== null);
-      
-      res.json(validOffers);
+      res.json(offersWithDetails);
     } catch (error) {
       console.error("Get partner offers error:", error);
       res.status(500).json({ error: "Internal server error" });

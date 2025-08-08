@@ -503,6 +503,23 @@ export class DatabaseStorage implements IStorage {
     return await query;
   }
 
+  async getOfferAccessRequests(partnerId?: string, offerId?: string): Promise<OfferAccessRequest[]> {
+    let query = db.select().from(offerAccessRequests);
+    
+    if (partnerId && offerId) {
+      return await query.where(and(
+        eq(offerAccessRequests.partnerId, partnerId),
+        eq(offerAccessRequests.offerId, offerId)
+      ));
+    } else if (partnerId) {
+      return await query.where(eq(offerAccessRequests.partnerId, partnerId));
+    } else if (offerId) {
+      return await query.where(eq(offerAccessRequests.offerId, offerId));
+    }
+    
+    return await query;
+  }
+
   // Generate automatic partner link for an offer based on its base_url
   generatePartnerLink(baseUrl: string, partnerId: string, offerId: string, subId?: string): string {
     if (!baseUrl) {
