@@ -2365,31 +2365,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "You are not assigned to this advertiser" });
       }
       
-      // Проверяем, есть ли уже запрос для конкретного оффера
-      const allRequests = await storage.getOfferAccessRequests(partnerId);
-      const existingRequest = allRequests.find(req => req.offerId === offerId);
-      if (existingRequest) {
+      // Проверяем, есть ли уже запрос для конкретного оффера в базе данных
+      const existingRequest = await db.select()
+        .from(offerAccessRequests)
+        .where(
+          and(
+            eq(offerAccessRequests.partnerId, partnerId),
+            eq(offerAccessRequests.offerId, offerId)
+          )
+        );
+      
+      if (existingRequest.length > 0) {
         return res.status(400).json({ 
           error: "Access request already exists",
-          requestStatus: existingRequest.status 
+          requestStatus: existingRequest[0].status 
         });
       }
       
-      // Убираем проверку getPartnerOffers - она может не существовать для новых офферов
       console.log(`Creating access request for partner ${partnerId} to offer ${offerId}`);
       
-      // Создаем запрос
-      const request = await storage.createOfferAccessRequest({
-        id: randomUUID(),
+      // Создаем запрос напрямую в базе данных
+      const requestId = randomUUID();
+      const requestData = {
+        id: requestId,
         partnerId,
         offerId,
-        advertiserId: offer.advertiserId, // Добавляем advertiserId из оффера
+        advertiserId: offer.advertiserId,
         status: 'pending',
         requestNote: message || null,
-        createdAt: new Date(),
+        requestedAt: new Date(),
         updatedAt: new Date()
-      });
+      };
       
+      const [request] = await db.insert(offerAccessRequests)
+        .values(requestData)
+        .returning();
+      
+      console.log(`✅ Запрос доступа создан в базе: partnerId=${partnerId}, offerId=${offerId}, advertiserId=${offer.advertiserId}, requestId=${requestId}`);
       res.status(201).json(request);
     } catch (error) {
       console.error("Create offer access request error:", error);
