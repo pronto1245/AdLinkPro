@@ -132,7 +132,7 @@ const initialFormData: OfferFormData = {
   creativesUrl: '',
   
   // Статус
-  status: 'draft'
+  status: 'active'
 };
 
 const categories = [
