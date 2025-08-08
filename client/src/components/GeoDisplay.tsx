@@ -157,7 +157,7 @@ const GeoDisplay: React.FC<GeoDisplayProps> = ({
             <div className="flex justify-between items-center text-sm font-medium">
               <span>Общая сумма:</span>
               <span className="text-green-600 dark:text-green-400">
-                ${getCountryPayouts().reduce((sum, country) => sum + country.payout, 0).toFixed(2)} {currency}
+                ${Number(getCountryPayouts().reduce((sum, country) => sum + (Number(country.payout) || 0), 0)).toFixed(2)} {currency}
               </span>
             </div>
           </div>
