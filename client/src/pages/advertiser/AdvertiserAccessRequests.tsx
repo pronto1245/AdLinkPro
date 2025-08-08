@@ -55,27 +55,18 @@ interface OfferAccessRequest {
   partnerId: string;
   advertiserId: string;
   status: 'pending' | 'approved' | 'rejected';
-  message?: string;
-  responseMessage?: string;
+  requestNote?: string;
+  responseNote?: string;
   requestedAt: string;
-  respondedAt?: string;
+  reviewedAt?: string;
   
-  // Связанные данные
-  offer: {
-    id: string;
-    name: string;
-    category: string;
-    payoutType: string;
-    logo?: string;
-  };
-  partner: {
-    id: string;
-    username: string;
-    firstName?: string;
-    lastName?: string;
-    email: string;
-    company?: string;
-  };
+  // Обогащенные данные из API
+  partnerName: string;
+  partnerUsername: string;
+  partnerEmail: string;
+  offerName: string;
+  offerPayout: string;
+  offerCurrency: string;
 }
 
 export default function AdvertiserAccessRequests() {
@@ -133,10 +124,10 @@ export default function AdvertiserAccessRequests() {
   const filteredRequests = useMemo(() => {
     return requests.filter((request: OfferAccessRequest) => {
       const matchesSearch = 
-        request.offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.partner.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.partner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (request.partner.company && request.partner.company.toLowerCase().includes(searchTerm.toLowerCase()));
+        request.offerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.partnerUsername.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.partnerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.partnerName.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = statusFilter === "all" || request.status === statusFilter;
       
@@ -341,21 +332,13 @@ export default function AdvertiserAccessRequests() {
                         {/* Оффер */}
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            {request.offer.logo ? (
-                              <img 
-                                src={request.offer.logo} 
-                                alt={request.offer.name}
-                                className="w-10 h-10 rounded object-cover flex-shrink-0"
-                              />
-                            ) : (
-                              <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
-                                <Target className="w-5 h-5 text-gray-500" />
-                              </div>
-                            )}
+                            <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
+                              <Target className="w-5 h-5 text-gray-500" />
+                            </div>
                             <div>
-                              <div className="font-medium">{request.offer.name}</div>
+                              <div className="font-medium">{request.offerName}</div>
                               <div className="text-sm text-muted-foreground">
-                                {request.offer.category} • {request.offer.payoutType}
+                                {request.offerPayout} {request.offerCurrency}
                               </div>
                             </div>
                           </div>
@@ -364,18 +347,10 @@ export default function AdvertiserAccessRequests() {
                         {/* Партнер */}
                         <TableCell>
                           <div>
-                            <div className="font-medium">{request.partner.username}</div>
+                            <div className="font-medium">{request.partnerUsername}</div>
                             <div className="text-sm text-muted-foreground">
-                              {request.partner.firstName && request.partner.lastName ? 
-                                `${request.partner.firstName} ${request.partner.lastName}` : 
-                                request.partner.email
-                              }
+                              {request.partnerName || request.partnerEmail}
                             </div>
-                            {request.partner.company && (
-                              <div className="text-xs text-muted-foreground">
-                                {request.partner.company}
-                              </div>
-                            )}
                           </div>
                         </TableCell>
 
@@ -397,9 +372,9 @@ export default function AdvertiserAccessRequests() {
 
                         {/* Сообщение */}
                         <TableCell>
-                          {request.message ? (
-                            <div className="max-w-xs truncate text-sm" title={request.message}>
-                              {request.message}
+                          {request.requestNote ? (
+                            <div className="max-w-xs truncate text-sm" title={request.requestNote}>
+                              {request.requestNote}
                             </div>
                           ) : (
                             <span className="text-muted-foreground text-sm">Без сообщения</span>
