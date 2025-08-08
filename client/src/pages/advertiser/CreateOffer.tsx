@@ -833,9 +833,13 @@ export default function CreateOffer() {
                           maxNumberOfFiles={1}
                           maxFileSize={5 * 1024 * 1024} // 5MB
                           onGetUploadParameters={async () => {
+                            const token = localStorage.getItem('auth_token');
                             const response = await fetch('/api/objects/upload', {
                               method: 'POST',
-                              headers: { 'Content-Type': 'application/json' }
+                              headers: { 
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                              }
                             });
                             const data = await response.json();
                             return {
