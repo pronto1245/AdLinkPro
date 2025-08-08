@@ -5132,6 +5132,28 @@ class MemStorage implements IStorage {
     };
     // Add to mock offers array
     this.offers.push(newOffer);
+    
+    // Auto-create access requests for all partners if offer allows auto approval
+    if (offerData.partnerApprovalType === 'auto' || !offerData.isPrivate) {
+      const allPartners = this.users.filter(user => user.role === 'affiliate');
+      for (const partner of allPartners) {
+        const existingRequest = this.offerAccessRequests.find(req => 
+          req.partnerId === partner.id && req.offerId === newOffer.id
+        );
+        
+        if (!existingRequest) {
+          this.offerAccessRequests.push({
+            id: Math.random().toString(36).substr(2, 9),
+            partnerId: partner.id,
+            offerId: newOffer.id,
+            status: 'approved',
+            createdAt: new Date(),
+            approvedAt: new Date()
+          });
+        }
+      }
+    }
+    
     return newOffer;
   }
 
@@ -5372,21 +5394,24 @@ class MemStorage implements IStorage {
       .filter(req => req.status === 'approved')
       .map(req => req.offerId);
 
-    // Return offers that are either approved for this partner or public
+    // Return ALL active offers (both approved and available for request)
     return this.offers
-      .filter(offer => 
-        offer.status === 'active' && 
-        (approvedOfferIds.includes(offer.id) || !offer.isPrivate)
-      )
+      .filter(offer => offer.status === 'active')
       .map(offer => {
         const accessRequest = accessRequests.find(req => req.offerId === offer.id);
+        const isApproved = accessRequest?.status === 'approved';
+        const accessStatus = accessRequest?.status || 'available';
+        
         return {
           ...offer,
-          isApproved: accessRequest?.status === 'approved',
-          accessStatus: accessRequest?.status || 'not_requested',
-          trackingLink: accessRequest?.status === 'approved' 
+          isApproved,
+          accessStatus,
+          canRequestAccess: !accessRequest || accessRequest.status === 'rejected',
+          trackingLink: isApproved 
             ? `https://track.example.com/click?offer=${offer.id}&partner=${partnerId}&subid={subid}`
-            : null
+            : null,
+          // Add automatic approval for non-private offers
+          autoApproved: !offer.isPrivate && offer.partnerApprovalType === 'auto'
         };
       });
   }

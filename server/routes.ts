@@ -2241,79 +2241,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
       
-      // Получаем все активные офферы из базы данных (все офферы для фильтрации)
-      const allOffers = await storage.getAllOffers();
+      // Используем правильный метод для получения доступных офферов
+      const availableOffers = await storage.getAvailableOffers(partnerId);
       
-      // Получаем существующие запросы доступа и связи партнера
-      const partnerOffers = await storage.getPartnerOffers(partnerId);
-      const offerAccessRequests = await storage.getOfferAccessRequests(partnerId);
-      
-      // Создаем карты для быстрого поиска
-      const partnerOfferMap = new Map(partnerOffers.map(po => [po.offerId, po]));
-      const requestMap = new Map(offerAccessRequests.map(req => [req.offerId, req]));
-      
-      // Фильтруем офферы и проверяем доступность для партнера
-      const availableOffers = [];
-      // Фильтруем офферы и проверяем доступность для партнера
-      for (const offer of allOffers) {
-        if (offer.status !== 'active' || offer.isArchived || offer.isBlocked) {
-          continue;
-        }
-        
-        // Проверяем, есть ли партнер в списке у рекламодателя
-        const isAssigned = await storage.isPartnerAssignedToAdvertiser(partnerId, offer.advertiserId);
-        if (!isAssigned) {
-          continue; // Партнер не в списке рекламодателя
-        }
-        
-        const partnerOffer = partnerOfferMap.get(offer.id);
-        const accessRequest = requestMap.get(offer.id);
-        
-        let accessStatus = 'available'; // По умолчанию доступен для запроса
-        let hasFullAccess = false;
+      // Генерируем готовые ссылки для всех доступных офферов
+      const offersWithLinks = availableOffers.map(offer => {
         let partnerLink = null;
         
-        if (partnerOffer) {
-          // Уже есть связь с партнером
-          accessStatus = partnerOffer.isApproved ? 'approved' : 'pending';
-          hasFullAccess = partnerOffer.isApproved;
-          
-          // 🎯 АВТОМАТИЧЕСКАЯ ГЕНЕРАЦИЯ ГОТОВОЙ ССЫЛКИ С CLICKID
-          if (partnerOffer.isApproved) {
-            try {
-              partnerLink = await TrackingLinkService.generatePartnerTrackingLink(offer.id, partnerId);
-            } catch (error) {
-              console.error('Error generating partner tracking link for offer', offer.id, error);
-              partnerLink = `https://trk.platform.com/click?offer=${offer.id}&clickid=${partnerId}`;
-            }
-          }
-        } else if (accessRequest) {
-          // Есть запрос на доступ
-          accessStatus = accessRequest.status;
+        // Генерируем ссылку если есть доступ
+        if (offer.isApproved || offer.autoApproved) {
+          partnerLink = `https://track.example.com/click?offer=${offer.id}&partner=${partnerId}&clickid=partner_${partnerId}_${offer.id}_{subid}`;
         }
         
-        availableOffers.push({
-          id: offer.id,
-          name: offer.name,
-          description: offer.description || 'Описание оффера',
-          category: offer.category || 'other',
-          logo: offer.logo || 'https://via.placeholder.com/40x40/8b5cf6/ffffff?text=OF',
-          advertiserId: offer.advertiserId,
-          advertiserName: offer.advertiserName,
-          payout: offer.payout || 0,
-          currency: offer.currency || 'USD',
-          trackingLink: partnerLink, // Добавляем готовую ссылку с clickid
-          payoutType: offer.payoutType || 'cpa',
-          countries: offer.countries || ['RU'],
-          status: offer.status || 'active',
-          accessStatus,
-          hasFullAccess,
+        return {
+          ...offer,
           partnerLink,
-          createdAt: offer.createdAt
-        });
-      }
+          readyToUse: !!partnerLink
+        };
+      });
       
-      res.json(availableOffers);
+      res.json(offersWithLinks);
     } catch (error) {
       console.error("Get partner offers error:", error);
       res.status(500).json({ error: "Internal server error" });
