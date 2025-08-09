@@ -3,8 +3,9 @@ import { useParams } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, Lock, FileText, Download, Link } from "lucide-react";
+import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, Lock, FileText, Download, Link, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -130,6 +131,13 @@ const LandingPagesCard = ({
 }) => {
   const [transformedUrls, setTransformedUrls] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const [expandedLanding, setExpandedLanding] = useState<string | null>(null);
+  const [subParams, setSubParams] = useState<Record<string, {
+    sub1: string;
+    sub2: string;
+    sub3: string;
+    sub4: string;
+  }>>({});
 
   const getTransformedUrl = async (landing: any) => {
     if (transformedUrls[landing.id]) {
@@ -156,20 +164,59 @@ const LandingPagesCard = ({
     }
   };
 
+  const getUrlWithSubParams = async (landing: any) => {
+    const baseUrl = await getTransformedUrl(landing);
+    const landingSubParams = subParams[landing.id];
+    
+    if (!landingSubParams) {
+      return baseUrl;
+    }
+
+    const url = new URL(baseUrl);
+    
+    if (landingSubParams.sub1) url.searchParams.set('sub1', landingSubParams.sub1);
+    if (landingSubParams.sub2) url.searchParams.set('sub2', landingSubParams.sub2);
+    if (landingSubParams.sub3) url.searchParams.set('sub3', landingSubParams.sub3);
+    if (landingSubParams.sub4) url.searchParams.set('sub4', landingSubParams.sub4);
+    
+    return url.toString();
+  };
+
   const handleCopyUrl = async (landing: any) => {
-    const url = await getTransformedUrl(landing);
-    onCopyUrl(url, "URL лендинга с кастомным доменом");
+    const url = await getUrlWithSubParams(landing);
+    onCopyUrl(url, "URL лендинга с параметрами");
   };
 
   const handleOpenUrl = async (landing: any) => {
-    const url = await getTransformedUrl(landing);
+    const url = await getUrlWithSubParams(landing);
     window.open(url, '_blank');
+  };
+
+  const handleSubParamChange = (landingId: string, param: string, value: string) => {
+    setSubParams(prev => ({
+      ...prev,
+      [landingId]: {
+        ...prev[landingId],
+        [param]: value
+      }
+    }));
+  };
+
+  const toggleExpanded = (landingId: string) => {
+    setExpandedLanding(expandedLanding === landingId ? null : landingId);
   };
 
   useEffect(() => {
     // Pre-transform URLs for better UX
     landingPages.forEach(landing => {
       getTransformedUrl(landing);
+      // Initialize sub params for each landing
+      if (!subParams[landing.id]) {
+        setSubParams(prev => ({
+          ...prev,
+          [landing.id]: { sub1: '', sub2: '', sub3: '', sub4: '' }
+        }));
+      }
     });
   }, [landingPages, offerId]);
 
@@ -187,52 +234,132 @@ const LandingPagesCard = ({
       <CardContent>
         <div className="space-y-3">
           {landingPages.map((landing: any) => (
-            <div key={landing.id} className="flex items-start justify-between p-3 border rounded-lg gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h4 className="font-medium">{landing.name}</h4>
-                  {landing.isDefault && (
-                    <Badge variant="default" className="text-xs">По умолчанию</Badge>
-                  )}
-                  <Badge variant="outline" className="text-xs">{landing.type}</Badge>
-                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                    ✓ С трекингом
-                  </Badge>
+            <div key={landing.id} className="border rounded-lg">
+              <div className="flex items-start justify-between p-3 gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <h4 className="font-medium">{landing.name}</h4>
+                    {landing.isDefault && (
+                      <Badge variant="default" className="text-xs">По умолчанию</Badge>
+                    )}
+                    <Badge variant="outline" className="text-xs">{landing.type}</Badge>
+                    <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      ✓ С трекингом
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    {transformedUrls[landing.id] ? (
+                      <code className="text-sm text-green-600 dark:text-green-400 block font-medium break-all overflow-hidden">
+                        {subParams[landing.id] && (subParams[landing.id].sub1 || subParams[landing.id].sub2 || subParams[landing.id].sub3 || subParams[landing.id].sub4) ? 
+                          (() => {
+                            const url = new URL(transformedUrls[landing.id]);
+                            if (subParams[landing.id].sub1) url.searchParams.set('sub1', subParams[landing.id].sub1);
+                            if (subParams[landing.id].sub2) url.searchParams.set('sub2', subParams[landing.id].sub2);
+                            if (subParams[landing.id].sub3) url.searchParams.set('sub3', subParams[landing.id].sub3);
+                            if (subParams[landing.id].sub4) url.searchParams.set('sub4', subParams[landing.id].sub4);
+                            return url.toString();
+                          })() : 
+                          transformedUrls[landing.id]
+                        }
+                      </code>
+                    ) : loading[landing.id] ? (
+                      <span className="text-xs text-muted-foreground">⏳ Подготавливаем ссылку...</span>
+                    ) : (
+                      <code className="text-sm text-muted-foreground">
+                        Ссылка будет готова через секунду...
+                      </code>
+                    )}
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  {transformedUrls[landing.id] ? (
-                    <code className="text-sm text-green-600 dark:text-green-400 block font-medium break-all overflow-hidden">
-                      {transformedUrls[landing.id]}
-                    </code>
-                  ) : loading[landing.id] ? (
-                    <span className="text-xs text-muted-foreground">⏳ Подготавливаем ссылку...</span>
-                  ) : (
-                    <code className="text-sm text-muted-foreground">
-                      Ссылка будет готова через секунду...
-                    </code>
-                  )}
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleCopyUrl(landing)}
+                    title="Копировать URL"
+                    disabled={loading[landing.id]}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleOpenUrl(landing)}
+                    title="Открыть в новой вкладке"
+                    disabled={loading[landing.id]}
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => toggleExpanded(landing.id)}
+                    title="Дополнительные параметры"
+                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                  >
+                    <Settings className="w-4 h-4 mr-1" />
+                    Дополнительно
+                  </Button>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleCopyUrl(landing)}
-                  title="Копировать URL с кастомным доменом"
-                  disabled={loading[landing.id]}
-                >
-                  <Copy className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleOpenUrl(landing)}
-                  title="Открыть в новой вкладке"
-                  disabled={loading[landing.id]}
-                >
-                  <ExternalLink className="w-4 h-4" />
-                </Button>
-              </div>
+              
+              {/* Выпадающая секция с sub-параметрами */}
+              {expandedLanding === landing.id && (
+                <div className="border-t bg-gray-50 dark:bg-gray-900/50 p-4">
+                  <h5 className="font-medium text-sm mb-3 text-gray-700 dark:text-gray-300">
+                    Дополнительные параметры трекинга
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                        sub1 - источник трафика
+                      </label>
+                      <Input
+                        placeholder="facebook, google, youtube..."
+                        value={subParams[landing.id]?.sub1 || ''}
+                        onChange={(e) => handleSubParamChange(landing.id, 'sub1', e.target.value)}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                        sub2 - кампания
+                      </label>
+                      <Input
+                        placeholder="campaign_name, promo_2025..."
+                        value={subParams[landing.id]?.sub2 || ''}
+                        onChange={(e) => handleSubParamChange(landing.id, 'sub2', e.target.value)}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                        sub3 - креатив
+                      </label>
+                      <Input
+                        placeholder="banner_1, video_ad..."
+                        value={subParams[landing.id]?.sub3 || ''}
+                        onChange={(e) => handleSubParamChange(landing.id, 'sub3', e.target.value)}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                        sub4 - дополнительно
+                      </label>
+                      <Input
+                        placeholder="любая дополнительная информация..."
+                        value={subParams[landing.id]?.sub4 || ''}
+                        onChange={(e) => handleSubParamChange(landing.id, 'sub4', e.target.value)}
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                    💡 Параметры автоматически добавляются в ссылку при заполнении
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
