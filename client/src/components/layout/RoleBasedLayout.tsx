@@ -38,11 +38,11 @@ export default function RoleBasedLayout({ children }: RoleBasedLayoutProps) {
             <div 
               className={cn(
                 "w-full py-6",
-                user.role === 'affiliate' ? 'px-8' : 'px-4'
+                user.role === 'affiliate' ? '' : 'px-4'
               )} 
               style={{ 
-                paddingLeft: user.role === 'affiliate' ? '2rem' : '1rem',
-                paddingRight: user.role === 'affiliate' ? '2rem' : '1rem'
+                paddingLeft: user.role === 'affiliate' ? '2cm' : '1rem',
+                paddingRight: user.role === 'affiliate' ? '2cm' : '1rem'
               }}
             >
               {children}
