@@ -332,6 +332,7 @@ export default function UsersManagement() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>{t('user')}</TableHead>
+                        <TableHead>№ Партнера</TableHead>
                         <TableHead>{t('role')}</TableHead>
                         <TableHead>{t('status')}</TableHead>
                         <TableHead>{t('kyc_status')}</TableHead>
@@ -362,6 +363,15 @@ export default function UsersManagement() {
                                 )}
                               </div>
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            {user.role === 'affiliate' && user.partnerNumber ? (
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                #{user.partnerNumber}
+                              </Badge>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             <Badge className={`${getRoleBadgeColor(user.role)} flex items-center gap-1 w-fit`}>

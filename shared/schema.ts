@@ -28,6 +28,7 @@ export const users: any = pgTable("users", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   role: userRoleEnum("role").notNull().default('affiliate'),
+  partnerNumber: text("partner_number").unique(), // 4-digit sequential number for affiliates (0001, 0002, etc.)
   adminRole: adminRoleEnum("admin_role"), // For super_admin users - defines their specific admin permissions
   ipRestrictions: jsonb("ip_restrictions"), // Array of allowed IP addresses for admin access
   twoFactorEnabled: boolean("two_factor_enabled").default(false),

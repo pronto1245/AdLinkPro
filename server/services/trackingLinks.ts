@@ -49,6 +49,19 @@ export class TrackingLinkService {
     return domains.map(d => d.domain);
   }
 
+  // Get partner information including partner number
+  static async getPartnerInfo(partnerId: string): Promise<{ partnerNumber: string; username: string } | null> {
+    const [partner] = await db
+      .select({
+        partnerNumber: users.partnerNumber,
+        username: users.username
+      })
+      .from(users)
+      .where(eq(users.id, partnerId));
+    
+    return partner || null;
+  }
+
   // Transform landing page URL with custom domain and simplified tracking
   static async transformLandingUrl(params: {
     originalUrl: string;
@@ -59,6 +72,10 @@ export class TrackingLinkService {
     const { originalUrl, advertiserId, partnerId, offerId } = params;
     
     try {
+      // Get partner number for clean partner_id
+      const partnerInfo = await this.getPartnerInfo(partnerId);
+      const partnerNumber = partnerInfo?.partnerNumber || '0000';
+      
       // Check if originalUrl is a valid URL
       if (!originalUrl || typeof originalUrl !== 'string' || originalUrl.length < 4) {
         console.warn('Invalid original URL provided:', originalUrl);
@@ -67,9 +84,9 @@ export class TrackingLinkService {
         const customDomain = verifiedDomains.length > 0 ? verifiedDomains[0] : 'track.example.com';
         const fallbackUrl = new URL(`https://${customDomain}/landing`);
         // Добавляем только clickid и partner_id (clickid = 12 символов)
-        const shortClickId = `${partnerId.slice(0, 4)}${offerId.slice(0, 4)}${Date.now().toString(36).slice(-4)}`;
+        const shortClickId = `${partnerNumber}${offerId.slice(0, 4)}${Date.now().toString(36).slice(-4)}`;
         fallbackUrl.searchParams.set('clickid', shortClickId);
-        fallbackUrl.searchParams.set('partner_id', partnerId.slice(0, 8));
+        fallbackUrl.searchParams.set('partner_id', `${partnerNumber}${Date.now().toString(36).slice(-4)}`);
         return fallbackUrl.toString();
       }
 
@@ -97,17 +114,19 @@ export class TrackingLinkService {
       url.search = '';
       
       // Добавляем только clickid и partner_id (clickid = 12 символов)
-      const shortClickId = `${partnerId.slice(0, 4)}${offerId.slice(0, 4)}${Date.now().toString(36).slice(-4)}`;
+      const shortClickId = `${partnerNumber}${offerId.slice(0, 4)}${Date.now().toString(36).slice(-4)}`;
       url.searchParams.set('clickid', shortClickId);
-      url.searchParams.set('partner_id', partnerId.slice(0, 8));
+      url.searchParams.set('partner_id', `${partnerNumber}${Date.now().toString(36).slice(-4)}`);
       
       return url.toString();
     } catch (error) {
       console.error('Error transforming landing URL:', error);
       // Return a safe fallback URL (clickid = 12 символов)
+      const fallbackPartnerInfo = await this.getPartnerInfo(partnerId);
+      const fallbackPartnerNumber = fallbackPartnerInfo?.partnerNumber || '0000';
       const customDomain = 'track.example.com'; // Safe fallback
-      const shortClickId = `${partnerId.slice(0, 4)}${offerId.slice(0, 4)}${Date.now().toString(36).slice(-4)}`;
-      const fallbackUrl = `https://${customDomain}/landing?clickid=${shortClickId}&partner_id=${partnerId.slice(0, 8)}`;
+      const shortClickId = `${fallbackPartnerNumber}${offerId.slice(0, 4)}${Date.now().toString(36).slice(-4)}`;
+      const fallbackUrl = `https://${customDomain}/landing?clickid=${shortClickId}&partner_id=${fallbackPartnerNumber}${Date.now().toString(36).slice(-4)}`;
       return fallbackUrl;
     }
   }

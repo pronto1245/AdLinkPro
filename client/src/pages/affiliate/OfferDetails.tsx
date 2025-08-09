@@ -277,7 +277,10 @@ const LandingPagesCard = ({
                 </div>
               </div>
               <p className="text-xs text-blue-600 dark:text-blue-400 mt-3">
-                Пример: https://domain.com/path?clickid=04b043297lz9&partner_id=04b06c87&sub1=facebook&sub2=campaign1
+                Пример: https://domain.com/path?clickid=04b043297lz9&partner_id=04b00002&sub1=facebook&sub2=campaign1
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                ℹ️ partner_id содержит ваш номер партнера (последние 4 цифры) для удобной идентификации рекламодателем
               </p>
             </div>
           </div>

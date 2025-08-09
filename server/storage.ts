@@ -29,7 +29,8 @@ export interface IStorage {
   updateUser(id: string, data: Partial<InsertUser>): Promise<User>;
   getUsers(role?: string): Promise<User[]>;
   getUsersByOwner(ownerId: string, role?: string): Promise<User[]>;
-  
+  getNextPartnerNumber(): Promise<string>;
+
   // Enhanced user management
   getUsersWithFilters(filters: {
     search?: string;
@@ -370,6 +371,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    // Если создается партнер (affiliate), присваиваем ему порядковый номер
+    if (insertUser.role === 'affiliate') {
+      const partnerNumber = await this.getNextPartnerNumber();
+      insertUser.partnerNumber = partnerNumber;
+    }
+    
     const [user] = await db
       .insert(users)
       .values(insertUser)
@@ -402,6 +409,27 @@ export class DatabaseStorage implements IStorage {
       return await db.select().from(users).where(eq(users.role, role as any));
     }
     return await db.select().from(users);
+  }
+
+  // Получаем следующий номер партнера (0001, 0002, и т.д.)
+  async getNextPartnerNumber(): Promise<string> {
+    const lastPartner = await db
+      .select({ partnerNumber: users.partnerNumber })
+      .from(users)
+      .where(and(
+        eq(users.role, 'affiliate'),
+        isNotNull(users.partnerNumber)
+      ))
+      .orderBy(desc(users.partnerNumber))
+      .limit(1);
+      
+    if (lastPartner.length === 0) {
+      return '0001'; // Первый партнер
+    }
+    
+    const lastNumber = parseInt(lastPartner[0].partnerNumber || '0000');
+    const nextNumber = lastNumber + 1;
+    return nextNumber.toString().padStart(4, '0');
   }
 
   // Get users with hierarchy filtering
