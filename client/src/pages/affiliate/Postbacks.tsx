@@ -242,7 +242,9 @@ export function AffiliatePostbacks() {
   // Create profile mutation
   const createMutation = useMutation({
     mutationFn: async (profile: Partial<PostbackProfile>) => {
+      console.log('Creating profile:', profile);
       const token = localStorage.getItem('auth_token');
+      console.log('Token:', token ? 'present' : 'missing');
       const response = await fetch('/api/postback/profiles', {
         method: 'POST',
         headers: {
@@ -251,19 +253,36 @@ export function AffiliatePostbacks() {
         },
         body: JSON.stringify(profile)
       });
-      if (!response.ok) throw new Error('Failed to create profile');
-      return response.json();
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Create failed:', errorText);
+        throw new Error(`Failed to create profile: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log('Create success:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       setIsCreateModalOpen(false);
+      setFormData(defaultProfile);
       toast({ title: 'Профиль создан', description: 'Постбек профиль успешно создан' });
+    },
+    onError: (error) => {
+      console.error('Create mutation error:', error);
+      toast({ 
+        title: 'Ошибка создания', 
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
   // Update profile mutation
   const updateMutation = useMutation({
     mutationFn: async (profileData: PostbackProfile) => {
+      console.log('Updating profile:', profileData);
       const token = localStorage.getItem('auth_token');
       const { id, ...profile } = profileData;
       const response = await fetch(`/api/postback/profiles/${id}`, {
@@ -274,31 +293,62 @@ export function AffiliatePostbacks() {
         },
         body: JSON.stringify(profile)
       });
-      if (!response.ok) throw new Error('Failed to update profile');
-      return response.json();
+      console.log('Update response status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Update failed:', errorText);
+        throw new Error(`Failed to update profile: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log('Update success:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       setIsEditModalOpen(false);
       setSelectedProfile(null);
       toast({ title: 'Профиль обновлен', description: 'Постбек профиль успешно обновлен' });
+    },
+    onError: (error) => {
+      console.error('Update mutation error:', error);
+      toast({ 
+        title: 'Ошибка обновления', 
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
   // Delete profile mutation
   const deleteMutation = useMutation({
     mutationFn: async (profileId: string) => {
+      console.log('Deleting profile:', profileId);
       const token = localStorage.getItem('auth_token');
       const response = await fetch(`/api/postback/profiles/${profileId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!response.ok) throw new Error('Failed to delete profile');
-      return response.json();
+      console.log('Delete response status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Delete failed:', errorText);
+        throw new Error(`Failed to delete profile: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log('Delete success:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       toast({ title: 'Профиль удален', description: 'Постбек профиль успешно удален' });
+    },
+    onError: (error) => {
+      console.error('Delete mutation error:', error);
+      toast({ 
+        title: 'Ошибка удаления', 
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
@@ -513,7 +563,10 @@ export function AffiliatePostbacks() {
             Отмена
           </Button>
           <Button
-            onClick={() => onSave(localFormData)}
+            onClick={() => {
+              console.log('Saving form data:', localFormData);
+              onSave(localFormData);
+            }}
             disabled={!localFormData.name || !localFormData.endpointUrl}
             data-testid="button-save"
           >
