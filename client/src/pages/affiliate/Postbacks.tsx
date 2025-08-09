@@ -797,48 +797,71 @@ export function AffiliatePostbacks() {
                           {updateMutation.isPending ? 'ИЗМЕНЕНИЕ...' : 'ИЗМЕНИТЬ'}
                         </div>
 
-                        {/* ПОЛНОСТЬЮ НОВАЯ КНОПКА УДАЛЕНИЯ */}
+                        {/* ПРЯМАЯ КНОПКА УДАЛЕНИЯ БЕЗ МУТАЦИЙ */}
                         <div
                           onClick={async () => {
-                            console.log('🔥 НОВАЯ КНОПКА УДАЛЕНИЯ НАЖАТА:', profile.id);
+                            console.log('🔥🔥🔥 ПРЯМАЯ КНОПКА УДАЛЕНИЯ НАЖАТА:', profile.id);
                             
                             if (confirm(`Удалить профиль "${profile.name}"?`)) {
-                              console.log('🔥 Подтверждено удаление для:', profile.id);
+                              console.log('🔥🔥🔥 Подтверждено удаление для:', profile.id);
+                              
                               try {
-                                await deleteMutation.mutateAsync(profile.id);
-                                console.log('🔥 Удаление завершено успешно');
+                                const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+                                console.log('🔥🔥🔥 Найден токен:', !!token);
+                                
+                                const response = await fetch(`/api/postback/profiles/${profile.id}`, {
+                                  method: 'DELETE',
+                                  headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                  }
+                                });
+                                
+                                console.log('🔥🔥🔥 Ответ сервера:', response.status);
+                                
+                                if (response.ok) {
+                                  const result = await response.json();
+                                  console.log('🔥🔥🔥 Результат:', result);
+                                  alert('Профиль успешно удален!');
+                                  window.location.reload(); // Принудительная перезагрузка
+                                } else {
+                                  console.error('🔥🔥🔥 Ошибка:', response.status);
+                                  alert('Ошибка удаления профиля');
+                                }
                               } catch (error) {
-                                console.error('🔥 Ошибка удаления:', error);
+                                console.error('🔥🔥🔥 Исключение:', error);
+                                alert('Ошибка сети при удалении');
                               }
                             }
                           }}
                           style={{
-                            background: 'linear-gradient(45deg, #dc2626, #ef4444)',
+                            background: '#dc2626',
                             color: 'white',
-                            padding: '10px 20px',
+                            padding: '12px 24px',
                             borderRadius: '8px',
                             cursor: 'pointer',
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '8px',
                             fontWeight: 'bold',
-                            fontSize: '14px',
-                            border: '3px solid #dc2626',
-                            boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
-                            transition: 'all 0.2s ease'
+                            fontSize: '16px',
+                            border: '2px solid #dc2626',
+                            boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)',
+                            transition: 'all 0.2s ease',
+                            userSelect: 'none'
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.05)';
-                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(220, 38, 38, 0.5)';
+                            e.currentTarget.style.background = '#b91c1c';
+                            e.currentTarget.style.transform = 'scale(1.1)';
                           }}
                           onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#dc2626';
                             e.currentTarget.style.transform = 'scale(1)';
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3)';
                           }}
                           title="Удалить профиль"
                         >
-                          <Trash2 size={16} />
-                          {deleteMutation.isPending ? 'УДАЛЕНИЕ...' : 'УДАЛИТЬ'}
+                          <Trash2 size={18} />
+                          УДАЛИТЬ ПРОФИЛЬ
                         </div>
                       </div>
                     </div>
