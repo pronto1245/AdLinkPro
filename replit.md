@@ -41,7 +41,7 @@ Preferred communication style: Simple, everyday language.
 - **Internationalization**: Custom language context supporting English and Russian.
 - **Feature Specifications**: Comprehensive offer management with filtering, statistics, CRUD operations, mass actions, status management, and duplication. Includes country display with flags, color-coded status indicators (Active, Paused, Archive, Draft), and category system with distinct badges. Enhanced CR formatting. Compact interface with drag-n-drop reordering, CSV import/export, bulk actions, A/B testing, and template management. Advertiser profile includes tabs for account, API access, custom domain (with DNS verification), notifications, and security. Real-time WebSocket notifications.
 - **Creative Management System**: Role-based creative file management supporting ZIP archive upload/download, drag-n-drop interface, file validation, and cloud storage integration. Role-specific offer details pages with access controls.
-- **Tracking Links**: Simplified tracking link system where partners receive clean links with custom domains and `clickid`/`partner_id`, hiding original landing URLs until approval. Partners can add sub-parameters. Links are hidden until approved access.
+- **Tracking Links**: Ultra-short tracking link system where partners receive clean links with custom domains and 12-character `clickid` plus 8-character `partner_id`, hiding original landing URLs until approval. Partners can add sub-parameters. Links are hidden until approved access. Format: `https://domain.com/path?clickid=04b043297lz9&partner_id=04b06c87`
 
 ## Backend
 - **Runtime**: Node.js with Express.js.

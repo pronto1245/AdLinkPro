@@ -66,8 +66,8 @@ export class TrackingLinkService {
         const verifiedDomains = await this.getVerifiedCustomDomains(advertiserId);
         const customDomain = verifiedDomains.length > 0 ? verifiedDomains[0] : 'track.example.com';
         const fallbackUrl = new URL(`https://${customDomain}/landing`);
-        // Добавляем только clickid и partner_id (короткие значения)
-        const shortClickId = `${partnerId.slice(0, 8)}_${offerId.slice(0, 8)}_${Date.now().toString(36)}`;
+        // Добавляем только clickid и partner_id (clickid = 12 символов)
+        const shortClickId = `${partnerId.slice(0, 4)}${offerId.slice(0, 4)}${Date.now().toString(36).slice(-4)}`;
         fallbackUrl.searchParams.set('clickid', shortClickId);
         fallbackUrl.searchParams.set('partner_id', partnerId.slice(0, 8));
         return fallbackUrl.toString();
@@ -96,17 +96,17 @@ export class TrackingLinkService {
       // Удаляем все лишние параметры из оригинальной ссылки
       url.search = '';
       
-      // Добавляем только clickid и partner_id (короткие значения)
-      const shortClickId = `${partnerId.slice(0, 8)}_${offerId.slice(0, 8)}_${Date.now().toString(36)}`;
+      // Добавляем только clickid и partner_id (clickid = 12 символов)
+      const shortClickId = `${partnerId.slice(0, 4)}${offerId.slice(0, 4)}${Date.now().toString(36).slice(-4)}`;
       url.searchParams.set('clickid', shortClickId);
       url.searchParams.set('partner_id', partnerId.slice(0, 8));
       
       return url.toString();
     } catch (error) {
       console.error('Error transforming landing URL:', error);
-      // Return a safe fallback URL (короткие значения)
+      // Return a safe fallback URL (clickid = 12 символов)
       const customDomain = 'track.example.com'; // Safe fallback
-      const shortClickId = `${partnerId.slice(0, 8)}_${offerId.slice(0, 8)}_${Date.now().toString(36)}`;
+      const shortClickId = `${partnerId.slice(0, 4)}${offerId.slice(0, 4)}${Date.now().toString(36).slice(-4)}`;
       const fallbackUrl = `https://${customDomain}/landing?clickid=${shortClickId}&partner_id=${partnerId.slice(0, 8)}`;
       return fallbackUrl;
     }
