@@ -630,44 +630,68 @@ export default function AdvertiserDashboard() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <Link to="/advertiser/offers/new">
-              <Button variant="outline" className="w-full h-20 flex flex-col items-center gap-2 hover:bg-blue-50 hover:border-blue-200">
+              <Button 
+                variant="outline" 
+                className="w-full h-20 flex flex-col items-center gap-2 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:from-blue-100 hover:to-blue-200 hover:border-blue-300 transition-all duration-300 shadow-sm hover:shadow-md"
+                title="Создать новый оффер"
+              >
                 <Plus className="h-6 w-6 text-blue-600" />
-                <span className="text-xs">Новый оффер</span>
+                <span className="text-xs text-blue-700 font-medium">Новый оффер</span>
               </Button>
             </Link>
             
             <Link to="/advertiser/analytics">
-              <Button variant="outline" className="w-full h-20 flex flex-col items-center gap-2 hover:bg-green-50 hover:border-green-200">
+              <Button 
+                variant="outline" 
+                className="w-full h-20 flex flex-col items-center gap-2 bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:from-green-100 hover:to-green-200 hover:border-green-300 transition-all duration-300 shadow-sm hover:shadow-md"
+                title="Просмотр аналитики"
+              >
                 <BarChart3 className="h-6 w-6 text-green-600" />
-                <span className="text-xs">Аналитика</span>
+                <span className="text-xs text-green-700 font-medium">Аналитика</span>
               </Button>
             </Link>
             
             <Link to="/advertiser/partners">
-              <Button variant="outline" className="w-full h-20 flex flex-col items-center gap-2 hover:bg-purple-50 hover:border-purple-200">
+              <Button 
+                variant="outline" 
+                className="w-full h-20 flex flex-col items-center gap-2 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:from-purple-100 hover:to-purple-200 hover:border-purple-300 transition-all duration-300 shadow-sm hover:shadow-md"
+                title="Управление партнерами"
+              >
                 <Users className="h-6 w-6 text-purple-600" />
-                <span className="text-xs">Партнеры</span>
+                <span className="text-xs text-purple-700 font-medium">Партнеры</span>
               </Button>
             </Link>
             
             <Link to="/advertiser/finances">
-              <Button variant="outline" className="w-full h-20 flex flex-col items-center gap-2 hover:bg-yellow-50 hover:border-yellow-200">
+              <Button 
+                variant="outline" 
+                className="w-full h-20 flex flex-col items-center gap-2 bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 hover:from-yellow-100 hover:to-yellow-200 hover:border-yellow-300 transition-all duration-300 shadow-sm hover:shadow-md"
+                title="Финансовый учет"
+              >
                 <Wallet className="h-6 w-6 text-yellow-600" />
-                <span className="text-xs">Финансы</span>
+                <span className="text-xs text-yellow-700 font-medium">Финансы</span>
               </Button>
             </Link>
             
             <Link to="/advertiser/antifraud">
-              <Button variant="outline" className="w-full h-20 flex flex-col items-center gap-2 hover:bg-red-50 hover:border-red-200">
+              <Button 
+                variant="outline" 
+                className="w-full h-20 flex flex-col items-center gap-2 bg-gradient-to-br from-red-50 to-red-100 border-red-200 hover:from-red-100 hover:to-red-200 hover:border-red-300 transition-all duration-300 shadow-sm hover:shadow-md"
+                title="Защита от мошенничества"
+              >
                 <Shield className="h-6 w-6 text-red-600" />
-                <span className="text-xs">Антифрод</span>
+                <span className="text-xs text-red-700 font-medium">Антифрод</span>
               </Button>
             </Link>
             
             <Link to="/advertiser/profile">
-              <Button variant="outline" className="w-full h-20 flex flex-col items-center gap-2 hover:bg-gray-50 hover:border-gray-200">
+              <Button 
+                variant="outline" 
+                className="w-full h-20 flex flex-col items-center gap-2 bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 hover:from-gray-100 hover:to-gray-200 hover:border-gray-300 transition-all duration-300 shadow-sm hover:shadow-md"
+                title="Настройки профиля"
+              >
                 <Settings className="h-6 w-6 text-gray-600" />
-                <span className="text-xs">Настройки</span>
+                <span className="text-xs text-gray-700 font-medium">Настройки</span>
               </Button>
             </Link>
           </div>
