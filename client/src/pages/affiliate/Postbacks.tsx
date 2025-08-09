@@ -593,7 +593,8 @@ export function AffiliatePostbacks() {
                         <Switch
                           checked={profile.enabled}
                           onCheckedChange={(checked) => {
-                            updateMutation.mutate({ ...profile, enabled: checked } as PostbackProfile);
+                            const updatedProfile: PostbackProfile = { ...profile, enabled: checked };
+                            updateMutation.mutate(updatedProfile);
                           }}
                           data-testid={`switch-enabled-${profile.id}`}
                         />
@@ -775,7 +776,10 @@ export function AffiliatePostbacks() {
           {selectedProfile && (
             <PostbackForm
               profile={selectedProfile}
-              onSave={(data) => updateMutation.mutate({ ...selectedProfile, ...data } as PostbackProfile)}
+              onSave={(data) => {
+                const updatedProfile: PostbackProfile = { ...selectedProfile, ...data };
+                updateMutation.mutate(updatedProfile);
+              }}
             />
           )}
         </DialogContent>
