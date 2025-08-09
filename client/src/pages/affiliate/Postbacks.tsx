@@ -299,7 +299,7 @@ export function AffiliatePostbacks() {
   // Update profile mutation
   const updateMutation = useMutation({
     mutationFn: async (profileData: any) => {
-      console.log('Updating profile via apiRequest:', profileData);
+      console.log('🔄 Updating profile via apiRequest:', profileData);
       
       if (!profileData || typeof profileData !== 'object') {
         throw new Error('Invalid profile data');
@@ -311,16 +311,20 @@ export function AffiliatePostbacks() {
         throw new Error('Profile ID is required');
       }
       
-      return await apiRequest(`/api/postback/profiles/${id}`, 'PUT', profile);
+      const result = await apiRequest(`/api/postback/profiles/${id}`, 'PUT', profile);
+      console.log('🔄 Update result:', result);
+      return result;
     },
     onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['/api/postback/profiles'] });
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
+      queryClient.refetchQueries({ queryKey: ['/api/postback/profiles'] });
       setIsEditModalOpen(false);
       setSelectedProfile(null);
       toast({ title: 'Профиль обновлен', description: 'Постбек профиль успешно обновлен' });
     },
     onError: (error) => {
-      console.error('Update mutation error:', error);
+      console.error('❌ Update mutation error:', error);
       toast({ 
         title: 'Ошибка обновления', 
         description: error.message,
@@ -332,15 +336,19 @@ export function AffiliatePostbacks() {
   // Delete profile mutation
   const deleteMutation = useMutation({
     mutationFn: async (profileId: string) => {
-      console.log('Deleting profile via apiRequest:', profileId);
-      return await apiRequest(`/api/postback/profiles/${profileId}`, 'DELETE');
+      console.log('🗑️ Deleting profile via apiRequest:', profileId);
+      const result = await apiRequest(`/api/postback/profiles/${profileId}`, 'DELETE');
+      console.log('🗑️ Delete result:', result);
+      return result;
     },
     onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['/api/postback/profiles'] });
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
+      queryClient.refetchQueries({ queryKey: ['/api/postback/profiles'] });
       toast({ title: 'Профиль удален', description: 'Постбек профиль успешно удален' });
     },
     onError: (error) => {
-      console.error('Delete mutation error:', error);
+      console.error('❌ Delete mutation error:', error);
       toast({ 
         title: 'Ошибка удаления', 
         description: error.message,

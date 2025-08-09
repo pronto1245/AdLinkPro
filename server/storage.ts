@@ -38,6 +38,8 @@ export interface IStorage {
   // In-memory postback storage
   getCreatedPostbackProfiles(): any[];
   savePostbackProfile(profile: any): void;
+  deletePostbackProfile(profileId: string): boolean;
+  updatePostbackProfile(profileId: string, updateData: any): any;
 
   // Enhanced user management
   getUsersWithFilters(filters: {
@@ -586,6 +588,15 @@ export class DatabaseStorage implements IStorage {
   
   savePostbackProfile(profile: any): void {
     this.createdPostbackProfiles.push(profile);
+  }
+
+  deletePostbackProfile(profileId: string): boolean {
+    const index = this.createdPostbackProfiles.findIndex(p => p.id === profileId);
+    if (index !== -1) {
+      this.createdPostbackProfiles.splice(index, 1);
+      return true;
+    }
+    return false;
   }
 
   updatePostbackProfile(id: string, updateData: any): any {

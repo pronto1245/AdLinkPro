@@ -435,17 +435,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const profileId = req.params.id;
       const updateData = req.body;
       
-      const updatedProfile = {
-        id: profileId,
-        ...updateData,
-        updated_at: new Date().toISOString()
-      };
-
-      console.log('Updating postback profile:', updatedProfile);
-      res.json(updatedProfile);
+      console.log('🔄 PUT /api/postback/profiles/:id - Updating profile:', profileId, updateData);
+      
+      // Обновляем профиль через storage
+      const updatedProfile = storage.updatePostbackProfile(profileId, updateData);
+      
+      if (updatedProfile) {
+        console.log('🔄 Profile updated successfully:', updatedProfile);
+        res.json({ success: true, profile: updatedProfile, message: 'Профиль успешно обновлен' });
+      } else {
+        console.log('❌ Profile not found for update:', profileId);
+        res.status(404).json({ success: false, message: 'Профиль не найден' });
+      }
     } catch (error: any) {
-      console.error('Error updating postback profile:', error);
-      res.status(500).json({ message: 'Failed to update postback profile' });
+      console.error('❌ Error updating postback profile:', error);
+      res.status(500).json({ success: false, message: 'Failed to update postback profile' });
     }
   });
 
@@ -453,11 +457,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/postback/profiles/:id", async (req, res) => {
     try {
       const profileId = req.params.id;
-      console.log('Deleting postback profile:', profileId);
-      res.json({ success: true });
+      console.log('🗑️ DELETE /api/postback/profiles/:id - Deleting profile:', profileId);
+      
+      // Пытаемся удалить из созданных профилей
+      const deleted = storage.deletePostbackProfile(profileId);
+      
+      console.log('🗑️ Profile deletion result:', deleted);
+      
+      if (deleted) {
+        res.json({ success: true, message: 'Профиль успешно удален' });
+      } else {
+        res.status(404).json({ success: false, message: 'Профиль не найден или не может быть удален' });
+      }
     } catch (error: any) {
-      console.error('Error deleting postback profile:', error);
-      res.status(500).json({ message: 'Failed to delete postback profile' });
+      console.error('❌ Error deleting postback profile:', error);
+      res.status(500).json({ success: false, message: 'Failed to delete postback profile' });
     }
   });
 
