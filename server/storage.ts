@@ -156,6 +156,8 @@ export interface IStorage {
   
   // Tracking clicks
   getTrackingClicks(filters?: any): Promise<any[]>;
+  createTrackingClick(data: any): Promise<any>;
+  updateTrackingClick(clickId: string, updates: any): Promise<any>;
 
   // Advertiser Dashboard
   getAdvertiserDashboard(advertiserId: string, filters: {
@@ -3081,36 +3083,49 @@ export class DatabaseStorage implements IStorage {
 
   async getTrackingClicks(filters?: any): Promise<any[]> {
     try {
-      // Return mock tracking clicks data for antifraud analysis
-      return [
-        {
-          id: '1',
-          clickId: 'test_click_001',
-          partnerId: '04b06c87-c6cf-4409-af64-3e1234567890',
-          isBot: false,
-          vpnDetected: false,
-          fraudScore: 15,
-          riskLevel: 'low',
-          ipAddress: '192.168.1.1',
-          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          timestamp: new Date().toISOString()
-        },
-        {
-          id: '2', 
-          clickId: 'test_click_002',
-          partnerId: '04b06c87-c6cf-4409-af64-3e1234567891',
-          isBot: true,
-          vpnDetected: false,
-          fraudScore: 85,
-          riskLevel: 'high',
-          ipAddress: '10.0.0.1',
-          userAgent: 'bot/1.0',
-          timestamp: new Date().toISOString()
-        }
-      ];
+      let query = db.select().from(newTrackingClicks);
+      
+      if (filters?.partnerId) {
+        query = query.where(eq(newTrackingClicks.partnerId, filters.partnerId));
+      }
+      
+      if (filters?.offerId) {
+        query = query.where(eq(newTrackingClicks.offerId, filters.offerId));
+      }
+      
+      const results = await query;
+      
+      return results;
     } catch (error) {
       console.error('Error getting tracking clicks:', error);
       return [];
+    }
+  }
+
+  async createTrackingClick(data: any): Promise<any> {
+    try {
+      const [result] = await db
+        .insert(newTrackingClicks)
+        .values(data)
+        .returning();
+      return result;
+    } catch (error) {
+      console.error('Error creating tracking click:', error);
+      throw error;
+    }
+  }
+
+  async updateTrackingClick(clickId: string, updates: any): Promise<any> {
+    try {
+      const [result] = await db
+        .update(newTrackingClicks)
+        .set(updates)
+        .where(eq(newTrackingClicks.id, clickId))
+        .returning();
+      return result;
+    } catch (error) {
+      console.error('Error updating tracking click:', error);
+      throw error;
     }
   }
 

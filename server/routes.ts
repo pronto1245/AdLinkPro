@@ -3359,37 +3359,174 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Partner Analytics with real tracking data
+  // Partner Analytics с реальными данными из tracking clicks
   app.get("/api/partner/analytics", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
-      const { tab = 'overview', page = 1, limit = 50, startDate, endDate, offer } = req.query;
+      const { tab = 'overview', page = '1', limit = '50' } = req.query;
+      const userId = authUser.id;
       
-      console.log(`Getting partner analytics for ${authUser.id}, tab: ${tab}`);
+      console.log(`Getting partner analytics for ${userId}, tab: ${tab}`);
+
+      // Получить реальные tracking clicks для партнера
+      const trackingClicks = await storage.getTrackingClicks({ partnerId: userId });
       
-      // Return simplified analytics for now to avoid schema conflicts
-      const analytics = {
-        summary: {
-          totalClicks: 0,
-          totalConversions: 0,
-          totalRevenue: 0,
-          conversionRate: 0,
-          epc: 0
-        },
-        data: [],
-        pagination: {
-          page: parseInt(page as string),
-          limit: parseInt(limit as string),
-          total: 0,
-          totalPages: 0
-        },
-        geoStats: null,
-        deviceStats: null
+      // Вычислить метрики
+      const totalClicks = trackingClicks.length;
+      const conversions = trackingClicks.filter(click => click.status === 'conversion');
+      const totalConversions = conversions.length;
+      const totalRevenue = conversions.reduce((sum, conv) => sum + parseFloat(conv.revenue || '0'), 0);
+      const cr = totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : '0.00';
+      const epc = totalClicks > 0 ? (totalRevenue / totalClicks).toFixed(2) : '0.00';
+
+      // Базовые метрики
+      const summary = {
+        totalClicks,
+        totalConversions,
+        totalRevenue: totalRevenue.toFixed(2),
+        conversionRate: cr,
+        epc,
+        currency: 'USD'
       };
+
+      let data = [];
       
-      res.json(analytics);
+      // Формировать данные по вкладкам
+      if (tab === 'overview') {
+        data = [{
+          date: new Date().toISOString().split('T')[0],
+          clicks: totalClicks,
+          conversions: totalConversions,
+          revenue: totalRevenue.toFixed(2),
+          cr: cr + '%',
+          epc: '$' + epc
+        }];
+      } else if (tab === 'geography') {
+        // Группировка по странам
+        const countryStats = {};
+        trackingClicks.forEach(click => {
+          const country = click.country || 'Unknown';
+          if (!countryStats[country]) {
+            countryStats[country] = { clicks: 0, conversions: 0, revenue: 0 };
+          }
+          countryStats[country].clicks++;
+          if (click.status === 'conversion') {
+            countryStats[country].conversions++;
+            countryStats[country].revenue += parseFloat(click.revenue || '0');
+          }
+        });
+        
+        data = Object.entries(countryStats).map(([country, stats]: [string, any]) => ({
+          country,
+          clicks: stats.clicks,
+          conversions: stats.conversions,
+          revenue: stats.revenue.toFixed(2),
+          cr: stats.clicks > 0 ? ((stats.conversions / stats.clicks) * 100).toFixed(2) + '%' : '0.00%',
+          epc: stats.clicks > 0 ? '$' + (stats.revenue / stats.clicks).toFixed(2) : '$0.00'
+        }));
+      } else if (tab === 'devices') {
+        // Группировка по устройствам
+        const deviceStats = {};
+        trackingClicks.forEach(click => {
+          const device = click.device || 'Unknown';
+          if (!deviceStats[device]) {
+            deviceStats[device] = { clicks: 0, conversions: 0, revenue: 0 };
+          }
+          deviceStats[device].clicks++;
+          if (click.status === 'conversion') {
+            deviceStats[device].conversions++;
+            deviceStats[device].revenue += parseFloat(click.revenue || '0');
+          }
+        });
+        
+        data = Object.entries(deviceStats).map(([device, stats]: [string, any]) => ({
+          device,
+          clicks: stats.clicks,
+          conversions: stats.conversions,
+          revenue: stats.revenue.toFixed(2),
+          cr: stats.clicks > 0 ? ((stats.conversions / stats.clicks) * 100).toFixed(2) + '%' : '0.00%',
+          epc: stats.clicks > 0 ? '$' + (stats.revenue / stats.clicks).toFixed(2) : '$0.00'
+        }));
+      } else if (tab === 'sources') {
+        // Группировка по источникам (браузеры)
+        const sourceStats = {};
+        trackingClicks.forEach(click => {
+          const browser = click.browser || 'Unknown';
+          if (!sourceStats[browser]) {
+            sourceStats[browser] = { clicks: 0, conversions: 0, revenue: 0 };
+          }
+          sourceStats[browser].clicks++;
+          if (click.status === 'conversion') {
+            sourceStats[browser].conversions++;
+            sourceStats[browser].revenue += parseFloat(click.revenue || '0');
+          }
+        });
+        
+        data = Object.entries(sourceStats).map(([browser, stats]: [string, any]) => ({
+          source: browser,
+          clicks: stats.clicks,
+          conversions: stats.conversions,
+          revenue: stats.revenue.toFixed(2),
+          cr: stats.clicks > 0 ? ((stats.conversions / stats.clicks) * 100).toFixed(2) + '%' : '0.00%',
+          epc: stats.clicks > 0 ? '$' + (stats.revenue / stats.clicks).toFixed(2) : '$0.00'
+        }));
+      } else if (tab === 'subid') {
+        // Группировка по SubID
+        const subIdStats = {};
+        trackingClicks.forEach(click => {
+          const sub1 = click.sub_1 || 'No SubID';
+          if (!subIdStats[sub1]) {
+            subIdStats[sub1] = { 
+              clicks: 0, conversions: 0, revenue: 0,
+              sub_1: click.sub_1, sub_2: click.sub_2, sub_3: click.sub_3, sub_4: click.sub_4,
+              sub_5: click.sub_5, sub_6: click.sub_6, sub_7: click.sub_7, sub_8: click.sub_8,
+              sub_9: click.sub_9, sub_10: click.sub_10, sub_11: click.sub_11, sub_12: click.sub_12,
+              sub_13: click.sub_13, sub_14: click.sub_14, sub_15: click.sub_15, sub_16: click.sub_16
+            };
+          }
+          subIdStats[sub1].clicks++;
+          if (click.status === 'conversion') {
+            subIdStats[sub1].conversions++;
+            subIdStats[sub1].revenue += parseFloat(click.revenue || '0');
+          }
+        });
+        
+        data = Object.values(subIdStats).map((stats: any) => ({
+          ...stats,
+          revenue: stats.revenue.toFixed(2),
+          cr: stats.clicks > 0 ? ((stats.conversions / stats.clicks) * 100).toFixed(2) + '%' : '0.00%',
+          epc: stats.clicks > 0 ? '$' + (stats.revenue / stats.clicks).toFixed(2) : '$0.00'
+        }));
+      } else if (tab === 'details') {
+        // Детальные клики с partnerId и clickId
+        data = trackingClicks.map(click => ({
+          clickId: click.id,
+          partnerId: click.partnerId,
+          offerId: click.offerId,
+          country: click.country || 'Unknown',
+          device: click.device || 'Unknown',
+          browser: click.browser || 'Unknown',
+          status: click.status || 'click',
+          revenue: click.revenue || '0.00',
+          timestamp: click.createdAt,
+          sub_1: click.sub_1,
+          sub_2: click.sub_2,
+          sub_3: click.sub_3
+        }));
+      }
+
+      res.json({
+        summary,
+        data,
+        pagination: {
+          currentPage: parseInt(page as string),
+          totalPages: Math.ceil(data.length / parseInt(limit as string)),
+          totalItems: data.length,
+          itemsPerPage: parseInt(limit as string)
+        }
+      });
     } catch (error) {
-      console.error("Get partner analytics error:", error);
+      console.error("Partner analytics error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -3417,6 +3554,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get fresh token error:", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Трекинг клики и конверсии для заполнения аналитики данными
+  app.post("/api/tracking/click", async (req, res) => {
+    try {
+      const { 
+        partnerId, 
+        offerId, 
+        clickId, 
+        country, 
+        device, 
+        browser, 
+        os,
+        sub_1, sub_2, sub_3, sub_4, sub_5, sub_6, sub_7, sub_8,
+        sub_9, sub_10, sub_11, sub_12, sub_13, sub_14, sub_15, sub_16,
+        userAgent,
+        ipAddress,
+        referrer
+      } = req.body;
+
+      // Создаем запись клика
+      const clickData = {
+        id: clickId || crypto.randomUUID(),
+        partnerId,
+        offerId,
+        country: country || 'Unknown',
+        device: device || 'Unknown',
+        browser: browser || 'Unknown',
+        os: os || 'Unknown',
+        sub_1, sub_2, sub_3, sub_4, sub_5, sub_6, sub_7, sub_8,
+        sub_9, sub_10, sub_11, sub_12, sub_13, sub_14, sub_15, sub_16,
+        userAgent: userAgent || req.get('User-Agent'),
+        ipAddress: ipAddress || req.ip,
+        referrer: referrer || req.get('Referer'),
+        status: 'click',
+        createdAt: new Date(),
+        revenue: '0.00'
+      };
+
+      await storage.createTrackingClick(clickData);
+      
+      console.log(`Click tracked: ${clickId} for partner ${partnerId} on offer ${offerId}`);
+      
+      res.json({ success: true, clickId: clickData.id });
+    } catch (error) {
+      console.error("Click tracking error:", error);
+      res.status(500).json({ error: "Failed to track click" });
+    }
+  });
+
+  // Трекинг конверсий
+  app.post("/api/tracking/conversion", async (req, res) => {
+    try {
+      const { clickId, status, revenue } = req.body;
+      
+      if (!clickId) {
+        return res.status(400).json({ error: "Click ID required" });
+      }
+
+      // Обновляем статус клика
+      await storage.updateTrackingClick(clickId, {
+        status: status || 'conversion',
+        revenue: revenue || '10.00',
+        convertedAt: new Date()
+      });
+      
+      console.log(`Conversion tracked: ${clickId} with status ${status} and revenue ${revenue}`);
+      
+      res.json({ success: true, clickId, status, revenue });
+    } catch (error) {
+      console.error("Conversion tracking error:", error);
+      res.status(500).json({ error: "Failed to track conversion" });
+    }
+  });
+
+  // Генерация тестовых данных для аналитики  
+  app.post("/api/tracking/generate-test-data", async (req, res) => {
+    try {
+      const partnerId = '04b06c87-c6cf-4409-af64-3e05bf6c9c7c'; // test_affiliate
+      const offers = await storage.getOffers();
+      
+      if (!offers || offers.length === 0) {
+        return res.status(404).json({ error: "No offers found" });
+      }
+
+      const countries = ['US', 'GB', 'DE', 'FR', 'IT', 'ES', 'CA', 'AU', 'BR', 'IN'];
+      const devices = ['Desktop', 'Mobile', 'Tablet'];
+      const browsers = ['Chrome', 'Firefox', 'Safari', 'Edge'];
+      const operatingSystems = ['Windows', 'macOS', 'Linux', 'iOS', 'Android'];
+      
+      const testClicks = [];
+      
+      // Генерируем 50 тестовых кликов
+      for (let i = 0; i < 50; i++) {
+        const offer = offers[Math.floor(Math.random() * offers.length)];
+        const country = countries[Math.floor(Math.random() * countries.length)];
+        const device = devices[Math.floor(Math.random() * devices.length)];
+        const browser = browsers[Math.floor(Math.random() * browsers.length)];
+        const os = operatingSystems[Math.floor(Math.random() * operatingSystems.length)];
+        
+        // Случайная конверсия (20% шанс)
+        const isConversion = Math.random() < 0.2;
+        
+        const clickData = {
+          id: crypto.randomUUID(),
+          partnerId,
+          offerId: offer.id,
+          country,
+          device,
+          browser,
+          os,
+          sub_1: `sub1_${i}`,
+          sub_2: `sub2_${i}`,
+          sub_3: `sub3_${i}`,
+          sub_4: null,
+          sub_5: null,
+          sub_6: null,
+          sub_7: null,
+          sub_8: null,
+          sub_9: null,
+          sub_10: null,
+          sub_11: null,
+          sub_12: null,
+          sub_13: null,
+          sub_14: null,
+          sub_15: null,
+          sub_16: null,
+          userAgent: `Mozilla/5.0 (Test) ${browser}`,
+          ipAddress: `192.168.1.${Math.floor(Math.random() * 255)}`,
+          referrer: 'https://test-referrer.com',
+          status: isConversion ? 'conversion' : 'click',
+          revenue: isConversion ? (Math.random() * 100).toFixed(2) : '0.00',
+          createdAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000), // За последнюю неделю
+          convertedAt: isConversion ? new Date() : null
+        };
+        
+        testClicks.push(clickData);
+      }
+      
+      // Сохраняем все клики
+      for (const click of testClicks) {
+        await storage.createTrackingClick(click);
+      }
+      
+      console.log(`Generated ${testClicks.length} test clicks for analytics`);
+      
+      res.json({ 
+        success: true, 
+        generated: testClicks.length,
+        conversions: testClicks.filter(c => c.status === 'conversion').length
+      });
+    } catch (error) {
+      console.error("Test data generation error:", error);
+      res.status(500).json({ error: "Failed to generate test data" });
     }
   });
 

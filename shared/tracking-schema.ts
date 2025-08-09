@@ -7,12 +7,12 @@ import { users, offers } from "./schema";
 // Comprehensive tracking clicks with all parameters
 export const trackingClicks = pgTable("tracking_clicks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  clickId: text("click_id").notNull().unique(), // Уникальный 12-символьный ID
+  clickId: text("click_id"), // Уникальный 12-символьный ID
   
-  // IDs and references
-  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
-  offerId: varchar("offer_id").notNull().references(() => offers.id),
-  partnerId: varchar("partner_id").notNull().references(() => users.id),
+  // IDs as strings (no foreign key constraints to avoid migration issues)
+  advertiserId: varchar("advertiser_id"),
+  offerId: varchar("offer_id"),
+  partnerId: varchar("partner_id"),
   partnerNumber: text("partner_number"), // 8-символьный ID партнера
   
   // Tracking link data
@@ -121,10 +121,10 @@ export const dailyStatistics = pgTable("daily_statistics", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   date: timestamp("date").notNull(),
   
-  // IDs for filtering
-  advertiserId: varchar("advertiser_id").references(() => users.id),
-  offerId: varchar("offer_id").references(() => offers.id),
-  partnerId: varchar("partner_id").references(() => users.id),
+  // IDs for filtering (no foreign keys)
+  advertiserId: varchar("advertiser_id"),
+  offerId: varchar("offer_id"),
+  partnerId: varchar("partner_id"),
   
   // Breakdown dimensions
   country: text("country"),
@@ -172,10 +172,10 @@ export const hourlyStatistics = pgTable("hourly_statistics", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   hour: timestamp("hour").notNull(), // Hour timestamp
   
-  // IDs for filtering
-  advertiserId: varchar("advertiser_id").references(() => users.id),
-  offerId: varchar("offer_id").references(() => offers.id),
-  partnerId: varchar("partner_id").references(() => users.id),
+  // IDs for filtering (no foreign keys)
+  advertiserId: varchar("advertiser_id"),
+  offerId: varchar("offer_id"),
+  partnerId: varchar("partner_id"),
   
   // Breakdown dimensions
   country: text("country"),
@@ -216,54 +216,4 @@ export type InsertDailyStatistics = z.infer<typeof insertDailyStatisticsSchema>;
 export type HourlyStatistics = typeof hourlyStatistics.$inferSelect;
 export type InsertHourlyStatistics = z.infer<typeof insertHourlyStatisticsSchema>;
 
-// Relations
-export const trackingClicksRelations = relations(trackingClicks, ({ one }) => ({
-  advertiser: one(users, {
-    fields: [trackingClicks.advertiserId],
-    references: [users.id],
-    relationName: 'advertiserClicks'
-  }),
-  offer: one(offers, {
-    fields: [trackingClicks.offerId],
-    references: [offers.id],
-  }),
-  partner: one(users, {
-    fields: [trackingClicks.partnerId],
-    references: [users.id],
-    relationName: 'partnerClicks'
-  }),
-}));
-
-export const dailyStatisticsRelations = relations(dailyStatistics, ({ one }) => ({
-  advertiser: one(users, {
-    fields: [dailyStatistics.advertiserId],
-    references: [users.id],
-    relationName: 'advertiserStats'
-  }),
-  offer: one(offers, {
-    fields: [dailyStatistics.offerId],
-    references: [offers.id],
-  }),
-  partner: one(users, {
-    fields: [dailyStatistics.partnerId],
-    references: [users.id],
-    relationName: 'partnerStats'
-  }),
-}));
-
-export const hourlyStatisticsRelations = relations(hourlyStatistics, ({ one }) => ({
-  advertiser: one(users, {
-    fields: [hourlyStatistics.advertiserId],
-    references: [users.id],
-    relationName: 'advertiserHourlyStats'
-  }),
-  offer: one(offers, {
-    fields: [hourlyStatistics.offerId],
-    references: [offers.id],
-  }),
-  partner: one(users, {
-    fields: [hourlyStatistics.partnerId],
-    references: [users.id],
-    relationName: 'partnerHourlyStats'
-  }),
-}));
+// Убрал Relations чтобы избежать circular dependencies
