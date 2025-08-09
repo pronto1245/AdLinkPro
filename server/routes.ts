@@ -3895,16 +3895,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Отправить постбеки для каждого профиля
         for (const profile of profiles) {
           if (profile.enabled) {
-            // Заменить макросы в URL
+            // Заменить макросы в URL - используем множественные форматы для Кейтаро
             let postbackUrl = profile.endpointUrl;
             postbackUrl = postbackUrl.replace('{clickid}', clickId);
-            postbackUrl = postbackUrl.replace('{status}', status || 'conversion');
+            postbackUrl = postbackUrl.replace('{click_id}', clickId); 
+            postbackUrl = postbackUrl.replace('{client_id}', clickId);
+            postbackUrl = postbackUrl.replace('{status}', status || 'approved');
             postbackUrl = postbackUrl.replace('{revenue}', revenue || '0.00');
             postbackUrl = postbackUrl.replace('{payout}', revenue || '0.00');
+            postbackUrl = postbackUrl.replace('{sum}', revenue || '0.00');
             postbackUrl = postbackUrl.replace('{country}', click.country || '');
             postbackUrl = postbackUrl.replace('{sub1}', click.sub_1 || '');
             postbackUrl = postbackUrl.replace('{sub2}', click.sub_2 || '');
             postbackUrl = postbackUrl.replace('{sub3}', click.sub_3 || '');
+            
+            // Добавляем дополнительные параметры для Кейтаро
+            const urlObj = new URL(postbackUrl);
+            urlObj.searchParams.set('action', 'conversion');
+            urlObj.searchParams.set('offer_id', click.offer_id || '');
+            urlObj.searchParams.set('partner_id', click.partner_id || '');
+            postbackUrl = urlObj.toString();
             
             console.log(`📤 Sending postback to: ${postbackUrl}`);
             
