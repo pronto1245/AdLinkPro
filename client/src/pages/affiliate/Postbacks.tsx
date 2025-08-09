@@ -649,9 +649,20 @@ export function AffiliatePostbacks() {
               {console.log('🎨 PROFILES LENGTH:', profiles?.length)}
               {console.log('🎨 PROFILES TYPE:', typeof profiles)}
               {console.log('🎨 PROFILES ARRAY CHECK:', Array.isArray(profiles))}
+              {console.log('🎨 MUTATIONS STATE:', {
+                createPending: createMutation.isPending,
+                updatePending: updateMutation.isPending,
+                deletePending: deleteMutation.isPending,
+                testPending: testMutation.isPending
+              })}
               
               {profiles?.length > 0 ? profiles.map((profile: PostbackProfile, index: number) => {
                 console.log(`🎨 RENDERING PROFILE #${index}:`, profile);
+                console.log(`🎨 BUTTON STATES FOR ${profile.id}:`, {
+                  deletePending: deleteMutation.isPending,
+                  updatePending: updateMutation.isPending,
+                  testPending: testMutation.isPending
+                });
                 return (
                 <Card key={profile.id} className="hover:shadow-md transition-shadow border-4 border-green-500 bg-green-50">
                   <CardHeader className="pb-3">
@@ -716,10 +727,11 @@ export function AffiliatePostbacks() {
                           }}
                           disabled={testMutation.isPending}
                           title="Протестировать постбек"
+                          className={testMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
                           data-testid={`button-test-${profile.id}`}
                         >
                           <Play className="h-3 w-3 mr-1" />
-                          Тест
+                          {testMutation.isPending ? 'Тестирование...' : 'Тест'}
                         </Button>
                         <Button
                           variant="outline"
@@ -728,16 +740,19 @@ export function AffiliatePostbacks() {
                             e.preventDefault();
                             e.stopPropagation();
                             console.log('🔄 EDIT button clicked for profile:', profile);
+                            console.log('🔄 Current modal state:', { isEditModalOpen, selectedProfile });
                             console.log('🔄 Setting selectedProfile and opening modal...');
                             setSelectedProfile(profile);
                             setIsEditModalOpen(true);
-                            console.log('🔄 Modal should now be open');
+                            console.log('🔄 Modal state after set:', { isEditModalOpen: true, selectedProfile: profile });
                           }}
+                          disabled={updateMutation.isPending}
                           title="Редактировать профиль"
+                          className={updateMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
                           data-testid={`button-edit-${profile.id}`}
                         >
                           <Settings className="h-3 w-3 mr-1" />
-                          Настройки
+                          {updateMutation.isPending ? 'Обновление...' : 'Настройки'}
                         </Button>
                         <Button
                           variant="outline"
@@ -762,7 +777,7 @@ export function AffiliatePostbacks() {
                           }}
                           disabled={deleteMutation.isPending}
                           title="Удалить профиль"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className={`text-red-600 hover:text-red-700 hover:bg-red-50 ${deleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                           data-testid={`button-delete-${profile.id}`}
                         >
                           <Trash2 className="h-3 w-3 mr-1" />
