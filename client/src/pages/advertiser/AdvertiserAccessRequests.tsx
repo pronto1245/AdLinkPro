@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { OfferLogo } from "@/components/ui/offer-logo";
 import { 
   Check, 
   X, 
@@ -67,6 +68,7 @@ interface OfferAccessRequest {
   offerName: string;
   offerPayout: string;
   offerCurrency: string;
+  offerLogo?: string | null;
 }
 
 export default function AdvertiserAccessRequests() {
@@ -332,9 +334,12 @@ export default function AdvertiserAccessRequests() {
                         {/* Оффер */}
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
-                              <Target className="w-5 h-5 text-gray-500" />
-                            </div>
+                            <OfferLogo 
+                              name={request.offerName}
+                              logo={request.offerLogo}
+                              size="md"
+                              showTooltip={true}
+                            />
                             <div>
                               <div className="font-medium">{request.offerName}</div>
                               <div className="text-sm text-muted-foreground">

@@ -8110,6 +8110,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         offerCategory: offers.category,
         offerPayout: offers.payout,
         offerPayoutType: offers.payoutType,
+        offerLogo: offers.logo,
         // Partner details
         partnerUsername: users.username,
         partnerEmail: users.email,
@@ -8122,31 +8123,28 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       .where(eq(offerAccessRequests.advertiserId, userId))
       .orderBy(sql`${offerAccessRequests.requestedAt} DESC`);
 
-      // Transform to match the expected format
+      // Transform to match the expected format (flat structure)
       const formattedRequests = requests.map(req => ({
         id: req.id,
         offerId: req.offerId,
         partnerId: req.partnerId,
+        advertiserId: userId,
         status: req.status,
-        requestNote: req.requestNote,
-        responseNote: req.responseNote,
-        requestedAt: req.requestedAt,
-        reviewedAt: req.reviewedAt,
-        offer: {
-          id: req.offerId,
-          name: req.offerName,
-          category: req.offerCategory,
-          payoutType: req.offerPayoutType,
-          payoutAmount: req.offerPayout,
-          currency: 'USD'
-        },
-        partner: {
-          id: req.partnerId,
-          username: req.partnerUsername,
-          email: req.partnerEmail,
-          firstName: req.partnerFirstName,
-          lastName: req.partnerLastName
-        }
+        message: req.requestNote,
+        createdAt: req.requestedAt,
+        approvedAt: req.reviewedAt,
+        updatedAt: req.reviewedAt || req.requestedAt,
+        // Flat partner fields
+        partnerName: req.partnerFirstName && req.partnerLastName 
+          ? `${req.partnerFirstName} ${req.partnerLastName}` 
+          : (req.partnerFirstName || req.partnerLastName || ''),
+        partnerUsername: req.partnerUsername,
+        partnerEmail: req.partnerEmail,
+        // Flat offer fields
+        offerName: req.offerName,
+        offerPayout: req.offerPayout || '0',
+        offerCurrency: 'USD',
+        offerLogo: req.offerLogo
       }));
 
       res.json(formattedRequests);

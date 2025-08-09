@@ -25,8 +25,7 @@ export function OfferLogo({
 }: OfferLogoProps) {
   const [imageError, setImageError] = useState(false);
   
-  // Отладочный лог (временно)
-  console.log("OfferLogo render:", { name, logo, size, imageError, willShowImage: !!(logo && !imageError) });
+
   
   // Получаем первые две буквы из названия оффера
   const getInitials = (offerName: string): string => {
@@ -80,14 +79,13 @@ export function OfferLogo({
     <div 
       className={cn(
         "relative inline-flex items-center justify-center rounded-lg font-semibold",
-        "bg-gradient-to-br from-red-500 to-pink-600 text-white border-4 border-yellow-300",
-        "shadow-lg",
+        "bg-gradient-to-br from-blue-500 to-purple-600 text-white",
+        "shadow-sm border border-gray-200 dark:border-gray-700",
         sizeClasses[size],
         className
       )}
       title={showTooltip ? name : undefined}
       data-testid="offer-logo-initials"
-      style={{ zIndex: 999 }}
     >
       {initials}
     </div>
