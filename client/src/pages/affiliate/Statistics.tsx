@@ -302,7 +302,7 @@ export default function Statistics() {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="p-6 bg-white min-h-screen">
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-6">
             <div className="text-center">
@@ -316,7 +316,7 @@ export default function Statistics() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 bg-white min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
