@@ -53,16 +53,30 @@ const mockPostbackProfiles: MockPostbackProfile[] = [
     ownerScope: 'advertiser',
     ownerId: '1',
     priority: 100,
-    endpointUrl: 'https://keitaro.example.com/api/v1/conversions',
+    endpointUrl: 'https://keitaro.example.com/click.php',
     method: 'GET',
     paramsTemplate: {
       'subid': '{{clickid}}',
       'status': '{{status_mapped}}',
-      'payout': '{{revenue}}'
+      'payout': '{{revenue}}',
+      'currency': '{{currency}}',
+      'txid': '{{txid}}'
     },
     statusMap: {
-      'reg': { 'approved': 'lead', 'declined': 'trash' },
-      'purchase': { 'approved': 'sale', 'declined': 'trash', 'refunded': 'refund', 'chargeback': 'chargeback' }
+      'reg': {
+        'initiated': 'lead',
+        'pending': 'lead',
+        'approved': 'lead',
+        'declined': 'reject'
+      },
+      'purchase': {
+        'initiated': 'sale',
+        'pending': 'sale',
+        'approved': 'sale',
+        'declined': 'reject',
+        'refunded': 'refund',
+        'chargeback': 'chargeback'
+      }
     },
     filterRevenueGt0: false,
     retries: 5,
@@ -70,8 +84,45 @@ const mockPostbackProfiles: MockPostbackProfile[] = [
     backoffBaseSec: 2
   },
   {
-    id: 'profile_binom_backup',
-    name: 'Binom Backup Tracker',
+    id: 'profile_keitaro_backup',
+    name: 'Keitaro Backup Tracker',
+    enabled: true,
+    ownerScope: 'advertiser',
+    ownerId: '1',
+    priority: 90,
+    endpointUrl: 'https://backup.keitaro.example.com/click.php',
+    method: 'GET',
+    paramsTemplate: {
+      'subid': '{{clickid}}',
+      'status': '{{status_mapped}}',
+      'payout': '{{revenue}}',
+      'currency': '{{currency}}',
+      'txid': '{{txid}}'
+    },
+    statusMap: {
+      'reg': {
+        'initiated': 'lead',
+        'pending': 'lead',
+        'approved': 'lead',
+        'declined': 'reject'
+      },
+      'purchase': {
+        'initiated': 'sale',
+        'pending': 'sale',
+        'approved': 'sale',
+        'declined': 'reject',
+        'refunded': 'refund',
+        'chargeback': 'chargeback'
+      }
+    },
+    filterRevenueGt0: false,
+    retries: 3,
+    timeoutMs: 8000,
+    backoffBaseSec: 3
+  },
+  {
+    id: 'profile_binom_tracker',
+    name: 'Binom Tracker',
     enabled: true,
     ownerScope: 'advertiser',
     ownerId: '1',
@@ -84,8 +135,18 @@ const mockPostbackProfiles: MockPostbackProfile[] = [
       'payout': '{{revenue}}'
     },
     statusMap: {
-      'reg': { 'approved': 'lead', 'declined': 'trash' },
-      'purchase': { 'approved': 'conversion', 'declined': 'trash' }
+      'reg': { 
+        'approved': 'lead', 
+        'declined': 'trash',
+        'pending': 'lead',
+        'initiated': 'lead'
+      },
+      'purchase': { 
+        'approved': 'conversion', 
+        'declined': 'trash',
+        'pending': 'conversion',
+        'initiated': 'conversion'
+      }
     },
     filterRevenueGt0: true,
     retries: 3,

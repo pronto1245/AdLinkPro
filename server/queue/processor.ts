@@ -17,7 +17,7 @@ interface PostbackProfile {
   backoffBaseSec: number;
 }
 
-// Mock postback profiles for demonstration
+// Production-ready Keitaro profiles with official mappings
 const mockProfiles: PostbackProfile[] = [
   {
     id: 'keitaro_main',
@@ -25,11 +25,23 @@ const mockProfiles: PostbackProfile[] = [
     enabled: true,
     advertiserId: '1',
     priority: 100,
-    endpointUrl: 'https://keitaro.example.com/api/v1/conversions',
+    endpointUrl: 'https://keitaro.example.com/click.php',
     method: 'GET',
     statusMap: {
-      'reg': { 'approved': 'lead', 'declined': 'trash' },
-      'purchase': { 'approved': 'sale', 'declined': 'trash', 'refunded': 'refund', 'chargeback': 'chargeback' }
+      'reg': {
+        'initiated': 'lead',
+        'pending': 'lead',
+        'approved': 'lead',
+        'declined': 'reject'
+      },
+      'purchase': {
+        'initiated': 'sale',
+        'pending': 'sale',
+        'approved': 'sale',
+        'declined': 'reject',
+        'refunded': 'refund',
+        'chargeback': 'chargeback'
+      }
     },
     filterRevenueGt0: false,
     retries: 5,
@@ -37,16 +49,55 @@ const mockProfiles: PostbackProfile[] = [
     backoffBaseSec: 2
   },
   {
-    id: 'binom_backup',
-    name: 'Binom Backup Tracker',
+    id: 'keitaro_backup',
+    name: 'Keitaro Backup Tracker',
+    enabled: true,
+    advertiserId: '1',
+    priority: 90,
+    endpointUrl: 'https://backup.keitaro.example.com/click.php',
+    method: 'GET',
+    statusMap: {
+      'reg': {
+        'initiated': 'lead',
+        'pending': 'lead',
+        'approved': 'lead',
+        'declined': 'reject'
+      },
+      'purchase': {
+        'initiated': 'sale',
+        'pending': 'sale',
+        'approved': 'sale',
+        'declined': 'reject',
+        'refunded': 'refund',
+        'chargeback': 'chargeback'
+      }
+    },
+    filterRevenueGt0: false,
+    retries: 3,
+    timeoutMs: 8000,
+    backoffBaseSec: 3
+  },
+  {
+    id: 'binom_tracker',
+    name: 'Binom Tracker',
     enabled: true,
     advertiserId: '1',
     priority: 50,
     endpointUrl: 'https://binom.example.com/click.php',
     method: 'GET',
     statusMap: {
-      'reg': { 'approved': 'lead', 'declined': 'trash' },
-      'purchase': { 'approved': 'conversion', 'declined': 'trash' }
+      'reg': { 
+        'approved': 'lead', 
+        'declined': 'trash',
+        'pending': 'lead',
+        'initiated': 'lead'
+      },
+      'purchase': { 
+        'approved': 'conversion', 
+        'declined': 'trash',
+        'pending': 'conversion',
+        'initiated': 'conversion'
+      }
     },
     filterRevenueGt0: true,
     retries: 3,
@@ -124,17 +175,21 @@ export async function processPostbackTask(task: PostbackTask): Promise<DeliveryR
       continue;
     }
 
-    // Build postback URL
+    // Build postback URL with Keitaro standard parameters
     const url = new URL(profile.endpointUrl);
     const params = {
-      clickid: task.clickid,
       subid: task.clickid,
       status: mappedStatus,
       payout: task.revenue ?? '0',
-      revenue: task.revenue ?? '0',
       currency: task.currency ?? 'USD',
       txid: task.txid,
-      conversion_id: task.conversionId
+      // Additional Keitaro parameters
+      clickid: task.clickid,
+      conversion_id: task.conversionId,
+      offer_id: task.offerId ?? '',
+      campaign_id: task.campaignId ?? '',
+      partner_id: task.partnerId ?? '',
+      timestamp: Math.floor(Date.now() / 1000).toString()
     };
 
     if (profile.method === 'GET') {

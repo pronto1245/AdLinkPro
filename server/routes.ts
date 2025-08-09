@@ -1500,6 +1500,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // Keitaro integration endpoints
+  app.get('/api/keitaro/templates', async (req, res) => {
+    try {
+      const { getKeitaroProfileTemplates } = await import('./queue/keitaro.js');
+      const templates = getKeitaroProfileTemplates();
+      res.json({ templates });
+    } catch (error) {
+      console.error('Error getting Keitaro templates:', error);
+      res.status(500).json({ error: 'Failed to load Keitaro templates' });
+    }
+  });
+
+  app.post('/api/keitaro/test', async (req, res) => {
+    try {
+      const { domain, authToken } = req.body;
+      const { generateKeitaroTestPostback } = await import('./queue/keitaro.js');
+      
+      if (!domain) {
+        return res.status(400).json({ error: 'Domain is required' });
+      }
+      
+      const testData = generateKeitaroTestPostback(domain, authToken);
+      
+      console.log('🧪 Keitaro test postback generated:', {
+        domain,
+        url: testData.url,
+        clickid: testData.testData.clickid
+      });
+      
+      res.json({
+        success: true,
+        message: 'Test postback generated successfully',
+        testUrl: testData.url,
+        expectedResponse: testData.expectedResponse,
+        testClickId: testData.testData.clickid
+      });
+    } catch (error) {
+      console.error('Error generating Keitaro test:', error);
+      res.status(500).json({ error: 'Failed to generate test postback' });
+    }
+  });
   
   // Move middleware setup after team routes (so team routes work without middleware)
   // Security middleware disabled for development to fix team functionality

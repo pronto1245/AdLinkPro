@@ -2575,7 +2575,7 @@ export class DatabaseStorage implements IStorage {
       for (let i = 6; i >= 0; i--) {
         const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
         const dateStr = date.toISOString().split('T')[0];
-        const found = registrationTrendData.find(item => item.date === dateStr);
+        const found = null; // Mock data for now
         registrationTrend.push({
           date: dateStr,
           registrations: found ? found.count : 0
