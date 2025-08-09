@@ -281,10 +281,24 @@ export function AffiliatePostbacks() {
 
   // Update profile mutation
   const updateMutation = useMutation({
-    mutationFn: async (profileData: PostbackProfile) => {
+    mutationFn: async (profileData: any) => {
       console.log('Updating profile:', profileData);
       const token = localStorage.getItem('auth_token');
+      
+      // Ensure we have proper object structure
+      if (!profileData || typeof profileData !== 'object') {
+        throw new Error('Invalid profile data');
+      }
+      
       const { id, ...profile } = profileData;
+      
+      if (!id) {
+        throw new Error('Profile ID is required');
+      }
+      
+      console.log('Profile ID:', id);
+      console.log('Profile data to send:', profile);
+      
       const response = await fetch(`/api/postback/profiles/${id}`, {
         method: 'PUT',
         headers: {
@@ -293,12 +307,15 @@ export function AffiliatePostbacks() {
         },
         body: JSON.stringify(profile)
       });
+      
       console.log('Update response status:', response.status);
+      
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Update failed:', errorText);
         throw new Error(`Failed to update profile: ${response.status}`);
       }
+      
       const result = await response.json();
       console.log('Update success:', result);
       return result;
@@ -646,8 +663,8 @@ export function AffiliatePostbacks() {
                         <Switch
                           checked={profile.enabled}
                           onCheckedChange={(checked) => {
-                            const updatedProfile: PostbackProfile = { ...profile, enabled: checked };
-                            updateMutation.mutate(updatedProfile);
+                            console.log('Switch toggled:', checked, 'for profile:', profile.id);
+                            updateMutation.mutate({ ...profile, enabled: checked });
                           }}
                           data-testid={`switch-enabled-${profile.id}`}
                         />
@@ -830,7 +847,10 @@ export function AffiliatePostbacks() {
             <PostbackForm
               profile={selectedProfile}
               onSave={(data) => {
-                const updatedProfile: PostbackProfile = { ...selectedProfile, ...data };
+                console.log('PostbackForm onSave called with:', data);
+                console.log('Selected profile:', selectedProfile);
+                const updatedProfile = { ...selectedProfile, ...data };
+                console.log('Final profile data:', updatedProfile);
                 updateMutation.mutate(updatedProfile);
               }}
             />
