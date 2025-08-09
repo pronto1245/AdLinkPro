@@ -727,13 +727,12 @@ export default function OfferDetails() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg dark:bg-green-900/20">
-              <DollarSign className="w-5 h-5 text-green-600" />
+              <Calendar className="w-5 h-5 text-green-600" />
               <div>
-                <p className="font-semibold text-green-600">${offer?.payout || '0'} {offer?.currency || 'USD'}</p>
-                <p className="text-sm text-muted-foreground">Выплата за {(offer?.payoutType || 'CPA').toUpperCase()}</p>
-                <p className="text-xs text-green-600 mt-1">
+                <p className="font-semibold text-green-600">
                   {offer?.createdAt ? new Date(offer.createdAt).toLocaleDateString('ru-RU') : ''}
                 </p>
+                <p className="text-sm text-muted-foreground">Дата создания оффера</p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg dark:bg-blue-900/20">
