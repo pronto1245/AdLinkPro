@@ -58,6 +58,8 @@ export default function Statistics() {
 
   const [showSubParams, setShowSubParams] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
 
   // Функции для работы с фильтрами
   const applyFilters = () => {
@@ -85,16 +87,9 @@ export default function Statistics() {
     return offers[offerId as keyof typeof offers] || offerId;
   };
 
-  // Mock data для демонстрации
-  const mockStats = {
-    summary: {
-      totalClicks: 8450,
-      totalConversions: 324,
-      totalRevenue: 18650.50,
-      conversionRate: 3.83,
-      epc: 2.21
-    },
-    detailedStats: [
+  // Функция генерации расширенных mock данных для пагинации
+  const generateMockStats = () => {
+    const baseStats = [
       {
         id: 1,
         date: "2025-08-05",
@@ -207,13 +202,66 @@ export default function Statistics() {
         cr: 1.58,
         epc: 0.95
       }
-    ]
+    ];
+    
+    // Генерируем 120 записей для демонстрации пагинации
+    const extendedStats = [];
+    for (let i = 0; i < 120; i++) {
+      const baseIndex = i % baseStats.length;
+      const baseStat = baseStats[baseIndex];
+      
+      extendedStats.push({
+        ...baseStat,
+        id: i + 1,
+        date: `2025-08-${String(Math.floor(Math.random() * 8) + 1).padStart(2, '0')}`,
+        clickid: `${Math.random().toString(36).substr(2, 12)}${Math.random().toString(36).substr(2, 4)}`,
+        clicks: Math.floor(Math.random() * 500) + 100,
+        conversions: Math.floor(Math.random() * 20) + 1,
+        revenue: (Math.random() * 2000 + 200).toFixed(2),
+        cr: (Math.random() * 5 + 1).toFixed(2),
+        epc: (Math.random() * 5 + 0.5).toFixed(2)
+      });
+    }
+    
+    return {
+      summary: {
+        totalClicks: 8450,
+        totalConversions: 324,
+        totalRevenue: 18650.50,
+        conversionRate: 3.83,
+        epc: 2.21
+      },
+      detailedStats: extendedStats
+    };
   };
+
+  // Mock data для демонстрации
+  const mockStats = generateMockStats();
 
   const { data: statsData, isLoading } = useQuery({
     queryKey: ['/api/partner/statistics', filters],
     initialData: mockStats
   });
+
+  // Вычисления для пагинации
+  const totalItems = statsData?.detailedStats?.length || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPageData = statsData?.detailedStats?.slice(startIndex, endIndex) || [];
+
+  // Функции пагинации
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  const goToPreviousPage = () => {
+    setCurrentPage(prev => Math.max(1, prev - 1));
+  };
+
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(totalPages, prev + 1));
+  };
 
   if (isLoading) {
     return (
@@ -516,8 +564,61 @@ export default function Statistics() {
 
       {/* Detailed Stats Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Детальная статистика</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Детальная статистика</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Показано {startIndex + 1}-{Math.min(endIndex, totalItems)} из {totalItems} записей (Страница {currentPage} из {totalPages})
+            </p>
+          </div>
+          {/* Верхняя пагинация */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 1}
+              data-testid="button-prev-page-top"
+            >
+              ←
+            </Button>
+            <div className="flex gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => goToPage(pageNum)}
+                    data-testid={`button-page-${pageNum}-top`}
+                    className="w-8 h-8 p-0"
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+              data-testid="button-next-page-top"
+            >
+              →
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -536,7 +637,7 @@ export default function Statistics() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {statsData.detailedStats.map((stat) => (
+              {currentPageData.map((stat) => (
                 <TableRow key={stat.id}>
                   <TableCell className="font-medium text-gray-700 dark:text-gray-300">{stat.date}</TableCell>
                   <TableCell className="font-medium text-purple-700 dark:text-purple-300">{stat.offerName}</TableCell>
@@ -580,6 +681,60 @@ export default function Statistics() {
               ))}
             </TableBody>
           </Table>
+          
+          {/* Нижняя пагинация */}
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-muted-foreground">
+              Показано {startIndex + 1}-{Math.min(endIndex, totalItems)} из {totalItems} записей
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={goToPreviousPage}
+                disabled={currentPage === 1}
+                data-testid="button-prev-page-bottom"
+              >
+                ← Предыдущая
+              </Button>
+              <div className="flex gap-1">
+                {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 7) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 4) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 3) {
+                    pageNum = totalPages - 6 + i;
+                  } else {
+                    pageNum = currentPage - 3 + i;
+                  }
+                  
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => goToPage(pageNum)}
+                      data-testid={`button-page-${pageNum}-bottom`}
+                      className="w-10 h-8 p-0"
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                data-testid="button-next-page-bottom"
+              >
+                Следующая →
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
