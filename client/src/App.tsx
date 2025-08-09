@@ -73,6 +73,7 @@ import Finances from "@/pages/affiliate/Finances";
 import { useAuth } from "./contexts/auth-context";
 import * as React from 'react';
 import Login from "@/pages/auth/login";
+import UpdateToken from "@/pages/UpdateToken";
 import AdvertiserPostbacks from '@/pages/advertiser/Postbacks';
 import AdvertiserPostbackSettings from '@/pages/advertiser/AdvertiserPostbackSettings';
 import PostbackProfiles from '@/pages/advertiser/PostbackProfiles';
@@ -531,6 +532,9 @@ function Router() {
           </div>
         </div>
       </Route>
+      
+      {/* Utility routes */}
+      <Route path="/update-token" component={UpdateToken} />
       
       <Route component={NotFound} />
     </Switch>

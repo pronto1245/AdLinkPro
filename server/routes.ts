@@ -3394,6 +3394,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint для обновления токена в браузере
+  app.get("/api/get-fresh-token", async (req, res) => {
+    try {
+      // Создаем новый токен для партнера test_affiliate
+      const partnerUser = await storage.getUsers({ role: 'affiliate', username: 'test_affiliate' });
+      if (!partnerUser || partnerUser.length === 0) {
+        return res.status(404).json({ error: 'Partner user not found' });
+      }
+      
+      const user = partnerUser[0];
+      const token = jwt.sign(
+        { 
+          id: user.id, 
+          username: user.username, 
+          role: user.role,
+          advertiserId: user.advertiserId 
+        },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+      
+      res.json({ token, user: { id: user.id, username: user.username, role: user.role } });
+    } catch (error) {
+      console.error("Get fresh token error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Statistics
   app.get("/api/statistics", authenticateToken, async (req, res) => {
     try {
