@@ -3393,14 +3393,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Формировать данные по вкладкам
       if (tab === 'overview') {
-        data = [{
+        // Получить реальные офферы для отображения
+        const offerData = {};
+        for (const click of trackingClicks) {
+          const offerId = click.offer_id;
+          if (!offerData[offerId]) {
+            offerData[offerId] = { 
+              offerId, 
+              clicks: 0, 
+              conversions: 0, 
+              revenue: 0,
+              offerName: `Offer ${offerId.substring(0, 8)}` // Краткое имя оффера
+            };
+          }
+          offerData[offerId].clicks++;
+          if (click.status === 'conversion') {
+            offerData[offerId].conversions++;
+            offerData[offerId].revenue += parseFloat(click.revenue || '0');
+          }
+        }
+        
+        data = Object.values(offerData).map((offer: any) => ({
           date: new Date().toISOString().split('T')[0],
-          clicks: totalClicks,
-          conversions: totalConversions,
-          revenue: totalRevenue.toFixed(2),
-          cr: cr + '%',
-          epc: '$' + epc
-        }];
+          offer: offer.offerName,
+          offerId: offer.offerId,
+          clicks: offer.clicks,
+          conversions: offer.conversions,
+          revenue: offer.revenue.toFixed(2),
+          cr: offer.clicks > 0 ? ((offer.conversions / offer.clicks) * 100).toFixed(2) + '%' : '0.00%',
+          epc: offer.clicks > 0 ? '$' + (offer.revenue / offer.clicks).toFixed(2) : '$0.00'
+        }));
       } else if (tab === 'geography') {
         // Группировка по странам
         const countryStats = {};
@@ -3500,18 +3522,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (tab === 'details') {
         // Детальные клики с partnerId и clickId
         data = trackingClicks.map(click => ({
-          clickId: click.id,
-          partnerId: click.partnerId,
-          offerId: click.offerId,
+          id: click.id,
+          clickId: click.click_id || click.id,
+          partnerId: click.partner_id,
+          offerId: click.offer_id,
           country: click.country || 'Unknown',
           device: click.device || 'Unknown',
           browser: click.browser || 'Unknown',
           status: click.status || 'click',
-          revenue: click.revenue || '0.00',
-          timestamp: click.createdAt,
+          revenue: parseFloat(click.revenue || '0').toFixed(2),
+          timestamp: click.created_at,
+          createdAt: click.created_at,
+          ip: '192.168.1.1', // Добавляем mock IP для отображения
           sub_1: click.sub_1,
           sub_2: click.sub_2,
-          sub_3: click.sub_3
+          sub_3: click.sub_3,
+          sub_4: click.sub_4,
+          sub_5: click.sub_5,
+          sub_6: click.sub_6,
+          sub_7: click.sub_7,
+          sub_8: click.sub_8,
+          sub_9: click.sub_9,
+          sub_10: click.sub_10,
+          sub_11: click.sub_11,
+          sub_12: click.sub_12,
+          sub_13: click.sub_13,
+          sub_14: click.sub_14,
+          sub_15: click.sub_15,
+          sub_16: click.sub_16
         }));
       }
 
