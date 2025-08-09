@@ -2845,7 +2845,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         partnerId: authUser.id,
         offerId,
         trackingCode,
-        url: `${process.env.TRACKING_DOMAIN || 'http://localhost:5000'}/track/${trackingCode}`,
+        url: `${process.env.TRACKING_DOMAIN || 'http://localhost:3000'}/track/${trackingCode}`,
         subId1,
         subId2,
         subId3,
