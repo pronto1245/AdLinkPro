@@ -8161,6 +8161,8 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       })));
       console.log(`=== END LOGO DEBUG ===`);
 
+      // Отключаем кеш для отладки логотипов
+      res.set('Cache-Control', 'no-cache');
       res.json(formattedRequests);
     } catch (error) {
       console.error('Error fetching access requests:', error);
