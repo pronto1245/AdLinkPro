@@ -134,34 +134,7 @@ export function LinkGenerator({ offerId, offerName, isApproved = false, accessSt
             </div>
           </div>
 
-          {/* Дополнительные параметры */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium">Дополнительные параметры (необязательно):</h4>
-            <p className="text-xs text-muted-foreground">
-              Вы можете добавить собственные sub-параметры к готовой ссылке:
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">SubID 1 (источник):</label>
-                <Input
-                  placeholder="facebook, google, etc."
-                  className="text-sm h-8"
-                  data-testid="input-subid1"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">SubID 2 (кампания):</label>
-                <Input
-                  placeholder="campaign_name"
-                  className="text-sm h-8"
-                  data-testid="input-subid2"
-                />
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Добавьте параметры вручную к концу ссылки: &sub1=значение&sub2=значение
-            </p>
-          </div>
+
         </CardContent>
       </Card>
     </div>
