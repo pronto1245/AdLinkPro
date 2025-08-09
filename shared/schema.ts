@@ -25,6 +25,11 @@ export const walletStatusEnum = pgEnum('wallet_status', ['active', 'suspended', 
 export const accessRequestStatusEnum = pgEnum('access_request_status', ['pending', 'approved', 'rejected', 'cancelled']);
 export const domainStatusEnum = pgEnum('domain_status', ['pending', 'verified', 'error']);
 export const domainTypeEnum = pgEnum('domain_type', ['a_record', 'cname']);
+export const ownerScopeEnum = pgEnum('owner_scope', ['owner', 'advertiser', 'partner']);
+export const postbackScopeTypeEnum = pgEnum('postback_scope_type', ['global', 'campaign', 'offer', 'flow']);
+export const postbackMethodEnum = pgEnum('postback_method', ['GET', 'POST']);
+export const postbackIdParamEnum = pgEnum('postback_id_param', ['subid', 'clickid']);
+export const deliveryStatusEnum = pgEnum('delivery_status', ['pending', 'success', 'failed', 'retrying']);
 
 // Users table  
 export const users: any = pgTable("users", {

@@ -10,6 +10,12 @@ import {
   transactions, fraudReports, fraudBlocks, financialTransactions, financialSummaries, payoutRequests,
   offerAccessRequests, partnerOffers, creativeFiles, customDomains
 } from "@shared/schema";
+import { 
+  trackingClicks as newTrackingClicks, trackingEvents, postbackProfiles, postbackDeliveries, deliveryQueue,
+  clickEventSchema, conversionEventSchema, createPostbackProfileSchema, updatePostbackProfileSchema,
+  type TrackingClick, type TrackingEvent, type PostbackProfile, type PostbackDelivery,
+  sub2Config
+} from "@shared/postback-schema";
 import { sql } from "drizzle-orm";
 import { eq, and, gte, lte, count, sum, desc } from "drizzle-orm";
 import { db, queryCache } from "./db";
@@ -8940,6 +8946,326 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   const enhancedAnalyticsRoutes = await import('./routes/analytics-enhanced');
   app.use('/api/live-analytics', authenticateToken, enhancedAnalyticsRoutes.default);
   
+  // ==================== TRACKING AND POSTBACK SYSTEM ====================
+
+  // Helper functions for tracking system
+  function generateClickId(): string {
+    return nanoid(16); // Short, unique clickid
+  }
+
+  function parseSub2(sub2Raw: string): Record<string, string> {
+    if (!sub2Raw) return {};
+    
+    const pairs = sub2Raw.split('|');
+    const result: Record<string, string> = {};
+    
+    for (const pair of pairs) {
+      const [key, value] = pair.split('-', 2);
+      if (key && value && sub2Config.allowedKeys.includes(key)) {
+        result[key] = value;
+      }
+    }
+    
+    return result;
+  }
+
+  function getClientIp(req: Request): string {
+    return (req.headers['x-forwarded-for'] as string)?.split(',')[0] || 
+           req.headers['x-real-ip'] as string || 
+           req.connection.remoteAddress || 
+           req.socket.remoteAddress || 
+           '127.0.0.1';
+  }
+
+  // Click tracking endpoint
+  app.get("/click/:clickid?", async (req: Request, res: Response) => {
+    try {
+      const clickid = req.params.clickid || generateClickId();
+      const ip = getClientIp(req);
+      
+      // Parse query params using clickEventSchema
+      const clickData = clickEventSchema.parse({
+        ...req.query,
+        user_agent: req.headers['user-agent'] || '',
+      });
+
+      // Parse sub2 if present
+      const sub2Map = clickData.sub2 ? parseSub2(clickData.sub2) : {};
+
+      // Basic geo/device detection placeholders
+      const geoData = {
+        countryIso: 'XX',
+        region: '',
+        city: '',
+        isp: '',
+        operator: '',
+        isProxy: false,
+      };
+
+      const deviceData = {
+        browserName: '',
+        browserVersion: '',
+        osName: '',
+        osVersion: '',
+        deviceModel: '',
+        deviceType: clickData.device_type || 'desktop',
+      };
+
+      // Find associated advertiser/partner
+      let advertiserId: string | undefined;
+      let partnerId: string | undefined;
+
+      if (clickData.offer_id) {
+        const offer = await db.select().from(offers).where(eq(offers.id, clickData.offer_id)).limit(1);
+        if (offer.length > 0) {
+          advertiserId = offer[0].advertiserId;
+        }
+      }
+
+      if (!advertiserId) {
+        return res.status(400).json({ error: 'Invalid offer_id or missing attribution data' });
+      }
+
+      // Store click data
+      await db.insert(newTrackingClicks).values({
+        clickid,
+        advertiserId,
+        partnerId,
+        campaignId: clickData.campaign_id,
+        offerId: clickData.offer_id,
+        flowId: clickData.flow_id,
+        site: clickData.site,
+        referrer: clickData.referrer,
+        
+        // Sub parameters
+        sub1: clickData.sub1,
+        sub2Raw: clickData.sub2,
+        sub2Map,
+        sub3: clickData.sub3,
+        sub4: clickData.sub4,
+        sub5: clickData.sub5,
+        sub6: clickData.sub6,
+        sub7: clickData.sub7,
+        sub8: clickData.sub8,
+        sub9: clickData.sub9,
+        sub10: clickData.sub10,
+        
+        // UTM parameters
+        utmSource: clickData.utm_source,
+        utmCampaign: clickData.utm_campaign,
+        utmMedium: clickData.utm_medium,
+        utmTerm: clickData.utm_term,
+        utmContent: clickData.utm_content,
+        
+        // Client and server data
+        ip,
+        ...geoData,
+        
+        userAgent: clickData.user_agent,
+        ...deviceData,
+        connection: clickData.connection,
+        lang: clickData.lang,
+      });
+
+      // Trigger click event
+      await db.insert(trackingEvents).values({
+        clickid,
+        advertiserId,
+        partnerId,
+        type: 'lp_click',
+        ts: new Date(),
+      });
+
+      // Redirect to landing page
+      const redirectUrl = 'https://example.com'; // Placeholder
+      res.redirect(302, redirectUrl);
+
+    } catch (error) {
+      console.error('Click tracking error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Event tracking endpoint
+  app.post("/event", async (req: Request, res: Response) => {
+    try {
+      const eventData = conversionEventSchema.parse(req.body);
+      
+      // Check if click exists
+      const click = await db.select().from(newTrackingClicks)
+        .where(eq(newTrackingClicks.clickid, eventData.clickid))
+        .limit(1);
+        
+      if (click.length === 0) {
+        return res.status(404).json({ error: 'Click not found' });
+      }
+
+      const clickRecord = click[0];
+
+      // Insert event with duplicate prevention
+      try {
+        const eventId = await db.insert(trackingEvents).values({
+          clickid: eventData.clickid,
+          advertiserId: clickRecord.advertiserId,
+          partnerId: clickRecord.partnerId,
+          type: eventData.type,
+          revenue: eventData.revenue,
+          currency: eventData.currency,
+          txid: eventData.txid,
+          timeOnPageMs: eventData.time_on_page_ms,
+          ts: new Date(),
+        }).returning({ id: trackingEvents.id });
+
+        res.json({ 
+          success: true, 
+          eventId: eventId[0].id,
+          clickid: eventData.clickid 
+        });
+
+      } catch (dbError: any) {
+        if (dbError.code === '23505') { // Unique constraint violation
+          return res.status(409).json({ error: 'Duplicate event' });
+        }
+        throw dbError;
+      }
+
+    } catch (error) {
+      console.error('Event tracking error:', error);
+      res.status(400).json({ error: 'Invalid request data' });
+    }
+  });
+
+  // ==================== POSTBACK PROFILES MANAGEMENT ====================
+
+  // Get postback profiles for current user
+  app.get("/api/postback-profiles", authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      
+      let profiles;
+      if (user.role === 'super_admin') {
+        profiles = await db.select().from(postbackProfiles)
+          .orderBy(desc(postbackProfiles.createdAt));
+      } else {
+        profiles = await db.select().from(postbackProfiles)
+          .where(eq(postbackProfiles.ownerId, user.id))
+          .orderBy(desc(postbackProfiles.createdAt));
+      }
+
+      res.json(profiles);
+    } catch (error) {
+      console.error('Get postback profiles error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Create postback profile
+  app.post("/api/postback-profiles", authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      
+      const profileData = createPostbackProfileSchema.parse({
+        ...req.body,
+        ownerId: user.id,
+        ownerScope: user.role === 'advertiser' ? 'advertiser' : 
+                   user.role === 'partner' ? 'partner' : 'owner'
+      });
+
+      const profile = await db.insert(postbackProfiles)
+        .values(profileData)
+        .returning();
+
+      res.status(201).json(profile[0]);
+    } catch (error) {
+      console.error('Create postback profile error:', error);
+      res.status(400).json({ error: 'Invalid request data' });
+    }
+  });
+
+  // Update postback profile
+  app.patch("/api/postback-profiles/:id", authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { id } = req.params;
+      
+      // Check ownership
+      const existing = await db.select().from(postbackProfiles)
+        .where(and(
+          eq(postbackProfiles.id, id),
+          user.role === 'super_admin' ? sql`true` : eq(postbackProfiles.ownerId, user.id)
+        ))
+        .limit(1);
+
+      if (existing.length === 0) {
+        return res.status(404).json({ error: 'Profile not found' });
+      }
+
+      const updateData = updatePostbackProfileSchema.parse(req.body);
+      
+      const updated = await db.update(postbackProfiles)
+        .set({ ...updateData, updatedAt: new Date() })
+        .where(eq(postbackProfiles.id, id))
+        .returning();
+
+      res.json(updated[0]);
+    } catch (error) {
+      console.error('Update postback profile error:', error);
+      res.status(400).json({ error: 'Invalid request data' });
+    }
+  });
+
+  // Delete postback profile
+  app.delete("/api/postback-profiles/:id", authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { id } = req.params;
+      
+      await db.delete(postbackProfiles)
+        .where(and(
+          eq(postbackProfiles.id, id),
+          user.role === 'super_admin' ? sql`true` : eq(postbackProfiles.ownerId, user.id)
+        ));
+
+      res.status(204).send();
+    } catch (error) {
+      console.error('Delete postback profile error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get postback delivery logs
+  app.get("/api/postback/deliveries", authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { profileId, limit = '50', offset = '0' } = req.query;
+      
+      let query = db.select().from(postbackDeliveries);
+      
+      // Apply filters based on user role
+      if (user.role !== 'super_admin') {
+        if (user.role === 'advertiser') {
+          query = query.where(eq(postbackDeliveries.advertiserId, user.id));
+        } else if (user.role === 'partner') {
+          query = query.where(eq(postbackDeliveries.partnerId, user.id));
+        }
+      }
+
+      if (profileId) {
+        query = query.where(eq(postbackDeliveries.profileId, profileId as string));
+      }
+
+      const deliveries = await query
+        .orderBy(desc(postbackDeliveries.createdAt))
+        .limit(parseInt(limit as string))
+        .offset(parseInt(offset as string));
+
+      res.json(deliveries);
+    } catch (error) {
+      console.error('Get postback deliveries error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Add tracking routes (public - no auth required)
   const trackingRoutes = await import('./routes/tracking');
   app.use('/api/track', trackingRoutes.default);
