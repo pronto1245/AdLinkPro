@@ -41,6 +41,7 @@ Preferred communication style: Simple, everyday language.
 - **Feature Specifications**: Comprehensive offer management with filtering, statistics, CRUD operations, mass actions, status management, and duplication. Includes country display with flags, geo-specific payout amounts, color-coded status indicators, and a category system. Supports drag-n-drop reordering, CSV import/export, bulk actions, A/B testing, and template management. Advertiser profiles include account, API access, custom domain, notifications, and security tabs. Real-time WebSocket notifications.
 - **Creative Management System**: Role-based creative file management with ZIP archive upload/download, drag-n-drop interface, file validation, and cloud storage integration.
 - **Tracking Links**: Ultra-short tracking link system with custom domains, 12-character `clickid` and 8-character `partner_id`. Supports partner sub-parameters. Links are hidden until approved access.
+- **Automatic Custom Domain Links (2025-08-09)**: System automatically generates tracking links with arbiconnect.store domain for all new offers. DNS configured with CNAME: arbiconnect → affiliate-tracker.replit.app. When new offers are created, system creates tracking links for all active partners with format: https://arbiconnect.store/track/{offer_name}_{partner_number}
 
 ## Backend
 - **Runtime**: Node.js with Express.js.
