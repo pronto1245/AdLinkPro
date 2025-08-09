@@ -3940,7 +3940,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             // Обратная совместимость с форматом REPLACE (если кто-то еще использует)
             postbackUrl = postbackUrl.replace(/subid=REPLACE/g, `subid=${clickId}`);
-            postbackUrl = postbackUrl.replace(/status=REPLACE/g, `status=${conversionStatus}`);
+            postbackUrl = postbackUrl.replace(/status=REPLACE/g, `status=${keitaroStatus}`);
             postbackUrl = postbackUrl.replace(/payout=REPLACE/g, `payout=${payoutValue}`);
             
             console.log(`📤 Sending postback to: ${postbackUrl}`);
