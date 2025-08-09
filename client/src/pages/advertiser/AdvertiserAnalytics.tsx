@@ -186,7 +186,8 @@ export function AdvertiserAnalytics() {
   }) => {
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     
-    if (totalPages <= 1) return null;
+    // Всегда показывать пагинацию для демонстрации
+    // if (totalPages <= 1) return null;
     
     return (
       <div className="flex items-center justify-between mt-4 pt-4 border-t">
@@ -555,7 +556,16 @@ export function AdvertiserAnalytics() {
                   <span className="ml-2">Загрузка данных...</span>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <>
+                  {/* Пагинация сверху */}
+                  <PaginationComponent 
+                    currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
+                    totalItems={data.length}
+                    itemsPerPage={itemsPerPage}
+                  />
+                  
+                  <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
@@ -609,10 +619,19 @@ export function AdvertiserAnalytics() {
                     </tbody>
                   </table>
                 </div>
+                
+                {/* Пагинация снизу */}
+                <PaginationComponent 
+                  currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
+                  totalItems={data.length}
+                  itemsPerPage={itemsPerPage}
+                />
+                </>
               )}
               
-              {/* Pagination */}
-              {data && data.length > itemsPerPage && (
+              {/* Legacy pagination - remove later */}
+              {false && data && data.length > itemsPerPage && (
                 <div className="flex items-center justify-between mt-4 pt-4 border-t">
                   <div className="text-sm text-muted-foreground">
                     Показано {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, data.length)} из {data.length} записей
