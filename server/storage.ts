@@ -526,6 +526,28 @@ export class DatabaseStorage implements IStorage {
     this.createdPostbackProfiles.push(profile);
   }
 
+  updatePostbackProfile(id: string, updateData: any): any {
+    const index = this.createdPostbackProfiles.findIndex(p => p.id === id);
+    if (index !== -1) {
+      this.createdPostbackProfiles[index] = { 
+        ...this.createdPostbackProfiles[index], 
+        ...updateData,
+        updated_at: new Date().toISOString()
+      };
+      return this.createdPostbackProfiles[index];
+    }
+    return null;
+  }
+
+  deletePostbackProfile(id: string): boolean {
+    const index = this.createdPostbackProfiles.findIndex(p => p.id === id);
+    if (index !== -1) {
+      this.createdPostbackProfiles.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;

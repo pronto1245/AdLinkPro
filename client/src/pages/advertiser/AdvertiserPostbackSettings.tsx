@@ -61,6 +61,8 @@ export default function AdvertiserPostbackSettings() {
   const queryClient = useQueryClient();
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<AdvertiserPostbackProfile | null>(null);
   const [activeTab, setActiveTab] = useState('profiles');
 
   // Fetch advertiser postback profiles
@@ -121,6 +123,47 @@ export default function AdvertiserPostbackSettings() {
     },
   });
 
+  // Update profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string, data: any }) => 
+      apiRequest(`/api/advertiser/postback/profiles/${id}`, 'PUT', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/postback/profiles'] });
+      setShowEditForm(false);
+      setEditingProfile(null);
+      toast({
+        title: "Успешно",
+        description: "Профиль постбека обновлен",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось обновить профиль",
+        variant: "destructive" as const,
+      });
+    },
+  });
+
+  // Delete profile mutation
+  const deleteProfileMutation = useMutation({
+    mutationFn: (id: string) => apiRequest(`/api/advertiser/postback/profiles/${id}`, 'DELETE'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/postback/profiles'] });
+      toast({
+        title: "Успешно",
+        description: "Профиль постбека удален",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось удалить профиль",
+        variant: "destructive" as const,
+      });
+    },
+  });
+
   const handleCreateProfile = (formData: FormData) => {
     const data = {
       name: formData.get('name'),
@@ -148,6 +191,34 @@ export default function AdvertiserPostbackSettings() {
         offer_id: 'test_offer'
       }
     });
+  };
+
+  const handleEditProfile = (profile: AdvertiserPostbackProfile) => {
+    setEditingProfile(profile);
+    setShowEditForm(true);
+  };
+
+  const handleUpdateProfile = (formData: FormData) => {
+    if (!editingProfile) return;
+    
+    const data = {
+      name: formData.get('name'),
+      tracker_type: formData.get('tracker_type'),
+      endpoint_url: formData.get('endpoint_url'),
+      method: formData.get('method'),
+      events: formData.getAll('events'),
+      offers: formData.getAll('offers'),
+      partners: formData.getAll('partners'),
+      enabled: formData.get('enabled') === 'on',
+    };
+    
+    updateProfileMutation.mutate({ id: editingProfile.id, data });
+  };
+
+  const handleDeleteProfile = (profile: AdvertiserPostbackProfile) => {
+    if (confirm(`Удалить профиль "${profile.name}"? Это действие нельзя отменить.`)) {
+      deleteProfileMutation.mutate(profile.id);
+    }
   };
 
   const trackerPresets = {
@@ -271,6 +342,7 @@ export default function AdvertiserPostbackSettings() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => handleEditProfile(profile)}
                         data-testid={`button-edit-advertiser-postback-${profile.id}`}
                         title="Редактировать"
                       >
@@ -279,8 +351,11 @@ export default function AdvertiserPostbackSettings() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => handleDeleteProfile(profile)}
+                        disabled={deleteProfileMutation.isPending}
                         data-testid={`button-delete-advertiser-postback-${profile.id}`}
                         title="Удалить"
+                        className="hover:bg-red-50 hover:text-red-600"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -524,6 +599,148 @@ export default function AdvertiserPostbackSettings() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Form Modal */}
+      {showEditForm && editingProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Редактировать профиль постбека</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowEditForm(false);
+                  setEditingProfile(null);
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              handleUpdateProfile(formData);
+            }} className="space-y-4">
+              <div>
+                <Label htmlFor="edit-name">Название профиля</Label>
+                <Input 
+                  id="edit-name" 
+                  name="name" 
+                  defaultValue={editingProfile.name}
+                  required 
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-tracker-type">Тип трекера</Label>
+                <Select name="tracker_type" defaultValue={editingProfile.tracker_type}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите тип трекера" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="keitaro">Keitaro</SelectItem>
+                    <SelectItem value="binom">Binom</SelectItem>
+                    <SelectItem value="redtrack">RedTrack</SelectItem>
+                    <SelectItem value="voluum">Voluum</SelectItem>
+                    <SelectItem value="custom">Произвольный</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-endpoint-url">URL постбека</Label>
+                <Textarea 
+                  id="edit-endpoint-url" 
+                  name="endpoint_url" 
+                  defaultValue={editingProfile.endpoint_url}
+                  placeholder="https://your-tracker.com/postback?clickid={clickid}&status={status}&revenue={revenue}"
+                  rows={3}
+                  required 
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-method">HTTP метод</Label>
+                <Select name="method" defaultValue={editingProfile.method}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите метод" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="GET">GET</SelectItem>
+                    <SelectItem value="POST">POST</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>События</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['lp_click', 'lead', 'deposit', 'conversion'].map(event => (
+                    <label key={event} className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        name="events" 
+                        value={event}
+                        defaultChecked={editingProfile.events?.includes(event)}
+                      />
+                      <span className="capitalize">{event}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label>Офферы (оставьте пустым для всех)</Label>
+                <div className="max-h-32 overflow-y-auto border rounded p-2">
+                  {offers.map((offer: any) => (
+                    <label key={offer.id} className="flex items-center space-x-2 py-1">
+                      <input 
+                        type="checkbox" 
+                        name="offers" 
+                        value={offer.id}
+                        defaultChecked={editingProfile.offers?.includes(offer.id)}
+                      />
+                      <span className="text-sm">{offer.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="checkbox" 
+                  id="edit-enabled" 
+                  name="enabled"
+                  defaultChecked={editingProfile.enabled}
+                />
+                <Label htmlFor="edit-enabled">Активен</Label>
+              </div>
+
+              <div className="flex space-x-2 pt-4">
+                <Button 
+                  type="submit" 
+                  disabled={updateProfileMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {updateProfileMutation.isPending ? 'Сохранение...' : 'Сохранить'}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => {
+                    setShowEditForm(false);
+                    setEditingProfile(null);
+                  }}
+                >
+                  Отмена
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Create Profile Modal */}
       {showCreateForm && (

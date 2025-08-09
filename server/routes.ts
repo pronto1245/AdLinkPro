@@ -627,6 +627,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/advertiser/postback/profiles/:id", async (req, res) => {
+    console.log('=== UPDATE ADVERTISER POSTBACK PROFILE ===');
+    
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      console.log('Updating advertiser postback profile:', id, updateData);
+      
+      // Обновляем профиль в хранилище
+      const updatedProfile = storage.updatePostbackProfile(id, updateData);
+      
+      if (!updatedProfile) {
+        return res.status(404).json({ message: 'Profile not found' });
+      }
+
+      res.json(updatedProfile);
+    } catch (error: any) {
+      console.error('Error updating advertiser postback profile:', error);
+      res.status(500).json({ message: 'Failed to update postback profile' });
+    }
+  });
+
+  app.delete("/api/advertiser/postback/profiles/:id", async (req, res) => {
+    console.log('=== DELETE ADVERTISER POSTBACK PROFILE ===');
+    
+    try {
+      const { id } = req.params;
+      console.log('Deleting advertiser postback profile:', id);
+      
+      // Удаляем профиль из хранилища
+      const deleted = storage.deletePostbackProfile(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: 'Profile not found' });
+      }
+
+      res.status(204).send();
+    } catch (error: any) {
+      console.error('Error deleting advertiser postback profile:', error);
+      res.status(500).json({ message: 'Failed to delete postback profile' });
+    }
+  });
+
   app.get("/api/advertiser/postback/logs", async (req, res) => {
     console.log('=== GET ADVERTISER POSTBACK LOGS ===');
     
