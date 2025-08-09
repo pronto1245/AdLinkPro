@@ -409,60 +409,7 @@ export default function Statistics() {
             </Button>
           </div>
 
-          {/* Быстрые фильтры */}
-          <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Быстрые фильтры:</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setFilters(prev => ({
-                    ...prev,
-                    dateFrom: '2025-08-05',
-                    dateTo: '2025-08-05',
-                    offerId: '1'
-                  }));
-                }}
-                data-testid="quick-filter-4rabet-today"
-              >
-                4RaBet India за 05.08.2025
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setFilters(prev => ({
-                    ...prev,
-                    dateFrom: '2025-08-04',
-                    dateTo: '2025-08-04',
-                    offerId: 'all'
-                  }));
-                }}
-                data-testid="quick-filter-yesterday"
-              >
-                Все офферы за 04.08.2025
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setFilters(prev => ({
-                    ...prev,
-                    dateFrom: '',
-                    dateTo: '',
-                    offerId: '1',
-                    geo: 'IN'
-                  }));
-                }}
-                data-testid="quick-filter-4rabet-india"
-              >
-                4RaBet India (Индия)
-              </Button>
-            </div>
-          </div>
+
 
           {/* Показ активных фильтров */}
           {(filters.dateFrom || filters.dateTo || (filters.offerId && filters.offerId !== 'all') || (filters.geo && filters.geo !== 'all') || (filters.device && filters.device !== 'all')) && (
