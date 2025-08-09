@@ -668,9 +668,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add conversion routes
   app.use('/api/conversion', conversionRoutes);
 
-  // Add analytics routes
-  app.use('/api', analyticsRoutes);
-
   // Auth routes
   app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
     try {
@@ -8773,6 +8770,9 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       res.status(500).json({ error: "Failed to delete API token" });
     }
   });
+  
+  // Add analytics routes with authentication middleware (placed at end)
+  app.use('/api/analytics', authenticateToken, analyticsRoutes);
   
   return httpServer;
 }

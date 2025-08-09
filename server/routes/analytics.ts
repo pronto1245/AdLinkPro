@@ -15,16 +15,7 @@ declare global {
 
 const router = Router();
 
-// Auth middleware for analytics routes
-const requireAuth = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.user) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-  next();
-};
-
-// Apply auth middleware to all routes
-router.use(requireAuth);
+// Auth middleware will be applied at router level, no need for additional middleware here
 
 // Query schema for statistics filters
 const statisticsFiltersSchema = z.object({

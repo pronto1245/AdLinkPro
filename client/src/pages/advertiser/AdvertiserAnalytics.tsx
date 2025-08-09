@@ -88,7 +88,7 @@ export function AdvertiserAnalytics() {
 
   // Fetch statistics data
   const { data: statisticsData, isLoading: isLoadingStats, refetch } = useQuery({
-    queryKey: ['/api/advertiser/statistics', dateRange, filters],
+    queryKey: ['/api/analytics/advertiser/statistics', dateRange, filters],
     queryFn: async () => {
       const params = new URLSearchParams({
         dateFrom: dateRange.from.toISOString(),
@@ -100,7 +100,7 @@ export function AdvertiserAnalytics() {
         )
       });
       
-      const response = await fetch(`/api/advertiser/statistics?${params}`);
+      const response = await fetch(`/api/analytics/advertiser/statistics?${params}`);
       if (!response.ok) throw new Error('Failed to fetch statistics');
       return response.json();
     }
@@ -108,9 +108,9 @@ export function AdvertiserAnalytics() {
 
   // Fetch offers list for filter
   const { data: offers } = useQuery({
-    queryKey: ['/api/advertiser/offers'],
+    queryKey: ['/api/analytics/advertiser/offers'],
     queryFn: async () => {
-      const response = await fetch('/api/advertiser/offers');
+      const response = await fetch('/api/analytics/advertiser/offers');
       if (!response.ok) throw new Error('Failed to fetch offers');
       return response.json();
     }
@@ -118,9 +118,9 @@ export function AdvertiserAnalytics() {
 
   // Fetch partners list for filter
   const { data: partners } = useQuery({
-    queryKey: ['/api/advertiser/partners'],
+    queryKey: ['/api/analytics/advertiser/partners'],
     queryFn: async () => {
-      const response = await fetch('/api/advertiser/partners');
+      const response = await fetch('/api/analytics/advertiser/partners');
       if (!response.ok) throw new Error('Failed to fetch partners');
       return response.json();
     }
@@ -172,7 +172,7 @@ export function AdvertiserAnalytics() {
         )
       });
       
-      const response = await fetch(`/api/advertiser/statistics/export?${params}`);
+      const response = await fetch(`/api/analytics/advertiser/statistics/export?${params}`);
       if (!response.ok) throw new Error('Failed to export data');
       
       const blob = await response.blob();
