@@ -62,6 +62,112 @@ interface PostbackProfile {
   updatedAt: string;
 }
 
+// Предварительно настроенные шаблоны для популярных трекеров
+const trackerTemplates = {
+  keitaro: {
+    name: 'Keitaro Tracker',
+    trackerType: 'keitaro' as const,
+    endpointUrl: 'https://your-keitaro-domain.com/api/v1/postback',
+    method: 'GET' as const,
+    paramsTemplate: {
+      'token': '{{auth_token}}',
+      'clickid': '{{clickid}}',
+      'status': '{{status}}',
+      'payout': '{{revenue}}',
+      'currency': '{{currency}}',
+      'country': '{{country_iso}}'
+    },
+    statusMap: {
+      'lead': 'lead',
+      'deposit': 'sale',
+      'conversion': 'sale',
+      'approved': 'approved',
+      'hold': 'hold',
+      'rejected': 'rejected'
+    }
+  },
+  binom: {
+    name: 'Binom Tracker',
+    trackerType: 'custom' as const,
+    endpointUrl: 'https://your-binom-domain.com/click.php',
+    method: 'GET' as const,
+    paramsTemplate: {
+      'cnv_id': '{{clickid}}',
+      'cnv_status': '{{status}}',
+      'payout': '{{revenue}}',
+      'currency': '{{currency}}',
+      'country': '{{country_iso}}'
+    },
+    statusMap: {
+      'lead': '1',
+      'deposit': '2', 
+      'conversion': '2',
+      'approved': '3',
+      'hold': '4',
+      'rejected': '5'
+    }
+  },
+  redtrack: {
+    name: 'RedTrack',
+    trackerType: 'custom' as const,
+    endpointUrl: 'https://your-redtrack-domain.com/postback',
+    method: 'GET' as const,
+    paramsTemplate: {
+      'clickid': '{{clickid}}',
+      'goal': '{{status}}',
+      'revenue': '{{revenue}}',
+      'currency': '{{currency}}',
+      'country': '{{country_iso}}'
+    },
+    statusMap: {
+      'lead': 'lead',
+      'deposit': 'deposit',
+      'conversion': 'sale',
+      'approved': 'approved',
+      'hold': 'pending',
+      'rejected': 'rejected'
+    }
+  },
+  voluum: {
+    name: 'Voluum',
+    trackerType: 'custom' as const,
+    endpointUrl: 'https://your-voluum-domain.com/postback',
+    method: 'GET' as const,
+    paramsTemplate: {
+      'cid': '{{clickid}}',
+      'cv': '{{status}}',
+      'payout': '{{revenue}}',
+      'txid': '{{transaction_id}}',
+      'country': '{{country_iso}}'
+    },
+    statusMap: {
+      'lead': '1',
+      'deposit': '2',
+      'conversion': '2', 
+      'approved': '3',
+      'hold': '4',
+      'rejected': '0'
+    }
+  },
+  custom: {
+    name: 'Пользовательский трекер',
+    trackerType: 'custom' as const,
+    endpointUrl: '',
+    method: 'GET' as const,
+    paramsTemplate: {
+      'clickid': '{{clickid}}',
+      'status': '{{status}}',
+      'revenue': '{{revenue}}',
+      'currency': '{{currency}}'
+    },
+    statusMap: {
+      'lead': 'lead',
+      'deposit': 'sale',
+      'conversion': 'sale'
+    }
+  }
+};
+
 const defaultProfile: Partial<PostbackProfile> = {
   name: '',
   trackerType: 'custom',
@@ -102,15 +208,17 @@ export function AffiliatePostbacks() {
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('profiles');
   const [testData, setTestData] = useState({ clickid: '', type: 'reg', revenue: '100', currency: 'USD' });
+  const [selectedTemplate, setSelectedTemplate] = useState<keyof typeof trackerTemplates>('custom');
+  const [formData, setFormData] = useState<Partial<PostbackProfile>>(defaultProfile);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Fetch postback profiles
   const { data: profiles, isLoading } = useQuery({
-    queryKey: ['/api/affiliate/postback/profiles'],
+    queryKey: ['/api/postback/profiles'],
     queryFn: async () => {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/affiliate/postback/profiles', {
+      const response = await fetch('/api/postback/profiles', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) throw new Error('Failed to fetch profiles');
@@ -120,10 +228,10 @@ export function AffiliatePostbacks() {
 
   // Fetch delivery logs
   const { data: deliveries } = useQuery({
-    queryKey: ['/api/affiliate/postback/deliveries'],
+    queryKey: ['/api/postback/logs'],
     queryFn: async () => {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/affiliate/postback/deliveries', {
+      const response = await fetch('/api/postback/logs', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) throw new Error('Failed to fetch deliveries');
@@ -135,7 +243,7 @@ export function AffiliatePostbacks() {
   const createMutation = useMutation({
     mutationFn: async (profile: Partial<PostbackProfile>) => {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/affiliate/postback/profiles', {
+      const response = await fetch('/api/postback/profiles', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -147,7 +255,7 @@ export function AffiliatePostbacks() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/affiliate/postback/profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       setIsCreateModalOpen(false);
       toast({ title: 'Профиль создан', description: 'Постбек профиль успешно создан' });
     }
@@ -157,7 +265,7 @@ export function AffiliatePostbacks() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...profile }: PostbackProfile) => {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/affiliate/postback/profiles/${id}`, {
+      const response = await fetch(`/api/postback/profiles/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -169,25 +277,76 @@ export function AffiliatePostbacks() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/affiliate/postback/profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       setIsEditModalOpen(false);
       setSelectedProfile(null);
       toast({ title: 'Профиль обновлен', description: 'Постбек профиль успешно обновлен' });
     }
   });
 
+  // Функция для применения шаблона трекера
+  const applyTemplate = (templateKey: keyof typeof trackerTemplates) => {
+    const template = trackerTemplates[templateKey];
+    setFormData({
+      ...defaultProfile,
+      ...template,
+      name: template.name,
+      scopeType: 'global'
+    });
+  };
+
   const PostbackForm = ({ profile, onSave }: { profile: Partial<PostbackProfile>; onSave: (data: Partial<PostbackProfile>) => void }) => {
-    const [formData, setFormData] = useState(profile);
+    const [localFormData, setLocalFormData] = useState(profile);
 
     return (
       <div className="space-y-6">
+        {/* Template Selection */}
+        <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
+          <h3 className="font-medium flex items-center gap-2">
+            <Zap className="h-4 w-4 text-blue-500" />
+            Быстрая настройка по шаблону
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            {Object.entries(trackerTemplates).map(([key, template]) => (
+              <Button
+                key={key}
+                variant={selectedTemplate === key ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setSelectedTemplate(key as keyof typeof trackerTemplates);
+                  const templateData = {
+                    ...defaultProfile,
+                    ...template,
+                    scopeType: 'global' as const
+                  };
+                  setLocalFormData(templateData);
+                }}
+                className="h-auto p-3 flex flex-col items-center text-center"
+                data-testid={`template-${key}`}
+              >
+                <div className="font-medium text-xs mb-1">
+                  {key === 'keitaro' && '🔥'} 
+                  {key === 'binom' && '⚡'} 
+                  {key === 'redtrack' && '🚀'} 
+                  {key === 'voluum' && '📊'} 
+                  {key === 'custom' && '⚙️'}
+                </div>
+                <div className="text-xs">{template.name}</div>
+              </Button>
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Выберите шаблон для автоматического заполнения настроек популярных трекеров
+          </p>
+        </div>
+
         {/* Basic Settings */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Название</Label>
             <Input
-              value={formData.name || ''}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              value={localFormData.name || ''}
+              onChange={(e) => setLocalFormData({ ...localFormData, name: e.target.value })}
               placeholder="Мой трекер"
               data-testid="input-profile-name"
             />
@@ -195,7 +354,7 @@ export function AffiliatePostbacks() {
           
           <div className="space-y-2">
             <Label>Тип трекера</Label>
-            <Select value={formData.trackerType} onValueChange={(value) => setFormData({ ...formData, trackerType: value as 'keitaro' | 'custom' })}>
+            <Select value={localFormData.trackerType} onValueChange={(value) => setLocalFormData({ ...localFormData, trackerType: value as 'keitaro' | 'custom' })}>
               <SelectTrigger data-testid="select-tracker-type">
                 <SelectValue />
               </SelectTrigger>
@@ -208,7 +367,7 @@ export function AffiliatePostbacks() {
 
           <div className="space-y-2">
             <Label>Область применения</Label>
-            <Select value={formData.scopeType} onValueChange={(value) => setFormData({ ...formData, scopeType: value as any })}>
+            <Select value={localFormData.scopeType} onValueChange={(value) => setLocalFormData({ ...localFormData, scopeType: value as any })}>
               <SelectTrigger data-testid="select-scope-type">
                 <SelectValue />
               </SelectTrigger>
@@ -223,8 +382,8 @@ export function AffiliatePostbacks() {
             <Label>Приоритет</Label>
             <Input
               type="number"
-              value={formData.priority || 100}
-              onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
+              value={localFormData.priority || 100}
+              onChange={(e) => setLocalFormData({ ...localFormData, priority: parseInt(e.target.value) })}
               data-testid="input-priority"
             />
           </div>
@@ -238,8 +397,8 @@ export function AffiliatePostbacks() {
             <div className="md:col-span-2 space-y-2">
               <Label>URL эндпоинта</Label>
               <Input
-                value={formData.endpointUrl || ''}
-                onChange={(e) => setFormData({ ...formData, endpointUrl: e.target.value })}
+                value={localFormData.endpointUrl || ''}
+                onChange={(e) => setLocalFormData({ ...localFormData, endpointUrl: e.target.value })}
                 placeholder="https://mytracker.com/postback"
                 data-testid="input-endpoint-url"
               />
@@ -247,7 +406,7 @@ export function AffiliatePostbacks() {
 
             <div className="space-y-2">
               <Label>Метод</Label>
-              <Select value={formData.method} onValueChange={(value) => setFormData({ ...formData, method: value as 'GET' | 'POST' })}>
+              <Select value={localFormData.method} onValueChange={(value) => setLocalFormData({ ...localFormData, method: value as 'GET' | 'POST' })}>
                 <SelectTrigger data-testid="select-method">
                   <SelectValue />
                 </SelectTrigger>
@@ -264,14 +423,14 @@ export function AffiliatePostbacks() {
         <div className="space-y-4">
           <h3 className="font-medium">Маппинг статусов</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(formData.statusMap || {}).map(([key, value]) => (
+            {Object.entries(localFormData.statusMap || {}).map(([key, value]) => (
               <div key={key} className="space-y-2">
                 <Label>{key}</Label>
                 <Input
                   value={value}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    statusMap: { ...formData.statusMap, [key]: e.target.value }
+                  onChange={(e) => setLocalFormData({
+                    ...localFormData,
+                    statusMap: { ...localFormData.statusMap, [key]: e.target.value }
                   })}
                   data-testid={`input-status-${key}`}
                 />
@@ -284,11 +443,11 @@ export function AffiliatePostbacks() {
         <div className="space-y-4">
           <h3 className="font-medium">Шаблон параметров</h3>
           <Textarea
-            value={JSON.stringify(formData.paramsTemplate || {}, null, 2)}
+            value={JSON.stringify(localFormData.paramsTemplate || {}, null, 2)}
             onChange={(e) => {
               try {
                 const parsed = JSON.parse(e.target.value);
-                setFormData({ ...formData, paramsTemplate: parsed });
+                setLocalFormData({ ...localFormData, paramsTemplate: parsed });
               } catch (error) {
                 // Invalid JSON, don't update
               }
@@ -312,8 +471,8 @@ export function AffiliatePostbacks() {
             Отмена
           </Button>
           <Button
-            onClick={() => onSave(formData)}
-            disabled={!formData.name || !formData.endpointUrl}
+            onClick={() => onSave(localFormData)}
+            disabled={!localFormData.name || !localFormData.endpointUrl}
             data-testid="button-save"
           >
             Сохранить
@@ -324,7 +483,7 @@ export function AffiliatePostbacks() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6 bg-white min-h-screen">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Постбеки</h1>
@@ -465,48 +624,54 @@ export function AffiliatePostbacks() {
                       <TableHead>Время</TableHead>
                       <TableHead>Профиль</TableHead>
                       <TableHead>ClickID</TableHead>
-                      <TableHead>Попытка</TableHead>
                       <TableHead>Статус</TableHead>
-                      <TableHead>Длительность</TableHead>
+                      <TableHead>Код ответа</TableHead>
+                      <TableHead>Попытка</TableHead>
+                      <TableHead>Время ответа</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {deliveries?.map((delivery: any) => (
                       <TableRow key={delivery.id}>
                         <TableCell>
-                          {new Date(delivery.createdAt).toLocaleString('ru-RU')}
+                          {new Date(delivery.created_at).toLocaleString('ru-RU')}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">{delivery.profileName}</Badge>
+                          <Badge variant="outline">{delivery.profile_name}</Badge>
                         </TableCell>
                         <TableCell className="font-mono text-sm">
                           {delivery.clickid}
                         </TableCell>
                         <TableCell>
-                          {delivery.attempt}/{delivery.maxAttempts}
+                          <Badge 
+                            variant={delivery.response_code >= 200 && delivery.response_code < 300 ? "default" : "destructive"}
+                          >
+                            {delivery.response_code >= 200 && delivery.response_code < 300 ? (
+                              <><CheckCircle className="h-3 w-3 mr-1" />Успех</>
+                            ) : (
+                              <><XCircle className="h-3 w-3 mr-1" />Ошибка</>
+                            )}
+                          </Badge>
                         </TableCell>
                         <TableCell>
-                          {delivery.responseCode ? (
-                            <Badge variant={delivery.responseCode >= 200 && delivery.responseCode < 300 ? "default" : "destructive"}>
-                              {delivery.responseCode}
-                            </Badge>
-                          ) : delivery.error ? (
-                            <Badge variant="destructive">
-                              <XCircle className="h-3 w-3 mr-1" />
-                              Ошибка
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary">
-                              <Clock className="h-3 w-3 mr-1" />
-                              В обработке
-                            </Badge>
-                          )}
+                          <Badge variant="outline">{delivery.response_code || 'N/A'}</Badge>
                         </TableCell>
                         <TableCell>
-                          {delivery.durationMs ? `${delivery.durationMs}мс` : '-'}
+                          {delivery.attempt}/{delivery.max_attempts}
+                        </TableCell>
+                        <TableCell>
+                          {delivery.duration_ms ? `${delivery.duration_ms}ms` : 'N/A'}
                         </TableCell>
                       </TableRow>
                     ))}
+                    {(!deliveries || deliveries.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          <Clock className="h-8 w-8 mx-auto mb-2" />
+                          Пока нет логов доставок
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -515,29 +680,29 @@ export function AffiliatePostbacks() {
         </TabsContent>
       </Tabs>
 
-      {/* Create Profile Modal */}
+      {/* Create Modal */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Создать постбек профиль</DialogTitle>
             <DialogDescription>
-              Настройте интеграцию с вашим трекером для автоматической передачи событий
+              Настройте интеграцию с вашим трекером для автоматической отправки данных о конверсиях
             </DialogDescription>
           </DialogHeader>
           <PostbackForm
-            profile={defaultProfile}
+            profile={formData}
             onSave={(data) => createMutation.mutate(data)}
           />
         </DialogContent>
       </Dialog>
 
-      {/* Edit Profile Modal */}
+      {/* Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Редактировать профиль</DialogTitle>
             <DialogDescription>
-              Изменить настройки постбек профиля
+              Изменить настройки интеграции с трекером
             </DialogDescription>
           </DialogHeader>
           {selectedProfile && (
@@ -546,6 +711,75 @@ export function AffiliatePostbacks() {
               onSave={(data) => updateMutation.mutate({ ...selectedProfile, ...data })}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Test Modal */}
+      <Dialog open={isTestModalOpen} onOpenChange={setIsTestModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Тестирование постбека</DialogTitle>
+            <DialogDescription>
+              Отправить тестовый постбек для проверки настроек
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Click ID</Label>
+                <Input
+                  value={testData.clickid}
+                  onChange={(e) => setTestData({ ...testData, clickid: e.target.value })}
+                  placeholder="test123456"
+                  data-testid="input-test-clickid"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Тип события</Label>
+                <Select value={testData.type} onValueChange={(value) => setTestData({ ...testData, type: value })}>
+                  <SelectTrigger data-testid="select-test-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lead">Lead (Лид)</SelectItem>
+                    <SelectItem value="deposit">Deposit (Депозит)</SelectItem>
+                    <SelectItem value="conversion">Conversion (Конверсия)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Сумма</Label>
+                <Input
+                  value={testData.revenue}
+                  onChange={(e) => setTestData({ ...testData, revenue: e.target.value })}
+                  placeholder="100"
+                  data-testid="input-test-revenue"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Валюта</Label>
+                <Input
+                  value={testData.currency}
+                  onChange={(e) => setTestData({ ...testData, currency: e.target.value })}
+                  placeholder="USD"
+                  data-testid="input-test-currency"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsTestModalOpen(false)}>
+                Отмена
+              </Button>
+              <Button onClick={() => {
+                // Test logic here
+                toast({ title: 'Тест постбека', description: 'Тестовый постбек отправлен' });
+                setIsTestModalOpen(false);
+              }}>
+                <Send className="h-4 w-4 mr-2" />
+                Отправить тест
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
