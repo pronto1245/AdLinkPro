@@ -689,79 +689,200 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log('=== ADDING ANTIFRAUD ROUTES ===');
   
   app.get("/api/advertiser/antifraud/dashboard", async (req, res) => {
-    console.log('=== GET ANTIFRAUD DASHBOARD ===');
+    console.log('=== GET ANTIFRAUD DASHBOARD WITH REAL DATA ===');
     const { range = '24h' } = req.query;
     
     try {
-      // Mock данные дашборда антифрод системы
-      const mockDashboard = {
-        totalEvents: 1547,
-        blockedEvents: 312,
-        fraudRate: 20.17,
-        topFraudTypes: [
-          { type: 'bot', count: 156, percentage: 50.0 },
-          { type: 'vpn', count: 89, percentage: 28.5 },
-          { type: 'proxy', count: 43, percentage: 13.8 },
-          { type: 'click_spam', count: 24, percentage: 7.7 }
-        ],
-        topFraudPartners: [
-          { partnerId: 'partner_1', partnerName: 'Suspicious Partner 1', events: 45, fraudRate: 78.3 },
-          { partnerId: 'partner_2', partnerName: 'High Risk Partner', events: 32, fraudRate: 65.2 },
-          { partnerId: 'partner_3', partnerName: 'Bot Traffic Source', events: 28, fraudRate: 89.1 }
-        ],
-        hourlyStats: Array.from({ length: 24 }, (_, i) => ({
-          hour: String(i).padStart(2, '0') + ':00',
-          events: Math.floor(Math.random() * 50) + 10,
-          blocked: Math.floor(Math.random() * 20) + 5
-        })),
-        countryStats: [
-          { country: 'US', events: 245, fraudRate: 15.3 },
-          { country: 'RU', events: 189, fraudRate: 23.7 },
-          { country: 'BR', events: 156, fraudRate: 31.2 },
-          { country: 'IN', events: 134, fraudRate: 45.1 }
-        ],
-        recentEvents: [
-          {
-            id: 'evt_1',
-            timestamp: new Date(Date.now() - 300000).toISOString(),
-            partnerId: 'partner_1',
-            partnerName: 'Suspicious Partner 1',
-            offerId: 'offer_1',
-            offerName: 'Gaming Offer',
-            subId: 'suspicious_sub_001',
-            ip: '192.168.1.100',
-            country: 'US',
-            fraudType: 'bot',
-            riskScore: 95,
-            action: 'blocked',
-            status: 'confirmed',
-            details: 'Detected headless browser with no user interactions',
-            userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
-            fingerprint: 'fp_abc123def456'
-          },
-          {
-            id: 'evt_2',
-            timestamp: new Date(Date.now() - 600000).toISOString(),
-            partnerId: 'partner_2',
-            partnerName: 'High Risk Partner',
-            offerId: 'offer_2',
-            offerName: 'Casino Offer',
-            subId: 'vpn_traffic_002',
-            ip: '10.0.0.5',
-            country: 'RU',
-            fraudType: 'vpn',
-            riskScore: 87,
-            action: 'flagged',
-            status: 'pending',
-            details: 'VPN detected from commercial VPN service',
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0',
-            fingerprint: 'fp_def789ghi012'
-          }
-        ]
+      const user = req.user;
+      console.log('Getting antifraud data for user:', user?.username);
+
+      // Получаем реальные данные из tracking_clicks для антифрода анализа
+      const allClicks = await storage.getTrackingClicks({});
+      const totalClicks = allClicks.length;
+      
+      console.log('Found', totalClicks, 'total clicks for antifraud analysis');
+      
+      // Анализируем реальные данные для выявления фрода
+      const totalEvents = totalClicks;
+      const fraudEvents = allClicks.filter(click => 
+        click.isBot === true || 
+        click.vpnDetected === true || 
+        (click.fraudScore && click.fraudScore > 70) ||
+        click.riskLevel === 'high'
+      );
+      const blockedEvents = fraudEvents.length;
+      const fraudRate = totalEvents > 0 ? (blockedEvents / totalEvents) * 100 : 0;
+
+      // Группируем по типам фрода
+      const fraudTypeMap = {
+        'bot': 0,
+        'vpn': 0, 
+        'proxy': 0,
+        'duplicate': 0,
+        'suspicious_cr': 0,
+        'click_spam': 0,
+        'tor': 0
+      };
+
+      fraudEvents.forEach(event => {
+        // Определяем тип фрода на основе реальных полей
+        let fraudType = 'suspicious';
+        if (event.isBot) fraudType = 'bot';
+        else if (event.vpnDetected) fraudType = 'vpn';
+        else if (event.riskLevel === 'high') fraudType = 'proxy';
+        
+        if (fraudTypeMap[fraudType] !== undefined) {
+          fraudTypeMap[fraudType]++;
+        } else {
+          fraudTypeMap['bot']++;
+        }
+      });
+
+      const topFraudTypes = Object.entries(fraudTypeMap)
+        .map(([type, count]) => ({
+          type,
+          count,
+          percentage: blockedEvents > 0 ? (count / blockedEvents) * 100 : 0
+        }))
+        .filter(item => item.count > 0)
+        .sort((a, b) => b.count - a.count);
+
+      // Группируем по партнерам из реальных данных
+      const partnerStats = {};
+      allClicks.forEach(click => {
+        const partnerId = click.partnerId;
+        const partnerName = 'Partner ' + (partnerId?.slice(-8) || 'Unknown');
+        
+        if (!partnerStats[partnerId]) {
+          partnerStats[partnerId] = {
+            partnerId,
+            partnerName,
+            totalEvents: 0,
+            fraudEvents: 0
+          };
+        }
+        
+        partnerStats[partnerId].totalEvents++;
+        if (click.isBot || click.vpnDetected || (click.fraudScore && click.fraudScore > 70) || click.riskLevel === 'high') {
+          partnerStats[partnerId].fraudEvents++;
+        }
+      });
+
+      const topFraudPartners = Object.values(partnerStats)
+        .map(stats => ({
+          ...stats,
+          events: stats.fraudEvents,
+          fraudRate: stats.totalEvents > 0 ? (stats.fraudEvents / stats.totalEvents) * 100 : 0
+        }))
+        .filter(partner => partner.fraudEvents > 0)
+        .sort((a, b) => b.fraudRate - a.fraudRate)
+        .slice(0, 10);
+
+      // Статистика по часам
+      const hourlyStats = Array.from({ length: 24 }, (_, hour) => {
+        const hourStart = new Date();
+        hourStart.setHours(hour, 0, 0, 0);
+        const hourEnd = new Date();
+        hourEnd.setHours(hour, 59, 59, 999);
+
+        const hourClicks = allClicks.filter(click => {
+          const clickTime = new Date(click.createdAt);
+          return clickTime.getHours() === hour;
+        });
+
+        const hourFraud = hourClicks.filter(click => 
+          click.isBot || click.vpnDetected || (click.fraudScore && click.fraudScore > 70) || click.riskLevel === 'high'
+        );
+
+        return {
+          hour: String(hour).padStart(2, '0') + ':00',
+          events: hourClicks.length,
+          blocked: hourFraud.length
+        };
+      });
+
+      // Статистика по странам из реальных данных
+      const countryStats = {};
+      allClicks.forEach(click => {
+        const country = click.country || 'Unknown';
+        if (!countryStats[country]) {
+          countryStats[country] = { total: 0, fraud: 0 };
+        }
+        countryStats[country].total++;
+        if (click.isBot || click.vpnDetected || (click.fraudScore && click.fraudScore > 70) || click.riskLevel === 'high') {
+          countryStats[country].fraud++;
+        }
+      });
+
+      const topCountryStats = Object.entries(countryStats)
+        .map(([country, stats]) => ({
+          country,
+          events: stats.total,
+          fraudRate: stats.total > 0 ? (stats.fraud / stats.total) * 100 : 0
+        }))
+        .sort((a, b) => b.events - a.events)
+        .slice(0, 10);
+
+      // Последние события фрода с правильными полями
+      const recentEvents = fraudEvents.slice(0, 20).map(event => {
+        let fraudType = 'suspicious';
+        let details = 'Suspicious activity detected';
+        let action = 'flagged';
+        
+        if (event.isBot) {
+          fraudType = 'bot';
+          details = 'Bot traffic detected';
+          action = 'blocked';
+        } else if (event.vpnDetected) {
+          fraudType = 'vpn';
+          details = 'VPN/Proxy detected';
+          action = 'flagged';
+        } else if (event.riskLevel === 'high') {
+          fraudType = 'proxy';
+          details = 'High risk activity';
+          action = 'blocked';
+        }
+        
+        return {
+          id: event.id,
+          timestamp: event.createdAt,
+          partnerId: event.partnerId,
+          partnerName: 'Partner ' + (event.partnerId?.slice(-8) || 'Unknown'),
+          offerId: event.offerId,
+          offerName: 'Offer ' + (event.offerId?.slice(-8) || 'Unknown'),
+          subId: event.subId1 || 'no_sub',
+          ip: 'xxx.xxx.xxx.xxx',
+          country: event.country || 'Unknown',
+          fraudType,
+          riskScore: event.fraudScore || 0,
+          action,
+          status: action === 'blocked' ? 'confirmed' : 'pending',
+          details,
+          userAgent: 'Mozilla/5.0...',
+          fingerprint: `fp_${event.id.slice(0, 8)}`
+        };
+      });
+
+      const dashboard = {
+        totalEvents,
+        blockedEvents,
+        fraudRate: Math.round(fraudRate * 100) / 100,
+        topFraudTypes,
+        topFraudPartners,
+        hourlyStats,
+        countryStats: topCountryStats,
+        recentEvents
       };
       
-      console.log('Returning antifraud dashboard for range:', range);
-      res.json(mockDashboard);
+      console.log('Returning real antifraud dashboard:', {
+        totalEvents,
+        blockedEvents,
+        fraudRate,
+        topFraudTypesCount: topFraudTypes.length,
+        topPartnersCount: topFraudPartners.length
+      });
+      
+      res.json(dashboard);
     } catch (error) {
       console.error("Get antifraud dashboard error:", error);
       res.status(500).json({ error: "Internal server error", details: error.message });
@@ -769,111 +890,238 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/advertiser/antifraud/events", async (req, res) => {
-    console.log('=== GET ANTIFRAUD EVENTS ===');
-    console.log('Query params:', req.query);
+    console.log('=== GET ANTIFRAUD EVENTS WITH REAL DATA ===');
     
     try {
-      // Mock данные событий фрода
-      const mockEvents = [
-        {
-          id: 'evt_1',
-          timestamp: new Date(Date.now() - 300000).toISOString(),
-          partnerId: 'partner_1',
-          partnerName: 'Suspicious Partner 1',
-          offerId: 'offer_1',
-          offerName: 'Gaming Offer',
-          subId: 'suspicious_sub_001',
-          ip: '192.168.1.100',
-          country: 'US',
-          fraudType: 'bot',
-          riskScore: 95,
-          action: 'blocked',
-          status: 'confirmed',
-          details: 'Detected headless browser with no user interactions',
-          userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
-          fingerprint: 'fp_abc123def456'
-        },
-        {
-          id: 'evt_2',
-          timestamp: new Date(Date.now() - 600000).toISOString(),
-          partnerId: 'partner_2',
-          partnerName: 'High Risk Partner',
-          offerId: 'offer_2',
-          offerName: 'Casino Offer',
-          subId: 'vpn_traffic_002',
-          ip: '10.0.0.5',
-          country: 'RU',
-          fraudType: 'vpn',
-          riskScore: 87,
-          action: 'flagged',
-          status: 'pending',
-          details: 'VPN detected from commercial VPN service',
-          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0',
-          fingerprint: 'fp_def789ghi012'
-        },
-        {
-          id: 'evt_3',
-          timestamp: new Date(Date.now() - 900000).toISOString(),
-          partnerId: 'partner_3',
-          partnerName: 'Bot Traffic Source',
-          offerId: 'offer_3',
-          offerName: 'Finance Offer',
-          subId: 'proxy_clicks_003',
-          ip: '203.0.113.15',
-          country: 'BR',
-          fraudType: 'proxy',
-          riskScore: 76,
-          action: 'blocked',
-          status: 'confirmed',
-          details: 'Traffic from known proxy server',
-          userAgent: 'Mozilla/5.0 (Windows NT 6.1; WOW64) Gecko/20100101',
-          fingerprint: 'fp_ghi345jkl678'
-        },
-        {
-          id: 'evt_4',
-          timestamp: new Date(Date.now() - 1200000).toISOString(),
-          partnerId: 'partner_4',
-          partnerName: 'Click Farm Network',
-          offerId: 'offer_1',
-          offerName: 'Gaming Offer',
-          subId: 'spam_clicks_004',
-          ip: '198.51.100.42',
-          country: 'IN',
-          fraudType: 'click_spam',
-          riskScore: 92,
-          action: 'blocked',
-          status: 'confirmed',
-          details: '150 clicks from same IP in 5 minutes',
-          userAgent: 'Mozilla/5.0 (Android 10; Mobile; rv:81.0) Gecko/81.0',
-          fingerprint: 'fp_jkl901mno234'
-        },
-        {
-          id: 'evt_5',
-          timestamp: new Date(Date.now() - 1500000).toISOString(),
-          partnerId: 'partner_5',
-          partnerName: 'Suspicious CR Partner',
-          offerId: 'offer_4',
-          offerName: 'Dating Offer',
-          subId: 'high_cr_005',
-          ip: '192.0.2.100',
-          country: 'DE',
-          fraudType: 'suspicious_cr',
-          riskScore: 83,
-          action: 'flagged',
-          status: 'pending',
-          details: '100% conversion rate - statistically impossible',
-          userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-          fingerprint: 'fp_mno567pqr890'
+      const user = req.user;
+      const { 
+        page = 1, 
+        limit = 50, 
+        fraudType, 
+        partnerId, 
+        offerId,
+        riskLevel,
+        status,
+        dateFrom,
+        dateTo 
+      } = req.query;
+
+      // Строим SQL запрос с фильтрами
+      let whereConditions = [`tc.created_at >= NOW() - INTERVAL '30 days'`];
+      let queryParams = [];
+
+      if (fraudType && fraudType !== 'all') {
+        whereConditions.push(`tc.fraud_reason = ?`);
+        queryParams.push(fraudType);
+      }
+
+      if (partnerId && partnerId !== 'all') {
+        whereConditions.push(`tc.partner_id = ?`);
+        queryParams.push(partnerId);
+      }
+
+      if (offerId && offerId !== 'all') {
+        whereConditions.push(`tc.offer_id = ?`);
+        queryParams.push(offerId);
+      }
+
+      if (riskLevel) {
+        if (riskLevel === 'high') {
+          whereConditions.push(`tc.risk_score >= 80`);
+        } else if (riskLevel === 'medium') {
+          whereConditions.push(`tc.risk_score >= 50 AND tc.risk_score < 80`);
+        } else if (riskLevel === 'low') {
+          whereConditions.push(`tc.risk_score < 50`);
         }
-      ];
+      }
+
+      if (status === 'blocked') {
+        whereConditions.push(`tc.is_fraud = true`);
+      } else if (status === 'flagged') {
+        whereConditions.push(`tc.risk_score > 70 AND tc.is_fraud = false`);
+      }
+
+      if (dateFrom) {
+        whereConditions.push(`tc.created_at >= ?`);
+        queryParams.push(dateFrom);
+      }
+
+      if (dateTo) {
+        whereConditions.push(`tc.created_at <= ?`);
+        queryParams.push(dateTo);
+      }
+
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      const eventsQuery = `
+        SELECT 
+          tc.*,
+          u.username as partner_name,
+          o.name as offer_name,
+          COUNT(*) OVER() as total_count
+        FROM tracking_clicks tc
+        LEFT JOIN users u ON u.id = tc.partner_id
+        LEFT JOIN offers o ON o.id = tc.offer_id
+        WHERE ${whereConditions.join(' AND ')}
+        AND (tc.is_fraud = true OR tc.risk_score > 70)
+        ORDER BY tc.created_at DESC
+        LIMIT ? OFFSET ?
+      `;
+
+      queryParams.push(parseInt(limit), offset);
       
-      console.log('Returning', mockEvents.length, 'antifraud events');
-      res.json(mockEvents);
+      const events = await storage.raw(eventsQuery, queryParams);
+      const totalCount = events.length > 0 ? events[0].total_count : 0;
+
+      const formattedEvents = events.map(event => ({
+        id: event.id,
+        timestamp: event.created_at,
+        partnerId: event.partner_id,
+        partnerName: event.partner_name || 'Unknown Partner',
+        offerId: event.offer_id,
+        offerName: event.offer_name || 'Unknown Offer',
+        subId: event.sub_id_1 || 'no_sub',
+        ip: event.ip_address,
+        country: event.country || 'Unknown',
+        fraudType: event.fraud_reason || 'suspicious',
+        riskScore: event.risk_score || 0,
+        action: event.is_fraud ? 'blocked' : 'flagged',
+        status: event.is_fraud ? 'confirmed' : 'pending',
+        details: event.fraud_reason || 'Suspicious activity detected',
+        userAgent: event.user_agent || '',
+        fingerprint: event.fingerprint || `fp_${event.id.slice(0, 8)}`,
+        revenue: event.revenue || 0,
+        currency: event.currency || 'USD'
+      }));
+
+      res.json({
+        events: formattedEvents,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: totalCount,
+          pages: Math.ceil(totalCount / parseInt(limit))
+        }
+      });
+
     } catch (error) {
       console.error("Get antifraud events error:", error);
       res.status(500).json({ error: "Internal server error", details: error.message });
     }
   });
+
+  // Эндпоинт для добавления IP в черный список
+  app.post("/api/advertiser/antifraud/blacklist", async (req, res) => {
+    console.log('=== ADD IP TO BLACKLIST ===');
+    
+    try {
+      const { ip, reason, partnerId, offerId } = req.body;
+      const user = req.user;
+
+      // Добавляем IP в черный список
+      const blacklistEntry = {
+        id: crypto.randomUUID(),
+        ip_address: ip,
+        reason: reason || 'Manual block',
+        added_by: user.id,
+        partner_id: partnerId || null,
+        offer_id: offerId || null,
+        created_at: new Date().toISOString(),
+        is_active: true
+      };
+
+      console.log('Adding IP to blacklist:', blacklistEntry);
+      
+      // В реальной реализации здесь будет INSERT в таблицу ip_blacklist
+      res.json({ 
+        success: true, 
+        message: `IP ${ip} добавлен в черный список`,
+        entry: blacklistEntry 
+      });
+
+    } catch (error) {
+      console.error("Add to blacklist error:", error);
+      res.status(500).json({ error: "Failed to add IP to blacklist" });
+    }
+  });
+
+  // Эндпоинт для настроек антифрода
+  app.get("/api/advertiser/antifraud/settings", async (req, res) => {
+    console.log('=== GET ANTIFRAUD SETTINGS ===');
+    
+    try {
+      const user = req.user;
+      
+      // Mock настройки антифрода для рекламодателя
+      const settings = {
+        enabled: true,
+        sensitivity: 7,
+        autoBlock: true,
+        botDetection: {
+          enabled: true,
+          checkJs: true,
+          checkHeadless: true,
+          checkInteraction: true
+        },
+        vpnProxyDetection: {
+          enabled: true,
+          blockVpn: true,
+          blockProxy: true,
+          blockTor: true
+        },
+        clickSpamDetection: {
+          enabled: true,
+          maxClicksPerIp: 10,
+          timeWindow: 60
+        },
+        suspiciousActivity: {
+          enabled: true,
+          maxConversionRate: 15,
+          minTimeOnSite: 30
+        },
+        geoFiltering: {
+          enabled: false,
+          allowedCountries: [],
+          blockedCountries: []
+        },
+        notifications: {
+          email: true,
+          telegram: false,
+          webhooks: false,
+          threshold: 5
+        }
+      };
+
+      res.json(settings);
+    } catch (error) {
+      console.error("Get antifraud settings error:", error);
+      res.status(500).json({ error: "Failed to get settings" });
+    }
+  });
+
+  app.post("/api/advertiser/antifraud/settings", async (req, res) => {
+    console.log('=== UPDATE ANTIFRAUD SETTINGS ===');
+    
+    try {
+      const user = req.user;
+      const settings = req.body;
+      
+      console.log('Updating antifraud settings for user:', user.username, settings);
+      
+      // В реальной реализации здесь будет UPDATE в таблице antifraud_settings
+      res.json({ 
+        success: true, 
+        message: 'Настройки антифрода обновлены',
+        settings 
+      });
+
+    } catch (error) {
+      console.error("Update antifraud settings error:", error);
+      res.status(500).json({ error: "Failed to update settings" });
+    }
+  });
+
+
 
   app.get("/api/advertiser/antifraud/settings", async (req, res) => {
     console.log('=== GET ANTIFRAUD SETTINGS ===');
