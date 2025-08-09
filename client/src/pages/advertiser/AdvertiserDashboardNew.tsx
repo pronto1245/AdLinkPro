@@ -231,34 +231,19 @@ export default function AdvertiserDashboardNew() {
           </div>
         </div>
 
-        {/* Combined section: Quick Actions + KPI Cards */}
+        {/* Combined section: Conversions + Notifications + Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          {/* Quick Actions */}
-          <Link to="/analytics/traffic">
-            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" data-testid="button-quick-traffic">
-              <Activity className="h-5 w-5" />
-              <span className="text-sm font-medium">Трафик</span>
-            </Button>
-          </Link>
-          
-          <Link to="/analytics/conversions">
-            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-green-50 hover:bg-green-100 border-green-200 text-green-700" data-testid="button-quick-conversions">
-              <Target className="h-5 w-5" />
-              <span className="text-sm font-medium">Конверсии</span>
-            </Button>
-          </Link>
-
-          {/* KPI Cards */}
-          <Card data-testid="card-fraud" className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700">
+          {/* KPI Cards first */}
+          <Card data-testid="card-conversions" className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-red-700 dark:text-red-300">Фрод-активность</CardTitle>
-              <div className="p-3 bg-red-500 rounded-xl shadow-lg">
-                <Shield className="h-6 w-6 text-white" />
+              <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">Конверсии</CardTitle>
+              <div className="p-3 bg-green-500 rounded-xl shadow-lg">
+                <Target className="h-6 w-6 text-white" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-900 dark:text-red-100">{overview?.fraudActivity || 0}</div>
-              <p className="text-xs text-red-700 dark:text-red-400">случаев за период</p>
+              <div className="text-2xl font-bold text-green-900 dark:text-green-100">{overview?.totalConversions || 0}</div>
+              <p className="text-xs text-green-700 dark:text-green-400">за период</p>
             </CardContent>
           </Card>
 
@@ -274,6 +259,21 @@ export default function AdvertiserDashboardNew() {
               <p className="text-xs text-amber-700 dark:text-amber-400">новых сообщений</p>
             </CardContent>
           </Card>
+
+          {/* Quick Actions on the right */}
+          <Link to="/analytics/traffic">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" data-testid="button-quick-traffic">
+              <Activity className="h-5 w-5" />
+              <span className="text-sm font-medium">Трафик</span>
+            </Button>
+          </Link>
+          
+          <Link to="/analytics/conversions">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700" data-testid="button-quick-conversions">
+              <Target className="h-5 w-5" />
+              <span className="text-sm font-medium">Аналитика</span>
+            </Button>
+          </Link>
         </div>
 
         {/* Charts Section - aligned to match Quick Actions width */}
