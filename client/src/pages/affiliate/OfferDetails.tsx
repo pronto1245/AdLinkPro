@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, Lock, FileText, Download } from "lucide-react";
+import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, Lock, FileText, Download, Link } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { LinkGenerator } from "@/components/partner/LinkGenerator";
+
 import { transformLandingUrl } from "@/lib/queryClient";
 
 interface OfferDetails {
@@ -177,9 +177,12 @@ const LandingPagesCard = ({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <ExternalLink className="w-5 h-5" />
-          Лендинг страницы ({landingPages.length})
+          <Link className="w-5 h-5" />
+          Готовые трекинговые ссылки ({landingPages.length})
         </CardTitle>
+        <CardDescription>
+          Готовые ссылки с кастомными доменами и автоматическим tracking. Никаких настроек не требуется - просто копируйте и используйте.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -192,7 +195,9 @@ const LandingPagesCard = ({
                     <Badge variant="default" className="text-xs">По умолчанию</Badge>
                   )}
                   <Badge variant="outline" className="text-xs">{landing.type}</Badge>
-                  <Badge variant="secondary" className="text-xs">Готовая ссылка</Badge>
+                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                    ✓ С трекингом
+                  </Badge>
                 </div>
                 <div className="space-y-1">
                   {transformedUrls[landing.id] ? (
@@ -565,13 +570,7 @@ export default function OfferDetails() {
         </CardContent>
       </Card>
 
-      {/* Готовые трекинговые ссылки - КРИТИЧНО: только после одобрения */}
-      <LinkGenerator 
-        offerId={offer?.id} 
-        offerName={offer?.name}
-        isApproved={isApproved}
-        accessStatus={requestStatus}
-      />
+
 
       {/* Креативы - только для одобренных */}
       {isApproved ? (
@@ -629,7 +628,7 @@ export default function OfferDetails() {
         </CardContent>
       </Card>
 
-      {/* Лендинг страницы - условно для одобренных или кнопка запроса */}
+      {/* Готовые трекинговые ссылки - условно для одобренных или кнопка запроса */}
       {isApproved ? (
         <LandingPagesCard 
           landingPages={offer.landingPages || []} 
@@ -641,7 +640,7 @@ export default function OfferDetails() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Lock className="w-5 h-5" />
-              Доступ к лендингам
+              Готовые трекинговые ссылки
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4 py-12">
@@ -652,8 +651,8 @@ export default function OfferDetails() {
               </h3>
               <p className="text-muted-foreground">
                 {requestStatus === 'pending' 
-                  ? 'Ваш запрос на доступ к лендингам и ссылкам рассматривается рекламодателем'
-                  : 'Для получения ссылок отслеживания и лендинг-страниц необходимо запросить доступ у рекламодателя'
+                  ? 'Ваш запрос на доступ к готовым трекинговым ссылкам рассматривается рекламодателем'
+                  : 'Для получения готовых трекинговых ссылок с кастомными доменами необходимо запросить доступ у рекламодателя'
                 }
               </p>
             </div>
