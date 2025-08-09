@@ -263,8 +263,9 @@ export function AffiliatePostbacks() {
 
   // Update profile mutation
   const updateMutation = useMutation({
-    mutationFn: async ({ id, ...profile }: PostbackProfile) => {
+    mutationFn: async (profileData: PostbackProfile) => {
       const token = localStorage.getItem('auth_token');
+      const { id, ...profile } = profileData;
       const response = await fetch(`/api/postback/profiles/${id}`, {
         method: 'PUT',
         headers: {
@@ -551,7 +552,7 @@ export function AffiliatePostbacks() {
                         <Switch
                           checked={profile.enabled}
                           onCheckedChange={(checked) => {
-                            updateMutation.mutate({ ...profile, enabled: checked });
+                            updateMutation.mutate({ ...profile, enabled: checked } as PostbackProfile);
                           }}
                           data-testid={`switch-enabled-${profile.id}`}
                         />
@@ -708,7 +709,7 @@ export function AffiliatePostbacks() {
           {selectedProfile && (
             <PostbackForm
               profile={selectedProfile}
-              onSave={(data) => updateMutation.mutate({ ...selectedProfile, ...data })}
+              onSave={(data) => updateMutation.mutate({ ...selectedProfile, ...data } as PostbackProfile)}
             />
           )}
         </DialogContent>
