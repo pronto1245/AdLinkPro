@@ -699,6 +699,7 @@ export function AffiliatePostbacks() {
                           variant="outline"
                           size="sm"
                           onClick={() => {
+                            console.log('🔄 EDIT button clicked for profile:', profile);
                             setSelectedProfile(profile);
                             setIsEditModalOpen(true);
                           }}
@@ -712,7 +713,9 @@ export function AffiliatePostbacks() {
                           variant="outline"
                           size="sm"
                           onClick={() => {
+                            console.log('🗑️ DELETE button clicked for profile:', profile.id);
                             if (confirm('Вы уверены, что хотите удалить этот профиль?')) {
+                              console.log('🗑️ User confirmed deletion, calling deleteMutation.mutate');
                               deleteMutation.mutate(profile.id);
                             }
                           }}
