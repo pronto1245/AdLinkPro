@@ -363,6 +363,173 @@ export const cryptoTransactions = pgTable("crypto_transactions", {
   confirmedAt: timestamp("confirmed_at"),
 });
 
+// Clicks table for tracking system (from technical specification)
+export const clicks = pgTable("clicks", {
+  clickid: text("clickid").primaryKey(), // Generated clickid (12-character random string)
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  partnerId: varchar("partner_id").references(() => users.id), // NULL if no partner
+  campaignId: varchar("campaign_id"), // Future campaigns table
+  offerId: varchar("offer_id").references(() => offers.id),
+  flowId: varchar("flow_id"), // Future flows table
+  site: text("site"), // Landing page URL
+  referrer: text("referrer"), // HTTP referrer
+  
+  // Sub parameters (sub1-sub10 standard + sub2 special handling)
+  sub1: text("sub1"),
+  sub2Raw: text("sub2_raw"), // Raw sub2 string (key-value|key2-value2)
+  sub2Map: jsonb("sub2_map"), // Parsed sub2 as JSONB {"key":"value","key2":"value2"}
+  sub3: text("sub3"),
+  sub4: text("sub4"),
+  sub5: text("sub5"),
+  sub6: text("sub6"),
+  sub7: text("sub7"),
+  sub8: text("sub8"),
+  sub9: text("sub9"),
+  sub10: text("sub10"),
+  sub11: text("sub11"),
+  sub12: text("sub12"),
+  sub13: text("sub13"),
+  sub14: text("sub14"),
+  sub15: text("sub15"),
+  sub16: text("sub16"),
+  
+  // UTM parameters
+  utmSource: text("utm_source"),
+  utmCampaign: text("utm_campaign"),
+  utmMedium: text("utm_medium"),
+  utmContent: text("utm_content"),
+  utmTerm: text("utm_term"),
+  
+  // IP and geo data
+  ip: text("ip"), // INET type in PostgreSQL, stored as text in Drizzle
+  countryIso: text("country_iso"), // 2-letter country code
+  region: text("region"), // State/region
+  city: text("city"), // City name
+  isp: text("isp"), // Internet service provider
+  operator: text("operator"), // Mobile operator
+  isProxy: boolean("is_proxy").default(false), // VPN/Proxy detection
+  
+  // User agent parsing
+  userAgent: text("user_agent"), // Full user agent string
+  browserName: text("browser_name"), // Chrome, Firefox, Safari, etc.
+  browserVersion: text("browser_version"), // Browser version
+  osName: text("os_name"), // Windows, macOS, iOS, Android, etc.
+  osVersion: text("os_version"), // OS version
+  deviceModel: text("device_model"), // Device model (iPhone 14, Samsung Galaxy S21, etc.)
+  deviceType: text("device_type"), // mobile, tablet, desktop
+  connection: text("connection"), // wifi, mobile, cable
+  lang: text("lang"), // Accept-Language header
+  
+  // Timestamps
+  ts: timestamp("ts").defaultNow(),
+});
+
+// Events table for tracking system (from technical specification)
+export const events = pgTable("events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clickid: text("clickid").notNull().references(() => clicks.clickid),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  partnerId: varchar("partner_id").references(() => users.id),
+  
+  // Event type and data
+  type: eventTypeEnum("type").notNull(), // open, lp_click, reg, deposit, sale, lead, lp_leave
+  revenue: decimal("revenue", { precision: 18, scale: 6 }), // Up to 6 decimal places for crypto
+  currency: text("currency").default('USD'), // 3-letter currency code
+  txid: text("txid"), // Transaction ID for deduplication
+  
+  // Additional event data
+  timeOnPageMs: integer("time_on_page_ms"), // Time on page in milliseconds for lp_leave event
+  
+  // Timestamps
+  ts: timestamp("ts").defaultNow(),
+}, (table) => ({
+  // Unique constraint for idempotency: (clickid, type, coalesce(txid,''))
+  uniqueEvent: sql`UNIQUE (clickid, type, COALESCE(txid, ''))`,
+}));
+
+// Postback profiles table (from technical specification)
+export const postbackProfiles = pgTable("postback_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Ownership and scope
+  ownerScope: ownerScopeEnum("owner_scope").notNull(), // 'owner', 'advertiser', 'partner'
+  ownerId: varchar("owner_id").notNull().references(() => users.id), // ID of the owner
+  scopeType: postbackScopeTypeEnum("scope_type").notNull(), // 'global', 'campaign', 'offer', 'flow'
+  scopeId: varchar("scope_id"), // ID of the specific scope (offer_id, campaign_id, flow_id)
+  
+  // Profile settings
+  name: text("name").notNull(),
+  enabled: boolean("enabled").notNull().default(true),
+  priority: integer("priority").notNull().default(100),
+  
+  // Endpoint configuration
+  endpointUrl: text("endpoint_url").notNull(),
+  method: postbackMethodEnum("method").notNull(), // 'GET', 'POST'
+  idParam: postbackIdParamEnum("id_param").notNull(), // 'subid', 'clickid'
+  
+  // Authentication
+  authQueryKey: text("auth_query_key"), // Query parameter name for auth
+  authQueryVal: text("auth_query_val"), // Query parameter value for auth (encrypted)
+  authHeaderName: text("auth_header_name"), // Header name for auth
+  authHeaderVal: text("auth_header_val"), // Header value for auth (encrypted)
+  
+  // Status mapping and parameters
+  statusMap: jsonb("status_map").notNull().default(sql`'{}'::jsonb`), // Map event types to postback statuses
+  paramsTemplate: jsonb("params_template").notNull().default(sql`'{}'::jsonb`), // Mustache template for parameters
+  urlEncode: boolean("url_encode").notNull().default(true),
+  
+  // HMAC settings
+  hmacEnabled: boolean("hmac_enabled").notNull().default(false),
+  hmacSecret: text("hmac_secret"), // Encrypted HMAC secret
+  hmacPayloadTpl: text("hmac_payload_tpl"), // Mustache template for HMAC payload
+  hmacParamName: text("hmac_param_name"), // Parameter name for HMAC signature
+  
+  // Retry and timeout settings
+  retries: integer("retries").notNull().default(5),
+  timeoutMs: integer("timeout_ms").notNull().default(4000),
+  backoffBaseSec: integer("backoff_base_sec").notNull().default(2),
+  
+  // Filters
+  filterRevenueGt0: boolean("filter_revenue_gt0").notNull().default(false),
+  filterCountryWhitelist: jsonb("filter_country_whitelist"), // Array of allowed countries
+  filterCountryBlacklist: jsonb("filter_country_blacklist"), // Array of blocked countries
+  filterExcludeBots: boolean("filter_exclude_bots").notNull().default(true),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Postback deliveries table (delivery logs from technical specification)
+export const postbackDeliveries = pgTable("postback_deliveries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  profileId: varchar("profile_id").notNull().references(() => postbackProfiles.id, { onDelete: 'cascade' }),
+  eventId: varchar("event_id").references(() => events.id),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  partnerId: varchar("partner_id").references(() => users.id),
+  clickid: text("clickid").notNull(),
+  
+  // Delivery attempt information
+  attempt: integer("attempt").notNull(),
+  maxAttempts: integer("max_attempts").notNull(),
+  
+  // Request details
+  requestMethod: text("request_method").notNull(),
+  requestUrl: text("request_url").notNull(),
+  requestBody: text("request_body"),
+  requestHeaders: jsonb("request_headers"),
+  
+  // Response details
+  responseCode: integer("response_code"),
+  responseBody: text("response_body"),
+  error: text("error"),
+  durationMs: integer("duration_ms"),
+  
+  // Status and timestamps
+  status: deliveryStatusEnum("status").notNull().default('pending'),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Postbacks
 export const postbacks = pgTable("postbacks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -628,129 +795,6 @@ export const auditLogs = pgTable("audit_logs", {
   userAgent: text("user_agent"),
   timestamp: timestamp("timestamp").defaultNow(),
   description: text("description"),
-});
-
-// Clicks tracking table
-export const clicks = pgTable("clicks", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  clickid: text("clickid").notNull().unique(),
-  visitor_code: text("visitor_code"),
-  campaign_id: varchar("campaign_id"),
-  source_id: varchar("source_id"),
-  flow_id: varchar("flow_id"),
-  offer_id: varchar("offer_id"),
-  landing_id: varchar("landing_id"),
-  ad_campaign_id: text("ad_campaign_id"),
-  external_id: text("external_id"),
-  creative_id: text("creative_id"),
-  site: text("site"),
-  referrer: text("referrer"),
-  sub1: text("sub1"),
-  sub2_raw: text("sub2_raw"),
-  sub2_map: jsonb("sub2_map"),
-  sub3: text("sub3"),
-  sub4: text("sub4"),
-  sub5: text("sub5"),
-  sub6: text("sub6"),
-  sub7: text("sub7"),
-  sub8: text("sub8"),
-  sub9: text("sub9"),
-  sub10: text("sub10"),
-  ip: text("ip"),
-  country_iso: text("country_iso"),
-  region: text("region"),
-  city: text("city"),
-  isp: text("isp"),
-  operator: text("operator"),
-  is_proxy: boolean("is_proxy").default(false),
-  user_agent: text("user_agent"),
-  browser_name: text("browser_name"),
-  browser_version: text("browser_version"),
-  os_name: text("os_name"),
-  os_version: text("os_version"),
-  device_model: text("device_model"),
-  device_type: text("device_type"),
-  connection: text("connection"),
-  lang: text("lang"),
-  created_at: timestamp("created_at").defaultNow(),
-});
-
-// Events tracking table
-export const events = pgTable("events", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  clickid: text("clickid").notNull(),
-  type: eventTypeEnum("type").notNull(),
-  revenue: decimal("revenue", { precision: 15, scale: 2 }),
-  currency: text("currency").default('USD'),
-  txid: text("txid"),
-  time_on_page_ms: integer("time_on_page_ms"),
-  created_at: timestamp("created_at").defaultNow(),
-});
-
-// Postback profiles
-export const postbackProfiles = pgTable("postback_profiles", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  owner_id: varchar("owner_id").notNull().references(() => users.id),
-  name: text("name").notNull(),
-  tracker_type: trackerTypeEnum("tracker_type").notNull(),
-  scope_type: scopeTypeEnum("scope_type").notNull(),
-  scope_id: varchar("scope_id"),
-  priority: integer("priority").default(100),
-  enabled: boolean("enabled").default(true),
-  endpoint_url: text("endpoint_url").notNull(),
-  method: httpMethodEnum("method").default('GET'),
-  id_param: idParamEnum("id_param").default('clickid'),
-  auth_query_key: text("auth_query_key"),
-  auth_query_val: text("auth_query_val"),
-  auth_header_name: text("auth_header_name"),
-  auth_header_val: text("auth_header_val"),
-  status_map: jsonb("status_map").default({
-    open: 'open',
-    reg: 'lead',
-    deposit: 'sale',
-    lp_click: 'click'
-  }),
-  params_template: jsonb("params_template").default({
-    clickid: '{{clickid}}',
-    status: '{{status}}',
-    revenue: '{{revenue}}',
-    currency: '{{currency}}',
-    country: '{{country_iso}}'
-  }),
-  url_encode: boolean("url_encode").default(true),
-  hmac_enabled: boolean("hmac_enabled").default(false),
-  hmac_secret: text("hmac_secret"),
-  hmac_payload_tpl: text("hmac_payload_tpl"),
-  hmac_param_name: text("hmac_param_name").default('signature'),
-  retries: integer("retries").default(5),
-  timeout_ms: integer("timeout_ms").default(4000),
-  backoff_base_sec: integer("backoff_base_sec").default(2),
-  filter_revenue_gt0: boolean("filter_revenue_gt0").default(false),
-  filter_country_whitelist: jsonb("filter_country_whitelist").default([]),
-  filter_country_blacklist: jsonb("filter_country_blacklist").default([]),
-  filter_exclude_bots: boolean("filter_exclude_bots").default(true),
-  last_delivery: timestamp("last_delivery"),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
-});
-
-// Postback deliveries logs
-export const postbackDeliveries = pgTable("postback_deliveries", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  profile_id: varchar("profile_id").notNull().references(() => postbackProfiles.id),
-  event_id: varchar("event_id").references(() => events.id),
-  clickid: text("clickid").notNull(),
-  attempt: integer("attempt").notNull(),
-  max_attempts: integer("max_attempts").notNull(),
-  request_method: httpMethodEnum("request_method").notNull(),
-  request_url: text("request_url").notNull(),
-  request_body: text("request_body"),
-  request_headers: jsonb("request_headers"),
-  response_code: integer("response_code"),
-  response_body: text("response_body"),
-  error: text("error"),
-  duration_ms: integer("duration_ms"),
-  created_at: timestamp("created_at").defaultNow(),
 });
 
 // Financial Transactions - Core finance table
@@ -1887,3 +1931,39 @@ export const insertApiTokenSchema = createInsertSchema(apiTokens).omit({
 
 export type ApiToken = typeof apiTokens.$inferSelect;
 export type InsertApiToken = z.infer<typeof insertApiTokenSchema>;
+
+// Clicks Types
+export const insertClickSchema = createInsertSchema(clicks).omit({
+  ts: true,
+});
+
+export type Click = typeof clicks.$inferSelect;
+export type InsertClick = z.infer<typeof insertClickSchema>;
+
+// Events Types
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true,
+  ts: true,
+});
+
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+
+// Postback Profiles Types
+export const insertPostbackProfileSchema = createInsertSchema(postbackProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type PostbackProfile = typeof postbackProfiles.$inferSelect;
+export type InsertPostbackProfile = z.infer<typeof insertPostbackProfileSchema>;
+
+// Postback Deliveries Types
+export const insertPostbackDeliverySchema = createInsertSchema(postbackDeliveries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type PostbackDelivery = typeof postbackDeliveries.$inferSelect;
+export type InsertPostbackDelivery = z.infer<typeof insertPostbackDeliverySchema>;

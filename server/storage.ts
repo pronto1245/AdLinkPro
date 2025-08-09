@@ -3,7 +3,7 @@ import {
   postbacks, postbackLogs, postbackTemplates, tickets, fraudAlerts, customRoles, userRoleAssignments,
   cryptoWallets, cryptoTransactions, fraudReports, fraudRules, 
   deviceTracking, ipAnalysis, fraudBlocks, receivedOffers, offerAccessRequests, userNotifications,
-  creativeFiles, customDomains, apiTokens,
+  creativeFiles, customDomains, apiTokens, clicks, events, postbackProfiles, postbackDeliveries,
   type User, type InsertUser, type Offer, type InsertOffer,
   type PartnerOffer, type InsertPartnerOffer, type TrackingLink, type InsertTrackingLink,
   type Transaction, type InsertTransaction, type Postback, type InsertPostback,
@@ -13,7 +13,9 @@ import {
   type DeviceTracking, type InsertDeviceTracking, type IpAnalysis, type InsertIpAnalysis,
   type FraudBlock, type InsertFraudBlock, type ReceivedOffer, type InsertReceivedOffer,
   type OfferAccessRequest, type InsertOfferAccessRequest, type UserNotification, type InsertUserNotification,
-  type CustomDomain, type InsertCustomDomain, type ApiToken, type InsertApiToken
+  type CustomDomain, type InsertCustomDomain, type ApiToken, type InsertApiToken,
+  type Click, type InsertClick, type Event, type InsertEvent,
+  type PostbackProfile, type InsertPostbackProfile, type PostbackDelivery, type InsertPostbackDelivery
 } from "@shared/schema";
 import {
   trackingClicks as newTrackingClicks, dailyStatistics, hourlyStatistics,
@@ -489,6 +491,23 @@ export interface IStorage {
 
   // Analytics export
   exportStatistics(filters: any, format: 'csv' | 'xlsx' | 'json'): Promise<string>;
+
+  // New tracking system methods
+  recordClick(clickData: InsertClick): Promise<Click>;
+  getClick(clickid: string): Promise<Click | undefined>;
+  recordEvent(eventData: InsertEvent): Promise<Event>;
+  getEvents(clickid: string): Promise<Event[]>;
+  
+  // Postback profiles management
+  getPostbackProfiles(ownerId: string, ownerScope?: string): Promise<PostbackProfile[]>;
+  createPostbackProfile(profile: InsertPostbackProfile): Promise<PostbackProfile>;
+  updatePostbackProfile(id: string, data: Partial<InsertPostbackProfile>): Promise<PostbackProfile>;
+  deletePostbackProfile(id: string): Promise<void>;
+  
+  // Postback delivery management
+  recordPostbackDelivery(delivery: InsertPostbackDelivery): Promise<PostbackDelivery>;
+  getPostbackDeliveries(profileId?: string, status?: string): Promise<PostbackDelivery[]>;
+  updatePostbackDelivery(id: string, data: Partial<InsertPostbackDelivery>): Promise<PostbackDelivery>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -5852,8 +5871,83 @@ class MemStorage implements IStorage {
     return `https://track.example.com/click?${baseParams.toString()}`;
   }
 
+  // New tracking system implementation
+  async recordClick(clickData: InsertClick): Promise<Click> {
+    const [click] = await db.insert(clicks).values(clickData).returning();
+    return click;
+  }
 
+  async getClick(clickid: string): Promise<Click | undefined> {
+    const [click] = await db.select().from(clicks).where(eq(clicks.clickid, clickid));
+    return click;
+  }
 
+  async recordEvent(eventData: InsertEvent): Promise<Event> {
+    const [event] = await db.insert(events).values(eventData).returning();
+    return event;
+  }
+
+  async getEvents(clickid: string): Promise<Event[]> {
+    return await db.select().from(events).where(eq(events.clickid, clickid));
+  }
+
+  // Postback profiles management
+  async getPostbackProfiles(ownerId: string, ownerScope?: string): Promise<PostbackProfile[]> {
+    let query = db.select().from(postbackProfiles).where(eq(postbackProfiles.ownerId, ownerId));
+    
+    if (ownerScope) {
+      query = query.where(eq(postbackProfiles.ownerScope, ownerScope as any));
+    }
+    
+    return await query;
+  }
+
+  async createPostbackProfile(profile: InsertPostbackProfile): Promise<PostbackProfile> {
+    const [newProfile] = await db.insert(postbackProfiles).values(profile).returning();
+    return newProfile;
+  }
+
+  async updatePostbackProfile(id: string, data: Partial<InsertPostbackProfile>): Promise<PostbackProfile> {
+    const [updatedProfile] = await db
+      .update(postbackProfiles)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(postbackProfiles.id, id))
+      .returning();
+    return updatedProfile;
+  }
+
+  async deletePostbackProfile(id: string): Promise<void> {
+    await db.delete(postbackProfiles).where(eq(postbackProfiles.id, id));
+  }
+
+  // Postback delivery management
+  async recordPostbackDelivery(delivery: InsertPostbackDelivery): Promise<PostbackDelivery> {
+    const [newDelivery] = await db.insert(postbackDeliveries).values(delivery).returning();
+    return newDelivery;
+  }
+
+  async getPostbackDeliveries(profileId?: string, status?: string): Promise<PostbackDelivery[]> {
+    let query = db.select().from(postbackDeliveries);
+    
+    if (profileId) {
+      query = query.where(eq(postbackDeliveries.profileId, profileId));
+    }
+    
+    if (status) {
+      query = query.where(eq(postbackDeliveries.status, status as any));
+    }
+    
+    return await query.orderBy(desc(postbackDeliveries.createdAt));
+  }
+
+  async updatePostbackDelivery(id: string, data: Partial<InsertPostbackDelivery>): Promise<PostbackDelivery> {
+    const [updatedDelivery] = await db
+      .update(postbackDeliveries)
+      .set(data)
+      .where(eq(postbackDeliveries.id, id))
+      .returning();
+    return updatedDelivery;
+  }
 }
 
 // Use MemStorage for quick fix - switch back to DatabaseStorage once methods are properly implemented

@@ -32,6 +32,8 @@ import archiver from "archiver";
 import { CreativeService } from "./services/creativeService";
 import { TrackingLinkService } from "./services/trackingLinks";
 import { DNSVerificationService } from "./services/dnsVerification";
+import trackingRoutes from "./routes/tracking";
+import postbackRoutes from "./routes/postbacks";
 
 
 // Extend Express Request to include user property
@@ -163,23 +165,14 @@ const requireUserAccess = async (req: Request, res: Response, next: NextFunction
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Import postback and tracking routes
-  try {
-    const { default: postbackRoutes } = await import('./routes/postback.js');
-    const { default: trackingRoutes } = await import('./routes/tracking.js');
-    
-    // Mount postback routes
-    app.use('/api/postback', postbackRoutes);
-    app.use('/api/advertiser/postback', postbackRoutes);
-    app.use('/api/affiliate/postback', postbackRoutes);
-    
-    // Mount tracking routes at root for /click and /event endpoints
-    app.use('/', trackingRoutes);
-    
-    console.log('=== POSTBACK AND TRACKING ROUTES ADDED ===');
-  } catch (error) {
-    console.warn('Postback routes not found:', error);
-  }
+  // Import tracking and postback routes
+  const trackingRoutes = await import('./routes/tracking.js');
+  const postbackRoutes = await import('./routes/postbacks.js');
+  
+  // Add new tracking and postback routes
+  app.use('/track', trackingRoutes.default);
+  app.use('/api/postbacks', postbackRoutes.default);
+  console.log('=== POSTBACK AND TRACKING ROUTES ADDED ===');
 
   // FIXED: Team API routes added first without middleware for testing
   console.log('=== ADDING TEAM ROUTES WITHOUT MIDDLEWARE ===');
@@ -8938,6 +8931,325 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       res.status(500).json({ error: "Failed to delete API token" });
     }
   });
+
+  // Advertiser Dashboard API
+  app.get("/api/advertiser/dashboard", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { dateFrom, dateTo, geo, device, offerId, partnerId } = req.query;
+      
+      // Get advertiser's offers
+      const offers = await storage.getOffers(userId);
+      const totalOffers = offers.length;
+      const activeOffers = offers.filter(o => o.status === 'active').length;
+      const pendingOffers = offers.filter(o => o.status === 'pending').length;
+      const rejectedOffers = offers.filter(o => o.status === 'rejected').length;
+      
+      // Get partners
+      const partners = await storage.getUsersByOwner(userId, 'affiliate');
+      const partnersCount = partners.length;
+      
+      // Mock dashboard data with real structure
+      const dashboardData = {
+        overview: {
+          totalOffers,
+          activeOffers,
+          pendingOffers, 
+          rejectedOffers,
+          totalBudget: 150000,
+          totalSpent: 85420,
+          totalRevenue: 124800,
+          partnersCount,
+          avgCR: 3.2,
+          epc: 2.45,
+          postbacksSent: 1247,
+          postbacksReceived: 1198,
+          postbackErrors: 49,
+          fraudActivity: 12
+        },
+        chartData: {
+          traffic: [
+            { date: '2025-08-01', clicks: 1240, uniqueClicks: 1180 },
+            { date: '2025-08-02', clicks: 1350, uniqueClicks: 1280 },
+            { date: '2025-08-03', clicks: 1120, uniqueClicks: 1050 },
+            { date: '2025-08-04', clicks: 1480, uniqueClicks: 1400 },
+            { date: '2025-08-05', clicks: 1650, uniqueClicks: 1580 },
+            { date: '2025-08-06', clicks: 1420, uniqueClicks: 1350 },
+            { date: '2025-08-07', clicks: 1580, uniqueClicks: 1520 }
+          ],
+          conversions: [
+            { date: '2025-08-01', leads: 42, registrations: 28, deposits: 15 },
+            { date: '2025-08-02', leads: 48, registrations: 32, deposits: 18 },
+            { date: '2025-08-03', leads: 36, registrations: 24, deposits: 12 },
+            { date: '2025-08-04', leads: 52, registrations: 36, deposits: 22 },
+            { date: '2025-08-05', leads: 58, registrations: 42, deposits: 26 },
+            { date: '2025-08-06', leads: 45, registrations: 30, deposits: 18 },
+            { date: '2025-08-07', leads: 55, registrations: 38, deposits: 24 }
+          ],
+          spending: [
+            { date: '2025-08-01', spent: 12400, revenue: 15800 },
+            { date: '2025-08-02', spent: 13500, revenue: 17200 },
+            { date: '2025-08-03', spent: 11200, revenue: 14600 },
+            { date: '2025-08-04', spent: 14800, revenue: 18900 },
+            { date: '2025-08-05', spent: 16500, revenue: 21200 },
+            { date: '2025-08-06', spent: 14200, revenue: 18400 },
+            { date: '2025-08-07', spent: 15800, revenue: 20700 }
+          ],
+          postbacks: [
+            { date: '2025-08-01', sent: 182, successful: 175, failed: 7 },
+            { date: '2025-08-02', sent: 198, successful: 189, failed: 9 },
+            { date: '2025-08-03', sent: 156, successful: 148, failed: 8 },
+            { date: '2025-08-04', sent: 215, successful: 207, failed: 8 },
+            { date: '2025-08-05', sent: 242, successful: 235, failed: 7 },
+            { date: '2025-08-06', sent: 189, successful: 182, failed: 7 },
+            { date: '2025-08-07', sent: 225, successful: 217, failed: 8 }
+          ],
+          fraud: [
+            { date: '2025-08-01', detected: 8, blocked: 6 },
+            { date: '2025-08-02', detected: 12, blocked: 10 },
+            { date: '2025-08-03', detected: 5, blocked: 4 },
+            { date: '2025-08-04', detected: 15, blocked: 12 },
+            { date: '2025-08-05', detected: 18, blocked: 16 },
+            { date: '2025-08-06', detected: 9, blocked: 8 },
+            { date: '2025-08-07', detected: 14, blocked: 11 }
+          ]
+        },
+        topOffers: offers.slice(0, 5).map((offer, i) => ({
+          id: offer.id,
+          name: offer.name,
+          status: offer.status,
+          clicks: 1200 + i * 200,
+          cr: 2.5 + i * 0.3,
+          conversions: 30 + i * 8,
+          spent: 8500 + i * 1200,
+          postbacks: 145 + i * 25,
+          fraudRate: 0.5 + i * 0.2
+        })),
+        notifications: [
+          {
+            id: '1',
+            type: 'success',
+            title: 'Новые конверсии',
+            message: '25 новых конверсий по офферу Casino Premium за последний час',
+            createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+            isRead: false
+          },
+          {
+            id: '2', 
+            type: 'warning',
+            title: 'Низкий CR',
+            message: 'CR по офферу Dating Pro упал ниже 2% - рекомендуется проверить трафик',
+            createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+            isRead: false
+          },
+          {
+            id: '3',
+            type: 'info',
+            title: 'Новый партнёр',
+            message: 'Партнёр TopTraffic подал заявку на доступ к офферу Sports Betting',
+            createdAt: new Date(Date.now() - 1000 * 60 * 240).toISOString(),
+            isRead: true
+          }
+        ],
+        offerStatus: {
+          pending: pendingOffers,
+          active: activeOffers,
+          hidden: offers.filter(o => o.status === 'hidden').length,
+          archived: offers.filter(o => o.status === 'archived').length
+        }
+      };
+      
+      res.json(dashboardData);
+    } catch (error) {
+      console.error("Dashboard error:", error);
+      res.status(500).json({ error: "Failed to fetch dashboard data" });
+    }
+  });
+
+  // Partner/Affiliate Dashboard API
+  app.get("/api/affiliate/dashboard", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { dateFrom, dateTo, geo, device, offerId } = req.query;
+      
+      // Get partner's offer access requests
+      const offerRequests = await storage.getOfferAccessRequests(userId);
+      const approvedOffers = offerRequests.filter(r => r.status === 'approved').length;
+      
+      // Mock partner dashboard data
+      const partnerDashboard = {
+        metrics: {
+          totalRevenue: 45720,
+          totalConversions: 184,
+          totalClicks: 7850,
+          uniqueClicks: 7420,
+          epc: 5.82,
+          avgCR: 2.34,
+          activeOffers: approvedOffers,
+          postbacksSent: 892,
+          postbacksReceived: 867,
+          pendingRevenue: 12400,
+          confirmedRevenue: 33320,
+          rejectedRevenue: 1200,
+          avgSessionDuration: 145000 // milliseconds
+        },
+        chartData: {
+          revenue: [
+            { date: '2025-08-01', revenue: 6200 },
+            { date: '2025-08-02', revenue: 7100 },
+            { date: '2025-08-03', revenue: 5800 },
+            { date: '2025-08-04', revenue: 8500 },
+            { date: '2025-08-05', revenue: 9200 },
+            { date: '2025-08-06', revenue: 8800 }
+          ],
+          crEpc: [
+            { date: '2025-08-01', cr: 2.1, epc: 5.2 },
+            { date: '2025-08-02', cr: 2.4, epc: 5.8 },
+            { date: '2025-08-03', cr: 2.0, epc: 5.1 },
+            { date: '2025-08-04', cr: 2.8, epc: 6.5 },
+            { date: '2025-08-05', cr: 3.1, epc: 7.2 },
+            { date: '2025-08-06', cr: 2.6, epc: 6.1 }
+          ],
+          conversions: [
+            { date: '2025-08-01', leads: 24, deposits: 12 },
+            { date: '2025-08-02', leads: 28, deposits: 15 },
+            { date: '2025-08-03', leads: 20, deposits: 8 },
+            { date: '2025-08-04', leads: 35, deposits: 18 },
+            { date: '2025-08-05', leads: 42, deposits: 22 },
+            { date: '2025-08-06', leads: 30, deposits: 16 }
+          ],
+          geoTraffic: [
+            { country: 'IN', clicks: 2400, revenue: 15200, cr: 3.2 },
+            { country: 'ID', clicks: 1800, revenue: 8900, cr: 2.8 },
+            { country: 'TH', clicks: 1200, revenue: 6400, cr: 2.1 },
+            { country: 'MY', clicks: 950, revenue: 4800, cr: 2.4 },
+            { country: 'PH', clicks: 750, revenue: 3200, cr: 1.9 }
+          ],
+          postbackActivity: [
+            { date: '2025-08-01', sent: 128, successful: 125, failed: 3 },
+            { date: '2025-08-02', sent: 142, successful: 138, failed: 4 },
+            { date: '2025-08-03', sent: 118, successful: 115, failed: 3 },
+            { date: '2025-08-04', sent: 168, successful: 163, failed: 5 },
+            { date: '2025-08-05', sent: 189, successful: 185, failed: 4 },
+            { date: '2025-08-06', sent: 152, successful: 148, failed: 4 }
+          ]
+        },
+        topOffers: offerRequests.slice(0, 5).map((request, i) => ({
+          id: request.offerId,
+          name: `Offer ${i + 1}`, // Would normally fetch offer details
+          clicks: 800 + i * 150,
+          conversions: 18 + i * 5,
+          revenue: 2400 + i * 800,
+          cr: 2.2 + i * 0.3,
+          epc: 3.0 + i * 0.8,
+          status: request.status
+        })),
+        notifications: [
+          {
+            id: '1',
+            type: 'success',
+            title: 'Новые конверсии',
+            message: '8 конверсий по офферу Casino Gold за последние 2 часа',
+            time: '30 мин назад'
+          },
+          {
+            id: '2',
+            type: 'info', 
+            title: 'Доступ к офферу',
+            message: 'Одобрен доступ к новому офферу Sports Premium',
+            time: '2 часа назад'
+          }
+        ],
+        smartAlerts: [
+          {
+            id: '1',
+            type: 'opportunity',
+            title: 'Высокий CR в Индии',
+            message: 'CR по офферу Dating Pro в Индии вырос до 4.2% - увеличьте трафик',
+            action: 'Оптимизировать'
+          }
+        ]
+      };
+      
+      res.json(partnerDashboard);
+    } catch (error) {
+      console.error("Partner dashboard error:", error);
+      res.status(500).json({ error: "Failed to fetch partner dashboard data" });
+    }
+  });
+
+  // Super Admin Dashboard API
+  app.get("/api/admin/dashboard", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      // Get all users for overview
+      const allUsers = await storage.getUsers();
+      const advertisers = allUsers.filter(u => u.role === 'advertiser');
+      const partners = allUsers.filter(u => u.role === 'affiliate');
+      
+      // Get all offers
+      const allOffers = await storage.getOffers();
+      
+      // Mock admin dashboard data
+      const adminDashboard = {
+        overview: {
+          totalUsers: allUsers.length,
+          totalAdvertisers: advertisers.length,
+          totalPartners: partners.length,
+          totalOffers: allOffers.length,
+          activeOffers: allOffers.filter(o => o.status === 'active').length,
+          totalRevenue: 284750,
+          totalClicks: 47850,
+          avgCR: 2.8,
+          fraudDetected: 145
+        },
+        chartData: {
+          userGrowth: [
+            { date: '2025-08-01', advertisers: 45, partners: 180 },
+            { date: '2025-08-02', advertisers: 46, partners: 185 },
+            { date: '2025-08-03', advertisers: 48, partners: 188 },
+            { date: '2025-08-04', advertisers: 49, partners: 192 },
+            { date: '2025-08-05', advertisers: 52, partners: 198 },
+            { date: '2025-08-06', advertisers: 53, partners: 205 }
+          ],
+          revenue: [
+            { date: '2025-08-01', total: 42500, advertisers: 28000, platform: 14500 },
+            { date: '2025-08-02', total: 48200, advertisers: 31800, platform: 16400 },
+            { date: '2025-08-03', total: 39800, advertisers: 26200, platform: 13600 },
+            { date: '2025-08-04', total: 54600, advertisers: 36000, platform: 18600 },
+            { date: '2025-08-05', total: 61200, advertisers: 40400, platform: 20800 },
+            { date: '2025-08-06', total: 56400, advertisers: 37200, platform: 19200 }
+          ]
+        },
+        topAdvertisers: advertisers.slice(0, 5).map((adv, i) => ({
+          id: adv.id,
+          name: adv.firstName + ' ' + adv.lastName,
+          company: adv.company || 'N/A',
+          offers: Math.floor(Math.random() * 20) + 5,
+          revenue: 15000 + i * 8000,
+          partners: Math.floor(Math.random() * 50) + 10
+        })),
+        topPartners: partners.slice(0, 5).map((partner, i) => ({
+          id: partner.id,
+          name: partner.firstName + ' ' + partner.lastName,
+          partnerNumber: partner.partnerNumber,
+          revenue: 8000 + i * 3000,
+          conversions: 45 + i * 15,
+          cr: 2.1 + i * 0.4
+        })),
+        systemHealth: {
+          uptime: '99.98%',
+          responseTime: 145,
+          errorRate: 0.02,
+          fraudBlocked: 89
+        }
+      };
+      
+      res.json(adminDashboard);
+    } catch (error) {
+      console.error("Admin dashboard error:", error);
+      res.status(500).json({ error: "Failed to fetch admin dashboard data" });
+    }
+  });
   
   // Add analytics routes with authentication middleware (placed at end)
   app.use('/api/analytics', authenticateToken, analyticsRoutes);
@@ -9266,9 +9578,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
-  // Add tracking routes (public - no auth required)
-  const trackingRoutes = await import('./routes/tracking');
-  app.use('/api/track', trackingRoutes.default);
+
   
   return httpServer;
 }
