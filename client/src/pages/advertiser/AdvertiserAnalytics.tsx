@@ -100,7 +100,13 @@ export function AdvertiserAnalytics() {
         )
       });
       
-      const response = await fetch(`/api/analytics/advertiser/statistics?${params}`);
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/analytics/advertiser/statistics?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch statistics');
       return response.json();
     }
@@ -110,7 +116,13 @@ export function AdvertiserAnalytics() {
   const { data: offers } = useQuery({
     queryKey: ['/api/analytics/advertiser/offers'],
     queryFn: async () => {
-      const response = await fetch('/api/analytics/advertiser/offers');
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/analytics/advertiser/offers', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch offers');
       return response.json();
     }
@@ -120,7 +132,13 @@ export function AdvertiserAnalytics() {
   const { data: partners } = useQuery({
     queryKey: ['/api/analytics/advertiser/partners'],
     queryFn: async () => {
-      const response = await fetch('/api/analytics/advertiser/partners');
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/analytics/advertiser/partners', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch partners');
       return response.json();
     }
@@ -139,7 +157,7 @@ export function AdvertiserAnalytics() {
   const data: StatisticsData[] = statisticsData?.data || [];
 
   const handleFilterChange = (key: string, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters(prev => ({ ...prev, [key]: value === 'all' ? '' : value }));
   };
 
   const resetFilters = () => {
@@ -172,7 +190,13 @@ export function AdvertiserAnalytics() {
         )
       });
       
-      const response = await fetch(`/api/analytics/advertiser/statistics/export?${params}`);
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/analytics/advertiser/statistics/export?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (!response.ok) throw new Error('Failed to export data');
       
       const blob = await response.blob();
@@ -275,7 +299,7 @@ export function AdvertiserAnalytics() {
                   <SelectValue placeholder="Все офферы" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все офферы</SelectItem>
+                  <SelectItem value="all">Все офферы</SelectItem>
                   {offers?.map((offer: any) => (
                     <SelectItem key={offer.id} value={offer.id}>
                       {offer.name}
@@ -292,7 +316,7 @@ export function AdvertiserAnalytics() {
                   <SelectValue placeholder="Все партнеры" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все партнеры</SelectItem>
+                  <SelectItem value="all">Все партнеры</SelectItem>
                   {partners?.map((partner: any) => (
                     <SelectItem key={partner.id} value={partner.id}>
                       {partner.username}
@@ -318,7 +342,7 @@ export function AdvertiserAnalytics() {
                   <SelectValue placeholder="Все устройства" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все устройства</SelectItem>
+                  <SelectItem value="all">Все устройства</SelectItem>
                   <SelectItem value="mobile">Мобильные</SelectItem>
                   <SelectItem value="desktop">Десктоп</SelectItem>
                   <SelectItem value="tablet">Планшеты</SelectItem>
