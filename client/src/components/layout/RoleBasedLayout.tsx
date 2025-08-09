@@ -35,10 +35,16 @@ export default function RoleBasedLayout({ children }: RoleBasedLayoutProps) {
           } as React.CSSProperties}
         >
           <div className="w-full h-full">
-            <div className="w-full px-4 py-6" style={{ 
-              paddingLeft: '1rem',
-              paddingRight: '1rem'
-            }}>
+            <div 
+              className={cn(
+                "w-full py-6",
+                user.role === 'affiliate' ? 'px-8' : 'px-4'
+              )} 
+              style={{ 
+                paddingLeft: user.role === 'affiliate' ? '2rem' : '1rem',
+                paddingRight: user.role === 'affiliate' ? '2rem' : '1rem'
+              }}
+            >
               {children}
             </div>
           </div>
