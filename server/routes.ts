@@ -7547,40 +7547,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
-  // Get advertiser's access requests for their offers
-  app.get('/api/advertiser/access-requests', authenticateToken, requireRole(['advertiser']), async (req, res) => {
-    try {
-      const advertiserId = req.user!.id;
 
-      const requests = await db.execute(sql`
-        SELECT 
-          oar.id,
-          oar.offer_id,
-          o.name as offer_name,
-          oar.partner_id,
-          u.username as partner_username,
-          u.email as partner_email,
-          oar.status,
-          oar.request_note,
-          oar.partner_message,
-          oar.requested_at,
-          oar.reviewed_at,
-          oar.response_note,
-          oar.advertiser_response,
-          oar.expires_at
-        FROM offer_access_requests oar
-        LEFT JOIN offers o ON oar.offer_id = o.id
-        LEFT JOIN users u ON oar.partner_id = u.id
-        WHERE oar.advertiser_id = ${advertiserId}
-        ORDER BY oar.requested_at DESC
-      `);
-
-      res.json(requests.rows);
-    } catch (error) {
-      console.error('Get advertiser requests error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
 
   // Partner requests access to a private offer
   app.post('/api/offers/:offerId/request-access', authenticateToken, requireRole(['affiliate']), async (req, res) => {
