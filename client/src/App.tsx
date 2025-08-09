@@ -78,6 +78,7 @@ import AdvertiserPostbacks from '@/pages/advertiser/Postbacks';
 import AdvertiserPostbackSettings from '@/pages/advertiser/AdvertiserPostbackSettings';
 import PostbackProfiles from '@/pages/advertiser/PostbackProfiles';
 import AffiliatePostbacks from '@/pages/affiliate/Postbacks';
+import PostbacksNew from '@/pages/affiliate/PostbacksNew';
 
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
@@ -466,7 +467,7 @@ function Router() {
       <Route path="/affiliate/postbacks">
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PartnerLayout>
-            <PostbackSettings />
+            <PostbacksNew />
           </PartnerLayout>
         </ProtectedRoute>
       </Route>
