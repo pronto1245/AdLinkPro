@@ -333,25 +333,49 @@ export function AffiliatePostbacks() {
     }
   });
 
-  // Delete profile mutation
+  // Delete profile mutation with enhanced error handling
   const deleteMutation = useMutation({
     mutationFn: async (profileId: string) => {
-      console.log('🗑️ Deleting profile via apiRequest:', profileId);
-      const result = await apiRequest(`/api/postback/profiles/${profileId}`, 'DELETE');
-      console.log('🗑️ Delete result:', result);
-      return result;
+      console.log('🗑️ DELETE MUTATION - Starting deletion for:', profileId);
+      
+      if (!profileId) {
+        throw new Error('ID профиля не указан');
+      }
+      
+      try {
+        const result = await apiRequest(`/api/postback/profiles/${profileId}`, 'DELETE');
+        console.log('🗑️ DELETE MUTATION - apiRequest result:', result);
+        
+        if (!result || !result.success) {
+          throw new Error(result?.message || 'Неизвестная ошибка при удалении');
+        }
+        
+        return result;
+      } catch (error) {
+        console.error('🗑️ DELETE MUTATION - apiRequest error:', error);
+        throw new Error(`Ошибка удаления: ${error.message}`);
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('🗑️ DELETE MUTATION - Success:', data);
       queryClient.removeQueries({ queryKey: ['/api/postback/profiles'] });
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       queryClient.refetchQueries({ queryKey: ['/api/postback/profiles'] });
-      toast({ title: 'Профиль удален', description: 'Постбек профиль успешно удален' });
+      toast({ 
+        title: 'Успешно удалено', 
+        description: 'Профиль постбека успешно удален из системы' 
+      });
+      
+      // Принудительная перезагрузка через небольшую задержку
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['/api/postback/profiles'] });
+      }, 500);
     },
     onError: (error) => {
-      console.error('❌ Delete mutation error:', error);
+      console.error('🗑️ DELETE MUTATION - Error:', error);
       toast({ 
-        title: 'Ошибка удаления', 
-        description: error.message,
+        title: 'Ошибка удаления профиля', 
+        description: `Не удалось удалить профиль: ${error.message}`,
         variant: 'destructive'
       });
     }
