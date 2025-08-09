@@ -1,6 +1,11 @@
 # Overview
 This is a comprehensive affiliate marketing platform designed to empower advertisers with intelligent offer management, real-time analytics, robust partner relationship tools, streamlined financial transactions, and advanced anti-fraud protection. The platform supports multiple user roles (super-admin, advertiser, affiliate, staff) and provides full offer management capabilities, including creative asset handling. It delivers real-time statistics, financial management with integrated payouts, dynamic partner approval workflows, and multi-layered security. All data, from status changes to conversion rates and fraud alerts, updates reactively and instantly across all user interfaces, ensuring a live and responsive experience. The business vision is to provide a leading-edge, secure, and user-friendly platform that maximizes efficiency and profitability for all stakeholders in the affiliate marketing ecosystem.
 
+# Recent Changes (Updated: 2025-08-09)
+✅ **Analytics System Complete**: Fixed advertiser analytics to display real tracking data instead of mock data. Each click now shows individual partnerId and clickId for full transparency. Added detailed click tracking table showing exact partner attribution for each conversion.
+✅ **Data Integrity**: All analytics now use real database data from tracking_clicks table with proper partner and offer relationships.
+✅ **Click Transparency**: Advertisers can now see which specific partner (partnerId) brought each click (clickId) with color-coded display.
+
 # User Preferences
 Preferred communication style: Simple, everyday language.
 
