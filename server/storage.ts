@@ -3147,23 +3147,29 @@ export class DatabaseStorage implements IStorage {
 
   async createTrackingClick(data: any): Promise<any> {
     try {
-      // Используем прямой SQL для создания tracking click
+      // Используем прямой SQL с правильными полями
       const query = sql.raw(`
-        INSERT INTO tracking_clicks (partner_id, offer_id, advertiser_id, status, country, device, browser, revenue, sub_1, sub_2, sub_3)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-        RETURNING *
+        INSERT INTO tracking_clicks (
+          id, partner_id, offer_id, status, country, device, browser,
+          revenue, sub_1, sub_2, sub_3, sub_4, sub_5, sub_6, sub_7, sub_8,
+          sub_9, sub_10, sub_11, sub_12, sub_13, sub_14, sub_15, sub_16,
+          created_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
+          $17, $18, $19, $20, $21, $22, $23, $24, $25
+        ) RETURNING *
       `, [
+        data.id,
         data.partnerId || data.partner_id,
         data.offerId || data.offer_id,
-        data.advertiserId || data.advertiser_id,
         data.status || 'click',
-        data.country,
-        data.device,
-        data.browser,
-        data.revenue || 0,
-        data.sub_1,
-        data.sub_2,
-        data.sub_3
+        data.country || 'Unknown',
+        data.device || 'Unknown',
+        data.browser || 'Unknown',
+        data.revenue || '0.00',
+        data.sub_1, data.sub_2, data.sub_3, data.sub_4, data.sub_5, data.sub_6, data.sub_7, data.sub_8,
+        data.sub_9, data.sub_10, data.sub_11, data.sub_12, data.sub_13, data.sub_14, data.sub_15, data.sub_16,
+        new Date()
       ]);
       
       const result = await db.execute(query);
@@ -3184,7 +3190,7 @@ export class DatabaseStorage implements IStorage {
         RETURNING *
       `, [
         updates.status,
-        updates.revenue || 0,
+        updates.revenue || '0.00',
         clickId
       ]);
       
