@@ -8055,8 +8055,8 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
-  // Get advertiser's access requests
-  app.get('/api/advertiser/access-requests', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+  // Get advertiser's access requests (debug version)
+  app.get('/api/advertiser/access-requests-v2', authenticateToken, requireRole(['advertiser']), async (req, res) => {
     const userId = req.user?.id || req.userId;
 
     try {

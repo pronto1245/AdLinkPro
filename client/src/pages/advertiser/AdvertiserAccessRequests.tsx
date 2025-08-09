@@ -85,7 +85,7 @@ export default function AdvertiserAccessRequests() {
 
   // Загрузка запросов доступа
   const { data: requests = [], isLoading } = useQuery({
-    queryKey: ["/api/advertiser/access-requests", Date.now()], // Force fresh data
+    queryKey: ["/api/advertiser/access-requests-v2"],
     staleTime: 0, // Always fetch fresh
   });
   
