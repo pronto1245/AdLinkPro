@@ -100,7 +100,13 @@ async function getRealAnalyticsData(filters: any) {
         offerName: row.offerName || 'Unknown Offer',
         country: row.country || 'Unknown',
         device: row.device || 'Unknown',
-        trafficSource: 'direct',
+        trafficSource: (() => {
+          try {
+            return row.referer ? new URL(row.referer).hostname : 'direct';
+          } catch {
+            return row.referer || 'direct';
+          }
+        })(),
         sub1: row.sub1 || '',
         sub2: row.sub2 || '',
         sub3: row.sub3 || '',
