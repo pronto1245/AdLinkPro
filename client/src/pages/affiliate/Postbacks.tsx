@@ -624,8 +624,8 @@ export function AffiliatePostbacks() {
           >
             🧪 ТЕСТ СОЗДАНИЯ
           </Button>
-          <div className="ml-4 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs">
-            <strong>ПРОВЕРКА:</strong> Видите ли вы красную кнопку "🗑️ УДАЛИТЬ ПРОФИЛЬ" рядом с профилями?
+          <div className="ml-4 p-3 bg-red-100 border-2 border-red-400 rounded text-sm font-bold">
+            ⚠️ ЕСЛИ КНОПКИ БЕЛЫЕ: Обновите страницу (Ctrl+F5) или очистите кеш!
           </div>
           <Button onClick={() => setIsCreateModalOpen(true)} data-testid="button-create-profile">
             <Plus className="h-4 w-4 mr-2" />
@@ -737,15 +737,29 @@ export function AffiliatePostbacks() {
                           {testMutation.isPending ? 'Тестирование...' : 'Тест'}
                         </Button>
                         
-                        {/* НОВАЯ КНОПКА РЕДАКТИРОВАНИЯ С ПРИНУДИТЕЛЬНЫМ СИНИМ СТИЛЕМ */}
+                        {/* КНОПКА РЕДАКТИРОВАНИЯ С ПРЯМЫМИ CSS СТИЛЯМИ */}
                         <button
                           type="button"
                           style={{
-                            backgroundColor: '#2563eb !important',
-                            borderColor: '#2563eb !important',
-                            color: '#ffffff !important'
+                            backgroundColor: '#2563eb',
+                            borderColor: '#2563eb',
+                            color: '#ffffff',
+                            border: '2px solid #2563eb',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                            cursor: 'pointer'
                           }}
-                          className="inline-flex items-center px-4 py-2 text-sm font-bold rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#1d4ed8';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#2563eb';
+                          }}
                           onClick={() => {
                             console.log('🆕 NEW EDIT BUTTON CLICKED:', profile.id);
                             setSelectedProfile(profile);
@@ -758,15 +772,29 @@ export function AffiliatePostbacks() {
                           {updateMutation.isPending ? '🔄 ИЗМЕНЕНИЕ...' : '⚙️ ИЗМЕНИТЬ'}
                         </button>
 
-                        {/* НОВАЯ КНОПКА УДАЛЕНИЯ С ПРИНУДИТЕЛЬНЫМ КРАСНЫМ СТИЛЕМ */}
+                        {/* КНОПКА УДАЛЕНИЯ С ПРЯМЫМИ CSS СТИЛЯМИ */}
                         <button
                           type="button"
                           style={{
-                            backgroundColor: '#dc2626 !important',
-                            borderColor: '#dc2626 !important',
-                            color: '#ffffff !important'
+                            backgroundColor: '#dc2626',
+                            borderColor: '#dc2626',
+                            color: '#ffffff',
+                            border: '2px solid #dc2626',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                            cursor: 'pointer'
                           }}
-                          className="inline-flex items-center px-4 py-2 text-sm font-bold rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#b91c1c';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#dc2626';
+                          }}
                           onClick={async (event) => {
                             event.preventDefault();
                             event.stopPropagation();
