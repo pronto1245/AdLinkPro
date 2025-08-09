@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Обновление токена</title>
+</head>
+<body>
+    <h1>Обновление токена аутентификации</h1>
+    <p>Нажмите кнопку чтобы обновить токен в localStorage:</p>
+    
+    <button onclick="updateToken()">Обновить токен</button>
+    
+    <p id="status"></p>
+    
+    <script>
+        function updateToken() {
+            const newToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA0YjA2Yzg3LWM2Y2YtNDQwOS1hZjY0LTNlMDViZjZjOWM3YyIsInVzZXJuYW1lIjoidGVzdF9hZmZpbGlhdGUiLCJyb2xlIjoiYWZmaWxpYXRlIiwiYWR2ZXJ0aXNlcklkIjpudWxsLCJpYXQiOjE3NTQ3NjQ0MDcsImV4cCI6MTc1NDg1MDgwN30.6Qt4VWftu7iQLnDtCzolxMDcmLDefrf4HEsPeXFK_xg';
+            
+            localStorage.setItem('token', newToken);
+            document.getElementById('status').innerHTML = '<span style="color: green;">✓ Токен обновлен успешно!</span>';
+            
+            setTimeout(() => {
+                window.location.href = '/affiliate/statistics';
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
