@@ -93,8 +93,8 @@ export function AdvertiserDashboard() {
         </div>
       </div>
 
-      {/* Main Statistics Row - 6 Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4">
+      {/* Main Statistics - 2 Rows x 3 Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {/* Total Clicks */}
         <Card data-testid="card-total-clicks" className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -137,6 +137,10 @@ export function AdvertiserDashboard() {
           </CardContent>
         </Card>
 
+      </div>
+
+      {/* Second Row - 3 Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {/* EPC */}
         <Card data-testid="card-epc" className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
