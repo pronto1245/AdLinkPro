@@ -137,6 +137,18 @@ const LandingPagesCard = ({
     sub2: string;
     sub3: string;
     sub4: string;
+    sub5: string;
+    sub6: string;
+    sub7: string;
+    sub8: string;
+    sub9: string;
+    sub10: string;
+    sub11: string;
+    sub12: string;
+    sub13: string;
+    sub14: string;
+    sub15: string;
+    sub16: string;
   }>>({});
 
   const getTransformedUrl = async (landing: any) => {
@@ -178,6 +190,18 @@ const LandingPagesCard = ({
     if (landingSubParams.sub2) url.searchParams.set('sub2', landingSubParams.sub2);
     if (landingSubParams.sub3) url.searchParams.set('sub3', landingSubParams.sub3);
     if (landingSubParams.sub4) url.searchParams.set('sub4', landingSubParams.sub4);
+    if (landingSubParams.sub5) url.searchParams.set('sub5', landingSubParams.sub5);
+    if (landingSubParams.sub6) url.searchParams.set('sub6', landingSubParams.sub6);
+    if (landingSubParams.sub7) url.searchParams.set('sub7', landingSubParams.sub7);
+    if (landingSubParams.sub8) url.searchParams.set('sub8', landingSubParams.sub8);
+    if (landingSubParams.sub9) url.searchParams.set('sub9', landingSubParams.sub9);
+    if (landingSubParams.sub10) url.searchParams.set('sub10', landingSubParams.sub10);
+    if (landingSubParams.sub11) url.searchParams.set('sub11', landingSubParams.sub11);
+    if (landingSubParams.sub12) url.searchParams.set('sub12', landingSubParams.sub12);
+    if (landingSubParams.sub13) url.searchParams.set('sub13', landingSubParams.sub13);
+    if (landingSubParams.sub14) url.searchParams.set('sub14', landingSubParams.sub14);
+    if (landingSubParams.sub15) url.searchParams.set('sub15', landingSubParams.sub15);
+    if (landingSubParams.sub16) url.searchParams.set('sub16', landingSubParams.sub16);
     
     return url.toString();
   };
@@ -214,7 +238,10 @@ const LandingPagesCard = ({
       if (!subParams[landing.id]) {
         setSubParams(prev => ({
           ...prev,
-          [landing.id]: { sub1: '', sub2: '', sub3: '', sub4: '' }
+          [landing.id]: { 
+            sub1: '', sub2: '', sub3: '', sub4: '', sub5: '', sub6: '', sub7: '', sub8: '',
+            sub9: '', sub10: '', sub11: '', sub12: '', sub13: '', sub14: '', sub15: '', sub16: ''
+          }
         }));
       }
     });
@@ -250,13 +277,12 @@ const LandingPagesCard = ({
                   <div className="space-y-1">
                     {transformedUrls[landing.id] ? (
                       <code className="text-sm text-green-600 dark:text-green-400 block font-medium break-all overflow-hidden">
-                        {subParams[landing.id] && (subParams[landing.id].sub1 || subParams[landing.id].sub2 || subParams[landing.id].sub3 || subParams[landing.id].sub4) ? 
+                        {subParams[landing.id] && Object.values(subParams[landing.id]).some(val => val) ? 
                           (() => {
                             const url = new URL(transformedUrls[landing.id]);
-                            if (subParams[landing.id].sub1) url.searchParams.set('sub1', subParams[landing.id].sub1);
-                            if (subParams[landing.id].sub2) url.searchParams.set('sub2', subParams[landing.id].sub2);
-                            if (subParams[landing.id].sub3) url.searchParams.set('sub3', subParams[landing.id].sub3);
-                            if (subParams[landing.id].sub4) url.searchParams.set('sub4', subParams[landing.id].sub4);
+                            Object.entries(subParams[landing.id]).forEach(([key, value]) => {
+                              if (value) url.searchParams.set(key, value);
+                            });
                             return url.toString();
                           })() : 
                           transformedUrls[landing.id]
@@ -307,56 +333,109 @@ const LandingPagesCard = ({
               {expandedLanding === landing.id && (
                 <div className="border-t bg-gray-50 dark:bg-gray-900/50 p-4">
                   <h5 className="font-medium text-sm mb-3 text-gray-700 dark:text-gray-300">
-                    Дополнительные параметры трекинга
+                    Дополнительные параметры трекинга (sub1-sub16)
                   </h5>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        sub1 - источник трафика
-                      </label>
-                      <Input
-                        placeholder="facebook, google, youtube..."
-                        value={subParams[landing.id]?.sub1 || ''}
-                        onChange={(e) => handleSubParamChange(landing.id, 'sub1', e.target.value)}
-                        className="text-sm"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        sub2 - кампания
-                      </label>
-                      <Input
-                        placeholder="campaign_name, promo_2025..."
-                        value={subParams[landing.id]?.sub2 || ''}
-                        onChange={(e) => handleSubParamChange(landing.id, 'sub2', e.target.value)}
-                        className="text-sm"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        sub3 - креатив
-                      </label>
-                      <Input
-                        placeholder="banner_1, video_ad..."
-                        value={subParams[landing.id]?.sub3 || ''}
-                        onChange={(e) => handleSubParamChange(landing.id, 'sub3', e.target.value)}
-                        className="text-sm"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        sub4 - дополнительно
-                      </label>
-                      <Input
-                        placeholder="любая дополнительная информация..."
-                        value={subParams[landing.id]?.sub4 || ''}
-                        onChange={(e) => handleSubParamChange(landing.id, 'sub4', e.target.value)}
-                        className="text-sm"
-                      />
+                  
+                  {/* Основные параметры */}
+                  <div className="mb-4">
+                    <h6 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                      Основные параметры
+                    </h6>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                          sub1 - источник
+                        </label>
+                        <Input
+                          placeholder="facebook, google..."
+                          value={subParams[landing.id]?.sub1 || ''}
+                          onChange={(e) => handleSubParamChange(landing.id, 'sub1', e.target.value)}
+                          className="text-sm h-8"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                          sub2 - кампания
+                        </label>
+                        <Input
+                          placeholder="campaign_name..."
+                          value={subParams[landing.id]?.sub2 || ''}
+                          onChange={(e) => handleSubParamChange(landing.id, 'sub2', e.target.value)}
+                          className="text-sm h-8"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                          sub3 - креатив
+                        </label>
+                        <Input
+                          placeholder="banner_1..."
+                          value={subParams[landing.id]?.sub3 || ''}
+                          onChange={(e) => handleSubParamChange(landing.id, 'sub3', e.target.value)}
+                          className="text-sm h-8"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                          sub4 - аудитория
+                        </label>
+                        <Input
+                          placeholder="audience_18+"
+                          value={subParams[landing.id]?.sub4 || ''}
+                          onChange={(e) => handleSubParamChange(landing.id, 'sub4', e.target.value)}
+                          className="text-sm h-8"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                    💡 Параметры автоматически добавляются в ссылку при заполнении
+                  
+                  {/* Дополнительные параметры */}
+                  <div className="mb-4">
+                    <h6 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                      Дополнительные параметры
+                    </h6>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                      {[5, 6, 7, 8, 9, 10, 11, 12].map(num => (
+                        <div key={num} className="space-y-1">
+                          <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                            sub{num}
+                          </label>
+                          <Input
+                            placeholder={`параметр ${num}`}
+                            value={subParams[landing.id]?.[`sub${num}` as keyof typeof subParams[landing.id]] || ''}
+                            onChange={(e) => handleSubParamChange(landing.id, `sub${num}`, e.target.value)}
+                            className="text-sm h-8"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Расширенные параметры */}
+                  <div>
+                    <h6 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                      Расширенные параметры
+                    </h6>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                      {[13, 14, 15, 16].map(num => (
+                        <div key={num} className="space-y-1">
+                          <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                            sub{num}
+                          </label>
+                          <Input
+                            placeholder={`параметр ${num}`}
+                            value={subParams[landing.id]?.[`sub${num}` as keyof typeof subParams[landing.id]] || ''}
+                            onChange={(e) => handleSubParamChange(landing.id, `sub${num}`, e.target.value)}
+                            className="text-sm h-8"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                    <span>💡</span>
+                    <span>Параметры автоматически добавляются в ссылку при заполнении. Поддерживается до 16 sub-параметров.</span>
                   </div>
                 </div>
               )}
