@@ -750,15 +750,36 @@ export function AffiliatePostbacks() {
                           {updateMutation.isPending ? 'Изменение...' : 'Изменить'}
                         </button>
 
-                        {/* НОВАЯ КНОПКА УДАЛЕНИЯ */}
+                        {/* НОВАЯ КНОПКА УДАЛЕНИЯ С УЛУЧШЕННОЙ ЛОГИКОЙ */}
                         <button
                           type="button"
                           className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                          onClick={() => {
-                            console.log('🆕 NEW DELETE BUTTON CLICKED:', profile.id);
-                            if (confirm(`Удалить профиль "${profile.name}"?`)) {
-                              console.log('🆕 CONFIRMED DELETE, calling mutation...');
-                              deleteMutation.mutate(profile.id);
+                          onClick={async (event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            
+                            console.log('🆕🗑️ DELETE BUTTON CLICKED:', {
+                              profileId: profile.id,
+                              profileName: profile.name,
+                              mutationState: deleteMutation.isPending
+                            });
+                            
+                            if (deleteMutation.isPending) {
+                              console.log('🆕🗑️ DELETE already in progress, ignoring click');
+                              return;
+                            }
+                            
+                            const userConfirmed = confirm(`Вы действительно хотите удалить профиль "${profile.name}"?`);
+                            console.log('🆕🗑️ User confirmation:', userConfirmed);
+                            
+                            if (userConfirmed) {
+                              try {
+                                console.log('🆕🗑️ Starting deletion process...');
+                                await deleteMutation.mutateAsync(profile.id);
+                                console.log('🆕🗑️ Deletion completed successfully');
+                              } catch (error) {
+                                console.error('🆕🗑️ Deletion failed:', error);
+                              }
                             }
                           }}
                           disabled={deleteMutation.isPending}
