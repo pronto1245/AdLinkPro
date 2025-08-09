@@ -624,6 +624,9 @@ export function AffiliatePostbacks() {
           >
             🧪 ТЕСТ СОЗДАНИЯ
           </Button>
+          <div className="ml-4 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs">
+            <strong>ПРОВЕРКА:</strong> Видите ли вы красную кнопку "🗑️ УДАЛИТЬ ПРОФИЛЬ" рядом с профилями?
+          </div>
           <Button onClick={() => setIsCreateModalOpen(true)} data-testid="button-create-profile">
             <Plus className="h-4 w-4 mr-2" />
             Создать профиль
@@ -734,10 +737,15 @@ export function AffiliatePostbacks() {
                           {testMutation.isPending ? 'Тестирование...' : 'Тест'}
                         </Button>
                         
-                        {/* НОВАЯ КНОПКА РЕДАКТИРОВАНИЯ */}
+                        {/* НОВАЯ КНОПКА РЕДАКТИРОВАНИЯ С ПРИНУДИТЕЛЬНЫМ СИНИМ СТИЛЕМ */}
                         <button
                           type="button"
-                          className="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 hover:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                          style={{
+                            backgroundColor: '#2563eb !important',
+                            borderColor: '#2563eb !important',
+                            color: '#ffffff !important'
+                          }}
+                          className="inline-flex items-center px-4 py-2 text-sm font-bold rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                           onClick={() => {
                             console.log('🆕 NEW EDIT BUTTON CLICKED:', profile.id);
                             setSelectedProfile(profile);
@@ -750,10 +758,15 @@ export function AffiliatePostbacks() {
                           {updateMutation.isPending ? '🔄 ИЗМЕНЕНИЕ...' : '⚙️ ИЗМЕНИТЬ'}
                         </button>
 
-                        {/* НОВАЯ КНОПКА УДАЛЕНИЯ С УЛУЧШЕННОЙ ЛОГИКОЙ */}
+                        {/* НОВАЯ КНОПКА УДАЛЕНИЯ С ПРИНУДИТЕЛЬНЫМ КРАСНЫМ СТИЛЕМ */}
                         <button
                           type="button"
-                          className="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-red-600 border border-red-600 rounded-md hover:bg-red-700 hover:border-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                          style={{
+                            backgroundColor: '#dc2626 !important',
+                            borderColor: '#dc2626 !important',
+                            color: '#ffffff !important'
+                          }}
+                          className="inline-flex items-center px-4 py-2 text-sm font-bold rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                           onClick={async (event) => {
                             event.preventDefault();
                             event.stopPropagation();
