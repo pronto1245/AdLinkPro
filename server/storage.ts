@@ -38,6 +38,9 @@ export interface IStorage {
   // In-memory postback storage
   getCreatedPostbackProfiles(): any[];
   savePostbackProfile(profile: any): void;
+  
+  // Postback deliveries
+  savePostbackDelivery(delivery: any): Promise<void>;
   deletePostbackProfile(profileId: string): boolean;
   updatePostbackProfile(profileId: string, updateData: any): any;
 
@@ -6288,4 +6291,3 @@ class MemStorage implements IStorage {
 // КРИТИЧНО: Используем DatabaseStorage для консистентности данных
 // MemStorage вызывает foreign key constraint ошибки из-за рассинхронизации
 export const storage = new DatabaseStorage();
-

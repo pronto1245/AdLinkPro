@@ -3854,13 +3854,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Трекинг конверсий
+  // Трекинг конверсий с автоматическим постбеком
   app.post("/api/tracking/conversion", async (req, res) => {
     try {
       const { clickId, status, revenue } = req.body;
       
       if (!clickId) {
         return res.status(400).json({ error: "Click ID required" });
+      }
+
+      // Получаем данные клика для постбека
+      const clickData = await storage.getTrackingClicks({ clickId });
+      const click = clickData && clickData.length > 0 ? clickData[0] : null;
+      
+      if (!click) {
+        return res.status(404).json({ error: "Click not found" });
       }
 
       // Обновляем статус клика
@@ -3871,6 +3879,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       console.log(`Conversion tracked: ${clickId} with status ${status} and revenue ${revenue}`);
+      
+      // АВТОМАТИЧЕСКИЙ ТРИГГЕР ПОСТБЕКОВ 
+      try {
+        console.log(`🔄 Triggering automatic postbacks for conversion: ${clickId}`);
+        
+        // Найти активные постбек профили партнера из базы данных  
+        const { postbackProfiles } = await import('@shared/postback-schema');
+        const profiles = await db.select()
+          .from(postbackProfiles)
+          .where(eq(postbackProfiles.ownerId, click.partner_id || click.partnerId));
+        
+        console.log(`Found ${profiles.length} postback profiles for partner`);
+        
+        // Отправить постбеки для каждого профиля
+        for (const profile of profiles) {
+          if (profile.enabled) {
+            // Заменить макросы в URL
+            let postbackUrl = profile.endpointUrl;
+            postbackUrl = postbackUrl.replace('{clickid}', clickId);
+            postbackUrl = postbackUrl.replace('{status}', status || 'conversion');
+            postbackUrl = postbackUrl.replace('{revenue}', revenue || '0.00');
+            postbackUrl = postbackUrl.replace('{payout}', revenue || '0.00');
+            postbackUrl = postbackUrl.replace('{country}', click.country || '');
+            postbackUrl = postbackUrl.replace('{sub1}', click.sub_1 || '');
+            postbackUrl = postbackUrl.replace('{sub2}', click.sub_2 || '');
+            postbackUrl = postbackUrl.replace('{sub3}', click.sub_3 || '');
+            
+            console.log(`📤 Sending postback to: ${postbackUrl}`);
+            
+            // Отправить HTTP запрос
+            try {
+              const response = await fetch(postbackUrl, {
+                method: profile.method || 'GET',
+                headers: {
+                  'User-Agent': 'Affiliate-Platform-Postback/1.0'
+                }
+              });
+              
+              console.log(`✅ Postback sent successfully to ${profile.name}: ${response.status}`);
+              
+              console.log(`✅ Postback delivered successfully to ${profile.name}: ${response.status}`);
+              // Логирование минимальное - только в консоль для отладки
+              
+            } catch (fetchError) {
+              console.error(`❌ Postback failed for ${profile.name}:`, fetchError.message);
+              
+              console.log(`❌ Postback delivery failed to ${profile.name}: ${fetchError.message}`);
+              // Логирование минимальное - только в консоль для отладки
+            }
+          }
+        }
+        
+      } catch (postbackError) {
+        console.error('Error triggering postbacks:', postbackError);
+        // Не прерываем процесс конверсии из-за ошибок постбека
+      }
       
       res.json({ success: true, clickId, status, revenue });
     } catch (error) {
