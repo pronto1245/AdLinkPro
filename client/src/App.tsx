@@ -74,6 +74,7 @@ import { useAuth } from "./contexts/auth-context";
 import * as React from 'react';
 import Login from "@/pages/auth/login";
 import AdvertiserPostbacks from '@/pages/advertiser/Postbacks';
+import AdvertiserPostbackSettings from '@/pages/advertiser/AdvertiserPostbackSettings';
 import PostbackProfiles from '@/pages/advertiser/PostbackProfiles';
 import AffiliatePostbacks from '@/pages/affiliate/Postbacks';
 
@@ -335,7 +336,7 @@ function Router() {
       <Route path="/advertiser/postbacks">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <RoleBasedLayout>
-            <AdvertiserPostbacks />
+            <AdvertiserPostbackSettings />
           </RoleBasedLayout>
         </ProtectedRoute>
       </Route>

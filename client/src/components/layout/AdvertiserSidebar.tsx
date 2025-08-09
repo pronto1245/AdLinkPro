@@ -76,6 +76,12 @@ const sidebarItems = [
     description: 'Детальная аналитика и отчёты'
   },
   {
+    title: 'Постбеки',
+    href: '/advertiser/postbacks',
+    icon: Send,
+    description: 'Настройка интеграций с трекерами'
+  },
+  {
     title: 'Профиль',
     href: '/advertiser/profile',
     icon: Settings,

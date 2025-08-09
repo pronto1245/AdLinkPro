@@ -520,6 +520,171 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   console.log('=== POSTBACK ROUTES ADDED SUCCESSFULLY ===');
 
+  // ADVERTISER POSTBACK API ENDPOINTS
+  console.log('=== ADDING ADVERTISER POSTBACK ROUTES ===');
+  
+  app.get("/api/advertiser/postback/profiles", async (req, res) => {
+    console.log('=== GET ADVERTISER POSTBACK PROFILES ===');
+    
+    try {
+      // Mock данные профилей постбеков рекламодателя
+      const mockProfiles = [
+        {
+          id: 'adv_profile_1',
+          name: 'Main CRM Integration',
+          tracker_type: 'custom',
+          enabled: true,
+          endpoint_url: 'https://your-crm.com/api/leads?clickid={clickid}&partner={partner_id}&revenue={revenue}&offer={offer_id}',
+          method: 'GET',
+          events: ['lead', 'deposit', 'conversion'],
+          offers: [], // All offers
+          partners: [], // All partners
+          last_delivery: new Date(Date.now() - 1800000).toISOString(),
+          status: 'active',
+          delivery_stats: {
+            total_sent: 4521,
+            success_rate: 94.2,
+            avg_response_time: 285
+          }
+        },
+        {
+          id: 'adv_profile_2',
+          name: 'Keitaro Analytics',
+          tracker_type: 'keitaro',
+          enabled: true,
+          endpoint_url: 'https://tracker.example.com/api/v1/conversions?clickid={clickid}&status={status}&revenue={revenue}&offer_id={offer_id}',
+          method: 'GET',
+          events: ['lp_click', 'lead', 'deposit'],
+          offers: ['7b537e40-05bc-4e5b-88ae-89b4fa738e76'],
+          partners: [],
+          last_delivery: new Date(Date.now() - 600000).toISOString(),
+          status: 'active',
+          delivery_stats: {
+            total_sent: 2847,
+            success_rate: 98.1,
+            avg_response_time: 156
+          }
+        },
+        {
+          id: 'adv_profile_3',
+          name: 'Testing Profile',
+          tracker_type: 'voluum',
+          enabled: false,
+          endpoint_url: 'https://test-voluum.com/postback?cid={clickid}&payout={revenue}',
+          method: 'GET',
+          events: ['conversion'],
+          offers: [],
+          partners: ['04b06c87-c6cf-440f-9e49-e1bdba4c3e77'],
+          last_delivery: null,
+          status: 'disabled',
+          delivery_stats: {
+            total_sent: 0,
+            success_rate: 0,
+            avg_response_time: 0
+          }
+        }
+      ];
+
+      res.json(mockProfiles);
+    } catch (error: any) {
+      console.error('Error getting advertiser postback profiles:', error);
+      res.status(500).json({ message: 'Failed to get postback profiles' });
+    }
+  });
+
+  app.post("/api/advertiser/postback/profiles", async (req, res) => {
+    console.log('=== CREATE ADVERTISER POSTBACK PROFILE ===');
+    
+    try {
+      const profileData = req.body;
+      console.log('Creating advertiser postback profile:', profileData);
+      
+      // Mock response for successful creation
+      const newProfile = {
+        id: 'adv_profile_' + Date.now(),
+        ...profileData,
+        status: 'active',
+        last_delivery: null,
+        delivery_stats: {
+          total_sent: 0,
+          success_rate: 0,
+          avg_response_time: 0
+        },
+        created_at: new Date().toISOString()
+      };
+
+      res.status(201).json(newProfile);
+    } catch (error: any) {
+      console.error('Error creating advertiser postback profile:', error);
+      res.status(500).json({ message: 'Failed to create postback profile' });
+    }
+  });
+
+  app.get("/api/advertiser/postback/logs", async (req, res) => {
+    console.log('=== GET ADVERTISER POSTBACK LOGS ===');
+    
+    try {
+      // Mock данные логов постбеков рекламодателя
+      const mockLogs = [
+        {
+          id: 'adv_log_1',
+          event_type: 'lead',
+          status: 'sent',
+          response_status: 200,
+          response_time: 245,
+          error_message: null,
+          sent_at: new Date(Date.now() - 300000).toISOString(),
+          clickid: 'test_exact_data',
+          partner_name: 'Test Partner',
+          offer_name: 'Gaming Offer'
+        },
+        {
+          id: 'adv_log_2',
+          event_type: 'deposit',
+          status: 'sent',
+          response_status: 200,
+          response_time: 189,
+          error_message: null,
+          sent_at: new Date(Date.now() - 600000).toISOString(),
+          clickid: 'abcd12345678',
+          partner_name: 'Premium Partner',
+          offer_name: 'Finance Offer'
+        },
+        {
+          id: 'adv_log_3',
+          event_type: 'lp_click',
+          status: 'failed',
+          response_status: 404,
+          response_time: 5000,
+          error_message: 'Endpoint not found',
+          sent_at: new Date(Date.now() - 900000).toISOString(),
+          clickid: 'efgh87654321',
+          partner_name: 'Basic Partner',
+          offer_name: 'Test Offer'
+        },
+        {
+          id: 'adv_log_4',
+          event_type: 'conversion',
+          status: 'sent',
+          response_status: 200,
+          response_time: 321,
+          error_message: null,
+          sent_at: new Date(Date.now() - 1200000).toISOString(),
+          clickid: 'ijkl11223344',
+          partner_name: 'VIP Partner',
+          offer_name: 'Premium Gaming'
+        }
+      ];
+
+      res.json(mockLogs);
+    } catch (error: any) {
+      console.error('Error getting advertiser postback logs:', error);
+      res.status(500).json({ message: 'Failed to get postback logs' });
+    }
+  });
+
+  console.log('=== ADVERTISER POSTBACK ROUTES ADDED SUCCESSFULLY ===');
+
   // АНТИФРОД API ЭНДПОИНТЫ
   console.log('=== ADDING ANTIFRAUD ROUTES ===');
   
