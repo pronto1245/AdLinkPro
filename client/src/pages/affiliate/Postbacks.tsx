@@ -248,12 +248,12 @@ export function AffiliatePostbacks() {
   const queryClient = useQueryClient();
 
   // Fetch postback profiles using default queryFn
-  const { data: profiles, isLoading } = useQuery({
+  const { data: profiles = [], isLoading } = useQuery({
     queryKey: ['/api/postback/profiles']
   });
 
   // Fetch delivery logs using default queryFn
-  const { data: deliveries } = useQuery({
+  const { data: deliveries = [] } = useQuery({
     queryKey: ['/api/postback/logs']
   });
 

@@ -13,6 +13,26 @@ export async function apiRequest(
   body?: any,
   customHeaders?: Record<string, string>
 ): Promise<any> {
+  // CRITICAL FIX: Ensure method is always a string
+  const httpMethod = typeof method === 'string' ? method : 'GET';
+  
+  console.log('🔧 apiRequest call:', {
+    url,
+    originalMethod: method,
+    methodType: typeof method,
+    finalMethod: httpMethod,
+    methodValue: JSON.stringify(method)
+  });
+
+  if (typeof method !== 'string') {
+    console.error('❌ INVALID METHOD IN apiRequest:', {
+      method,
+      methodType: typeof method,
+      stack: new Error().stack
+    });
+    throw new Error(`Invalid method in apiRequest: ${typeof method}. Expected string, got ${typeof method}`);
+  }
+
   const token = localStorage.getItem('auth_token');
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -24,7 +44,7 @@ export async function apiRequest(
   }
 
   const res = await fetch(url, {
-    method,
+    method: httpMethod,
     headers,
     body: body ? JSON.stringify(body) : undefined,
     credentials: "include",
