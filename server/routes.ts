@@ -3895,14 +3895,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Отправить постбеки для каждого профиля
         for (const profile of profiles) {
           if (profile.enabled) {
-            // Заменить макросы в URL - только основные параметры
+            // Заменить макросы в URL - только client_id, остальные пустые
             let postbackUrl = profile.endpointUrl;
             postbackUrl = postbackUrl.replace('{clickid}', clickId);
             postbackUrl = postbackUrl.replace('{click_id}', clickId); 
             postbackUrl = postbackUrl.replace('{client_id}', clickId);
-            postbackUrl = postbackUrl.replace('{status}', status || 'approved');
-            postbackUrl = postbackUrl.replace('{revenue}', revenue || '0.00');
-            postbackUrl = postbackUrl.replace('{payout}', revenue || '0.00');
+            postbackUrl = postbackUrl.replace('{status}', '');
+            postbackUrl = postbackUrl.replace('{revenue}', '');
+            postbackUrl = postbackUrl.replace('{payout}', '');
             
             console.log(`📤 Sending postback to: ${postbackUrl}`);
             
