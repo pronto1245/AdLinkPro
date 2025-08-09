@@ -3918,9 +3918,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             postbackUrl = postbackUrl.replace(/{client_id}/g, clickId);
             postbackUrl = postbackUrl.replace(/{external_id}/g, clickId);
             
-            // Заменяем статус - 1 для approved конверсий
-            const conversionStatus = status === 'approved' ? '1' : '0';
-            postbackUrl = postbackUrl.replace(/{status}/g, conversionStatus);
+            // Определяем тип конверсии для Keitaro
+            let keitaroStatus = '';
+            if (status === 'lead') {
+              keitaroStatus = 'lead';
+            } else if (status === 'sale' || status === 'approved') {
+              keitaroStatus = 'sale';
+            } else {
+              keitaroStatus = status === 'approved' ? 'sale' : status;
+            }
+            
+            // Заменяем статус на правильный тип
+            postbackUrl = postbackUrl.replace(/{status}/g, keitaroStatus);
+            postbackUrl = postbackUrl.replace(/{lead}/g, 'lead');
+            postbackUrl = postbackUrl.replace(/{sale}/g, 'sale');
             
             // Заменяем payout реальным значением revenue
             const payoutValue = revenue || '0';
