@@ -551,3 +551,5 @@ export function AffiliatePostbacks() {
     </div>
   );
 }
+
+export default AffiliatePostbacks;

@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Textarea } from '@/components/ui/textarea';
 import { 
   Plus, 
   Settings, 
@@ -539,7 +538,7 @@ export function AdvertiserPostbacks() {
                 onCheckedChange={(checked) => setFormData({ ...formData, filterRevenueGt0: checked })}
                 data-testid="switch-filter-revenue"
               />
-              <Label>Только с доходом > 0</Label>
+              <Label>Только с доходом &gt; 0</Label>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -926,3 +925,5 @@ export function AdvertiserPostbacks() {
     </div>
   );
 }
+
+export default AdvertiserPostbacks;
