@@ -810,56 +810,7 @@ export default function OfferDetails() {
         </CardContent>
       </Card>
 
-      {/* Готовые трекинговые ссылки - условно для одобренных или кнопка запроса */}
-      {isApproved ? (
-        <LandingPagesCard 
-          landingPages={offer.landingPages || []} 
-          offerId={offer.id}
-          onCopyUrl={copyToClipboard}
-        />
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="w-5 h-5" />
-              Готовые трекинговые ссылки
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4 py-12">
-            <Lock className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
-            <div>
-              <h3 className="text-lg font-medium mb-2">
-                {requestStatus === 'pending' ? 'Запрос отправлен' : 'Требуется доступ'}
-              </h3>
-              <p className="text-muted-foreground">
-                {requestStatus === 'pending' 
-                  ? 'Ваш запрос на доступ к готовым трекинговым ссылкам рассматривается рекламодателем'
-                  : 'Для получения готовых трекинговых ссылок с кастомными доменами необходимо запросить доступ у рекламодателя'
-                }
-              </p>
-            </div>
-            {requestStatus === 'none' && (
-              <Button 
-                onClick={handleRequestAccess}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8"
-              >
-                Запросить доступ
-              </Button>
-            )}
-            {requestStatus === 'pending' && (
-              <Button 
-                variant="outline"
-                className="border-yellow-500 text-yellow-600 hover:bg-yellow-50 px-8"
-                disabled
-              >
-                В ожидании одобрения
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* KPI условия */}
+      {/* Условия и требования */}
       <Card>
         <CardHeader>
           <CardTitle>Условия и требования</CardTitle>
@@ -921,6 +872,55 @@ export default function OfferDetails() {
 
         </CardContent>
       </Card>
+
+      {/* Готовые трекинговые ссылки - условно для одобренных или кнопка запроса */}
+      {isApproved ? (
+        <LandingPagesCard 
+          landingPages={offer.landingPages || []} 
+          offerId={offer.id}
+          onCopyUrl={copyToClipboard}
+        />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5" />
+              Готовые трекинговые ссылки
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4 py-12">
+            <Lock className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
+            <div>
+              <h3 className="text-lg font-medium mb-2">
+                {requestStatus === 'pending' ? 'Запрос отправлен' : 'Требуется доступ'}
+              </h3>
+              <p className="text-muted-foreground">
+                {requestStatus === 'pending' 
+                  ? 'Ваш запрос на доступ к готовым трекинговым ссылкам рассматривается рекламодателем'
+                  : 'Для получения готовых трекинговых ссылок с кастомными доменами необходимо запросить доступ у рекламодателя'
+                }
+              </p>
+            </div>
+            {requestStatus === 'none' && (
+              <Button 
+                onClick={handleRequestAccess}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+              >
+                Запросить доступ
+              </Button>
+            )}
+            {requestStatus === 'pending' && (
+              <Button 
+                variant="outline"
+                className="border-yellow-500 text-yellow-600 hover:bg-yellow-50 px-8"
+                disabled
+              >
+                В ожидании одобрения
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
