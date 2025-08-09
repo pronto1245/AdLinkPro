@@ -33,7 +33,11 @@ export async function apiRequest(
     throw new Error(`Invalid method in apiRequest: ${typeof method}. Expected string, got ${typeof method}`);
   }
 
-  const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+  // CRITICAL FIX: Only use auth_token, clear old token format
+  if (localStorage.getItem('token')) {
+    localStorage.removeItem('token');
+  }
+  const token = localStorage.getItem('auth_token');
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...customHeaders
@@ -63,7 +67,11 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+    // CRITICAL FIX: Only use auth_token, clear old token format
+    if (localStorage.getItem('token')) {
+      localStorage.removeItem('token');
+    }
+    const token = localStorage.getItem('auth_token');
     const headers: Record<string, string> = {};
     
     if (token) {
