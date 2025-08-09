@@ -202,6 +202,27 @@ const defaultProfile: Partial<PostbackProfile> = {
 };
 
 export function AffiliatePostbacks() {
+  // Debug fetch calls
+  React.useEffect(() => {
+    const originalFetch = window.fetch;
+    window.fetch = function(url: RequestInfo | URL, init?: RequestInit) {
+      if (init && init.method && typeof init.method !== 'string') {
+        console.error('❌ BAD METHOD TYPE:', {
+          url,
+          method: init.method,
+          methodType: typeof init.method,
+          fullInit: init
+        });
+        throw new Error(`Invalid method type: ${typeof init.method}. Expected string, got ${typeof init.method}`);
+      }
+      return originalFetch.call(this, url, init);
+    };
+    
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, []);
+
   const [selectedProfile, setSelectedProfile] = useState<PostbackProfile | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -372,17 +393,29 @@ export function AffiliatePostbacks() {
   // Test postback mutation
   const testMutation = useMutation({
     mutationFn: async ({ profileId, testData: data }: { profileId: string, testData: any }) => {
+      console.log('Testing postback:', { profileId, testData: data });
       const token = localStorage.getItem('auth_token');
+      
       const response = await fetch(`/api/postback/test/${profileId}`, {
-        method: 'POST',
+        method: 'POST', // Explicit string
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
       });
-      if (!response.ok) throw new Error('Failed to test postback');
-      return response.json();
+      
+      console.log('Test response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Test failed:', errorText);
+        throw new Error(`Failed to test postback: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('Test success:', result);
+      return result;
     },
     onSuccess: (data) => {
       toast({ 
@@ -390,6 +423,15 @@ export function AffiliatePostbacks() {
         description: data.message || 'Постбек отправлен'
       });
       setIsTestModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/postback/logs'] });
+    },
+    onError: (error) => {
+      console.error('Test mutation error:', error);
+      toast({ 
+        title: 'Ошибка тестирования', 
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
@@ -515,7 +557,13 @@ export function AffiliatePostbacks() {
 
             <div className="space-y-2">
               <Label>Метод</Label>
-              <Select value={localFormData.method} onValueChange={(value) => setLocalFormData({ ...localFormData, method: value as 'GET' | 'POST' })}>
+              <Select 
+                value={String(localFormData.method || 'GET')} 
+                onValueChange={(value) => {
+                  console.log('Method select changed to:', value, typeof value);
+                  setLocalFormData({ ...localFormData, method: value as 'GET' | 'POST' });
+                }}
+              >
                 <SelectTrigger data-testid="select-method">
                   <SelectValue />
                 </SelectTrigger>
@@ -582,7 +630,15 @@ export function AffiliatePostbacks() {
           <Button
             onClick={() => {
               console.log('Saving form data:', localFormData);
-              onSave(localFormData);
+              
+              // Ensure method is a string
+              const sanitizedData = {
+                ...localFormData,
+                method: String(localFormData.method || 'GET') as 'GET' | 'POST'
+              };
+              
+              console.log('Sanitized form data:', sanitizedData);
+              onSave(sanitizedData);
             }}
             disabled={!localFormData.name || !localFormData.endpointUrl}
             data-testid="button-save"
