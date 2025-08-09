@@ -278,6 +278,49 @@ export default function AdvertiserDashboardNew() {
 
         {/* Charts Section - aligned to match Quick Actions width */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {/* Offer Status Card */}
+          <Card data-testid="card-offer-status">
+            <CardHeader>
+              <CardTitle>Топ-офферы</CardTitle>
+              <CardDescription>Лучшие офферы по эффективности</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {topOffers.slice(0, 3).map((offer: any) => (
+                  <div key={offer.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                    <div className="flex flex-col">
+                      <span className="font-medium text-sm">{offer.name}</span>
+                      <span className="text-xs text-muted-foreground">CR: {offer.cr}%</span>
+                    </div>
+                    <Badge variant={offer.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                      {offer.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Notifications List Card */}
+          <Card data-testid="card-notifications-list">
+            <CardHeader>
+              <CardTitle>Последние уведомления</CardTitle>
+              <CardDescription>Сообщения системы</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {notifications.slice(0, 3).map((notification: any) => (
+                  <div key={notification.id} className="flex items-start gap-2 p-2 rounded-lg bg-muted/50">
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{notification.title}</div>
+                      <div className="text-xs text-muted-foreground">{notification.message}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
           <Card data-testid="chart-traffic">
             <CardHeader>
               <CardTitle>Трафик по времени</CardTitle>
@@ -314,49 +357,6 @@ export default function AdvertiserDashboardNew() {
                   <Area type="monotone" dataKey="deposits" stackId="1" stroke="#f59e0b" fill="#f59e0b" name="Депозиты" />
                 </AreaChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Offer Status Card */}
-          <Card data-testid="card-offer-status">
-            <CardHeader>
-              <CardTitle>Топ-офферы</CardTitle>
-              <CardDescription>Лучшие офферы по эффективности</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {topOffers.slice(0, 3).map((offer: any) => (
-                  <div key={offer.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-sm">{offer.name}</span>
-                      <span className="text-xs text-muted-foreground">CR: {offer.cr}%</span>
-                    </div>
-                    <Badge variant={offer.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                      {offer.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Notifications Card */}
-          <Card data-testid="card-notifications-list">
-            <CardHeader>
-              <CardTitle>Уведомления</CardTitle>
-              <CardDescription>Последние сообщения системы</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {notifications.slice(0, 3).map((notification: any) => (
-                  <div key={notification.id} className="flex items-start gap-2 p-2 rounded-lg bg-muted/50">
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{notification.title}</div>
-                      <div className="text-xs text-muted-foreground">{notification.message}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </CardContent>
           </Card>
         </div>
