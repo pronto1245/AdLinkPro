@@ -715,7 +715,7 @@ export default function OfferDetails() {
                 </Badge>
                 {getStatusBadge(offer?.status || 'draft')}
               </div>
-              <p className="text-muted-foreground">
+              <p className="text-black dark:text-white">
                 {typeof offer?.description === 'object' 
                   ? (offer.description?.ru || offer.description?.en || 'Описание не указано')
                   : (offer?.description || 'Описание не указано')
