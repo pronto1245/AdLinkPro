@@ -75,7 +75,7 @@ Preferred communication style: Simple, everyday language.
 - **Automatic Partner Link Generation**: Smart link generation with unique parameters and role-based access control.
 - **Real-time Event Tracking**: Automatic postback triggers on lp_click, lead, deposit, conversion events with full data preservation.
 - **Postback Testing & Monitoring**: Built-in testing tools for validating tracker configurations and monitoring delivery success rates.
-- **Keitaro Integration Status (2025-08-09)**: Postbacks successfully delivered to Keitaro with HTTP 200 responses. Correct format implemented: `?subid=REPLACE&status=REPLACE&payout=REPLACE` with proper parameter replacement. Both UUID and short click ID formats (like `3tuglu44rt`, `ktr8x9m2qw`) fully supported. System automatically replaces REPLACE placeholders with actual values: subid=clickId, status=1 for approved conversions, payout=revenue amount. Integration confirmed working with Keitaro receiving postbacks correctly.
+- **Keitaro Integration Status (2025-08-09)**: Postbacks successfully delivered to Keitaro with HTTP 200 responses. System migrated from REPLACE placeholders to standard parameter format: `?subid={clickid}&status={status}&payout={revenue}`. Both UUID and short click ID formats (like `3tuglu44rt`, `ktr8x9m2qw`) fully supported. System automatically replaces parameters with actual values: subid=clickId, status=1 for approved conversions, payout=revenue amount. Standard format provides better consistency across all tracker integrations. Integration confirmed working with Keitaro receiving postbacks correctly.
 
 # External Dependencies
 

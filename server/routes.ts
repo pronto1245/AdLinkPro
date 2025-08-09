@@ -3912,25 +3912,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Для Кейтаро используем только постбек без предварительного создания клика
             // Кейтаро сам должен обрабатывать постбеки для существующих кликов
             
-            // Заменить макросы в URL с правильными значениями для Кейтаро
-            postbackUrl = postbackUrl.replace('{clickid}', clickId);
-            postbackUrl = postbackUrl.replace('{click_id}', clickId); 
-            postbackUrl = postbackUrl.replace('{client_id}', clickId);
-            postbackUrl = postbackUrl.replace('{external_id}', clickId);
+            // Стандартная замена параметров в нашем формате
+            postbackUrl = postbackUrl.replace(/{clickid}/g, clickId);
+            postbackUrl = postbackUrl.replace(/{click_id}/g, clickId);
+            postbackUrl = postbackUrl.replace(/{client_id}/g, clickId);
+            postbackUrl = postbackUrl.replace(/{external_id}/g, clickId);
             
             // Заменяем статус - 1 для approved конверсий
             const conversionStatus = status === 'approved' ? '1' : '0';
-            postbackUrl = postbackUrl.replace('{status}', conversionStatus);
+            postbackUrl = postbackUrl.replace(/{status}/g, conversionStatus);
             
-            // Заменяем payout реальным значением revenue
+            // Заменяем revenue/payout реальным значением
             const payoutValue = revenue || '0';
-            postbackUrl = postbackUrl.replace('{revenue}', payoutValue);
-            postbackUrl = postbackUrl.replace('{payout}', payoutValue);
+            postbackUrl = postbackUrl.replace(/{revenue}/g, payoutValue);
+            postbackUrl = postbackUrl.replace(/{payout}/g, payoutValue);
             
-            // Последовательная замена всех REPLACE параметров
-            postbackUrl = postbackUrl.replace(/subid=REPLACE/, `subid=${clickId}`);
-            postbackUrl = postbackUrl.replace(/status=REPLACE/, `status=${conversionStatus}`);
-            postbackUrl = postbackUrl.replace(/payout=REPLACE/, `payout=${payoutValue}`);
+            // Обратная совместимость с форматом REPLACE (если кто-то еще использует)
+            postbackUrl = postbackUrl.replace(/subid=REPLACE/g, `subid=${clickId}`);
+            postbackUrl = postbackUrl.replace(/status=REPLACE/g, `status=${conversionStatus}`);
+            postbackUrl = postbackUrl.replace(/payout=REPLACE/g, `payout=${payoutValue}`);
             
             console.log(`📤 Sending postback to: ${postbackUrl}`);
             
