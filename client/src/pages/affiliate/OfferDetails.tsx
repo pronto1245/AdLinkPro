@@ -384,7 +384,7 @@ const LandingPagesCard = ({
                           </label>
                           <Input
                             placeholder={`параметр ${num}`}
-                            value={subParams[landing.id]?.[`sub${num}` as keyof typeof subParams[landing.id]] || ''}
+                            value={subParams[landing.id]?.[`sub${num}` as keyof typeof subParams[typeof landing.id]] || ''}
                             onChange={(e) => handleSubParamChange(landing.id, `sub${num}`, e.target.value)}
                             className="text-sm h-8"
                           />
@@ -406,7 +406,7 @@ const LandingPagesCard = ({
                           </label>
                           <Input
                             placeholder={`параметр ${num}`}
-                            value={subParams[landing.id]?.[`sub${num}` as keyof typeof subParams[landing.id]] || ''}
+                            value={subParams[landing.id]?.[`sub${num}` as keyof typeof subParams[typeof landing.id]] || ''}
                             onChange={(e) => handleSubParamChange(landing.id, `sub${num}`, e.target.value)}
                             className="text-sm h-8"
                           />

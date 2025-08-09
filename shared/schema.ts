@@ -1687,11 +1687,6 @@ export const insertOfferAccessRequestSchema = createInsertSchema(offerAccessRequ
 export type OfferAccessRequest = typeof offerAccessRequests.$inferSelect;
 export type InsertOfferAccessRequest = z.infer<typeof insertOfferAccessRequestSchema>;
 
-// Custom domains types
-export type CustomDomain = typeof customDomains.$inferSelect;
-export type InsertCustomDomain = typeof customDomains.$inferInsert;
-
-
 // Custom Domains table for white-label tracking
 export const customDomains = pgTable("custom_domains", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
