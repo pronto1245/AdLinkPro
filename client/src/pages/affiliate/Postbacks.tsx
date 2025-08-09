@@ -67,10 +67,10 @@ interface PostbackProfile {
 const trackerTemplates = {
   keitaro: {
     name: 'Keitaro Tracker',
-    trackerType: 'keitaro' as const,
-    endpointUrl: 'https://your-keitaro-domain.com/api/v1/postback',
+    tracker_type: 'keitaro' as const,
+    endpoint_url: 'https://your-keitaro-domain.com/api/v1/postback',
     method: 'GET' as const,
-    paramsTemplate: {
+    params_template: {
       'token': '{{auth_token}}',
       'clickid': '{{clickid}}',
       'status': '{{status}}',
@@ -78,7 +78,7 @@ const trackerTemplates = {
       'currency': '{{currency}}',
       'country': '{{country_iso}}'
     },
-    statusMap: {
+    status_map: {
       'lead': 'lead',
       'deposit': 'sale',
       'conversion': 'sale',
@@ -171,35 +171,35 @@ const trackerTemplates = {
 
 const defaultProfile: Partial<PostbackProfile> = {
   name: '',
-  trackerType: 'custom',
-  scopeType: 'global',
+  tracker_type: 'custom',
+  scope_type: 'global',
   priority: 100,
   enabled: true,
-  endpointUrl: '',
+  endpoint_url: '',
   method: 'GET',
-  idParam: 'clickid',
-  statusMap: {
+  id_param: 'clickid',
+  status_map: {
     open: 'open',
     reg: 'lead',
     deposit: 'sale',
     lp_click: 'click'
   },
-  paramsTemplate: {
+  params_template: {
     clickid: '{{clickid}}',
     status: '{{status}}',
     revenue: '{{revenue}}',
     currency: '{{currency}}',
     country: '{{country_iso}}'
   },
-  urlEncode: true,
-  hmacEnabled: false,
+  url_encode: true,
+  hmac_enabled: false,
   retries: 5,
-  timeoutMs: 4000,
-  backoffBaseSec: 2,
-  filterRevenueGt0: false,
-  filterCountryWhitelist: [],
-  filterCountryBlacklist: [],
-  filterExcludeBots: true
+  timeout_ms: 4000,
+  backoff_base_sec: 2,
+  filter_revenue_gt0: false,
+  filter_country_whitelist: [],
+  filter_country_blacklist: [],
+  filter_exclude_bots: true
 };
 
 export function AffiliatePostbacks() {
@@ -248,8 +248,10 @@ export function AffiliatePostbacks() {
   const queryClient = useQueryClient();
 
   // Fetch postback profiles using default queryFn
-  const { data: profiles = [], isLoading } = useQuery({
-    queryKey: ['/api/postback/profiles']
+  const { data: profiles = [], isLoading, refetch } = useQuery({
+    queryKey: ['/api/postback/profiles'],
+    refetchInterval: 2000, // Автообновление каждые 2 секунды
+    refetchOnWindowFocus: true
   });
 
   // Fetch delivery logs using default queryFn
@@ -264,11 +266,17 @@ export function AffiliatePostbacks() {
       return await apiRequest('/api/postback/profiles', 'POST', profile);
     },
     onSuccess: () => {
+      // Принудительно очищаем весь кеш и перезагружаем
+      queryClient.removeQueries({ queryKey: ['/api/postback/profiles'] });
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       queryClient.refetchQueries({ queryKey: ['/api/postback/profiles'] });
       setIsCreateModalOpen(false);
       setFormData(defaultProfile);
       toast({ title: 'Профиль создан', description: 'Постбек профиль успешно создан' });
+      // Принудительно перезагружаем через таймаут
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['/api/postback/profiles'] });
+      }, 100);
     },
     onError: (error) => {
       console.error('Create mutation error:', error);
