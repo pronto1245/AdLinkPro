@@ -66,9 +66,10 @@ export class TrackingLinkService {
         const verifiedDomains = await this.getVerifiedCustomDomains(advertiserId);
         const customDomain = verifiedDomains.length > 0 ? verifiedDomains[0] : 'track.example.com';
         const fallbackUrl = new URL(`https://${customDomain}/landing`);
-        // Добавляем только clickid и partner_id
-        fallbackUrl.searchParams.set('clickid', `${partnerId}_${offerId}_${Date.now()}`);
-        fallbackUrl.searchParams.set('partner_id', partnerId);
+        // Добавляем только clickid и partner_id (короткие значения)
+        const shortClickId = `${partnerId.slice(0, 8)}_${offerId.slice(0, 8)}_${Date.now().toString(36)}`;
+        fallbackUrl.searchParams.set('clickid', shortClickId);
+        fallbackUrl.searchParams.set('partner_id', partnerId.slice(0, 8));
         return fallbackUrl.toString();
       }
 
@@ -95,16 +96,18 @@ export class TrackingLinkService {
       // Удаляем все лишние параметры из оригинальной ссылки
       url.search = '';
       
-      // Добавляем только clickid и partner_id
-      url.searchParams.set('clickid', `${partnerId}_${offerId}_${Date.now()}`);
-      url.searchParams.set('partner_id', partnerId);
+      // Добавляем только clickid и partner_id (короткие значения)
+      const shortClickId = `${partnerId.slice(0, 8)}_${offerId.slice(0, 8)}_${Date.now().toString(36)}`;
+      url.searchParams.set('clickid', shortClickId);
+      url.searchParams.set('partner_id', partnerId.slice(0, 8));
       
       return url.toString();
     } catch (error) {
       console.error('Error transforming landing URL:', error);
-      // Return a safe fallback URL
+      // Return a safe fallback URL (короткие значения)
       const customDomain = 'track.example.com'; // Safe fallback
-      const fallbackUrl = `https://${customDomain}/landing?clickid=${partnerId}_${offerId}_${Date.now()}&partner_id=${partnerId}`;
+      const shortClickId = `${partnerId.slice(0, 8)}_${offerId.slice(0, 8)}_${Date.now().toString(36)}`;
+      const fallbackUrl = `https://${customDomain}/landing?clickid=${shortClickId}&partner_id=${partnerId.slice(0, 8)}`;
       return fallbackUrl;
     }
   }
@@ -135,14 +138,18 @@ export class TrackingLinkService {
         ? `https://${verifiedDomains[0]}` 
         : 'https://trk.platform.com';
 
-      // Generate the tracking link with partner's clickid
-      const trackingLink = `${baseDomain}/click?offer=${offerId}&clickid=${partnerId}`;
+      // Generate the tracking link with partner's clickid (короткие значения)
+      const shortOfferId = offerId.slice(0, 8);
+      const shortPartnerId = partnerId.slice(0, 8);
+      const trackingLink = `${baseDomain}/click?offer=${shortOfferId}&clickid=${shortPartnerId}`;
       
       return trackingLink;
     } catch (error) {
       console.error('Error generating partner tracking link:', error);
-      // Fallback to platform domain
-      return `https://trk.platform.com/click?offer=${offerId}&clickid=${partnerId}`;
+      // Fallback to platform domain (короткие значения)
+      const shortOfferId = offerId.slice(0, 8);
+      const shortPartnerId = partnerId.slice(0, 8);
+      return `https://trk.platform.com/click?offer=${shortOfferId}&clickid=${shortPartnerId}`;
     }
   }
 

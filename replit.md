@@ -1,47 +1,5 @@
 # Overview
-This is a comprehensive affiliate marketing platform providing advertisers with intelligent offer management, real-time analytics, partner relationships, financial transactions, and anti-fraud protection. The platform features role-based access control (super-admin, advertiser, affiliate, staff), comprehensive offer management with creative file handling, real-time statistics and analytics, financial management with payouts and transactions, partner approval workflows, and multi-layered security. All data flows are reactive and live - status changes, conversion rates, financial metrics, and fraud alerts update in real-time across all user interfaces.
-
-**Latest Update (Aug 9, 2025)**: ✅ УПРОЩЕНА СИСТЕМА ТРЕКИНГОВЫХ ССЫЛОК - ПАРТНЕРЫ ПОЛУЧАЮТ ЧИСТЫЕ ССЫЛКИ БЕЗ ЛИШНИХ ПАРАМЕТРОВ!
-
-**РЕАЛИЗОВАННЫЕ И ПРОТЕСТИРОВАННЫЕ ВОЗМОЖНОСТИ:**
-- ✅ API эндпоинт `/api/partner/transform-landing-url` для трансформации лендинг URL ✓ ТЕСТИРОВАН
-- ✅ Метод `TrackingLinkService.transformLandingUrl` для серверной обработки ✓ ТЕСТИРОВАН
-- ✅ Клиентская функция `transformLandingUrl` в queryClient.ts ✓ ТЕСТИРОВАН
-- ✅ Компонент `LandingPagesCard` с автоматической трансформацией URL ✓ ТЕСТИРОВАН
-- ✅ DNS верификация доменов с автоматическим изменением статуса ✓ ТЕСТИРОВАН
-- ✅ Обработка невалидных URL с fallback механизмом ✓ ТЕСТИРОВАН
-- ✅ Полное скрытие оригинальных лендинг URL от партнеров ✓ ТЕСТИРОВАН
-- ✅ Показ только готовых ссылок с кастомным доменом и tracking параметрами ✓ ТЕСТИРОВАН
-- ✅ Интеграция с существующей системой верификации доменов ✓ ТЕСТИРОВАН
-- ✅ УПРОЩЕНИЕ СИСТЕМЫ: Партнеры получают чистые ссылки только с clickid и partner_id ✓ ТЕСТИРОВАН
-- ✅ ПОДСКАЗКИ: Добавлены советы для партнеров о дополнительных sub-параметрах ✓ ТЕСТИРОВАН
-
-**РЕЗУЛЬТАТЫ LIVE ТЕСТИРОВАНИЯ:**
-- ✅ URL трансформация: `example-landing.com/promo-page` → `track.advertiser1.com/promo-page?partner_id=...&offer_id=...`
-- ✅ 2 домена верифицированы: `track.advertiser1.com` и `arbiconnect.store` (статус: verified)
-- ✅ Фронтенд показывает трансформированные URL с loading состояниями
-- ✅ Система безопасности: ссылки скрыты до одобрения доступа
-
-**КРИТИЧНАЯ ЛОГИКА СИСТЕМЫ (НЕ ЛОМАТЬ!):**
-
-1. **Рекламодатель создает офферы** - через стандартную форму создания
-2. **Все офферы видны партнерам** - полная информация, но БЕЗ трекинговых ссылок
-3. **Партнер запрашивает доступ** - через кнопку "Запросить доступ" 
-4. **Рекламодатель одобряет запрос** - в своей панели управления
-5. **ПОСЛЕ одобрения появляются готовые ссылки** - автоматически сгенерированные с кастомным доменом и clickid
-
-**ФОРМАТЫ ГОТОВЫХ ССЫЛОК (УПРОЩЕННЫЕ):**
-- Лендинг страницы: `https://custom-domain.com/path?clickid=${partnerId}_${offerId}_${timestamp}&partner_id=${partnerId}`
-- Партнеры могут добавлять свои sub-параметры: `&sub1=facebook&sub2=campaign1&sub3=creative&sub4=extra`
-- Система генерирует ТОЛЬКО чистые ссылки, без лишних параметров из оригинального URL
-
-**СИСТЕМА БЕЗОПАСНОСТИ ПОЛНОСТЬЮ РАБОТАЕТ:**
-- ✅ LinkGenerator.tsx скрывает все ссылки до одобрения (isApproved проверка)
-- ✅ PartnerOffers.tsx не показывает готовые ссылки до одобрения
-- ✅ OfferDetails.tsx передает статус одобрения во все компоненты
-- ✅ Все компоненты проверяют accessStatus перед показом ссылок
-
-ВАЖНО: НЕ делать автоматическое одобрение при создании офферов! Партнеры должны запрашивать доступ вручную.
+This is a comprehensive affiliate marketing platform designed to empower advertisers with intelligent offer management, real-time analytics, robust partner relationship tools, streamlined financial transactions, and advanced anti-fraud protection. The platform supports multiple user roles (super-admin, advertiser, affiliate, staff) and provides full offer management capabilities, including creative asset handling. It delivers real-time statistics, financial management with integrated payouts, dynamic partner approval workflows, and multi-layered security. All data, from status changes to conversion rates and fraud alerts, updates reactively and instantly across all user interfaces, ensuring a live and responsive experience. The business vision is to provide a leading-edge, secure, and user-friendly platform that maximizes efficiency and profitability for all stakeholders in the affiliate marketing ecosystem.
 
 # User Preferences
 Preferred communication style: Simple, everyday language.
@@ -75,14 +33,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Frontend
 - **Framework**: React 18 with TypeScript and Vite.
-- **UI/UX**: Shadcn/ui components on Radix UI, styled with Tailwind CSS (with CSS variables for theming and dark mode). Features extensive color coding for traffic sources and offer categories, icon-only designs, hover effects, and tooltips. Design emphasizes a clean, intuitive interface with logo thumbnails, geo-pricing, comprehensive filtering, and modal-based editing. Optimized analytics tables use virtualization and smart re-rendering. It includes full-screen layouts and collapsible sidebars.
-- **Theme System**: Complete dark/light theme support implemented for all roles (partners and advertisers) with ThemeProvider context, theme toggle components in both sidebars and top navigation, consistent font styling across all layouts.
+- **UI/UX**: Shadcn/ui components on Radix UI, styled with Tailwind CSS (with CSS variables for theming and dark mode). Emphasizes a clean, intuitive interface with full-screen layouts, collapsible sidebars, and consistent font styling.
+- **Theme System**: Complete dark/light theme support implemented for all roles with context-based theming.
 - **State Management**: React Query for server state management and caching.
 - **Routing**: Wouter for client-side routing.
 - **Authentication**: Context-based with JWT tokens.
 - **Internationalization**: Custom language context supporting English and Russian.
-- **Feature Specifications**: Comprehensive offer management with filtering, statistics, CRUD operations, mass actions, status management, and offer duplication. Integrated country display system showing country codes and flags. Colorful status indicators for Active, Paused, Archive, and Draft states. Color-coded category system with distinct badges for 50+ categories (Gaming, Finance, Dating, etc.). Enhanced CR (conversion rate) formatting with ceil rounding to 2 decimals (4.858477373333 → 4.86). MyOffersDragDrop provides a compact interface with drag-n-drop reordering, CSV import/export, bulk actions, A/B testing, and template management. AdvertiserProfile includes tabs for Account, API Access, Custom Domain, Notifications, and Security with real-time token generation and DNS verification. Complete notification system with real-time WebSocket support and partner/advertiser access.
-- **Creative Management System**: Complete role-based creative file management with ZIP archive upload/download functionality. CreativeUploader component with drag-n-drop interface, file validation (ZIP only, 50MB max), and cloud storage integration. Role-specific offer details pages for super-admin, advertiser, and partner with appropriate access controls.
+- **Feature Specifications**: Comprehensive offer management with filtering, statistics, CRUD operations, mass actions, status management, and duplication. Includes country display with flags, color-coded status indicators (Active, Paused, Archive, Draft), and category system with distinct badges. Enhanced CR formatting. Compact interface with drag-n-drop reordering, CSV import/export, bulk actions, A/B testing, and template management. Advertiser profile includes tabs for account, API access, custom domain (with DNS verification), notifications, and security. Real-time WebSocket notifications.
+- **Creative Management System**: Role-based creative file management supporting ZIP archive upload/download, drag-n-drop interface, file validation, and cloud storage integration. Role-specific offer details pages with access controls.
+- **Tracking Links**: Simplified tracking link system where partners receive clean links with custom domains and `clickid`/`partner_id`, hiding original landing URLs until approval. Partners can add sub-parameters. Links are hidden until approved access.
 
 ## Backend
 - **Runtime**: Node.js with Express.js.
@@ -90,14 +49,14 @@ Preferred communication style: Simple, everyday language.
 - **Database ORM**: Drizzle ORM for PostgreSQL.
 - **Authentication**: JWT-based with bcrypt for password hashing.
 - **File Storage**: Google Cloud Storage integration.
-- **Core Functionality**: User, offer, and financial management, fraud detection, and a ticket system. Includes server-side performance optimizations like compression middleware, helmet security, and rate limiting.
+- **Core Functionality**: User, offer, and financial management, fraud detection, and a ticket system. Includes server-side performance optimizations like compression, helmet security, and rate limiting.
 
 ## Database Design
 - **User Management**: Role-based system (super_admin, advertiser, affiliate, staff) with hierarchical ownership.
-- **Offer System**: Flexible structure with categories, payout types, geo-targeting, antifraud methods, allowed applications, partner approval types, and detailed analytics.
+- **Offer System**: Flexible structure including categories, payout types, geo-targeting, antifraud methods, allowed applications, partner approval types, and detailed analytics.
 - **Tracking**: Comprehensive tracking link system.
 - **Financial**: Transaction management with multi-currency support and real financial calculations.
-- **Security**: KYC status and fraud alerts, with dependency validation for fraud rules.
+- **Security**: KYC status and fraud alerts with dependency validation for fraud rules.
 
 ## Role-Based Access Control
 - **Super Admin (Owner)**: Full platform control.
@@ -140,9 +99,3 @@ Preferred communication style: Simple, everyday language.
 - **Express.js**: Web application framework for Node.js.
 - **ws**: WebSocket library for real-time communication.
 - **Zod**: TypeScript-first schema validation library.
-
-## Third-party Fraud Services (Configured, not active)
-- **FraudScore**
-- **Forensiq**
-- **Anura**
-- **Botbox**
