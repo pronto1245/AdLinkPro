@@ -1448,6 +1448,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   console.log('=== ANTIFRAUD ROUTES ADDED SUCCESSFULLY ===');
   
+  // Enhanced API routes with DTO validations
+  console.log('=== ADDING ENHANCED API ROUTES ===');
+  app.use('/api/v2', (await import('./api-routes')).default);
+  console.log('=== ENHANCED API ROUTES ADDED SUCCESSFULLY ===');
+  
   // Move middleware setup after team routes (so team routes work without middleware)
   // Security middleware disabled for development to fix team functionality
   console.log('=== SKIPPING MIDDLEWARE SETUP FOR TEAM DEBUGGING ===');

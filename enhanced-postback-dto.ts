@@ -1,6 +1,38 @@
 // Enhanced postback system DTOs and validations
 import { z } from 'zod';
 
+// Core event DTOs for tracking system
+export const EventDto = z.object({
+  type: z.enum(["reg","purchase"]),
+  clickid: z.string().min(1),
+  txid: z.string().min(1),
+  value: z.number().optional().default(0),
+  currency: z.string().length(3).optional(),
+  meta: z.record(z.any()).optional(),
+});
+
+export const AffiliateWebhookDto = z.object({
+  type: z.literal("reg"),
+  txid: z.string(),
+  status: z.enum(["approved","declined"]),
+  payout: z.number().optional().default(0),
+  currency: z.string().length(3).optional(),
+  raw: z.record(z.any()).optional(),
+});
+
+export const PspWebhookDto = z.object({
+  type: z.literal("purchase"),
+  txid: z.string(),
+  status: z.enum(["approved","declined","refunded","chargeback"]),
+  amount: z.number().optional(),
+  currency: z.string().length(3).optional(),
+  raw: z.record(z.any()).optional(),
+});
+
+export type EventDtoType = z.infer<typeof EventDto>;
+export type AffiliateWebhookDtoType = z.infer<typeof AffiliateWebhookDto>;
+export type PspWebhookDtoType = z.infer<typeof PspWebhookDto>;
+
 // Conversion event DTO
 export const conversionEventSchema = z.object({
   advertiserId: z.number().int().positive(),
