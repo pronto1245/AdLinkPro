@@ -1,7 +1,7 @@
 # Overview
 This is a comprehensive affiliate marketing platform providing advertisers with intelligent offer management, real-time analytics, partner relationships, financial transactions, and anti-fraud protection. The platform features role-based access control (super-admin, advertiser, affiliate, staff), comprehensive offer management with creative file handling, real-time statistics and analytics, financial management with payouts and transactions, partner approval workflows, and multi-layered security. All data flows are reactive and live - status changes, conversion rates, financial metrics, and fraud alerts update in real-time across all user interfaces.
 
-**Latest Update (Aug 9, 2025)**: ✅ КАСТОМНЫЕ ДОМЕНЫ ПОЛНОСТЬЮ ПРОТЕСТИРОВАНЫ И РАБОТАЮТ НА 100%!
+**Latest Update (Aug 9, 2025)**: ✅ УПРОЩЕНА СИСТЕМА ТРЕКИНГОВЫХ ССЫЛОК - ПАРТНЕРЫ ПОЛУЧАЮТ ЧИСТЫЕ ССЫЛКИ БЕЗ ЛИШНИХ ПАРАМЕТРОВ!
 
 **РЕАЛИЗОВАННЫЕ И ПРОТЕСТИРОВАННЫЕ ВОЗМОЖНОСТИ:**
 - ✅ API эндпоинт `/api/partner/transform-landing-url` для трансформации лендинг URL ✓ ТЕСТИРОВАН
@@ -13,6 +13,8 @@ This is a comprehensive affiliate marketing platform providing advertisers with 
 - ✅ Полное скрытие оригинальных лендинг URL от партнеров ✓ ТЕСТИРОВАН
 - ✅ Показ только готовых ссылок с кастомным доменом и tracking параметрами ✓ ТЕСТИРОВАН
 - ✅ Интеграция с существующей системой верификации доменов ✓ ТЕСТИРОВАН
+- ✅ УПРОЩЕНИЕ СИСТЕМЫ: Партнеры получают чистые ссылки только с clickid и partner_id ✓ ТЕСТИРОВАН
+- ✅ ПОДСКАЗКИ: Добавлены советы для партнеров о дополнительных sub-параметрах ✓ ТЕСТИРОВАН
 
 **РЕЗУЛЬТАТЫ LIVE ТЕСТИРОВАНИЯ:**
 - ✅ URL трансформация: `example-landing.com/promo-page` → `track.advertiser1.com/promo-page?partner_id=...&offer_id=...`
@@ -28,9 +30,10 @@ This is a comprehensive affiliate marketing platform providing advertisers with 
 4. **Рекламодатель одобряет запрос** - в своей панели управления
 5. **ПОСЛЕ одобрения появляются готовые ссылки** - автоматически сгенерированные с кастомным доменом и clickid
 
-**ФОРМАТЫ ГОТОВЫХ ССЫЛОК:**
-- Трекинг ссылки: `https://track.example.com/click?offer=${offerId}&partner=${partnerId}&clickid=partner_${partnerId}_${offerId}_{subid}`
-- Лендинг страницы: `https://custom-domain.com/landing?offer_id=${offerId}&partner_id=${partnerId}&subid=${subid}`
+**ФОРМАТЫ ГОТОВЫХ ССЫЛОК (УПРОЩЕННЫЕ):**
+- Лендинг страницы: `https://custom-domain.com/path?clickid=${partnerId}_${offerId}_${timestamp}&partner_id=${partnerId}`
+- Партнеры могут добавлять свои sub-параметры: `&sub1=facebook&sub2=campaign1&sub3=creative&sub4=extra`
+- Система генерирует ТОЛЬКО чистые ссылки, без лишних параметров из оригинального URL
 
 **СИСТЕМА БЕЗОПАСНОСТИ ПОЛНОСТЬЮ РАБОТАЕТ:**
 - ✅ LinkGenerator.tsx скрывает все ссылки до одобрения (isApproved проверка)

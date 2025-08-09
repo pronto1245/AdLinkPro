@@ -66,7 +66,7 @@ export class TrackingLinkService {
         const verifiedDomains = await this.getVerifiedCustomDomains(advertiserId);
         const customDomain = verifiedDomains.length > 0 ? verifiedDomains[0] : 'track.example.com';
         const fallbackUrl = new URL(`https://${customDomain}/landing`);
-        // Only essential tracking parameters
+        // Добавляем только clickid и partner_id
         fallbackUrl.searchParams.set('clickid', `${partnerId}_${offerId}_${Date.now()}`);
         fallbackUrl.searchParams.set('partner_id', partnerId);
         return fallbackUrl.toString();
@@ -92,7 +92,10 @@ export class TrackingLinkService {
         url.protocol = 'https:';
       }
       
-      // Add only essential tracking parameters
+      // Удаляем все лишние параметры из оригинальной ссылки
+      url.search = '';
+      
+      // Добавляем только clickid и partner_id
       url.searchParams.set('clickid', `${partnerId}_${offerId}_${Date.now()}`);
       url.searchParams.set('partner_id', partnerId);
       
