@@ -93,6 +93,7 @@ export default function Statistics() {
       {
         id: 1,
         date: "2025-08-05",
+        time: "14:32:15",
         offerName: "4RaBet India",
         geo: "IN",
         clickid: "04b043297lz9a2b4",
@@ -121,6 +122,7 @@ export default function Statistics() {
       {
         id: 2,
         date: "2025-08-05",
+        time: "13:45:22",
         offerName: "Crypto Trading Pro",
         geo: "US",
         clickid: "5c8d92f4x7n9z3k1",
@@ -149,6 +151,7 @@ export default function Statistics() {
       {
         id: 3,
         date: "2025-08-04",
+        time: "12:18:44",
         offerName: "Dating VIP",
         geo: "DE",
         clickid: "7f2b15c8m4p6q9r2",
@@ -177,6 +180,7 @@ export default function Statistics() {
       {
         id: 4,
         date: "2025-08-04",
+        time: "11:05:33",
         offerName: "VPN Service",
         geo: "UK",
         clickid: "9x1y4z7w8v5u3t6s",
@@ -214,6 +218,7 @@ export default function Statistics() {
         ...baseStat,
         id: i + 1,
         date: `2025-08-${String(Math.floor(Math.random() * 8) + 1).padStart(2, '0')}`,
+        time: `${String(Math.floor(Math.random() * 24)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
         clickid: `${Math.random().toString(36).substr(2, 12)}${Math.random().toString(36).substr(2, 4)}`,
         clicks: Math.floor(Math.random() * 500) + 100,
         conversions: Math.floor(Math.random() * 20) + 1,
@@ -571,7 +576,7 @@ export default function Statistics() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-gray-700 dark:text-gray-300 font-semibold">Дата</TableHead>
+                <TableHead className="text-gray-700 dark:text-gray-300 font-semibold">Дата и время</TableHead>
                 <TableHead className="text-purple-700 dark:text-purple-300 font-semibold">Оффер</TableHead>
                 <TableHead className="text-green-700 dark:text-green-300 font-semibold">Гео</TableHead>
                 <TableHead className="text-blue-700 dark:text-blue-300 font-semibold">Click ID</TableHead>
@@ -586,7 +591,12 @@ export default function Statistics() {
             <TableBody>
               {currentPageData.map((stat) => (
                 <TableRow key={stat.id}>
-                  <TableCell className="font-medium text-gray-700 dark:text-gray-300">{stat.date}</TableCell>
+                  <TableCell className="font-medium text-gray-700 dark:text-gray-300">
+                    <div className="flex flex-col">
+                      <span className="font-semibold">{stat.date}</span>
+                      <span className="text-xs text-muted-foreground">{stat.time}</span>
+                    </div>
+                  </TableCell>
                   <TableCell className="font-medium text-purple-700 dark:text-purple-300">{stat.offerName}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="border-green-500 text-green-700 dark:text-green-300">{stat.geo}</Badge>
