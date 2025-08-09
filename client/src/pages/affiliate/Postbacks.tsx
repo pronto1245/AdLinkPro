@@ -247,11 +247,19 @@ export function AffiliatePostbacks() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch postback profiles using default queryFn
+  // Fetch postback profiles using apiRequest directly
   const { data: profiles = [], isLoading, refetch } = useQuery({
     queryKey: ['/api/postback/profiles'],
-    refetchInterval: 2000, // Автообновление каждые 2 секунды
-    refetchOnWindowFocus: true
+    queryFn: async () => {
+      console.log('🔄 Fetching profiles directly...');
+      const result = await apiRequest('/api/postback/profiles', 'GET');
+      console.log('📊 Profiles received:', result);
+      return result || [];
+    },
+    refetchInterval: 1000, // Автообновление каждую секунду
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Всегда считать данные устаревшими
+    gcTime: 0 // Не кешировать
   });
 
   // Fetch delivery logs using default queryFn
@@ -609,7 +617,8 @@ export function AffiliatePostbacks() {
             </div>
           ) : (
             <div className="grid gap-4">
-              {profiles?.map((profile: PostbackProfile) => (
+              {console.log('🎨 Rendering profiles:', profiles)}
+              {profiles?.length > 0 ? profiles.map((profile: PostbackProfile) => (
                 <Card key={profile.id} className="hover:shadow-md transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
@@ -713,21 +722,11 @@ export function AffiliatePostbacks() {
                 </Card>
               ))}
 
-              {(!profiles || profiles.length === 0) && (
-                <Card>
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <Send className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Нет постбек профилей</h3>
-                    <p className="text-muted-foreground text-center mb-4">
-                      Создайте первый профиль для интеграции с вашим трекером
-                    </p>
-                    <Button onClick={() => setIsCreateModalOpen(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Создать профиль
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
+              <div className="mt-4 p-4 bg-gray-50 rounded">
+                <p>Отладочная информация:</p>
+                <p>Количество профилей: {profiles?.length || 0}</p>
+                <p>Данные profiles: {JSON.stringify(profiles, null, 2)}</p>
+              </div>
             </div>
           )}
         </TabsContent>
