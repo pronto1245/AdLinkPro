@@ -61,6 +61,17 @@ export default function Statistics() {
         date: "2025-08-05",
         offerName: "4RaBet India",
         geo: "IN",
+        clickid: "04b043297lz9a2b4",
+        sub1: "facebook_campaign_01",
+        sub2: "geo-IN|dev-mobile|src-fb",
+        sub3: "adset_123",
+        sub4: "creative_456",
+        sub5: "tier1",
+        sub6: "",
+        sub7: "",
+        sub8: "",
+        sub9: "",
+        sub10: "",
         clicks: 420,
         conversions: 18,
         revenue: 1080.00,
@@ -72,6 +83,17 @@ export default function Statistics() {
         date: "2025-08-05",
         offerName: "Crypto Trading Pro",
         geo: "US",
+        clickid: "5c8d92f4x7n9z3k1",
+        sub1: "google_ads_crypto",
+        sub2: "geo-US|dev-desktop|src-google",
+        sub3: "campaign_789",
+        sub4: "banner_321",
+        sub5: "tier2",
+        sub6: "abtest_A",
+        sub7: "",
+        sub8: "",
+        sub9: "",
+        sub10: "",
         clicks: 380,
         conversions: 12,
         revenue: 1440.00,
@@ -83,6 +105,17 @@ export default function Statistics() {
         date: "2025-08-04",
         offerName: "Dating VIP",
         geo: "DE",
+        clickid: "7f2b15c8m4p6q9r2",
+        sub1: "native_dating_de",
+        sub2: "geo-DE|dev-mobile|src-native",
+        sub3: "placement_555",
+        sub4: "video_888",
+        sub5: "tier3",
+        sub6: "",
+        sub7: "premium",
+        sub8: "",
+        sub9: "",
+        sub10: "",
         clicks: 250,
         conversions: 7,
         revenue: 350.00,
@@ -94,6 +127,17 @@ export default function Statistics() {
         date: "2025-08-04",
         offerName: "VPN Service",
         geo: "UK",
+        clickid: "9x1y4z7w8v5u3t6s",
+        sub1: "telegram_vpn_uk",
+        sub2: "geo-UK|dev-desktop|src-telegram",
+        sub3: "channel_999",
+        sub4: "post_777",
+        sub5: "tier1",
+        sub6: "",
+        sub7: "",
+        sub8: "security",
+        sub9: "",
+        sub10: "",
         clicks: 190,
         conversions: 3,
         revenue: 180.00,
@@ -302,6 +346,12 @@ export default function Statistics() {
                 <TableHead>Дата</TableHead>
                 <TableHead>Оффер</TableHead>
                 <TableHead>Гео</TableHead>
+                <TableHead>Click ID</TableHead>
+                <TableHead>Sub1</TableHead>
+                <TableHead>Sub2</TableHead>
+                <TableHead>Sub3</TableHead>
+                <TableHead>Sub4</TableHead>
+                <TableHead>Sub5</TableHead>
                 <TableHead>Клики</TableHead>
                 <TableHead>Конверсии</TableHead>
                 <TableHead>Доход</TableHead>
@@ -316,6 +366,24 @@ export default function Statistics() {
                   <TableCell>{stat.offerName}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{stat.geo}</Badge>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-blue-600">
+                    {stat.clickid}
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-600">
+                    {stat.sub1 || '-'}
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-600 max-w-32 truncate" title={stat.sub2}>
+                    {stat.sub2 || '-'}
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-600">
+                    {stat.sub3 || '-'}
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-600">
+                    {stat.sub4 || '-'}
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-600">
+                    {stat.sub5 || '-'}
                   </TableCell>
                   <TableCell className="text-blue-600 font-medium">
                     {stat.clicks.toLocaleString()}

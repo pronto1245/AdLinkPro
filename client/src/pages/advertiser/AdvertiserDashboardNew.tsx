@@ -239,7 +239,7 @@ export default function AdvertiserDashboardNew() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          <Card data-testid="card-offers" className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
+          {/* <Card data-testid="card-offers" className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">Офферы</CardTitle>
               <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
@@ -253,9 +253,9 @@ export default function AdvertiserDashboardNew() {
                 <span className="text-yellow-600 dark:text-yellow-400">На модерации: {overview?.pendingOffers || 0}</span>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
-          <Card data-testid="card-budget" className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
+          {/* <Card data-testid="card-budget" className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">Бюджет / Расход</CardTitle>
               <div className="p-3 bg-green-500 rounded-xl shadow-lg">
@@ -266,7 +266,7 @@ export default function AdvertiserDashboardNew() {
               <div className="text-2xl font-bold text-green-900 dark:text-green-100">${overview?.totalSpent || 0}</div>
               <p className="text-xs text-green-700 dark:text-green-400">из ${overview?.totalBudget || 0}</p>
             </CardContent>
-          </Card>
+          </Card> */}
 
           <Card data-testid="card-revenue" className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -310,7 +310,7 @@ export default function AdvertiserDashboardNew() {
             </CardContent>
           </Card>
 
-          <Card data-testid="card-postbacks" className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 border-teal-200 dark:border-teal-700">
+          {/* <Card data-testid="card-postbacks" className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 border-teal-200 dark:border-teal-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-teal-700 dark:text-teal-300">Постбеки</CardTitle>
               <div className="p-3 bg-teal-500 rounded-xl shadow-lg">
@@ -324,7 +324,7 @@ export default function AdvertiserDashboardNew() {
                 <span className="text-red-600 dark:text-red-400">Ошибок: {overview?.postbackErrors || 0}</span>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           <Card data-testid="card-fraud" className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -394,7 +394,7 @@ export default function AdvertiserDashboardNew() {
             </CardContent>
           </Card>
 
-          <Card data-testid="chart-spending">
+          {/* <Card data-testid="chart-spending">
             <CardHeader>
               <CardTitle>Расходы / Выплаты</CardTitle>
               <CardDescription>Финансовая динамика</CardDescription>
@@ -431,13 +431,13 @@ export default function AdvertiserDashboardNew() {
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Tables and Status */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Top Offers Table */}
-          <Card className="lg:col-span-2" data-testid="table-top-offers">
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+          {/* Hidden Top Offers Table - keeping logic intact */}
+          {/* <Card className="lg:col-span-2" data-testid="table-top-offers">
             <CardHeader>
               <CardTitle>Топ-офферы</CardTitle>
               <CardDescription>Лучшие офферы по эффективности</CardDescription>
@@ -489,7 +489,7 @@ export default function AdvertiserDashboardNew() {
                 </TableBody>
               </Table>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Offer Status and Notifications */}
           <div className="space-y-6">
