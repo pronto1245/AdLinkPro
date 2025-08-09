@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -27,6 +26,19 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   BarChart3,
   Download,
   Filter,
@@ -36,18 +48,21 @@ import {
   Target,
   DollarSign,
   Eye,
-  X
+  X,
+  Copy,
+  ExternalLink,
+  Globe,
+  Monitor,
+  Smartphone,
+  Search
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { formatCurrency, formatCR } from "@/utils/formatting";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Statistics() {
+  const { toast } = useToast();
+  
+  const [activeTab, setActiveTab] = useState('overview');
   const [filters, setFilters] = useState({
     dateFrom: '',
     dateTo: '',
@@ -57,14 +72,53 @@ export default function Statistics() {
   });
 
   const [showSubParams, setShowSubParams] = useState(false);
-  const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
 
+  // Получаем реальные данные с сервера
+  const { data: analyticsData, isLoading, error } = useQuery({
+    queryKey: ['/api/partner/analytics', activeTab, currentPage, filters],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        tab: activeTab,
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString(),
+        ...(filters.offerId !== 'all' && { offer: filters.offerId }),
+        ...(filters.dateFrom && { startDate: filters.dateFrom }),
+        ...(filters.dateTo && { endDate: filters.dateTo })
+      });
+      
+      const response = await fetch(`/api/partner/analytics?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics data');
+      }
+      
+      return response.json();
+    }
+  });
+
+  // Получаем список доступных офферов для фильтра
+  const { data: offers } = useQuery({
+    queryKey: ['/api/partner/offers'],
+    queryFn: async () => {
+      const response = await fetch('/api/partner/offers', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      return response.json();
+    }
+  });
+
   // Функции для работы с фильтрами
   const applyFilters = () => {
-    // Здесь будет логика применения фильтров к данным
-    console.log('Применяются фильтры:', filters);
+    setCurrentPage(1); // Сбрасываем на первую страницу при применении фильтров
   };
 
   const resetFilters = () => {
@@ -75,215 +129,85 @@ export default function Statistics() {
       geo: 'all',
       device: 'all'
     });
+    setCurrentPage(1);
+  };
+
+  const copyToClipboard = async (text: string, label: string = '') => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Скопировано!",
+        description: `${label} скопировано в буфер обмена`,
+        duration: 2000
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось скопировать в буфер обмена",
+        variant: "destructive",
+        duration: 2000
+      });
+    }
   };
 
   const getOfferName = (offerId: string) => {
-    const offers = {
-      '1': '4RaBet India',
-      '2': 'Crypto Trading Pro', 
-      '3': 'Dating VIP',
-      '4': 'VPN Service'
-    };
-    return offers[offerId as keyof typeof offers] || offerId;
+    if (!offers) return offerId;
+    const offer = offers.find((o: any) => o.id === offerId);
+    return offer ? offer.name : offerId;
   };
 
-  // Функция генерации расширенных mock данных для пагинации
-  const generateMockStats = () => {
-    const baseStats = [
-      {
-        id: 1,
-        date: "2025-08-05",
-        time: "14:32:15",
-        offerName: "4RaBet India",
-        geo: "IN",
-        clickid: "04b043297lz9a2b4",
-        sub1: "facebook_campaign_01",
-        sub2: "geo-IN|dev-mobile|src-fb",
-        sub3: "adset_123",
-        sub4: "creative_456",
-        sub5: "tier1",
-        sub6: "premium_users",
-        sub7: "morning_traffic",
-        sub8: "mobile_app",
-        sub9: "retargeting",
-        sub10: "lookalike_audience",
-        sub11: "conversion_campaign",
-        sub12: "brand_safety",
-        sub13: "adult_18_35",
-        sub14: "hindi_language",
-        sub15: "gambling_allowed",
-        sub16: "final_tracker",
-        clicks: 420,
-        conversions: 18,
-        revenue: 1080.00,
-        cr: 4.29,
-        epc: 2.57
-      },
-      {
-        id: 2,
-        date: "2025-08-05",
-        time: "13:45:22",
-        offerName: "Crypto Trading Pro",
-        geo: "US",
-        clickid: "5c8d92f4x7n9z3k1",
-        sub1: "google_ads_crypto",
-        sub2: "geo-US|dev-desktop|src-google",
-        sub3: "campaign_789",
-        sub4: "banner_321",
-        sub5: "tier2",
-        sub6: "abtest_A",
-        sub7: "evening_peak",
-        sub8: "desktop_web",
-        sub9: "cold_traffic",
-        sub10: "interest_targeting",
-        sub11: "lead_generation",
-        sub12: "financial_approved",
-        sub13: "adult_25_55",
-        sub14: "english_primary",
-        sub15: "crypto_legal",
-        sub16: "final_conversion",
-        clicks: 380,
-        conversions: 12,
-        revenue: 1440.00,
-        cr: 3.16,
-        epc: 3.79
-      },
-      {
-        id: 3,
-        date: "2025-08-04",
-        time: "12:18:44",
-        offerName: "Dating VIP",
-        geo: "DE",
-        clickid: "7f2b15c8m4p6q9r2",
-        sub1: "native_dating_de",
-        sub2: "geo-DE|dev-mobile|src-native",
-        sub3: "placement_555",
-        sub4: "video_888",
-        sub5: "tier3",
-        sub6: "weekend_special",
-        sub7: "premium",
-        sub8: "mobile_optimized",
-        sub9: "warm_audience",
-        sub10: "behavioral_targeting",
-        sub11: "dating_funnel",
-        sub12: "content_verified",
-        sub13: "adult_21_40",
-        sub14: "german_native",
-        sub15: "dating_legal",
-        sub16: "premium_conversion",
-        clicks: 250,
-        conversions: 7,
-        revenue: 350.00,
-        cr: 2.80,
-        epc: 1.40
-      },
-      {
-        id: 4,
-        date: "2025-08-04",
-        time: "11:05:33",
-        offerName: "VPN Service",
-        geo: "UK",
-        clickid: "9x1y4z7w8v5u3t6s",
-        sub1: "telegram_vpn_uk",
-        sub2: "geo-UK|dev-desktop|src-telegram",
-        sub3: "channel_999",
-        sub4: "post_777",
-        sub5: "tier1",
-        sub6: "privacy_focused",
-        sub7: "night_hours",
-        sub8: "security",
-        sub9: "tech_savvy",
-        sub10: "privacy_targeting",
-        sub11: "vpn_funnel",
-        sub12: "security_approved",
-        sub13: "adult_18_45",
-        sub14: "english_uk",
-        sub15: "vpn_legal",
-        sub16: "security_conversion",
-        clicks: 190,
-        conversions: 3,
-        revenue: 180.00,
-        cr: 1.58,
-        epc: 0.95
-      }
-    ];
-    
-    // Генерируем 120 записей для демонстрации пагинации
-    const extendedStats = [];
-    for (let i = 0; i < 120; i++) {
-      const baseIndex = i % baseStats.length;
-      const baseStat = baseStats[baseIndex];
-      
-      extendedStats.push({
-        ...baseStat,
-        id: i + 1,
-        date: `2025-08-${String(Math.floor(Math.random() * 8) + 1).padStart(2, '0')}`,
-        time: `${String(Math.floor(Math.random() * 24)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-        clickid: `${Math.random().toString(36).substr(2, 12)}${Math.random().toString(36).substr(2, 4)}`,
-        clicks: Math.floor(Math.random() * 500) + 100,
-        conversions: Math.floor(Math.random() * 20) + 1,
-        revenue: (Math.random() * 2000 + 200).toFixed(2),
-        cr: (Math.random() * 5 + 1).toFixed(2),
-        epc: (Math.random() * 5 + 0.5).toFixed(2)
-      });
-    }
-    
-    return {
-      summary: {
-        totalClicks: 8450,
-        totalConversions: 324,
-        totalRevenue: 18650.50,
-        conversionRate: 3.83,
-        epc: 2.21
-      },
-      detailedStats: extendedStats
-    };
+  // Получаем данные клика для отображения SubID
+  const getClickDetails = (clickId: string) => {
+    if (!analyticsData?.data) return null;
+    return analyticsData.data.find((item: any) => item.clickId === clickId);
   };
 
-  // Mock data для демонстрации
-  const mockStats = generateMockStats();
-
-  const { data: statsData, isLoading } = useQuery({
-    queryKey: ['/api/partner/statistics', filters],
-    initialData: mockStats
-  });
-
-  // Вычисления для пагинации
-  const totalItems = statsData?.detailedStats?.length || 0;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentPageData = statsData?.detailedStats?.slice(startIndex, endIndex) || [];
-
-  // Функции пагинации
-  const goToPage = (page: number) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  // Статистика для отображения
+  const stats = analyticsData?.summary || {
+    totalClicks: 0,
+    totalConversions: 0,
+    totalRevenue: 0,
+    conversionRate: 0,
+    epc: 0
   };
 
-  const goToPreviousPage = () => {
-    setCurrentPage(prev => Math.max(1, prev - 1));
-  };
-
-  const goToNextPage = () => {
-    setCurrentPage(prev => Math.min(totalPages, prev + 1));
+  // Данные для таблицы и пагинация
+  const tableData = analyticsData?.data || [];
+  const pagination = analyticsData?.pagination || {
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 0
   };
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-4 w-20" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-16" />
-              </CardContent>
-            </Card>
+            <Skeleton key={i} className="h-24" />
           ))}
         </div>
+        <Skeleton className="h-96" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-red-800 mb-2">Ошибка загрузки данных</h3>
+              <p className="text-red-600">Не удалось загрузить статистику партнера</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -293,19 +217,18 @@ export default function Statistics() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Статистика</h1>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            <BarChart3 className="h-8 w-8 text-blue-600" />
+            Статистика Партнера
+          </h1>
           <p className="text-muted-foreground">
-            Детальная аналитика по кликам и конверсиям
+            Детальная аналитика по кликам и конверсиям с реальными данными
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => window.print()}>
             <Download className="h-4 w-4 mr-2" />
-            Экспорт CSV
-          </Button>
-          <Button variant="outline">
-            <Filter className="h-4 w-4 mr-2" />
-            Фильтры
+            Экспорт
           </Button>
         </div>
       </div>
@@ -319,9 +242,9 @@ export default function Statistics() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-5">
+          <div className="grid gap-4 md:grid-cols-6">
             <div>
-              <label className="text-sm font-medium">Дата от</label>
+              <label className="text-sm font-medium mb-2 block">Дата от</label>
               <Input
                 type="date"
                 value={filters.dateFrom}
@@ -330,7 +253,7 @@ export default function Statistics() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Дата до</label>
+              <label className="text-sm font-medium mb-2 block">Дата до</label>
               <Input
                 type="date"
                 value={filters.dateTo}
@@ -339,7 +262,7 @@ export default function Statistics() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Оффер</label>
+              <label className="text-sm font-medium mb-2 block">Оффер</label>
               <Select
                 value={filters.offerId}
                 onValueChange={(value) => setFilters(prev => ({ ...prev, offerId: value }))}
@@ -349,15 +272,16 @@ export default function Statistics() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Все офферы</SelectItem>
-                  <SelectItem value="1">4RaBet India</SelectItem>
-                  <SelectItem value="2">Crypto Trading Pro</SelectItem>
-                  <SelectItem value="3">Dating VIP</SelectItem>
-                  <SelectItem value="4">VPN Service</SelectItem>
+                  {offers?.map((offer: any) => (
+                    <SelectItem key={offer.id} value={offer.id}>
+                      {offer.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Гео</label>
+              <label className="text-sm font-medium mb-2 block">География</label>
               <Select
                 value={filters.geo}
                 onValueChange={(value) => setFilters(prev => ({ ...prev, geo: value }))}
@@ -374,96 +298,27 @@ export default function Statistics() {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <label className="text-sm font-medium">Устройство</label>
-              <Select
-                value={filters.device}
-                onValueChange={(value) => setFilters(prev => ({ ...prev, device: value }))}
-              >
-                <SelectTrigger data-testid="select-device">
-                  <SelectValue placeholder="Все устройства" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все устройства</SelectItem>
-                  <SelectItem value="mobile">Мобильные</SelectItem>
-                  <SelectItem value="desktop">Десктоп</SelectItem>
-                  <SelectItem value="tablet">Планшеты</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-end gap-2">
+              <Button onClick={applyFilters} className="flex-1">
+                Применить
+              </Button>
+              <Button variant="outline" onClick={resetFilters}>
+                Сброс
+              </Button>
             </div>
           </div>
-          
-          <div className="flex gap-2 mt-4">
-            <Button 
-              onClick={applyFilters}
-              data-testid="button-apply-filters"
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Применить
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={resetFilters}
-              data-testid="button-reset-filters"
-            >
-              Сбросить
-            </Button>
-            <Button variant="outline" data-testid="button-export-data">
-              <Download className="h-4 w-4 mr-2" />
-              Экспорт
-            </Button>
-          </div>
-
-
-
-          {/* Показ активных фильтров */}
-          {(filters.dateFrom || filters.dateTo || (filters.offerId && filters.offerId !== 'all') || (filters.geo && filters.geo !== 'all') || (filters.device && filters.device !== 'all')) && (
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Filter className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Активные фильтры:</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {filters.dateFrom && (
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                    От: {filters.dateFrom}
-                  </Badge>
-                )}
-                {filters.dateTo && (
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                    До: {filters.dateTo}
-                  </Badge>
-                )}
-                {filters.offerId && filters.offerId !== 'all' && (
-                  <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                    Оффер: {getOfferName(filters.offerId)}
-                  </Badge>
-                )}
-                {filters.geo && filters.geo !== 'all' && (
-                  <Badge variant="secondary" className="bg-green-100 text-green-700">
-                    Гео: {filters.geo}
-                  </Badge>
-                )}
-                {filters.device && filters.device !== 'all' && (
-                  <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-                    Устройство: {filters.device}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Всего кликов</CardTitle>
             <MousePointer className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{statsData.summary.totalClicks.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-blue-600">{stats.totalClicks.toLocaleString()}</div>
           </CardContent>
         </Card>
         
@@ -473,7 +328,7 @@ export default function Statistics() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{statsData.summary.totalConversions}</div>
+            <div className="text-2xl font-bold text-green-600">{stats.totalConversions}</div>
           </CardContent>
         </Card>
         
@@ -484,7 +339,7 @@ export default function Statistics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">
-              {formatCurrency(statsData.summary.totalRevenue)}
+              {formatCurrency(stats.totalRevenue)}
             </div>
           </CardContent>
         </Card>
@@ -496,7 +351,7 @@ export default function Statistics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              {formatCR(statsData.summary.conversionRate / 100)}
+              {formatCR(stats.conversionRate / 100)}
             </div>
           </CardContent>
         </Card>
@@ -508,288 +363,387 @@ export default function Statistics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-teal-600">
-              {formatCurrency(statsData.summary.epc)}
+              {formatCurrency(stats.epc)}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Detailed Stats Table */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Детальная статистика</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              Показано {startIndex + 1}-{Math.min(endIndex, totalItems)} из {totalItems} записей (Страница {currentPage} из {totalPages})
-            </p>
-          </div>
-          {/* Верхняя пагинация */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={goToPreviousPage}
-              disabled={currentPage === 1}
-              data-testid="button-prev-page-top"
-            >
-              ←
-            </Button>
-            <div className="flex gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-                
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={currentPage === pageNum ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => goToPage(pageNum)}
-                    data-testid={`button-page-${pageNum}-top`}
-                    className="w-8 h-8 p-0"
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              })}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages}
-              data-testid="button-next-page-top"
-            >
-              →
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-gray-700 dark:text-gray-300 font-semibold">Дата и время</TableHead>
-                <TableHead className="text-purple-700 dark:text-purple-300 font-semibold">Оффер</TableHead>
-                <TableHead className="text-green-700 dark:text-green-300 font-semibold">Гео</TableHead>
-                <TableHead className="text-blue-700 dark:text-blue-300 font-semibold">Click ID</TableHead>
-                <TableHead className="text-cyan-700 dark:text-cyan-300 font-semibold">Клики</TableHead>
-                <TableHead className="text-emerald-700 dark:text-emerald-300 font-semibold">Конверсии</TableHead>
-                <TableHead className="text-purple-700 dark:text-purple-300 font-semibold">Доход</TableHead>
-                <TableHead className="text-orange-700 dark:text-orange-300 font-semibold">CR</TableHead>
-                <TableHead className="text-teal-700 dark:text-teal-300 font-semibold">EPC</TableHead>
-                <TableHead className="text-indigo-700 dark:text-indigo-300 font-semibold">Sub-параметры</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentPageData.map((stat) => (
-                <TableRow key={stat.id}>
-                  <TableCell className="font-medium text-gray-700 dark:text-gray-300">
-                    <div className="flex flex-col">
-                      <span className="font-semibold">{stat.date}</span>
-                      <span className="text-xs text-muted-foreground">{stat.time}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium text-purple-700 dark:text-purple-300">{stat.offerName}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="border-green-500 text-green-700 dark:text-green-300">{stat.geo}</Badge>
-                  </TableCell>
-                  <TableCell className="font-mono text-xs text-blue-600 dark:text-blue-400">
-                    {stat.clickid}
-                  </TableCell>
-                  <TableCell className="text-cyan-600 dark:text-cyan-400 font-medium">
-                    {stat.clicks.toLocaleString()}
-                  </TableCell>
-                  <TableCell className="text-emerald-600 dark:text-emerald-400 font-medium">
-                    {stat.conversions}
-                  </TableCell>
-                  <TableCell className="text-purple-600 dark:text-purple-400 font-medium">
-                    {formatCurrency(stat.revenue)}
-                  </TableCell>
-                  <TableCell className="text-orange-600 dark:text-orange-400 font-medium">
-                    {formatCR(stat.cr / 100)}
-                  </TableCell>
-                  <TableCell className="text-teal-600 dark:text-teal-400 font-medium">
-                    {formatCurrency(stat.epc)}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedRowId(stat.id);
-                        setShowSubParams(true);
-                      }}
-                      data-testid={`button-sub-params-${stat.id}`}
-                      title="Просмотр sub-параметров"
-                    >
-                      <Eye className="h-3 w-3 mr-1" />
-                      Sub1-16
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          
-          {/* Нижняя пагинация */}
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-muted-foreground">
-              Показано {startIndex + 1}-{Math.min(endIndex, totalItems)} из {totalItems} записей
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={goToPreviousPage}
-                disabled={currentPage === 1}
-                data-testid="button-prev-page-bottom"
-              >
-                ← Предыдущая
-              </Button>
-              <div className="flex gap-1">
-                {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 7) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 4) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 3) {
-                    pageNum = totalPages - 6 + i;
-                  } else {
-                    pageNum = currentPage - 3 + i;
-                  }
-                  
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={currentPage === pageNum ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => goToPage(pageNum)}
-                      data-testid={`button-page-${pageNum}-bottom`}
-                      className="w-10 h-8 p-0"
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                data-testid="button-next-page-bottom"
-              >
-                Следующая →
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Tabs for different views */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="overview">Обзор</TabsTrigger>
+          <TabsTrigger value="geography">География</TabsTrigger>
+          <TabsTrigger value="devices">Устройства</TabsTrigger>
+          <TabsTrigger value="sources">Источники</TabsTrigger>
+          <TabsTrigger value="subid">SubID</TabsTrigger>
+          <TabsTrigger value="details">Детали</TabsTrigger>
+        </TabsList>
 
-      {/* Sub-параметры Dialog */}
+        <TabsContent value="overview" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Общая статистика кликов</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Дата/Время</TableHead>
+                    <TableHead>Оффер</TableHead>
+                    <TableHead>Гео</TableHead>
+                    <TableHead>ClickID</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead>Доход</TableHead>
+                    <TableHead>Действия</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tableData.map((item: any) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{item.date}</span>
+                          <span className="text-xs text-muted-foreground">{item.time}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{item.offer}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{item.geo}</Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-600">{item.clickId}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(item.clickId, 'ClickID')}
+                            title="Копировать ClickID"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={item.status === 'conversion' ? 'default' : 'secondary'}
+                          className={item.status === 'conversion' ? 'bg-green-100 text-green-800' : ''}
+                        >
+                          {item.status === 'conversion' ? 'Конверсия' : 'Клик'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-medium text-purple-600">
+                        {formatCurrency(item.revenue)}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedRowId(item.clickId);
+                            setShowSubParams(true);
+                          }}
+                          title="Просмотр SubID параметров"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          SubID
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="geography" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Статистика по географии
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {analyticsData?.geoStats ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Страна</TableHead>
+                      <TableHead>Клики</TableHead>
+                      <TableHead>Конверсии</TableHead>
+                      <TableHead>Доход</TableHead>
+                      <TableHead>CR</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {analyticsData.geoStats.map((stat: any) => (
+                      <TableRow key={stat.geo}>
+                        <TableCell>
+                          <Badge variant="outline">{stat.geo}</Badge>
+                        </TableCell>
+                        <TableCell>{stat.clicks}</TableCell>
+                        <TableCell>{stat.conversions}</TableCell>
+                        <TableCell className="font-medium text-purple-600">
+                          {formatCurrency(stat.revenue)}
+                        </TableCell>
+                        <TableCell className="font-medium text-orange-600">
+                          {formatCR(stat.cr / 100)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-muted-foreground">Переключитесь на вкладку "География" для получения данных</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="devices" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Monitor className="h-5 w-5" />
+                Статистика по устройствам
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {analyticsData?.deviceStats ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Устройство</TableHead>
+                      <TableHead>Клики</TableHead>
+                      <TableHead>Конверсии</TableHead>
+                      <TableHead>Доход</TableHead>
+                      <TableHead>CR</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {analyticsData.deviceStats.map((stat: any) => (
+                      <TableRow key={stat.device}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {stat.device === 'mobile' ? (
+                              <Smartphone className="h-4 w-4" />
+                            ) : (
+                              <Monitor className="h-4 w-4" />
+                            )}
+                            {stat.device}
+                          </div>
+                        </TableCell>
+                        <TableCell>{stat.clicks}</TableCell>
+                        <TableCell>{stat.conversions}</TableCell>
+                        <TableCell className="font-medium text-purple-600">
+                          {formatCurrency(stat.revenue)}
+                        </TableCell>
+                        <TableCell className="font-medium text-orange-600">
+                          {formatCR(stat.cr / 100)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-muted-foreground">Переключитесь на вкладку "Устройства" для получения данных</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="subid" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Анализ SubID параметров</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Детальный анализ всех Sub1-Sub16 параметров с сохранением исходных данных
+              </p>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ClickID</TableHead>
+                    <TableHead>Sub1</TableHead>
+                    <TableHead>Sub2</TableHead>
+                    <TableHead>Sub3</TableHead>
+                    <TableHead>Sub4</TableHead>
+                    <TableHead>Sub5</TableHead>
+                    <TableHead>Действия</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tableData.slice(0, 10).map((item: any) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-mono text-xs text-blue-600">
+                        {item.clickId}
+                      </TableCell>
+                      <TableCell className="text-xs">{item.sub1 || '-'}</TableCell>
+                      <TableCell className="text-xs">{item.sub2 || '-'}</TableCell>
+                      <TableCell className="text-xs">{item.sub3 || '-'}</TableCell>
+                      <TableCell className="text-xs">{item.sub4 || '-'}</TableCell>
+                      <TableCell className="text-xs">{item.sub5 || '-'}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedRowId(item.clickId);
+                            setShowSubParams(true);
+                          }}
+                          title="Посмотреть все Sub1-Sub16"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          Все
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="details" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Детальная статистика (50 записей на страницу)</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Показано {((pagination.page - 1) * pagination.limit) + 1}-{Math.min(pagination.page * pagination.limit, pagination.total)} из {pagination.total} записей
+              </p>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Время</TableHead>
+                    <TableHead>Оффер</TableHead>
+                    <TableHead>ClickID</TableHead>
+                    <TableHead>IP</TableHead>
+                    <TableHead>Гео</TableHead>
+                    <TableHead>Устройство</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead>Доход</TableHead>
+                    <TableHead>SubID</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tableData.map((item: any) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="text-xs">
+                        <div className="flex flex-col">
+                          <span>{item.date}</span>
+                          <span className="text-muted-foreground">{item.time}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{item.offer}</TableCell>
+                      <TableCell className="font-mono text-xs text-blue-600">
+                        {item.clickId}
+                      </TableCell>
+                      <TableCell className="text-xs">{item.ip}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{item.geo}</Badge>
+                      </TableCell>
+                      <TableCell>{item.device}</TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={item.status === 'conversion' ? 'default' : 'secondary'}
+                          className={item.status === 'conversion' ? 'bg-green-100 text-green-800' : ''}
+                        >
+                          {item.status === 'conversion' ? 'Конверсия' : 'Клик'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-medium text-purple-600">
+                        {formatCurrency(item.revenue)}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedRowId(item.clickId);
+                            setShowSubParams(true);
+                          }}
+                          title="Просмотр всех SubID"
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {/* Pagination */}
+              <div className="flex items-center justify-between mt-4">
+                <div className="text-sm text-muted-foreground">
+                  Страница {pagination.page} из {pagination.totalPages}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={pagination.page === 1}
+                  >
+                    Назад
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
+                    disabled={pagination.page === pagination.totalPages}
+                  >
+                    Вперед
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* SubID Dialog */}
       <Dialog open={showSubParams} onOpenChange={setShowSubParams}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
+        <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              Sub-параметры (Sub1-Sub16)
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowSubParams(false)}
-                data-testid="button-close-sub-params"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </DialogTitle>
+            <DialogTitle>SubID Параметры для {selectedRowId}</DialogTitle>
             <DialogDescription>
-              Детальная информация о sub-параметрах для выбранного клика
+              Полный список всех Sub1-Sub16 параметров с точным сохранением данных
             </DialogDescription>
           </DialogHeader>
-          
           {selectedRowId && (
-            <div className="space-y-4">
-              {(() => {
-                const selectedStat = statsData.detailedStats.find(stat => stat.id === selectedRowId);
-                if (!selectedStat) return null;
+            <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+              {Array.from({ length: 16 }, (_, i) => {
+                const subKey = `sub${i + 1}`;
+                const clickDetails = getClickDetails(selectedRowId);
+                const subValue = clickDetails?.[subKey as keyof typeof clickDetails] || '-';
                 
                 return (
-                  <>
-                    {/* Основная информация */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Click ID</Label>
-                        <div className="font-mono text-sm text-blue-600">{selectedStat.clickid}</div>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Оффер</Label>
-                        <div className="text-sm font-medium">{selectedStat.offerName}</div>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Дата</Label>
-                        <div className="text-sm">{selectedStat.date}</div>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Гео</Label>
-                        <Badge variant="outline">{selectedStat.geo}</Badge>
-                      </div>
+                  <div key={subKey} className="flex items-center justify-between p-2 border rounded">
+                    <span className="font-medium text-sm">Sub{i + 1}:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground truncate max-w-48" title={subValue}>
+                        {subValue}
+                      </span>
+                      {subValue !== '-' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(subValue, `Sub${i + 1}`)}
+                          title={`Копировать Sub${i + 1}`}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
-
-                    {/* Sub-параметры в сетке */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {Array.from({ length: 16 }, (_, i) => {
-                        const subKey = `sub${i + 1}` as keyof typeof selectedStat;
-                        const subValue = selectedStat[subKey] as string;
-                        
-                        return (
-                          <div key={`sub${i + 1}`} className="space-y-2">
-                            <Label className="text-sm font-medium text-gray-500">
-                              Sub{i + 1}
-                            </Label>
-                            <div className="p-2 border rounded-md bg-white dark:bg-gray-900 min-h-[40px] flex items-center">
-                              <span className="text-sm text-gray-700 dark:text-gray-300 break-all">
-                                {subValue || '-'}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Статистика */}
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Клики</Label>
-                        <div className="text-lg font-bold text-blue-600">{selectedStat.clicks.toLocaleString()}</div>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Конверсии</Label>
-                        <div className="text-lg font-bold text-green-600">{selectedStat.conversions}</div>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Доход</Label>
-                        <div className="text-lg font-bold text-purple-600">{formatCurrency(selectedStat.revenue)}</div>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">CR</Label>
-                        <div className="text-lg font-bold text-orange-600">{formatCR(selectedStat.cr / 100)}</div>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">EPC</Label>
-                        <div className="text-lg font-bold text-teal-600">{formatCurrency(selectedStat.epc)}</div>
-                      </div>
-                    </div>
-                  </>
+                  </div>
                 );
-              })()}
+              })}
             </div>
           )}
         </DialogContent>
