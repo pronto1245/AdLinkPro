@@ -1257,6 +1257,17 @@ export class DatabaseStorage implements IStorage {
     return link || undefined;
   }
 
+  // Update tracking link stats  
+  async updateTrackingLinkStats(trackingCode: string, stats: { clickCount?: number; conversionCount?: number }) {
+    await db.update(trackingLinks)
+      .set({
+        clickCount: sql`${trackingLinks.clickCount} + ${stats.clickCount || 0}`,
+        conversionCount: sql`${trackingLinks.conversionCount} + ${stats.conversionCount || 0}`,
+        lastClickAt: new Date()
+      })
+      .where(eq(trackingLinks.trackingCode, trackingCode));
+  }
+
   async createTrackingLink(link: InsertTrackingLink): Promise<TrackingLink> {
     const trackingCode = randomUUID().substring(0, 8);
     const [newLink] = await db

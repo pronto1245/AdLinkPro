@@ -173,6 +173,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Add new tracking and postback routes
   app.use('/track', trackingRoutes.default);
+
+  // Direct tracking link handler - redirects to offer landing page
+  app.get('/track/:trackingCode', async (req, res) => {
+    try {
+      const { trackingCode } = req.params;
+      
+      // Find tracking link
+      const trackingLink = await storage.getTrackingLinkByCode(trackingCode);
+      if (!trackingLink) {
+        return res.status(404).send('Tracking link not found');
+      }
+
+      // Get offer details
+      const offer = await storage.getOffer(trackingLink.offerId);
+      if (!offer) {
+        return res.status(404).send('Offer not found');
+      }
+
+      // Generate unique clickId
+      const { nanoid } = await import('nanoid');
+      const clickId = nanoid(12);
+      
+      // Get IP and User Agent
+      const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip;
+      const userAgent = req.headers['user-agent'] || '';
+      
+      // Create click record
+      await storage.createTrackingClick({
+        clickId,
+        partnerId: trackingLink.partnerId,
+        offerId: trackingLink.offerId,
+        advertiserId: offer.advertiserId,
+        ip,
+        userAgent,
+        referrer: req.get('referer') || '',
+        subId1: trackingLink.subId1,
+        subId2: trackingLink.subId2,
+        subId3: trackingLink.subId3,
+        subId4: trackingLink.subId4,
+        subId5: trackingLink.subId5,
+        country: 'Unknown',
+        device: 'Unknown',
+        browser: 'Unknown',
+        os: 'Unknown',
+        status: 'click',
+        revenue: '0.00',
+        createdAt: new Date()
+      });
+
+      // Update tracking link click count
+      await storage.updateTrackingLinkStats(trackingCode, { clickCount: 1 });
+
+      // Build landing URL with parameters
+      let landingUrl = offer.landingPageUrl || 'https://example.com';
+      
+      // Replace macros in landing URL
+      landingUrl = landingUrl
+        .replace('{client_id}', clickId)
+        .replace('{external_id}', clickId)
+        .replace('{clickid}', clickId)
+        .replace('{sub1}', trackingLink.subId1 || '')
+        .replace('{sub2}', trackingLink.subId2 || '')
+        .replace('{sub3}', trackingLink.subId3 || '')
+        .replace('{sub4}', trackingLink.subId4 || '')
+        .replace('{sub5}', trackingLink.subId5 || '');
+
+      console.log(`🔗 Tracking link ${trackingCode} clicked. Redirecting to: ${landingUrl}`);
+
+      // Redirect to landing page
+      res.redirect(302, landingUrl);
+    } catch (error) {
+      console.error('Tracking link error:', error);
+      res.status(500).send('Internal server error');
+    }
+  });
   app.use('/api/postbacks', postbackRoutes.default);
   console.log('=== POSTBACK AND TRACKING ROUTES ADDED ===');
 
