@@ -605,10 +605,30 @@ export function AffiliatePostbacks() {
             Настройка интеграции с внешними трекерами
           </p>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)} data-testid="button-create-profile">
-          <Plus className="h-4 w-4 mr-2" />
-          Создать профиль
-        </Button>
+        <div className="flex space-x-2">
+          <Button 
+            onClick={() => {
+              console.log('🧪 MANUAL TEST CREATE PROFILE');
+              const testProfile = {
+                name: `INTERFACE TEST ${Date.now()}`,
+                tracker_type: 'custom',
+                endpoint_url: `http://test-interface.com/${Date.now()}`,
+                method: 'GET',
+                enabled: true
+              };
+              console.log('🧪 Creating profile:', testProfile);
+              createMutation.mutate(testProfile);
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white"
+            data-testid="button-test-create"
+          >
+            🧪 ТЕСТ СОЗДАНИЯ
+          </Button>
+          <Button onClick={() => setIsCreateModalOpen(true)} data-testid="button-create-profile">
+            <Plus className="h-4 w-4 mr-2" />
+            Создать профиль
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -625,9 +645,15 @@ export function AffiliatePostbacks() {
             </div>
           ) : (
             <div className="grid gap-4">
-              {console.log('🎨 Rendering profiles:', profiles)}
-              {profiles?.length > 0 ? profiles.map((profile: PostbackProfile) => (
-                <Card key={profile.id} className="hover:shadow-md transition-shadow">
+              {console.log('🎨 RENDERING PROFILES:', profiles)}
+              {console.log('🎨 PROFILES LENGTH:', profiles?.length)}
+              {console.log('🎨 PROFILES TYPE:', typeof profiles)}
+              {console.log('🎨 PROFILES ARRAY CHECK:', Array.isArray(profiles))}
+              
+              {profiles?.length > 0 ? profiles.map((profile: PostbackProfile, index: number) => {
+                console.log(`🎨 RENDERING PROFILE #${index}:`, profile);
+                return (
+                <Card key={profile.id} className="hover:shadow-md transition-shadow border-4 border-green-500 bg-green-50">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
@@ -731,12 +757,42 @@ export function AffiliatePostbacks() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              )) : (
+                <div className="text-center py-8 bg-red-50 border-4 border-red-500 rounded">
+                  <h2 className="text-red-800 font-bold text-xl mb-4">ПРОФИЛИ НЕ НАЙДЕНЫ!</h2>
+                  <p className="text-red-600 mb-2">Всего профилей: {profiles?.length || 0}</p>
+                  <p className="text-red-600 mb-2">Тип данных: {typeof profiles}</p>
+                  <p className="text-red-600 mb-4">Это массив: {Array.isArray(profiles) ? 'Да' : 'Нет'}</p>
+                  <Button 
+                    onClick={() => {
+                      console.log('🔄 FORCE REFETCH clicked');
+                      refetch();
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА
+                  </Button>
+                </div>
+              )}
 
-              <div className="mt-4 p-4 bg-gray-50 rounded">
-                <p>Отладочная информация:</p>
-                <p>Количество профилей: {profiles?.length || 0}</p>
-                <p>Данные profiles: {JSON.stringify(profiles, null, 2)}</p>
+              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+                <h4 className="font-bold text-yellow-800 mb-2">ОТЛАДКА - ПОЛНАЯ ИНФОРМАЦИЯ</h4>
+                <div className="text-sm space-y-1">
+                  <p><strong>Количество профилей:</strong> {profiles?.length || 0}</p>
+                  <p><strong>isLoading:</strong> {isLoading ? 'true' : 'false'}</p>
+                  <p><strong>deleteMutation.isPending:</strong> {deleteMutation.isPending ? 'true' : 'false'}</p>
+                  <p><strong>updateMutation.isPending:</strong> {updateMutation.isPending ? 'true' : 'false'}</p>
+                  <p><strong>createMutation.isPending:</strong> {createMutation.isPending ? 'true' : 'false'}</p>
+                  {profiles?.map((profile, index) => (
+                    <div key={profile.id} className="p-2 bg-white border rounded mt-2">
+                      <p><strong>Профиль #{index + 1}:</strong></p>
+                      <p>ID: {profile.id}</p>
+                      <p>Название: {profile.name}</p>
+                      <p>Включен: {profile.enabled ? 'Да' : 'Нет'}</p>
+                      <p>Тип: {profile.tracker_type}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
