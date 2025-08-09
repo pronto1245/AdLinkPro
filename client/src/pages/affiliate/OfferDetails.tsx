@@ -442,55 +442,7 @@ const LandingPagesCard = ({
             </div>
           ))}
         </div>
-        
-        {/* Подсказки для дополнительных параметров */}
-        <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <div className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold mt-0.5">
-              💡
-            </div>
-            <div className="flex-1">
-              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
-                Дополнительные параметры для трекинга
-              </h4>
-              <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-                К готовой ссылке вы можете добавить свои sub-параметры для детального трекинга:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border">
-                    &sub1=
-                  </code>
-                  <span className="text-blue-600 dark:text-blue-400">источник трафика</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border">
-                    &sub2=
-                  </code>
-                  <span className="text-blue-600 dark:text-blue-400">кампания</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border">
-                    &sub3=
-                  </code>
-                  <span className="text-blue-600 dark:text-blue-400">креатив</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <code className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border">
-                    &sub4=
-                  </code>
-                  <span className="text-blue-600 dark:text-blue-400">дополнительно</span>
-                </div>
-              </div>
-              <p className="text-xs text-blue-600 dark:text-blue-400 mt-3">
-                Пример: https://domain.com/path?clickid=04b043297lz9&partner_id=04b00002&sub1=facebook&sub2=campaign1
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                ℹ️ partner_id содержит ваш номер партнера (последние 4 цифры) для удобной идентификации рекламодателем
-              </p>
-            </div>
-          </div>
-        </div>
+
       </CardContent>
     </Card>
   );
