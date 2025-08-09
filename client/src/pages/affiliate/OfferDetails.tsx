@@ -8,6 +8,7 @@ import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalL
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { OfferLogo } from "@/components/ui/offer-logo";
 
 import { transformLandingUrl } from "@/lib/queryClient";
 
@@ -512,9 +513,12 @@ export default function OfferDetails() {
       <Card>
         <CardHeader>
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
-              {offer?.name ? offer.name.substring(0, 2).toUpperCase() : 'OF'}
-            </div>
+            <OfferLogo 
+              name={offer?.name || 'Оффер'}
+              logo={offer?.logo}
+              size="xl"
+              showTooltip={true}
+            />
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <CardTitle className="text-xl">{offer?.name || 'Загрузка...'}</CardTitle>

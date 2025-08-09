@@ -10,6 +10,7 @@ import { MoreHorizontal, Target, BarChart3, MousePointer, Zap, Send, Clock, Chec
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
 import { apiRequest } from "@/lib/queryClient";
+import { OfferLogo } from "@/components/ui/offer-logo";
 
 
 interface PartnerOffer {
@@ -280,17 +281,12 @@ export default function PartnerOffers() {
                         <TableCell>
                           {index === 0 ? (
                             <div className="flex items-center gap-3">
-                              {offer.logo ? (
-                                <img 
-                                  src={offer.logo} 
-                                  alt={offer.name}
-                                  className="w-10 h-10 rounded object-cover flex-shrink-0"
-                                />
-                              ) : (
-                                <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
-                                  <Target className="w-5 h-5 text-gray-500" />
-                                </div>
-                              )}
+                              <OfferLogo 
+                                name={offer.name}
+                                logo={offer.logo}
+                                size="md"
+                                showTooltip={true}
+                              />
                               <div>
                                 <div 
                                   className="font-medium cursor-pointer text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors"
@@ -434,17 +430,12 @@ export default function PartnerOffers() {
                         {/* Название с лого */}
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            {offer.logo ? (
-                              <img 
-                                src={offer.logo} 
-                                alt={offer.name}
-                                className="w-10 h-10 rounded object-cover flex-shrink-0"
-                              />
-                            ) : (
-                              <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
-                                <Target className="w-5 h-5 text-gray-500" />
-                              </div>
-                            )}
+                            <OfferLogo 
+                              name={offer.name}
+                              logo={offer.logo}
+                              size="md"
+                              showTooltip={true}
+                            />
                             <div>
                               <div 
                                 className="font-medium cursor-pointer text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors"
