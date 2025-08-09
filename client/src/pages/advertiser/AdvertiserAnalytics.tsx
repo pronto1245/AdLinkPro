@@ -44,6 +44,7 @@ interface StatisticsSummary {
 interface StatisticsData {
   id: string;
   date: string;
+  clickId?: string;  // Добавляем clickId
   country?: string;
   device?: string;
   trafficSource?: string;
@@ -68,6 +69,7 @@ interface StatisticsData {
   roi: number;
   fraudClicks: number;
   fraudRate: number;
+  clickIds?: string[];  // Для случаев группировки
 }
 
 export function AdvertiserAnalytics() {
@@ -649,9 +651,78 @@ export function AdvertiserAnalytics() {
           <Card>
             <CardHeader>
               <CardTitle>Детальные клики</CardTitle>
+              <CardDescription>
+                Полная информация по каждому отдельному клику с clickId и partnerId
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Детальная информация по каждому клику будет показана здесь</p>
+              {isLoadingStats ? (
+                <div className="flex items-center justify-center h-32">
+                  <RefreshCw className="h-6 w-6 animate-spin" />
+                  <span className="ml-2">Загрузка детальных данных...</span>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-2">Click ID</th>
+                        <th className="text-left p-2">Partner ID</th>
+                        <th className="text-left p-2">Партнер</th>
+                        <th className="text-left p-2">Оффер</th>
+                        <th className="text-left p-2">Дата/время</th>
+                        <th className="text-left p-2">Страна</th>
+                        <th className="text-left p-2">Устройство</th>
+                        <th className="text-left p-2">Статус</th>
+                        <th className="text-right p-2">Доход, $</th>
+                        <th className="text-right p-2">CR, %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.map((row, index) => (
+                        <tr key={index} className="border-b hover:bg-gray-50">
+                          <td className="p-2 font-mono text-xs text-green-600">
+                            {row.clickId || 'N/A'}
+                          </td>
+                          <td className="p-2 font-mono text-xs text-blue-600">
+                            {row.partnerId ? row.partnerId.substring(0, 8) + '...' : 'N/A'}
+                          </td>
+                          <td className="p-2 font-medium">
+                            {row.partnerName || 'Unknown Partner'}
+                          </td>
+                          <td className="p-2">
+                            {row.offerName || 'Unknown Offer'}
+                          </td>
+                          <td className="p-2">
+                            {new Date(row.date).toLocaleDateString('ru-RU')} {new Date(row.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                          <td className="p-2">
+                            {row.country || 'Unknown'}
+                          </td>
+                          <td className="p-2">
+                            {row.device || 'Unknown'}
+                          </td>
+                          <td className="p-2">
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              row.conversions > 0 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {row.conversions > 0 ? 'Конверсия' : 'Клик'}
+                            </span>
+                          </td>
+                          <td className="text-right p-2 font-medium">
+                            ${row.revenue.toFixed(2)}
+                          </td>
+                          <td className="text-right p-2">
+                            {row.cr.toFixed(2)}%
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
