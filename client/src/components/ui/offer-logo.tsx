@@ -25,6 +25,9 @@ export function OfferLogo({
 }: OfferLogoProps) {
   const [imageError, setImageError] = useState(false);
   
+  // Отладочный лог для понимания что передается в компонент
+  console.log("OfferLogo render:", { name, logo, size, imageError });
+  
   // Получаем первые две буквы из названия оффера
   const getInitials = (offerName: string): string => {
     if (!offerName) return "??";
