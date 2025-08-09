@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демо: Настройка постбеков</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .step-highlight {
+            animation: pulse 2s infinite;
+            border: 3px solid #3b82f6;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">
+                🚀 Настройка постбеков в партнерском кабинете
+            </h1>
+            
+            <!-- Шаг 1 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold mr-3">1</div>
+                    <h2 class="text-xl font-semibold">Войдите в кабинет партнера</h2>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-gray-700">Авторизуйтесь в системе и найдите раздел <strong>"Постбеки"</strong> в боковом меню</p>
+                    <div class="mt-3 p-3 bg-white rounded border-2 border-blue-500">
+                        <div class="text-sm text-gray-600">📍 Путь: Главное меню → Постбеки</div>
+                        <div class="text-sm text-blue-600 font-mono">/affiliate/postbacks</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Шаг 2 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold mr-3">2</div>
+                    <h2 class="text-xl font-semibold">Создайте профиль постбека</h2>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-semibold mb-2">Нажмите "Добавить постбек"</h3>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 step-highlight">
+                                ➕ Добавить постбек
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold mb-2">Форма создания</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Название</label>
+                                <input type="text" value="Мой Keitaro трекер" class="w-full p-2 border rounded" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Тип трекера</label>
+                                <select class="w-full p-2 border rounded">
+                                    <option>Keitaro</option>
+                                    <option>Binom</option>
+                                    <option>RedTrack</option>
+                                    <option>Voluum</option>
+                                    <option>Произвольный</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Шаг 3 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold mr-3">3</div>
+                    <h2 class="text-xl font-semibold">Вставьте URL постбека</h2>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <h3 class="font-semibold mb-2">🎯 Сюда вставляете ваш постбек URL:</h3>
+                        <textarea 
+                            class="w-full p-3 border-2 border-purple-300 rounded-lg font-mono text-sm step-highlight" 
+                            rows="3" 
+                            placeholder="https://your-keitaro.com/api/v1/conversions?clickid={clickid}&status={status}&revenue={revenue}&partner_id={partner_id}&sub1={sub1}&sub2={sub2}"
+                            readonly
+                        >https://tracker.example.com/api/v1/conversions?clickid={clickid}&status={status}&revenue={revenue}&offer_id={offer_id}&partner_id={partner_id}&sub1={sub1}&sub2={sub2}</textarea>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-yellow-800 mb-2">⚡ Keitaro</h4>
+                            <code class="text-xs bg-white p-2 rounded block">
+                                https://your-keitaro.com/api/v1/conversions?clickid={clickid}&status={status}&revenue={revenue}
+                            </code>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-blue-800 mb-2">🎯 Binom</h4>
+                            <code class="text-xs bg-white p-2 rounded block">
+                                https://your-binom.com/click.php?cnv_id={clickid}&payout={revenue}
+                            </code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Шаг 4 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold mr-3">4</div>
+                    <h2 class="text-xl font-semibold">Протестируйте постбек</h2>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="font-semibold">Тестирование интеграции</span>
+                        <button class="bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 step-highlight">
+                            🧪 Тест
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600">Нажмите кнопку "Тест" чтобы отправить тестовые данные на ваш трекер и убедиться что интеграция работает корректно.</p>
+                </div>
+            </div>
+
+            <!-- Шаг 5 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold mr-3">✓</div>
+                    <h2 class="text-xl font-semibold">Готово!</h2>
+                </div>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="bg-green-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl mb-2">🔗</div>
+                        <h3 class="font-semibold">При клике</h3>
+                        <p class="text-sm text-gray-600">Автоматическая отправка события lp_click</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl mb-2">💰</div>
+                        <h3 class="font-semibold">При лиде</h3>
+                        <p class="text-sm text-gray-600">Отправка события lead с суммой</p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl mb-2">📊</div>
+                        <h3 class="font-semibold">Мониторинг</h3>
+                        <p class="text-sm text-gray-600">Логи во вкладке "Логи отправки"</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Полезная информация -->
+            <div class="bg-gray-100 rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-4">💡 Полезная информация</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-semibold mb-2">Доступные макросы:</h3>
+                        <div class="space-y-1 text-sm">
+                            <div><code class="bg-white px-2 py-1 rounded">{clickid}</code> - ID клика</div>
+                            <div><code class="bg-white px-2 py-1 rounded">{status}</code> - Статус события</div>
+                            <div><code class="bg-white px-2 py-1 rounded">{revenue}</code> - Сумма конверсии</div>
+                            <div><code class="bg-white px-2 py-1 rounded">{partner_id}</code> - ID партнера</div>
+                            <div><code class="bg-white px-2 py-1 rounded">{sub1}-{sub16}</code> - SubID параметры</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold mb-2">Статусы событий:</h3>
+                        <div class="space-y-1 text-sm">
+                            <div><span class="bg-blue-100 px-2 py-1 rounded">lp_click</span> - Клик по ссылке</div>
+                            <div><span class="bg-green-100 px-2 py-1 rounded">lead</span> - Регистрация</div>
+                            <div><span class="bg-yellow-100 px-2 py-1 rounded">deposit</span> - Депозит</div>
+                            <div><span class="bg-purple-100 px-2 py-1 rounded">conversion</span> - Покупка</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Анимация подсветки элементов
+        document.addEventListener('DOMContentLoaded', function() {
+            const highlights = document.querySelectorAll('.step-highlight');
+            let currentIndex = 0;
+            
+            function animateNext() {
+                // Убираем подсветку с предыдущего элемента
+                if (currentIndex > 0) {
+                    highlights[currentIndex - 1].classList.remove('step-highlight');
+                }
+                
+                // Добавляем подсветку к текущему элементу
+                if (currentIndex < highlights.length) {
+                    highlights[currentIndex].classList.add('step-highlight');
+                    currentIndex++;
+                } else {
+                    // Начинаем заново
+                    currentIndex = 0;
+                    highlights.forEach(el => el.classList.remove('step-highlight'));
+                }
+            }
+            
+            // Запускаем анимацию каждые 3 секунды
+            setInterval(animateNext, 3000);
+        });
+    </script>
+</body>
+</html>
