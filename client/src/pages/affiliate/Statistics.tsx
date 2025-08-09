@@ -94,6 +94,12 @@ export default function Statistics() {
       const token = localStorage.getItem('token');
       console.log('Making request with token:', token ? token.substring(0, 20) + '...' : 'null');
       
+      if (!token) {
+        console.log('No token found, redirecting to login');
+        window.location.href = '/login';
+        return;
+      }
+      
       const response = await fetch(`/api/partner/analytics?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -107,8 +113,8 @@ export default function Statistics() {
         const errorData = await response.json().catch(() => ({}));
         console.log('Error response:', errorData);
         
-        if (response.status === 401 && errorData.code === 'TOKEN_MISSING') {
-          // Токен отсутствует или недействителен - перенаправляем на логин
+        if (response.status === 401 || response.status === 403) {
+          // Ошибка авторизации - перенаправляем на логин
           localStorage.removeItem('token');
           window.location.href = '/login';
           return;
@@ -125,11 +131,27 @@ export default function Statistics() {
   const { data: offers } = useQuery({
     queryKey: ['/api/partner/offers'],
     queryFn: async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login';
+        return [];
+      }
+
       const response = await fetch('/api/partner/offers', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+          return [];
+        }
+        throw new Error('Failed to fetch offers');
+      }
+
       return response.json();
     }
   });
