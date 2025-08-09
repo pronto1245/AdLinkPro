@@ -23,10 +23,13 @@ export default function UpdateToken() {
       const response = await fetch('/api/get-fresh-token');
       
       if (!response.ok) {
-        throw new Error('Не удалось получить новый токен');
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        throw new Error(`Ошибка API: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('Received token data:', data);
       
       // Очищаем старый токен
       localStorage.removeItem('token');
