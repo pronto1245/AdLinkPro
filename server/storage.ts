@@ -3214,33 +3214,49 @@ export class DatabaseStorage implements IStorage {
 
   async createTrackingClick(data: any): Promise<any> {
     try {
-      // Используем прямой SQL с правильными полями
-      const query = sql.raw(`
-        INSERT INTO tracking_clicks (
-          id, partner_id, offer_id, status, country, device, browser,
-          revenue, sub_1, sub_2, sub_3, sub_4, sub_5, sub_6, sub_7, sub_8,
-          sub_9, sub_10, sub_11, sub_12, sub_13, sub_14, sub_15, sub_16,
-          created_at
-        ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
-          $17, $18, $19, $20, $21, $22, $23, $24, $25
-        ) RETURNING *
-      `, [
-        data.id,
-        data.partnerId || data.partner_id,
-        data.offerId || data.offer_id,
-        data.status || 'click',
-        data.country || 'Unknown',
-        data.device || 'Unknown',
-        data.browser || 'Unknown',
-        data.revenue || '0.00',
-        data.sub_1, data.sub_2, data.sub_3, data.sub_4, data.sub_5, data.sub_6, data.sub_7, data.sub_8,
-        data.sub_9, data.sub_10, data.sub_11, data.sub_12, data.sub_13, data.sub_14, data.sub_15, data.sub_16,
-        new Date()
-      ]);
+      // Генерируем UUID для новой записи
+      const uuid = randomUUID();
       
-      const result = await db.execute(query);
-      return result.rows[0];
+      // Исправляем SQL запрос с правильными именами полей из базы данных
+      const result = await db.execute(sql.raw(`
+        INSERT INTO tracking_clicks (
+          id, partner_id, offer_id, click_id, country, device, browser,
+          sub_1, sub_2, sub_3, sub_4, sub_5, sub_6, sub_7, sub_8,
+          sub_9, sub_10, sub_11, sub_12, sub_13, sub_14, sub_15, sub_16,
+          status, revenue, created_at
+        ) VALUES (
+          '${uuid}',
+          '${data.partnerId || data.partner_id}',
+          '${data.offerId || data.offer_id}',
+          '${data.clickId || data.click_id || uuid}',
+          '${data.country || 'Unknown'}',
+          '${data.device || 'Unknown'}',
+          '${data.browser || 'Unknown'}',
+          '${data.sub_1 || ''}',
+          '${data.sub_2 || ''}',
+          '${data.sub_3 || ''}',
+          '${data.sub_4 || ''}',
+          '${data.sub_5 || ''}',
+          '${data.sub_6 || ''}',
+          '${data.sub_7 || ''}',
+          '${data.sub_8 || ''}',
+          '${data.sub_9 || ''}',
+          '${data.sub_10 || ''}',
+          '${data.sub_11 || ''}',
+          '${data.sub_12 || ''}',
+          '${data.sub_13 || ''}',
+          '${data.sub_14 || ''}',
+          '${data.sub_15 || ''}',
+          '${data.sub_16 || ''}',
+          '${data.status || 'click'}',
+          '${data.revenue || '0.00'}',
+          NOW()
+        ) RETURNING *
+      `));
+      
+      const newClick = result.rows[0];
+      console.log('✅ Tracking click created successfully:', newClick);
+      return newClick;
     } catch (error) {
       console.error('Error creating tracking click:', error);
       throw error;
@@ -3249,19 +3265,17 @@ export class DatabaseStorage implements IStorage {
 
   async updateTrackingClick(clickId: string, updates: any): Promise<any> {
     try {
-      // Используем прямой SQL для обновления tracking click
-      const query = sql.raw(`
+      // Исправляем SQL запрос для обновления по click_id
+      const result = await db.execute(sql.raw(`
         UPDATE tracking_clicks 
-        SET status = $1, revenue = $2, updated_at = NOW()
-        WHERE id = $3
+        SET status = '${updates.status}', 
+            revenue = '${updates.revenue || '0.00'}', 
+            updated_at = NOW()
+        WHERE click_id = '${clickId}'
         RETURNING *
-      `, [
-        updates.status,
-        updates.revenue || '0.00',
-        clickId
-      ]);
+      `));
       
-      const result = await db.execute(query);
+      console.log('✅ Tracking click updated successfully:', result.rows[0]);
       return result.rows[0];
     } catch (error) {
       console.error('Error updating tracking click:', error);
