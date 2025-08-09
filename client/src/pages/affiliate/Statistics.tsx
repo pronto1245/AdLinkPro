@@ -190,9 +190,9 @@ export default function Statistics() {
   // Данные для таблицы и пагинация
   const tableData = analyticsData?.data || [];
   const pagination = analyticsData?.pagination || {
-    page: 1,
-    limit: 50,
-    total: 0,
+    currentPage: 1,
+    itemsPerPage: 50,
+    totalItems: 0,
     totalPages: 0
   };
 
@@ -423,9 +423,9 @@ export default function Statistics() {
                           <span className="text-xs text-muted-foreground">{item.time}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{item.offer}</TableCell>
+                      <TableCell className="font-medium">{item.offer || getOfferName(item.offerId)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{item.geo}</Badge>
+                        <Badge variant="outline">{item.country || item.geo}</Badge>
                       </TableCell>
                       <TableCell className="font-mono text-xs">
                         <div className="flex items-center gap-2">
@@ -482,38 +482,38 @@ export default function Statistics() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {analyticsData?.geoStats ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Страна</TableHead>
-                      <TableHead>Клики</TableHead>
-                      <TableHead>Конверсии</TableHead>
-                      <TableHead>Доход</TableHead>
-                      <TableHead>CR</TableHead>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Страна</TableHead>
+                    <TableHead>Клики</TableHead>
+                    <TableHead>Конверсии</TableHead>
+                    <TableHead>Доход</TableHead>
+                    <TableHead>CR</TableHead>
+                    <TableHead>EPC</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tableData.map((item: any) => (
+                    <TableRow key={item.country}>
+                      <TableCell>
+                        <Badge variant="outline">{item.country}</Badge>
+                      </TableCell>
+                      <TableCell>{item.clicks}</TableCell>
+                      <TableCell>{item.conversions}</TableCell>
+                      <TableCell className="font-medium text-purple-600">
+                        {formatCurrency(item.revenue)}
+                      </TableCell>
+                      <TableCell className="font-medium text-orange-600">
+                        {item.cr}
+                      </TableCell>
+                      <TableCell className="font-medium text-teal-600">
+                        {item.epc}
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {analyticsData.geoStats.map((stat: any) => (
-                      <TableRow key={stat.geo}>
-                        <TableCell>
-                          <Badge variant="outline">{stat.geo}</Badge>
-                        </TableCell>
-                        <TableCell>{stat.clicks}</TableCell>
-                        <TableCell>{stat.conversions}</TableCell>
-                        <TableCell className="font-medium text-purple-600">
-                          {formatCurrency(stat.revenue)}
-                        </TableCell>
-                        <TableCell className="font-medium text-orange-600">
-                          {formatCR(stat.cr / 100)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <p className="text-muted-foreground">Переключитесь на вкладку "География" для получения данных</p>
-              )}
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
@@ -527,45 +527,88 @@ export default function Statistics() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {analyticsData?.deviceStats ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Устройство</TableHead>
-                      <TableHead>Клики</TableHead>
-                      <TableHead>Конверсии</TableHead>
-                      <TableHead>Доход</TableHead>
-                      <TableHead>CR</TableHead>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Устройство</TableHead>
+                    <TableHead>Клики</TableHead>
+                    <TableHead>Конверсии</TableHead>
+                    <TableHead>Доход</TableHead>
+                    <TableHead>CR</TableHead>
+                    <TableHead>EPC</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tableData.map((item: any) => (
+                    <TableRow key={item.device}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {item.device === 'Desktop' && <Monitor className="h-4 w-4" />}
+                          {item.device === 'Mobile' && <Smartphone className="h-4 w-4" />}
+                          {item.device === 'Tablet' && <Smartphone className="h-4 w-4" />}
+                          {item.device}
+                        </div>
+                      </TableCell>
+                      <TableCell>{item.clicks}</TableCell>
+                      <TableCell>{item.conversions}</TableCell>
+                      <TableCell className="font-medium text-purple-600">
+                        {formatCurrency(item.revenue)}
+                      </TableCell>
+                      <TableCell className="font-medium text-orange-600">
+                        {item.cr}
+                      </TableCell>
+                      <TableCell className="font-medium text-teal-600">
+                        {item.epc}
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {analyticsData.deviceStats.map((stat: any) => (
-                      <TableRow key={stat.device}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {stat.device === 'mobile' ? (
-                              <Smartphone className="h-4 w-4" />
-                            ) : (
-                              <Monitor className="h-4 w-4" />
-                            )}
-                            {stat.device}
-                          </div>
-                        </TableCell>
-                        <TableCell>{stat.clicks}</TableCell>
-                        <TableCell>{stat.conversions}</TableCell>
-                        <TableCell className="font-medium text-purple-600">
-                          {formatCurrency(stat.revenue)}
-                        </TableCell>
-                        <TableCell className="font-medium text-orange-600">
-                          {formatCR(stat.cr / 100)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <p className="text-muted-foreground">Переключитесь на вкладку "Устройства" для получения данных</p>
-              )}
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="sources" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                Статистика по источникам
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Источник</TableHead>
+                    <TableHead>Клики</TableHead>
+                    <TableHead>Конверсии</TableHead>
+                    <TableHead>Доход</TableHead>
+                    <TableHead>CR</TableHead>
+                    <TableHead>EPC</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tableData.map((item: any) => (
+                    <TableRow key={item.source}>
+                      <TableCell>
+                        <Badge variant="outline">{item.source}</Badge>
+                      </TableCell>
+                      <TableCell>{item.clicks}</TableCell>
+                      <TableCell>{item.conversions}</TableCell>
+                      <TableCell className="font-medium text-purple-600">
+                        {formatCurrency(item.revenue)}
+                      </TableCell>
+                      <TableCell className="font-medium text-orange-600">
+                        {item.cr}
+                      </TableCell>
+                      <TableCell className="font-medium text-teal-600">
+                        {item.epc}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
@@ -597,11 +640,11 @@ export default function Statistics() {
                       <TableCell className="font-mono text-xs text-blue-600">
                         {item.clickId}
                       </TableCell>
-                      <TableCell className="text-xs">{item.sub1 || '-'}</TableCell>
-                      <TableCell className="text-xs">{item.sub2 || '-'}</TableCell>
-                      <TableCell className="text-xs">{item.sub3 || '-'}</TableCell>
-                      <TableCell className="text-xs">{item.sub4 || '-'}</TableCell>
-                      <TableCell className="text-xs">{item.sub5 || '-'}</TableCell>
+                      <TableCell className="text-xs">{item.sub_1 || '-'}</TableCell>
+                      <TableCell className="text-xs">{item.sub_2 || '-'}</TableCell>
+                      <TableCell className="text-xs">{item.sub_3 || '-'}</TableCell>
+                      <TableCell className="text-xs">{item.sub_4 || '-'}</TableCell>
+                      <TableCell className="text-xs">{item.sub_5 || '-'}</TableCell>
                       <TableCell>
                         <Button
                           variant="outline"
@@ -629,7 +672,7 @@ export default function Statistics() {
             <CardHeader>
               <CardTitle>Детальная статистика (50 записей на страницу)</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Показано {((pagination.page - 1) * pagination.limit) + 1}-{Math.min(pagination.page * pagination.limit, pagination.total)} из {pagination.total} записей
+                Показано {((pagination.currentPage - 1) * pagination.itemsPerPage) + 1}-{Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} из {pagination.totalItems} записей
               </p>
             </CardHeader>
             <CardContent>
@@ -652,17 +695,17 @@ export default function Statistics() {
                     <TableRow key={item.id}>
                       <TableCell className="text-xs">
                         <div className="flex flex-col">
-                          <span>{item.date}</span>
-                          <span className="text-muted-foreground">{item.time}</span>
+                          <span>{new Date(item.timestamp || item.createdAt).toLocaleDateString()}</span>
+                          <span className="text-muted-foreground">{new Date(item.timestamp || item.createdAt).toLocaleTimeString()}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{item.offer}</TableCell>
+                      <TableCell className="font-medium">{getOfferName(item.offerId)}</TableCell>
                       <TableCell className="font-mono text-xs text-blue-600">
                         {item.clickId}
                       </TableCell>
                       <TableCell className="text-xs">{item.ip}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{item.geo}</Badge>
+                        <Badge variant="outline">{item.country}</Badge>
                       </TableCell>
                       <TableCell>{item.device}</TableCell>
                       <TableCell>
@@ -697,14 +740,14 @@ export default function Statistics() {
               {/* Pagination */}
               <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-muted-foreground">
-                  Страница {pagination.page} из {pagination.totalPages}
+                  Страница {pagination.currentPage} из {pagination.totalPages}
                 </div>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={pagination.page === 1}
+                    disabled={pagination.currentPage === 1}
                   >
                     Назад
                   </Button>
@@ -712,7 +755,7 @@ export default function Statistics() {
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
-                    disabled={pagination.page === pagination.totalPages}
+                    disabled={pagination.currentPage === pagination.totalPages}
                   >
                     Вперед
                   </Button>
@@ -735,7 +778,7 @@ export default function Statistics() {
           {selectedRowId && (
             <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
               {Array.from({ length: 16 }, (_, i) => {
-                const subKey = `sub${i + 1}`;
+                const subKey = `sub_${i + 1}`;
                 const clickDetails = getClickDetails(selectedRowId);
                 const subValue = clickDetails?.[subKey as keyof typeof clickDetails] || '-';
                 
