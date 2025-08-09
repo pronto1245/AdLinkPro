@@ -87,6 +87,9 @@ export default function AdvertiserAccessRequests() {
     queryKey: ["/api/advertiser/access-requests"],
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
+  
+  // Отладка данных с сервера
+  console.log("Access requests data:", requests);
 
   // Mutation для ответа на запрос доступа
   const respondToRequestMutation = useMutation({

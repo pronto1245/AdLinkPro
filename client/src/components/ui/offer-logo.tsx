@@ -26,7 +26,7 @@ export function OfferLogo({
   const [imageError, setImageError] = useState(false);
   
   // Отладка для понимания почему изображения не загружаются
-  console.log("OfferLogo debug:", { name, logo, imageError, hasLogo: !!logo });
+  console.log("OfferLogo debug:", { name, logo: logo, logoType: typeof logo, logoLength: logo?.length, imageError, hasLogo: !!logo });
   
   // Получаем первые две буквы из названия оффера
   const getInitials = (offerName: string): string => {
