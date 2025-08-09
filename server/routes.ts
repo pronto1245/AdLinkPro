@@ -3824,9 +3824,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         referrer
       } = req.body;
 
+      // Генерируем короткий click ID в формате как у Keitaro (10 символов)
+      const generateShortClickId = () => {
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < 10; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+      };
+      
+      const shortClickId = clickId || generateShortClickId();
+      
       // Создаем запись клика
       const clickData = {
-        id: clickId || crypto.randomUUID(),
+        id: shortClickId,
         partnerId,
         offerId,
         country: country || 'Unknown',
@@ -3845,9 +3857,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await storage.createTrackingClick(clickData);
       
-      console.log(`Click tracked: ${clickId} for partner ${partnerId} on offer ${offerId}`);
+      console.log(`Click tracked: ${shortClickId} for partner ${partnerId} on offer ${offerId}`);
       
-      res.json({ success: true, clickId: clickData.id });
+      res.json({ success: true, clickId: shortClickId });
     } catch (error) {
       console.error("Click tracking error:", error);
       res.status(500).json({ error: "Failed to track click" });
