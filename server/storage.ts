@@ -154,6 +154,9 @@ export interface IStorage {
     endDate?: Date;
   }): Promise<any[]>;
   
+  // Tracking clicks
+  getTrackingClicks(filters?: any): Promise<any[]>;
+
   // Advertiser Dashboard
   getAdvertiserDashboard(advertiserId: string, filters: {
     dateFrom?: Date;
@@ -3065,6 +3068,41 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error reviewing fraud report:', error);
       throw error;
+    }
+  }
+
+  async getTrackingClicks(filters?: any): Promise<any[]> {
+    try {
+      // Return mock tracking clicks data for antifraud analysis
+      return [
+        {
+          id: '1',
+          clickId: 'test_click_001',
+          partnerId: '04b06c87-c6cf-4409-af64-3e1234567890',
+          isBot: false,
+          vpnDetected: false,
+          fraudScore: 15,
+          riskLevel: 'low',
+          ipAddress: '192.168.1.1',
+          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          timestamp: new Date().toISOString()
+        },
+        {
+          id: '2', 
+          clickId: 'test_click_002',
+          partnerId: '04b06c87-c6cf-4409-af64-3e1234567891',
+          isBot: true,
+          vpnDetected: false,
+          fraudScore: 85,
+          riskLevel: 'high',
+          ipAddress: '10.0.0.1',
+          userAgent: 'bot/1.0',
+          timestamp: new Date().toISOString()
+        }
+      ];
+    } catch (error) {
+      console.error('Error getting tracking clicks:', error);
+      return [];
     }
   }
 
