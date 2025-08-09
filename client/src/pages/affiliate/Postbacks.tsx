@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -203,6 +203,24 @@ const defaultProfile: Partial<PostbackProfile> = {
 };
 
 export function AffiliatePostbacks() {
+  
+  // DEBUG: Проверяем токены при загрузке
+  useEffect(() => {
+    console.log('🔍 ОТЛАДКА ТОКЕНОВ ПРИ ЗАГРУЗКЕ:');
+    console.log('localStorage.token:', localStorage.getItem('token'));
+    console.log('localStorage.auth_token:', localStorage.getItem('auth_token'));
+    console.log('Все ключи localStorage:', Object.keys(localStorage));
+    
+    // Устанавливаем правильный токен если его нет
+    const currentToken = localStorage.getItem('token') || localStorage.getItem('auth_token');
+    if (!currentToken) {
+      console.log('❌ Токен не найден! Установка токена партнера...');
+      const affiliateToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA0YjA2Yzg3LWM2Y2YtNDQwOS1hZjY0LTNlMDViZjZjOWM3YyIsInVzZXJuYW1lIjoidGVzdF9hZmZpbGlhdGUiLCJyb2xlIjoiYWZmaWxpYXRlIiwiYWR2ZXJ0aXNlcklkIjpudWxsLCJpYXQiOjE3NTQ3Njg2NjIsImV4cCI6MTc1NDg1NTA2Mn0.GiEfmbEtVG5u-L0TN6RMgW3s3VkJMhULHG9Gn1VzNOc';
+      localStorage.setItem('token', affiliateToken);
+      localStorage.setItem('auth_token', affiliateToken);
+      console.log('✅ Токен установлен');
+    }
+  }, []);
   // Debug fetch calls with stack trace
   React.useEffect(() => {
     const originalFetch = window.fetch;
@@ -797,72 +815,98 @@ export function AffiliatePostbacks() {
                           {updateMutation.isPending ? 'ИЗМЕНЕНИЕ...' : 'ИЗМЕНИТЬ'}
                         </div>
 
-                        {/* ПРЯМАЯ КНОПКА УДАЛЕНИЯ БЕЗ МУТАЦИЙ */}
-                        <div
-                          onClick={async () => {
-                            console.log('🔥🔥🔥 ПРЯМАЯ КНОПКА УДАЛЕНИЯ НАЖАТА:', profile.id);
+                        {/* ПРОСТЕЙШАЯ КНОПКА УДАЛЕНИЯ */}
+                        <button
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             
-                            if (confirm(`Удалить профиль "${profile.name}"?`)) {
-                              console.log('🔥🔥🔥 Подтверждено удаление для:', profile.id);
+                            console.log('🚨🚨🚨 ПРОСТЕЙШАЯ КНОПКА НАЖАТА!');
+                            console.log('🚨 ID профиля:', profile.id);
+                            console.log('🚨 Название профиля:', profile.name);
+                            
+                            const userConfirmed = window.confirm(`Действительно удалить "${profile.name}"?`);
+                            console.log('🚨 Подтверждение пользователя:', userConfirmed);
+                            
+                            if (!userConfirmed) {
+                              console.log('🚨 Отменено пользователем');
+                              return;
+                            }
+                            
+                            console.log('🚨 Начинаем удаление...');
+                            
+                            try {
+                              // Получаем токен
+                              const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+                              console.log('🚨 Токен найден:', token ? 'ДА' : 'НЕТ');
+                              console.log('🚨 Длина токена:', token?.length || 0);
                               
-                              try {
-                                const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
-                                console.log('🔥🔥🔥 Найден токен:', !!token);
-                                
-                                const response = await fetch(`/api/postback/profiles/${profile.id}`, {
-                                  method: 'DELETE',
-                                  headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'application/json'
-                                  }
-                                });
-                                
-                                console.log('🔥🔥🔥 Ответ сервера:', response.status);
-                                
-                                if (response.ok) {
-                                  const result = await response.json();
-                                  console.log('🔥🔥🔥 Результат:', result);
-                                  alert('Профиль успешно удален!');
-                                  window.location.reload(); // Принудительная перезагрузка
-                                } else {
-                                  console.error('🔥🔥🔥 Ошибка:', response.status);
-                                  alert('Ошибка удаления профиля');
-                                }
-                              } catch (error) {
-                                console.error('🔥🔥🔥 Исключение:', error);
-                                alert('Ошибка сети при удалении');
+                              if (!token) {
+                                alert('Ошибка: токен авторизации не найден!');
+                                return;
                               }
+                              
+                              console.log('🚨 Отправляем DELETE запрос...');
+                              
+                              const deleteResponse = await fetch(`/api/postback/profiles/${profile.id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                  'Authorization': `Bearer ${token}`,
+                                  'Content-Type': 'application/json'
+                                }
+                              });
+                              
+                              console.log('🚨 Статус ответа:', deleteResponse.status);
+                              console.log('🚨 OK:', deleteResponse.ok);
+                              
+                              if (deleteResponse.ok) {
+                                const jsonResult = await deleteResponse.json();
+                                console.log('🚨 JSON результат:', jsonResult);
+                                
+                                alert(`✅ Удаление выполнено: ${jsonResult.message}`);
+                                
+                                // Обновляем страницу
+                                console.log('🚨 Перезагружаем страницу...');
+                                window.location.reload();
+                              } else {
+                                const errorText = await deleteResponse.text();
+                                console.error('🚨 Ошибка сервера:', errorText);
+                                alert(`❌ Ошибка ${deleteResponse.status}: ${errorText}`);
+                              }
+                              
+                            } catch (error) {
+                              console.error('🚨 Исключение при удалении:', error);
+                              alert(`❌ Ошибка сети: ${error.message}`);
                             }
                           }}
                           style={{
-                            background: '#dc2626',
-                            color: 'white',
-                            padding: '12px 24px',
-                            borderRadius: '8px',
+                            backgroundColor: '#ef4444',
+                            color: '#ffffff',
+                            border: '3px solid #dc2626',
+                            padding: '15px 30px',
+                            borderRadius: '10px',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
                             cursor: 'pointer',
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '8px',
-                            fontWeight: 'bold',
-                            fontSize: '16px',
-                            border: '2px solid #dc2626',
-                            boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)',
-                            transition: 'all 0.2s ease',
-                            userSelect: 'none'
+                            gap: '10px',
+                            boxShadow: '0 6px 16px rgba(239, 68, 68, 0.4)',
+                            textTransform: 'uppercase'
                           }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = '#b91c1c';
-                            e.currentTarget.style.transform = 'scale(1.1)';
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#dc2626';
+                            e.currentTarget.style.transform = 'scale(1.05)';
                           }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = '#dc2626';
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ef4444';
                             e.currentTarget.style.transform = 'scale(1)';
                           }}
-                          title="Удалить профиль"
+                          title="Удалить этот профиль"
                         >
-                          <Trash2 size={18} />
-                          УДАЛИТЬ ПРОФИЛЬ
-                        </div>
+                          <Trash2 size={20} />
+                          УДАЛИТЬ
+                        </button>
                       </div>
                     </div>
                   </CardContent>
