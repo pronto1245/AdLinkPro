@@ -6,6 +6,10 @@ import helmet from "helmet";
 
 const app = express();
 
+// Load and validate configuration
+import { config, validateConfig } from "./config/environment.js";
+validateConfig();
+
 // Компрессия для лучшей производительности
 app.use(compression({
   level: 6,
