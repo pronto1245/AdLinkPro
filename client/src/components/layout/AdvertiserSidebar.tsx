@@ -50,12 +50,7 @@ const sidebarItems = [
     icon: MessageSquare,
     description: 'Обработка запросов партнёров на доступ к офферам'
   },
-  {
-    title: 'Статистика',
-    href: '/advertiser/analytics',
-    icon: BarChart3,
-    description: 'Аналитика и отчёты'
-  },
+
   {
     title: 'Финансы',
     href: '/advertiser/finances',
@@ -75,16 +70,10 @@ const sidebarItems = [
     description: 'Система защиты от фродового трафика'
   },
   {
-    title: 'Живая Аналитика',
-    href: '/advertiser/live-analytics',
-    icon: Eye,
-    description: 'Статистика трекинга в реальном времени'
-  },
-  {
-    title: 'Антифрод Аналитика',
-    href: '/advertiser/antifraud-analytics',
-    icon: Shield,
-    description: 'Анализ фродового трафика и угроз'
+    title: 'Аналитика',
+    href: '/advertiser/analytics',
+    icon: BarChart3,
+    description: 'Детальная аналитика и отчёты'
   },
   {
     title: 'Профиль',

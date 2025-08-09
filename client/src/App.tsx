@@ -54,10 +54,9 @@ import MyOffers from "@/pages/advertiser/MyOffers";
 import MyOffersDragDrop from "@/pages/advertiser/MyOffersDragDrop";
 import ReceivedOffers from "@/pages/advertiser/ReceivedOffers";
 import Finance from "@/pages/advertiser/Finance";
-import Analytics from "@/pages/advertiser/Analytics";
+// Removed: Analytics - functionality merged into AdvertiserAnalytics
 import { AdvertiserAnalytics } from "@/pages/advertiser/AdvertiserAnalytics";
-import LiveAnalytics from "@/pages/advertiser/LiveAnalytics";
-import AntiFraudAnalytics from "@/pages/advertiser/AntiFraudAnalytics";
+// Removed: LiveAnalytics and AntiFraudAnalytics - functionality merged
 import AdvertiserTeamManagement from "@/pages/advertiser/TeamManagement";
 import AntiFraud from "@/pages/advertiser/AntiFraud";
 import AdvertiserDocuments from "@/pages/advertiser/AdvertiserDocuments";
@@ -348,29 +347,7 @@ function Router() {
         </ProtectedRoute>
       </Route>
 
-      <Route path="/advertiser/live-analytics">
-        <ProtectedRoute allowedRoles={['advertiser']}>
-          <RoleBasedLayout>
-            <LiveAnalytics />
-          </RoleBasedLayout>
-        </ProtectedRoute>
-      </Route>
-
-      <Route path="/advertiser/antifraud-analytics">
-        <ProtectedRoute allowedRoles={['advertiser']}>
-          <RoleBasedLayout>
-            <AntiFraudAnalytics />
-          </RoleBasedLayout>
-        </ProtectedRoute>
-      </Route>
-      
-      <Route path="/advertiser/analytics-old">
-        <ProtectedRoute allowedRoles={['advertiser']}>
-          <RoleBasedLayout>
-            <Analytics />
-          </RoleBasedLayout>
-        </ProtectedRoute>
-      </Route>
+      {/* Removed: live-analytics, antifraud-analytics, analytics-old - functionality merged into main pages */}
       
       <Route path="/advertiser/team">
         <ProtectedRoute allowedRoles={['advertiser']}>
