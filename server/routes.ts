@@ -3895,11 +3895,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Отправить постбеки для каждого профиля
         for (const profile of profiles) {
           if (profile.enabled) {
-            // Заменить макросы в URL - минимальный формат для Кейтаро статистики
+            // Заменить макросы в URL - используем external_id для Кейтаро
             let postbackUrl = profile.endpointUrl;
             postbackUrl = postbackUrl.replace('{clickid}', clickId);
             postbackUrl = postbackUrl.replace('{click_id}', clickId); 
             postbackUrl = postbackUrl.replace('{client_id}', clickId);
+            postbackUrl = postbackUrl.replace('{external_id}', clickId);
             postbackUrl = postbackUrl.replace('{status}', '');
             postbackUrl = postbackUrl.replace('{revenue}', '');
             postbackUrl = postbackUrl.replace('{payout}', '');
