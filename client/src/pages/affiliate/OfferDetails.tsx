@@ -25,6 +25,7 @@ interface OfferDetails {
   currency: string;
   status: string;
   countries: string[];
+  payoutByGeo?: Record<string, number>; // Выплаты по странам
   creatives?: string;
   creativesUrl?: string;
   landingPages: Array<{
@@ -805,16 +806,27 @@ export default function OfferDetails() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {(offer.countries || []).map((country: string) => (
-              <div key={country} className="flex items-center gap-2 p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" title={getCountryName(country)}>
-                <span className="text-xl">{getCountryFlag(country)}</span>
-                <span className="font-medium text-sm">{getCountryName(country)}</span>
-                <Badge variant="secondary" className="ml-auto text-xs">
-                  {country.toUpperCase()}
-                </Badge>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {(offer.countries || []).map((country: string) => {
+              const countryPayout = offer.payoutByGeo?.[country.toLowerCase()] || offer.payoutByGeo?.[country.toUpperCase()] || parseFloat(offer.payout);
+              return (
+                <div key={country} className="flex items-center justify-between gap-3 p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" title={getCountryName(country)}>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className="text-xl">{getCountryFlag(country)}</span>
+                    <span className="font-medium text-sm">{getCountryName(country)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 font-medium">
+                      <DollarSign className="w-3 h-3 mr-1" />
+                      {countryPayout}{offer.currency}
+                    </Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      {country.toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
