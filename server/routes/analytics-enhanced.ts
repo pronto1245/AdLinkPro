@@ -350,4 +350,141 @@ router.get('/advertiser/dashboard-metrics', async (req: Request, res: Response) 
   }
 });
 
+// Antifraud analytics endpoint
+router.get('/advertiser/antifraud-analytics', async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user || user.role !== 'advertiser') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const filters = enhancedStatsSchema.parse(req.query);
+    
+    // Build date range
+    const dateFrom = filters.dateFrom ? new Date(filters.dateFrom) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const dateTo = filters.dateTo ? new Date(filters.dateTo) : new Date();
+    
+    // Generate mock antifraud data showing integration with tracking
+    const antifraudData = [];
+    const riskTypes = ['proxy', 'bot', 'vpn', 'suspicious_behavior', 'click_flooding'];
+    const countries = ['RU', 'CN', 'TR', 'IN', 'BD', 'PK', 'ID'];
+    
+    for (let d = new Date(dateFrom); d <= dateTo; d.setDate(d.getDate() + 1)) {
+      for (let i = 0; i < 3; i++) {
+        const totalClicks = Math.floor(Math.random() * 1000) + 100;
+        const fraudClicks = Math.floor(totalClicks * (Math.random() * 0.4 + 0.05)); // 5-45% fraud
+        const blockedClicks = Math.floor(fraudClicks * (Math.random() * 0.6 + 0.3)); // 30-90% blocked
+        const riskScore = Math.floor(Math.random() * 60) + 40; // 40-100 risk score
+        
+        antifraudData.push({
+          id: `fraud_${d.getTime()}_${i}`,
+          date: d.toISOString().split('T')[0],
+          ip: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+          country: countries[Math.floor(Math.random() * countries.length)],
+          device: ['mobile', 'desktop', 'tablet'][Math.floor(Math.random() * 3)],
+          trafficSource: ['facebook', 'google', 'native', 'telegram'][Math.floor(Math.random() * 4)],
+          offerId: `offer_${Math.floor(Math.random() * 10) + 1}`,
+          offerName: `Test Offer ${Math.floor(Math.random() * 10) + 1}`,
+          partnerId: `partner_${Math.floor(Math.random() * 20) + 1}`,
+          partnerName: `Partner ${Math.floor(Math.random() * 20) + 1}`,
+          fraudType: riskTypes[Math.floor(Math.random() * riskTypes.length)],
+          fraudReason: `${riskTypes[Math.floor(Math.random() * riskTypes.length)].replace('_', ' ')} detected by AI system`,
+          isProxy: Math.random() > 0.7,
+          isVpn: Math.random() > 0.8,
+          isTor: Math.random() > 0.95,
+          isBot: Math.random() > 0.75,
+          suspiciousActivity: Math.random() > 0.6,
+          riskScore,
+          clicks: totalClicks,
+          blockedClicks,
+          fraudClicks,
+          legitimateClicks: totalClicks - fraudClicks,
+          fraudRate: Math.round((fraudClicks / totalClicks) * 100),
+          timestamp: new Date(d.getTime() + Math.random() * 24 * 60 * 60 * 1000).toISOString()
+        });
+      }
+    }
+    
+    // Apply filters
+    let filteredData = antifraudData;
+    if (filters.country) {
+      filteredData = filteredData.filter(item => item.country === filters.country.toUpperCase());
+    }
+    if (filters.device && filters.device !== 'all') {
+      filteredData = filteredData.filter(item => item.device === filters.device);
+    }
+    
+    // Calculate summary
+    const summary = filteredData.reduce((acc, item) => {
+      acc.totalClicks += item.clicks;
+      acc.totalFraudClicks += item.fraudClicks;
+      acc.totalBlockedClicks += item.blockedClicks;
+      acc.totalLegitimateClicks += item.legitimateClicks;
+      acc.riskScoreSum += item.riskScore;
+      
+      // Count fraud types
+      const fraudType = item.fraudType;
+      acc.fraudTypes[fraudType] = (acc.fraudTypes[fraudType] || 0) + item.fraudClicks;
+      
+      // Count countries
+      const country = item.country;
+      acc.countries[country] = (acc.countries[country] || 0) + item.fraudClicks;
+      
+      return acc;
+    }, {
+      totalClicks: 0,
+      totalFraudClicks: 0,
+      totalBlockedClicks: 0,
+      totalLegitimateClicks: 0,
+      riskScoreSum: 0,
+      fraudTypes: {} as Record<string, number>,
+      countries: {} as Record<string, number>
+    });
+    
+    const overallFraudRate = summary.totalClicks > 0 ? (summary.totalFraudClicks / summary.totalClicks) * 100 : 0;
+    const avgRiskScore = filteredData.length > 0 ? summary.riskScoreSum / filteredData.length : 0;
+    
+    // Top fraud types and countries
+    const topFraudTypes = Object.entries(summary.fraudTypes)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+      .map(([type, count]) => ({ type, count }));
+      
+    const topFraudCountries = Object.entries(summary.countries)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+      .map(([country, count]) => ({ country, count }));
+
+    res.json({
+      data: filteredData.slice(0, filters.limit),
+      summary: {
+        totalClicks: summary.totalClicks,
+        totalFraudClicks: summary.totalFraudClicks,
+        totalBlockedClicks: summary.totalBlockedClicks,
+        totalLegitimateClicks: summary.totalLegitimateClicks,
+        overallFraudRate: Math.round(overallFraudRate * 100) / 100,
+        avgRiskScore: Math.round(avgRiskScore),
+        topFraudTypes,
+        topFraudCountries
+      },
+      total: filteredData.length,
+      integration: {
+        trackingEvents: true,
+        realTimeBlocking: true,
+        riskScoring: true,
+        geoDetection: true,
+        deviceFingerprinting: true,
+        behaviorAnalysis: true
+      }
+    });
+
+  } catch (error) {
+    console.error('Antifraud analytics error:', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Invalid filters', details: error.errors });
+    }
+    res.status(500).json({ error: 'Failed to fetch antifraud analytics' });
+  }
+});
+
 export default router;

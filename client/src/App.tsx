@@ -57,6 +57,7 @@ import Finance from "@/pages/advertiser/Finance";
 import Analytics from "@/pages/advertiser/Analytics";
 import { AdvertiserAnalytics } from "@/pages/advertiser/AdvertiserAnalytics";
 import LiveAnalytics from "@/pages/advertiser/LiveAnalytics";
+import AntiFraudAnalytics from "@/pages/advertiser/AntiFraudAnalytics";
 import AdvertiserTeamManagement from "@/pages/advertiser/TeamManagement";
 import AntiFraud from "@/pages/advertiser/AntiFraud";
 import AdvertiserDocuments from "@/pages/advertiser/AdvertiserDocuments";
@@ -332,6 +333,14 @@ function Router() {
         <ProtectedRoute allowedRoles={['advertiser']}>
           <RoleBasedLayout>
             <LiveAnalytics />
+          </RoleBasedLayout>
+        </ProtectedRoute>
+      </Route>
+
+      <Route path="/advertiser/antifraud-analytics">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <RoleBasedLayout>
+            <AntiFraudAnalytics />
           </RoleBasedLayout>
         </ProtectedRoute>
       </Route>

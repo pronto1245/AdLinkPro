@@ -15,7 +15,8 @@ import {
   ChevronLeft,
   Menu,
   MessageSquare,
-  Send
+  Send,
+  Eye
 } from 'lucide-react';
 
 const sidebarItems = [
@@ -72,6 +73,18 @@ const sidebarItems = [
     href: '/advertiser/antifraud',
     icon: Shield,
     description: 'Система защиты от фродового трафика'
+  },
+  {
+    title: 'Живая Аналитика',
+    href: '/advertiser/live-analytics',
+    icon: Eye,
+    description: 'Статистика трекинга в реальном времени'
+  },
+  {
+    title: 'Антифрод Аналитика',
+    href: '/advertiser/antifraud-analytics',
+    icon: Shield,
+    description: 'Анализ фродового трафика и угроз'
   },
   {
     title: 'Профиль',
