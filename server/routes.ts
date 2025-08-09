@@ -3393,35 +3393,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Формировать данные по вкладкам
       if (tab === 'overview') {
-        // Получить реальные офферы для отображения
-        const offerData = {};
-        for (const click of trackingClicks) {
-          const offerId = click.offer_id;
-          if (!offerData[offerId]) {
-            offerData[offerId] = { 
-              offerId, 
-              clicks: 0, 
-              conversions: 0, 
-              revenue: 0,
-              offerName: `Offer ${offerId.substring(0, 8)}` // Краткое имя оффера
-            };
-          }
-          offerData[offerId].clicks++;
-          if (click.status === 'conversion') {
-            offerData[offerId].conversions++;
-            offerData[offerId].revenue += parseFloat(click.revenue || '0');
-          }
-        }
-        
-        data = Object.values(offerData).map((offer: any) => ({
-          date: new Date().toISOString().split('T')[0],
-          offer: offer.offerName,
-          offerId: offer.offerId,
-          clicks: offer.clicks,
-          conversions: offer.conversions,
-          revenue: offer.revenue.toFixed(2),
-          cr: offer.clicks > 0 ? ((offer.conversions / offer.clicks) * 100).toFixed(2) + '%' : '0.00%',
-          epc: offer.clicks > 0 ? '$' + (offer.revenue / offer.clicks).toFixed(2) : '$0.00'
+        // Для overview показываем реальные клики с данными
+        data = trackingClicks.map(click => ({
+          id: click.id,
+          clickId: click.click_id || click.id,
+          partnerId: click.partner_id,
+          offerId: click.offer_id,
+          offer: `Offer ${click.offer_id.substring(0, 8)}`,
+          country: click.country || 'Unknown',
+          device: click.device || 'Unknown',
+          browser: click.browser || 'Unknown',
+          status: click.status || 'click',
+          revenue: parseFloat(click.revenue || '0').toFixed(2),
+          timestamp: click.created_at,
+          createdAt: click.created_at,
+          date: new Date(click.created_at).toLocaleDateString(),
+          time: new Date(click.created_at).toLocaleTimeString(),
+          geo: click.country || 'Unknown'
         }));
       } else if (tab === 'geography') {
         // Группировка по странам
@@ -3493,31 +3481,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
           epc: stats.clicks > 0 ? '$' + (stats.revenue / stats.clicks).toFixed(2) : '$0.00'
         }));
       } else if (tab === 'subid') {
-        // Группировка по SubID
-        const subIdStats = {};
-        trackingClicks.forEach(click => {
-          const sub1 = click.sub_1 || 'No SubID';
-          if (!subIdStats[sub1]) {
-            subIdStats[sub1] = { 
-              clicks: 0, conversions: 0, revenue: 0,
-              sub_1: click.sub_1, sub_2: click.sub_2, sub_3: click.sub_3, sub_4: click.sub_4,
-              sub_5: click.sub_5, sub_6: click.sub_6, sub_7: click.sub_7, sub_8: click.sub_8,
-              sub_9: click.sub_9, sub_10: click.sub_10, sub_11: click.sub_11, sub_12: click.sub_12,
-              sub_13: click.sub_13, sub_14: click.sub_14, sub_15: click.sub_15, sub_16: click.sub_16
-            };
-          }
-          subIdStats[sub1].clicks++;
-          if (click.status === 'conversion') {
-            subIdStats[sub1].conversions++;
-            subIdStats[sub1].revenue += parseFloat(click.revenue || '0');
-          }
-        });
-        
-        data = Object.values(subIdStats).map((stats: any) => ({
-          ...stats,
-          revenue: stats.revenue.toFixed(2),
-          cr: stats.clicks > 0 ? ((stats.conversions / stats.clicks) * 100).toFixed(2) + '%' : '0.00%',
-          epc: stats.clicks > 0 ? '$' + (stats.revenue / stats.clicks).toFixed(2) : '$0.00'
+        // Для SubID показываем индивидуальные клики с SubID данными
+        data = trackingClicks.map(click => ({
+          id: click.id,
+          clickId: click.click_id || click.id,
+          partnerId: click.partner_id,
+          offerId: click.offer_id,
+          country: click.country || 'Unknown',
+          device: click.device || 'Unknown',
+          browser: click.browser || 'Unknown',
+          status: click.status || 'click',
+          revenue: parseFloat(click.revenue || '0').toFixed(2),
+          timestamp: click.created_at,
+          createdAt: click.created_at,
+          sub_1: click.sub_1,
+          sub_2: click.sub_2,
+          sub_3: click.sub_3,
+          sub_4: click.sub_4,
+          sub_5: click.sub_5,
+          sub_6: click.sub_6,
+          sub_7: click.sub_7,
+          sub_8: click.sub_8,
+          sub_9: click.sub_9,
+          sub_10: click.sub_10,
+          sub_11: click.sub_11,
+          sub_12: click.sub_12,
+          sub_13: click.sub_13,
+          sub_14: click.sub_14,
+          sub_15: click.sub_15,
+          sub_16: click.sub_16
         }));
       } else if (tab === 'details') {
         // Детальные клики с partnerId и clickId

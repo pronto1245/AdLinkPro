@@ -419,13 +419,13 @@ export default function Statistics() {
                     <TableRow key={item.id}>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium">{item.date}</span>
-                          <span className="text-xs text-muted-foreground">{item.time}</span>
+                          <span className="font-medium">{new Date(item.timestamp || item.createdAt).toLocaleDateString()}</span>
+                          <span className="text-xs text-muted-foreground">{new Date(item.timestamp || item.createdAt).toLocaleTimeString()}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{item.offer || getOfferName(item.offerId)}</TableCell>
+                      <TableCell className="font-medium">{getOfferName(item.offerId)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{item.country || item.geo}</Badge>
+                        <Badge variant="outline">{item.country}</Badge>
                       </TableCell>
                       <TableCell className="font-mono text-xs">
                         <div className="flex items-center gap-2">
@@ -636,7 +636,7 @@ export default function Statistics() {
                 </TableHeader>
                 <TableBody>
                   {tableData.slice(0, 10).map((item: any) => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id || item.clickId}>
                       <TableCell className="font-mono text-xs text-blue-600">
                         {item.clickId}
                       </TableCell>
