@@ -3895,14 +3895,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Отправить постбеки для каждого профиля
         for (const profile of profiles) {
           if (profile.enabled) {
-            // Заменить макросы в URL - используем правильные значения для Кейтаро
+            // Заменить макросы в URL - минимальный формат для Кейтаро статистики
             let postbackUrl = profile.endpointUrl;
             postbackUrl = postbackUrl.replace('{clickid}', clickId);
             postbackUrl = postbackUrl.replace('{click_id}', clickId); 
             postbackUrl = postbackUrl.replace('{client_id}', clickId);
-            postbackUrl = postbackUrl.replace('{status}', '1');  // Кейтаро ожидает 1 для конверсии
-            postbackUrl = postbackUrl.replace('{revenue}', revenue || '0');
-            postbackUrl = postbackUrl.replace('{payout}', revenue || '0');
+            postbackUrl = postbackUrl.replace('{status}', '');
+            postbackUrl = postbackUrl.replace('{revenue}', '');
+            postbackUrl = postbackUrl.replace('{payout}', '');
+            
+            // Удаляем пустые параметры из URL
+            postbackUrl = postbackUrl.replace(/[&?]status=(&|$)/, '$1');
+            postbackUrl = postbackUrl.replace(/[&?]payout=(&|$)/, '$1');
+            postbackUrl = postbackUrl.replace(/[&?]revenue=(&|$)/, '$1');
+            postbackUrl = postbackUrl.replace(/&$/, ''); // убираем & в конце
             
             console.log(`📤 Sending postback to: ${postbackUrl}`);
             
