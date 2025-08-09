@@ -51,9 +51,9 @@ export default function Statistics() {
   const [filters, setFilters] = useState({
     dateFrom: '',
     dateTo: '',
-    offerId: '',
-    geo: '',
-    device: ''
+    offerId: 'all',
+    geo: 'all',
+    device: 'all'
   });
 
   const [showSubParams, setShowSubParams] = useState(false);
@@ -69,9 +69,9 @@ export default function Statistics() {
     setFilters({
       dateFrom: '',
       dateTo: '',
-      offerId: '',
-      geo: '',
-      device: ''
+      offerId: 'all',
+      geo: 'all',
+      device: 'all'
     });
   };
 
@@ -295,7 +295,7 @@ export default function Statistics() {
                   <SelectValue placeholder="Все офферы" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все офферы</SelectItem>
+                  <SelectItem value="all">Все офферы</SelectItem>
                   <SelectItem value="1">4RaBet India</SelectItem>
                   <SelectItem value="2">Crypto Trading Pro</SelectItem>
                   <SelectItem value="3">Dating VIP</SelectItem>
@@ -313,7 +313,7 @@ export default function Statistics() {
                   <SelectValue placeholder="Все страны" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все страны</SelectItem>
+                  <SelectItem value="all">Все страны</SelectItem>
                   <SelectItem value="IN">Индия</SelectItem>
                   <SelectItem value="US">США</SelectItem>
                   <SelectItem value="DE">Германия</SelectItem>
@@ -331,7 +331,7 @@ export default function Statistics() {
                   <SelectValue placeholder="Все устройства" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все устройства</SelectItem>
+                  <SelectItem value="all">Все устройства</SelectItem>
                   <SelectItem value="mobile">Мобильные</SelectItem>
                   <SelectItem value="desktop">Десктоп</SelectItem>
                   <SelectItem value="tablet">Планшеты</SelectItem>
@@ -390,7 +390,7 @@ export default function Statistics() {
                     ...prev,
                     dateFrom: '2025-08-04',
                     dateTo: '2025-08-04',
-                    offerId: ''
+                    offerId: 'all'
                   }));
                 }}
                 data-testid="quick-filter-yesterday"
@@ -417,7 +417,7 @@ export default function Statistics() {
           </div>
 
           {/* Показ активных фильтров */}
-          {(filters.dateFrom || filters.dateTo || filters.offerId || filters.geo || filters.device) && (
+          {(filters.dateFrom || filters.dateTo || (filters.offerId && filters.offerId !== 'all') || (filters.geo && filters.geo !== 'all') || (filters.device && filters.device !== 'all')) && (
             <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Filter className="h-4 w-4 text-blue-600" />
@@ -434,17 +434,17 @@ export default function Statistics() {
                     До: {filters.dateTo}
                   </Badge>
                 )}
-                {filters.offerId && (
+                {filters.offerId && filters.offerId !== 'all' && (
                   <Badge variant="secondary" className="bg-purple-100 text-purple-700">
                     Оффер: {getOfferName(filters.offerId)}
                   </Badge>
                 )}
-                {filters.geo && (
+                {filters.geo && filters.geo !== 'all' && (
                   <Badge variant="secondary" className="bg-green-100 text-green-700">
                     Гео: {filters.geo}
                   </Badge>
                 )}
-                {filters.device && (
+                {filters.device && filters.device !== 'all' && (
                   <Badge variant="secondary" className="bg-orange-100 text-orange-700">
                     Устройство: {filters.device}
                   </Badge>
