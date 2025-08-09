@@ -115,6 +115,7 @@ export default function Statistics() {
         
         if (response.status === 401 || response.status === 403) {
           // Ошибка авторизации - перенаправляем на логин
+          console.log('Auth error, redirecting to login');
           localStorage.removeItem('token');
           window.location.href = '/login';
           return;
