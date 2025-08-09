@@ -2,6 +2,7 @@
 import express from 'express';
 import { z } from 'zod';
 import { EventDto, AffiliateWebhookDto, PspWebhookDto } from '../enhanced-postback-dto';
+import { normalize, Status, mapExternalStatus, isValidTransition, getStatusDescription } from './domain/status';
 // Note: In production, these would import from the actual database schema
 // import { conversions, enhancedPostbackProfiles, postbackDeliveries } from '../shared/schema';
 // import { postbackWorker } from '../postback-worker';
@@ -21,18 +22,27 @@ apiRouter.post('/event', async (req, res) => {
       value: eventData.value
     });
     
-    // Create conversion record
+    // Create conversion record with normalized status
+    const conversionType = eventData.type === 'reg' ? 'reg' as const : 'purchase' as const;
+    const initialStatus = normalize(undefined, 'initiated', conversionType);
+    
     const conversion = {
       advertiserId: 1, // Extract from auth or context
       partnerId: 2,
       clickid: eventData.clickid,
-      type: eventData.type === 'reg' ? 'reg' as const : 'purchase' as const,
+      type: conversionType,
       txid: eventData.txid,
       revenue: eventData.value?.toString() || '0',
       currency: eventData.currency || 'USD',
-      conversionStatus: 'initiated' as const,
+      conversionStatus: initialStatus,
       details: eventData.meta || {},
     };
+    
+    console.log('📝 Conversion created with normalized status:', {
+      type: conversionType,
+      initialStatus,
+      statusDescription: getStatusDescription(initialStatus, 'ru')
+    });
     
     // Save to database
     // const savedConversion = await db.insert(conversions).values(conversion).returning();
@@ -77,12 +87,13 @@ apiRouter.post('/webhook/affiliate', async (req, res) => {
       payout: webhookData.payout
     });
     
-    // Update conversion status
-    await updateConversionStatus(webhookData.txid, webhookData.status, webhookData.payout);
+    // Update conversion status with normalization
+    const updateResult = await updateConversionStatus(webhookData.txid, webhookData.status, webhookData.payout, 'affiliate');
     
     res.json({
       success: true,
-      message: 'Webhook processed successfully'
+      message: 'Webhook processed successfully',
+      statusUpdate: updateResult
     });
     
   } catch (error) {
@@ -115,12 +126,13 @@ apiRouter.post('/webhook/psp', async (req, res) => {
       amount: webhookData.amount
     });
     
-    // Update conversion with payment status
-    await updateConversionStatus(webhookData.txid, webhookData.status, webhookData.amount);
+    // Update conversion with payment status using PSP normalization
+    const updateResult = await updateConversionStatus(webhookData.txid, webhookData.status, webhookData.amount, 'psp');
     
     res.json({
       success: true,
-      message: 'PSP webhook processed successfully'
+      message: 'PSP webhook processed successfully',
+      statusUpdate: updateResult
     });
     
   } catch (error) {
@@ -198,25 +210,65 @@ async function triggerPostbacks(conversion: any) {
   }
 }
 
-// Helper function to update conversion status
-async function updateConversionStatus(txid: string, status: string, amount?: number) {
+// Helper function to update conversion status with normalization
+async function updateConversionStatus(txid: string, newStatus: string, amount?: number, source: 'affiliate' | 'psp' = 'affiliate') {
   try {
-    console.log('🔄 Updating conversion status:', {
+    console.log('🔄 Updating conversion status with normalization:', {
       txid,
-      status,
-      amount
+      newStatus,
+      amount,
+      source
     });
+    
+    // In production, get current conversion from database
+    const currentConversion = {
+      type: 'purchase' as const, // Would be fetched from DB
+      status: 'pending' as Status // Would be fetched from DB
+    };
+    
+    // Map external status to internal status
+    const mappedStatus = mapExternalStatus(newStatus, source);
+    
+    // Normalize status transition
+    const normalizedStatus = normalize(currentConversion.status, mappedStatus, currentConversion.type);
+    
+    // Check if transition is valid
+    const isValid = isValidTransition(currentConversion.status, normalizedStatus, currentConversion.type);
+    
+    console.log('📊 Status normalization result:', {
+      currentStatus: currentConversion.status,
+      externalStatus: newStatus,
+      mappedStatus,
+      normalizedStatus,
+      isValidTransition: isValid,
+      statusDescription: getStatusDescription(normalizedStatus, 'ru')
+    });
+    
+    if (!isValid) {
+      console.warn('⚠️ Invalid status transition attempted:', {
+        from: currentConversion.status,
+        to: normalizedStatus,
+        type: currentConversion.type
+      });
+    }
     
     // In production, this would update the database
     // await db.update(conversions)
     //   .set({ 
-    //     conversionStatus: status,
-    //     revenue: amount?.toString() || '0',
+    //     conversionStatus: normalizedStatus,
+    //     revenue: amount?.toString() || currentConversion.revenue,
     //     statusUpdatedAt: new Date()
     //   })
     //   .where(eq(conversions.txid, txid));
     
-    console.log('✅ Conversion status updated successfully');
+    console.log('✅ Conversion status updated with normalization');
+    
+    return {
+      txid,
+      previousStatus: currentConversion.status,
+      newStatus: normalizedStatus,
+      isValidTransition: isValid
+    };
     
   } catch (error) {
     console.error('❌ Failed to update conversion status:', error);

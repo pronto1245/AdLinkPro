@@ -14,7 +14,7 @@ export const EventDto = z.object({
 export const AffiliateWebhookDto = z.object({
   type: z.literal("reg"),
   txid: z.string(),
-  status: z.enum(["approved","declined"]),
+  status: z.enum(["approved","declined","pending","hold"]),
   payout: z.number().optional().default(0),
   currency: z.string().length(3).optional(),
   raw: z.record(z.any()).optional(),
@@ -23,7 +23,7 @@ export const AffiliateWebhookDto = z.object({
 export const PspWebhookDto = z.object({
   type: z.literal("purchase"),
   txid: z.string(),
-  status: z.enum(["approved","declined","refunded","chargeback"]),
+  status: z.enum(["approved","declined","refunded","chargeback","success","failed","pending","reversed"]),
   amount: z.number().optional(),
   currency: z.string().length(3).optional(),
   raw: z.record(z.any()).optional(),
