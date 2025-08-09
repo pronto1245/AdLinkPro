@@ -761,98 +761,85 @@ export function AffiliatePostbacks() {
                           {testMutation.isPending ? 'Тестирование...' : 'Тест'}
                         </Button>
                         
-                        {/* КНОПКА РЕДАКТИРОВАНИЯ С ПРЯМЫМИ CSS СТИЛЯМИ */}
-                        <button
-                          type="button"
-                          style={{
-                            backgroundColor: '#2563eb',
-                            borderColor: '#2563eb',
-                            color: '#ffffff',
-                            border: '2px solid #2563eb',
-                            padding: '8px 16px',
-                            borderRadius: '6px',
-                            fontWeight: 'bold',
-                            fontSize: '14px',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                            cursor: 'pointer'
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#1d4ed8';
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#2563eb';
-                          }}
+                        {/* ПОЛНОСТЬЮ НОВАЯ КНОПКА РЕДАКТИРОВАНИЯ */}
+                        <div
                           onClick={() => {
-                            console.log('🆕 NEW EDIT BUTTON CLICKED:', profile.id);
+                            console.log('🔥 НОВАЯ КНОПКА РЕДАКТИРОВАНИЯ НАЖАТА:', profile.id);
                             setSelectedProfile(profile);
                             setIsEditModalOpen(true);
                           }}
-                          disabled={updateMutation.isPending}
-                          title="Редактировать профиль"
-                        >
-                          <Settings className="h-4 w-4 mr-2" />
-                          {updateMutation.isPending ? '🔄 ИЗМЕНЕНИЕ...' : '⚙️ ИЗМЕНИТЬ'}
-                        </button>
-
-                        {/* КНОПКА УДАЛЕНИЯ С ПРЯМЫМИ CSS СТИЛЯМИ */}
-                        <button
-                          type="button"
                           style={{
-                            backgroundColor: '#dc2626',
-                            borderColor: '#dc2626',
-                            color: '#ffffff',
-                            border: '2px solid #dc2626',
-                            padding: '8px 16px',
-                            borderRadius: '6px',
-                            fontWeight: 'bold',
-                            fontSize: '14px',
+                            background: 'linear-gradient(45deg, #2563eb, #3b82f6)',
+                            color: 'white',
+                            padding: '10px 20px',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
                             display: 'inline-flex',
                             alignItems: 'center',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                            cursor: 'pointer'
+                            gap: '8px',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            border: '3px solid #2563eb',
+                            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
+                            transition: 'all 0.2s ease'
                           }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#b91c1c';
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.05)';
+                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(37, 99, 235, 0.5)';
                           }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#dc2626';
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.3)';
                           }}
-                          onClick={async (event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
+                          title="Редактировать профиль"
+                        >
+                          <Settings size={16} />
+                          {updateMutation.isPending ? 'ИЗМЕНЕНИЕ...' : 'ИЗМЕНИТЬ'}
+                        </div>
+
+                        {/* ПОЛНОСТЬЮ НОВАЯ КНОПКА УДАЛЕНИЯ */}
+                        <div
+                          onClick={async () => {
+                            console.log('🔥 НОВАЯ КНОПКА УДАЛЕНИЯ НАЖАТА:', profile.id);
                             
-                            console.log('🆕🗑️ DELETE BUTTON CLICKED:', {
-                              profileId: profile.id,
-                              profileName: profile.name,
-                              mutationState: deleteMutation.isPending
-                            });
-                            
-                            if (deleteMutation.isPending) {
-                              console.log('🆕🗑️ DELETE already in progress, ignoring click');
-                              return;
-                            }
-                            
-                            const userConfirmed = confirm(`Вы действительно хотите удалить профиль "${profile.name}"?`);
-                            console.log('🆕🗑️ User confirmation:', userConfirmed);
-                            
-                            if (userConfirmed) {
+                            if (confirm(`Удалить профиль "${profile.name}"?`)) {
+                              console.log('🔥 Подтверждено удаление для:', profile.id);
                               try {
-                                console.log('🆕🗑️ Starting deletion process...');
                                 await deleteMutation.mutateAsync(profile.id);
-                                console.log('🆕🗑️ Deletion completed successfully');
+                                console.log('🔥 Удаление завершено успешно');
                               } catch (error) {
-                                console.error('🆕🗑️ Deletion failed:', error);
+                                console.error('🔥 Ошибка удаления:', error);
                               }
                             }
                           }}
-                          disabled={deleteMutation.isPending}
+                          style={{
+                            background: 'linear-gradient(45deg, #dc2626, #ef4444)',
+                            color: 'white',
+                            padding: '10px 20px',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            border: '3px solid #dc2626',
+                            boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.05)';
+                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(220, 38, 38, 0.5)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3)';
+                          }}
                           title="Удалить профиль"
                         >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          {deleteMutation.isPending ? '🔄 УДАЛЕНИЕ...' : '🗑️ УДАЛИТЬ ПРОФИЛЬ'}
-                        </button>
+                          <Trash2 size={16} />
+                          {deleteMutation.isPending ? 'УДАЛЕНИЕ...' : 'УДАЛИТЬ'}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
