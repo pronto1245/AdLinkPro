@@ -865,23 +865,20 @@ export default function OfferDetails() {
           <CardTitle>Условия и требования</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <h4 className="font-medium mb-2">KPI условия</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {offer?.kpiConditions?.minDeposit && (
-                <div className="p-3 bg-green-50 rounded-lg dark:bg-green-900/20">
-                  <p className="text-sm text-muted-foreground">Мин. депозит</p>
-                  <p className="font-semibold text-green-600">${offer.kpiConditions.minDeposit}</p>
+          {/* KPI условия от рекламодателя */}
+          {offer?.kpiConditions && (
+            <div>
+              <h4 className="font-medium mb-3">KPI условия</h4>
+              <div className="p-4 bg-amber-50 rounded-lg border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
+                <div className="text-sm whitespace-pre-wrap">
+                  {typeof offer.kpiConditions === 'object' 
+                    ? (offer.kpiConditions.ru || offer.kpiConditions.en || 'KPI условия не указаны')
+                    : (offer.kpiConditions || 'KPI условия не указаны')
+                  }
                 </div>
-              )}
-              {offer?.kpiConditions?.minAge && (
-                <div className="p-3 bg-blue-50 rounded-lg dark:bg-blue-900/20">
-                  <p className="text-sm text-muted-foreground">Мин. возраст</p>
-                  <p className="font-semibold text-blue-600">{offer.kpiConditions.minAge}+</p>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
+          )}
 
           <Separator />
 
@@ -921,22 +918,7 @@ export default function OfferDetails() {
             </>
           )}
 
-          {/* Запрещенные источники */}
-          {(offer?.restrictions?.forbidden_sources?.length > 0) && (
-            <>
-              <div>
-                <h4 className="font-medium mb-2">Запрещенные источники</h4>
-                <div className="flex flex-wrap gap-2">
-                  {offer?.restrictions?.forbidden_sources?.map((source: string) => (
-                    <Badge key={source} variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-                      {source}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <Separator />
-            </>
-          )}
+
         </CardContent>
       </Card>
     </div>
