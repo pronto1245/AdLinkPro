@@ -2236,21 +2236,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Mock comprehensive dashboard data following frontend interface
       const dashboardData = {
-        overview: {
+        metrics: {
+          // Основные метрики офферов
+          offersCount: 12,
           totalOffers: 12,
           activeOffers: 8,
           pendingOffers: 2,
           rejectedOffers: 2,
+          
+          // Финансовые метрики
           totalBudget: 50000,
           totalSpent: 15750,
+          revenue: 8900,
           advertiserRevenue: 8900,
+          
+          // Партнёры и активность
           partnersCount: 24,
           avgCR: 3.2,
           epc: 2.15,
+          
+          // Постбеки
           postbacksSent: 1245,
           postbacksReceived: 1187,
           postbackErrors: 58,
+          
+          // Фрод активность
           fraudActivity: 12,
+          fraudRate: 2.1,
+          
           // Изменения по сравнению с предыдущим периодом
           offersChange: 8.5,
           budgetChange: -3.2,
@@ -2263,13 +2276,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         chartData: {
           traffic: [
-            { date: "2025-07-30", clicks: 1200, uniqueClicks: 890 },
-            { date: "2025-07-31", clicks: 1450, uniqueClicks: 1020 },
-            { date: "2025-08-01", clicks: 1650, uniqueClicks: 1180 },
-            { date: "2025-08-02", clicks: 1340, uniqueClicks: 950 },
-            { date: "2025-08-03", clicks: 1580, uniqueClicks: 1150 },
-            { date: "2025-08-04", clicks: 1720, uniqueClicks: 1250 },
-            { date: "2025-08-05", clicks: 1890, uniqueClicks: 1380 }
+            { date: "2025-07-30", clicks: 1200, uniques: 890 },
+            { date: "2025-07-31", clicks: 1450, uniques: 1020 },
+            { date: "2025-08-01", clicks: 1650, uniques: 1180 },
+            { date: "2025-08-02", clicks: 1340, uniques: 950 },
+            { date: "2025-08-03", clicks: 1580, uniques: 1150 },
+            { date: "2025-08-04", clicks: 1720, uniques: 1250 },
+            { date: "2025-08-05", clicks: 1890, uniques: 1380 }
           ],
           conversions: [
             { date: "2025-07-30", leads: 45, registrations: 32, deposits: 18 },
@@ -2290,22 +2303,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             { date: "2025-08-05", spent: 2950, payouts: 2200 }
           ],
           postbacks: [
-            { date: "2025-07-30", sent: 180, successful: 172, failed: 8 },
-            { date: "2025-07-31", sent: 205, successful: 195, failed: 10 },
-            { date: "2025-08-01", sent: 235, successful: 224, failed: 11 },
-            { date: "2025-08-02", sent: 195, successful: 186, failed: 9 },
-            { date: "2025-08-03", sent: 220, successful: 210, failed: 10 },
-            { date: "2025-08-04", sent: 245, successful: 233, failed: 12 },
-            { date: "2025-08-05", sent: 265, successful: 252, failed: 13 }
+            { date: "2025-07-30", sent: 180, received: 172, errors: 8 },
+            { date: "2025-07-31", sent: 205, received: 195, errors: 10 },
+            { date: "2025-08-01", sent: 235, received: 224, errors: 11 },
+            { date: "2025-08-02", sent: 195, received: 186, errors: 9 },
+            { date: "2025-08-03", sent: 220, received: 210, errors: 10 },
+            { date: "2025-08-04", sent: 245, received: 233, errors: 12 },
+            { date: "2025-08-05", sent: 265, received: 252, errors: 13 }
           ],
           fraud: [
-            { date: "2025-07-30", detected: 15, blocked: 12 },
-            { date: "2025-07-31", detected: 18, blocked: 15 },
-            { date: "2025-08-01", detected: 22, blocked: 19 },
-            { date: "2025-08-02", detected: 16, blocked: 13 },
-            { date: "2025-08-03", detected: 20, blocked: 17 },
-            { date: "2025-08-04", detected: 25, blocked: 21 },
-            { date: "2025-08-05", detected: 28, blocked: 24 }
+            { date: "2025-07-30", blocked: 15, suspicious: 12 },
+            { date: "2025-07-31", blocked: 18, suspicious: 15 },
+            { date: "2025-08-01", blocked: 22, suspicious: 19 },
+            { date: "2025-08-02", blocked: 16, suspicious: 13 },
+            { date: "2025-08-03", blocked: 20, suspicious: 17 },
+            { date: "2025-08-04", blocked: 25, suspicious: 21 },
+            { date: "2025-08-05", blocked: 28, suspicious: 24 }
           ]
         },
         topOffers: [
@@ -2327,7 +2340,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           active: 8,
           hidden: 1,
           archived: 1
-        }
+        },
+        offerStatusDistribution: [
+          { name: 'Активные', value: 8, color: '#10B981' },
+          { name: 'На модерации', value: 2, color: '#F59E0B' },
+          { name: 'Скрытые', value: 1, color: '#6B7280' },
+          { name: 'Архивные', value: 1, color: '#EF4444' }
+        ]
       };
       
       res.json(dashboardData);

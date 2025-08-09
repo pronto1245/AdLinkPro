@@ -470,19 +470,19 @@ export default function AdvertiserDashboard() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">На модерации:</span>
-                    <Badge variant="secondary">{dashboard.offerStatusDistribution.pending}</Badge>
+                    <Badge variant="secondary">{dashboard.offerStatus.pending}</Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Активные:</span>
-                    <Badge variant="default">{dashboard.offerStatusDistribution.active}</Badge>
+                    <Badge variant="default">{dashboard.offerStatus.active}</Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Скрытые:</span>
-                    <Badge variant="outline">{dashboard.offerStatusDistribution.hidden}</Badge>
+                    <Badge variant="outline">{dashboard.offerStatus.hidden}</Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Архив:</span>
-                    <Badge variant="secondary">{dashboard.offerStatusDistribution.archived}</Badge>
+                    <Badge variant="secondary">{dashboard.offerStatus.archived}</Badge>
                   </div>
                 </div>
                 
@@ -491,12 +491,7 @@ export default function AdvertiserDashboard() {
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie
-                        data={[
-                          { name: 'Активные', value: dashboard.offerStatusDistribution.active },
-                          { name: 'На модерации', value: dashboard.offerStatusDistribution.pending },
-                          { name: 'Скрытые', value: dashboard.offerStatusDistribution.hidden },
-                          { name: 'Архив', value: dashboard.offerStatusDistribution.archived }
-                        ]}
+                        data={dashboard.offerStatusDistribution}
                         cx="50%"
                         cy="50%"
                         outerRadius={80}
