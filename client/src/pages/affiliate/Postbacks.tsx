@@ -733,56 +733,40 @@ export function AffiliatePostbacks() {
                           <Play className="h-3 w-3 mr-1" />
                           {testMutation.isPending ? 'Тестирование...' : 'Тест'}
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log('🔄 EDIT button clicked for profile:', profile);
-                            console.log('🔄 Current modal state:', { isEditModalOpen, selectedProfile });
-                            console.log('🔄 Setting selectedProfile and opening modal...');
+                        
+                        {/* НОВАЯ КНОПКА РЕДАКТИРОВАНИЯ */}
+                        <button
+                          type="button"
+                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={() => {
+                            console.log('🆕 NEW EDIT BUTTON CLICKED:', profile.id);
                             setSelectedProfile(profile);
                             setIsEditModalOpen(true);
-                            console.log('🔄 Modal state after set:', { isEditModalOpen: true, selectedProfile: profile });
                           }}
                           disabled={updateMutation.isPending}
                           title="Редактировать профиль"
-                          className={updateMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
-                          data-testid={`button-edit-${profile.id}`}
                         >
                           <Settings className="h-3 w-3 mr-1" />
-                          {updateMutation.isPending ? 'Обновление...' : 'Настройки'}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log('🗑️ DELETE button clicked for profile:', profile.id);
-                            console.log('🗑️ Profile details:', profile);
-                            console.log('🗑️ deleteMutation state:', { isPending: deleteMutation.isPending });
-                            
-                            if (confirm(`Вы уверены, что хотите удалить профиль "${profile.name}"?`)) {
-                              console.log('🗑️ User confirmed deletion, calling deleteMutation.mutate');
-                              try {
-                                deleteMutation.mutate(profile.id);
-                              } catch (error) {
-                                console.error('🗑️ Error calling deleteMutation.mutate:', error);
-                              }
-                            } else {
-                              console.log('🗑️ User cancelled deletion');
+                          {updateMutation.isPending ? 'Изменение...' : 'Изменить'}
+                        </button>
+
+                        {/* НОВАЯ КНОПКА УДАЛЕНИЯ */}
+                        <button
+                          type="button"
+                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={() => {
+                            console.log('🆕 NEW DELETE BUTTON CLICKED:', profile.id);
+                            if (confirm(`Удалить профиль "${profile.name}"?`)) {
+                              console.log('🆕 CONFIRMED DELETE, calling mutation...');
+                              deleteMutation.mutate(profile.id);
                             }
                           }}
                           disabled={deleteMutation.isPending}
                           title="Удалить профиль"
-                          className={`text-red-600 hover:text-red-700 hover:bg-red-50 ${deleteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          data-testid={`button-delete-${profile.id}`}
                         >
                           <Trash2 className="h-3 w-3 mr-1" />
                           {deleteMutation.isPending ? 'Удаление...' : 'Удалить'}
-                        </Button>
+                        </button>
                       </div>
                     </div>
                   </CardContent>
