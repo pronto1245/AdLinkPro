@@ -885,36 +885,58 @@ export default function OfferDetails() {
 
           <Separator />
 
-          <div>
-            <h4 className="font-medium mb-2">Разрешенные источники трафика</h4>
-            <div className="flex flex-wrap gap-2">
-              {offer?.kpiConditions?.allowedTrafficTypes?.map((type: string) => (
-                <Badge key={type} variant="secondary">{type}</Badge>
-              ))}
-            </div>
-          </div>
+          {/* Разрешенные источники трафика */}
+          {(offer?.trafficSources?.length > 0 || offer?.kpiConditions?.allowedTrafficTypes?.length > 0) && (
+            <>
+              <div>
+                <h4 className="font-medium mb-2">Разрешенные источники трафика</h4>
+                <div className="flex flex-wrap gap-2">
+                  {/* Используем trafficSources из схемы или fallback на kpiConditions */}
+                  {(offer?.trafficSources || offer?.kpiConditions?.allowedTrafficTypes || []).map((type: string) => (
+                    <Badge key={type} variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                      {type}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
 
-          <Separator />
+          {/* Разрешенные приложения/площадки */}
+          {(offer?.allowedApplications?.length > 0 || offer?.restrictions?.allowed_sources?.length > 0) && (
+            <>
+              <div>
+                <h4 className="font-medium mb-2">Разрешенные площадки</h4>
+                <div className="flex flex-wrap gap-2">
+                  {/* Используем allowedApplications из схемы или fallback на restrictions */}
+                  {(offer?.allowedApplications || offer?.restrictions?.allowed_sources || []).map((source: string) => (
+                    <Badge key={source} variant="outline" className="border-green-600 text-green-600 dark:border-green-400 dark:text-green-400">
+                      {source}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
 
-          <div>
-            <h4 className="font-medium mb-2">Запрещенные источники</h4>
-            <div className="flex flex-wrap gap-2">
-              {offer?.restrictions?.forbidden_sources?.map((source: string) => (
-                <Badge key={source} variant="destructive">{source}</Badge>
-              ))}
-            </div>
-          </div>
-
-          <Separator />
-
-          <div>
-            <h4 className="font-medium mb-2">Разрешенные площадки</h4>
-            <div className="flex flex-wrap gap-2">
-              {offer?.restrictions?.allowed_sources?.map((source: string) => (
-                <Badge key={source} variant="outline" className="border-green-600 text-green-600">{source}</Badge>
-              ))}
-            </div>
-          </div>
+          {/* Запрещенные источники */}
+          {(offer?.restrictions?.forbidden_sources?.length > 0) && (
+            <>
+              <div>
+                <h4 className="font-medium mb-2">Запрещенные источники</h4>
+                <div className="flex flex-wrap gap-2">
+                  {offer?.restrictions?.forbidden_sources?.map((source: string) => (
+                    <Badge key={source} variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                      {source}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
