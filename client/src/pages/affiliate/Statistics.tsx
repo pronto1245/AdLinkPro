@@ -91,7 +91,7 @@ export default function Statistics() {
         ...(filters.dateTo && { endDate: filters.dateTo })
       });
       
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
       console.log('Making request with token:', token ? token.substring(0, 20) + '...' : 'null');
       
       if (!token) {
@@ -132,7 +132,7 @@ export default function Statistics() {
   const { data: offers } = useQuery({
     queryKey: ['/api/partner/offers'],
     queryFn: async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
       if (!token) {
         window.location.href = '/login';
         return [];
