@@ -231,8 +231,9 @@ export default function AdvertiserDashboardNew() {
           </div>
         </div>
 
-        {/* Quick Actions - Moved under filters */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4">
+        {/* Combined section: Quick Actions + KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {/* Quick Actions */}
           <Link to="/analytics/traffic">
             <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" data-testid="button-quick-traffic">
               <Activity className="h-5 w-5" />
@@ -246,11 +247,8 @@ export default function AdvertiserDashboardNew() {
               <span className="text-sm font-medium">Конверсии</span>
             </Button>
           </Link>
-        </div>
 
-        {/* KPI Cards - aligned with Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4">
-
+          {/* KPI Cards */}
           <Card data-testid="card-fraud" className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-red-700 dark:text-red-300">Фрод-активность</CardTitle>
