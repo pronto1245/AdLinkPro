@@ -34,7 +34,7 @@ import OfferDetails from '@/pages/affiliate/OfferDetails';
 import SuperAdminSupport from "@/pages/super-admin/support";
 import UserAnalytics from "@/pages/super-admin/user-analytics";
 import PostbackManagementSuperAdmin from "@/pages/super-admin/postback-management";
-import AdvertiserDashboard from "@/pages/advertiser/simple-dashboard";
+import AdvertiserDashboardOld from "@/pages/advertiser/simple-dashboard";
 import AdvertiserProfile from '@/pages/advertiser/AdvertiserProfile';
 import AdvertiserFinances from '@/pages/advertiser/AdvertiserFinances';
 import AdvertiserOffers from '@/pages/advertiser/AdvertiserOffers';
@@ -45,7 +45,7 @@ import CreativesAndTools from "@/pages/affiliate/CreativesAndTools";
 import AffiliateTeamManagement from "@/pages/affiliate/TeamManagement";
 import PostbackManagementAffiliate from "@/pages/affiliate/PostbackManagement";
 import PartnerNotifications from "./pages/affiliate/PartnerNotifications";
-import AdvertiserDashboardNew from "@/pages/advertiser/AdvertiserDashboard";
+import { AdvertiserDashboard } from "@/pages/advertiser/AdvertiserDashboard";
 import OfferManagement from "@/pages/advertiser/OfferManagement";
 import CreateOffer from "@/pages/advertiser/CreateOffer";
 import AdvertiserOfferDetails from "@/pages/advertiser/OfferDetails";
@@ -386,7 +386,7 @@ function Router() {
       <Route path="/advertiser/dashboard">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <RoleBasedLayout>
-            <AdvertiserDashboardNew />
+            <AdvertiserDashboard />
           </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
@@ -394,7 +394,7 @@ function Router() {
       <Route path="/advertiser">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <RoleBasedLayout>
-            <AdvertiserDashboardNew />
+            <AdvertiserDashboard />
           </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
