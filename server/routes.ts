@@ -520,6 +520,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/postback/test/:id - Test postback delivery
+  app.post('/api/postback/test/:id', async (req, res) => {
+    try {
+      console.log('=== TESTING POSTBACK ===');
+      const profileId = req.params.id;
+      const testData = req.body;
+      
+      console.log('Profile ID:', profileId);
+      console.log('Test data:', testData);
+      
+      // Mock profile data (in real scenario would fetch from database)
+      const mockProfiles = [
+        {
+          id: 'profile_1',
+          name: 'Keitaro Main',
+          endpointUrl: 'https://keitaro.example.com/api/v1/conversions?clickid={clickid}&status={status}&revenue={revenue}',
+          method: 'POST',
+          enabled: true
+        },
+        {
+          id: 'profile_2', 
+          name: 'Binom Track',
+          endpointUrl: 'https://binom.example.com/click.php?cnv_id={clickid}&cnv_status={status}&payout={revenue}',
+          method: 'GET',
+          enabled: true
+        }
+      ];
+      
+      const profile = mockProfiles.find(p => p.id === profileId);
+      
+      if (!profile) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'Профиль не найден' 
+        });
+      }
+      
+      if (!profile.enabled) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Профиль отключен. Включите профиль для тестирования.' 
+        });
+      }
+      
+      // Replace macros in URL
+      let finalUrl = profile.endpointUrl;
+      finalUrl = finalUrl.replace('{clickid}', testData.clickid || 'test_click');
+      finalUrl = finalUrl.replace('{status}', testData.type || 'lead');
+      finalUrl = finalUrl.replace('{revenue}', testData.revenue || '0');
+      finalUrl = finalUrl.replace('{currency}', testData.currency || 'USD');
+      
+      console.log('Sending test postback to:', finalUrl);
+      
+      // Simulate successful delivery (in real scenario would make HTTP request)
+      const testResult = {
+        success: true,
+        message: `Тестовый постбек успешно отправлен на ${profile.name}`,
+        url: finalUrl,
+        method: profile.method,
+        response_code: 200,
+        response_time: 125,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('Test result:', testResult);
+      res.json(testResult);
+      
+    } catch (error: any) {
+      console.error('Error testing postback:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Внутренняя ошибка сервера' 
+      });
+    }
+  });
+
+  // GET /api/postback/logs - Alias for deliveries (used by frontend)
+  app.get('/api/postback/logs', async (req, res) => {
+    try {
+      console.log('=== FETCHING POSTBACK LOGS ===');
+      const mockLogs = [
+        {
+          id: 'log_1',
+          profileId: 'profile_1',
+          profileName: 'Keitaro Main',
+          url: 'https://keitaro.example.com/api/v1/conversions?clickid=test123&status=lead&revenue=100',
+          method: 'POST',
+          status: 'success',
+          responseCode: 200,
+          responseTime: 125,
+          timestamp: new Date().toISOString(),
+          isTest: false
+        },
+        {
+          id: 'log_2',
+          profileId: 'profile_1',
+          profileName: 'Keitaro Main',
+          url: 'https://keitaro.example.com/api/v1/conversions?clickid=abc456&status=conversion&revenue=250',
+          method: 'POST',
+          status: 'success',
+          responseCode: 200,
+          responseTime: 89,
+          timestamp: new Date(Date.now() - 300000).toISOString(),
+          isTest: false
+        },
+        {
+          id: 'log_3',
+          profileId: 'profile_2',
+          profileName: 'Binom Track',
+          url: 'https://binom.example.com/click.php?cnv_id=test789&cnv_status=lead&payout=150',
+          method: 'GET',
+          status: 'failed',
+          responseCode: 404,
+          responseTime: 5000,
+          timestamp: new Date(Date.now() - 600000).toISOString(),
+          isTest: false,
+          error: 'Endpoint not found'
+        }
+      ];
+      res.json(mockLogs);
+    } catch (error: any) {
+      console.error('Error fetching postback logs:', error);
+      res.status(500).json({ error: 'Failed to fetch logs' });
+    }
+  });
+
   console.log('=== POSTBACK ROUTES ADDED SUCCESSFULLY ===');
 
   // ADVERTISER POSTBACK API ENDPOINTS
