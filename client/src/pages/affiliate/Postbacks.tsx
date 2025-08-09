@@ -724,10 +724,14 @@ export function AffiliatePostbacks() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             console.log('🔄 EDIT button clicked for profile:', profile);
+                            console.log('🔄 Setting selectedProfile and opening modal...');
                             setSelectedProfile(profile);
                             setIsEditModalOpen(true);
+                            console.log('🔄 Modal should now be open');
                           }}
                           title="Редактировать профиль"
                           data-testid={`button-edit-${profile.id}`}
@@ -738,11 +742,22 @@ export function AffiliatePostbacks() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             console.log('🗑️ DELETE button clicked for profile:', profile.id);
-                            if (confirm('Вы уверены, что хотите удалить этот профиль?')) {
+                            console.log('🗑️ Profile details:', profile);
+                            console.log('🗑️ deleteMutation state:', { isPending: deleteMutation.isPending });
+                            
+                            if (confirm(`Вы уверены, что хотите удалить профиль "${profile.name}"?`)) {
                               console.log('🗑️ User confirmed deletion, calling deleteMutation.mutate');
-                              deleteMutation.mutate(profile.id);
+                              try {
+                                deleteMutation.mutate(profile.id);
+                              } catch (error) {
+                                console.error('🗑️ Error calling deleteMutation.mutate:', error);
+                              }
+                            } else {
+                              console.log('🗑️ User cancelled deletion');
                             }
                           }}
                           disabled={deleteMutation.isPending}
@@ -751,7 +766,7 @@ export function AffiliatePostbacks() {
                           data-testid={`button-delete-${profile.id}`}
                         >
                           <Trash2 className="h-3 w-3 mr-1" />
-                          Удалить
+                          {deleteMutation.isPending ? 'Удаление...' : 'Удалить'}
                         </Button>
                       </div>
                     </div>

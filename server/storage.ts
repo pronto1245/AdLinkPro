@@ -590,56 +590,65 @@ export class DatabaseStorage implements IStorage {
     this.createdPostbackProfiles.push(profile);
   }
 
-  deletePostbackProfile(profileId: string): boolean {
-    const index = this.createdPostbackProfiles.findIndex(p => p.id === profileId);
-    if (index !== -1) {
-      this.createdPostbackProfiles.splice(index, 1);
-      return true;
-    }
-    return false;
-  }
+
 
   updatePostbackProfile(id: string, updateData: any): any {
+    console.log('🔄 updatePostbackProfile called with:', { id, updateData });
+    
     // Проверяем в созданных профилях
     const createdIndex = this.createdPostbackProfiles.findIndex(p => p.id === id);
     if (createdIndex !== -1) {
+      console.log('🔄 Found profile in created profiles, updating...');
       this.createdPostbackProfiles[createdIndex] = { 
         ...this.createdPostbackProfiles[createdIndex], 
         ...updateData,
         updated_at: new Date().toISOString()
       };
+      console.log('🔄 Updated profile:', this.createdPostbackProfiles[createdIndex]);
       return this.createdPostbackProfiles[createdIndex];
     }
 
     // Проверяем в демо профилях
     const demoIndex = this.demoPostbackProfiles.findIndex(p => p.id === id);
     if (demoIndex !== -1) {
+      console.log('🔄 Found profile in demo profiles, updating...');
       this.demoPostbackProfiles[demoIndex] = { 
         ...this.demoPostbackProfiles[demoIndex], 
         ...updateData,
         updated_at: new Date().toISOString()
       };
+      console.log('🔄 Updated demo profile:', this.demoPostbackProfiles[demoIndex]);
       return this.demoPostbackProfiles[demoIndex];
     }
 
+    console.log('❌ Profile not found for update:', id);
     return null;
   }
 
   deletePostbackProfile(id: string): boolean {
+    console.log('🗑️ deletePostbackProfile called with:', id);
+    
     // Проверяем в созданных профилях
     const createdIndex = this.createdPostbackProfiles.findIndex(p => p.id === id);
     if (createdIndex !== -1) {
+      console.log('🗑️ Found profile in created profiles, deleting...');
       this.createdPostbackProfiles.splice(createdIndex, 1);
+      console.log('🗑️ Profile deleted successfully');
       return true;
     }
 
     // Проверяем в демо профилях
     const demoIndex = this.demoPostbackProfiles.findIndex(p => p.id === id);
     if (demoIndex !== -1) {
+      console.log('🗑️ Found profile in demo profiles, deleting...');
       this.demoPostbackProfiles.splice(demoIndex, 1);
+      console.log('🗑️ Demo profile deleted successfully');
       return true;
     }
 
+    console.log('❌ Profile not found for deletion:', id);
+    console.log('❌ Available created profiles:', this.createdPostbackProfiles.map(p => ({ id: p.id, name: p.name })));
+    console.log('❌ Available demo profiles:', this.demoPostbackProfiles.map(p => ({ id: p.id, name: p.name })));
     return false;
   }
 
