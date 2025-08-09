@@ -18,6 +18,7 @@ import { Plus, Minus, Upload, Image, Globe, DollarSign, Target, Settings, ArrowL
 import { useToast } from '@/hooks/use-toast';
 import { ObjectUploader } from '@/components/ObjectUploader';
 import { CreativeUploader } from '@/components/CreativeUploader';
+import { getCountryFlag, getCountryName } from '@/utils/countries';
 // import { useAuth } from '@/contexts/AuthContext';
 
 import { apiRequest } from '@/lib/queryClient';
@@ -354,9 +355,14 @@ function CountrySelect({ value, onChange, placeholder = "Выберите стр
           aria-expanded={open}
           className="w-full justify-between text-sm"
         >
-          {value
-            ? countries.find((country) => country.code === value)?.name || value
-            : placeholder}
+          {value ? (
+            <div className="flex items-center gap-2">
+              <span>{getCountryFlag(value)}</span>
+              <span>{getCountryName(value)}</span>
+            </div>
+          ) : (
+            placeholder
+          )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -374,7 +380,10 @@ function CountrySelect({ value, onChange, placeholder = "Выберите стр
                   setOpen(false);
                 }}
               >
-                {country.name}
+                <div className="flex items-center gap-2">
+                  <span>{getCountryFlag(country.code)}</span>
+                  <span>{country.name}</span>
+                </div>
                 <Check
                   className={`ml-auto h-4 w-4 ${
                     value === country.code ? "opacity-100" : "opacity-0"

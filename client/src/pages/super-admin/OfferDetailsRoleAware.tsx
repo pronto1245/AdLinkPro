@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CreativeUploader } from "@/components/CreativeUploader";
+import { getCountryFlag, getCountryName } from '@/utils/countries';
 
 interface OfferDetails {
   id: string;
@@ -62,27 +63,7 @@ interface OfferDetails {
   };
 }
 
-// Функция для получения названий стран по кодам
-function getCountryName(code: string): string {
-  const countries: Record<string, string> = {
-    'RU': 'Россия', 'US': 'США', 'DE': 'Германия', 'FR': 'Франция', 'IT': 'Италия',
-    'ES': 'Испания', 'UK': 'Великобритания', 'CA': 'Канада', 'AU': 'Австралия',
-    'BR': 'Бразилия', 'MX': 'Мексика', 'IN': 'Индия', 'JP': 'Япония', 'KR': 'Южная Корея',
-    'KZ': 'Казахстан', 'BY': 'Беларусь', 'UA': 'Украина', 'PL': 'Польша', 'TR': 'Турция'
-  };
-  return countries[code] || code;
-}
 
-// Функция для получения флага страны
-function getCountryFlag(code: string): string {
-  const flags: Record<string, string> = {
-    'RU': '🇷🇺', 'US': '🇺🇸', 'DE': '🇩🇪', 'FR': '🇫🇷', 'IT': '🇮🇹',
-    'ES': '🇪🇸', 'UK': '🇬🇧', 'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷',
-    'MX': '🇲🇽', 'IN': '🇮🇳', 'JP': '🇯🇵', 'KR': '🇰🇷', 'KZ': '🇰🇿',
-    'BY': '🇧🇾', 'UA': '🇺🇦', 'PL': '🇵🇱', 'TR': '🇹🇷'
-  };
-  return flags[code] || '🌍';
-}
 
 // Функция для получения свойств бейджа категории
 function getCategoryBadgeProps(category: string) {

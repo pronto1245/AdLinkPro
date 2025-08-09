@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { OfferLogo } from "@/components/ui/offer-logo";
+import { getCountryFlag, getCountryName } from '@/utils/countries';
 
 import { transformLandingUrl } from "@/lib/queryClient";
 
@@ -52,27 +53,7 @@ interface OfferDetails {
   };
 }
 
-// Функция для получения названий стран по кодам
-function getCountryName(code: string): string {
-  const countries: Record<string, string> = {
-    'RU': 'Россия', 'US': 'США', 'DE': 'Германия', 'FR': 'Франция', 'IT': 'Италия',
-    'ES': 'Испания', 'UK': 'Великобритания', 'CA': 'Канада', 'AU': 'Австралия',
-    'BR': 'Бразилия', 'MX': 'Мексика', 'IN': 'Индия', 'JP': 'Япония', 'KR': 'Южная Корея',
-    'KZ': 'Казахстан', 'BY': 'Беларусь', 'UA': 'Украина', 'PL': 'Польша', 'TR': 'Турция'
-  };
-  return countries[code] || code;
-}
 
-// Функция для получения флага страны
-function getCountryFlag(code: string): string {
-  const flags: Record<string, string> = {
-    'RU': '🇷🇺', 'US': '🇺🇸', 'DE': '🇩🇪', 'FR': '🇫🇷', 'IT': '🇮🇹',
-    'ES': '🇪🇸', 'UK': '🇬🇧', 'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷',
-    'MX': '🇲🇽', 'IN': '🇮🇳', 'JP': '🇯🇵', 'KR': '🇰🇷', 'KZ': '🇰🇿',
-    'BY': '🇧🇾', 'UA': '🇺🇦', 'PL': '🇵🇱', 'TR': '🇹🇷'
-  };
-  return flags[code] || '🌍';
-}
 
 // Функция для получения свойств бейджа категории
 function getCategoryBadgeProps(category: string) {
@@ -826,9 +807,9 @@ export default function OfferDetails() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {(offer.countries || []).map((country: string) => (
-              <div key={country} className="flex items-center gap-2 p-2 border rounded-lg">
-                <span className="text-lg">{countryNames[country] ? countryNames[country].split(' ')[0] : getCountryFlag(country)}</span>
-                <span className="font-medium">{countryNames[country] ? countryNames[country].split(' ')[1] : getCountryName(country)}</span>
+              <div key={country} className="flex items-center gap-2 p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" title={getCountryName(country)}>
+                <span className="text-xl">{getCountryFlag(country)}</span>
+                <span className="font-medium text-sm">{getCountryName(country)}</span>
                 <Badge variant="secondary" className="ml-auto text-xs">
                   {country.toUpperCase()}
                 </Badge>

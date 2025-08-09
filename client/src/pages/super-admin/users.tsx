@@ -18,6 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { insertUserSchema } from '@shared/schema';
 import { z } from 'zod';
 import { Plus, Search, Edit, Trash2, Shield, Users, DollarSign, Eye, Flag } from 'lucide-react';
+import { getCountryFlag, getCountryName } from '@/utils/countries';
 import { useLocation } from 'wouter';
 
 export default function UsersManagement() {
@@ -333,6 +334,7 @@ export default function UsersManagement() {
                       <TableRow>
                         <TableHead>{t('user')}</TableHead>
                         <TableHead>№ Партнера</TableHead>
+                        <TableHead>Гео</TableHead>
                         <TableHead>{t('role')}</TableHead>
                         <TableHead>{t('status')}</TableHead>
                         <TableHead>{t('kyc_status')}</TableHead>
@@ -369,6 +371,16 @@ export default function UsersManagement() {
                               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                                 #{user.partnerNumber}
                               </Badge>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {user.country ? (
+                              <div className="flex items-center gap-2" title={getCountryName(user.country)}>
+                                <span className="text-lg">{getCountryFlag(user.country)}</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{user.country}</span>
+                              </div>
                             ) : (
                               <span className="text-gray-400">—</span>
                             )}
