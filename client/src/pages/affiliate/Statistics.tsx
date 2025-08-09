@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -33,8 +34,17 @@ import {
   TrendingUp,
   MousePointer,
   Target,
-  DollarSign
+  DollarSign,
+  Eye,
+  X
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { formatCurrency, formatCR } from "@/utils/formatting";
 
 export default function Statistics() {
@@ -45,6 +55,9 @@ export default function Statistics() {
     geo: '',
     device: ''
   });
+
+  const [showSubParams, setShowSubParams] = useState(false);
+  const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
 
   // Mock data для демонстрации
   const mockStats = {
@@ -67,11 +80,17 @@ export default function Statistics() {
         sub3: "adset_123",
         sub4: "creative_456",
         sub5: "tier1",
-        sub6: "",
-        sub7: "",
-        sub8: "",
-        sub9: "",
-        sub10: "",
+        sub6: "premium_users",
+        sub7: "morning_traffic",
+        sub8: "mobile_app",
+        sub9: "retargeting",
+        sub10: "lookalike_audience",
+        sub11: "conversion_campaign",
+        sub12: "brand_safety",
+        sub13: "adult_18_35",
+        sub14: "hindi_language",
+        sub15: "gambling_allowed",
+        sub16: "final_tracker",
         clicks: 420,
         conversions: 18,
         revenue: 1080.00,
@@ -90,10 +109,16 @@ export default function Statistics() {
         sub4: "banner_321",
         sub5: "tier2",
         sub6: "abtest_A",
-        sub7: "",
-        sub8: "",
-        sub9: "",
-        sub10: "",
+        sub7: "evening_peak",
+        sub8: "desktop_web",
+        sub9: "cold_traffic",
+        sub10: "interest_targeting",
+        sub11: "lead_generation",
+        sub12: "financial_approved",
+        sub13: "adult_25_55",
+        sub14: "english_primary",
+        sub15: "crypto_legal",
+        sub16: "final_conversion",
         clicks: 380,
         conversions: 12,
         revenue: 1440.00,
@@ -111,11 +136,17 @@ export default function Statistics() {
         sub3: "placement_555",
         sub4: "video_888",
         sub5: "tier3",
-        sub6: "",
+        sub6: "weekend_special",
         sub7: "premium",
-        sub8: "",
-        sub9: "",
-        sub10: "",
+        sub8: "mobile_optimized",
+        sub9: "warm_audience",
+        sub10: "behavioral_targeting",
+        sub11: "dating_funnel",
+        sub12: "content_verified",
+        sub13: "adult_21_40",
+        sub14: "german_native",
+        sub15: "dating_legal",
+        sub16: "premium_conversion",
         clicks: 250,
         conversions: 7,
         revenue: 350.00,
@@ -133,11 +164,17 @@ export default function Statistics() {
         sub3: "channel_999",
         sub4: "post_777",
         sub5: "tier1",
-        sub6: "",
-        sub7: "",
+        sub6: "privacy_focused",
+        sub7: "night_hours",
         sub8: "security",
-        sub9: "",
-        sub10: "",
+        sub9: "tech_savvy",
+        sub10: "privacy_targeting",
+        sub11: "vpn_funnel",
+        sub12: "security_approved",
+        sub13: "adult_18_45",
+        sub14: "english_uk",
+        sub15: "vpn_legal",
+        sub16: "security_conversion",
         clicks: 190,
         conversions: 3,
         revenue: 180.00,
@@ -347,16 +384,12 @@ export default function Statistics() {
                 <TableHead>Оффер</TableHead>
                 <TableHead>Гео</TableHead>
                 <TableHead>Click ID</TableHead>
-                <TableHead>Sub1</TableHead>
-                <TableHead>Sub2</TableHead>
-                <TableHead>Sub3</TableHead>
-                <TableHead>Sub4</TableHead>
-                <TableHead>Sub5</TableHead>
                 <TableHead>Клики</TableHead>
                 <TableHead>Конверсии</TableHead>
                 <TableHead>Доход</TableHead>
                 <TableHead>CR</TableHead>
                 <TableHead>EPC</TableHead>
+                <TableHead>Sub-параметры</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -369,21 +402,6 @@ export default function Statistics() {
                   </TableCell>
                   <TableCell className="font-mono text-xs text-blue-600">
                     {stat.clickid}
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-600">
-                    {stat.sub1 || '-'}
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-600 max-w-32 truncate" title={stat.sub2}>
-                    {stat.sub2 || '-'}
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-600">
-                    {stat.sub3 || '-'}
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-600">
-                    {stat.sub4 || '-'}
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-600">
-                    {stat.sub5 || '-'}
                   </TableCell>
                   <TableCell className="text-blue-600 font-medium">
                     {stat.clicks.toLocaleString()}
@@ -400,12 +418,127 @@ export default function Statistics() {
                   <TableCell className="text-teal-600 font-medium">
                     {formatCurrency(stat.epc)}
                   </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedRowId(stat.id);
+                        setShowSubParams(true);
+                      }}
+                      data-testid={`button-sub-params-${stat.id}`}
+                      title="Просмотр sub-параметров"
+                    >
+                      <Eye className="h-3 w-3 mr-1" />
+                      Sub1-16
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      {/* Sub-параметры Dialog */}
+      <Dialog open={showSubParams} onOpenChange={setShowSubParams}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              Sub-параметры (Sub1-Sub16)
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSubParams(false)}
+                data-testid="button-close-sub-params"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+            <DialogDescription>
+              Детальная информация о sub-параметрах для выбранного клика
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedRowId && (
+            <div className="space-y-4">
+              {(() => {
+                const selectedStat = statsData.detailedStats.find(stat => stat.id === selectedRowId);
+                if (!selectedStat) return null;
+                
+                return (
+                  <>
+                    {/* Основная информация */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Click ID</Label>
+                        <div className="font-mono text-sm text-blue-600">{selectedStat.clickid}</div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Оффер</Label>
+                        <div className="text-sm font-medium">{selectedStat.offerName}</div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Дата</Label>
+                        <div className="text-sm">{selectedStat.date}</div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Гео</Label>
+                        <Badge variant="outline">{selectedStat.geo}</Badge>
+                      </div>
+                    </div>
+
+                    {/* Sub-параметры в сетке */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {Array.from({ length: 16 }, (_, i) => {
+                        const subKey = `sub${i + 1}` as keyof typeof selectedStat;
+                        const subValue = selectedStat[subKey] as string;
+                        
+                        return (
+                          <div key={`sub${i + 1}`} className="space-y-2">
+                            <Label className="text-sm font-medium text-gray-500">
+                              Sub{i + 1}
+                            </Label>
+                            <div className="p-2 border rounded-md bg-white dark:bg-gray-900 min-h-[40px] flex items-center">
+                              <span className="text-sm text-gray-700 dark:text-gray-300 break-all">
+                                {subValue || '-'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Статистика */}
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Клики</Label>
+                        <div className="text-lg font-bold text-blue-600">{selectedStat.clicks.toLocaleString()}</div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Конверсии</Label>
+                        <div className="text-lg font-bold text-green-600">{selectedStat.conversions}</div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Доход</Label>
+                        <div className="text-lg font-bold text-purple-600">{formatCurrency(selectedStat.revenue)}</div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">CR</Label>
+                        <div className="text-lg font-bold text-orange-600">{formatCR(selectedStat.cr / 100)}</div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">EPC</Label>
+                        <div className="text-lg font-bold text-teal-600">{formatCurrency(selectedStat.epc)}</div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
