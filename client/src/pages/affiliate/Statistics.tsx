@@ -89,14 +89,30 @@ export default function Statistics() {
         ...(filters.dateTo && { endDate: filters.dateTo })
       });
       
+      const token = localStorage.getItem('token');
+      console.log('Making request with token:', token ? token.substring(0, 20) + '...' : 'null');
+      
       const response = await fetch(`/api/partner/analytics?${params}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
       
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch analytics data');
+        const errorData = await response.json().catch(() => ({}));
+        console.log('Error response:', errorData);
+        
+        if (response.status === 401 && errorData.code === 'TOKEN_MISSING') {
+          // Токен отсутствует или недействителен - перенаправляем на логин
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+          return;
+        }
+        
+        throw new Error(errorData.error || 'Failed to fetch analytics data');
       }
       
       return response.json();

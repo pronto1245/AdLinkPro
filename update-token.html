@@ -7,7 +7,9 @@
     <h1>Обновление токена аутентификации</h1>
     <p>Нажмите кнопку чтобы обновить токен в localStorage:</p>
     
-    <button onclick="updateToken()">Обновить токен</button>
+    <div id="current-token" style="margin: 10px 0; padding: 10px; background: #f0f0f0; font-family: monospace;"></div>
+    
+    <button onclick="updateToken()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Обновить токен</button>
     
     <p id="status"></p>
     
@@ -15,12 +17,37 @@
         function updateToken() {
             const newToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA0YjA2Yzg3LWM2Y2YtNDQwOS1hZjY0LTNlMDViZjZjOWM3YyIsInVzZXJuYW1lIjoidGVzdF9hZmZpbGlhdGUiLCJyb2xlIjoiYWZmaWxpYXRlIiwiYWR2ZXJ0aXNlcklkIjpudWxsLCJpYXQiOjE3NTQ3NjQ0MDcsImV4cCI6MTc1NDg1MDgwN30.6Qt4VWftu7iQLnDtCzolxMDcmLDefrf4HEsPeXFK_xg';
             
+            // Очищаем старый токен
+            localStorage.removeItem('token');
+            
+            // Устанавливаем новый токен
             localStorage.setItem('token', newToken);
-            document.getElementById('status').innerHTML = '<span style="color: green;">✓ Токен обновлен успешно!</span>';
+            
+            document.getElementById('status').innerHTML = '<span style="color: green;">✓ Токен обновлен успешно! Перенаправление...</span>';
+            
+            // Принудительная очистка кеша
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                    });
+                });
+            }
             
             setTimeout(() => {
                 window.location.href = '/affiliate/statistics';
             }, 1000);
+        }
+        
+        // Автоматически показываем текущий токен для диагностики
+        window.onload = function() {
+            const currentToken = localStorage.getItem('token');
+            if (currentToken) {
+                document.getElementById('current-token').innerHTML = 
+                    '<strong>Текущий токен:</strong> ' + currentToken.substring(0, 50) + '...';
+            } else {
+                document.getElementById('current-token').innerHTML = '<strong>Токен не найден</strong>';
+            }
         }
     </script>
 </body>

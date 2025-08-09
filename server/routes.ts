@@ -70,7 +70,9 @@ const authenticateToken = async (req: express.Request, res: express.Response, ne
 
   if (!token) {
     console.log('No token provided - returning 401');
-    return res.sendStatus(401);
+    // Добавляем специальный заголовок для фронтенда
+    res.setHeader('X-Auth-Error', 'token-missing');
+    return res.status(401).json({ error: 'Authentication required', code: 'TOKEN_MISSING' });
   }
 
   try {
