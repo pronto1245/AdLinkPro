@@ -8027,9 +8027,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         return res.status(403).json({ error: 'Not authorized' });
       }
 
-      if (request.status !== 'pending') {
-        return res.status(400).json({ error: 'Request already processed' });
-      }
+      // Allow status changes - advertisers can approve rejected requests or reject approved ones
 
       // Update the access request
       const [updatedRequest] = await db.update(offerAccessRequests)
@@ -8042,47 +8040,48 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         .where(eq(offerAccessRequests.id, requestId))
         .returning();
 
-      // If approved, create/update partner-offer relationship
-      if (action === 'approve') {
-        // Check if partner-offer relationship already exists
-        const existingPartnerOffer = await db.select()
-          .from(partnerOffers)
+      // Update partner-offer relationship based on action
+      const isApproved = action === 'approve';
+      
+      // Check if partner-offer relationship already exists
+      const existingPartnerOffer = await db.select()
+        .from(partnerOffers)
+        .where(
+          and(
+            eq(partnerOffers.partnerId, request.partnerId),
+            eq(partnerOffers.offerId, request.offerId)
+          )
+        );
+
+      if (existingPartnerOffer.length > 0) {
+        // Update existing relationship
+        await db.update(partnerOffers)
+          .set({ 
+            isApproved: isApproved,
+            updatedAt: new Date()
+          })
           .where(
             and(
               eq(partnerOffers.partnerId, request.partnerId),
               eq(partnerOffers.offerId, request.offerId)
             )
           );
-
-        if (existingPartnerOffer.length > 0) {
-          // Update existing relationship
-          await db.update(partnerOffers)
-            .set({ 
-              isApproved: true,
-              updatedAt: new Date()
-            })
-            .where(
-              and(
-                eq(partnerOffers.partnerId, request.partnerId),
-                eq(partnerOffers.offerId, request.offerId)
-              )
-            );
-        } else {
-          // Create new relationship
-          await db.insert(partnerOffers)
-            .values({
-              id: randomUUID(),
-              partnerId: request.partnerId,
-              offerId: request.offerId,
-              isApproved: true,
-              createdAt: new Date(),
-              updatedAt: new Date()
-            });
-        }
-
-        // Log successful approval
-        console.log(`Access request ${requestId} approved. Partner ${request.partnerId} granted access to offer ${request.offerId}`);
+      } else {
+        // Create new relationship
+        await db.insert(partnerOffers)
+          .values({
+            id: randomUUID(),
+            partnerId: request.partnerId,
+            offerId: request.offerId,
+            isApproved: isApproved,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
       }
+
+      // Log the action
+      console.log(`Access request ${requestId} ${action}d. Partner ${request.partnerId} ${isApproved ? 'granted' : 'denied'} access to offer ${request.offerId}`);
+      console.log('Ответ на запрос доступа:', requestId, 'action:', action, 'advertiserId:', userId);
 
       res.json(updatedRequest);
     } catch (error) {
