@@ -1464,6 +1464,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/v2', (await import('./api-routes')).default);
   console.log('=== LEGACY API V2 ROUTES MAINTAINED ===');
   
+  // Queue monitoring endpoint
+  app.get('/api/queue/stats', async (req, res) => {
+    try {
+      const { getQueueStats } = await import('./queue/enqueue.js');
+      const bullmqStats = await getQueueStats();
+      
+      // Also get autonomous processor stats
+      const { getProcessingStats } = await import('./queue/processor.js');
+      const processorStats = getProcessingStats();
+      
+      res.json({
+        bullmq: bullmqStats,
+        processor: processorStats,
+        mode: bullmqStats.error ? 'autonomous' : 'bullmq'
+      });
+    } catch (error) {
+      res.json({
+        bullmq: {
+          waiting: 0,
+          active: 0,
+          completed: 0,
+          failed: 0,
+          total: 0,
+          error: 'BullMQ unavailable'
+        },
+        processor: {
+          processedTasks: 0,
+          successfulDeliveries: 0,
+          failedDeliveries: 0,
+          successRate: 0,
+          timestamp: new Date().toISOString()
+        },
+        mode: 'autonomous'
+      });
+    }
+  });
+  
   // Move middleware setup after team routes (so team routes work without middleware)
   // Security middleware disabled for development to fix team functionality
   console.log('=== SKIPPING MIDDLEWARE SETUP FOR TEAM DEBUGGING ===');
