@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -202,18 +203,30 @@ const defaultProfile: Partial<PostbackProfile> = {
 };
 
 export function AffiliatePostbacks() {
-  // Debug fetch calls
+  // Debug fetch calls with stack trace
   React.useEffect(() => {
     const originalFetch = window.fetch;
     window.fetch = function(url: RequestInfo | URL, init?: RequestInit) {
-      if (init && init.method && typeof init.method !== 'string') {
-        console.error('❌ BAD METHOD TYPE:', {
-          url,
+      if (init && init.method !== undefined) {
+        console.log('🔍 FETCH CALL:', {
+          url: String(url),
           method: init.method,
           methodType: typeof init.method,
-          fullInit: init
+          methodValue: JSON.stringify(init.method),
+          stack: new Error().stack
         });
-        throw new Error(`Invalid method type: ${typeof init.method}. Expected string, got ${typeof init.method}`);
+        
+        if (typeof init.method !== 'string') {
+          console.error('❌ BAD METHOD TYPE:', {
+            url,
+            method: init.method,
+            methodType: typeof init.method,
+            fullInit: init,
+            stack: new Error().stack
+          });
+          debugger; // Pause in debugger
+          throw new Error(`Invalid method type: ${typeof init.method}. Expected string, got ${typeof init.method}`);
+        }
       }
       return originalFetch.call(this, url, init);
     };
@@ -234,55 +247,21 @@ export function AffiliatePostbacks() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch postback profiles
+  // Fetch postback profiles using default queryFn
   const { data: profiles, isLoading } = useQuery({
-    queryKey: ['/api/postback/profiles'],
-    queryFn: async () => {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/postback/profiles', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) throw new Error('Failed to fetch profiles');
-      return response.json();
-    }
+    queryKey: ['/api/postback/profiles']
   });
 
-  // Fetch delivery logs
+  // Fetch delivery logs using default queryFn
   const { data: deliveries } = useQuery({
-    queryKey: ['/api/postback/logs'],
-    queryFn: async () => {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/postback/logs', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) throw new Error('Failed to fetch deliveries');
-      return response.json();
-    }
+    queryKey: ['/api/postback/logs']
   });
 
   // Create profile mutation
   const createMutation = useMutation({
     mutationFn: async (profile: Partial<PostbackProfile>) => {
-      console.log('Creating profile:', profile);
-      const token = localStorage.getItem('auth_token');
-      console.log('Token:', token ? 'present' : 'missing');
-      const response = await fetch('/api/postback/profiles', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(profile)
-      });
-      console.log('Response status:', response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Create failed:', errorText);
-        throw new Error(`Failed to create profile: ${response.status}`);
-      }
-      const result = await response.json();
-      console.log('Create success:', result);
-      return result;
+      console.log('Creating profile via apiRequest:', profile);
+      return await apiRequest('/api/postback/profiles', 'POST', profile);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
@@ -303,10 +282,8 @@ export function AffiliatePostbacks() {
   // Update profile mutation
   const updateMutation = useMutation({
     mutationFn: async (profileData: any) => {
-      console.log('Updating profile:', profileData);
-      const token = localStorage.getItem('auth_token');
+      console.log('Updating profile via apiRequest:', profileData);
       
-      // Ensure we have proper object structure
       if (!profileData || typeof profileData !== 'object') {
         throw new Error('Invalid profile data');
       }
@@ -317,29 +294,7 @@ export function AffiliatePostbacks() {
         throw new Error('Profile ID is required');
       }
       
-      console.log('Profile ID:', id);
-      console.log('Profile data to send:', profile);
-      
-      const response = await fetch(`/api/postback/profiles/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(profile)
-      });
-      
-      console.log('Update response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Update failed:', errorText);
-        throw new Error(`Failed to update profile: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('Update success:', result);
-      return result;
+      return await apiRequest(`/api/postback/profiles/${id}`, 'PUT', profile);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
@@ -360,21 +315,8 @@ export function AffiliatePostbacks() {
   // Delete profile mutation
   const deleteMutation = useMutation({
     mutationFn: async (profileId: string) => {
-      console.log('Deleting profile:', profileId);
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/postback/profiles/${profileId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      console.log('Delete response status:', response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Delete failed:', errorText);
-        throw new Error(`Failed to delete profile: ${response.status}`);
-      }
-      const result = await response.json();
-      console.log('Delete success:', result);
-      return result;
+      console.log('Deleting profile via apiRequest:', profileId);
+      return await apiRequest(`/api/postback/profiles/${profileId}`, 'DELETE');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
@@ -393,29 +335,8 @@ export function AffiliatePostbacks() {
   // Test postback mutation
   const testMutation = useMutation({
     mutationFn: async ({ profileId, testData: data }: { profileId: string, testData: any }) => {
-      console.log('Testing postback:', { profileId, testData: data });
-      const token = localStorage.getItem('auth_token');
-      
-      const response = await fetch(`/api/postback/test/${profileId}`, {
-        method: 'POST', // Explicit string
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-      
-      console.log('Test response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Test failed:', errorText);
-        throw new Error(`Failed to test postback: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('Test success:', result);
-      return result;
+      console.log('Testing postback via apiRequest:', { profileId, testData: data });
+      return await apiRequest(`/api/postback/test/${profileId}`, 'POST', data);
     },
     onSuccess: (data) => {
       toast({ 
