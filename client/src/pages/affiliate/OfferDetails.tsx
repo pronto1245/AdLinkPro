@@ -731,6 +731,9 @@ export default function OfferDetails() {
               <div>
                 <p className="font-semibold text-green-600">${offer?.payout || '0'} {offer?.currency || 'USD'}</p>
                 <p className="text-sm text-muted-foreground">Выплата за {(offer?.payoutType || 'CPA').toUpperCase()}</p>
+                <p className="text-xs text-green-600 mt-1">
+                  {offer?.createdAt ? new Date(offer.createdAt).toLocaleDateString('ru-RU') : ''}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg dark:bg-blue-900/20">
@@ -750,13 +753,21 @@ export default function OfferDetails() {
               </div>
             </div>
             <div className="flex items-center gap-2 p-3 bg-orange-50 rounded-lg dark:bg-orange-900/20">
-              <Calendar className="w-5 h-5 text-orange-600" />
-              <div>
-                <p className="font-semibold text-orange-600">
-                  {offer?.createdAt ? new Date(offer.createdAt).toLocaleDateString('ru-RU') : ''}
-                </p>
-                <p className="text-sm text-muted-foreground">Дата создания</p>
+              <FileText className="w-5 h-5 text-orange-600" />
+              <div className="flex-1">
+                <p className="font-semibold text-orange-600">Креативы</p>
+                <p className="text-sm text-muted-foreground">Архив с материалами</p>
               </div>
+              {isApproved && (
+                <Button
+                  onClick={() => downloadCreatives(offer.creatives || offer.creativesUrl)}
+                  size="sm"
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                  title="Скачать креативы"
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
@@ -764,38 +775,7 @@ export default function OfferDetails() {
 
 
 
-      {/* Креативы - только для одобренных */}
-      {isApproved ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Креативы
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-gray-900/50">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <h4 className="font-medium">Архив с креативами</h4>
-                  <p className="text-sm text-muted-foreground">ZIP архив с рекламными материалами</p>
-                </div>
-              </div>
-              <Button
-                onClick={() => downloadCreatives(offer.creatives || offer.creativesUrl)}
-                className="bg-green-600 hover:bg-green-700 text-white"
-                title="Скачать креативы"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Скачать
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
+
 
       {/* Гео-таргетинг */}
       <Card>
