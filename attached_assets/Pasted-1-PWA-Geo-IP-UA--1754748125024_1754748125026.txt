@@ -1,0 +1,328 @@
+1) Цель
+Фиксировать клики и события PWA/лендингов.
+
+Обогащать визиты (Geo/IP/UA), считать уникальности.
+
+Передавать события в трекер S2S-постбеками с ретраями и логами.
+
+Поддержать «свои значения» в sub2 (формат key-value|key2-value2).
+
+2) Роли и доступ
+Owner/Admin — полный доступ.
+
+рекламодатель — управляет своими партнерами/кампаниями/офферами/потоками и постбеками в рамках своих сущностей.
+партнер -управляет своими кампаниями/офферами/потоками и постбеками в рамках 
+3) Архитектура
+Front (лендинги/PWA): сбор клика/событий и отправка на 1st-party эндпоинт /event.
+
+Track Backend: сервис с эндпоинтами /click, /event, обогащением, БД, очередью и доставкой постбеков.
+
+DB: PostgreSQL.
+
+Queue/Worker: Redis Streams/RabbitMQ/SQS — отправка постбеков с ретраями.
+
+Admin UI: раздел «Интеграции → Постбеки» (создание/тест/логи).
+
+4) Поток данных (логика)
+Клик по смарт-ссылке
+
+URL: https://trk.domain.com/click?campaign_id=...&offer_id=...&flow_id=...&sub1=...&sub2=geo-TR|dev-mobile|abtest-B&utm_source=...
+
+Бэк генерирует clickid (UUID) → пишет click (сырые метки, IP, UA) → делает 302-редирект на LP поставщика, добавив clickid и сабы/utm.
+
+События на фронте
+Скрипт на лендинге:
+
+Сохраняет clickid и visitor_code (UUID) в cookie+localStorage.
+
+Отправляет open, lp_click, reg(txid), deposit(amount,currency,txid), lp_leave(time_on_page_ms) на /event.
+
+Приём /event на бэке
+
+Валидация полей; парс sub2 в JSON-карту.
+
+Обогащение: GeoIP/ASN/Proxy, UA→OS/Browser/Device, время.
+
+Запись в events.
+
+Маппинг статуса под трекер (напр. reg→lead, deposit→sale).
+
+Постановка задачи в очередь доставки постбека (с профилем по области).
+
+Worker доставки
+
+Формирует запрос (GET/POST), подставляет переменные, HMAC-подпись (если включена).
+
+Таймаут, ретраии по backoff.
+
+Логирует каждую попытку в postback_deliveries.
+
+5) Front: требования и вставка скрипта
+На всех LP/PWA подключить сниппет (до </body>).
+
+Обязательные события: open (при первом открытии), lp_leave (при уходе), lp_click (по клику на CTA), reg, deposit.
+
+Пример (сокр.):
+
+<script>
+(function(){
+  const u=new URL(location.href), get=k=>u.searchParams.get(k);
+  const cid=get('clickid')||localStorage.getItem('clickid'); if(cid) localStorage.setItem('clickid',cid);
+  const visitor=localStorage.getItem('visitor_code')||crypto.randomUUID(); localStorage.setItem('visitor_code',visitor);
+  const base={ clickid:cid, visitor_code:visitor, campaign_id:get('campaign_id'), source_id:get('source_id'),
+               flow_id:get('flow_id'), offer_id:get('offer_id'), landing_id:get('landing_id'),
+               ad_campaign_id:get('ad_campaign_id'), external_id:get('external_id'), creative_id:get('creative_id'),
+               sub1:get('sub1'), sub2:get('sub2'), sub3:get('sub3'), sub4:get('sub4'), sub5:get('sub5'),
+               sub6:get('sub6'), sub7:get('sub7'), sub8:get('sub8'), sub9:get('sub9'), sub10:get('sub10'),
+               site:location.hostname, referrer:document.referrer||null };
+  const started=performance.now();
+  const meta=()=>({ user_agent:navigator.userAgent, lang:navigator.language,
+    tz:Intl.DateTimeFormat().resolvedOptions().timeZone||null, screen:`${screen.width}x${screen.height}`,
+    connection:navigator.connection?.effectiveType||null, device_type:/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)?'mobile':'desktop', ts_client:Date.now() });
+  async function send(type,extra={}){ const p={type,...base,...meta(),...extra};
+    try{ await (navigator.sendBeacon&&navigator.sendBeacon('/event',new Blob([JSON.stringify(p)],{type:'application/json'}))) ||
+      fetch('/event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p),keepalive:true}); }catch(e){}}
+  send('open'); window.trackLpClick=()=>send('lp_click');
+  window.trackReg=txid=>send('reg',{txid});
+  window.trackDeposit=(amt,c='USD',txid)=>send('deposit',{revenue_deposit:amt,currency:c,txid});
+  addEventListener('beforeunload',()=>send('lp_leave',{time_on_page_ms:Math.round(performance.now()-started)}));
+})();
+</script>
+6) API бэка
+6.1 GET /click
+Генерирует clickid (если не передан).
+
+Пишет запись в clicks.
+
+302 на LP поставщика с добавлением clickid, sub1..sub10, utm_*.
+
+Логи: IP, UA, ts.
+
+6.2 POST /event (JSON)
+Валидация:
+
+type ∈ {open, lp_click, reg, deposit, sale, lead, lp_leave}
+
+clickid обязателен
+
+sub2 ≤ 200 символов; пары key-value, разделитель |, внутри -; URL-decoded
+
+Обогащение:
+
+IP: x-forwarded-for → GeoIP2 country/region/city, ASN/ISP, is_proxy
+
+UA: browser_name/version, os_name/version, device_model, device_type
+
+Время: ts_server=now()
+
+Идемпотентность:
+
+Ключ события: (clickid, type, coalesce(txid,'-'))
+
+Повтор по тому же ключу → не записывать второй раз и не слать постбек.
+
+Запись в events.
+
+Маппинг статуса и постановка задачи на доставку постбека (если профиль активен и фильтры прошли).
+
+7) Sub2 — «свои значения»
+Формат строки: key-value|key2-value2|... (URL-encode на фронте, decode на бэке).
+
+Конфиг допустимых ключей (ENV): SUB2_ALLOWED_KEYS=geo,dev,src,adset,lang,tier,abtest,cohort,pp,fpr,seg
+
+Лимиты: до 8 пар, общая длина ≤ 200.
+
+В БД хранить: sub2_raw (TEXT) и sub2_map (JSONB).
+
+Пример: geo-TR|dev-mobile|abtest-B → {"geo":"TR","dev":"mobile","abtest":"B"}.
+
+8) Схема БД (PostgreSQL)
+-- клики
+CREATE TABLE clicks (
+  clickid TEXT PRIMARY KEY,
+  visitor_code TEXT,
+  campaign_id BIGINT, source_id BIGINT, flow_id BIGINT, offer_id BIGINT, landing_id BIGINT,
+  ad_campaign_id TEXT, external_id TEXT, creative_id TEXT,
+  site TEXT, referrer TEXT,
+  sub1 TEXT, sub2_raw TEXT, sub2_map JSONB,
+  sub3 TEXT, sub4 TEXT, sub5 TEXT, sub6 TEXT, sub7 TEXT, sub8 TEXT, sub9 TEXT, sub10 TEXT,
+  ip INET, country_iso TEXT, region TEXT, city TEXT,
+  isp TEXT, operator TEXT, is_proxy BOOLEAN,
+  user_agent TEXT, browser_name TEXT, browser_version TEXT,
+  os_name TEXT, os_version TEXT, device_model TEXT, device_type TEXT, connection TEXT, lang TEXT,
+  ts TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ix_clicks_campaign_ts ON clicks (campaign_id, ts);
+CREATE INDEX ix_clicks_sub2_map ON clicks USING GIN (sub2_map);
+
+-- события
+CREATE TABLE events (
+  id BIGSERIAL PRIMARY KEY,
+  clickid TEXT REFERENCES clicks(clickid),
+  type TEXT NOT NULL,                         -- open, reg, deposit, ...
+  revenue NUMERIC(18,6), currency CHAR(3), txid TEXT,
+  time_on_page_ms INT,
+  ts TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (clickid, type, coalesce(txid, ''))
+);
+CREATE INDEX ix_events_type_ts ON events(type, ts);
+9) Постбеки (профили и логика)
+9.1 Страница «Интеграции → Постбеки»
+Список профилей: название, тип, область (Global/Кампания/Оффер/Поток), id-параметр (subid/clickid), метод (GET/POST), включено, последняя доставка.
+
+Форма профиля:
+
+Название, тип (Keitaro/Custom)
+
+Область: Global/Кампания/Оффер/Поток + выбор ID
+
+Приоритет (меньше — выше)
+
+Endpoint URL, метод, id-параметр (subid/clickid)
+
+Аутентификация: query key=... и/или header Authorization: Bearer ... (шифровать)
+
+Маппинг статусов: install, open, reg, deposit, sale, lead, lp_click → строка
+
+Params template (Mustache JSON): поддержать {{clickid}}, {{sub1}}..{{sub10}}, {{sub2}}, {{revenue}}, {{currency}}, {{txid}}, {{country_iso}} и пр.
+
+URL-encode toggle (по умолчанию ВКЛ)
+
+HMAC: secret (шифр.), шаблон строки для подписи, имя параметра sig
+
+Ретраи (попытки, таймаут, backoff base)
+
+Фильтры: revenue>0, страны whitelist/blacklist, исключать ботов
+
+Тест: ввод clickid/тип/сумма → показывает финальный URL/боди, код ответа, тело (первые 2 КБ).
+
+Логи доставок: время, профиль, тип, clickid, попытка N/max, код ответа/ошибка, длительность, «повторить».
+
+9.2 Модель данных (дополнительно)
+CREATE TABLE postback_profiles (
+  id SERIAL PRIMARY KEY,
+  owner_id BIGINT NOT NULL,
+  name TEXT NOT NULL,
+  tracker_type TEXT NOT NULL,           -- 'keitaro' | 'custom'
+  scope_type TEXT NOT NULL,             -- 'global'|'campaign'|'offer'|'flow'
+  scope_id BIGINT,
+  priority INT NOT NULL DEFAULT 100,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+
+  endpoint_url TEXT NOT NULL,
+  method TEXT NOT NULL CHECK (method IN ('GET','POST')),
+  id_param TEXT NOT NULL,               -- 'subid'|'clickid'
+  auth_query_key TEXT, auth_query_val TEXT,
+  auth_header_name TEXT, auth_header_val TEXT,
+
+  status_map JSONB NOT NULL DEFAULT '{}'::jsonb,
+  params_template JSONB NOT NULL DEFAULT '{}'::jsonb,
+  url_encode BOOLEAN NOT NULL DEFAULT TRUE,
+
+  hmac_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  hmac_secret TEXT,
+  hmac_payload_tpl TEXT,
+  hmac_param_name TEXT,
+
+  retries SMALLINT NOT NULL DEFAULT 5,
+  timeout_ms INT NOT NULL DEFAULT 4000,
+  backoff_base_sec INT NOT NULL DEFAULT 2,
+
+  filter_revenue_gt0 BOOLEAN NOT NULL DEFAULT FALSE,
+  filter_country_whitelist TEXT[],
+  filter_country_blacklist TEXT[],
+  filter_exclude_bots BOOLEAN NOT NULL DEFAULT TRUE,
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE postback_deliveries (
+  id BIGSERIAL PRIMARY KEY,
+  profile_id BIGINT NOT NULL REFERENCES postback_profiles(id) ON DELETE CASCADE,
+  event_id BIGINT,
+  clickid TEXT NOT NULL,
+  attempt SMALLINT NOT NULL,
+  max_attempts SMALLINT NOT NULL,
+  request_method TEXT NOT NULL,
+  request_url TEXT NOT NULL,
+  request_body TEXT,
+  request_headers JSONB,
+  response_code INT,
+  response_body TEXT,
+  error TEXT,
+  duration_ms INT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+9.3 Выбор профиля по области
+Ищем включённые профили по приоритету: flow → offer → campaign → global.
+
+Если на одном уровне несколько — берём с наименьшим priority. Опция «посылать всем в уровне» = false по умолчанию.
+
+9.4 Worker доставки (логика)
+Формируем статус: status_mapped = profile.status_map[e.type] || e.type.
+
+Подставляем переменные в params_template (Mustache).
+
+Если hmac_enabled: строим строку по hmac_payload_tpl, считаем HMAC-SHA256 секретом, добавляем в параметр hmac_param_name.
+
+GET: в query; POST: JSON-боди.
+
+Таймаут = timeout_ms. Ретраи retries, задержка backoff_base_sec * 2^(attempt-1) ± джиттер 20%.
+
+Логируем каждую попытку.
+
+10) Антифрод и идемпотентность
+Бот-сигналы: known_bot_ua, headless, asn_hosting, is_proxy. Храним флаги причин.
+
+Идемпотентность событий: уникальный ключ (clickid, type, txid); при дубликате — не записывать и не слать.
+
+Идемпотентность постбеков: кэш успешно отданных (profile_id, clickid, status_mapped, txid) на N часов — не повторять.
+
+11) Безопасность
+Все секреты (auth/hmac) — шифрованно (KMS/at-rest), маскировать в UI.
+
+CORS/CSP: /event принимать только с белых доменов.
+
+Лимитировать частоту тест-запросов.
+
+Логи IP — по политике хранения.
+
+12) Мониторинг
+Метрики очереди (lag), % ошибок постбеков, p95 времени ответа.
+
+Алерты в Telegram/Slack при 5xx > порога или «исчерпаны ретраи».
+
+13) Критерии приёмки
+Клик по смарт-ссылке создаёт clickid, запись в clicks, редирект на LP с прокинутыми параметрами.
+
+События (open, reg, deposit) пишутся в events 1 раз (идемпотентность).
+
+Sub2: строка вида geo-TR|dev-mobile|abtest-B сохраняется в sub2_raw, парсится в sub2_map, доступна фильтрация по ключам.
+
+Постбеки: при reg уходит lead, при deposit — sale с payout/currency; 200 OK, попытки и логи видны.
+
+Ретраи: при недоступности трекера — 5 попыток с backoff; после восстановления — успешная доставка.
+
+Профили: разные области (flow/offer/campaign/global) выбираются корректно, приоритет учитывается.
+
+Тест-отправка: формирует URL/боди, возвращает код ответа, пишет лог с пометкой теста.
+
+Антифрод-флаги: определяются и видны в данных (is_proxy/headless/hosting).
+
+UI: страница «Интеграции → Постбеки» даёт создать/включить/тестировать/смотреть логи.
+
+14) Тест-план (E2E)
+E2E-кейс 1: Клик → LP → open → reg → постбек lead (200).
+
+E2E-кейс 2: deposit(100,USD,tx1) → постбек sale с payout=100.
+
+Sub2: sub2=abtest-B|tier-A → SQL: WHERE sub2_map->>'abtest'='B' работает.
+
+Повторы: второй reg с тем же txid не создаёт дубль и не шлёт постбек.
+
+Ретраи: отключить трекер → 5 попыток → включить → успех.
+
+HMAC: включить подпись, проверка на стороне мок-сервиса (верный sig).
+
+Боты: прогнать Puppeteer / датацентр-прокси → флаги проставлены.
