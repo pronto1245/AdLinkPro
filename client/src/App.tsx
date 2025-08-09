@@ -79,6 +79,7 @@ import AdvertiserPostbackSettings from '@/pages/advertiser/AdvertiserPostbackSet
 import PostbackProfiles from '@/pages/advertiser/PostbackProfiles';
 import AffiliatePostbacks from '@/pages/affiliate/Postbacks';
 import PostbacksNew from '@/pages/affiliate/PostbacksNew';
+import { EventTesting } from '@/pages/EventTesting';
 
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
@@ -532,6 +533,27 @@ function Router() {
             </div>
           </div>
         </div>
+      </Route>
+      
+      {/* Event Testing Routes */}
+      <Route path="/admin/events">
+        <ProtectedRoute allowedRoles={['super_admin']}>
+          <EventTesting />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/events">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <EventTesting />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/events">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PartnerLayout>
+            <EventTesting />
+          </PartnerLayout>
+        </ProtectedRoute>
       </Route>
       
       {/* Utility routes */}
