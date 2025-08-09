@@ -737,7 +737,7 @@ export function AffiliatePostbacks() {
                         {/* НОВАЯ КНОПКА РЕДАКТИРОВАНИЯ */}
                         <button
                           type="button"
-                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 hover:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                           onClick={() => {
                             console.log('🆕 NEW EDIT BUTTON CLICKED:', profile.id);
                             setSelectedProfile(profile);
@@ -746,14 +746,14 @@ export function AffiliatePostbacks() {
                           disabled={updateMutation.isPending}
                           title="Редактировать профиль"
                         >
-                          <Settings className="h-3 w-3 mr-1" />
-                          {updateMutation.isPending ? 'Изменение...' : 'Изменить'}
+                          <Settings className="h-4 w-4 mr-2" />
+                          {updateMutation.isPending ? '🔄 ИЗМЕНЕНИЕ...' : '⚙️ ИЗМЕНИТЬ'}
                         </button>
 
                         {/* НОВАЯ КНОПКА УДАЛЕНИЯ С УЛУЧШЕННОЙ ЛОГИКОЙ */}
                         <button
                           type="button"
-                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-red-600 border border-red-600 rounded-md hover:bg-red-700 hover:border-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                           onClick={async (event) => {
                             event.preventDefault();
                             event.stopPropagation();
@@ -785,8 +785,8 @@ export function AffiliatePostbacks() {
                           disabled={deleteMutation.isPending}
                           title="Удалить профиль"
                         >
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          {deleteMutation.isPending ? 'Удаление...' : 'Удалить'}
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          {deleteMutation.isPending ? '🔄 УДАЛЕНИЕ...' : '🗑️ УДАЛИТЬ ПРОФИЛЬ'}
                         </button>
                       </div>
                     </div>
