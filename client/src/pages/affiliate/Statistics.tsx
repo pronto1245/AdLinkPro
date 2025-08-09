@@ -189,12 +189,97 @@ export default function Statistics() {
 
   // Данные для таблицы и пагинация
   const tableData = analyticsData?.data || [];
+  const totalItems = analyticsData?.pagination?.totalItems || 0;
+  const totalPages = analyticsData?.pagination?.totalPages || 1;
   const pagination = analyticsData?.pagination || {
     currentPage: 1,
     itemsPerPage: 50,
     totalItems: 0,
     totalPages: 0
   };
+
+  // Функции пагинации
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Генерация номеров страниц для отображения
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+    
+    return pages;
+  };
+
+  // Компонент пагинации
+  const PaginationControls = () => (
+    <div className="flex items-center justify-between mt-4">
+      <div className="text-sm text-muted-foreground">
+        Показано {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalItems)} из {totalItems} записей
+      </div>
+      
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handlePreviousPage}
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Назад
+        </Button>
+        
+        <div className="flex items-center gap-1">
+          {getPageNumbers().map((page) => (
+            <Button
+              key={page}
+              variant={currentPage === page ? "default" : "outline"}
+              size="sm"
+              onClick={() => handlePageClick(page)}
+              className="w-8 h-8 p-0"
+            >
+              {page}
+            </Button>
+          ))}
+        </div>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleNextPage}
+          disabled={currentPage === totalPages}
+        >
+          Вперед
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
 
   if (isLoading) {
     return (
@@ -490,6 +575,7 @@ export default function Statistics() {
                   ))}
                 </TableBody>
               </Table>
+              <PaginationControls />
             </CardContent>
           </Card>
         </TabsContent>
@@ -535,6 +621,7 @@ export default function Statistics() {
                   ))}
                 </TableBody>
               </Table>
+              <PaginationControls />
             </CardContent>
           </Card>
         </TabsContent>
@@ -585,6 +672,7 @@ export default function Statistics() {
                   ))}
                 </TableBody>
               </Table>
+              <PaginationControls />
             </CardContent>
           </Card>
         </TabsContent>
@@ -630,6 +718,7 @@ export default function Statistics() {
                   ))}
                 </TableBody>
               </Table>
+              <PaginationControls />
             </CardContent>
           </Card>
         </TabsContent>
@@ -687,6 +776,7 @@ export default function Statistics() {
                   ))}
                 </TableBody>
               </Table>
+              <PaginationControls />
             </CardContent>
           </Card>
         </TabsContent>
@@ -764,30 +854,7 @@ export default function Statistics() {
                 </TableBody>
               </Table>
 
-              {/* Pagination */}
-              <div className="flex items-center justify-between mt-4">
-                <div className="text-sm text-muted-foreground">
-                  Страница {pagination.currentPage} из {pagination.totalPages}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={pagination.currentPage === 1}
-                  >
-                    Назад
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
-                    disabled={pagination.currentPage === pagination.totalPages}
-                  >
-                    Вперед
-                  </Button>
-                </div>
-              </div>
+              <PaginationControls />
             </CardContent>
           </Card>
         </TabsContent>
