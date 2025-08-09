@@ -17,11 +17,8 @@ import {
   type Click, type InsertClick, type Event, type InsertEvent,
   type PostbackProfile, type InsertPostbackProfile, type PostbackDelivery, type InsertPostbackDelivery
 } from "@shared/schema";
-import {
-  trackingClicks as newTrackingClicks, dailyStatistics, hourlyStatistics,
-  type TrackingClick, type InsertTrackingClick, type DailyStatistics, type InsertDailyStatistics,
-  type HourlyStatistics, type InsertHourlyStatistics
-} from "@shared/tracking-schema";
+// Убираем импорт tracking schema чтобы избежать конфликтов
+// import { trackingClicks as newTrackingClicks } from "@shared/tracking-schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lt, lte, count, sum, sql, isNotNull, like, ilike, or, inArray, ne } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -3083,19 +3080,24 @@ export class DatabaseStorage implements IStorage {
 
   async getTrackingClicks(filters?: any): Promise<any[]> {
     try {
-      let query = db.select().from(newTrackingClicks);
+      // Используем прямой SQL для получения данных из tracking_clicks таблицы
+      let query = 'SELECT * FROM tracking_clicks WHERE 1=1';
+      const params: any[] = [];
       
       if (filters?.partnerId) {
-        query = query.where(eq(newTrackingClicks.partnerId, filters.partnerId));
+        params.push(filters.partnerId);
+        query += ` AND partner_id = $${params.length}`;
       }
       
       if (filters?.offerId) {
-        query = query.where(eq(newTrackingClicks.offerId, filters.offerId));
+        params.push(filters.offerId);  
+        query += ` AND offer_id = $${params.length}`;
       }
       
-      const results = await query;
+      query += ' ORDER BY created_at DESC';
       
-      return results;
+      const result = await db.execute(sql.raw(query, params));
+      return result.rows || [];
     } catch (error) {
       console.error('Error getting tracking clicks:', error);
       return [];
@@ -3104,11 +3106,27 @@ export class DatabaseStorage implements IStorage {
 
   async createTrackingClick(data: any): Promise<any> {
     try {
-      const [result] = await db
-        .insert(newTrackingClicks)
-        .values(data)
-        .returning();
-      return result;
+      // Используем прямой SQL для создания tracking click
+      const query = sql.raw(`
+        INSERT INTO tracking_clicks (partner_id, offer_id, advertiser_id, status, country, device, browser, revenue, sub_1, sub_2, sub_3)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING *
+      `, [
+        data.partnerId || data.partner_id,
+        data.offerId || data.offer_id,
+        data.advertiserId || data.advertiser_id,
+        data.status || 'click',
+        data.country,
+        data.device,
+        data.browser,
+        data.revenue || 0,
+        data.sub_1,
+        data.sub_2,
+        data.sub_3
+      ]);
+      
+      const result = await db.execute(query);
+      return result.rows[0];
     } catch (error) {
       console.error('Error creating tracking click:', error);
       throw error;
@@ -3117,12 +3135,20 @@ export class DatabaseStorage implements IStorage {
 
   async updateTrackingClick(clickId: string, updates: any): Promise<any> {
     try {
-      const [result] = await db
-        .update(newTrackingClicks)
-        .set(updates)
-        .where(eq(newTrackingClicks.id, clickId))
-        .returning();
-      return result;
+      // Используем прямой SQL для обновления tracking click
+      const query = sql.raw(`
+        UPDATE tracking_clicks 
+        SET status = $1, revenue = $2, updated_at = NOW()
+        WHERE id = $3
+        RETURNING *
+      `, [
+        updates.status,
+        updates.revenue || 0,
+        clickId
+      ]);
+      
+      const result = await db.execute(query);
+      return result.rows[0];
     } catch (error) {
       console.error('Error updating tracking click:', error);
       throw error;
