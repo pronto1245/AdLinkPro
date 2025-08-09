@@ -41,6 +41,11 @@ interface MockPostbackProfile {
   authQueryVal?: string;
   authHeaderName?: string;
   authHeaderVal?: string;
+  antifraudPolicy?: {
+    blockHard: boolean;
+    softOnlyPending: boolean;
+    logBlocked: boolean;
+  };
 }
 
 // Mock data for development
@@ -81,7 +86,12 @@ const mockPostbackProfiles: MockPostbackProfile[] = [
     filterRevenueGt0: false,
     retries: 5,
     timeoutMs: 10000,
-    backoffBaseSec: 2
+    backoffBaseSec: 2,
+    antifraudPolicy: {
+      blockHard: true,
+      softOnlyPending: false,
+      logBlocked: true
+    }
   },
   {
     id: 'profile_keitaro_backup',
@@ -118,7 +128,12 @@ const mockPostbackProfiles: MockPostbackProfile[] = [
     filterRevenueGt0: false,
     retries: 3,
     timeoutMs: 8000,
-    backoffBaseSec: 3
+    backoffBaseSec: 3,
+    antifraudPolicy: {
+      blockHard: true,
+      softOnlyPending: true,
+      logBlocked: true
+    }
   },
   {
     id: 'profile_binom_tracker',
@@ -151,7 +166,12 @@ const mockPostbackProfiles: MockPostbackProfile[] = [
     filterRevenueGt0: true,
     retries: 3,
     timeoutMs: 5000,
-    backoffBaseSec: 3
+    backoffBaseSec: 3,
+    antifraudPolicy: {
+      blockHard: true,
+      softOnlyPending: false,
+      logBlocked: true
+    }
   }
 ];
 
@@ -214,27 +234,32 @@ export const worker = new Worker<PostbackTask>("postbacks", async (job) => {
     return { success: false, error: 'Conversion not found' };
   }
 
-  // 2) Check antifraud policy
+  // 2) Global antifraud policy check
   if (task.antifraudLevel === "hard") {
-    await savePostbackDelivery({
-      profileId: 0,
-      conversionId: conv.id,
-      advertiserId: conv.advertiserId,
-      partnerId: conv.partnerId ?? null,
-      clickid: conv.clickid,
-      type: conv.type,
-      txid: conv.txid,
-      statusMapped: "blocked_by_af",
-      attempt: 0,
-      maxAttempts: 0,
-      requestMethod: "SKIP",
-      requestUrl: "",
-      durationMs: 0,
-      error: "blocked_by_af"
-    });
+    // Log hard block for all profiles
+    for (const profile of profiles) {
+      if (profile.antifraudPolicy?.logBlocked) {
+        await savePostbackDelivery({
+          profileId: profile.id,
+          conversionId: conv.id,
+          advertiserId: conv.advertiserId,
+          partnerId: conv.partnerId ?? null,
+          clickid: conv.clickid,
+          type: conv.type,
+          txid: conv.txid,
+          statusMapped: "blocked_by_af_hard",
+          attempt: 0,
+          maxAttempts: 0,
+          requestMethod: "SKIP",
+          requestUrl: profile.endpointUrl,
+          durationMs: 0,
+          error: "blocked_by_af_hard"
+        });
+      }
+    }
     
-    console.log('🚫 Postback blocked by antifraud (hard level)');
-    return { success: true, message: 'Blocked by antifraud' };
+    console.log('🚫 All postbacks blocked by antifraud (hard level)');
+    return { success: true, message: `Blocked by antifraud: ${profiles.length} profiles affected` };
   }
 
   // 3) Load relevant postback profiles
@@ -250,9 +275,33 @@ export const worker = new Worker<PostbackTask>("postbacks", async (job) => {
   let successCount = 0;
   let errorCount = 0;
 
-  // 4) Process each profile
+  // 4) Process each profile with antifraud policies
   for (const profile of profiles) {
-    console.log(`🔄 Processing profile: ${profile.name} (${profile.id})`);
+    console.log(`🔄 Processing profile: ${profile.name} (AF: ${JSON.stringify(profile.antifraudPolicy)})`);
+    
+    // Apply profile-specific soft antifraud policy
+    if (task.antifraudLevel === "soft" && profile.antifraudPolicy?.softOnlyPending) {
+      if (task.status !== 'pending') {
+        await savePostbackDelivery({
+          profileId: profile.id,
+          conversionId: conv.id,
+          advertiserId: conv.advertiserId,
+          partnerId: conv.partnerId ?? null,
+          clickid: conv.clickid,
+          type: conv.type,
+          txid: conv.txid,
+          statusMapped: "blocked_by_af_soft_policy",
+          attempt: 0,
+          maxAttempts: 0,
+          requestMethod: "SKIP",
+          requestUrl: profile.endpointUrl,
+          error: `soft_af_non_pending_blocked (status: ${task.status})`
+        });
+        
+        console.log(`⚠️ Soft AF policy: blocked non-pending status "${task.status}" for ${profile.name}`);
+        continue;
+      }
+    }
     
     // Map status according to profile configuration
     const mappedStatus = mapStatus(profile.statusMap, task.type, task.status);

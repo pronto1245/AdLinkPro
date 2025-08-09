@@ -1542,6 +1542,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to generate test postback' });
     }
   });
+
+  // Test postback processing endpoint
+  app.post('/api/v3/postback/test', async (req, res) => {
+    try {
+      console.log('🧪 Test postback request received:', req.body);
+      
+      const { processPostbackTask } = await import('./queue/processor.js');
+      const task = req.body;
+      
+      // Validate required fields
+      if (!task.conversionId || !task.antifraudLevel) {
+        return res.status(400).json({ 
+          error: 'Missing required fields: conversionId, antifraudLevel' 
+        });
+      }
+      
+      console.log(`🚀 Processing test postback with antifraud level: ${task.antifraudLevel}`);
+      
+      const results = await processPostbackTask(task);
+      
+      const summary = {
+        antifraudLevel: task.antifraudLevel,
+        profilesProcessed: results.length,
+        successful: results.filter(r => r.success).length,
+        blocked: results.filter(r => r.error?.includes('af')).length,
+        results: results.map(r => ({
+          profile: r.profileName,
+          success: r.success,
+          error: r.error,
+          blocked: r.error?.includes('af') || false
+        }))
+      };
+      
+      console.log('📊 Test results:', summary);
+      
+      res.json({
+        success: true,
+        message: `Processed ${summary.profilesProcessed} profiles`,
+        antifraud: {
+          level: task.antifraudLevel,
+          blockedProfiles: summary.blocked,
+          successfulProfiles: summary.successful
+        },
+        details: summary
+      });
+      
+    } catch (error) {
+      console.error('Error in postback test:', error);
+      res.status(500).json({ error: 'Failed to process test postback' });
+    }
+  });
   
   // Move middleware setup after team routes (so team routes work without middleware)
   // Security middleware disabled for development to fix team functionality

@@ -15,6 +15,12 @@ interface PostbackProfile {
   retries: number;
   timeoutMs: number;
   backoffBaseSec: number;
+  // Antifraud policies
+  antifraudPolicy?: {
+    blockHard: boolean;           // Block hard level antifraud
+    softOnlyPending: boolean;     // For soft AF, only send pending status
+    logBlocked: boolean;          // Log blocked conversions
+  };
 }
 
 // Production-ready Keitaro profiles with official mappings
@@ -46,7 +52,12 @@ const mockProfiles: PostbackProfile[] = [
     filterRevenueGt0: false,
     retries: 5,
     timeoutMs: 10000,
-    backoffBaseSec: 2
+    backoffBaseSec: 2,
+    antifraudPolicy: {
+      blockHard: true,
+      softOnlyPending: false,
+      logBlocked: true
+    }
   },
   {
     id: 'keitaro_backup',
@@ -75,7 +86,12 @@ const mockProfiles: PostbackProfile[] = [
     filterRevenueGt0: false,
     retries: 3,
     timeoutMs: 8000,
-    backoffBaseSec: 3
+    backoffBaseSec: 3,
+    antifraudPolicy: {
+      blockHard: true,
+      softOnlyPending: true,  // More strict for backup
+      logBlocked: true
+    }
   },
   {
     id: 'binom_tracker',
@@ -102,7 +118,12 @@ const mockProfiles: PostbackProfile[] = [
     filterRevenueGt0: true,
     retries: 3,
     timeoutMs: 5000,
-    backoffBaseSec: 3
+    backoffBaseSec: 3,
+    antifraudPolicy: {
+      blockHard: true,
+      softOnlyPending: false,
+      logBlocked: true
+    }
   }
 ];
 
@@ -128,17 +149,36 @@ export async function processPostbackTask(task: PostbackTask): Promise<DeliveryR
     advertiserId: task.advertiserId
   });
 
-  // Apply antifraud blocking
+  // Global antifraud blocking - hard level blocks all profiles
   if (task.antifraudLevel === "hard") {
-    console.log('🚫 Postback blocked by antifraud (hard level)');
-    return [{
-      profileId: 'antifraud_block',
-      profileName: 'Antifraud Block',
+    console.log('🚫 Postback blocked by antifraud (hard level) for all profiles');
+    
+    // Log blocked conversion for each profile that would have processed it
+    const blockedResults: DeliveryResult[] = profiles.map(profile => ({
+      profileId: profile.id,
+      profileName: profile.name,
       success: false,
       attempts: 0,
-      finalUrl: '',
-      error: 'blocked_by_antifraud_hard'
-    }];
+      finalUrl: profile.endpointUrl,
+      error: 'blocked_by_af_hard'
+    }));
+    
+    // Save antifraud block logs
+    for (const profile of profiles) {
+      if (profile.antifraudPolicy?.logBlocked) {
+        await saveAntifraudBlock({
+          profileId: profile.id,
+          conversionId: task.conversionId,
+          advertiserId: task.advertiserId,
+          clickid: task.clickid,
+          antifraudLevel: task.antifraudLevel,
+          blockReason: 'hard_level_global_block',
+          blockedAt: new Date().toISOString()
+        });
+      }
+    }
+    
+    return blockedResults;
   }
 
   // Get relevant profiles
@@ -156,7 +196,36 @@ export async function processPostbackTask(task: PostbackTask): Promise<DeliveryR
   const results: DeliveryResult[] = [];
 
   for (const profile of profiles) {
-    console.log(`🔄 Processing profile: ${profile.name}`);
+    console.log(`🔄 Processing profile: ${profile.name} (AF policy: ${JSON.stringify(profile.antifraudPolicy)})`);
+    
+    // Apply profile-specific antifraud policies
+    if (task.antifraudLevel === "soft" && profile.antifraudPolicy?.softOnlyPending) {
+      if (task.status !== 'pending') {
+        console.log(`⚠️ Soft antifraud: skipping non-pending status "${task.status}" for profile ${profile.name}`);
+        results.push({
+          profileId: profile.id,
+          profileName: profile.name,
+          success: false,
+          attempts: 0,
+          finalUrl: profile.endpointUrl,
+          error: 'soft_af_non_pending_blocked'
+        });
+        
+        if (profile.antifraudPolicy.logBlocked) {
+          await saveAntifraudBlock({
+            profileId: profile.id,
+            conversionId: task.conversionId,
+            advertiserId: task.advertiserId,
+            clickid: task.clickid,
+            antifraudLevel: task.antifraudLevel,
+            blockReason: 'soft_level_non_pending_status',
+            blockedAt: new Date().toISOString(),
+            actualStatus: task.status
+          });
+        }
+        continue;
+      }
+    }
     
     // Map status
     const mappedStatus = profile.statusMap[task.type]?.[task.status] ?? task.status;
@@ -299,12 +368,44 @@ export function updateStats(results: DeliveryResult[]) {
   });
 }
 
+// Antifraud statistics
+let antifraudBlocks = 0;
+let hardBlocks = 0;
+let softBlocks = 0;
+
+export function updateAntifraudStats(level: string, blocked: boolean) {
+  if (blocked) {
+    antifraudBlocks++;
+    if (level === 'hard') hardBlocks++;
+    if (level === 'soft') softBlocks++;
+  }
+}
+
 export function getProcessingStats() {
   return {
     processedTasks,
     successfulDeliveries,
     failedDeliveries,
     successRate: processedTasks > 0 ? (successfulDeliveries / (successfulDeliveries + failedDeliveries)) * 100 : 0,
+    antifraud: {
+      totalBlocks: antifraudBlocks,
+      hardBlocks,
+      softBlocks,
+      blockRate: processedTasks > 0 ? (antifraudBlocks / processedTasks) * 100 : 0
+    },
     timestamp: new Date().toISOString()
   };
+}
+
+// Mock antifraud block logging
+async function saveAntifraudBlock(blockData: any): Promise<void> {
+  console.log('🛡️ Antifraud block logged:', {
+    profileId: blockData.profileId,
+    conversionId: blockData.conversionId,
+    level: blockData.antifraudLevel,
+    reason: blockData.blockReason,
+    clickid: blockData.clickid
+  });
+  
+  updateAntifraudStats(blockData.antifraudLevel, true);
 }
