@@ -1450,8 +1450,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Enhanced API routes with DTO validations
   console.log('=== ADDING ENHANCED API ROUTES ===');
+  
+  // V3 routes with idempotency and queue system
+  try {
+    const enhancedApiRoutesV3 = await import('./api/routes.js');
+    app.use('/api/v3', enhancedApiRoutesV3.default);
+    console.log('=== ENHANCED API V3 ROUTES WITH IDEMPOTENCY ADDED ===');
+  } catch (error) {
+    console.error('❌ Failed to load V3 API routes:', error);
+  }
+  
+  // Legacy V2 routes (maintained for compatibility)
   app.use('/api/v2', (await import('./api-routes')).default);
-  console.log('=== ENHANCED API ROUTES ADDED SUCCESSFULLY ===');
+  console.log('=== LEGACY API V2 ROUTES MAINTAINED ===');
   
   // Move middleware setup after team routes (so team routes work without middleware)
   // Security middleware disabled for development to fix team functionality
