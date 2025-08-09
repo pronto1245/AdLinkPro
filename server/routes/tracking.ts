@@ -3,6 +3,7 @@ import { storage } from '../storage';
 import { nanoid } from 'nanoid';
 import { insertClickSchema, insertEventSchema } from '@shared/schema';
 import { z } from 'zod';
+import { PostbackService, type PostbackEvent } from '../services/postback.js';
 
 const router = Router();
 
@@ -121,6 +122,49 @@ router.get('/click', async (req, res) => {
       type: 'open',
     });
 
+    // Trigger postback for click event (lp_click)
+    try {
+      const postbackEvent: PostbackEvent = {
+        type: 'lp_click',
+        clickId: clickid,
+        data: {
+          clickid,
+          partner_id: partnerId as string,
+          offer_id: offerId as string,
+          sub1: sub1 as string,
+          sub2: sub2 as string,
+          sub3: sub3 as string,
+          sub4: sub4 as string,
+          sub5: sub5 as string,
+          sub6: sub6 as string,
+          sub7: sub7 as string,
+          sub8: sub8 as string,
+          sub9: sub9 as string,
+          sub10: sub10 as string,
+          sub11: sub11 as string,
+          sub12: sub12 as string,
+          sub13: sub13 as string,
+          sub14: sub14 as string,
+          sub15: sub15 as string,
+          sub16: sub16 as string,
+          utm_source: utm_source as string,
+          utm_campaign: utm_campaign as string,
+          utm_medium: utm_medium as string,
+          utm_content: utm_content as string,
+          utm_term: utm_term as string,
+        },
+        partnerId: partnerId as string,
+        offerId: offerId as string,
+      };
+      
+      // Send postbacks to external trackers (non-blocking)
+      PostbackService.triggerPostbacks(postbackEvent).catch(error => {
+        console.error('Postback sending failed:', error);
+      });
+    } catch (error) {
+      console.error('Postback trigger failed:', error);
+    }
+
     // Get offer details for redirect
     const offer = await storage.getOffer(offerId as string);
     if (!offer) {
@@ -152,6 +196,33 @@ router.post('/event', async (req, res) => {
       advertiserId: click.advertiserId,
       partnerId: click.partnerId,
     });
+
+    // Trigger postback for conversion event
+    try {
+      const postbackEvent: PostbackEvent = {
+        type: eventData.type as any,
+        clickId: eventData.clickid,
+        data: {
+          clickid: eventData.clickid,
+          status: eventData.type,
+          partner_id: click.partnerId,
+          offer_id: click.offerId,
+          revenue: eventData.revenue?.toString() || '0.00',
+          currency: eventData.currency || 'USD',
+          txid: eventData.transactionId || '',
+        },
+        partnerId: click.partnerId,
+        offerId: click.offerId,
+        advertiserId: click.advertiserId,
+      };
+      
+      // Send postbacks to external trackers (non-blocking)
+      PostbackService.triggerPostbacks(postbackEvent).catch(error => {
+        console.error('Event postback sending failed:', error);
+      });
+    } catch (error) {
+      console.error('Event postback trigger failed:', error);
+    }
 
     res.status(201).json(event);
   } catch (error) {
@@ -197,6 +268,126 @@ router.get('/events/:clickid', async (req, res) => {
     res.json(events);
   } catch (error) {
     console.error('Get events error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Manual postback trigger endpoint for testing/retrying
+router.post('/postback/send', async (req, res) => {
+  try {
+    const {
+      clickid,
+      event_type,
+      revenue,
+      currency = 'USD',
+      txid,
+      force = false
+    } = req.body;
+
+    if (!clickid || !event_type) {
+      return res.status(400).json({
+        error: 'Missing required parameters: clickid and event_type'
+      });
+    }
+
+    // Get click data
+    const click = await storage.getClick(clickid);
+    if (!click) {
+      return res.status(404).json({ error: 'Click not found' });
+    }
+
+    // Build postback event
+    const postbackEvent: PostbackEvent = {
+      type: event_type,
+      clickId: clickid,
+      data: {
+        clickid,
+        status: event_type,
+        partner_id: click.partnerId,
+        offer_id: click.offerId,
+        revenue: revenue?.toString() || '0.00',
+        currency,
+        txid: txid || '',
+      },
+      partnerId: click.partnerId,
+      offerId: click.offerId,
+      advertiserId: click.advertiserId,
+    };
+
+    // Send postbacks
+    const results = await PostbackService.triggerPostbacks(postbackEvent);
+    
+    res.json({
+      success: true,
+      message: 'Postbacks sent successfully',
+      results: results.length,
+      clickid,
+      event_type
+    });
+
+  } catch (error) {
+    console.error('Manual postback error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Test external tracker postback endpoint
+router.post('/postback/test', async (req, res) => {
+  try {
+    const {
+      tracker_url,
+      method = 'GET',
+      auth,
+      hmac,
+      timeout = 30,
+      test_data = {}
+    } = req.body;
+
+    if (!tracker_url) {
+      return res.status(400).json({
+        error: 'Missing required parameter: tracker_url'
+      });
+    }
+
+    // Create test event
+    const testEvent: PostbackEvent = {
+      type: 'lead',
+      clickId: 'test_click_123',
+      data: {
+        clickid: 'test_click_123',
+        status: 'lead',
+        partner_id: 'test_partner',
+        offer_id: 'test_offer',
+        revenue: '25.00',
+        currency: 'USD',
+        country: 'US',
+        device: 'desktop',
+        ...test_data
+      }
+    };
+
+    // Send test postback
+    const result = await PostbackService.sendExternalTrackerPostback(
+      tracker_url,
+      testEvent,
+      null, // no click data for test
+      {
+        method,
+        auth,
+        hmac,
+        timeout
+      }
+    );
+
+    res.json({
+      success: result.success,
+      test_url: tracker_url,
+      response: result.response,
+      error: result.error
+    });
+
+  } catch (error) {
+    console.error('Test postback error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

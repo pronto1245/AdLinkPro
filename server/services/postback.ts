@@ -16,19 +16,50 @@ export interface PostbackMacros {
   sub3?: string;
   sub4?: string;
   sub5?: string;
+  sub6?: string;
+  sub7?: string;
+  sub8?: string;
+  sub9?: string;
+  sub10?: string;
+  sub11?: string;
+  sub12?: string;
+  sub13?: string;
+  sub14?: string;
+  sub15?: string;
+  sub16?: string;
   country?: string;
+  country_iso?: string;
+  geo?: string;
   device?: string;
+  device_type?: string;
+  os?: string;
+  browser?: string;
   ip?: string;
   txid?: string;
   amount?: string;
   timestamp?: string;
+  datetime?: string;
+  user_agent?: string;
+  referer?: string;
+  campaign_id?: string;
+  flow_id?: string;
+  landing_id?: string;
+  creative_id?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_term?: string;
+  utm_content?: string;
   [key: string]: any;
 }
 
 export interface PostbackEvent {
-  type: 'click' | 'lead' | 'ftd' | 'deposit' | 'approve' | 'reject' | 'hold' | 'conversion';
+  type: 'click' | 'lp_click' | 'lead' | 'registration' | 'ftd' | 'deposit' | 'approve' | 'reject' | 'hold' | 'conversion' | 'sale' | 'open' | 'lp_leave';
   clickId: string;
   data: PostbackMacros;
+  offerId?: string;
+  partnerId?: string;
+  advertiserId?: string;
 }
 
 export class PostbackService {
@@ -233,12 +264,168 @@ export class PostbackService {
     }
   }
 
-  // Trigger postbacks for an event
+  // Build comprehensive macros from click data
+  static buildMacrosFromClick(clickData: any, event: PostbackEvent): PostbackMacros {
+    const macros: PostbackMacros = {
+      // Core tracking data
+      clickid: event.clickId,
+      status: event.type,
+      offer_id: clickData?.offerId || event.offerId,
+      partner_id: clickData?.partnerId || event.partnerId,
+      
+      // Revenue and payout
+      revenue: event.data.revenue || '0.00',
+      payout: event.data.payout || '0.00', 
+      amount: event.data.amount || event.data.revenue || '0.00',
+      currency: event.data.currency || 'USD',
+      txid: event.data.txid || '',
+      
+      // Sub parameters (all 16)
+      sub1: clickData?.subId1 || event.data.sub1 || '',
+      sub2: clickData?.subId2 || event.data.sub2 || '',
+      sub3: clickData?.subId3 || event.data.sub3 || '',
+      sub4: clickData?.subId4 || event.data.sub4 || '',
+      sub5: clickData?.subId5 || event.data.sub5 || '',
+      sub6: clickData?.subId6 || event.data.sub6 || '',
+      sub7: clickData?.subId7 || event.data.sub7 || '',
+      sub8: clickData?.subId8 || event.data.sub8 || '',
+      sub9: clickData?.subId9 || event.data.sub9 || '',
+      sub10: clickData?.subId10 || event.data.sub10 || '',
+      sub11: clickData?.subId11 || event.data.sub11 || '',
+      sub12: clickData?.subId12 || event.data.sub12 || '',
+      sub13: clickData?.subId13 || event.data.sub13 || '',
+      sub14: clickData?.subId14 || event.data.sub14 || '',
+      sub15: clickData?.subId15 || event.data.sub15 || '',
+      sub16: clickData?.subId16 || event.data.sub16 || '',
+      
+      // Geo data
+      country: clickData?.country || event.data.country || '',
+      country_iso: clickData?.country || event.data.country_iso || '',
+      geo: clickData?.country || event.data.geo || '',
+      
+      // Device data  
+      device: clickData?.device || event.data.device || '',
+      device_type: clickData?.device || event.data.device_type || '',
+      os: clickData?.os || event.data.os || '',
+      browser: clickData?.browser || event.data.browser || '',
+      
+      // Technical data
+      ip: clickData?.ip || event.data.ip || '',
+      user_agent: clickData?.userAgent || event.data.user_agent || '',
+      referer: clickData?.referer || event.data.referer || '',
+      
+      // Campaign data
+      campaign_id: event.data.campaign_id || '',
+      flow_id: event.data.flow_id || '',
+      landing_id: event.data.landing_id || '',
+      creative_id: event.data.creative_id || '',
+      
+      // UTM parameters
+      utm_source: event.data.utm_source || '',
+      utm_medium: event.data.utm_medium || '',
+      utm_campaign: event.data.utm_campaign || '',
+      utm_term: event.data.utm_term || '',
+      utm_content: event.data.utm_content || '',
+      
+      // Timestamps
+      timestamp: Math.floor(Date.now() / 1000).toString(),
+      datetime: new Date().toISOString(),
+    };
+    
+    return macros;
+  }
+
+  // Enhanced postback for external trackers (Keitaro, Binom, etc.)
+  static async sendExternalTrackerPostback(
+    trackerUrl: string, 
+    event: PostbackEvent,
+    clickData: any,
+    options: {
+      method?: 'GET' | 'POST';
+      auth?: { type: 'query' | 'header'; key: string; value: string };
+      hmac?: { secret: string; param: string };
+      timeout?: number;
+    } = {}
+  ): Promise<{ success: boolean; response?: any; error?: string }> {
+    try {
+      // Build comprehensive macros
+      const macros = this.buildMacrosFromClick(clickData, event);
+      
+      // Replace macros in URL
+      let processedUrl = this.replaceMacros(trackerUrl, macros);
+      console.log(`Sending to external tracker: ${processedUrl}`);
+      
+      // Prepare request
+      const requestOptions: any = {
+        method: options.method || 'GET',
+        timeout: (options.timeout || 30) * 1000,
+        headers: {
+          'User-Agent': 'AffiliateNetwork-Postback/2.0',
+          'Content-Type': 'application/json',
+        },
+      };
+
+      // Add authentication
+      if (options.auth) {
+        if (options.auth.type === 'header') {
+          requestOptions.headers[options.auth.key] = options.auth.value;
+        } else if (options.auth.type === 'query') {
+          const url = new URL(processedUrl);
+          url.searchParams.set(options.auth.key, options.auth.value);
+          processedUrl = url.toString();
+        }
+      }
+
+      // Add HMAC signature if configured
+      if (options.hmac) {
+        const signature = this.generateSignature(processedUrl, macros, options.hmac.secret);
+        if (options.method === 'POST') {
+          requestOptions.headers['X-Signature'] = signature;
+        } else {
+          const url = new URL(processedUrl);
+          url.searchParams.set(options.hmac.param, signature);
+          processedUrl = url.toString();
+        }
+      }
+
+      // Add payload for POST requests
+      if (requestOptions.method === 'POST') {
+        requestOptions.body = JSON.stringify(macros);
+      }
+
+      // Send request
+      const startTime = Date.now();
+      const response = await fetch(processedUrl, requestOptions);
+      const responseTime = Date.now() - startTime;
+      const responseBody = await response.text();
+      
+      console.log(`External tracker response: ${response.status} in ${responseTime}ms`);
+
+      return {
+        success: response.ok,
+        response: {
+          status: response.status,
+          statusText: response.statusText,
+          body: responseBody,
+          responseTime,
+        },
+      };
+
+    } catch (error: any) {
+      console.error('External tracker postback failed:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  // Trigger postbacks for an event (enhanced version)
   static async triggerPostbacks(event: PostbackEvent) {
     try {
       console.log(`Triggering postbacks for event: ${event.type}, clickId: ${event.clickId}`);
       
-      // Get click data if available
+      // Get click data with all fields
       let clickData = null;
       if (event.clickId) {
         const [click] = await db.select()
@@ -261,11 +448,13 @@ export class PostbackService {
         return [];
       }
 
-      // Send postbacks concurrently
+      // Send postbacks concurrently with enhanced data
       const results = await Promise.allSettled(
         relevantPostbacks.map(({ postback_templates: pb }) => {
           console.log(`Triggering postback ${pb.id} for event ${event.type}`);
-          return this.sendPostback(pb.id, event.type, event.data, event.clickId);
+          // Build enhanced macros for this postback
+          const enhancedMacros = this.buildMacrosFromClick(clickData, event);
+          return this.sendPostback(pb.id, event.type, enhancedMacros, event.clickId);
         })
       );
 
