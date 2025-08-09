@@ -32,35 +32,35 @@ import { useToast } from '@/hooks/use-toast';
 interface PostbackProfile {
   id: string;
   name: string;
-  trackerType: 'keitaro' | 'custom';
-  scopeType: 'global' | 'offer';
-  scopeId?: string;
-  priority: number;
+  tracker_type: 'keitaro' | 'custom';
+  scope_type: 'global' | 'offer';
+  scope_id?: string;
+  priority?: number;
   enabled: boolean;
-  endpointUrl: string;
+  endpoint_url: string;
   method: 'GET' | 'POST';
-  idParam: 'subid' | 'clickid';
-  authQueryKey?: string;
-  authQueryVal?: string;
-  authHeaderName?: string;
-  authHeaderVal?: string;
-  statusMap: Record<string, string>;
-  paramsTemplate: Record<string, string>;
-  urlEncode: boolean;
-  hmacEnabled: boolean;
-  hmacSecret?: string;
-  hmacPayloadTpl?: string;
-  hmacParamName?: string;
-  retries: number;
-  timeoutMs: number;
-  backoffBaseSec: number;
-  filterRevenueGt0: boolean;
-  filterCountryWhitelist: string[];
-  filterCountryBlacklist: string[];
-  filterExcludeBots: boolean;
-  lastDelivery?: string;
-  createdAt: string;
-  updatedAt: string;
+  id_param: 'subid' | 'clickid';
+  auth_query_key?: string;
+  auth_query_val?: string;
+  auth_header_name?: string;
+  auth_header_val?: string;
+  status_map?: Record<string, string>;
+  params_template?: Record<string, string>;
+  url_encode?: boolean;
+  hmac_enabled?: boolean;
+  hmac_secret?: string;
+  hmac_payload_tpl?: string;
+  hmac_param_name?: string;
+  retries?: number;
+  timeout_ms?: number;
+  backoff_base_sec?: number;
+  filter_revenue_gt0?: boolean;
+  filter_country_whitelist?: string[];
+  filter_country_blacklist?: string[];
+  filter_exclude_bots?: boolean;
+  last_delivery?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 // Предварительно настроенные шаблоны для популярных трекеров
@@ -265,6 +265,7 @@ export function AffiliatePostbacks() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
+      queryClient.refetchQueries({ queryKey: ['/api/postback/profiles'] });
       setIsCreateModalOpen(false);
       setFormData(defaultProfile);
       toast({ title: 'Профиль создан', description: 'Постбек профиль успешно создан' });
@@ -607,7 +608,7 @@ export function AffiliatePostbacks() {
                       <div className="flex items-center space-x-2">
                         <Globe className="h-4 w-4" />
                         <CardTitle className="text-lg">{profile.name}</CardTitle>
-                        <Badge variant="outline">{profile.trackerType}</Badge>
+                        <Badge variant="outline">{profile.tracker_type}</Badge>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Badge variant={profile.enabled ? "default" : "secondary"}>
@@ -621,14 +622,14 @@ export function AffiliatePostbacks() {
                       <div>
                         <p className="text-sm font-medium">Эндпоинт</p>
                         <p className="text-sm text-muted-foreground truncate">
-                          {profile.method} {profile.endpointUrl}
+                          {profile.method} {profile.endpoint_url}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm font-medium">Последняя доставка</p>
                         <p className="text-sm text-muted-foreground">
-                          {profile.lastDelivery 
-                            ? new Date(profile.lastDelivery).toLocaleString('ru-RU')
+                          {profile.last_delivery 
+                            ? new Date(profile.last_delivery).toLocaleString('ru-RU')
                             : 'Не было'
                           }
                         </p>
