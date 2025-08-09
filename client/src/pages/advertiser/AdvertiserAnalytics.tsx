@@ -440,7 +440,10 @@ export function AdvertiserAnalytics() {
                     <thead>
                       <tr className="border-b">
                         <th className="text-left p-2">Дата и время</th>
-                        <th className="text-right p-2">Показы</th>
+                        <th className="text-left p-2">Partner ID</th>
+                        <th className="text-left p-2">Партнер</th>
+                        <th className="text-left p-2">Оффер</th>
+                        <th className="text-left p-2">Click ID</th>
                         <th className="text-right p-2">Клики</th>
                         <th className="text-right p-2">Конверсии</th>
                         <th className="text-right p-2">CR, %</th>
@@ -461,7 +464,18 @@ export function AdvertiserAnalytics() {
                             <td className="p-2">
                               {new Date(row.date).toLocaleDateString('ru-RU')} {new Date(row.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
                             </td>
-                            <td className="text-right p-2">{(row.clicks * 3.2).toFixed(0)}</td>
+                            <td className="p-2 text-blue-600 font-mono text-xs">
+                              {row.partnerId ? row.partnerId.substring(0, 8) + '...' : 'N/A'}
+                            </td>
+                            <td className="p-2 font-medium">
+                              {row.partnerName || 'Unknown Partner'}
+                            </td>
+                            <td className="p-2">
+                              {row.offerName || 'Unknown Offer'}
+                            </td>
+                            <td className="p-2 text-green-600 font-mono text-xs">
+                              {row.clickId || (row.clickIds && row.clickIds.length > 0 ? `${row.clickIds.length} кликов` : 'N/A')}
+                            </td>
                             <td className="text-right p-2">{row.clicks.toLocaleString()}</td>
                             <td className="text-right p-2">{row.conversions.toLocaleString()}</td>
                             <td className="text-right p-2">{row.cr.toFixed(2)}%</td>

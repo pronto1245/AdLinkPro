@@ -83,95 +83,42 @@ async function getRealAnalyticsData(filters: any) {
     .orderBy(desc(trackingClicks.createdAt))
     .limit(100);
     
-    // Group by partner and offer to calculate metrics
-    const groupedData = new Map();
-    
-    result.forEach((row: any) => {
-      // Group by partner + offer
-      const key = `${row.partnerId}_${row.offerId}`;
+    // Return individual clicks instead of grouping - so advertiser can see each clickId
+    return result.map((row: any) => {
+      const revenue = parseFloat(row.revenue) || 0;
+      const conversions = parseInt(row.conversions) || 0;
+      const payout = conversions * 15; // Example payout per conversion
+      const profit = revenue - payout;
       
-      if (!groupedData.has(key)) {
-        groupedData.set(key, {
-          id: `analytics_${key}`,
-          date: row.date.toISOString().split('T')[0],
-          offerId: row.offerId,
-          offerName: row.offerName || 'Unknown Offer',
-          partnerId: row.partnerId,
-          partnerName: row.partnerName || 'Unknown Partner',
-          country: row.country || 'Unknown',
-          device: row.device || 'Unknown',
-          trafficSource: 'direct',
-          sub1: row.sub1 || '',
-          sub2: row.sub2 || '',
-          sub3: row.sub3 || '',
-          sub4: row.sub4 || '',
-          sub5: row.sub5 || '',
-          clicks: 0,
-          uniqueClicks: 0,
-          conversions: 0,
-          revenue: 0,
-          payout: 0,
-          profit: 0,
-          cr: 0,
-          epc: 0,
-          ctr: 0,
-          roi: 0,
-          fraudClicks: 0,
-          fraudRate: 0,
-          totalFraudScore: 0,
-          clickIds: []
-        });
-      }
-      
-      const data = groupedData.get(key);
-      
-      // Each row = one click from partner
-      data.clicks += 1;
-      data.uniqueClicks += 1;
-      data.conversions += parseInt(row.conversions) || 0;
-      data.revenue += parseFloat(row.revenue) || 0;
-      data.clickIds.push(row.clickId);
-      data.totalFraudScore += (row.fraudScore || 0);
-      
-      // Count fraud clicks
-      if (row.isBot) data.fraudClicks += 1;
-      if (row.fraudScore > 50) data.fraudClicks += 1;
-      
-      // Update latest data
-      if (new Date(row.date) > new Date(data.date)) {
-        data.date = row.date.toISOString().split('T')[0];
-        data.country = row.country || data.country;
-        data.device = row.device || data.device;
-        data.sub1 = row.sub1 || data.sub1;
-        data.sub2 = row.sub2 || data.sub2;
-        data.sub3 = row.sub3 || data.sub3;
-        data.sub4 = row.sub4 || data.sub4;
-        data.sub5 = row.sub5 || data.sub5;
-      }
-    });
-    
-    // Calculate metrics for each partner+offer group
-    return Array.from(groupedData.values()).map(data => {
-      // Calculate metrics for partner
-      data.cr = data.clicks > 0 ? (data.conversions / data.clicks) * 100 : 0;
-      data.epc = data.clicks > 0 ? data.revenue / data.clicks : 0;
-      data.payout = data.conversions * 15; // Example payout per conversion
-      data.profit = data.revenue - data.payout;
-      data.roi = data.payout > 0 ? ((data.revenue - data.payout) / data.payout) * 100 : 0;
-      data.fraudRate = data.clicks > 0 ? (data.fraudClicks / data.clicks) * 100 : 0;
-      data.ctr = Math.random() * 3 + 1; // Mock CTR for now
-      
-      // Round numbers
-      data.cr = parseFloat(data.cr.toFixed(2));
-      data.epc = parseFloat(data.epc.toFixed(4));
-      data.revenue = parseFloat(data.revenue.toFixed(2));
-      data.payout = parseFloat(data.payout.toFixed(2));
-      data.profit = parseFloat(data.profit.toFixed(2));
-      data.roi = parseFloat(data.roi.toFixed(2));
-      data.fraudRate = parseFloat(data.fraudRate.toFixed(2));
-      data.ctr = parseFloat(data.ctr.toFixed(2));
-      
-      return data;
+      return {
+        id: `click_${row.clickId}`,
+        date: row.date.toISOString().split('T')[0],
+        clickId: row.clickId,
+        partnerId: row.partnerId,
+        partnerName: row.partnerName || 'Unknown Partner',
+        offerId: row.offerId,
+        offerName: row.offerName || 'Unknown Offer',
+        country: row.country || 'Unknown',
+        device: row.device || 'Unknown',
+        trafficSource: 'direct',
+        sub1: row.sub1 || '',
+        sub2: row.sub2 || '',
+        sub3: row.sub3 || '',
+        sub4: row.sub4 || '',
+        sub5: row.sub5 || '',
+        clicks: 1, // Each row is one click
+        uniqueClicks: 1,
+        conversions,
+        revenue,
+        payout: parseFloat(payout.toFixed(2)),
+        profit: parseFloat(profit.toFixed(2)),
+        cr: conversions > 0 ? 100 : 0, // Either 0% or 100% for individual clicks
+        epc: revenue,
+        ctr: Math.random() * 3 + 1, // Mock CTR for now
+        roi: payout > 0 ? ((revenue - payout) / payout) * 100 : 0,
+        fraudClicks: (row.isBot || row.fraudScore > 50) ? 1 : 0,
+        fraudRate: (row.isBot || row.fraudScore > 50) ? 100 : 0
+      };
     });
     
   } catch (error) {
