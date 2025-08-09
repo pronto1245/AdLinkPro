@@ -3897,24 +3897,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (profile.enabled) {
             let postbackUrl = profile.endpointUrl;
             
-            // Для Кейтаро - сначала создать клик, потом отправить постбек
-            if (profile.tracker_type === 'keitaro' || postbackUrl.includes('postback')) {
-              // Извлекаем базовый URL для создания клика
-              const baseUrl = postbackUrl.replace('/postback', '').split('?')[0];
-              
-              try {
-                // Создаем клик в Кейтаро
-                const clickUrl = `${baseUrl}/?subid=${clickId}&utm_source=affiliate&utm_medium=postback`;
-                console.log(`🔗 Creating Keitaro click: ${clickUrl}`);
-                const clickResponse = await fetch(clickUrl);
-                console.log(`✅ Keitaro click created: ${clickResponse.status}`);
-                
-                // Ждем немного чтобы клик зарегистрировался
-                await new Promise(resolve => setTimeout(resolve, 1000));
-              } catch (error) {
-                console.log(`❌ Failed to create Keitaro click: ${error}`);
-              }
-            }
+            // Для Кейтаро используем только постбек без предварительного создания клика
+            // Кейтаро сам должен обрабатывать постбеки для существующих кликов
             
             // Заменить макросы в URL
             postbackUrl = postbackUrl.replace('{clickid}', clickId);
