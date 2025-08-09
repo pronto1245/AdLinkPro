@@ -201,10 +201,7 @@ export default function AntiFraud() {
   // Мутации
   const updateSettingsMutation = useMutation({
     mutationFn: async (newSettings: Partial<FraudSettings>) => {
-      return await apiRequest('/api/advertiser/antifraud/settings', {
-        method: 'PATCH',
-        body: JSON.stringify(newSettings)
-      });
+      return await apiRequest('/api/advertiser/antifraud/settings', 'POST', newSettings);
     },
     onSuccess: () => {
       toast({
@@ -224,10 +221,7 @@ export default function AntiFraud() {
 
   const confirmEventMutation = useMutation({
     mutationFn: async ({ eventId, status }: { eventId: string; status: 'confirmed' | 'false_positive' }) => {
-      return await apiRequest('/api/advertiser/antifraud/confirm-event', {
-        method: 'POST',
-        body: JSON.stringify({ eventId, status })
-      });
+      return await apiRequest('/api/advertiser/antifraud/confirm-event', 'POST', { eventId, status });
     },
     onSuccess: () => {
       toast({
@@ -248,10 +242,7 @@ export default function AntiFraud() {
 
   const blockPartnerMutation = useMutation({
     mutationFn: async ({ partnerId, reason }: { partnerId: string; reason: string }) => {
-      return await apiRequest('/api/advertiser/antifraud/block-partner', {
-        method: 'POST',
-        body: JSON.stringify({ partnerId, reason })
-      });
+      return await apiRequest('/api/advertiser/antifraud/block-partner', 'POST', { partnerId, reason });
     },
     onSuccess: () => {
       toast({
@@ -278,9 +269,9 @@ export default function AntiFraud() {
     let current = newSettings;
     
     for (let i = 0; i < fields.length - 1; i++) {
-      current = current[fields[i]];
+      current = (current as any)[fields[i]];
     }
-    current[fields[fields.length - 1]] = value;
+    (current as any)[fields[fields.length - 1]] = value;
     
     updateSettingsMutation.mutate(newSettings);
   };
