@@ -384,46 +384,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all postback profiles for current user
   app.get("/api/postback/profiles", async (req, res) => {
     try {
-      const mockProfiles = [
-        {
-          id: 'profile_1',
-          name: 'Keitaro Main',
-          tracker_type: 'keitaro',
-          scope_type: 'global',
-          enabled: true,
-          endpoint_url: 'https://keitaro.example.com/api/v1/conversions',
-          method: 'POST',
-          id_param: 'clickid',
-          status_map: {
-            open: 'open',
-            reg: 'lead',
-            deposit: 'sale',
-            lp_click: 'click'
-          },
-          last_delivery: new Date().toISOString(),
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 'profile_2',
-          name: 'Custom Tracker',
-          tracker_type: 'custom',
-          scope_type: 'global',
-          enabled: false,
-          endpoint_url: 'https://custom.example.com/postback',
-          method: 'GET',
-          id_param: 'subid',
-          status_map: {
-            open: 'open',
-            reg: 'registration',
-            deposit: 'conversion',
-            lp_click: 'click'
-          },
-          last_delivery: null,
-          created_at: new Date().toISOString()
-        }
-      ];
+      // Получаем демо данные + созданные профили
+      const demoProfiles = storage.getDemoPostbackProfiles();
+      const createdProfiles = storage.getCreatedPostbackProfiles();
+      
+      // Объединяем все профили
+      const allProfiles = [...demoProfiles, ...createdProfiles];
+      
+      console.log('📋 GET /api/postback/profiles - Returning profiles:', {
+        demo: demoProfiles.length,
+        created: createdProfiles.length,
+        total: allProfiles.length,
+        createdProfileIds: createdProfiles.map(p => p.id)
+      });
 
-      res.json(mockProfiles);
+      res.json(allProfiles);
     } catch (error: any) {
       console.error('Error getting postback profiles:', error);
       res.status(500).json({ message: 'Failed to get postback profiles' });
@@ -442,6 +417,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       console.log('Creating postback profile:', newProfile);
+      
+      // Сохраняем профиль в storage для отображения
+      storage.savePostbackProfile(newProfile);
+      console.log('Profile saved to storage');
+      
       res.json(newProfile);
     } catch (error: any) {
       console.error('Error creating postback profile:', error);
