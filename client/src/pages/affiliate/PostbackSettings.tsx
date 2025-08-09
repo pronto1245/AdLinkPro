@@ -55,10 +55,7 @@ export default function PostbackSettings() {
 
   // Create profile mutation
   const createProfileMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/postback/profiles', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
+    mutationFn: (data: any) => apiRequest('/api/postback/profiles', 'POST', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       setShowCreateForm(false);
@@ -78,10 +75,7 @@ export default function PostbackSettings() {
 
   // Test postback mutation
   const testPostbackMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/track/postback/test', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
+    mutationFn: (data: any) => apiRequest('/api/track/postback/test', 'POST', data),
     onSuccess: (data) => {
       toast({
         title: "Тест успешен",
