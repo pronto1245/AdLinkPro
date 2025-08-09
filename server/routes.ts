@@ -3912,7 +3912,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Для Кейтаро используем только постбек без предварительного создания клика
             // Кейтаро сам должен обрабатывать постбеки для существующих кликов
             
-            // Стандартная замена параметров в нашем формате
+            // Правильная замена параметров согласно Keitaro формату
             postbackUrl = postbackUrl.replace(/{clickid}/g, clickId);
             postbackUrl = postbackUrl.replace(/{click_id}/g, clickId);
             postbackUrl = postbackUrl.replace(/{client_id}/g, clickId);
@@ -3922,7 +3922,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const conversionStatus = status === 'approved' ? '1' : '0';
             postbackUrl = postbackUrl.replace(/{status}/g, conversionStatus);
             
-            // Заменяем revenue/payout реальным значением
+            // Заменяем payout реальным значением revenue
             const payoutValue = revenue || '0';
             postbackUrl = postbackUrl.replace(/{revenue}/g, payoutValue);
             postbackUrl = postbackUrl.replace(/{payout}/g, payoutValue);
