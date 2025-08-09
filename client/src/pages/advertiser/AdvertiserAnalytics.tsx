@@ -57,6 +57,17 @@ interface StatisticsData {
   sub3?: string;
   sub4?: string;
   sub5?: string;
+  sub6?: string;
+  sub7?: string;
+  sub8?: string;
+  sub9?: string;
+  sub10?: string;
+  sub11?: string;
+  sub12?: string;
+  sub13?: string;
+  sub14?: string;
+  sub15?: string;
+  sub16?: string;
   clicks: number;
   uniqueClicks: number;
   conversions: number;
@@ -1001,15 +1012,24 @@ export function AdvertiserAnalytics() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left p-2">Sub1</th>
-                        <th className="text-left p-2">Sub2</th>
                         <th className="text-left p-2">Partner ID</th>
                         <th className="text-left p-2">Click ID</th>
-                        <th className="text-left p-2">Источник</th>
-                        <th className="text-right p-2">Клики</th>
-                        <th className="text-right p-2">Конверсии</th>
-                        <th className="text-right p-2">CR, %</th>
-                        <th className="text-right p-2">Доход, $</th>
+                        <th className="text-left p-2">Sub1</th>
+                        <th className="text-left p-2">Sub2</th>
+                        <th className="text-left p-2">Sub3</th>
+                        <th className="text-left p-2">Sub4</th>
+                        <th className="text-left p-2">Sub5</th>
+                        <th className="text-left p-2">Sub6</th>
+                        <th className="text-left p-2">Sub7</th>
+                        <th className="text-left p-2">Sub8</th>
+                        <th className="text-left p-2">Sub9</th>
+                        <th className="text-left p-2">Sub10</th>
+                        <th className="text-left p-2">Sub11</th>
+                        <th className="text-left p-2">Sub12</th>
+                        <th className="text-left p-2">Sub13</th>
+                        <th className="text-left p-2">Sub14</th>
+                        <th className="text-left p-2">Sub15</th>
+                        <th className="text-left p-2">Sub16</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1020,23 +1040,28 @@ export function AdvertiserAnalytics() {
                         
                         return paginatedData.map((row, index) => (
                           <tr key={startIndex + index} className="border-b hover:bg-gray-50">
-                            <td className="p-2 font-mono text-xs">
-                              {row.sub1 || '-'}
-                            </td>
-                            <td className="p-2 font-mono text-xs">
-                              {row.sub2 || '-'}
-                            </td>
                             <td className="p-2 text-blue-600 font-mono text-xs">
                               {row.partnerId ? row.partnerId.substring(0, 8) + '...' : 'N/A'}
                             </td>
                             <td className="p-2 text-green-600 font-mono text-xs">
                               {row.clickId || 'N/A'}
                             </td>
-                            <td className="p-2">{row.trafficSource || 'Direct'}</td>
-                            <td className="text-right p-2">{row.clicks.toLocaleString()}</td>
-                            <td className="text-right p-2">{row.conversions.toLocaleString()}</td>
-                            <td className="text-right p-2">{row.cr.toFixed(2)}%</td>
-                            <td className="text-right p-2">${row.revenue.toFixed(2)}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub1 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub2 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub3 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub4 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub5 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub6 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub7 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub8 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub9 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub10 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub11 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub12 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub13 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub14 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub15 || '-'}</td>
+                            <td className="p-2 font-mono text-xs">{row.sub16 || '-'}</td>
                           </tr>
                         ));
                       })()}
