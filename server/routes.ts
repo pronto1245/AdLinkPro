@@ -646,6 +646,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PUT /api/postback/profiles/:id - Update postback profile
+  app.put('/api/postback/profiles/:id', async (req, res) => {
+    try {
+      console.log('=== UPDATING POSTBACK PROFILE ===');
+      const profileId = req.params.id;
+      const updateData = req.body;
+      
+      console.log('Profile ID:', profileId);
+      console.log('Update data:', updateData);
+      
+      // For mock implementation, just return success
+      // In real scenario, would update in database
+      const updatedProfile = {
+        id: profileId,
+        ...updateData,
+        updatedAt: new Date().toISOString()
+      };
+      
+      console.log('Profile updated successfully');
+      res.json({
+        success: true,
+        profile: updatedProfile,
+        message: 'Профиль успешно обновлен'
+      });
+      
+    } catch (error: any) {
+      console.error('Error updating postback profile:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Внутренняя ошибка сервера' 
+      });
+    }
+  });
+
+  // DELETE /api/postback/profiles/:id - Delete postback profile
+  app.delete('/api/postback/profiles/:id', async (req, res) => {
+    try {
+      console.log('=== DELETING POSTBACK PROFILE ===');
+      const profileId = req.params.id;
+      
+      console.log('Deleting profile ID:', profileId);
+      
+      // For mock implementation, just return success
+      // In real scenario, would delete from database
+      console.log('Profile deleted successfully');
+      res.json({
+        success: true,
+        message: 'Профиль успешно удален'
+      });
+      
+    } catch (error: any) {
+      console.error('Error deleting postback profile:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Внутренняя ошибка сервера' 
+      });
+    }
+  });
+
+  // POST /api/postback/profiles - Create postback profile
+  app.post('/api/postback/profiles', async (req, res) => {
+    try {
+      console.log('=== CREATING POSTBACK PROFILE ===');
+      const profileData = req.body;
+      
+      console.log('Profile data:', profileData);
+      
+      // For mock implementation, create profile with generated ID
+      const newProfile = {
+        id: `profile_${Date.now()}`,
+        ...profileData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      console.log('Profile created successfully');
+      res.json({
+        success: true,
+        profile: newProfile,
+        message: 'Профиль успешно создан'
+      });
+      
+    } catch (error: any) {
+      console.error('Error creating postback profile:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Внутренняя ошибка сервера' 
+      });
+    }
+  });
+
   console.log('=== POSTBACK ROUTES ADDED SUCCESSFULLY ===');
 
   // ADVERTISER POSTBACK API ENDPOINTS
