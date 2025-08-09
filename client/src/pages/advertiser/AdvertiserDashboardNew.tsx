@@ -108,11 +108,14 @@ export default function AdvertiserDashboardNew() {
     from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
     to: new Date()
   });
+
   const [filters, setFilters] = useState({
-    geo: '',
-    device: '',
-    offerId: ''
+    geo: 'all',
+    device: 'all',
+    offerId: 'all',
+    partnerId: 'all'
   });
+
 
   // Fetch dashboard data
   const { data: dashboard, isLoading, refetch } = useQuery({
@@ -350,15 +353,15 @@ export default function AdvertiserDashboardNew() {
           </Card>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Charts Section - aligned to match Quick Actions width */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
           <Card data-testid="chart-traffic">
             <CardHeader>
               <CardTitle>Трафик по времени</CardTitle>
               <CardDescription>Клики и уникальные посетители</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={chartData?.traffic || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
@@ -377,7 +380,7 @@ export default function AdvertiserDashboardNew() {
               <CardDescription>Лиды, регистрации и депозиты</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={chartData?.conversions || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
@@ -391,7 +394,6 @@ export default function AdvertiserDashboardNew() {
             </CardContent>
           </Card>
 
-          
           {/* Offer Status Card */}
           <Card data-testid="card-offer-status">
             <CardHeader>
@@ -399,14 +401,14 @@ export default function AdvertiserDashboardNew() {
               <CardDescription>Лучшие офферы по эффективности</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {topOffers.slice(0, 3).map((offer: any) => (
-                  <div key={offer.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                  <div key={offer.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                     <div className="flex flex-col">
-                      <span className="font-medium">{offer.name}</span>
-                      <span className="text-sm text-muted-foreground">CR: {offer.cr}% | {offer.clicks} кликов</span>
+                      <span className="font-medium text-sm">{offer.name}</span>
+                      <span className="text-xs text-muted-foreground">CR: {offer.cr}%</span>
                     </div>
-                    <Badge variant={offer.status === 'active' ? 'default' : 'secondary'}>
+                    <Badge variant={offer.status === 'active' ? 'default' : 'secondary'} className="text-xs">
                       {offer.status}
                     </Badge>
                   </div>
@@ -423,8 +425,8 @@ export default function AdvertiserDashboardNew() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {notifications.slice(0, 4).map((notification: any) => (
-                  <div key={notification.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                {notifications.slice(0, 3).map((notification: any) => (
+                  <div key={notification.id} className="flex items-start gap-2 p-2 rounded-lg bg-muted/50">
                     <div className="flex-1">
                       <div className="font-medium text-sm">{notification.title}</div>
                       <div className="text-xs text-muted-foreground">{notification.message}</div>
@@ -435,26 +437,6 @@ export default function AdvertiserDashboardNew() {
             </CardContent>
           </Card>
         </div>
-
-
-                    <div className="mt-1">
-                      {notification.type === 'partner_request' && <Users className="h-4 w-4 text-blue-600" />}
-                      {notification.type === 'postback_error' && <AlertTriangle className="h-4 w-4 text-red-600" />}
-                      {notification.type === 'offer_pending' && <Clock className="h-4 w-4 text-yellow-600" />}
-                      {notification.type === 'fraud_alert' && <Shield className="h-4 w-4 text-red-600" />}
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium">{notification.title}</p>
-                      <p className="text-xs text-muted-foreground">{notification.message}</p>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Quick Actions moved and removed from end */}
       </div>
   );
 }
