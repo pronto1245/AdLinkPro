@@ -43,18 +43,18 @@ import {
   Download,
   Filter,
   Calendar,
+  Globe,
+  Monitor,
+  Search,
+  Target,
+  Eye,
   TrendingUp,
   MousePointer,
-  Target,
   DollarSign,
-  Eye,
   X,
   Copy,
   ExternalLink,
-  Globe,
-  Monitor,
-  Smartphone,
-  Search
+  Smartphone
 } from "lucide-react";
 import { formatCurrency, formatCR } from "@/utils/formatting";
 import { useToast } from "@/hooks/use-toast";
@@ -388,18 +388,39 @@ export default function Statistics() {
       {/* Tabs for different views */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview">Обзор</TabsTrigger>
-          <TabsTrigger value="geography">География</TabsTrigger>
-          <TabsTrigger value="devices">Устройства</TabsTrigger>
-          <TabsTrigger value="sources">Источники</TabsTrigger>
-          <TabsTrigger value="subid">SubID</TabsTrigger>
-          <TabsTrigger value="details">Детали</TabsTrigger>
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-blue-600" />
+            Обзор
+          </TabsTrigger>
+          <TabsTrigger value="geography" className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-green-600" />
+            География
+          </TabsTrigger>
+          <TabsTrigger value="devices" className="flex items-center gap-2">
+            <Monitor className="h-4 w-4 text-purple-600" />
+            Устройства
+          </TabsTrigger>
+          <TabsTrigger value="sources" className="flex items-center gap-2">
+            <Search className="h-4 w-4 text-orange-600" />
+            Источники
+          </TabsTrigger>
+          <TabsTrigger value="subid" className="flex items-center gap-2">
+            <Target className="h-4 w-4 text-teal-600" />
+            SubID
+          </TabsTrigger>
+          <TabsTrigger value="details" className="flex items-center gap-2">
+            <Eye className="h-4 w-4 text-indigo-600" />
+            Детали
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Общая статистика кликов</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-blue-600" />
+                Общая статистика кликов
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -477,7 +498,7 @@ export default function Statistics() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
+                <Globe className="h-5 w-5 text-green-600" />
                 Статистика по географии
               </CardTitle>
             </CardHeader>
@@ -522,7 +543,7 @@ export default function Statistics() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Monitor className="h-5 w-5" />
+                <Monitor className="h-5 w-5 text-purple-600" />
                 Статистика по устройствам
               </CardTitle>
             </CardHeader>
@@ -572,7 +593,7 @@ export default function Statistics() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Search className="h-5 w-5" />
+                <Search className="h-5 w-5 text-orange-600" />
                 Статистика по источникам
               </CardTitle>
             </CardHeader>
@@ -616,7 +637,10 @@ export default function Statistics() {
         <TabsContent value="subid" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Анализ SubID параметров</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-teal-600" />
+                Анализ SubID параметров
+              </CardTitle>
               <p className="text-sm text-muted-foreground">
                 Детальный анализ всех Sub1-Sub16 параметров с сохранением исходных данных
               </p>
@@ -670,7 +694,10 @@ export default function Statistics() {
         <TabsContent value="details" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Детальная статистика (50 записей на страницу)</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Eye className="h-5 w-5 text-indigo-600" />
+                Детальная статистика
+              </CardTitle>
               <p className="text-sm text-muted-foreground">
                 Показано {((pagination.currentPage - 1) * pagination.itemsPerPage) + 1}-{Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} из {pagination.totalItems} записей
               </p>
