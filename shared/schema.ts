@@ -11,6 +11,11 @@ export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'c
 export const ticketStatusEnum = pgEnum('ticket_status', ['open', 'in_progress', 'resolved', 'closed']);
 export const kycStatusEnum = pgEnum('kyc_status', ['pending', 'approved', 'rejected']);
 export const postbackStatusEnum = pgEnum('postback_status', ['pending', 'sent', 'failed', 'retry']);
+export const trackerTypeEnum = pgEnum('tracker_type', ['keitaro', 'custom']);
+export const scopeTypeEnum = pgEnum('scope_type', ['global', 'campaign', 'offer', 'flow']);
+export const httpMethodEnum = pgEnum('http_method', ['GET', 'POST']);
+export const idParamEnum = pgEnum('id_param', ['subid', 'clickid']);
+export const eventTypeEnum = pgEnum('event_type', ['open', 'lp_click', 'reg', 'deposit', 'sale', 'lead', 'lp_leave']);
 export const auditActionEnum = pgEnum('audit_action', ['create', 'update', 'delete', 'login', 'logout', 'view', 'approve', 'reject']);
 export const userStatusEnum = pgEnum('user_status', ['active', 'blocked', 'deleted', 'pending_verification']);
 export const userTypeEnum = pgEnum('user_type', ['advertiser', 'affiliate', 'staff', 'admin']);
@@ -620,6 +625,129 @@ export const auditLogs = pgTable("audit_logs", {
   description: text("description"),
 });
 
+// Clicks tracking table
+export const clicks = pgTable("clicks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clickid: text("clickid").notNull().unique(),
+  visitor_code: text("visitor_code"),
+  campaign_id: varchar("campaign_id"),
+  source_id: varchar("source_id"),
+  flow_id: varchar("flow_id"),
+  offer_id: varchar("offer_id"),
+  landing_id: varchar("landing_id"),
+  ad_campaign_id: text("ad_campaign_id"),
+  external_id: text("external_id"),
+  creative_id: text("creative_id"),
+  site: text("site"),
+  referrer: text("referrer"),
+  sub1: text("sub1"),
+  sub2_raw: text("sub2_raw"),
+  sub2_map: jsonb("sub2_map"),
+  sub3: text("sub3"),
+  sub4: text("sub4"),
+  sub5: text("sub5"),
+  sub6: text("sub6"),
+  sub7: text("sub7"),
+  sub8: text("sub8"),
+  sub9: text("sub9"),
+  sub10: text("sub10"),
+  ip: text("ip"),
+  country_iso: text("country_iso"),
+  region: text("region"),
+  city: text("city"),
+  isp: text("isp"),
+  operator: text("operator"),
+  is_proxy: boolean("is_proxy").default(false),
+  user_agent: text("user_agent"),
+  browser_name: text("browser_name"),
+  browser_version: text("browser_version"),
+  os_name: text("os_name"),
+  os_version: text("os_version"),
+  device_model: text("device_model"),
+  device_type: text("device_type"),
+  connection: text("connection"),
+  lang: text("lang"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+// Events tracking table
+export const events = pgTable("events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clickid: text("clickid").notNull(),
+  type: eventTypeEnum("type").notNull(),
+  revenue: decimal("revenue", { precision: 15, scale: 2 }),
+  currency: text("currency").default('USD'),
+  txid: text("txid"),
+  time_on_page_ms: integer("time_on_page_ms"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+// Postback profiles
+export const postbackProfiles = pgTable("postback_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  owner_id: varchar("owner_id").notNull().references(() => users.id),
+  name: text("name").notNull(),
+  tracker_type: trackerTypeEnum("tracker_type").notNull(),
+  scope_type: scopeTypeEnum("scope_type").notNull(),
+  scope_id: varchar("scope_id"),
+  priority: integer("priority").default(100),
+  enabled: boolean("enabled").default(true),
+  endpoint_url: text("endpoint_url").notNull(),
+  method: httpMethodEnum("method").default('GET'),
+  id_param: idParamEnum("id_param").default('clickid'),
+  auth_query_key: text("auth_query_key"),
+  auth_query_val: text("auth_query_val"),
+  auth_header_name: text("auth_header_name"),
+  auth_header_val: text("auth_header_val"),
+  status_map: jsonb("status_map").default({
+    open: 'open',
+    reg: 'lead',
+    deposit: 'sale',
+    lp_click: 'click'
+  }),
+  params_template: jsonb("params_template").default({
+    clickid: '{{clickid}}',
+    status: '{{status}}',
+    revenue: '{{revenue}}',
+    currency: '{{currency}}',
+    country: '{{country_iso}}'
+  }),
+  url_encode: boolean("url_encode").default(true),
+  hmac_enabled: boolean("hmac_enabled").default(false),
+  hmac_secret: text("hmac_secret"),
+  hmac_payload_tpl: text("hmac_payload_tpl"),
+  hmac_param_name: text("hmac_param_name").default('signature'),
+  retries: integer("retries").default(5),
+  timeout_ms: integer("timeout_ms").default(4000),
+  backoff_base_sec: integer("backoff_base_sec").default(2),
+  filter_revenue_gt0: boolean("filter_revenue_gt0").default(false),
+  filter_country_whitelist: jsonb("filter_country_whitelist").default([]),
+  filter_country_blacklist: jsonb("filter_country_blacklist").default([]),
+  filter_exclude_bots: boolean("filter_exclude_bots").default(true),
+  last_delivery: timestamp("last_delivery"),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+// Postback deliveries logs
+export const postbackDeliveries = pgTable("postback_deliveries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  profile_id: varchar("profile_id").notNull().references(() => postbackProfiles.id),
+  event_id: varchar("event_id").references(() => events.id),
+  clickid: text("clickid").notNull(),
+  attempt: integer("attempt").notNull(),
+  max_attempts: integer("max_attempts").notNull(),
+  request_method: httpMethodEnum("request_method").notNull(),
+  request_url: text("request_url").notNull(),
+  request_body: text("request_body"),
+  request_headers: jsonb("request_headers"),
+  response_code: integer("response_code"),
+  response_body: text("response_body"),
+  error: text("error"),
+  duration_ms: integer("duration_ms"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
 // Financial Transactions - Core finance table
 export const financialTransactions = pgTable("financial_transactions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -720,6 +848,8 @@ export const fraudReports = pgTable('fraud_reports', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
+
+
 
 // Fraud Rules Configuration
 export const fraudRules = pgTable('fraud_rules', {

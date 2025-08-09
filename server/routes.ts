@@ -157,6 +157,24 @@ const requireUserAccess = async (req: Request, res: Response, next: NextFunction
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Import postback and tracking routes
+  try {
+    const { default: postbackRoutes } = await import('./routes/postback.js');
+    const { default: trackingRoutes } = await import('./routes/tracking.js');
+    
+    // Mount postback routes
+    app.use('/api/postback', postbackRoutes);
+    app.use('/api/advertiser/postback', postbackRoutes);
+    app.use('/api/affiliate/postback', postbackRoutes);
+    
+    // Mount tracking routes at root for /click and /event endpoints
+    app.use('/', trackingRoutes);
+    
+    console.log('=== POSTBACK AND TRACKING ROUTES ADDED ===');
+  } catch (error) {
+    console.warn('Postback routes not found:', error);
+  }
+
   // FIXED: Team API routes added first without middleware for testing
   console.log('=== ADDING TEAM ROUTES WITHOUT MIDDLEWARE ===');
   
@@ -358,6 +376,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   console.log('=== TEAM ROUTES ADDED SUCCESSFULLY ===');
+
+  // Postback API Routes
+  console.log('=== ADDING POSTBACK ROUTES ===');
+  
+  // Get all postback profiles for current user
+  app.get("/api/postback/profiles", async (req, res) => {
+    try {
+      const mockProfiles = [
+        {
+          id: 'profile_1',
+          name: 'Keitaro Main',
+          tracker_type: 'keitaro',
+          scope_type: 'global',
+          enabled: true,
+          endpoint_url: 'https://keitaro.example.com/api/v1/conversions',
+          method: 'POST',
+          id_param: 'clickid',
+          status_map: {
+            open: 'open',
+            reg: 'lead',
+            deposit: 'sale',
+            lp_click: 'click'
+          },
+          last_delivery: new Date().toISOString(),
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 'profile_2',
+          name: 'Custom Tracker',
+          tracker_type: 'custom',
+          scope_type: 'global',
+          enabled: false,
+          endpoint_url: 'https://custom.example.com/postback',
+          method: 'GET',
+          id_param: 'subid',
+          status_map: {
+            open: 'open',
+            reg: 'registration',
+            deposit: 'conversion',
+            lp_click: 'click'
+          },
+          last_delivery: null,
+          created_at: new Date().toISOString()
+        }
+      ];
+
+      res.json(mockProfiles);
+    } catch (error: any) {
+      console.error('Error getting postback profiles:', error);
+      res.status(500).json({ message: 'Failed to get postback profiles' });
+    }
+  });
+
+  // Create new postback profile
+  app.post("/api/postback/profiles", async (req, res) => {
+    try {
+      const profileData = req.body;
+      const newProfile = {
+        id: `profile_${Date.now()}`,
+        ...profileData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('Creating postback profile:', newProfile);
+      res.json(newProfile);
+    } catch (error: any) {
+      console.error('Error creating postback profile:', error);
+      res.status(500).json({ message: 'Failed to create postback profile' });
+    }
+  });
+
+  // Update postback profile
+  app.put("/api/postback/profiles/:id", async (req, res) => {
+    try {
+      const profileId = req.params.id;
+      const updateData = req.body;
+      
+      const updatedProfile = {
+        id: profileId,
+        ...updateData,
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('Updating postback profile:', updatedProfile);
+      res.json(updatedProfile);
+    } catch (error: any) {
+      console.error('Error updating postback profile:', error);
+      res.status(500).json({ message: 'Failed to update postback profile' });
+    }
+  });
+
+  // Delete postback profile
+  app.delete("/api/postback/profiles/:id", async (req, res) => {
+    try {
+      const profileId = req.params.id;
+      console.log('Deleting postback profile:', profileId);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('Error deleting postback profile:', error);
+      res.status(500).json({ message: 'Failed to delete postback profile' });
+    }
+  });
+
+  // Get postback delivery logs
+  app.get("/api/postback/deliveries", async (req, res) => {
+    try {
+      const mockDeliveries = [
+        {
+          id: 'delivery_1',
+          profile_id: 'profile_1',
+          clickid: 'abc123456789',
+          attempt: 1,
+          max_attempts: 5,
+          request_method: 'POST',
+          request_url: 'https://keitaro.example.com/api/v1/conversions',
+          response_code: 200,
+          response_body: '{"status":"ok"}',
+          duration_ms: 150,
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 'delivery_2',
+          profile_id: 'profile_1',
+          clickid: 'def987654321',
+          attempt: 1,
+          max_attempts: 5,
+          request_method: 'POST',
+          request_url: 'https://keitaro.example.com/api/v1/conversions',
+          response_code: 500,
+          error: 'Server error',
+          duration_ms: 5000,
+          created_at: new Date(Date.now() - 3600000).toISOString()
+        }
+      ];
+
+      res.json(mockDeliveries);
+    } catch (error: any) {
+      console.error('Error getting postback deliveries:', error);
+      res.status(500).json({ message: 'Failed to get postback deliveries' });
+    }
+  });
+
+  console.log('=== POSTBACK ROUTES ADDED SUCCESSFULLY ===');
 
   // АНТИФРОД API ЭНДПОИНТЫ
   console.log('=== ADDING ANTIFRAUD ROUTES ===');

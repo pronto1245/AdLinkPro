@@ -1,362 +1,469 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import type { Request, Response } from 'express';
-import { 
-  clickEventSchema, 
-  conversionEventSchema, 
-  parseSub2,
-  clicks,
-  events,
-  type ClickEventData,
-  type ConversionEventData,
-  type NewClick,
-  type NewEvent
-} from '@shared/tracking-events-schema';
-import { storage } from '../storage';
-import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import crypto from 'crypto';
+import { db } from '../db.js';
+import { clicks, events, postbackProfiles, postbackDeliveries } from '../../shared/schema.js';
+import { eq, and, or, sql } from 'drizzle-orm';
 
 const router = Router();
 
-// UA parser (simplified - in production use ua-parser-js or similar)
-function parseUserAgent(userAgent: string) {
-  const ua = userAgent.toLowerCase();
-  
-  // Browser detection
-  let browserName = 'unknown';
-  let browserVersion = '';
-  
-  if (ua.includes('chrome')) {
-    browserName = 'Chrome';
-    const match = ua.match(/chrome\/([0-9.]+)/);
-    browserVersion = match ? match[1] : '';
-  } else if (ua.includes('firefox')) {
-    browserName = 'Firefox';
-    const match = ua.match(/firefox\/([0-9.]+)/);
-    browserVersion = match ? match[1] : '';
-  } else if (ua.includes('safari')) {
-    browserName = 'Safari';
-    const match = ua.match(/version\/([0-9.]+)/);
-    browserVersion = match ? match[1] : '';
-  }
-  
-  // OS detection
-  let osName = 'unknown';
-  let osVersion = '';
-  
-  if (ua.includes('windows')) {
-    osName = 'Windows';
-    if (ua.includes('windows nt 10.0')) osVersion = '10';
-    else if (ua.includes('windows nt 6.3')) osVersion = '8.1';
-    else if (ua.includes('windows nt 6.1')) osVersion = '7';
-  } else if (ua.includes('mac os')) {
-    osName = 'macOS';
-    const match = ua.match(/mac os x ([0-9_]+)/);
-    osVersion = match ? match[1].replace(/_/g, '.') : '';
-  } else if (ua.includes('android')) {
-    osName = 'Android';
-    const match = ua.match(/android ([0-9.]+)/);
-    osVersion = match ? match[1] : '';
-  } else if (ua.includes('iphone') || ua.includes('ipad')) {
-    osName = 'iOS';
-    const match = ua.match(/os ([0-9_]+)/);
-    osVersion = match ? match[1].replace(/_/g, '.') : '';
-  }
-  
-  // Device model (simplified)
-  let deviceModel = '';
-  if (ua.includes('iphone')) deviceModel = 'iPhone';
-  else if (ua.includes('ipad')) deviceModel = 'iPad';
-  else if (ua.includes('android')) {
-    const match = ua.match(/android[^;]*;\s*([^)]+)/);
-    deviceModel = match ? match[1].trim() : 'Android Device';
-  }
-  
-  return {
-    browserName,
-    browserVersion,
-    osName,
-    osVersion,
-    deviceModel
-  };
-}
+// Click tracking schema
+const clickSchema = z.object({
+  campaign_id: z.string().optional(),
+  source_id: z.string().optional(),
+  flow_id: z.string().optional(),
+  offer_id: z.string().optional(),
+  landing_id: z.string().optional(),
+  ad_campaign_id: z.string().optional(),
+  external_id: z.string().optional(),
+  creative_id: z.string().optional(),
+  sub1: z.string().optional(),
+  sub2: z.string().optional(),
+  sub3: z.string().optional(),
+  sub4: z.string().optional(),
+  sub5: z.string().optional(),
+  sub6: z.string().optional(),
+  sub7: z.string().optional(),
+  sub8: z.string().optional(),
+  sub9: z.string().optional(),
+  sub10: z.string().optional(),
+  clickid: z.string().optional(),
+  visitor_code: z.string().optional(),
+  utm_source: z.string().optional(),
+  utm_medium: z.string().optional(),
+  utm_campaign: z.string().optional(),
+  utm_term: z.string().optional(),
+  utm_content: z.string().optional()
+});
 
-// IP geolocation (mock - in production use MaxMind GeoIP2 or similar)
-function getGeoData(ip: string) {
-  // Mock implementation - replace with real geolocation service
-  const mockGeoData = {
-    '127.0.0.1': { country: 'US', region: 'CA', city: 'San Francisco', isp: 'Local ISP', operator: null },
-    '192.168.1.1': { country: 'US', region: 'NY', city: 'New York', isp: 'Verizon', operator: 'Verizon' },
-  };
+// Event tracking schema
+const eventSchema = z.object({
+  type: z.enum(['open', 'lp_click', 'reg', 'deposit', 'sale', 'lead', 'lp_leave']),
+  clickid: z.string().min(1, 'ClickID is required'),
+  visitor_code: z.string().optional(),
+  campaign_id: z.string().optional(),
+  source_id: z.string().optional(),
+  flow_id: z.string().optional(),
+  offer_id: z.string().optional(),
+  landing_id: z.string().optional(),
+  ad_campaign_id: z.string().optional(),
+  external_id: z.string().optional(),
+  creative_id: z.string().optional(),
+  sub1: z.string().optional(),
+  sub2: z.string().optional(),
+  sub3: z.string().optional(),
+  sub4: z.string().optional(),
+  sub5: z.string().optional(),
+  sub6: z.string().optional(),
+  sub7: z.string().optional(),
+  sub8: z.string().optional(),
+  sub9: z.string().optional(),
+  sub10: z.string().optional(),
+  site: z.string().optional(),
+  referrer: z.string().optional(),
+  user_agent: z.string().optional(),
+  lang: z.string().optional(),
+  tz: z.string().optional(),
+  screen: z.string().optional(),
+  connection: z.string().optional(),
+  device_type: z.string().optional(),
+  ts_client: z.number().optional(),
+  revenue: z.number().optional(),
+  revenue_deposit: z.number().optional(),
+  currency: z.string().optional(),
+  txid: z.string().optional(),
+  time_on_page_ms: z.number().optional()
+});
+
+// Parse sub2 format: key-value|key2-value2
+function parseSub2(sub2Raw?: string): Record<string, string> {
+  if (!sub2Raw || sub2Raw.length > 200) return {};
   
-  return mockGeoData[ip as keyof typeof mockGeoData] || {
-    country: 'US',
-    region: 'Unknown',
-    city: 'Unknown',
-    isp: 'Unknown ISP',
-    operator: null
-  };
-}
-
-// Check if IP is proxy (mock - use real proxy detection service)
-function isProxyIp(ip: string): boolean {
-  // Mock implementation
-  return false;
-}
-
-// Generate unique clickid
-function generateClickId(): string {
-  return nanoid(16); // 16 character unique ID
-}
-
-// GET /click - Initial click tracking and redirect
-router.get('/click', async (req: Request, res: Response) => {
   try {
-    const query = req.query;
+    const decoded = decodeURIComponent(sub2Raw);
+    const pairs = decoded.split('|').slice(0, 8); // Max 8 pairs
+    const result: Record<string, string> = {};
     
-    // Validate basic required params
-    const offerId = query.offer_id as string;
-    const landingUrl = query.landing_url as string;
+    const allowedKeys = (process.env.SUB2_ALLOWED_KEYS || 'geo,dev,src,adset,lang,tier,abtest,cohort,pp,fpr,seg').split(',');
     
-    if (!offerId || !landingUrl) {
-      return res.status(400).json({ 
-        error: 'Missing required parameters: offer_id, landing_url' 
-      });
+    for (const pair of pairs) {
+      const [key, value] = pair.split('-', 2);
+      if (key && value && allowedKeys.includes(key)) {
+        result[key] = value;
+      }
     }
     
-    // Generate clickid if not provided
-    const clickid = (query.clickid as string) || generateClickId();
-    const visitorCode = (query.visitor_code as string) || nanoid(32);
-    
-    // Get client IP
-    const ip = req.headers['x-forwarded-for'] as string || 
-               req.headers['x-real-ip'] as string || 
-               req.connection.remoteAddress || 
-               req.ip || 
-               '127.0.0.1';
-    
-    // Parse user agent
+    return result;
+  } catch (error) {
+    return {};
+  }
+}
+
+// Get GeoIP data (mock implementation)
+function getGeoData(ip: string) {
+  // In production, use real GeoIP service like MaxMind
+  return {
+    country_iso: 'US',
+    region: 'California',
+    city: 'San Francisco',
+    isp: 'Example ISP',
+    operator: 'Example Operator',
+    is_proxy: false
+  };
+}
+
+// Parse User Agent (mock implementation)
+function parseUserAgent(userAgent?: string) {
+  if (!userAgent) return {};
+  
+  // In production, use a real UA parser library
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(userAgent);
+  
+  return {
+    browser_name: 'Chrome',
+    browser_version: '120.0',
+    os_name: isMobile ? 'iOS' : 'Windows',
+    os_version: isMobile ? '17.0' : '11',
+    device_model: isMobile ? 'iPhone' : null,
+    device_type: isMobile ? 'mobile' : 'desktop'
+  };
+}
+
+// GET /click - Handle click tracking and redirect
+router.get('/click', async (req, res) => {
+  try {
+    const params = clickSchema.parse(req.query);
+    const clickid = params.clickid || nanoid();
+    const ip = req.ip || req.connection.remoteAddress || '';
     const userAgent = req.headers['user-agent'] || '';
-    const parsedUA = parseUserAgent(userAgent);
     
-    // Get geo data
+    // Get enrichment data
     const geoData = getGeoData(ip);
+    const uaData = parseUserAgent(userAgent);
+    const sub2Map = parseSub2(params.sub2);
     
-    // Prepare click data
-    const clickData: NewClick = {
+    // Store click
+    await db.insert(clicks).values({
       clickid,
-      visitorCode,
-      
-      // Attribution from query params
-      campaignId: query.campaign_id as string,
-      sourceId: query.source_id as string,
-      flowId: query.flow_id as string,
-      offerId: query.offer_id as string,
-      landingId: query.landing_id as string,
-      adCampaignId: query.ad_campaign_id as string,
-      externalId: query.external_id as string,
-      creativeId: query.creative_id as string,
-      
-      // Marketing
-      referrer: req.headers.referer,
-      site: req.headers.host,
-      utmSource: query.utm_source as string,
-      utmMedium: query.utm_medium as string,
-      utmCampaign: query.utm_campaign as string,
-      utmTerm: query.utm_term as string,
-      utmContent: query.utm_content as string,
-      
-      // Subs
-      sub1: query.sub1 as string,
-      sub2: query.sub2 as string,
-      sub3: query.sub3 as string,
-      sub4: query.sub4 as string,
-      sub5: query.sub5 as string,
-      sub6: query.sub6 as string,
-      sub7: query.sub7 as string,
-      sub8: query.sub8 as string,
-      sub9: query.sub9 as string,
-      sub10: query.sub10 as string,
-      
-      // Parse sub2
-      sub2Raw: query.sub2 as string,
-      sub2Map: query.sub2 ? parseSub2(query.sub2 as string) : null,
-      
-      // Client data (from headers/detection)
-      userAgent,
-      deviceType: query.device_type as any || 'desktop', // Will be detected by client
-      
-      // Server enriched
-      ip,
-      countryIso: geoData.country,
+      visitor_code: params.visitor_code,
+      campaign_id: params.campaign_id ? BigInt(params.campaign_id) : null,
+      source_id: params.source_id ? BigInt(params.source_id) : null,
+      flow_id: params.flow_id ? BigInt(params.flow_id) : null,
+      offer_id: params.offer_id ? BigInt(params.offer_id) : null,
+      landing_id: params.landing_id ? BigInt(params.landing_id) : null,
+      ad_campaign_id: params.ad_campaign_id,
+      external_id: params.external_id,
+      creative_id: params.creative_id,
+      site: req.hostname,
+      referrer: req.headers.referer || null,
+      sub1: params.sub1,
+      sub2_raw: params.sub2,
+      sub2_map: sub2Map,
+      sub3: params.sub3,
+      sub4: params.sub4,
+      sub5: params.sub5,
+      sub6: params.sub6,
+      sub7: params.sub7,
+      sub8: params.sub8,
+      sub9: params.sub9,
+      sub10: params.sub10,
+      ip: ip as any,
+      country_iso: geoData.country_iso,
       region: geoData.region,
       city: geoData.city,
       isp: geoData.isp,
       operator: geoData.operator,
-      isProxy: isProxyIp(ip),
-      
-      // UA parsing
-      browserName: parsedUA.browserName,
-      browserVersion: parsedUA.browserVersion,
-      osName: parsedUA.osName,
-      osVersion: parsedUA.osVersion,
-      deviceModel: parsedUA.deviceModel,
-      
-      // Timestamps
-      tsClient: query.ts_client ? Number(query.ts_client) : Date.now(),
-    };
+      is_proxy: geoData.is_proxy,
+      user_agent: userAgent,
+      browser_name: uaData.browser_name,
+      browser_version: uaData.browser_version,
+      os_name: uaData.os_name,
+      os_version: uaData.os_version,
+      device_model: uaData.device_model,
+      device_type: uaData.device_type,
+      connection: null,
+      lang: null
+    });
+
+    // Build redirect URL (should point to the actual landing page)
+    const redirectUrl = new URL(params.landing_id ? `https://landing-${params.landing_id}.com` : 'https://example-landing.com');
     
-    // Store click in database (mock for now)
-    console.log('Click stored:', clickData);
-    
-    // Build redirect URL with tracking parameters
-    const redirectUrl = new URL(landingUrl);
+    // Add tracking parameters to redirect
     redirectUrl.searchParams.set('clickid', clickid);
-    redirectUrl.searchParams.set('visitor_code', visitorCode);
+    if (params.sub1) redirectUrl.searchParams.set('sub1', params.sub1);
+    if (params.sub2) redirectUrl.searchParams.set('sub2', params.sub2);
+    if (params.sub3) redirectUrl.searchParams.set('sub3', params.sub3);
+    if (params.sub4) redirectUrl.searchParams.set('sub4', params.sub4);
+    if (params.sub5) redirectUrl.searchParams.set('sub5', params.sub5);
+    if (params.utm_source) redirectUrl.searchParams.set('utm_source', params.utm_source);
+    if (params.utm_medium) redirectUrl.searchParams.set('utm_medium', params.utm_medium);
+    if (params.utm_campaign) redirectUrl.searchParams.set('utm_campaign', params.utm_campaign);
+
+    console.log(`CLICK TRACKED: ${clickid} -> ${redirectUrl.toString()}`);
     
-    // Pass through subs
-    for (let i = 1; i <= 10; i++) {
-      const subValue = query[`sub${i}`] as string;
-      if (subValue) {
-        redirectUrl.searchParams.set(`sub${i}`, subValue);
-      }
-    }
-    
-    // Log click event
-    console.log(`Click tracked: ${clickid} -> ${offerId} (${geoData.country})`);
-    
-    // Redirect to landing page
+    // 302 redirect to landing page
     res.redirect(302, redirectUrl.toString());
     
   } catch (error) {
     console.error('Click tracking error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(400).json({ error: 'Invalid click parameters' });
   }
 });
 
-// POST /event - Conversion event tracking
-router.post('/event', async (req: Request, res: Response) => {
+// POST /event - Handle event tracking
+router.post('/event', async (req, res) => {
   try {
-    // Validate request body
-    const eventData = conversionEventSchema.parse(req.body);
+    const data = eventSchema.parse(req.body);
+    const ip = req.ip || req.connection.remoteAddress || '';
     
-    // Check if click exists (mock for now)
-    console.log('Checking click:', eventData.clickid);
+    // Check idempotency key
+    const idempotencyKey = `${data.clickid}-${data.type}-${data.txid || '-'}`;
     
-    // Get client IP for enrichment
-    const ip = req.headers['x-forwarded-for'] as string || 
-               req.headers['x-real-ip'] as string || 
-               req.connection.remoteAddress || 
-               req.ip || 
-               '127.0.0.1';
+    const existingEvent = await db.select()
+      .from(events)
+      .where(
+        and(
+          eq(events.clickid, data.clickid),
+          eq(events.type, data.type),
+          data.txid ? eq(events.txid, data.txid) : sql`txid IS NULL`
+        )
+      )
+      .limit(1);
     
-    // Parse user agent
-    const parsedUA = parseUserAgent(eventData.user_agent);
-    
-    // Get geo data
-    const geoData = getGeoData(ip);
-    
-    // Store conversion event
-    const newEvent: NewEvent = {
-      clickid: eventData.clickid,
-      type: eventData.type,
-      revenue: eventData.revenue?.toString(),
-      revenueDeposit: eventData.revenue_deposit?.toString(),
-      revenueReg: eventData.revenue_reg?.toString(),
-      currency: eventData.currency,
-      txid: eventData.txid,
-      timeOnPageMs: eventData.time_on_page_ms,
-      tsClient: eventData.ts_client,
-      raw: req.body // Store raw data for audit
-    };
-    
-    const insertedEvent = { id: 'mock-event-id', ...newEvent };
-    
-    // Update click with additional data if provided
-    if (eventData.campaign_id || eventData.offer_id || eventData.sub2) {
-      const updateData: Partial<NewClick> = {};
-      
-      if (eventData.campaign_id) updateData.campaignId = eventData.campaign_id;
-      if (eventData.offer_id) updateData.offerId = eventData.offer_id;
-      if (eventData.sub2) {
-        updateData.sub2Raw = eventData.sub2;
-        updateData.sub2Map = parseSub2(eventData.sub2);
-      }
-      
-      // Update browser/device info if more detailed
-      updateData.browserName = parsedUA.browserName;
-      updateData.browserVersion = parsedUA.browserVersion;
-      updateData.osName = parsedUA.osName;
-      updateData.osVersion = parsedUA.osVersion;
-      updateData.deviceModel = parsedUA.deviceModel;
-      updateData.deviceType = eventData.device_type;
-      updateData.lang = eventData.lang;
-      updateData.tz = eventData.tz;
-      updateData.screen = eventData.screen;
-      updateData.connection = eventData.connection;
-      
-      if (Object.keys(updateData).length > 0) {
-        console.log('Click update:', updateData);
-      }
+    if (existingEvent.length > 0) {
+      console.log(`DUPLICATE EVENT: ${idempotencyKey}`);
+      return res.json({ status: 'duplicate', event_id: existingEvent[0].id });
     }
+
+    // Get enrichment data
+    const geoData = getGeoData(ip);
+    const uaData = parseUserAgent(data.user_agent);
     
-    // TODO: Send postback to external tracker (Keitaro)
-    // await sendPostback(eventData, insertedEvent);
+    // Store event
+    const eventResult = await db.insert(events).values({
+      clickid: data.clickid,
+      type: data.type,
+      revenue: data.revenue || data.revenue_deposit || null,
+      currency: data.currency || 'USD',
+      txid: data.txid,
+      time_on_page_ms: data.time_on_page_ms
+    }).returning();
+
+    const eventId = eventResult[0].id;
     
-    console.log(`Event tracked: ${eventData.type} for ${eventData.clickid} (Revenue: ${eventData.revenue || 0})`);
+    console.log(`EVENT TRACKED: ${data.type} for ${data.clickid} (${eventId})`);
+
+    // Find and trigger postback profiles
+    await triggerPostbacks(data, eventId);
     
     res.json({ 
-      success: true, 
-      event_id: insertedEvent.id,
-      clickid: eventData.clickid 
+      status: 'success', 
+      event_id: eventId,
+      clickid: data.clickid,
+      type: data.type
     });
     
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
-        error: 'Validation error', 
-        details: error.errors 
-      });
-    }
-    
     console.error('Event tracking error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(400).json({ error: 'Invalid event data' });
   }
 });
 
-// GET /pixel - Pixel tracking for lp_leave events
-router.get('/pixel', async (req: Request, res: Response) => {
+// Function to trigger postbacks
+async function triggerPostbacks(eventData: any, eventId: bigint) {
   try {
-    const { clickid, time_on_page } = req.query;
-    
-    if (clickid && time_on_page) {
-      // Create lp_leave event
-      const eventData: NewEvent = {
-        clickid: clickid as string,
-        type: 'lp_leave',
-        timeOnPageMs: Number(time_on_page),
-        tsClient: Date.now(),
-        raw: req.query
-      };
-      
-      console.log('Pixel event:', eventData);
+    // Find applicable postback profiles
+    // Priority: flow -> offer -> campaign -> global
+    const profiles = await db.select()
+      .from(postbackProfiles)
+      .where(
+        and(
+          eq(postbackProfiles.enabled, true),
+          or(
+            eq(postbackProfiles.scope_type, 'global'),
+            and(
+              eq(postbackProfiles.scope_type, 'campaign'),
+              eq(postbackProfiles.scope_id, BigInt(eventData.campaign_id || 0))
+            ),
+            and(
+              eq(postbackProfiles.scope_type, 'offer'),
+              eq(postbackProfiles.scope_id, BigInt(eventData.offer_id || 0))
+            ),
+            and(
+              eq(postbackProfiles.scope_type, 'flow'),
+              eq(postbackProfiles.scope_id, BigInt(eventData.flow_id || 0))
+            )
+          )
+        )
+      )
+      .orderBy(postbackProfiles.priority);
+
+    for (const profile of profiles) {
+      // Apply filters
+      if (profile.filter_revenue_gt0 && (!eventData.revenue || eventData.revenue <= 0)) {
+        continue;
+      }
+
+      // Queue postback delivery (in production, use a proper queue system)
+      await queuePostbackDelivery(profile, eventData, eventId);
     }
     
-    // Return 1x1 transparent pixel
-    const pixel = Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-      'base64'
-    );
+  } catch (error) {
+    console.error('Postback trigger error:', error);
+  }
+}
+
+// Function to queue and execute postback delivery
+async function queuePostbackDelivery(profile: any, eventData: any, eventId: bigint) {
+  try {
+    // Map event type to profile status
+    const mappedStatus = profile.status_map[eventData.type] || eventData.type;
     
-    res.set('Content-Type', 'image/png');
-    res.set('Content-Length', pixel.length.toString());
-    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.send(pixel);
+    // Build parameters using template
+    const params: Record<string, string> = {};
+    for (const [key, template] of Object.entries(profile.params_template as Record<string, string>)) {
+      params[key] = replaceTemplate(template, {
+        ...eventData,
+        status: mappedStatus,
+        country_iso: 'US', // From geo enrichment
+        event_id: eventId.toString()
+      });
+    }
+
+    // Add authentication
+    if (profile.auth_query_key && profile.auth_query_val) {
+      params[profile.auth_query_key] = profile.auth_query_val;
+    }
+
+    // HMAC signature
+    if (profile.hmac_enabled && profile.hmac_secret && profile.hmac_payload_tpl) {
+      const payload = replaceTemplate(profile.hmac_payload_tpl, {
+        ...eventData,
+        status: mappedStatus
+      });
+      const signature = crypto.createHmac('sha256', profile.hmac_secret).update(payload).digest('hex');
+      params[profile.hmac_param_name || 'signature'] = signature;
+    }
+
+    // Execute delivery with retries
+    await executePostbackDelivery(profile, params, eventData.clickid, eventId, 1);
     
   } catch (error) {
-    console.error('Pixel tracking error:', error);
-    res.status(500).send('Error');
+    console.error('Postback delivery error:', error);
   }
-});
+}
+
+// Execute postback delivery with retry logic
+async function executePostbackDelivery(
+  profile: any, 
+  params: Record<string, string>, 
+  clickid: string, 
+  eventId: bigint, 
+  attempt: number
+) {
+  const startTime = Date.now();
+  let requestUrl = '';
+  let requestBody = '';
+  
+  try {
+    if (profile.method === 'GET') {
+      const url = new URL(profile.endpoint_url);
+      for (const [key, value] of Object.entries(params)) {
+        if (profile.url_encode) {
+          url.searchParams.set(key, encodeURIComponent(value));
+        } else {
+          url.searchParams.set(key, value);
+        }
+      }
+      requestUrl = url.toString();
+    } else {
+      requestUrl = profile.endpoint_url;
+      requestBody = JSON.stringify(params);
+    }
+
+    const headers: Record<string, string> = {
+      'User-Agent': 'AffiliateTracker/1.0'
+    };
+
+    if (profile.method === 'POST') {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    if (profile.auth_header_name && profile.auth_header_val) {
+      headers[profile.auth_header_name] = profile.auth_header_val;
+    }
+
+    // Make HTTP request
+    const response = await fetch(requestUrl, {
+      method: profile.method,
+      headers,
+      body: profile.method === 'POST' ? requestBody : undefined,
+      signal: AbortSignal.timeout(profile.timeout_ms || 4000)
+    });
+
+    const responseBody = await response.text();
+    const duration = Date.now() - startTime;
+
+    // Log delivery
+    await db.insert(postbackDeliveries).values({
+      profile_id: BigInt(profile.id),
+      event_id: eventId,
+      clickid,
+      attempt,
+      max_attempts: profile.retries || 5,
+      request_method: profile.method,
+      request_url: requestUrl,
+      request_body: requestBody || null,
+      request_headers: headers,
+      response_code: response.status,
+      response_body: responseBody.slice(0, 2048), // First 2KB
+      error: null,
+      duration_ms: duration
+    });
+
+    console.log(`POSTBACK SUCCESS: ${profile.name} -> ${response.status} (${duration}ms)`);
+    
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    // Log failed delivery
+    await db.insert(postbackDeliveries).values({
+      profile_id: BigInt(profile.id),
+      event_id: eventId,
+      clickid,
+      attempt,
+      max_attempts: profile.retries || 5,
+      request_method: profile.method,
+      request_url: requestUrl,
+      request_body: requestBody || null,
+      request_headers: {},
+      response_code: null,
+      response_body: null,
+      error: errorMessage,
+      duration_ms: duration
+    });
+
+    console.log(`POSTBACK FAILED: ${profile.name} -> ${errorMessage} (${duration}ms)`);
+
+    // Retry logic
+    if (attempt < (profile.retries || 5)) {
+      const delay = (profile.backoff_base_sec || 2) * Math.pow(2, attempt - 1) * 1000;
+      const jitter = delay * 0.2 * Math.random();
+      
+      setTimeout(() => {
+        executePostbackDelivery(profile, params, clickid, eventId, attempt + 1);
+      }, delay + jitter);
+    }
+  }
+}
+
+// Template replacement function
+function replaceTemplate(template: string, data: Record<string, any>): string {
+  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+    return data[key]?.toString() || '';
+  });
+}
 
 export default router;

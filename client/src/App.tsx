@@ -73,6 +73,10 @@ import Finances from "@/pages/affiliate/Finances";
 import { useAuth } from "./contexts/auth-context";
 import * as React from 'react';
 import Login from "@/pages/auth/login";
+import { AdvertiserPostbacks } from "@/pages/advertiser/Postbacks";
+import { AffiliatePostbacks } from "@/pages/affiliate/Postbacks";
+import AdvertiserPostbacks from '@/pages/advertiser/Postbacks';
+import AffiliatePostbacks from '@/pages/affiliate/Postbacks';
 
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
@@ -328,6 +332,14 @@ function Router() {
           </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
+      
+      <Route path="/advertiser/postbacks">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <RoleBasedLayout>
+            <AdvertiserPostbacks />
+          </RoleBasedLayout>
+        </ProtectedRoute>
+      </Route>
 
       <Route path="/advertiser/live-analytics">
         <ProtectedRoute allowedRoles={['advertiser']}>
@@ -377,11 +389,7 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
-      <Route path="/advertiser/postbacks">
-        <ProtectedRoute allowedRoles={['advertiser']}>
-          <PostbackManagementSuperAdmin />
-        </ProtectedRoute>
-      </Route>
+
       
       <Route path="/advertiser/dashboard">
         <ProtectedRoute allowedRoles={['advertiser']}>
@@ -471,7 +479,7 @@ function Router() {
       <Route path="/affiliate/postbacks">
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PartnerLayout>
-            <PostbackManagementAffiliate />
+            <AffiliatePostbacks />
           </PartnerLayout>
         </ProtectedRoute>
       </Route>

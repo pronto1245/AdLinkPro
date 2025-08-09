@@ -9,19 +9,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Textarea } from '@/components/ui/textarea';
 import { 
   Plus, 
   Settings, 
   Play, 
   Trash2, 
   Eye, 
-  Copy, 
   RefreshCw, 
   Send, 
-  AlertTriangle,
   CheckCircle,
   XCircle,
   Clock,
@@ -35,7 +32,7 @@ interface PostbackProfile {
   id: string;
   name: string;
   trackerType: 'keitaro' | 'custom';
-  scopeType: 'global' | 'campaign' | 'offer' | 'flow';
+  scopeType: 'global' | 'offer';
   scopeId?: string;
   priority: number;
   enabled: boolean;
@@ -63,24 +60,6 @@ interface PostbackProfile {
   lastDelivery?: string;
   createdAt: string;
   updatedAt: string;
-}
-
-interface PostbackDelivery {
-  id: string;
-  profileId: string;
-  profileName: string;
-  eventId: string;
-  clickid: string;
-  attempt: number;
-  maxAttempts: number;
-  requestMethod: string;
-  requestUrl: string;
-  requestBody?: string;
-  responseCode?: number;
-  responseBody?: string;
-  error?: string;
-  durationMs?: number;
-  createdAt: string;
 }
 
 const defaultProfile: Partial<PostbackProfile> = {
@@ -116,7 +95,7 @@ const defaultProfile: Partial<PostbackProfile> = {
   filterExcludeBots: true
 };
 
-export function AdvertiserPostbacks() {
+export function AffiliatePostbacks() {
   const [selectedProfile, setSelectedProfile] = useState<PostbackProfile | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -128,10 +107,10 @@ export function AdvertiserPostbacks() {
 
   // Fetch postback profiles
   const { data: profiles, isLoading } = useQuery({
-    queryKey: ['/api/postback/profiles'],
+    queryKey: ['/api/affiliate/postback/profiles'],
     queryFn: async () => {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/postback/profiles', {
+      const response = await fetch('/api/affiliate/postback/profiles', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) throw new Error('Failed to fetch profiles');
@@ -141,10 +120,10 @@ export function AdvertiserPostbacks() {
 
   // Fetch delivery logs
   const { data: deliveries } = useQuery({
-    queryKey: ['/api/postback/deliveries'],
+    queryKey: ['/api/affiliate/postback/deliveries'],
     queryFn: async () => {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/postback/deliveries', {
+      const response = await fetch('/api/affiliate/postback/deliveries', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) throw new Error('Failed to fetch deliveries');
@@ -156,7 +135,7 @@ export function AdvertiserPostbacks() {
   const createMutation = useMutation({
     mutationFn: async (profile: Partial<PostbackProfile>) => {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/postback/profiles', {
+      const response = await fetch('/api/affiliate/postback/profiles', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -168,7 +147,7 @@ export function AdvertiserPostbacks() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/affiliate/postback/profiles'] });
       setIsCreateModalOpen(false);
       toast({ title: 'Профиль создан', description: 'Постбек профиль успешно создан' });
     }
@@ -178,7 +157,7 @@ export function AdvertiserPostbacks() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...profile }: PostbackProfile) => {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/postback/profiles/${id}`, {
+      const response = await fetch(`/api/affiliate/postback/profiles/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -190,65 +169,12 @@ export function AdvertiserPostbacks() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/affiliate/postback/profiles'] });
       setIsEditModalOpen(false);
       setSelectedProfile(null);
       toast({ title: 'Профиль обновлен', description: 'Постбек профиль успешно обновлен' });
     }
   });
-
-  // Delete profile mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/postback/profiles/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) throw new Error('Failed to delete profile');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
-      toast({ title: 'Профиль удален', description: 'Постбек профиль успешно удален' });
-    }
-  });
-
-  // Test postback mutation
-  const testMutation = useMutation({
-    mutationFn: async ({ profileId, testData: data }: { profileId: string; testData: any }) => {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/postback/profiles/${profileId}/test`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error('Failed to test postback');
-      return response.json();
-    }
-  });
-
-  const getScopeIcon = (scopeType: string) => {
-    switch (scopeType) {
-      case 'global': return <Globe className="h-4 w-4" />;
-      case 'campaign': return <Target className="h-4 w-4" />;
-      case 'offer': return <Zap className="h-4 w-4" />;
-      case 'flow': return <Send className="h-4 w-4" />;
-      default: return <Globe className="h-4 w-4" />;
-    }
-  };
-
-  const getStatusBadge = (enabled: boolean, lastDelivery?: string) => {
-    if (!enabled) {
-      return <Badge variant="secondary">Отключен</Badge>;
-    }
-    if (!lastDelivery) {
-      return <Badge variant="outline">Нет доставок</Badge>;
-    }
-    return <Badge variant="default">Активен</Badge>;
-  };
 
   const PostbackForm = ({ profile, onSave }: { profile: Partial<PostbackProfile>; onSave: (data: Partial<PostbackProfile>) => void }) => {
     const [formData, setFormData] = useState(profile);
@@ -262,7 +188,7 @@ export function AdvertiserPostbacks() {
             <Input
               value={formData.name || ''}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Keitaro Tracker"
+              placeholder="Мой трекер"
               data-testid="input-profile-name"
             />
           </div>
@@ -288,9 +214,7 @@ export function AdvertiserPostbacks() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="global">Глобально</SelectItem>
-                <SelectItem value="campaign">Кампания</SelectItem>
                 <SelectItem value="offer">Оффер</SelectItem>
-                <SelectItem value="flow">Поток</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -316,7 +240,7 @@ export function AdvertiserPostbacks() {
               <Input
                 value={formData.endpointUrl || ''}
                 onChange={(e) => setFormData({ ...formData, endpointUrl: e.target.value })}
-                placeholder="https://tracker.com/postback"
+                placeholder="https://mytracker.com/postback"
                 data-testid="input-endpoint-url"
               />
             </div>
@@ -332,30 +256,6 @@ export function AdvertiserPostbacks() {
                   <SelectItem value="POST">POST</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>ID параметр</Label>
-              <Select value={formData.idParam} onValueChange={(value) => setFormData({ ...formData, idParam: value as 'subid' | 'clickid' })}>
-                <SelectTrigger data-testid="select-id-param">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="clickid">clickid</SelectItem>
-                  <SelectItem value="subid">subid</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center space-x-2 pt-6">
-              <Switch
-                checked={formData.urlEncode || false}
-                onCheckedChange={(checked) => setFormData({ ...formData, urlEncode: checked })}
-                data-testid="switch-url-encode"
-              />
-              <Label>URL-кодирование</Label>
             </div>
           </div>
         </div>
@@ -395,162 +295,9 @@ export function AdvertiserPostbacks() {
             }}
             className="font-mono text-sm"
             rows={8}
-            placeholder='{\n  "clickid": "{{clickid}}",\n  "status": "{{status}}",\n  "revenue": "{{revenue}}"\n}'
+            placeholder="{\n  \"clickid\": \"{{clickid}}\",\n  \"status\": \"{{status}}\",\n  \"revenue\": \"{{revenue}}\"\n}"
             data-testid="textarea-params-template"
           />
-        </div>
-
-        {/* Authentication */}
-        <div className="space-y-4">
-          <h3 className="font-medium">Аутентификация</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Query ключ</Label>
-              <Input
-                value={formData.authQueryKey || ''}
-                onChange={(e) => setFormData({ ...formData, authQueryKey: e.target.value })}
-                placeholder="api_key"
-                data-testid="input-auth-query-key"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Query значение</Label>
-              <Input
-                type="password"
-                value={formData.authQueryVal || ''}
-                onChange={(e) => setFormData({ ...formData, authQueryVal: e.target.value })}
-                placeholder="your_api_key"
-                data-testid="input-auth-query-val"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Header имя</Label>
-              <Input
-                value={formData.authHeaderName || ''}
-                onChange={(e) => setFormData({ ...formData, authHeaderName: e.target.value })}
-                placeholder="Authorization"
-                data-testid="input-auth-header-name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Header значение</Label>
-              <Input
-                type="password"
-                value={formData.authHeaderVal || ''}
-                onChange={(e) => setFormData({ ...formData, authHeaderVal: e.target.value })}
-                placeholder="Bearer token"
-                data-testid="input-auth-header-val"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* HMAC Settings */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Switch
-              checked={formData.hmacEnabled || false}
-              onCheckedChange={(checked) => setFormData({ ...formData, hmacEnabled: checked })}
-              data-testid="switch-hmac-enabled"
-            />
-            <Label>Включить HMAC подпись</Label>
-          </div>
-
-          {formData.hmacEnabled && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>HMAC секрет</Label>
-                <Input
-                  type="password"
-                  value={formData.hmacSecret || ''}
-                  onChange={(e) => setFormData({ ...formData, hmacSecret: e.target.value })}
-                  data-testid="input-hmac-secret"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Имя параметра подписи</Label>
-                <Input
-                  value={formData.hmacParamName || 'signature'}
-                  onChange={(e) => setFormData({ ...formData, hmacParamName: e.target.value })}
-                  data-testid="input-hmac-param-name"
-                />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <Label>Шаблон для подписи</Label>
-                <Input
-                  value={formData.hmacPayloadTpl || ''}
-                  onChange={(e) => setFormData({ ...formData, hmacPayloadTpl: e.target.value })}
-                  placeholder="{{clickid}}{{status}}{{revenue}}"
-                  data-testid="input-hmac-payload"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Retry Settings */}
-        <div className="space-y-4">
-          <h3 className="font-medium">Настройки повторов</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Попытки</Label>
-              <Input
-                type="number"
-                value={formData.retries || 5}
-                onChange={(e) => setFormData({ ...formData, retries: parseInt(e.target.value) })}
-                data-testid="input-retries"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Таймаут (мс)</Label>
-              <Input
-                type="number"
-                value={formData.timeoutMs || 4000}
-                onChange={(e) => setFormData({ ...formData, timeoutMs: parseInt(e.target.value) })}
-                data-testid="input-timeout"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Базовая задержка (сек)</Label>
-              <Input
-                type="number"
-                value={formData.backoffBaseSec || 2}
-                onChange={(e) => setFormData({ ...formData, backoffBaseSec: parseInt(e.target.value) })}
-                data-testid="input-backoff"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="space-y-4">
-          <h3 className="font-medium">Фильтры</h3>
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={formData.filterRevenueGt0 || false}
-                onCheckedChange={(checked) => setFormData({ ...formData, filterRevenueGt0: checked })}
-                data-testid="switch-filter-revenue"
-              />
-              <Label>Только с доходом > 0</Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={formData.filterExcludeBots || false}
-                onCheckedChange={(checked) => setFormData({ ...formData, filterExcludeBots: checked })}
-                data-testid="switch-filter-bots"
-              />
-              <Label>Исключать ботов</Label>
-            </div>
-          </div>
         </div>
 
         <div className="flex justify-end space-x-2">
@@ -582,7 +329,7 @@ export function AdvertiserPostbacks() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Постбеки</h1>
           <p className="text-muted-foreground">
-            Управление интеграциями с трекерами и системами аналитики
+            Настройка интеграции с внешними трекерами
           </p>
         </div>
         <Button onClick={() => setIsCreateModalOpen(true)} data-testid="button-create-profile">
@@ -610,30 +357,23 @@ export function AdvertiserPostbacks() {
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        {getScopeIcon(profile.scopeType)}
+                        <Globe className="h-4 w-4" />
                         <CardTitle className="text-lg">{profile.name}</CardTitle>
                         <Badge variant="outline">{profile.trackerType}</Badge>
                       </div>
                       <div className="flex items-center space-x-2">
-                        {getStatusBadge(profile.enabled, profile.lastDelivery)}
-                        <span className="text-sm text-muted-foreground">
-                          Приоритет: {profile.priority}
-                        </span>
+                        <Badge variant={profile.enabled ? "default" : "secondary"}>
+                          {profile.enabled ? 'Включен' : 'Отключен'}
+                        </Badge>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-sm font-medium">Эндпоинт</p>
                         <p className="text-sm text-muted-foreground truncate">
                           {profile.method} {profile.endpointUrl}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">Область</p>
-                        <p className="text-sm text-muted-foreground">
-                          {profile.scopeType} {profile.scopeId ? `(${profile.scopeId})` : ''}
                         </p>
                       </div>
                       <div>
@@ -684,15 +424,6 @@ export function AdvertiserPostbacks() {
                           <Settings className="h-3 w-3 mr-1" />
                           Настройки
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteMutation.mutate(profile.id)}
-                          data-testid={`button-delete-${profile.id}`}
-                        >
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          Удалить
-                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -705,7 +436,7 @@ export function AdvertiserPostbacks() {
                     <Send className="h-12 w-12 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-medium mb-2">Нет постбек профилей</h3>
                     <p className="text-muted-foreground text-center mb-4">
-                      Создайте первый профиль для интеграции с трекерами
+                      Создайте первый профиль для интеграции с вашим трекером
                     </p>
                     <Button onClick={() => setIsCreateModalOpen(true)}>
                       <Plus className="h-4 w-4 mr-2" />
@@ -737,11 +468,10 @@ export function AdvertiserPostbacks() {
                       <TableHead>Попытка</TableHead>
                       <TableHead>Статус</TableHead>
                       <TableHead>Длительность</TableHead>
-                      <TableHead>Действия</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {deliveries?.map((delivery: PostbackDelivery) => (
+                    {deliveries?.map((delivery: any) => (
                       <TableRow key={delivery.id}>
                         <TableCell>
                           {new Date(delivery.createdAt).toLocaleString('ru-RU')}
@@ -775,18 +505,6 @@ export function AdvertiserPostbacks() {
                         <TableCell>
                           {delivery.durationMs ? `${delivery.durationMs}мс` : '-'}
                         </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              // Show delivery details modal
-                            }}
-                            data-testid={`button-view-delivery-${delivery.id}`}
-                          >
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -803,7 +521,7 @@ export function AdvertiserPostbacks() {
           <DialogHeader>
             <DialogTitle>Создать постбек профиль</DialogTitle>
             <DialogDescription>
-              Настройте интеграцию с трекером для автоматической передачи событий
+              Настройте интеграцию с вашим трекером для автоматической передачи событий
             </DialogDescription>
           </DialogHeader>
           <PostbackForm
@@ -828,99 +546,6 @@ export function AdvertiserPostbacks() {
               onSave={(data) => updateMutation.mutate({ ...selectedProfile, ...data })}
             />
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Test Postback Modal */}
-      <Dialog open={isTestModalOpen} onOpenChange={setIsTestModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Тестировать постбек</DialogTitle>
-            <DialogDescription>
-              Отправить тестовое событие для проверки интеграции
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>ClickID</Label>
-                <Input
-                  value={testData.clickid}
-                  onChange={(e) => setTestData({ ...testData, clickid: e.target.value })}
-                  placeholder="test-click-123"
-                  data-testid="input-test-clickid"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Тип события</Label>
-                <Select value={testData.type} onValueChange={(value) => setTestData({ ...testData, type: value })}>
-                  <SelectTrigger data-testid="select-test-type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="open">open</SelectItem>
-                    <SelectItem value="reg">reg</SelectItem>
-                    <SelectItem value="deposit">deposit</SelectItem>
-                    <SelectItem value="lp_click">lp_click</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Сумма</Label>
-                <Input
-                  value={testData.revenue}
-                  onChange={(e) => setTestData({ ...testData, revenue: e.target.value })}
-                  placeholder="100"
-                  data-testid="input-test-revenue"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Валюта</Label>
-                <Input
-                  value={testData.currency}
-                  onChange={(e) => setTestData({ ...testData, currency: e.target.value })}
-                  placeholder="USD"
-                  data-testid="input-test-currency"
-                />
-              </div>
-            </div>
-
-            {testMutation.data && (
-              <div className="space-y-2">
-                <Label>Результат теста</Label>
-                <div className="p-3 bg-muted rounded-md">
-                  <pre className="text-sm overflow-x-auto">
-                    {JSON.stringify(testMutation.data, null, 2)}
-                  </pre>
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-end space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => setIsTestModalOpen(false)}
-                data-testid="button-test-cancel"
-              >
-                Отмена
-              </Button>
-              <Button
-                onClick={() => selectedProfile && testMutation.mutate({ 
-                  profileId: selectedProfile.id, 
-                  testData 
-                })}
-                disabled={!testData.clickid || testMutation.isPending}
-                data-testid="button-test-send"
-              >
-                {testMutation.isPending ? (
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4 mr-2" />
-                )}
-                Отправить тест
-              </Button>
-            </div>
-          </div>
         </DialogContent>
       </Dialog>
     </div>
