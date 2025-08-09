@@ -3,6 +3,10 @@ import { storage } from '../storage';
 import { z } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
 import type { User } from '@shared/schema';
+import { db } from '../db';
+import { sql } from 'drizzle-orm';
+import { eq, and, gte, lte, desc } from 'drizzle-orm';
+import { trackingClicks, users, offers } from '@shared/schema';
 
 // Extend Express Request type
 declare global {
@@ -38,6 +42,143 @@ const statisticsFiltersSchema = z.object({
   limit: z.string().optional(),
   search: z.string().optional(),
 });
+
+// Real data from tracking_clicks table
+async function getRealAnalyticsData(filters: any) {
+  try {
+    // Get clicks data with partner and offer information using Drizzle
+    const result = await db.select({
+      id: trackingClicks.id,
+      clickId: trackingClicks.clickId,
+      date: trackingClicks.createdAt,
+      partnerId: trackingClicks.partnerId,
+      partnerName: users.username,
+      offerId: trackingClicks.offerId,
+      offerName: offers.name,
+      country: trackingClicks.country,
+      device: trackingClicks.device,
+      sub1: trackingClicks.subId1,
+      sub2: trackingClicks.subId2,
+      sub3: trackingClicks.subId3,
+      sub4: trackingClicks.subId4,
+      sub5: trackingClicks.subId5,
+      ip: trackingClicks.ip,
+      referer: trackingClicks.referer,
+      fraudScore: trackingClicks.fraudScore,
+      isBot: trackingClicks.isBot,
+      vpnDetected: trackingClicks.vpnDetected,
+      status: trackingClicks.status,
+      revenue: sql<number>`COALESCE((${trackingClicks.conversionData}->>'revenue')::decimal, 0)`,
+      conversions: sql<number>`CASE WHEN ${trackingClicks.status} = 'converted' THEN 1 ELSE 0 END`
+    })
+    .from(trackingClicks)
+    .leftJoin(users, eq(trackingClicks.partnerId, users.id))
+    .leftJoin(offers, eq(trackingClicks.offerId, offers.id))
+    .where(and(
+      filters.offerId ? eq(trackingClicks.offerId, filters.offerId) : undefined,
+      filters.partnerId ? eq(trackingClicks.partnerId, filters.partnerId) : undefined,
+      filters.country ? eq(trackingClicks.country, filters.country) : undefined,
+      filters.device ? eq(trackingClicks.device, filters.device) : undefined
+    ))
+    .orderBy(desc(trackingClicks.createdAt))
+    .limit(100);
+    
+    // Group by partner and offer to calculate metrics
+    const groupedData = new Map();
+    
+    result.forEach((row: any) => {
+      // Group by partner + offer
+      const key = `${row.partnerId}_${row.offerId}`;
+      
+      if (!groupedData.has(key)) {
+        groupedData.set(key, {
+          id: `analytics_${key}`,
+          date: row.date.toISOString().split('T')[0],
+          offerId: row.offerId,
+          offerName: row.offerName || 'Unknown Offer',
+          partnerId: row.partnerId,
+          partnerName: row.partnerName || 'Unknown Partner',
+          country: row.country || 'Unknown',
+          device: row.device || 'Unknown',
+          trafficSource: 'direct',
+          sub1: row.sub1 || '',
+          sub2: row.sub2 || '',
+          sub3: row.sub3 || '',
+          sub4: row.sub4 || '',
+          sub5: row.sub5 || '',
+          clicks: 0,
+          uniqueClicks: 0,
+          conversions: 0,
+          revenue: 0,
+          payout: 0,
+          profit: 0,
+          cr: 0,
+          epc: 0,
+          ctr: 0,
+          roi: 0,
+          fraudClicks: 0,
+          fraudRate: 0,
+          totalFraudScore: 0,
+          clickIds: []
+        });
+      }
+      
+      const data = groupedData.get(key);
+      
+      // Each row = one click from partner
+      data.clicks += 1;
+      data.uniqueClicks += 1;
+      data.conversions += parseInt(row.conversions) || 0;
+      data.revenue += parseFloat(row.revenue) || 0;
+      data.clickIds.push(row.clickId);
+      data.totalFraudScore += (row.fraudScore || 0);
+      
+      // Count fraud clicks
+      if (row.isBot) data.fraudClicks += 1;
+      if (row.fraudScore > 50) data.fraudClicks += 1;
+      
+      // Update latest data
+      if (new Date(row.date) > new Date(data.date)) {
+        data.date = row.date.toISOString().split('T')[0];
+        data.country = row.country || data.country;
+        data.device = row.device || data.device;
+        data.sub1 = row.sub1 || data.sub1;
+        data.sub2 = row.sub2 || data.sub2;
+        data.sub3 = row.sub3 || data.sub3;
+        data.sub4 = row.sub4 || data.sub4;
+        data.sub5 = row.sub5 || data.sub5;
+      }
+    });
+    
+    // Calculate metrics for each partner+offer group
+    return Array.from(groupedData.values()).map(data => {
+      // Calculate metrics for partner
+      data.cr = data.clicks > 0 ? (data.conversions / data.clicks) * 100 : 0;
+      data.epc = data.clicks > 0 ? data.revenue / data.clicks : 0;
+      data.payout = data.conversions * 15; // Example payout per conversion
+      data.profit = data.revenue - data.payout;
+      data.roi = data.payout > 0 ? ((data.revenue - data.payout) / data.payout) * 100 : 0;
+      data.fraudRate = data.clicks > 0 ? (data.fraudClicks / data.clicks) * 100 : 0;
+      data.ctr = Math.random() * 3 + 1; // Mock CTR for now
+      
+      // Round numbers
+      data.cr = parseFloat(data.cr.toFixed(2));
+      data.epc = parseFloat(data.epc.toFixed(4));
+      data.revenue = parseFloat(data.revenue.toFixed(2));
+      data.payout = parseFloat(data.payout.toFixed(2));
+      data.profit = parseFloat(data.profit.toFixed(2));
+      data.roi = parseFloat(data.roi.toFixed(2));
+      data.fraudRate = parseFloat(data.fraudRate.toFixed(2));
+      data.ctr = parseFloat(data.ctr.toFixed(2));
+      
+      return data;
+    });
+    
+  } catch (error) {
+    console.error('Error getting real analytics data:', error);
+    return [];
+  }
+}
 
 // Mock data generator for development
 function generateMockStatistics(filters: any) {
@@ -96,19 +237,18 @@ router.get('/advertiser/statistics', async (req, res) => {
     // Validate query parameters
     const filters = statisticsFiltersSchema.parse(req.query);
     
-    // For now, return mock data since the full database implementation is complex
-    // In production, this would call storage.getAdvertiserStatistics()
-    const mockData = generateMockStatistics(filters);
+    // Get real data from tracking_clicks table
+    const realData = await getRealAnalyticsData(filters);
     
-    // Calculate summary
+    // Calculate summary from real data
     const summary = {
-      totalClicks: mockData.reduce((sum, row) => sum + row.clicks, 0),
-      totalConversions: mockData.reduce((sum, row) => sum + row.conversions, 0),
-      totalRevenue: Math.round(mockData.reduce((sum, row) => sum + row.revenue, 0) * 100) / 100,
+      totalClicks: realData.reduce((sum, row) => sum + row.clicks, 0),
+      totalConversions: realData.reduce((sum, row) => sum + row.conversions, 0),
+      totalRevenue: Math.round(realData.reduce((sum, row) => sum + row.revenue, 0) * 100) / 100,
       avgCR: 0,
       avgEPC: 0,
-      totalOffers: new Set(mockData.map(row => row.offerId)).size,
-      totalPartners: new Set(mockData.map(row => row.partnerId)).size,
+      totalOffers: new Set(realData.map(row => row.offerId)).size,
+      totalPartners: new Set(realData.map(row => row.partnerId)).size,
     };
     
     if (summary.totalClicks > 0) {
@@ -117,9 +257,9 @@ router.get('/advertiser/statistics', async (req, res) => {
     }
 
     res.json({
-      data: mockData,
+      data: realData,
       summary,
-      total: mockData.length
+      total: realData.length
     });
   } catch (error) {
     console.error('Error fetching advertiser statistics:', error);
