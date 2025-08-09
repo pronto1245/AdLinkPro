@@ -2505,9 +2505,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Access denied" });
       }
       
-      if (request.status !== 'pending') {
-        return res.status(400).json({ error: "Request already processed" });
-      }
+      // Allow status changes - advertisers can approve rejected requests or reject approved ones
       
       const status = action === 'approve' ? 'approved' : 'rejected';
       
