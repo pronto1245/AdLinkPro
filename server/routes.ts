@@ -6422,6 +6422,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const groupedData = new Map();
           
           result.forEach((row: any) => {
+            // ПРАВИЛЬНАЯ ЛОГИКА: Группируем по партнеру + офферу
+            // Каждая строка = один клик от партнера
             const key = `${row.partnerId}_${row.offerId}`;
             
             if (!groupedData.has(key)) {
@@ -6432,46 +6434,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 offerName: row.offerName || 'Unknown Offer',
                 partnerId: row.partnerId,
                 partnerUsername: row.partnerUsername || 'Unknown Partner',
-                clicks: 0,
-                uniqueClicks: 0,
-                conversions: 0,
-                revenue: 0,
-                payout: 0,
-                profit: 0,
-                cr: 0,
-                epc: 0,
-                roi: 0,
+                clicks: 0,           // Количество кликов от этого партнера
+                uniqueClicks: 0,     // Уникальные клики
+                conversions: 0,      // Конверсии
+                revenue: 0,          // Общий доход
+                payout: 0,           // Выплата партнеру
+                profit: 0,           // Прибыль
+                cr: 0,               // Конверсия %
+                epc: 0,              // Доход на клик
+                roi: 0,              // ROI %
                 geo: row.geo || 'Unknown',
-                device: row.device || 'Unknown',
+                device: row.device || 'Unknown', 
                 trafficSource: 'direct',
                 subId: row.subId || '',
-                clickId: row.clickId,
+                lastClickId: row.clickId,      // Последний clickId от партнера
                 fraudClicks: 0,
                 botClicks: 0,
-                fraudScore: row.fraudScore || 0,
+                avgFraudScore: 0,
+                totalFraudScore: 0,
                 postbackStatus: 'sent',
                 ipAddress: row.ip || '',
-                referer: row.referer || ''
+                referer: row.referer || '',
+                clickIds: []         // Массив всех clickId от партнера
               });
             }
             
             const data = groupedData.get(key);
+            
+            // Каждая строка = один клик от партнера
             data.clicks += 1;
-            data.uniqueClicks += 1; // Simple assumption for now
+            data.uniqueClicks += 1; // TODO: проверка на уникальность по IP
             data.conversions += parseInt(row.conversions) || 0;
             data.revenue += parseFloat(row.revenue) || 0;
+            data.clickIds.push(row.clickId);
+            data.totalFraudScore += (row.fraudScore || 0);
             
+            // Подсчет фрод-кликов
             if (row.isBot) data.botClicks += 1;
             if (row.fraudScore > 50) data.fraudClicks += 1;
+            
+            // Обновляем последние данные
+            if (new Date(row.date) > new Date(data.date)) {
+              data.date = row.date;
+              data.lastClickId = row.clickId;
+              data.geo = row.geo || data.geo;
+              data.device = row.device || data.device;
+              data.subId = row.subId || data.subId;
+              data.ipAddress = row.ip || data.ipAddress;
+              data.referer = row.referer || data.referer;
+            }
           });
           
-          // Calculate metrics for each group
+          // Calculate metrics for each partner+offer group
           return Array.from(groupedData.values()).map(data => {
+            // Вычисляем метрики для партнера
             data.cr = data.clicks > 0 ? (data.conversions / data.clicks) * 100 : 0;
             data.epc = data.clicks > 0 ? data.revenue / data.clicks : 0;
-            data.payout = data.conversions * 10; // Example payout
+            data.payout = data.conversions * 15; // Примерная выплата за конверсию
             data.profit = data.revenue - data.payout;
             data.roi = data.payout > 0 ? ((data.revenue - data.payout) / data.payout) * 100 : 0;
+            data.avgFraudScore = data.clicks > 0 ? data.totalFraudScore / data.clicks : 0;
             
             // Round numbers
             data.cr = parseFloat(data.cr.toFixed(2));
@@ -6480,6 +6502,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             data.payout = parseFloat(data.payout.toFixed(2));
             data.profit = parseFloat(data.profit.toFixed(2));
             data.roi = parseFloat(data.roi.toFixed(2));
+            data.avgFraudScore = parseFloat(data.avgFraudScore.toFixed(1));
+            
+            // Заменяем clickId на статистику
+            data.clickId = `${data.clickIds.length} кликов`;
             
             return data;
           });
