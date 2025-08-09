@@ -32,6 +32,17 @@ interface AdvertiserPostbackProfile {
   };
 }
 
+interface AdvertiserPostbackLog {
+  id: string;
+  profile_id: string;
+  event_type: string;
+  status: string;
+  response_code: number;
+  response_body: string;
+  url: string;
+  created_at: string;
+}
+
 interface PostbackLog {
   id: string;
   event_type: string;
@@ -53,12 +64,12 @@ export default function AdvertiserPostbackSettings() {
   const [activeTab, setActiveTab] = useState('profiles');
 
   // Fetch advertiser postback profiles
-  const { data: profiles = [], isLoading: profilesLoading } = useQuery({
+  const { data: profiles = [], isLoading: profilesLoading } = useQuery<AdvertiserPostbackProfile[]>({
     queryKey: ['/api/advertiser/postback/profiles'],
   });
 
   // Fetch postback logs for advertiser
-  const { data: logs = [], isLoading: logsLoading } = useQuery({
+  const { data: logs = [], isLoading: logsLoading } = useQuery<AdvertiserPostbackLog[]>({
     queryKey: ['/api/advertiser/postback/logs'],
   });
 
@@ -74,10 +85,7 @@ export default function AdvertiserPostbackSettings() {
 
   // Create profile mutation
   const createProfileMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/advertiser/postback/profiles', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
+    mutationFn: (data: any) => apiRequest('/api/advertiser/postback/profiles', 'POST', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/postback/profiles'] });
       setShowCreateForm(false);
@@ -90,17 +98,14 @@ export default function AdvertiserPostbackSettings() {
       toast({
         title: "Ошибка",
         description: error.message || "Не удалось создать профиль",
-        variant: "destructive",
+        variant: "destructive" as const,
       });
     },
   });
 
   // Test postback mutation
   const testPostbackMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/track/postback/test', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
+    mutationFn: (data: any) => apiRequest('/api/track/postback/test', 'POST', data),
     onSuccess: (data) => {
       toast({
         title: "Тест успешен",
@@ -111,7 +116,7 @@ export default function AdvertiserPostbackSettings() {
       toast({
         title: "Тест не прошел",
         description: error.message || "Ошибка при тестировании",
-        variant: "destructive",
+        variant: "destructive" as const,
       });
     },
   });
