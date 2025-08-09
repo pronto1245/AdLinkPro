@@ -8055,8 +8055,8 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
-  // Get advertiser's access requests (debug version)
-  app.get('/api/advertiser/access-requests-v2', authenticateToken, requireRole(['advertiser']), async (req, res) => {
+  // Get advertiser's access requests
+  app.get('/api/advertiser/access-requests', authenticateToken, requireRole(['advertiser']), async (req, res) => {
     const userId = req.user?.id || req.userId;
 
     try {
@@ -8112,29 +8112,6 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         offerLogo: req.offerLogo
       }));
 
-      // Отладка данных с подробностями
-      console.log(`=== LOGO DEBUG FOR ACCESS REQUESTS ===`);
-      console.log(`Raw requests from DB:`, requests.map(r => ({ 
-        name: r.offerName, 
-        logo: r.offerLogo, 
-        logoType: typeof r.offerLogo,
-        logoValue: r.offerLogo 
-      })));
-      console.log(`Formatted requests:`, formattedRequests.map(r => ({ 
-        name: r.offerName, 
-        logo: r.offerLogo, 
-        logoType: typeof r.offerLogo,
-        logoValue: r.offerLogo 
-      })));
-      console.log(`=== END LOGO DEBUG ===`);
-
-      // Полностью отключаем кеш для отладки логотипов
-      res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-        'ETag': Date.now().toString() // Force unique response
-      });
       res.json(formattedRequests);
     } catch (error) {
       console.error('Error fetching access requests:', error);
