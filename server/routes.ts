@@ -527,8 +527,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('=== GET ADVERTISER POSTBACK PROFILES ===');
     
     try {
-      // Mock данные профилей постбеков рекламодателя
-      const mockProfiles = [
+      // Получаем реальные созданные профили из памяти + демо профили
+      const createdProfiles = storage.getCreatedPostbackProfiles();
+      
+      const demoProfiles = [
         {
           id: 'adv_profile_1',
           name: 'Main CRM Integration',
@@ -537,8 +539,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           endpoint_url: 'https://your-crm.com/api/leads?clickid={clickid}&partner={partner_id}&revenue={revenue}&offer={offer_id}',
           method: 'GET',
           events: ['lead', 'deposit', 'conversion'],
-          offers: [], // All offers
-          partners: [], // All partners
+          offers: [],
+          partners: [],
           last_delivery: new Date(Date.now() - 1800000).toISOString(),
           status: 'active',
           delivery_stats: {
@@ -585,7 +587,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       ];
 
-      res.json(mockProfiles);
+      // Объединяем созданные и демо профили
+      const allProfiles = [...createdProfiles, ...demoProfiles];
+      res.json(allProfiles);
     } catch (error: any) {
       console.error('Error getting advertiser postback profiles:', error);
       res.status(500).json({ message: 'Failed to get postback profiles' });
@@ -599,7 +603,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const profileData = req.body;
       console.log('Creating advertiser postback profile:', profileData);
       
-      // Mock response for successful creation
+      // Создаем новый профиль и сохраняем в памяти
       const newProfile = {
         id: 'adv_profile_' + Date.now(),
         ...profileData,
@@ -612,6 +616,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         created_at: new Date().toISOString()
       };
+
+      // Сохраняем профиль в хранилище
+      storage.savePostbackProfile(newProfile);
 
       res.status(201).json(newProfile);
     } catch (error: any) {

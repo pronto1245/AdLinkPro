@@ -37,6 +37,10 @@ export interface IStorage {
   getUsers(role?: string): Promise<User[]>;
   getUsersByOwner(ownerId: string, role?: string): Promise<User[]>;
   getNextPartnerNumber(): Promise<string>;
+  
+  // In-memory postback storage
+  getCreatedPostbackProfiles(): any[];
+  savePostbackProfile(profile: any): void;
 
   // Enhanced user management
   getUsersWithFilters(filters: {
@@ -511,6 +515,17 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // In-memory storage for created postback profiles
+  private createdPostbackProfiles: any[] = [];
+  
+  getCreatedPostbackProfiles(): any[] {
+    return this.createdPostbackProfiles;
+  }
+  
+  savePostbackProfile(profile: any): void {
+    this.createdPostbackProfiles.push(profile);
+  }
+
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;

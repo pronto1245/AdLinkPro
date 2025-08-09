@@ -243,7 +243,7 @@ export default function AdvertiserPostbackSettings() {
                           {profile.enabled ? "Активен" : "Отключен"}
                         </Badge>
                         <Badge 
-                          variant={profile.status === 'active' ? "success" : profile.status === 'error' ? "destructive" : "secondary"}
+                          variant={profile.status === 'active' ? "default" : profile.status === 'error' ? "destructive" : "secondary"}
                         >
                           {profile.status === 'active' ? 'Работает' : profile.status === 'error' ? 'Ошибка' : 'Отключен'}
                         </Badge>
@@ -368,7 +368,7 @@ export default function AdvertiserPostbackSettings() {
                             <td className="p-2 text-sm">{log.offer_name || '-'}</td>
                             <td className="p-2">
                               {log.status === 'sent' ? (
-                                <Badge variant="success" className="bg-green-100 text-green-800">
+                                <Badge variant="default" className="bg-green-100 text-green-800">
                                   <Check className="h-3 w-3 mr-1" />
                                   Отправлен
                                 </Badge>
@@ -384,7 +384,7 @@ export default function AdvertiserPostbackSettings() {
                             <td className="p-2">
                               {log.response_status && (
                                 <Badge 
-                                  variant={log.response_status < 400 ? "success" : "destructive"}
+                                  variant={log.response_status < 400 ? "default" : "destructive"}
                                   className="font-mono"
                                 >
                                   {log.response_status}
