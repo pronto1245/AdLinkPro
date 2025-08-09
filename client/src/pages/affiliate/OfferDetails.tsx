@@ -144,8 +144,7 @@ const LandingPagesCard = ({
       setLoading(prev => ({ ...prev, [landing.id]: true }));
       const transformedUrl = await transformLandingUrl({
         originalUrl: landing.url,
-        offerId,
-        subid: `partner_${offerId}_landing`
+        offerId
       });
       setTransformedUrls(prev => ({ ...prev, [landing.id]: transformedUrl }));
       return transformedUrl;

@@ -1642,10 +1642,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Transform landing page URL with custom domain and subid
+  // Transform landing page URL with custom domain and essential tracking
   app.post("/api/partner/transform-landing-url", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
-      const { originalUrl, offerId, subid } = req.body;
+      const { originalUrl, offerId } = req.body;
       const partnerId = getAuthenticatedUser(req).id;
 
       if (!originalUrl || !offerId) {
@@ -1662,8 +1662,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         originalUrl,
         advertiserId: offer.advertiserId,
         partnerId,
-        offerId,
-        subid
+        offerId
       });
 
       res.json({ transformedUrl });

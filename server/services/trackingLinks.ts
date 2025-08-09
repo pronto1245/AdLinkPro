@@ -49,15 +49,14 @@ export class TrackingLinkService {
     return domains.map(d => d.domain);
   }
 
-  // Transform landing page URL with custom domain and subid
+  // Transform landing page URL with custom domain and simplified tracking
   static async transformLandingUrl(params: {
     originalUrl: string;
     advertiserId: string;
     partnerId: string;
     offerId: string;
-    subid?: string;
   }): Promise<string> {
-    const { originalUrl, advertiserId, partnerId, offerId, subid } = params;
+    const { originalUrl, advertiserId, partnerId, offerId } = params;
     
     try {
       // Check if originalUrl is a valid URL
@@ -67,9 +66,9 @@ export class TrackingLinkService {
         const verifiedDomains = await this.getVerifiedCustomDomains(advertiserId);
         const customDomain = verifiedDomains.length > 0 ? verifiedDomains[0] : 'track.example.com';
         const fallbackUrl = new URL(`https://${customDomain}/landing`);
-        if (subid) fallbackUrl.searchParams.set('subid', subid);
+        // Only essential tracking parameters
+        fallbackUrl.searchParams.set('clickid', `${partnerId}_${offerId}_${Date.now()}`);
         fallbackUrl.searchParams.set('partner_id', partnerId);
-        fallbackUrl.searchParams.set('offer_id', offerId);
         return fallbackUrl.toString();
       }
 
@@ -93,19 +92,16 @@ export class TrackingLinkService {
         url.protocol = 'https:';
       }
       
-      // Add tracking parameters
-      if (subid) {
-        url.searchParams.set('subid', subid);
-      }
+      // Add only essential tracking parameters
+      url.searchParams.set('clickid', `${partnerId}_${offerId}_${Date.now()}`);
       url.searchParams.set('partner_id', partnerId);
-      url.searchParams.set('offer_id', offerId);
       
       return url.toString();
     } catch (error) {
       console.error('Error transforming landing URL:', error);
       // Return a safe fallback URL
       const customDomain = 'track.example.com'; // Safe fallback
-      const fallbackUrl = `https://${customDomain}/landing?offer_id=${offerId}&partner_id=${partnerId}${subid ? `&subid=${subid}` : ''}`;
+      const fallbackUrl = `https://${customDomain}/landing?clickid=${partnerId}_${offerId}_${Date.now()}&partner_id=${partnerId}`;
       return fallbackUrl;
     }
   }

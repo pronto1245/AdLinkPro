@@ -102,11 +102,10 @@ export const prefetchCriticalData = async () => {
   ]);
 };
 
-// Transform landing page URL with custom domain and subid
+// Transform landing page URL with custom domain and essential tracking
 export const transformLandingUrl = async (params: {
   originalUrl: string;
   offerId: string;
-  subid?: string;
 }): Promise<string> => {
   const response = await apiRequest('/api/partner/transform-landing-url', 'POST', params);
   return response.transformedUrl;

@@ -59,7 +59,7 @@ export function LinkGenerator({ offerId, offerName, isApproved = false, accessSt
   }
 
   // Получаем готовую автоматическую ссылку с сервера  
-  const autoTrackingLink = `https://track.platform.com/click?offer=${offerId}&clickid=partner_${Date.now()}`;
+  const autoTrackingLink = `https://track.platform.com/click?offer=${offerId}&clickid=partner_${Date.now()}&partner_id=PARTNER_ID`;
 
   const handleCopyLink = (url: string) => {
     navigator.clipboard.writeText(url);
