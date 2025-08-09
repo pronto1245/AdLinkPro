@@ -163,6 +163,31 @@ export default function AdvertiserDashboardNew() {
           
           {/* Filters and Actions */}
           <div className="flex flex-wrap items-center gap-2">
+            <Select onValueChange={(value) => setFilters(prev => ({ ...prev, geo: value }))}>
+              <SelectTrigger className="w-32" data-testid="select-geo">
+                <SelectValue placeholder="Гео" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все страны</SelectItem>
+                <SelectItem value="IN">Индия</SelectItem>
+                <SelectItem value="US">США</SelectItem>
+                <SelectItem value="DE">Германия</SelectItem>
+                <SelectItem value="UK">Великобритания</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select onValueChange={(value) => setFilters(prev => ({ ...prev, device: value }))}>
+              <SelectTrigger className="w-32" data-testid="select-device">
+                <SelectValue placeholder="Устройство" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все устройства</SelectItem>
+                <SelectItem value="mobile">Мобильные</SelectItem>
+                <SelectItem value="desktop">Десктопы</SelectItem>
+                <SelectItem value="tablet">Планшеты</SelectItem>
+              </SelectContent>
+            </Select>
+            
             <div className="flex items-center gap-2">
               <Input
                 type="date"
@@ -238,35 +263,7 @@ export default function AdvertiserDashboardNew() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          {/* <Card data-testid="card-offers" className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">Офферы</CardTitle>
-              <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
-                <Target className="h-6 w-6 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{overview?.totalOffers || 0}</div>
-              <div className="flex gap-2 text-xs mt-2">
-                <span className="text-green-600 dark:text-green-400">Активных: {overview?.activeOffers || 0}</span>
-                <span className="text-yellow-600 dark:text-yellow-400">На модерации: {overview?.pendingOffers || 0}</span>
-              </div>
-            </CardContent>
-          </Card> */}
-
-          {/* <Card data-testid="card-budget" className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">Бюджет / Расход</CardTitle>
-              <div className="p-3 bg-green-500 rounded-xl shadow-lg">
-                <Wallet className="h-6 w-6 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-900 dark:text-green-100">${overview?.totalSpent || 0}</div>
-              <p className="text-xs text-green-700 dark:text-green-400">из ${overview?.totalBudget || 0}</p>
-            </CardContent>
-          </Card> */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 
           <Card data-testid="card-revenue" className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -394,138 +391,52 @@ export default function AdvertiserDashboardNew() {
             </CardContent>
           </Card>
 
-          {/* <Card data-testid="chart-spending">
-            <CardHeader>
-              <CardTitle>Расходы / Выплаты</CardTitle>
-              <CardDescription>Финансовая динамика</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData?.spending || []}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="spent" fill="#ef4444" name="Расходы" />
-                  <Bar dataKey="revenue" fill="#10b981" name="Доходы" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card data-testid="chart-postbacks">
-            <CardHeader>
-              <CardTitle>Активность постбеков</CardTitle>
-              <CardDescription>Отправленные и обработанные</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData?.postbacks || []}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="sent" stroke="#3b82f6" name="Отправлено" />
-                  <Line type="monotone" dataKey="successful" stroke="#10b981" name="Успешно" />
-                  <Line type="monotone" dataKey="failed" stroke="#ef4444" name="Ошибки" />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card> */}
-        </div>
-
-        {/* Tables and Status */}
-        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-          {/* Hidden Top Offers Table - keeping logic intact */}
-          {/* <Card className="lg:col-span-2" data-testid="table-top-offers">
+          
+          {/* Offer Status Card */}
+          <Card data-testid="card-offer-status">
             <CardHeader>
               <CardTitle>Топ-офферы</CardTitle>
               <CardDescription>Лучшие офферы по эффективности</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Оффер</TableHead>
-                    <TableHead>Статус</TableHead>
-                    <TableHead>Клики</TableHead>
-                    <TableHead>CR</TableHead>
-                    <TableHead>Конверсии</TableHead>
-                    <TableHead>Расход</TableHead>
-                    <TableHead>Фрод %</TableHead>
-                    <TableHead>Действия</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {topOffers.map((offer: any) => (
-                    <TableRow key={offer.id}>
-                      <TableCell className="font-medium">{offer.name}</TableCell>
-                      <TableCell>
-                        <Badge variant={offer.status === 'active' ? 'default' : 'secondary'}>
-                          {offer.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{offer.clicks}</TableCell>
-                      <TableCell>{offer.cr}%</TableCell>
-                      <TableCell>{offer.conversions}</TableCell>
-                      <TableCell>${offer.spent}</TableCell>
-                      <TableCell className={cn(
-                        offer.fraudRate > 5 ? 'text-red-600' : 'text-green-600'
-                      )}>
-                        {offer.fraudRate}%
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" data-testid={`button-view-${offer.id}`} title="Просмотр">
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                          <Button variant="ghost" size="sm" data-testid={`button-edit-${offer.id}`} title="Редактировать">
-                            <Settings className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="space-y-4">
+                {topOffers.slice(0, 3).map((offer: any) => (
+                  <div key={offer.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex flex-col">
+                      <span className="font-medium">{offer.name}</span>
+                      <span className="text-sm text-muted-foreground">CR: {offer.cr}% | {offer.clicks} кликов</span>
+                    </div>
+                    <Badge variant={offer.status === 'active' ? 'default' : 'secondary'}>
+                      {offer.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
             </CardContent>
-          </Card> */}
+          </Card>
 
-          {/* Offer Status and Notifications */}
-          <div className="space-y-6">
-            {/* Offer Status */}
-            <Card data-testid="card-offer-status">
-              <CardHeader>
-                <CardTitle>Статус офферов</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">На модерации</span>
-                  <Badge variant="secondary">{dashboard?.offerStatus.pending || 0}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Активные</span>
-                  <Badge variant="default">{dashboard?.offerStatus.active || 0}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Скрытые</span>
-                  <Badge variant="outline">{dashboard?.offerStatus.hidden || 0}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Архив</span>
-                  <Badge variant="secondary">{dashboard?.offerStatus.archived || 0}</Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Notifications */}
-            <Card data-testid="card-notifications">
-              <CardHeader>
-                <CardTitle>Уведомления</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {notifications.slice(0, 5).map((notification: any) => (
+          {/* Notifications Card */}
+          <Card data-testid="card-notifications-list">
+            <CardHeader>
+              <CardTitle>Уведомления</CardTitle>
+              <CardDescription>Последние сообщения системы</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {notifications.slice(0, 4).map((notification: any) => (
                   <div key={notification.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{notification.title}</div>
+                      <div className="text-xs text-muted-foreground">{notification.message}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+
                     <div className="mt-1">
                       {notification.type === 'partner_request' && <Users className="h-4 w-4 text-blue-600" />}
                       {notification.type === 'postback_error' && <AlertTriangle className="h-4 w-4 text-red-600" />}
