@@ -285,6 +285,47 @@ export function AffiliatePostbacks() {
     }
   });
 
+  // Delete profile mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (profileId: string) => {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/postback/profiles/${profileId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Failed to delete profile');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
+      toast({ title: 'Профиль удален', description: 'Постбек профиль успешно удален' });
+    }
+  });
+
+  // Test postback mutation
+  const testMutation = useMutation({
+    mutationFn: async ({ profileId, testData: data }: { profileId: string, testData: any }) => {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/postback/test/${profileId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to test postback');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: data.success ? 'Тест успешен' : 'Тест неудачен', 
+        description: data.message || 'Постбек отправлен'
+      });
+      setIsTestModalOpen(false);
+    }
+  });
+
   // Функция для применения шаблона трекера
   const applyTemplate = (templateKey: keyof typeof trackerTemplates) => {
     const template = trackerTemplates[templateKey];
@@ -565,8 +606,16 @@ export function AffiliatePostbacks() {
                           size="sm"
                           onClick={() => {
                             setSelectedProfile(profile);
+                            setTestData({ 
+                              clickid: `test_${Date.now()}`, 
+                              type: 'lead', 
+                              revenue: '100', 
+                              currency: 'USD' 
+                            });
                             setIsTestModalOpen(true);
                           }}
+                          disabled={testMutation.isPending}
+                          title="Протестировать постбек"
                           data-testid={`button-test-${profile.id}`}
                         >
                           <Play className="h-3 w-3 mr-1" />
@@ -579,10 +628,27 @@ export function AffiliatePostbacks() {
                             setSelectedProfile(profile);
                             setIsEditModalOpen(true);
                           }}
+                          title="Редактировать профиль"
                           data-testid={`button-edit-${profile.id}`}
                         >
                           <Settings className="h-3 w-3 mr-1" />
                           Настройки
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm('Вы уверены, что хотите удалить этот профиль?')) {
+                              deleteMutation.mutate(profile.id);
+                            }
+                          }}
+                          disabled={deleteMutation.isPending}
+                          title="Удалить профиль"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          data-testid={`button-delete-${profile.id}`}
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Удалить
                         </Button>
                       </div>
                     </div>
@@ -771,12 +837,22 @@ export function AffiliatePostbacks() {
               <Button variant="outline" onClick={() => setIsTestModalOpen(false)}>
                 Отмена
               </Button>
-              <Button onClick={() => {
-                // Test logic here
-                toast({ title: 'Тест постбека', description: 'Тестовый постбек отправлен' });
-                setIsTestModalOpen(false);
-              }}>
-                <Send className="h-4 w-4 mr-2" />
+              <Button 
+                onClick={() => {
+                  if (selectedProfile) {
+                    testMutation.mutate({
+                      profileId: selectedProfile.id,
+                      testData
+                    });
+                  }
+                }}
+                disabled={testMutation.isPending || !testData.clickid}
+              >
+                {testMutation.isPending ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4 mr-2" />
+                )}
                 Отправить тест
               </Button>
             </div>
