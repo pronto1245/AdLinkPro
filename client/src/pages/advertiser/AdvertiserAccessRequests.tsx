@@ -428,16 +428,23 @@ export default function AdvertiserAccessRequests() {
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => setSelectedRequest(request)}>
-                                      <Eye className="h-4 w-4 mr-2" />
-                                      Детали
-                                    </DropdownMenuItem>
-                                    {request.message && (
-                                      <DropdownMenuItem>
-                                        <MessageSquare className="h-4 w-4 mr-2" />
-                                        Ответ
+                                    {request.status === 'approved' ? (
+                                      <DropdownMenuItem 
+                                        onClick={() => handleResponseClick(request, 'reject')}
+                                        className="text-red-600 focus:text-red-600"
+                                      >
+                                        <UserX className="h-4 w-4 mr-2" />
+                                        Отозвать доступ
                                       </DropdownMenuItem>
-                                    )}
+                                    ) : request.status === 'rejected' ? (
+                                      <DropdownMenuItem 
+                                        onClick={() => handleResponseClick(request, 'approve')}
+                                        className="text-green-600 focus:text-green-600"
+                                      >
+                                        <UserCheck className="h-4 w-4 mr-2" />
+                                        Одобрить
+                                      </DropdownMenuItem>
+                                    ) : null}
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </div>
