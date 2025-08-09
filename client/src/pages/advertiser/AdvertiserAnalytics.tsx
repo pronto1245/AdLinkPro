@@ -19,7 +19,12 @@ import {
   Download,
   Filter,
   Search,
-  RefreshCw
+  RefreshCw,
+  PieChart,
+  Monitor,
+  Link,
+  Hash,
+  FileText
 } from 'lucide-react';
 import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
 import { ResponsiveCard } from '@/components/layout/ResponsiveCard';
@@ -385,12 +390,30 @@ export function AdvertiserAnalytics() {
       {/* Data Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview">Обзор</TabsTrigger>
-          <TabsTrigger value="geography">География</TabsTrigger>
-          <TabsTrigger value="devices">Устройства</TabsTrigger>
-          <TabsTrigger value="sources">Источники</TabsTrigger>
-          <TabsTrigger value="subids">SubID</TabsTrigger>
-          <TabsTrigger value="detailed">Детали</TabsTrigger>
+          <TabsTrigger value="overview" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=active]:border-blue-300">
+            <PieChart className="h-4 w-4 mr-2 text-blue-600" />
+            Обзор
+          </TabsTrigger>
+          <TabsTrigger value="geography" className="data-[state=active]:bg-green-100 data-[state=active]:text-green-700 data-[state=active]:border-green-300">
+            <Globe className="h-4 w-4 mr-2 text-green-600" />
+            География
+          </TabsTrigger>
+          <TabsTrigger value="devices" className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 data-[state=active]:border-purple-300">
+            <Monitor className="h-4 w-4 mr-2 text-purple-600" />
+            Устройства
+          </TabsTrigger>
+          <TabsTrigger value="sources" className="data-[state=active]:bg-orange-100 data-[state=active]:text-orange-700 data-[state=active]:border-orange-300">
+            <Link className="h-4 w-4 mr-2 text-orange-600" />
+            Источники
+          </TabsTrigger>
+          <TabsTrigger value="subids" className="data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700 data-[state=active]:border-indigo-300">
+            <Hash className="h-4 w-4 mr-2 text-indigo-600" />
+            SubID
+          </TabsTrigger>
+          <TabsTrigger value="detailed" className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-700 data-[state=active]:border-gray-300">
+            <FileText className="h-4 w-4 mr-2 text-gray-600" />
+            Детали
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
