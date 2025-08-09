@@ -314,7 +314,7 @@ export default function AdvertiserDashboardNew() {
             </CardContent>
           </Card>
 
-          {/* <Card data-testid="card-postbacks" className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 border-teal-200 dark:border-teal-700">
+          <Card data-testid="card-postbacks" className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 border-teal-200 dark:border-teal-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-teal-700 dark:text-teal-300">Постбеки</CardTitle>
               <div className="p-3 bg-teal-500 rounded-xl shadow-lg">
@@ -328,7 +328,7 @@ export default function AdvertiserDashboardNew() {
                 <span className="text-red-600 dark:text-red-400">Ошибок: {overview?.postbackErrors || 0}</span>
               </div>
             </CardContent>
-          </Card> */}
+          </Card>
 
           <Card data-testid="card-fraud" className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -358,7 +358,7 @@ export default function AdvertiserDashboardNew() {
         </div>
 
         {/* Charts Section - aligned to match Quick Actions width */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <Card data-testid="chart-traffic">
             <CardHeader>
               <CardTitle>Трафик по времени</CardTitle>
