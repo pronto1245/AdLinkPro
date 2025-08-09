@@ -85,8 +85,8 @@ export default function AdvertiserAccessRequests() {
 
   // Загрузка запросов доступа
   const { data: requests = [], isLoading } = useQuery({
-    queryKey: ["/api/advertiser/access-requests"],
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    queryKey: ["/api/advertiser/access-requests", Date.now()], // Force fresh data
+    staleTime: 0, // Always fetch fresh
   });
   
   // Отладка данных с сервера
