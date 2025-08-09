@@ -202,6 +202,9 @@ const countryNameToCode: Record<string, string> = {
   'колумбия': 'CO',
   'перу': 'PE',
   'венесуэла': 'VE',
+  'армения': 'AM',
+  'алжир': 'DZ',
+  'греция': 'GR',
   
   // Английские названия
   'russia': 'RU',
@@ -245,6 +248,10 @@ const countryNameToCode: Record<string, string> = {
   'belgium': 'BE',
   'ireland': 'IE',
   'israel': 'IL',
+  'armenia': 'AM',
+  'algeria': 'DZ',
+  'greece': 'GR',
+  'czech': 'CZ',
   'uae': 'AE',
   'united arab emirates': 'AE',
   'saudi arabia': 'SA',
@@ -453,12 +460,38 @@ const countryNameToCode: Record<string, string> = {
   'туркменистан': 'TM',
 };
 
-export function getCountryName(code: string): string {
-  return countries[code]?.name || code;
+export function getCountryName(input: string): string {
+  if (!input) return '';
+  
+  // Сначала попробуем использовать как код
+  if (countries[input.toUpperCase()]) {
+    return countries[input.toUpperCase()].name;
+  }
+  
+  // Затем попробуем конвертировать название в код
+  const countryCode = getCountryCodeByName(input);
+  if (countryCode && countries[countryCode]) {
+    return countries[countryCode].name;
+  }
+  
+  return input;
 }
 
-export function getCountryFlag(code: string): string {
-  return countries[code]?.flag || '🌍';
+export function getCountryFlag(input: string): string {
+  if (!input) return '🌍';
+  
+  // Сначала попробуем использовать как код
+  if (countries[input.toUpperCase()]) {
+    return countries[input.toUpperCase()].flag;
+  }
+  
+  // Затем попробуем конвертировать название в код
+  const countryCode = getCountryCodeByName(input);
+  if (countryCode && countries[countryCode]) {
+    return countries[countryCode].flag;
+  }
+  
+  return '🌍';
 }
 
 export function getCountryInfo(code: string): Country {
