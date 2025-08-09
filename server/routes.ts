@@ -8,7 +8,7 @@ import {
   insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, insertReceivedOfferSchema,
   type User, users, offers, statistics, fraudAlerts, tickets, postbacks, postbackLogs, trackingClicks,
   transactions, fraudReports, fraudBlocks, financialTransactions, financialSummaries, payoutRequests,
-  offerAccessRequests, partnerOffers, creativeFiles, customDomains
+  offerAccessRequests, partnerOffers, creativeFiles, customDomains, trackingLinks
 } from "@shared/schema";
 import { 
   trackingClicks as newTrackingClicks, trackingEvents, postbackProfiles, postbackDeliveries, deliveryQueue,
@@ -1951,6 +1951,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Creating offer with data:", JSON.stringify(offerData, null, 2));
       
       const offer = await storage.createOffer(offerData);
+      
+      // 🔗 АВТОМАТИЧЕСКАЯ ГЕНЕРАЦИЯ ТРЕКИНГОВЫХ ССЫЛОК С КАСТОМНЫМ ДОМЕНОМ arbiconnect.store
+      console.log("🔗 Автоматическое создание трекинговых ссылок для нового оффера...");
+      
+      try {
+        // Получаем всех активных партнеров
+        const activePartners = await db
+          .select({
+            id: users.id,
+            username: users.username,
+            partnerNumber: users.partnerNumber
+          })
+          .from(users)
+          .where(
+            and(
+              eq(users.role, 'affiliate'),
+              eq(users.isActive, true)
+            )
+          );
+        
+        console.log(`📊 Найдено ${activePartners.length} активных партнеров для генерации ссылок`);
+        
+        // Создаем трекинговые ссылки для каждого партнера с кастомным доменом
+        for (const partner of activePartners) {
+          const trackingCode = `${offer.name.toLowerCase().replace(/[^a-z0-9]/g, '')}_${partner.partnerNumber}`;
+          const customDomain = 'arbiconnect.store';
+          
+          // Создаем трекинговую ссылку
+          const trackingUrl = `https://${customDomain}/track/${trackingCode}`;
+          
+          // Сохраняем в базу данных
+          await db.insert(trackingLinks).values({
+            id: nanoid(),
+            partnerId: partner.id,
+            offerId: offer.id,
+            trackingCode,
+            url: trackingUrl,
+            customDomain,
+            subId1: 'auto_generated',
+            subId2: 'arbiconnect_domain',
+            subId3: offer.category || 'general',
+            subId4: 'new_offer',
+            subId5: authUser.username,
+            isActive: true,
+            clickCount: 0,
+            conversionCount: 0,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+          
+          console.log(`✅ Создана ссылка для партнера ${partner.username}: ${trackingUrl}`);
+        }
+        
+        console.log(`🎉 Успешно создано ${activePartners.length} трекинговых ссылок с доменом arbiconnect.store`);
+      } catch (linkError) {
+        console.error("❌ Ошибка создания трекинговых ссылок:", linkError);
+        // Не прерываем создание оффера из-за ошибки с ссылками
+      }
       
       // Сохраняем креативы в базу данных если они были загружены
       if (req.body.creatives || req.body.creativesUrl) {
