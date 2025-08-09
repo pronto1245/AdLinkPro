@@ -8145,9 +8145,21 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         offerLogo: req.offerLogo
       }));
 
-      // Отладка данных
-      console.log(`Raw requests from DB:`, requests.map(r => ({ name: r.offerName, logo: r.offerLogo })));
-      console.log(`Formatted requests:`, formattedRequests.map(r => ({ name: r.offerName, logo: r.offerLogo })));
+      // Отладка данных с подробностями
+      console.log(`=== LOGO DEBUG FOR ACCESS REQUESTS ===`);
+      console.log(`Raw requests from DB:`, requests.map(r => ({ 
+        name: r.offerName, 
+        logo: r.offerLogo, 
+        logoType: typeof r.offerLogo,
+        logoValue: r.offerLogo 
+      })));
+      console.log(`Formatted requests:`, formattedRequests.map(r => ({ 
+        name: r.offerName, 
+        logo: r.offerLogo, 
+        logoType: typeof r.offerLogo,
+        logoValue: r.offerLogo 
+      })));
+      console.log(`=== END LOGO DEBUG ===`);
 
       res.json(formattedRequests);
     } catch (error) {
