@@ -271,6 +271,62 @@ export function AdvertiserDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Quick Actions Section */}
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold mb-4">Быстрые действия</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
+          {/* Create New Offer */}
+          <Link to="/advertiser/offers/create">
+            <Button variant="outline" className="w-full h-20 flex flex-col gap-2 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border-blue-200 text-blue-700 shadow-sm" data-testid="button-create-offer">
+              <div className="p-2 bg-blue-500 rounded-lg">
+                <Target className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-sm font-medium">Создать оффер</span>
+            </Button>
+          </Link>
+
+          {/* View Analytics */}
+          <Link to="/advertiser/analytics">
+            <Button variant="outline" className="w-full h-20 flex flex-col gap-2 bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 border-green-200 text-green-700 shadow-sm" data-testid="button-view-analytics">
+              <div className="p-2 bg-green-500 rounded-lg">
+                <BarChart3 className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-sm font-medium">Аналитика</span>
+            </Button>
+          </Link>
+
+          {/* Manage Partners */}
+          <Link to="/advertiser/partners">
+            <Button variant="outline" className="w-full h-20 flex flex-col gap-2 bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border-purple-200 text-purple-700 shadow-sm" data-testid="button-manage-partners">
+              <div className="p-2 bg-purple-500 rounded-lg">
+                <Users className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-sm font-medium">Партнёры</span>
+            </Button>
+          </Link>
+
+          {/* Financial Reports */}
+          <Link to="/advertiser/finances">
+            <Button variant="outline" className="w-full h-20 flex flex-col gap-2 bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 border-orange-200 text-orange-700 shadow-sm" data-testid="button-finances">
+              <div className="p-2 bg-orange-500 rounded-lg">
+                <DollarSign className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-sm font-medium">Финансы</span>
+            </Button>
+          </Link>
+
+          {/* Settings */}
+          <Link to="/advertiser/profile">
+            <Button variant="outline" className="w-full h-20 flex flex-col gap-2 bg-gradient-to-br from-rose-50 to-rose-100 hover:from-rose-100 hover:to-rose-200 border-rose-200 text-rose-700 shadow-sm" data-testid="button-settings">
+              <div className="p-2 bg-rose-500 rounded-lg">
+                <Settings className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-sm font-medium">Настройки</span>
+            </Button>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
