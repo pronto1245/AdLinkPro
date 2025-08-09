@@ -188,9 +188,9 @@ const LandingPagesCard = ({
       <CardContent>
         <div className="space-y-3">
           {landingPages.map((landing: any) => (
-            <div key={landing.id} className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
+            <div key={landing.id} className="flex items-start justify-between p-3 border rounded-lg gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <h4 className="font-medium">{landing.name}</h4>
                   {landing.isDefault && (
                     <Badge variant="default" className="text-xs">По умолчанию</Badge>
@@ -202,7 +202,7 @@ const LandingPagesCard = ({
                 </div>
                 <div className="space-y-1">
                   {transformedUrls[landing.id] ? (
-                    <code className="text-sm text-green-600 dark:text-green-400 block font-medium">
+                    <code className="text-sm text-green-600 dark:text-green-400 block font-medium break-all overflow-hidden">
                       {transformedUrls[landing.id]}
                     </code>
                   ) : loading[landing.id] ? (
