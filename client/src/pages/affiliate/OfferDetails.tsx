@@ -244,68 +244,77 @@ const LandingPagesCard = ({
         <div className="space-y-3">
           {landingPages.map((landing: any) => (
             <div key={landing.id} className="border rounded-lg">
-              <div className="flex items-start justify-between p-3 gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h4 className="font-medium">{landing.name}</h4>
-                    {landing.isDefault && (
-                      <Badge variant="default" className="text-xs">По умолчанию</Badge>
-                    )}
-                    <Badge variant="outline" className="text-xs">{landing.type}</Badge>
-                    <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                      ✓ С трекингом
-                    </Badge>
+              <div className="p-3">
+                {/* Верхняя часть с заголовком и кнопками копирования/открытия */}
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <h4 className="font-medium">{landing.name}</h4>
+                      {landing.isDefault && (
+                        <Badge variant="default" className="text-xs">По умолчанию</Badge>
+                      )}
+                      <Badge variant="outline" className="text-xs">{landing.type}</Badge>
+                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        ✓ С трекингом
+                      </Badge>
+                    </div>
+                    <div className="space-y-1">
+                      {transformedUrls[landing.id] ? (
+                        <code className="text-sm text-green-600 dark:text-green-400 block font-medium break-all overflow-hidden">
+                          {subParams[landing.id] && Object.values(subParams[landing.id]).some(val => val) ? 
+                            (() => {
+                              const url = new URL(transformedUrls[landing.id]);
+                              Object.entries(subParams[landing.id]).forEach(([key, value]) => {
+                                if (value) url.searchParams.set(key, value);
+                              });
+                              return url.toString();
+                            })() : 
+                            transformedUrls[landing.id]
+                          }
+                        </code>
+                      ) : loading[landing.id] ? (
+                        <span className="text-xs text-muted-foreground">⏳ Подготавливаем ссылку...</span>
+                      ) : (
+                        <code className="text-sm text-muted-foreground">
+                          Ссылка будет готова через секунду...
+                        </code>
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    {transformedUrls[landing.id] ? (
-                      <code className="text-sm text-green-600 dark:text-green-400 block font-medium break-all overflow-hidden">
-                        {subParams[landing.id] && Object.values(subParams[landing.id]).some(val => val) ? 
-                          (() => {
-                            const url = new URL(transformedUrls[landing.id]);
-                            Object.entries(subParams[landing.id]).forEach(([key, value]) => {
-                              if (value) url.searchParams.set(key, value);
-                            });
-                            return url.toString();
-                          })() : 
-                          transformedUrls[landing.id]
-                        }
-                      </code>
-                    ) : loading[landing.id] ? (
-                      <span className="text-xs text-muted-foreground">⏳ Подготавливаем ссылку...</span>
-                    ) : (
-                      <code className="text-sm text-muted-foreground">
-                        Ссылка будет готова через секунду...
-                      </code>
-                    )}
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleCopyUrl(landing)}
+                      title="Копировать URL"
+                      disabled={loading[landing.id]}
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleOpenUrl(landing)}
+                      title="Открыть в новой вкладке"
+                      disabled={loading[landing.id]}
+                      className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                
+                {/* Кнопка "Дополнительно" внизу */}
+                <div className="flex justify-center">
                   <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleCopyUrl(landing)}
-                    title="Копировать URL"
-                    disabled={loading[landing.id]}
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleOpenUrl(landing)}
-                    title="Открыть в новой вкладке"
-                    disabled={loading[landing.id]}
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="sm"
+                    size="xs"
                     variant="outline"
                     onClick={() => toggleExpanded(landing.id)}
                     title="Дополнительные параметры"
-                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                    className="text-xs text-purple-600 border-purple-200 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-700 dark:hover:bg-purple-900/20"
                   >
-                    <Settings className="w-4 h-4 mr-1" />
+                    <Settings className="w-3 h-3 mr-1" />
                     Дополнительно
                   </Button>
                 </div>
