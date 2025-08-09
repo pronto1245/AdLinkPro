@@ -59,6 +59,32 @@ export default function Statistics() {
   const [showSubParams, setShowSubParams] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
 
+  // Функции для работы с фильтрами
+  const applyFilters = () => {
+    // Здесь будет логика применения фильтров к данным
+    console.log('Применяются фильтры:', filters);
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      dateFrom: '',
+      dateTo: '',
+      offerId: '',
+      geo: '',
+      device: ''
+    });
+  };
+
+  const getOfferName = (offerId: string) => {
+    const offers = {
+      '1': '4RaBet India',
+      '2': 'Crypto Trading Pro', 
+      '3': 'Dating VIP',
+      '4': 'VPN Service'
+    };
+    return offers[offerId as keyof typeof offers] || offerId;
+  };
+
   // Mock data для демонстрации
   const mockStats = {
     summary: {
@@ -242,19 +268,21 @@ export default function Statistics() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-5">
             <div>
-              <label className="text-sm font-medium">От</label>
+              <label className="text-sm font-medium">Дата от</label>
               <Input
                 type="date"
                 value={filters.dateFrom}
                 onChange={(e) => setFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                data-testid="input-date-from"
               />
             </div>
             <div>
-              <label className="text-sm font-medium">До</label>
+              <label className="text-sm font-medium">Дата до</label>
               <Input
                 type="date"
                 value={filters.dateTo}
                 onChange={(e) => setFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                data-testid="input-date-to"
               />
             </div>
             <div>
@@ -263,14 +291,15 @@ export default function Statistics() {
                 value={filters.offerId}
                 onValueChange={(value) => setFilters(prev => ({ ...prev, offerId: value }))}
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid="select-offer">
                   <SelectValue placeholder="Все офферы" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Все офферы</SelectItem>
+                  <SelectItem value="">Все офферы</SelectItem>
                   <SelectItem value="1">4RaBet India</SelectItem>
                   <SelectItem value="2">Crypto Trading Pro</SelectItem>
                   <SelectItem value="3">Dating VIP</SelectItem>
+                  <SelectItem value="4">VPN Service</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -280,14 +309,15 @@ export default function Statistics() {
                 value={filters.geo}
                 onValueChange={(value) => setFilters(prev => ({ ...prev, geo: value }))}
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid="select-geo">
                   <SelectValue placeholder="Все страны" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Все страны</SelectItem>
+                  <SelectItem value="">Все страны</SelectItem>
                   <SelectItem value="IN">Индия</SelectItem>
                   <SelectItem value="US">США</SelectItem>
                   <SelectItem value="DE">Германия</SelectItem>
+                  <SelectItem value="UK">Великобритания</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -297,11 +327,11 @@ export default function Statistics() {
                 value={filters.device}
                 onValueChange={(value) => setFilters(prev => ({ ...prev, device: value }))}
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid="select-device">
                   <SelectValue placeholder="Все устройства" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Все устройства</SelectItem>
+                  <SelectItem value="">Все устройства</SelectItem>
                   <SelectItem value="mobile">Мобильные</SelectItem>
                   <SelectItem value="desktop">Десктоп</SelectItem>
                   <SelectItem value="tablet">Планшеты</SelectItem>
@@ -309,6 +339,119 @@ export default function Statistics() {
               </Select>
             </div>
           </div>
+          
+          <div className="flex gap-2 mt-4">
+            <Button 
+              onClick={applyFilters}
+              data-testid="button-apply-filters"
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Применить
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={resetFilters}
+              data-testid="button-reset-filters"
+            >
+              Сбросить
+            </Button>
+            <Button variant="outline" data-testid="button-export-data">
+              <Download className="h-4 w-4 mr-2" />
+              Экспорт
+            </Button>
+          </div>
+
+          {/* Быстрые фильтры */}
+          <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Быстрые фильтры:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setFilters(prev => ({
+                    ...prev,
+                    dateFrom: '2025-08-05',
+                    dateTo: '2025-08-05',
+                    offerId: '1'
+                  }));
+                }}
+                data-testid="quick-filter-4rabet-today"
+              >
+                4RaBet India за 05.08.2025
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setFilters(prev => ({
+                    ...prev,
+                    dateFrom: '2025-08-04',
+                    dateTo: '2025-08-04',
+                    offerId: ''
+                  }));
+                }}
+                data-testid="quick-filter-yesterday"
+              >
+                Все офферы за 04.08.2025
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setFilters(prev => ({
+                    ...prev,
+                    dateFrom: '',
+                    dateTo: '',
+                    offerId: '1',
+                    geo: 'IN'
+                  }));
+                }}
+                data-testid="quick-filter-4rabet-india"
+              >
+                4RaBet India (Индия)
+              </Button>
+            </div>
+          </div>
+
+          {/* Показ активных фильтров */}
+          {(filters.dateFrom || filters.dateTo || filters.offerId || filters.geo || filters.device) && (
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Filter className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Активные фильтры:</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {filters.dateFrom && (
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                    От: {filters.dateFrom}
+                  </Badge>
+                )}
+                {filters.dateTo && (
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                    До: {filters.dateTo}
+                  </Badge>
+                )}
+                {filters.offerId && (
+                  <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                    Оффер: {getOfferName(filters.offerId)}
+                  </Badge>
+                )}
+                {filters.geo && (
+                  <Badge variant="secondary" className="bg-green-100 text-green-700">
+                    Гео: {filters.geo}
+                  </Badge>
+                )}
+                {filters.device && (
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                    Устройство: {filters.device}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
