@@ -295,7 +295,7 @@ export function AffiliatePostbacks() {
             }}
             className="font-mono text-sm"
             rows={8}
-            placeholder="{\n  \"clickid\": \"{{clickid}}\",\n  \"status\": \"{{status}}\",\n  \"revenue\": \"{{revenue}}\"\n}"
+            placeholder={`{\n  "clickid": "{{clickid}}",\n  "status": "{{status}}",\n  "revenue": "{{revenue}}"\n}`}
             data-testid="textarea-params-template"
           />
         </div>

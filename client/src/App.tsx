@@ -73,8 +73,6 @@ import Finances from "@/pages/affiliate/Finances";
 import { useAuth } from "./contexts/auth-context";
 import * as React from 'react';
 import Login from "@/pages/auth/login";
-import { AdvertiserPostbacks } from "@/pages/advertiser/Postbacks";
-import { AffiliatePostbacks } from "@/pages/affiliate/Postbacks";
 import AdvertiserPostbacks from '@/pages/advertiser/Postbacks';
 import AffiliatePostbacks from '@/pages/affiliate/Postbacks';
 
