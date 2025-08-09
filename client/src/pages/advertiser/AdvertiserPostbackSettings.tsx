@@ -107,18 +107,42 @@ export default function AdvertiserPostbackSettings() {
 
   // Test postback mutation
   const testPostbackMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/track/postback/test', 'POST', data),
-    onSuccess: (data) => {
-      toast({
-        title: "Тест успешен",
-        description: `Статус: ${data.response?.status || 'OK'}`,
+    mutationFn: async (data: { tracker_url: string; method?: string; test_data?: any }) => {
+      const response = await fetch('/api/track/postback/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(data)
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      return await response.json();
+    },
+    onSuccess: (response: any) => {
+      if (response.success) {
+        toast({
+          title: "Тест успешен",
+          description: `Статус: ${response.response?.status || 'OK'} (${response.response?.time || 0}ms)`,
+        });
+      } else {
+        toast({
+          title: "Ошибка теста",
+          description: response.error || `HTTP ${response.response?.status || 'Unknown'}`,
+          variant: "destructive",
+        });
+      }
     },
     onError: (error: any) => {
+      console.error('Test error:', error);
       toast({
-        title: "Тест не прошел",
-        description: error.message || "Ошибка при тестировании",
-        variant: "destructive" as const,
+        title: "Ошибка",
+        description: error.message || "Произошла ошибка при тестировании постбека",
+        variant: "destructive",
       });
     },
   });

@@ -6596,6 +6596,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Test postback endpoint 
+  app.post("/api/track/postback/test", async (req, res) => {
+    console.log('=== TEST POSTBACK ===');
+    const { tracker_url, method = 'GET', test_data } = req.body;
+
+    try {
+      // Replace macros in URL
+      let testUrl = tracker_url;
+      if (test_data) {
+        Object.keys(test_data).forEach(key => {
+          const macro = `{${key}}`;
+          testUrl = testUrl.replace(new RegExp(macro, 'g'), test_data[key]);
+        });
+      }
+
+      console.log('Testing postback URL:', testUrl);
+
+      // Make HTTP request
+      const startTime = Date.now();
+      const response = await fetch(testUrl, {
+        method,
+        headers: {
+          'User-Agent': 'Affiliate-Platform-Postback-Test/1.0'
+        }
+      });
+      const responseTime = Date.now() - startTime;
+
+      // Try to get response text, but handle errors gracefully
+      let responseText = '';
+      let isJson = false;
+      
+      try {
+        responseText = await response.text();
+        // Check if response is JSON
+        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+          JSON.parse(responseText); // Validate JSON
+          isJson = true;
+        }
+      } catch (textError) {
+        responseText = 'Could not read response body';
+      }
+      
+      // Determine success based on HTTP status code
+      const isSuccess = response.status >= 200 && response.status < 400;
+      
+      res.json({
+        success: isSuccess,
+        url: testUrl,
+        response: {
+          status: response.status,
+          statusText: response.statusText,
+          time: responseTime,
+          body: responseText.substring(0, 500), // Limit response body
+          isJson,
+          headers: Object.fromEntries(response.headers.entries())
+        }
+      });
+
+    } catch (error: any) {
+      console.error('Postback test error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+        url: tracker_url
+      });
+    }
+  });
+
   // ТЗ2: Enhanced Financial Management APIs
   app.get("/api/admin/financial-metrics-enhanced/:period", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
