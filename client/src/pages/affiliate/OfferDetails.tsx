@@ -281,42 +281,40 @@ const LandingPagesCard = ({
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleCopyUrl(landing)}
+                        title="Копировать URL"
+                        disabled={loading[landing.id]}
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleOpenUrl(landing)}
+                        title="Открыть в новой вкладке"
+                        disabled={loading[landing.id]}
+                        className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </Button>
+                    </div>
                     <Button
                       size="sm"
-                      variant="ghost"
-                      onClick={() => handleCopyUrl(landing)}
-                      title="Копировать URL"
-                      disabled={loading[landing.id]}
-                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+                      variant="outline"
+                      onClick={() => toggleExpanded(landing.id)}
+                      title="Дополнительные параметры"
+                      className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-700 dark:hover:bg-blue-900/20"
                     >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleOpenUrl(landing)}
-                      title="Открыть в новой вкладке"
-                      disabled={loading[landing.id]}
-                      className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20"
-                    >
-                      <ExternalLink className="w-4 h-4" />
+                      <Settings className="w-4 h-4 mr-1" />
+                      Дополнительно
                     </Button>
                   </div>
-                </div>
-                
-                {/* Кнопка "Дополнительно" внизу */}
-                <div className="flex justify-center">
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    onClick={() => toggleExpanded(landing.id)}
-                    title="Дополнительные параметры"
-                    className="text-xs text-purple-600 border-purple-200 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-700 dark:hover:bg-purple-900/20"
-                  >
-                    <Settings className="w-3 h-3 mr-1" />
-                    Дополнительно
-                  </Button>
                 </div>
               </div>
               
