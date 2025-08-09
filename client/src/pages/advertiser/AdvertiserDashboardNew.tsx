@@ -209,6 +209,10 @@ export default function AdvertiserDashboardNew() {
               />
             </div>
             
+            <Button variant="outline" size="icon" title="Фильтры" data-testid="button-filters">
+              <Filter className="h-4 w-4" />
+            </Button>
+            
             <Button variant="outline" size="icon" onClick={() => refetch()} data-testid="button-refresh" title="Обновить данные">
               <RefreshCw className="h-4 w-4" />
             </Button>
@@ -257,16 +261,16 @@ export default function AdvertiserDashboardNew() {
             </Button>
           </Link>
           
-          <Link to="/fraud-detection">
-            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-red-50 hover:bg-red-100 border-red-200 text-red-700" data-testid="button-quick-fraud">
-              <Shield className="h-5 w-5" />
-              <span className="text-sm font-medium">Фрод</span>
+          <Link to="/advertiser/profile">
+            <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700" data-testid="button-quick-settings">
+              <Settings className="h-5 w-5" />
+              <span className="text-sm font-medium">Настройки</span>
             </Button>
           </Link>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {/* KPI Cards - aligned with Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
 
           <Card data-testid="card-revenue" className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
