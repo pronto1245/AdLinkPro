@@ -16,7 +16,7 @@ import {
   type TrackingClick, type TrackingEvent, type PostbackProfile, type PostbackDelivery,
   sub2Config
 } from "@shared/postback-schema";
-import { sql } from "drizzle-orm";
+import { sql, SQL } from "drizzle-orm";
 import { eq, and, gte, lte, count, sum, desc } from "drizzle-orm";
 import { db, queryCache } from "./db";
 import { z } from "zod";
@@ -6382,98 +6382,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
         clickId 
       } = req.query;
 
-      // Create mock analytics data since we don't have real conversion data yet
-      const generateMockAnalytics = () => {
-        const records = [];
-        const offers = [
-          { id: '1', name: 'Casino Welcome Bonus' },
-          { id: '2', name: 'Sports Betting CPA' },
-          { id: '3', name: 'Forex Trading Lead' }
-        ];
-        const partners = [
-          { id: 'p1', username: 'partner1' },
-          { id: 'p2', username: 'partner2' },
-          { id: 'p3', username: 'partner3' }
-        ];
-        const geos = ['US', 'GB', 'DE', 'FR', 'CA'];
-        const devices = ['Desktop', 'Mobile', 'Tablet'];
-        const sources = ['push', 'pop', 'native', 'seo', 'social'];
-
-        for (let i = 0; i < 50; i++) {
-          const offer = offers[Math.floor(Math.random() * offers.length)];
-          const partner = partners[Math.floor(Math.random() * partners.length)];
-          const clicks = Math.floor(Math.random() * 1000) + 100;
-          const uniqueClicks = Math.floor(clicks * 0.8);
-          const leads = Math.floor(clicks * (Math.random() * 0.15 + 0.01));
-          const payout = leads * (Math.random() * 50 + 10);
-          const revenue = leads * (Math.random() * 80 + 15);
-          const profit = revenue - payout;
-          const cr = leads > 0 ? (leads / clicks) * 100 : 0;
-          const epc = clicks > 0 ? revenue / clicks : 0;
-          const roi = payout > 0 ? ((revenue - payout) / payout) * 100 : 0;
-          const fraudClicks = Math.floor(Math.random() * 10);
-          const botClicks = Math.floor(Math.random() * 15);
-
-          records.push({
-            id: `analytics_${i}`,
-            date: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-            offerId: offer.id,
-            offerName: offer.name,
-            partnerId: partner.id,
-            partnerUsername: partner.username,
-            clicks,
-            uniqueClicks,
-            leads,
-            conversions: leads,
-            revenue: parseFloat(revenue.toFixed(2)),
-            payout: parseFloat(payout.toFixed(2)),
-            profit: parseFloat(profit.toFixed(2)),
-            cr: parseFloat(cr.toFixed(2)),
-            epc: parseFloat(epc.toFixed(4)),
-            roi: parseFloat(roi.toFixed(2)),
-            geo: geos[Math.floor(Math.random() * geos.length)],
-            device: devices[Math.floor(Math.random() * devices.length)],
-            trafficSource: sources[Math.floor(Math.random() * sources.length)],
-            subId: `sub_${Math.random().toString(36).substring(2, 8)}`,
-            clickId: `click_${Math.random().toString(36).substring(2, 12)}`,
-            fraudClicks,
-            botClicks,
-            fraudScore: Math.floor(Math.random() * 100),
-            postbackStatus: Math.random() > 0.8 ? 'pending' : 'sent',
-            ipAddress: `${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`,
-            referer: Math.random() > 0.5 ? 'https://example.com' : null
+      // Get real analytics data from tracking_clicks table
+      const getRealAnalyticsData = async () => {
+        try {
+          // Get clicks data with partner and offer information using Drizzle
+          const result = await db.select({
+            id: trackingClicks.id,
+            clickId: trackingClicks.clickId,
+            date: trackingClicks.createdAt,
+            partnerId: trackingClicks.partnerId,
+            partnerUsername: users.username,
+            offerId: trackingClicks.offerId,
+            offerName: offers.name,
+            geo: trackingClicks.country,
+            device: trackingClicks.device,
+            subId: trackingClicks.subId1,
+            ip: trackingClicks.ip,
+            referer: trackingClicks.referer,
+            fraudScore: trackingClicks.fraudScore,
+            isBot: trackingClicks.isBot,
+            vpnDetected: trackingClicks.vpnDetected,
+            status: trackingClicks.status,
+            revenue: sql<number>`COALESCE((${trackingClicks.conversionData}->>'revenue')::decimal, 0)`,
+            conversions: sql<number>`CASE WHEN ${trackingClicks.status} = 'converted' THEN 1 ELSE 0 END`
+          })
+          .from(trackingClicks)
+          .leftJoin(users, eq(trackingClicks.partnerId, users.id))
+          .leftJoin(offers, eq(trackingClicks.offerId, offers.id))
+          .where(and(
+            offerId ? eq(trackingClicks.offerId, offerId) : undefined,
+            partnerId ? eq(trackingClicks.partnerId, partnerId) : undefined,
+            geo ? eq(trackingClicks.country, geo) : undefined,
+            device ? eq(trackingClicks.device, device) : undefined
+          ))
+          .orderBy(desc(trackingClicks.createdAt))
+          .limit(100);
+          
+          // Group by partner and offer to calculate metrics
+          const groupedData = new Map();
+          
+          result.forEach((row: any) => {
+            const key = `${row.partnerId}_${row.offerId}`;
+            
+            if (!groupedData.has(key)) {
+              groupedData.set(key, {
+                id: `analytics_${key}`,
+                date: row.date,
+                offerId: row.offerId,
+                offerName: row.offerName || 'Unknown Offer',
+                partnerId: row.partnerId,
+                partnerUsername: row.partnerUsername || 'Unknown Partner',
+                clicks: 0,
+                uniqueClicks: 0,
+                conversions: 0,
+                revenue: 0,
+                payout: 0,
+                profit: 0,
+                cr: 0,
+                epc: 0,
+                roi: 0,
+                geo: row.geo || 'Unknown',
+                device: row.device || 'Unknown',
+                trafficSource: 'direct',
+                subId: row.subId || '',
+                clickId: row.clickId,
+                fraudClicks: 0,
+                botClicks: 0,
+                fraudScore: row.fraudScore || 0,
+                postbackStatus: 'sent',
+                ipAddress: row.ip || '',
+                referer: row.referer || ''
+              });
+            }
+            
+            const data = groupedData.get(key);
+            data.clicks += 1;
+            data.uniqueClicks += 1; // Simple assumption for now
+            data.conversions += parseInt(row.conversions) || 0;
+            data.revenue += parseFloat(row.revenue) || 0;
+            
+            if (row.isBot) data.botClicks += 1;
+            if (row.fraudScore > 50) data.fraudClicks += 1;
           });
+          
+          // Calculate metrics for each group
+          return Array.from(groupedData.values()).map(data => {
+            data.cr = data.clicks > 0 ? (data.conversions / data.clicks) * 100 : 0;
+            data.epc = data.clicks > 0 ? data.revenue / data.clicks : 0;
+            data.payout = data.conversions * 10; // Example payout
+            data.profit = data.revenue - data.payout;
+            data.roi = data.payout > 0 ? ((data.revenue - data.payout) / data.payout) * 100 : 0;
+            
+            // Round numbers
+            data.cr = parseFloat(data.cr.toFixed(2));
+            data.epc = parseFloat(data.epc.toFixed(4));
+            data.revenue = parseFloat(data.revenue.toFixed(2));
+            data.payout = parseFloat(data.payout.toFixed(2));
+            data.profit = parseFloat(data.profit.toFixed(2));
+            data.roi = parseFloat(data.roi.toFixed(2));
+            
+            return data;
+          });
+          
+        } catch (error) {
+          console.error('Error getting real analytics data:', error);
+          return [];
         }
-        return records;
       };
 
-      let analyticsData = generateMockAnalytics();
+      let analyticsData = await getRealAnalyticsData();
 
-      // Apply filters
-      if (search) {
-        analyticsData = analyticsData.filter(record =>
-          record.offerName.toLowerCase().includes(search.toString().toLowerCase()) ||
-          record.partnerUsername.toLowerCase().includes(search.toString().toLowerCase()) ||
-          record.subId.includes(search.toString()) ||
-          record.clickId.includes(search.toString())
-        );
-      }
-
-      if (offerId) {
-        analyticsData = analyticsData.filter(record => record.offerId === offerId);
-      }
-
-      if (partnerId) {
-        analyticsData = analyticsData.filter(record => record.partnerId === partnerId);
-      }
-
-      if (geo) {
-        analyticsData = analyticsData.filter(record => record.geo === geo);
-      }
-
-      if (device) {
-        analyticsData = analyticsData.filter(record => record.device === device);
-      }
+      // Note: Filters are already applied in the database query above
 
       if (trafficSource) {
         analyticsData = analyticsData.filter(record => record.trafficSource === trafficSource);
