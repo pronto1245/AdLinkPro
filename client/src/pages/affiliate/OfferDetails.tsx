@@ -816,7 +816,7 @@ export default function OfferDetails() {
                     <span className="font-medium text-sm">{getCountryName(country)}</span>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 font-medium">
+                    <Badge variant="outline" className="bg-blue-600 text-white border-blue-600 dark:bg-blue-500 dark:text-white dark:border-blue-500 font-bold text-sm px-2 py-1">
                       <DollarSign className="w-3 h-3 mr-1" />
                       {countryPayout}{offer.currency}
                     </Badge>
