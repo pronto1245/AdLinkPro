@@ -186,7 +186,7 @@ export default function Statistics() {
                   <SelectValue placeholder="Все офферы" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все офферы</SelectItem>
+                  <SelectItem value="all">Все офферы</SelectItem>
                   <SelectItem value="1">4RaBet India</SelectItem>
                   <SelectItem value="2">Crypto Trading Pro</SelectItem>
                   <SelectItem value="3">Dating VIP</SelectItem>
@@ -203,7 +203,7 @@ export default function Statistics() {
                   <SelectValue placeholder="Все страны" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все страны</SelectItem>
+                  <SelectItem value="all">Все страны</SelectItem>
                   <SelectItem value="IN">Индия</SelectItem>
                   <SelectItem value="US">США</SelectItem>
                   <SelectItem value="DE">Германия</SelectItem>
@@ -220,7 +220,7 @@ export default function Statistics() {
                   <SelectValue placeholder="Все устройства" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все устройства</SelectItem>
+                  <SelectItem value="all">Все устройства</SelectItem>
                   <SelectItem value="mobile">Мобильные</SelectItem>
                   <SelectItem value="desktop">Десктоп</SelectItem>
                   <SelectItem value="tablet">Планшеты</SelectItem>

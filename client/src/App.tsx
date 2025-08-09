@@ -67,6 +67,7 @@ import AdvertiserAccessRequests from '@/pages/advertiser/AdvertiserAccessRequest
 
 import { PartnerLayout } from "@/components/partner/PartnerLayout";
 import Statistics from "@/pages/affiliate/Statistics";
+import PartnerLiveAnalytics from "@/pages/affiliate/PartnerLiveAnalytics";
 import Finances from "@/pages/affiliate/Finances";
 import { useAuth } from "./contexts/auth-context";
 import * as React from 'react';
@@ -402,6 +403,14 @@ function Router() {
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PartnerLayout>
             <Statistics />
+          </PartnerLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/live-analytics">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PartnerLayout>
+            <PartnerLiveAnalytics />
           </PartnerLayout>
         </ProtectedRoute>
       </Route>
