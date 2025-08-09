@@ -3080,24 +3080,45 @@ export class DatabaseStorage implements IStorage {
 
   async getTrackingClicks(filters?: any): Promise<any[]> {
     try {
+      console.log('getTrackingClicks called with filters:', filters);
+      
       // Используем прямой SQL для получения данных из tracking_clicks таблицы
-      let query = 'SELECT * FROM tracking_clicks WHERE 1=1';
-      const params: any[] = [];
-      
-      if (filters?.partnerId) {
-        params.push(filters.partnerId);
-        query += ` AND partner_id = $${params.length}`;
+      if (filters?.partnerId && filters?.offerId) {
+        console.log('Querying with both partnerId and offerId');
+        const result = await db.execute(sql`
+          SELECT * FROM tracking_clicks 
+          WHERE partner_id = ${filters.partnerId} AND offer_id = ${filters.offerId}
+          ORDER BY created_at DESC
+        `);
+        console.log('Query result:', result.rows?.length, 'rows');
+        return result.rows || [];
+      } else if (filters?.partnerId) {
+        console.log('Querying with partnerId only:', filters.partnerId);
+        const result = await db.execute(sql`
+          SELECT * FROM tracking_clicks 
+          WHERE partner_id = ${filters.partnerId}
+          ORDER BY created_at DESC
+        `);
+        console.log('Query result:', result.rows?.length, 'rows');
+        return result.rows || [];
+      } else if (filters?.offerId) {
+        console.log('Querying with offerId only');
+        const result = await db.execute(sql`
+          SELECT * FROM tracking_clicks 
+          WHERE offer_id = ${filters.offerId}
+          ORDER BY created_at DESC
+        `);
+        console.log('Query result:', result.rows?.length, 'rows');
+        return result.rows || [];
+      } else {
+        console.log('Querying all tracking clicks');
+        const result = await db.execute(sql`
+          SELECT * FROM tracking_clicks 
+          ORDER BY created_at DESC
+        `);
+        console.log('Query result:', result.rows?.length, 'rows');
+        return result.rows || [];
       }
-      
-      if (filters?.offerId) {
-        params.push(filters.offerId);  
-        query += ` AND offer_id = $${params.length}`;
-      }
-      
-      query += ' ORDER BY created_at DESC';
-      
-      const result = await db.execute(sql.raw(query, params));
-      return result.rows || [];
     } catch (error) {
       console.error('Error getting tracking clicks:', error);
       return [];
