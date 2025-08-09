@@ -761,7 +761,7 @@ export default function OfferDetails() {
                 <Button
                   onClick={() => downloadCreatives(offer.creatives || offer.creativesUrl)}
                   size="sm"
-                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                  className="bg-green-600 hover:bg-green-700 text-white"
                   title="Скачать креативы"
                 >
                   <Download className="w-4 h-4" />
