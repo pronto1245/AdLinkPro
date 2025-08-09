@@ -31,7 +31,9 @@ const statisticsFiltersSchema = z.object({
   sub3: z.string().optional(),
   sub4: z.string().optional(),
   sub5: z.string().optional(),
-  groupBy: z.array(z.string()).optional(),
+  groupBy: z.union([z.string(), z.array(z.string())]).optional().transform(val => 
+    typeof val === 'string' ? [val] : val || ['date']
+  ),
   page: z.string().optional(),
   limit: z.string().optional(),
   search: z.string().optional(),
