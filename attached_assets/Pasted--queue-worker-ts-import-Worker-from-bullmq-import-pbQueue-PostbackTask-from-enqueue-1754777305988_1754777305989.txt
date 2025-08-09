@@ -1,0 +1,123 @@
+// queue/worker.ts
+import { Worker } from "bullmq";
+import { pbQueue, PostbackTask } from "./enqueue";
+import { db } from "../db";
+import { postbackProfiles, postbackDeliveries, conversions } from "../db/schema";
+import { and, eq, desc } from "drizzle-orm";
+import crypto from "crypto";
+import fetch from "node-fetch";
+
+function render(tpl: Record<string,string>, ctx: Record<string, any>) {
+  const out: Record<string,string> = {};
+  for (const [k,v] of Object.entries(tpl)) out[k] = v.replace(/\{\{(\w+)\}\}/g, (_, key) => String(ctx[key] ?? ""));
+  return out;
+}
+
+function mapStatus(map: any, type: string, status: string) {
+  return map?.[type]?.[status] ?? status;
+}
+
+function jitter(ms: number) {
+  const j = ms * 0.2;
+  return ms + Math.floor((Math.random()*2-1)*j);
+}
+
+export const worker = new Worker<PostbackTask>("postbacks", async (job) => {
+  const t = job.data;
+
+  // 1) загрузим конверсию и релевантные профили (самый специфичный уровень)
+  const conv = (await db.select().from(conversions).where(eq(conversions.id, t.conversionId))).at(0);
+  if (!conv) return;
+
+  // политика антифрода
+  if (t.antifraudLevel === "hard") {
+    await db.insert(postbackDeliveries).values({
+      profileId: 0, conversionId: conv.id, advertiserId: conv.advertiserId, partnerId: conv.partnerId ?? null,
+      clickid: conv.clickid, type: conv.type, txid: conv.txid, statusMapped: "blocked_by_af",
+      attempt: 0, maxAttempts: 0, requestMethod: "SKIP", requestUrl: "", durationMs: 0, error: "blocked_by_af"
+    });
+    return;
+  }
+
+  // примитивная выборка профилей: включённые, по advertiser-global (добавь остальные уровни)
+  const profiles = await db.select().from(postbackProfiles)
+    .where(and(
+      eq(postbackProfiles.enabled, true),
+      eq(postbackProfiles.ownerScope, "advertiser"),
+      eq(postbackProfiles.ownerId, conv.advertiserId)
+    ))
+    .orderBy(desc(postbackProfiles.priority));
+
+  for (const p of profiles) {
+    const mapped = mapStatus(p.statusMap, t.type, t.status);
+
+    if (p.filterRevenueGt0 && (!t.revenue || Number(t.revenue) <= 0)) {
+      await db.insert(postbackDeliveries).values({
+        profileId: p.id, conversionId: conv.id, advertiserId: conv.advertiserId, partnerId: conv.partnerId ?? null,
+        clickid: conv.clickid, type: conv.type, txid: conv.txid, statusMapped: mapped,
+        attempt: 0, maxAttempts: p.retries, requestMethod: "SKIP", requestUrl: p.endpointUrl, error: "payout_le_zero"
+      });
+      continue;
+    }
+
+    // антидубли доставки (Redis лучше, но можно Memory/HLL; тут опустим — добавь Redis set key)
+    const ctx = {
+      clickid: conv.clickid,
+      status_mapped: mapped,
+      revenue: t.revenue ?? "0",
+      currency: t.currency ?? "",
+      txid: conv.txid,
+      // добавь нужные sub-поля
+    };
+    const params = render(p.paramsTemplate as any, ctx);
+
+    // HMAC
+    if (p.hmacEnabled && p.hmacSecret && p.hmacPayloadTpl && p.hmacParamName) {
+      const payloadString = (p.hmacPayloadTpl as string).replace(/\{\{(\w+)\}\}/g, (_, k) => String(ctx[k] ?? ""));
+      const sig = crypto.createHmac("sha256", p.hmacSecret).update(payloadString).digest("hex");
+      params[p.hmacParamName] = sig;
+    }
+
+    const url = new URL(p.endpointUrl);
+    let body: string | undefined;
+    const headers: Record<string,string> = {};
+    if (p.authQueryKey && p.authQueryVal) url.searchParams.set(p.authQueryKey, p.authQueryVal);
+    if (p.authHeaderName && p.authHeaderVal) headers[p.authHeaderName] = p.authHeaderVal;
+
+    if (p.method === "GET") {
+      Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+    } else {
+      headers["Content-Type"] = "application/json";
+      body = JSON.stringify(params);
+    }
+
+    const max = p.retries ?? 5;
+    let attempt = 0;
+    while (attempt < max) {
+      attempt++;
+      const started = Date.now();
+      try {
+        const resp = await fetch(url.toString(), { method: p.method, headers, body, timeout: p.timeoutMs ?? 4000 } as any);
+        const text = await resp.text();
+        await db.insert(postbackDeliveries).values({
+          profileId: p.id, conversionId: conv.id, advertiserId: conv.advertiserId, partnerId: conv.partnerId ?? null,
+          clickid: conv.clickid, type: conv.type, txid: conv.txid, statusMapped: mapped,
+          attempt, maxAttempts: max, requestMethod: p.method, requestUrl: url.toString(),
+          requestBody: body, requestHeaders: headers, responseCode: resp.status, responseBody: text,
+          durationMs: Date.now()-started
+        });
+        if (resp.ok) break; // успех — выходим, антидубль можно пометить в Redis
+      } catch (e: any) {
+        await db.insert(postbackDeliveries).values({
+          profileId: p.id, conversionId: conv.id, advertiserId: conv.advertiserId, partnerId: conv.partnerId ?? null,
+          clickid: conv.clickid, type: conv.type, txid: conv.txid, statusMapped: mapped,
+          attempt, maxAttempts: max, requestMethod: p.method, requestUrl: url.toString(),
+          requestBody: body, requestHeaders: headers, error: String(e),
+          durationMs: Date.now()-started
+        });
+      }
+      const delayMs = jitter((p.backoffBaseSec ?? 2) * 1000 * (2 ** (attempt-1)));
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+}, { connection: { url: process.env.REDIS_URL! } });

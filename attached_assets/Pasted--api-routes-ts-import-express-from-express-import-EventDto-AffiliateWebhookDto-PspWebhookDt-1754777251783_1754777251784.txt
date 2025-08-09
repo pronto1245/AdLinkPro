@@ -1,0 +1,109 @@
+// api/routes.ts
+import express from "express";
+import { EventDto, AffiliateWebhookDto, PspWebhookDto } from "./dto";
+import { normalize } from "../domain/status";
+import { db } from "../db"; // твой drizzle клиент
+import { conversions } from "../db/schema";
+import { eq, and } from "drizzle-orm";
+import { enqueuePostbacks } from "../queue/enqueue";
+
+export const router = express.Router();
+
+// /event (инициация от фронта/сервиса)
+router.post("/event", async (req, res, next) => {
+  try {
+    const dto = EventDto.parse(req.body);
+    const { advertiserId, partnerId, campaignId, offerId, flowId } = req; // получи из auth/ctx
+
+    const existing = await db.query.conversions.findFirst({
+      where: and(eq(conversions.advertiserId, advertiserId), eq(conversions.type, dto.type), eq(conversions.txid, dto.txid))
+    });
+
+    const nextStatus: any = normalize(existing?.conversionStatus as any, "initiated", dto.type);
+    const data = {
+      advertiserId, partnerId, campaignId, offerId, flowId,
+      clickid: dto.clickid, type: dto.type, txid: dto.txid,
+      currency: dto.currency, revenue: dto.value?.toString() ?? "0",
+      conversionStatus: nextStatus,
+      details: { ...(existing?.details ?? {}), event: dto },
+      updatedAt: new Date()
+    };
+
+    if (!existing) {
+      const [row] = await db.insert(conversions).values(data).returning();
+      await enqueuePostbacks(row); // политика фильтра внутри воркера
+      return res.status(201).json({ id: row.id, status: row.conversionStatus });
+    } else {
+      await db.update(conversions).set(data).where(eq(conversions.id, existing.id));
+      await enqueuePostbacks({ ...existing, ...data });
+      return res.json({ id: existing.id, status: nextStatus });
+    }
+  } catch (e) { next(e); }
+});
+
+// /webhook/affiliate (регистрация)
+router.post("/webhook/affiliate", async (req, res, next) => {
+  try {
+    const dto = AffiliateWebhookDto.parse(req.body);
+    const { advertiserId } = req;
+    const row = await db.query.conversions.findFirst({
+      where: and(eq(conversions.advertiserId, advertiserId), eq(conversions.type, "reg"), eq(conversions.txid, dto.txid))
+    });
+    const prev = row?.conversionStatus as any;
+    const nextStatus = normalize(prev, dto.status, "reg");
+
+    if (!row) {
+      // создадим, если пришёл только вебхук
+      const [created] = await db.insert(conversions).values({
+        advertiserId, clickid: "", type: "reg", txid: dto.txid,
+        currency: dto.currency, revenue: "0",
+        conversionStatus: nextStatus, details: { webhook: dto }
+      }).returning();
+      await enqueuePostbacks(created);
+    } else {
+      const data = {
+        conversionStatus: nextStatus,
+        revenue: (dto.payout ?? 0).toString(),
+        currency: dto.currency ?? row.currency,
+        details: { ...(row.details ?? {}), webhook: dto },
+        updatedAt: new Date()
+      };
+      await db.update(conversions).set(data).where(eq(conversions.id, row.id));
+      await enqueuePostbacks({ ...row, ...data });
+    }
+    res.status(204).end();
+  } catch (e) { next(e); }
+});
+
+// /webhook/psp (покупки)
+router.post("/webhook/psp", async (req, res, next) => {
+  try {
+    const dto = PspWebhookDto.parse(req.body);
+    const { advertiserId } = req;
+    const row = await db.query.conversions.findFirst({
+      where: and(eq(conversions.advertiserId, advertiserId), eq(conversions.type, "purchase"), eq(conversions.txid, dto.txid))
+    });
+    const prev = row?.conversionStatus as any;
+    const nextStatus = normalize(prev, dto.status, "purchase");
+
+    const revenue = (dto.amount ?? 0).toString();
+
+    if (!row) {
+      const [created] = await db.insert(conversions).values({
+        advertiserId, clickid: "", type: "purchase", txid: dto.txid,
+        revenue, currency: dto.currency, conversionStatus: nextStatus, details: { webhook: dto }
+      }).returning();
+      await enqueuePostbacks(created);
+    } else {
+      const data = {
+        conversionStatus: nextStatus,
+        revenue, currency: dto.currency ?? row.currency,
+        details: { ...(row.details ?? {}), webhook: dto },
+        updatedAt: new Date()
+      };
+      await db.update(conversions).set(data).where(eq(conversions.id, row.id));
+      await enqueuePostbacks({ ...row, ...data });
+    }
+    res.status(204).end();
+  } catch (e) { next(e); }
+});

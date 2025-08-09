@@ -1,5 +1,5 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, integer, decimal, timestamp, boolean, jsonb, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, decimal, timestamp, boolean, jsonb, pgEnum, serial, bigint, char, smallint, numeric, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -500,14 +500,18 @@ export const postbackProfiles = pgTable("postback_profiles", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Postback deliveries table (delivery logs from technical specification)
+// Enhanced postback deliveries table with comprehensive tracking and indexing
 export const postbackDeliveries = pgTable("postback_deliveries", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   profileId: varchar("profile_id").notNull().references(() => postbackProfiles.id, { onDelete: 'cascade' }),
   eventId: varchar("event_id").references(() => events.id),
+  conversionId: varchar("conversion_id").references(() => conversions.id),
   advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
   partnerId: varchar("partner_id").references(() => users.id),
   clickid: text("clickid").notNull(),
+  type: text("type"),
+  txid: text("txid"),
+  statusMapped: text("status_mapped"),
   
   // Delivery attempt information
   attempt: integer("attempt").notNull(),
@@ -528,7 +532,15 @@ export const postbackDeliveries = pgTable("postback_deliveries", {
   // Status and timestamps
   status: deliveryStatusEnum("status").notNull().default('pending'),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  // Enhanced indexes for performance optimization
+  ix_delivery_profile: index("ix_delivery_profile").on(t.profileId),
+  ix_delivery_clickid: index("ix_delivery_clickid").on(t.clickid),
+  ix_delivery_attempt: index("ix_delivery_attempt").on(t.attempt),
+  ix_delivery_created: index("ix_delivery_created").on(t.createdAt),
+  ix_delivery_status: index("ix_delivery_status").on(t.status),
+  ix_delivery_conversion: index("ix_delivery_conversion").on(t.conversionId),
+}));
 
 // Postbacks
 export const postbacks = pgTable("postbacks", {
@@ -1122,6 +1134,89 @@ export const trafficSources = pgTable("traffic_sources", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+// Enhanced postback and conversion tables with proper indexing
+export const conversions = pgTable("conversions", {
+  id: serial("id").primaryKey(),
+  advertiserId: bigint("advertiser_id", { mode: "number" }).notNull(),
+  partnerId: bigint("partner_id", { mode: "number" }),
+  campaignId: bigint("campaign_id", { mode: "number" }),
+  offerId: bigint("offer_id", { mode: "number" }),
+  flowId: bigint("flow_id", { mode: "number" }),
+
+  clickid: text("clickid").notNull(),
+  type: text("type").$type<"reg"|"purchase"|"rebill"|"refund"|"chargeback">().notNull(),
+  txid: text("txid").notNull(),
+  revenue: numeric("revenue", { precision: 18, scale: 6 }).default("0"),
+  currency: char("currency", { length: 3 }),
+
+  conversionStatus: text("conversion_status").$type<
+    "initiated"|"pending"|"approved"|"declined"|"refunded"|"chargeback"|"duplicate"|"test"
+  >().notNull(),
+
+  statusUpdatedAt: timestamp("status_updated_at", { withTimezone: true }).defaultNow().notNull(),
+
+  antifraudLevel: text("antifraud_level").$type<"ok"|"soft"|"hard">(),
+  antifraudScore: integer("antifraud_score"),
+  antifraudReasons: jsonb("antifraud_reasons").$type<Record<string, unknown>>().default({}),
+
+  details: jsonb("details").$type<Record<string, unknown>>().default({}),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => ({
+  // Indexes for performance
+  ix_conv_clickid: index("ix_conv_clickid").on(t.clickid),
+  ix_conv_status: index("ix_conv_status").on(t.conversionStatus),
+  ix_conv_advertiser: index("ix_conv_advertiser").on(t.advertiserId),
+  ix_conv_partner: index("ix_conv_partner").on(t.partnerId),
+  // Unique constraint
+  uniqTx: { columns: [t.advertiserId, t.type, t.txid], unique: true },
+}));
+
+export const enhancedPostbackProfiles = pgTable("enhanced_postback_profiles", {
+  id: serial("id").primaryKey(),
+  ownerScope: text("owner_scope").$type<"owner"|"advertiser"|"partner">().notNull(),
+  ownerId: bigint("owner_id", { mode: "number" }).notNull(),
+
+  scopeType: text("scope_type").$type<"global"|"campaign"|"offer"|"flow">().notNull(),
+  scopeId: bigint("scope_id", { mode: "number" }),
+
+  name: text("name").notNull(),
+  enabled: boolean("enabled").default(true).notNull(),
+  priority: integer("priority").default(100).notNull(),
+
+  endpointUrl: text("endpoint_url").notNull(),
+  method: text("method").$type<"GET"|"POST">().notNull(),
+  idParam: text("id_param").$type<"subid"|"clickid">().notNull(),
+  authQueryKey: text("auth_query_key"),
+  authQueryVal: text("auth_query_val"),
+  authHeaderName: text("auth_header_name"),
+  authHeaderVal: text("auth_header_val"),
+
+  paramsTemplate: jsonb("params_template").$type<Record<string, string>>().default({}).notNull(),
+  statusMap: jsonb("status_map").$type<Record<string, Record<string, string>>>().default({}).notNull(),
+
+  hmacEnabled: boolean("hmac_enabled").default(false).notNull(),
+  hmacSecret: text("hmac_secret"),
+  hmacPayloadTpl: text("hmac_payload_tpl"),
+  hmacParamName: text("hmac_param_name"),
+
+  retries: smallint("retries").default(5).notNull(),
+  timeoutMs: integer("timeout_ms").default(4000).notNull(),
+  backoffBaseSec: integer("backoff_base_sec").default(2).notNull(),
+
+  filterRevenueGt0: boolean("filter_revenue_gt0").default(false).notNull(),
+  filterExcludeFraudHard: boolean("filter_exclude_fraud_hard").default(true).notNull(),
+
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => ({
+  // Index for scope-based queries
+  ix_pb_scope: index("ix_pb_scope").on(t.ownerScope, t.ownerId, t.scopeType),
+  ix_pb_enabled: index("ix_pb_enabled").on(t.enabled),
+}));
+
+
 
 // Advanced analytics and statistics aggregation
 export const analyticsData = pgTable("analytics_data", {
