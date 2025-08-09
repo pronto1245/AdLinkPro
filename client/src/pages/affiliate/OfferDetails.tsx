@@ -289,7 +289,7 @@ const LandingPagesCard = ({
                         onClick={() => handleCopyUrl(landing)}
                         title="Копировать URL"
                         disabled={loading[landing.id]}
-                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:text-orange-300 dark:hover:bg-orange-900/20"
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
