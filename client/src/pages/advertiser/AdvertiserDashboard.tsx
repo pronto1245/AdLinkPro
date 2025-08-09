@@ -93,54 +93,91 @@ export function AdvertiserDashboard() {
         </div>
       </div>
 
-      {/* Main Row: Conversions + Notifications + Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {/* Conversions Card */}
+      {/* Main Statistics Row - 6 Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4">
+        {/* Total Clicks */}
+        <Card data-testid="card-total-clicks" className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">Клики</CardTitle>
+            <div className="p-2 bg-blue-500 rounded-lg shadow-lg">
+              <Activity className="h-4 w-4 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold text-blue-900 dark:text-blue-100">{overview?.totalClicks || 0}</div>
+            <p className="text-xs text-blue-700 dark:text-blue-400">всего кликов</p>
+          </CardContent>
+        </Card>
+
+        {/* Conversions */}
         <Card data-testid="card-conversions" className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">Конверсии</CardTitle>
-            <div className="p-3 bg-green-500 rounded-xl shadow-lg">
-              <Target className="h-6 w-6 text-white" />
+            <div className="p-2 bg-green-500 rounded-lg shadow-lg">
+              <Target className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-900 dark:text-green-100">{overview?.totalConversions || 0}</div>
-            <div className="flex items-center text-xs text-green-600 dark:text-green-400">
-              <TrendingUp className="h-3 w-3 mr-1" />
-              CR: {overview?.avgCR?.toFixed(2) || 0}%
-            </div>
+            <div className="text-xl font-bold text-green-900 dark:text-green-100">{overview?.totalConversions || 0}</div>
+            <p className="text-xs text-green-700 dark:text-green-400">CR: {overview?.avgCR?.toFixed(2) || 0}%</p>
           </CardContent>
         </Card>
 
-        {/* Notifications Card */}
-        <Card data-testid="card-notifications" className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
+        {/* Revenue */}
+        <Card data-testid="card-revenue" className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-300">Уведомления</CardTitle>
-            <div className="p-3 bg-amber-500 rounded-xl shadow-lg">
-              <Bell className="h-6 w-6 text-white" />
+            <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">Доход</CardTitle>
+            <div className="p-2 bg-purple-500 rounded-lg shadow-lg">
+              <DollarSign className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-900 dark:text-amber-100">{notifications.length}</div>
-            <p className="text-xs text-amber-700 dark:text-amber-400">новых сообщений</p>
+            <div className="text-xl font-bold text-purple-900 dark:text-purple-100">${overview?.totalRevenue || 0}</div>
+            <p className="text-xs text-purple-700 dark:text-purple-400">общий доход</p>
           </CardContent>
         </Card>
 
-        {/* Quick Action - Traffic */}
-        <Link to="/advertiser/analytics">
-          <Button variant="outline" className="w-full h-24 flex flex-col gap-2 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" data-testid="button-quick-traffic">
-            <Activity className="h-8 w-8" />
-            <span className="text-sm font-medium">Аналитика трафика</span>
-          </Button>
-        </Link>
-        
-        {/* Quick Action - Analytics */}
-        <Link to="/advertiser/analytics">
-          <Button variant="outline" className="w-full h-24 flex flex-col gap-2 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700" data-testid="button-quick-analytics">
-            <BarChart3 className="h-8 w-8" />
-            <span className="text-sm font-medium">Детальная аналитика</span>
-          </Button>
-        </Link>
+        {/* EPC */}
+        <Card data-testid="card-epc" className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-orange-700 dark:text-orange-300">EPC</CardTitle>
+            <div className="p-2 bg-orange-500 rounded-lg shadow-lg">
+              <TrendingUp className="h-4 w-4 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold text-orange-900 dark:text-orange-100">${overview?.epc?.toFixed(2) || 0}</div>
+            <p className="text-xs text-orange-700 dark:text-orange-400">за клик</p>
+          </CardContent>
+        </Card>
+
+        {/* Active Offers */}
+        <Card data-testid="card-active-offers" className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Офферы</CardTitle>
+            <div className="p-2 bg-indigo-500 rounded-lg shadow-lg">
+              <BarChart3 className="h-4 w-4 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold text-indigo-900 dark:text-indigo-100">{overview?.activeOffers || 0}</div>
+            <p className="text-xs text-indigo-700 dark:text-indigo-400">активных</p>
+          </CardContent>
+        </Card>
+
+        {/* Partners */}
+        <Card data-testid="card-partners" className="bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20 border-rose-200 dark:border-rose-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-rose-700 dark:text-rose-300">Партнёры</CardTitle>
+            <div className="p-2 bg-rose-500 rounded-lg shadow-lg">
+              <Users className="h-4 w-4 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold text-rose-900 dark:text-rose-100">{overview?.partnersCount || 0}</div>
+            <p className="text-xs text-rose-700 dark:text-rose-400">подключено</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Bottom Row: Top Offers + Recent Notifications + Traffic Chart + Conversions Chart */}
