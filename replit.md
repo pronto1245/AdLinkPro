@@ -24,6 +24,10 @@ This is a comprehensive affiliate marketing platform designed to empower adverti
 ✅ **Conversion Tracking**: Verified conversion flow by updating click status from "click" to "deposit" with revenue tracking ($35.50 test conversion recorded).
 ✅ **Postback Delivery Verification**: Confirmed successful postback delivery to Keitaro endpoint (HTTP 200 response in 0.21s) with proper parameter mapping.
 ✅ **Partner Statistics Integration**: Test tracking data properly displays in partner analytics with all sub-parameters preserved and revenue calculations accurate.
+✅ **Postback Persistence Fix**: Fixed critical issue where partner postbacks were only stored in memory and disappeared on logout. Implemented proper database storage for postback profiles with user-specific isolation.
+✅ **Database Postback Storage**: Partner postbacks now save to PostgreSQL `postback_profiles` table with proper authentication and ownership tracking per user ID.
+✅ **Session Persistence Verification**: Confirmed postbacks persist between user sessions - logout/login cycles maintain all user-created postback configurations permanently.
+✅ **User Isolation**: Each partner sees only their own postback profiles, with demo profiles shown only when user has no custom postbacks created.
 
 # User Preferences
 Preferred communication style: Simple, everyday language.

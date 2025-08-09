@@ -382,20 +382,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log('=== ADDING POSTBACK ROUTES ===');
   
   // Get all postback profiles for current user
-  app.get("/api/postback/profiles", async (req, res) => {
+  app.get("/api/postback/profiles", authenticateToken, async (req, res) => {
     try {
-      // Получаем демо данные + созданные профили
-      const demoProfiles = storage.getDemoPostbackProfiles();
-      const createdProfiles = storage.getCreatedPostbackProfiles();
+      const userId = (req as any).user.id;
       
-      // Объединяем все профили
-      const allProfiles = [...demoProfiles, ...createdProfiles];
+      // Получаем профили из базы данных для конкретного пользователя
+      const userProfiles = await storage.getCreatedPostbackProfiles(userId);
       
-      console.log('📋 GET /api/postback/profiles - Returning profiles:', {
-        demo: demoProfiles.length,
-        created: createdProfiles.length,
+      // Добавляем демо профили только если у пользователя нет созданных
+      const allProfiles = userProfiles.length > 0 
+        ? userProfiles 
+        : [...storage.getDemoPostbackProfiles(), ...userProfiles];
+      
+      console.log('📋 GET /api/postback/profiles - Returning profiles for user:', userId, {
+        userProfiles: userProfiles.length,
         total: allProfiles.length,
-        createdProfileIds: createdProfiles.map(p => p.id)
+        userProfileIds: userProfiles.map(p => p.id)
       });
 
       res.json(allProfiles);
@@ -406,25 +408,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new postback profile
-  app.post("/api/postback/profiles", async (req, res) => {
+  app.post("/api/postback/profiles", authenticateToken, async (req, res) => {
     try {
+      const userId = (req as any).user.id;
       const profileData = req.body;
+      
       const newProfile = {
         id: `profile_${Date.now()}`,
+        user_id: userId,
+        partnerId: userId,
         ...profileData,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
-      console.log('Creating postback profile:', newProfile);
+      console.log('💾 Creating postback profile for user:', userId, newProfile);
       
-      // Сохраняем профиль в storage для отображения
-      storage.savePostbackProfile(newProfile);
-      console.log('Profile saved to storage');
+      // Сохраняем профиль в базу данных
+      const savedProfile = await storage.savePostbackProfile(newProfile);
+      console.log('💾 Profile saved to database');
       
-      res.json(newProfile);
+      res.json(savedProfile);
     } catch (error: any) {
-      console.error('Error creating postback profile:', error);
+      console.error('❌ Error creating postback profile:', error);
       res.status(500).json({ message: 'Failed to create postback profile' });
     }
   });
@@ -454,13 +460,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete postback profile
-  app.delete("/api/postback/profiles/:id", async (req, res) => {
+  app.delete("/api/postback/profiles/:id", authenticateToken, async (req, res) => {
     try {
       const profileId = req.params.id;
-      console.log('🗑️ DELETE /api/postback/profiles/:id - Deleting profile:', profileId);
+      const userId = (req as any).user.id;
       
-      // Пытаемся удалить из созданных профилей
-      const deleted = storage.deletePostbackProfile(profileId);
+      console.log('🗑️ DELETE /api/postback/profiles/:id - Deleting profile:', profileId, 'for user:', userId);
+      
+      // Удаляем из базы данных
+      const deleted = await storage.deletePostbackProfile(profileId);
       
       console.log('🗑️ Profile deletion result:', deleted);
       

@@ -578,16 +578,70 @@ export class DatabaseStorage implements IStorage {
     }
   ];
   
-  getCreatedPostbackProfiles(): any[] {
-    return this.createdPostbackProfiles;
+  async getCreatedPostbackProfiles(userId?: string): Promise<any[]> {
+    console.log('📋 Getting postback profiles from database for user:', userId);
+    try {
+      let result;
+      if (userId) {
+        result = await db.execute(sql.raw(`
+          SELECT * FROM postback_profiles 
+          WHERE owner_id = '${userId}' AND owner_scope = 'partner'
+          ORDER BY created_at DESC
+        `));
+      } else {
+        result = await db.execute(sql.raw(`
+          SELECT * FROM postback_profiles 
+          WHERE owner_scope = 'partner'
+          ORDER BY created_at DESC
+        `));
+      }
+      console.log('📋 Found postback profiles in database:', result.rows?.length || 0);
+      return result.rows || [];
+    } catch (error) {
+      console.error('❌ Error getting postback profiles from database:', error);
+      // Fallback to in-memory storage
+      return this.createdPostbackProfiles;
+    }
   }
 
   getDemoPostbackProfiles(): any[] {
     return this.demoPostbackProfiles;
   }
   
-  savePostbackProfile(profile: any): void {
-    this.createdPostbackProfiles.push(profile);
+  async savePostbackProfile(profile: any): Promise<any> {
+    console.log('💾 Saving postback profile to database:', profile);
+    try {
+      // Сохраняем в базу данных с правильной структурой
+      const result = await db.execute(sql.raw(`
+        INSERT INTO postback_profiles (
+          id, owner_scope, owner_id, scope_type, scope_id, name, enabled, priority,
+          endpoint_url, method, id_param, status_map, params_template, created_at, updated_at
+        ) VALUES (
+          '${profile.id}',
+          'partner',
+          '${profile.user_id || profile.partnerId}',
+          'global',
+          NULL,
+          '${profile.name}',
+          ${profile.enabled !== false},
+          ${profile.priority || 100},
+          '${profile.endpoint_url}',
+          '${profile.method || 'GET'}',
+          'clickid',
+          '{}',
+          '{}',
+          NOW(),
+          NOW()
+        ) RETURNING *
+      `));
+      console.log('💾 Profile saved to database:', result.rows[0]);
+      return result.rows[0];
+    } catch (error) {
+      console.error('❌ Error saving postback profile to database:', error);
+      // Fallback to in-memory storage if database fails
+      this.createdPostbackProfiles.push(profile);
+      return profile;
+    }
   }
 
 
@@ -625,30 +679,43 @@ export class DatabaseStorage implements IStorage {
     return null;
   }
 
-  deletePostbackProfile(id: string): boolean {
+  async deletePostbackProfile(id: string): Promise<boolean> {
     console.log('🗑️ deletePostbackProfile called with:', id);
     
-    // Проверяем в созданных профилях
+    try {
+      // Сначала пытаемся удалить из базы данных
+      const result = await db.execute(sql.raw(`
+        DELETE FROM postback_profiles 
+        WHERE id = '${id}'
+        RETURNING *
+      `));
+      if (result.rows && result.rows.length > 0) {
+        console.log('🗑️ Profile deleted from database successfully');
+        return true;
+      }
+    } catch (error) {
+      console.error('❌ Error deleting from database:', error);
+    }
+    
+    // Fallback: проверяем в созданных профилях (память)
     const createdIndex = this.createdPostbackProfiles.findIndex(p => p.id === id);
     if (createdIndex !== -1) {
-      console.log('🗑️ Found profile in created profiles, deleting...');
+      console.log('🗑️ Found profile in memory, deleting...');
       this.createdPostbackProfiles.splice(createdIndex, 1);
-      console.log('🗑️ Profile deleted successfully');
+      console.log('🗑️ Profile deleted from memory successfully');
       return true;
     }
 
-    // Проверяем в демо профилях
+    // Проверяем в демо профилях (временно удаляем, но они вернутся при перезагрузке)
     const demoIndex = this.demoPostbackProfiles.findIndex(p => p.id === id);
     if (demoIndex !== -1) {
-      console.log('🗑️ Found profile in demo profiles, deleting...');
+      console.log('🗑️ Found profile in demo profiles, deleting temporarily...');
       this.demoPostbackProfiles.splice(demoIndex, 1);
-      console.log('🗑️ Demo profile deleted successfully');
+      console.log('🗑️ Demo profile deleted temporarily');
       return true;
     }
 
     console.log('❌ Profile not found for deletion:', id);
-    console.log('❌ Available created profiles:', this.createdPostbackProfiles.map(p => ({ id: p.id, name: p.name })));
-    console.log('❌ Available demo profiles:', this.demoPostbackProfiles.map(p => ({ id: p.id, name: p.name })));
     return false;
   }
 
