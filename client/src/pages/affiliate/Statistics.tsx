@@ -54,7 +54,9 @@ import {
   X,
   Copy,
   ExternalLink,
-  Smartphone
+  Smartphone,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { formatCurrency, formatCR } from "@/utils/formatting";
 import { useToast } from "@/hooks/use-toast";
@@ -283,7 +285,7 @@ export default function Statistics() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 bg-white min-h-screen">
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-10 w-32" />
