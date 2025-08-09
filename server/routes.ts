@@ -527,68 +527,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('=== GET ADVERTISER POSTBACK PROFILES ===');
     
     try {
-      // Получаем реальные созданные профили из памяти + демо профили
+      // Получаем созданные профили из хранилища
       const createdProfiles = storage.getCreatedPostbackProfiles();
       
-      const demoProfiles = [
-        {
-          id: 'adv_profile_1',
-          name: 'Main CRM Integration',
-          tracker_type: 'custom',
-          enabled: true,
-          endpoint_url: 'https://your-crm.com/api/leads?clickid={clickid}&partner={partner_id}&revenue={revenue}&offer={offer_id}',
-          method: 'GET',
-          events: ['lead', 'deposit', 'conversion'],
-          offers: [],
-          partners: [],
-          last_delivery: new Date(Date.now() - 1800000).toISOString(),
-          status: 'active',
-          delivery_stats: {
-            total_sent: 4521,
-            success_rate: 94.2,
-            avg_response_time: 285
-          }
-        },
-        {
-          id: 'adv_profile_2',
-          name: 'Keitaro Analytics',
-          tracker_type: 'keitaro',
-          enabled: true,
-          endpoint_url: 'https://tracker.example.com/api/v1/conversions?clickid={clickid}&status={status}&revenue={revenue}&offer_id={offer_id}',
-          method: 'GET',
-          events: ['lp_click', 'lead', 'deposit'],
-          offers: ['7b537e40-05bc-4e5b-88ae-89b4fa738e76'],
-          partners: [],
-          last_delivery: new Date(Date.now() - 600000).toISOString(),
-          status: 'active',
-          delivery_stats: {
-            total_sent: 2847,
-            success_rate: 98.1,
-            avg_response_time: 156
-          }
-        },
-        {
-          id: 'adv_profile_3',
-          name: 'Testing Profile',
-          tracker_type: 'voluum',
-          enabled: false,
-          endpoint_url: 'https://test-voluum.com/postback?cid={clickid}&payout={revenue}',
-          method: 'GET',
-          events: ['conversion'],
-          offers: [],
-          partners: ['04b06c87-c6cf-440f-9e49-e1bdba4c3e77'],
-          last_delivery: null,
-          status: 'disabled',
-          delivery_stats: {
-            total_sent: 0,
-            success_rate: 0,
-            avg_response_time: 0
-          }
-        }
-      ];
+      // Получаем демо профили из хранилища
+      const demoProfiles = storage.getDemoPostbackProfiles();
 
       // Объединяем созданные и демо профили
-      const allProfiles = [...createdProfiles, ...demoProfiles];
+      const allProfiles = [...demoProfiles, ...createdProfiles];
       res.json(allProfiles);
     } catch (error: any) {
       console.error('Error getting advertiser postback profiles:', error);

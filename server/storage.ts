@@ -517,9 +517,69 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   // In-memory storage for created postback profiles
   private createdPostbackProfiles: any[] = [];
+  private demoPostbackProfiles: any[] = [
+    {
+      id: "adv_profile_1",
+      name: "Main CRM Integration",
+      tracker_type: "custom",
+      enabled: true,
+      endpoint_url: "https://your-crm.com/api/leads?clickid={clickid}&partner={partner_id}&revenue={revenue}&offer={offer_id}",
+      method: "GET",
+      events: ["lead", "deposit", "conversion"],
+      offers: [],
+      partners: [],
+      last_delivery: "2025-08-09T17:17:09.799Z",
+      status: "active",
+      delivery_stats: {
+        total_sent: 4521,
+        success_rate: 94.2,
+        avg_response_time: 285
+      }
+    },
+    {
+      id: "adv_profile_2", 
+      name: "Keitaro Analytics",
+      tracker_type: "keitaro",
+      enabled: true,
+      endpoint_url: "https://tracker.example.com/api/v1/conversions?clickid={clickid}&status={status}&revenue={revenue}&offer_id={offer_id}",
+      method: "GET",
+      events: ["lp_click", "lead", "deposit"],
+      offers: ["7b537e40-05bc-4e5b-88ae-89b4fa738e76"],
+      partners: [],
+      last_delivery: "2025-08-09T17:37:09.799Z", 
+      status: "active",
+      delivery_stats: {
+        total_sent: 2847,
+        success_rate: 98.1,
+        avg_response_time: 156
+      }
+    },
+    {
+      id: "adv_profile_3",
+      name: "Testing Profile", 
+      tracker_type: "voluum",
+      enabled: false,
+      endpoint_url: "https://test-voluum.com/postback?cid={clickid}&payout={revenue}",
+      method: "GET",
+      events: ["conversion"],
+      offers: [],
+      partners: ["04b06c87-c6cf-440f-9e49-e1bdba4c3e77"],
+      last_delivery: null,
+      status: "disabled",
+      delivery_stats: {
+        total_sent: 0,
+        success_rate: 0,
+        avg_response_time: 0
+      }
+    }
+  ];
   
   getCreatedPostbackProfiles(): any[] {
     return this.createdPostbackProfiles;
+  }
+
+  getDemoPostbackProfiles(): any[] {
+    return this.demoPostbackProfiles;
   }
   
   savePostbackProfile(profile: any): void {
@@ -527,24 +587,46 @@ export class DatabaseStorage implements IStorage {
   }
 
   updatePostbackProfile(id: string, updateData: any): any {
-    const index = this.createdPostbackProfiles.findIndex(p => p.id === id);
-    if (index !== -1) {
-      this.createdPostbackProfiles[index] = { 
-        ...this.createdPostbackProfiles[index], 
+    // Проверяем в созданных профилях
+    const createdIndex = this.createdPostbackProfiles.findIndex(p => p.id === id);
+    if (createdIndex !== -1) {
+      this.createdPostbackProfiles[createdIndex] = { 
+        ...this.createdPostbackProfiles[createdIndex], 
         ...updateData,
         updated_at: new Date().toISOString()
       };
-      return this.createdPostbackProfiles[index];
+      return this.createdPostbackProfiles[createdIndex];
     }
+
+    // Проверяем в демо профилях
+    const demoIndex = this.demoPostbackProfiles.findIndex(p => p.id === id);
+    if (demoIndex !== -1) {
+      this.demoPostbackProfiles[demoIndex] = { 
+        ...this.demoPostbackProfiles[demoIndex], 
+        ...updateData,
+        updated_at: new Date().toISOString()
+      };
+      return this.demoPostbackProfiles[demoIndex];
+    }
+
     return null;
   }
 
   deletePostbackProfile(id: string): boolean {
-    const index = this.createdPostbackProfiles.findIndex(p => p.id === id);
-    if (index !== -1) {
-      this.createdPostbackProfiles.splice(index, 1);
+    // Проверяем в созданных профилях
+    const createdIndex = this.createdPostbackProfiles.findIndex(p => p.id === id);
+    if (createdIndex !== -1) {
+      this.createdPostbackProfiles.splice(createdIndex, 1);
       return true;
     }
+
+    // Проверяем в демо профилях
+    const demoIndex = this.demoPostbackProfiles.findIndex(p => p.id === id);
+    if (demoIndex !== -1) {
+      this.demoPostbackProfiles.splice(demoIndex, 1);
+      return true;
+    }
+
     return false;
   }
 
