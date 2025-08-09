@@ -21,6 +21,7 @@ import { notificationService } from "./services/notification";
 import { auditLog, checkIPBlacklist, rateLimiter, loginRateLimiter, recordFailedLogin, trackDevice, detectFraud, getAuditLogs } from "./middleware/security";
 import { PostbackService } from "./services/postback";
 import conversionRoutes from "./routes/conversion";
+import analyticsRoutes from "./routes/analytics";
 import archiver from "archiver";
 import { CreativeService } from "./services/creativeService";
 import { TrackingLinkService } from "./services/trackingLinks";
@@ -666,6 +667,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Add conversion routes
   app.use('/api/conversion', conversionRoutes);
+
+  // Add analytics routes
+  app.use('/api', analyticsRoutes);
 
   // Auth routes
   app.post("/api/auth/login", loginRateLimiter, async (req, res) => {

@@ -15,6 +15,11 @@ import {
   type OfferAccessRequest, type InsertOfferAccessRequest, type UserNotification, type InsertUserNotification,
   type CustomDomain, type InsertCustomDomain, type ApiToken, type InsertApiToken
 } from "@shared/schema";
+import {
+  trackingClicks as newTrackingClicks, dailyStatistics, hourlyStatistics,
+  type TrackingClick, type InsertTrackingClick, type DailyStatistics, type InsertDailyStatistics,
+  type HourlyStatistics, type InsertHourlyStatistics
+} from "@shared/tracking-schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lt, lte, count, sum, sql, isNotNull, like, ilike, or, inArray, ne } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -352,6 +357,138 @@ export interface IStorage {
   markNotificationAsRead(notificationId: string, userId: string): Promise<void>;
   markAllNotificationsAsRead(userId: string): Promise<void>;
   deleteNotification(notificationId: string, userId: string): Promise<void>;
+
+  // Advanced tracking and statistics
+  recordClick(clickData: InsertTrackingClick): Promise<TrackingClick>;
+  updateClickConversion(clickId: string, conversionData: Partial<InsertTrackingClick>): Promise<TrackingClick>;
+  
+  // Statistics queries for advertisers
+  getAdvertiserStatistics(advertiserId: string, filters: {
+    dateFrom?: string;
+    dateTo?: string;
+    offerId?: string;
+    partnerId?: string;
+    country?: string;
+    device?: string;
+    trafficSource?: string;
+    sub1?: string;
+    sub2?: string;
+    sub3?: string;
+    sub4?: string;
+    sub5?: string;
+    groupBy?: string[];
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    data: any[];
+    summary: {
+      totalClicks: number;
+      totalConversions: number;
+      totalRevenue: number;
+      avgCR: number;
+      avgEPC: number;
+      totalOffers: number;
+      totalPartners: number;
+    };
+    total: number;
+  }>;
+
+  // Statistics queries for partners
+  getPartnerStatistics(partnerId: string, filters: {
+    dateFrom?: string;
+    dateTo?: string;
+    offerId?: string;
+    country?: string;
+    device?: string;
+    trafficSource?: string;
+    sub1?: string;
+    sub2?: string;
+    sub3?: string;
+    sub4?: string;
+    sub5?: string;
+    groupBy?: string[];
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    data: any[];
+    summary: {
+      totalClicks: number;
+      totalConversions: number;
+      totalPayout: number;
+      avgCR: number;
+      avgEPC: number;
+      totalOffers: number;
+    };
+    total: number;
+  }>;
+
+  // Real-time analytics
+  getHourlyStatistics(filters: {
+    advertiserId?: string;
+    partnerId?: string;
+    offerId?: string;
+    date?: string;
+    hoursBack?: number;
+  }): Promise<HourlyStatistics[]>;
+
+  // Geographical analytics
+  getGeoStatistics(filters: {
+    advertiserId?: string;
+    partnerId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    offerId?: string;
+  }): Promise<any[]>;
+
+  // Device analytics
+  getDeviceStatistics(filters: {
+    advertiserId?: string;
+    partnerId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    offerId?: string;
+  }): Promise<any[]>;
+
+  // SubID analytics
+  getSubIdStatistics(filters: {
+    advertiserId?: string;
+    partnerId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    offerId?: string;
+    subLevel?: number; // 1-16
+  }): Promise<any[]>;
+
+  // Traffic source analytics
+  getTrafficSourceStatistics(filters: {
+    advertiserId?: string;
+    partnerId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    offerId?: string;
+  }): Promise<any[]>;
+
+  // Detailed click analysis
+  getDetailedClicks(filters: {
+    advertiserId?: string;
+    partnerId?: string;
+    offerId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    country?: string;
+    device?: string;
+    converted?: boolean;
+    fraud?: boolean;
+    ipAddress?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    data: TrackingClick[];
+    total: number;
+  }>;
+
+  // Analytics export
+  exportStatistics(filters: any, format: 'csv' | 'xlsx' | 'json'): Promise<string>;
 }
 
 export class DatabaseStorage implements IStorage {

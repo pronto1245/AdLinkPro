@@ -1,51 +1,60 @@
 import React from 'react';
-import { useSidebar } from '@/contexts/sidebar-context';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ResponsiveCardProps {
-  children: React.ReactNode;
-  variant?: 'default' | 'compact' | 'dashboard';
+  title: string;
+  value: string | number;
+  icon?: React.ReactNode;
+  trend?: {
+    value: number;
+    direction: 'up' | 'down';
+    label?: string;
+  };
   className?: string;
+  description?: string;
 }
 
 export function ResponsiveCard({ 
-  children, 
-  className, 
-  variant = 'default'
+  title, 
+  value, 
+  icon, 
+  trend, 
+  className,
+  description 
 }: ResponsiveCardProps) {
-  const { collapsed } = useSidebar();
-  
-  const getResponsiveClasses = () => {
-    switch (variant) {
-      case 'compact':
-        return cn(
-          collapsed ? "p-4" : "p-6",
-          collapsed ? "space-y-2" : "space-y-4"
-        );
-      case 'dashboard':
-        return cn(
-          collapsed ? "p-3" : "p-4 md:p-6",
-          "transition-all duration-300"
-        );
-      default:
-        return cn(
-          collapsed ? "p-4 md:p-5" : "p-6 md:p-8",
-          "transition-all duration-300"
-        );
-    }
-  };
-  
   return (
-    <Card 
-      className={cn(
-        getResponsiveClasses(),
-        className
-      )}
-    >
-      {children}
+    <Card className={cn("transition-all hover:shadow-md", className)}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {title}
+        </CardTitle>
+        {icon && <div className="text-muted-foreground">{icon}</div>}
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        {description && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {description}
+          </p>
+        )}
+        {trend && (
+          <div className="flex items-center space-x-1 text-xs text-muted-foreground mt-1">
+            {trend.direction === 'up' ? (
+              <TrendingUp className="h-3 w-3 text-green-500" />
+            ) : (
+              <TrendingDown className="h-3 w-3 text-red-500" />
+            )}
+            <span className={cn(
+              trend.direction === 'up' ? 'text-green-500' : 'text-red-500'
+            )}>
+              {trend.value}%
+            </span>
+            {trend.label && <span>{trend.label}</span>}
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 }
-
-export default ResponsiveCard;
