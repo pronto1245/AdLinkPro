@@ -380,42 +380,42 @@ export default function Statistics() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Дата</TableHead>
-                <TableHead>Оффер</TableHead>
-                <TableHead>Гео</TableHead>
-                <TableHead>Click ID</TableHead>
-                <TableHead>Клики</TableHead>
-                <TableHead>Конверсии</TableHead>
-                <TableHead>Доход</TableHead>
-                <TableHead>CR</TableHead>
-                <TableHead>EPC</TableHead>
-                <TableHead>Sub-параметры</TableHead>
+                <TableHead className="text-gray-700 dark:text-gray-300 font-semibold">Дата</TableHead>
+                <TableHead className="text-purple-700 dark:text-purple-300 font-semibold">Оффер</TableHead>
+                <TableHead className="text-green-700 dark:text-green-300 font-semibold">Гео</TableHead>
+                <TableHead className="text-blue-700 dark:text-blue-300 font-semibold">Click ID</TableHead>
+                <TableHead className="text-cyan-700 dark:text-cyan-300 font-semibold">Клики</TableHead>
+                <TableHead className="text-emerald-700 dark:text-emerald-300 font-semibold">Конверсии</TableHead>
+                <TableHead className="text-purple-700 dark:text-purple-300 font-semibold">Доход</TableHead>
+                <TableHead className="text-orange-700 dark:text-orange-300 font-semibold">CR</TableHead>
+                <TableHead className="text-teal-700 dark:text-teal-300 font-semibold">EPC</TableHead>
+                <TableHead className="text-indigo-700 dark:text-indigo-300 font-semibold">Sub-параметры</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {statsData.detailedStats.map((stat) => (
                 <TableRow key={stat.id}>
-                  <TableCell className="font-medium">{stat.date}</TableCell>
-                  <TableCell>{stat.offerName}</TableCell>
+                  <TableCell className="font-medium text-gray-700 dark:text-gray-300">{stat.date}</TableCell>
+                  <TableCell className="font-medium text-purple-700 dark:text-purple-300">{stat.offerName}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{stat.geo}</Badge>
+                    <Badge variant="outline" className="border-green-500 text-green-700 dark:text-green-300">{stat.geo}</Badge>
                   </TableCell>
-                  <TableCell className="font-mono text-xs text-blue-600">
+                  <TableCell className="font-mono text-xs text-blue-600 dark:text-blue-400">
                     {stat.clickid}
                   </TableCell>
-                  <TableCell className="text-blue-600 font-medium">
+                  <TableCell className="text-cyan-600 dark:text-cyan-400 font-medium">
                     {stat.clicks.toLocaleString()}
                   </TableCell>
-                  <TableCell className="text-green-600 font-medium">
+                  <TableCell className="text-emerald-600 dark:text-emerald-400 font-medium">
                     {stat.conversions}
                   </TableCell>
-                  <TableCell className="text-purple-600 font-medium">
+                  <TableCell className="text-purple-600 dark:text-purple-400 font-medium">
                     {formatCurrency(stat.revenue)}
                   </TableCell>
-                  <TableCell className="text-orange-600 font-medium">
+                  <TableCell className="text-orange-600 dark:text-orange-400 font-medium">
                     {formatCR(stat.cr / 100)}
                   </TableCell>
-                  <TableCell className="text-teal-600 font-medium">
+                  <TableCell className="text-teal-600 dark:text-teal-400 font-medium">
                     {formatCurrency(stat.epc)}
                   </TableCell>
                   <TableCell>
