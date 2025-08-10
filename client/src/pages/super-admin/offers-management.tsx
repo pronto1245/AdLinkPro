@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import * as React from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLanguage } from '@/contexts/language-context';
+// Removed old language context import
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import Sidebar from '@/components/layout/sidebar';
@@ -63,7 +63,8 @@ interface CreateOfferFormProps {
 }
 
 function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
-  const { t, language } = useLanguage();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -887,7 +888,8 @@ interface OfferLog {
 }
 
 export default function OffersManagement() {
-  const { t, language } = useLanguage();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();

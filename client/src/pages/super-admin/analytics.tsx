@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '../../contexts/auth-context';
-import { useLanguage } from '../../contexts/language-context';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { format, subDays } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -19,7 +20,7 @@ import {
   FileSpreadsheet, FileJson,
   ChevronLeft, ChevronRight, RotateCcw, Save
 } from 'lucide-react';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 
 interface AnalyticsData {
   id: string;
@@ -105,7 +106,7 @@ const defaultColumns: ColumnConfig[] = [
 
 export default function Analytics() {
   const { token } = useAuth();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   // State management
@@ -262,7 +263,7 @@ export default function Analytics() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `analytics_${format}_${format(new Date(), 'yyyy-MM-dd')}.${format}`;
+      a.download = `analytics_${format}_${new Date().toISOString().split('T')[0]}.${format}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);

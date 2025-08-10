@@ -9,14 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DataTable } from '@/components/ui/data-table';
-import { useLanguage } from '@/contexts/language-context';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function AffiliateDashboard() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { token, user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();

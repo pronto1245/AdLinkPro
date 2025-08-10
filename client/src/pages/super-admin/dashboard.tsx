@@ -13,7 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
@@ -57,7 +57,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 export default function Dashboard() {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
   

@@ -15,7 +15,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
@@ -47,7 +47,7 @@ type BlacklistEntryFormData = z.infer<typeof blacklistEntrySchema>;
 
 export default function BlacklistManagement() {
   const { token } = useAuth();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   

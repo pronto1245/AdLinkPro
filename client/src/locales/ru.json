@@ -32,6 +32,16 @@
     "processing": "Обработка",
     "error": "Ошибка"
   },
+  "theme": {
+    "light": "Светлая",
+    "dark": "Тёмная", 
+    "system": "Системная"
+  },
+  "language": {
+    "select": "Выбрать язык",
+    "russian": "Русский",
+    "english": "English"
+  },
   "navigation": {
     "dashboard": "Дашборд",
     "offers": "Офферы",

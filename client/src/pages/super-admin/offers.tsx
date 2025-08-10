@@ -2,7 +2,7 @@ import { useState } from 'react';
 import * as React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
+import { useTranslation } from 'react-i18next';
 import { getMultilingualText } from '@/lib/i18n';
 import { queryClient } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
@@ -21,7 +21,8 @@ import { useLocation } from 'wouter';
 
 export default function OffersManagement() {
   const { token } = useAuth();
-  const { t, language } = useLanguage();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
