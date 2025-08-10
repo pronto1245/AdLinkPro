@@ -9104,7 +9104,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         role: 'affiliate',
         adminRole: role,
         ownerId: authUser.id,
-        userType: 'team_member',
+        userType: 'affiliate',
         settings: JSON.stringify({
           permissions,
           restrictions,
@@ -9141,7 +9141,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         where: and(
           eq(users.id, id),
           eq(users.ownerId, authUser.id),
-          eq(users.userType, 'team_member')
+          eq(users.userType, 'affiliate')
         )
       });
       
@@ -9182,7 +9182,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         where: and(
           eq(users.id, id),
           eq(users.ownerId, authUser.id),
-          eq(users.userType, 'team_member')
+          eq(users.userType, 'affiliate')
         )
       });
       
@@ -11562,7 +11562,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         ownerId: partnerId, // Owned by partner
         advertiserId: partner.advertiserId, // Inherit partner's advertiser
         isActive: true,
-        userType: 'team_member',
+        userType: 'affiliate',
         settings: JSON.stringify({
           teamRole: role,
           permissions: permissions || [],
