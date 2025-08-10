@@ -187,8 +187,8 @@ export default function PartnerDashboard() {
       {/* Header */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Партнерский дашборд</h1>
-          <p className="text-muted-foreground">Мониторинг производительности и аналитика</p>
+          <h1 className="text-3xl font-bold tracking-tight text-black dark:text-white">Партнерский дашборд</h1>
+          <p className="text-black/70 dark:text-white/70">Мониторинг производительности и аналитика</p>
         </div>
         <Button variant="outline" onClick={handleRefresh} className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20">
           <RefreshCw className="h-4 w-4 mr-2" />
