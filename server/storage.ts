@@ -2795,24 +2795,24 @@ export class DatabaseStorage implements IStorage {
   // Custom Domains implementation
   async getCustomDomains(advertiserId: string): Promise<any[]> {
     try {
-      const domains = await db.select().from(customDomains).where(eq(customDomains.advertiserId, advertiserId));
-      return domains;
+      // Используем сервис для получения доменов
+      const { CustomDomainService } = await import('./services/customDomains');
+      return await CustomDomainService.getAdvertiserDomains(advertiserId);
     } catch (error) {
       console.error('Error fetching custom domains:', error);
-      throw error;
+      return [];
     }
   }
 
   async addCustomDomain(advertiserId: string, data: { domain: string; type: string }): Promise<any> {
     try {
-      const [domain] = await db.insert(customDomains).values({
+      // Используем сервис для создания домена с правильной логикой
+      const { CustomDomainService } = await import('./services/customDomains');
+      return await CustomDomainService.createCustomDomain({
         advertiserId,
         domain: data.domain,
-        type: data.type,
-        verificationValue: `replit-verify-${Math.random().toString(36).substring(7)}`,
-        targetValue: 'track.replit.app' // Default target
-      }).returning();
-      return domain;
+        type: data.type as 'a_record' | 'cname'
+      });
     } catch (error) {
       console.error('Error adding custom domain:', error);
       throw error;
@@ -2821,6 +2821,7 @@ export class DatabaseStorage implements IStorage {
 
   async verifyCustomDomain(advertiserId: string, domainId: string): Promise<any> {
     try {
+      // Проверяем что домен принадлежит рекламодателю
       const [domain] = await db.select().from(customDomains).where(
         and(eq(customDomains.id, domainId), eq(customDomains.advertiserId, advertiserId))
       );
@@ -2829,17 +2830,16 @@ export class DatabaseStorage implements IStorage {
         throw new Error('Domain not found');
       }
 
-      // Mock verification - в реальной системе здесь будет DNS проверка
-      const [updatedDomain] = await db.update(customDomains)
-        .set({ 
-          status: 'verified', 
-          lastChecked: new Date(),
-          updatedAt: new Date() 
-        })
-        .where(eq(customDomains.id, domainId))
-        .returning();
-        
-      return updatedDomain;
+      // Используем сервис для верификации домена с реальной DNS проверкой
+      const { CustomDomainService } = await import('./services/customDomains');
+      const result = await CustomDomainService.verifyDomain(domainId);
+      
+      // Получаем обновленный домен из базы
+      const [updatedDomain] = await db.select().from(customDomains).where(
+        eq(customDomains.id, domainId)
+      );
+      
+      return { ...updatedDomain, ...result };
     } catch (error) {
       console.error('Error verifying custom domain:', error);
       throw error;
