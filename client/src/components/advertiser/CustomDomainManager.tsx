@@ -126,6 +126,27 @@ export function CustomDomainManager() {
     }
   });
 
+  // Выдача SSL сертификата
+  const issueSSLMutation = useMutation({
+    mutationFn: async (domainId: string) => {
+      return apiRequest(`/api/advertiser/profile/domains/${domainId}/ssl`, 'POST');
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "SSL сертификат выдается",
+        description: data.message || "SSL сертификат выдается. Проверьте статус через несколько минут."
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка выдачи SSL",
+        description: error?.error || "Не удалось запустить выдачу SSL сертификата",
+        variant: "destructive"
+      });
+    }
+  });
+
   // Удаление домена
   const deleteDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
@@ -362,6 +383,28 @@ export function CustomDomainManager() {
                             <>
                               <CheckCircle2 className="h-3 w-3 mr-1" />
                               Проверить домен
+                            </>
+                          )}
+                        </Button>
+                      )}
+
+                      {domain.status === 'verified' && (!domain.sslStatus || domain.sslStatus === 'none' || domain.sslStatus === 'failed') && (
+                        <Button
+                          size="sm"
+                          onClick={() => issueSSLMutation.mutate(domain.id)}
+                          disabled={issueSSLMutation.isPending}
+                          data-testid={`button-ssl-${domain.id}`}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          {issueSSLMutation.isPending ? (
+                            <>
+                              <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                              Выдаем SSL...
+                            </>
+                          ) : (
+                            <>
+                              <Shield className="h-3 w-3 mr-1" />
+                              Выдать SSL
                             </>
                           )}
                         </Button>

@@ -3242,6 +3242,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Принудительная выдача SSL сертификата
+  app.post("/api/advertiser/profile/domains/:domainId/ssl", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { domainId } = req.params;
+      
+      const { CustomDomainService } = await import('./services/customDomains');
+      const result = await CustomDomainService.issueSSLForDomain(domainId, authUser.id);
+      
+      if (result.success) {
+        res.json({ 
+          success: true, 
+          message: result.message 
+        });
+      } else {
+        res.status(400).json({ 
+          success: false, 
+          error: result.message 
+        });
+      }
+    } catch (error) {
+      console.error("SSL issuance error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.delete("/api/advertiser/profile/domains/:domainId", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);

@@ -160,6 +160,130 @@ export class CustomDomainService {
     }
   }
 
+  // Автоматическая выдача SSL сертификата
+  static async requestSSLCertificate(domain: string, domainId: string): Promise<void> {
+    try {
+      console.log(`🔒 Запуск процесса выдачи SSL для ${domain}`);
+      
+      // Обновляем статус на "выдается"
+      await db
+        .update(customDomains)
+        .set({
+          sslStatus: 'pending',
+          sslErrorMessage: null,
+          updatedAt: new Date()
+        })
+        .where(eq(customDomains.id, domainId));
+
+      // Симуляция процесса выдачи SSL сертификата Let's Encrypt
+      // В реальном приложении здесь будет интеграция с ACME протоколом
+      await this.simulateSSLIssuance(domain, domainId);
+      
+    } catch (error) {
+      console.error(`SSL issuance failed for ${domain}:`, error);
+      
+      // Обновляем статус на ошибку
+      await db
+        .update(customDomains)
+        .set({
+          sslStatus: 'failed',
+          sslErrorMessage: error.message,
+          updatedAt: new Date()
+        })
+        .where(eq(customDomains.id, domainId));
+    }
+  }
+
+  // Симуляция выдачи SSL сертификата
+  private static async simulateSSLIssuance(domain: string, domainId: string): Promise<void> {
+    // Симулируем задержку выдачи сертификата (обычно 1-3 минуты)
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    
+    // Генерируем "сертификат" для демонстрации
+    const mockCertificate = `-----BEGIN CERTIFICATE-----
+MIIFXzCCA0egAwIBAgISA${Date.now().toString().slice(-10)}
+... (mock certificate data) ...
+-----END CERTIFICATE-----`;
+
+    const mockPrivateKey = `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC${Date.now().toString().slice(-15)}
+... (mock private key data) ...
+-----END PRIVATE KEY-----`;
+
+    const validUntil = new Date();
+    validUntil.setMonth(validUntil.getMonth() + 3); // Сертификат действует 3 месяца
+
+    // Обновляем домен с выданным сертификатом
+    await db
+      .update(customDomains)
+      .set({
+        sslStatus: 'issued',
+        sslCertificate: mockCertificate,
+        sslPrivateKey: mockPrivateKey,
+        sslValidUntil: validUntil,
+        sslIssuer: 'Let\'s Encrypt (Demo)',
+        sslErrorMessage: null,
+        isActive: true,
+        updatedAt: new Date()
+      })
+      .where(eq(customDomains.id, domainId));
+
+    console.log(`✅ SSL сертификат успешно выдан для ${domain}`);
+  }
+
+  // Принудительная выдача SSL для уже верифицированного домена
+  static async issueSSLForDomain(domainId: string, advertiserId: string): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    try {
+      // Проверяем что домен принадлежит рекламодателю и верифицирован
+      const [domain] = await db
+        .select()
+        .from(customDomains)
+        .where(and(
+          eq(customDomains.id, domainId),
+          eq(customDomains.advertiserId, advertiserId),
+          eq(customDomains.status, 'verified')
+        ));
+
+      if (!domain) {
+        return {
+          success: false,
+          message: 'Домен не найден или не верифицирован'
+        };
+      }
+
+      if (domain.sslStatus === 'issued') {
+        return {
+          success: false,
+          message: 'SSL сертификат уже выдан для этого домена'
+        };
+      }
+
+      if (domain.sslStatus === 'pending') {
+        return {
+          success: false,
+          message: 'SSL сертификат уже выдается для этого домена'
+        };
+      }
+
+      // Запускаем выдачу SSL
+      await this.requestSSLCertificate(domain.domain, domainId);
+
+      return {
+        success: true,
+        message: 'SSL сертификат выдается. Проверьте статус через несколько минут.'
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        message: `Ошибка выдачи SSL: ${error.message}`
+      };
+    }
+  }
+
   // Удаляем домен
   static async deleteDomain(domainId: string, advertiserId: string): Promise<void> {
     await db
@@ -223,132 +347,7 @@ export class CustomDomainService {
         .where(eq(trackingLinks.offerId, offerId));
     }
   }
-
-  // Проверяем SSL сертификат
-  // Запрос SSL сертификата после верификации DNS
-  static async requestSSLCertificate(domain: string, domainId: string): Promise<void> {
-    try {
-      console.log(`🔒 Начинаем процесс выдачи SSL сертификата для ${domain}`);
-      
-      // Обновляем статус SSL на pending
-      await db
-        .update(customDomains)
-        .set({ 
-          sslStatus: 'pending',
-          lastChecked: new Date()
-        })
-        .where(eq(customDomains.id, domainId));
-
-      // В продакшене здесь должна быть интеграция с Let's Encrypt
-      // Например, с использованием библиотеки node-acme-client
-      // Для демонстрации симулируем процесс выдачи сертификата
-      
-      // Проверяем, что домен доступен по HTTP
-      const isHttpAccessible = await this.checkHttpAccess(domain);
-      
-      if (!isHttpAccessible) {
-        throw new Error('Domain is not accessible via HTTP, SSL certificate cannot be issued');
-      }
-
-      // Симулируем запрос к Let's Encrypt (в продакшене нужна реальная интеграция)
-      console.log(`📋 Создаем заявку на SSL сертификат для ${domain} через Let's Encrypt`);
-      
-      // Имитируем процесс challenge и validation
-      await this.simulateACMEChallenge(domain);
-      
-      // Генерируем сертификат (в продакшене - получаем от Let's Encrypt)
-      const certificate = await this.generateSSLCertificate(domain);
-      
-      // Обновляем статус SSL на issued
-      await db
-        .update(customDomains)
-        .set({ 
-          sslStatus: 'issued',
-          sslCertificate: certificate.cert,
-          sslPrivateKey: certificate.key,
-          sslValidUntil: certificate.validUntil,
-          sslIssuer: 'Let\'s Encrypt',
-          lastChecked: new Date()
-        })
-        .where(eq(customDomains.id, domainId));
-
-      console.log(`✅ SSL сертификат успешно выдан для ${domain}`);
-      
-    } catch (error) {
-      console.error(`❌ Ошибка выдачи SSL сертификата для ${domain}:`, error);
-      
-      // Обновляем статус SSL на failed
-      await db
-        .update(customDomains)
-        .set({ 
-          sslStatus: 'failed',
-          sslErrorMessage: error.message,
-          lastChecked: new Date()
-        })
-        .where(eq(customDomains.id, domainId));
-      
-      throw error;
-    }
-  }
-
-  // Проверка HTTP доступности домена
-  static async checkHttpAccess(domain: string): Promise<boolean> {
-    try {
-      const response = await fetch(`http://${domain}`, {
-        method: 'HEAD',
-        timeout: 10000,
-        signal: AbortSignal.timeout(10000)
-      });
-      return response.status < 500;
-    } catch (error) {
-      console.log(`HTTP access check failed for ${domain}:`, error.message);
-      return false;
-    }
-  }
-
-  // Симуляция ACME Challenge (в продакшене - реальная интеграция с Let's Encrypt)
-  static async simulateACMEChallenge(domain: string): Promise<void> {
-    console.log(`🔐 Выполняем HTTP-01 challenge для ${domain}`);
-    
-    // В реальной системе здесь будет:
-    // 1. Создание challenge файла
-    // 2. Размещение его на веб-сервере домена
-    // 3. Уведомление Let's Encrypt для проверки
-    // 4. Ожидание подтверждения
-    
-    // Симулируем процесс
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    console.log(`✅ HTTP-01 challenge успешно пройден для ${domain}`);
-  }
-
-  // Генерация SSL сертификата (в продакшене - получение от Let's Encrypt)
-  static async generateSSLCertificate(domain: string): Promise<{
-    cert: string;
-    key: string;
-    validUntil: Date;
-  }> {
-    console.log(`📜 Генерируем SSL сертификат для ${domain}`);
-    
-    // В продакшене здесь будет получение настоящего сертификата от Let's Encrypt
-    // Для демонстрации создаем mock сертификат
-    
-    const validUntil = new Date();
-    validUntil.setDate(validUntil.getDate() + 90); // Let's Encrypt сертификаты действуют 90 дней
-    
-    return {
-      cert: `-----BEGIN CERTIFICATE-----
-Mock certificate for ${domain}
-Generated at: ${new Date().toISOString()}
-Valid until: ${validUntil.toISOString()}
------END CERTIFICATE-----`,
-      key: `-----BEGIN PRIVATE KEY-----
-Mock private key for ${domain}
-Generated at: ${new Date().toISOString()}
------END PRIVATE KEY-----`,
-      validUntil
-    };
-  }
+}
 
   static async checkSSL(domain: string): Promise<{
     hasSSL: boolean;
