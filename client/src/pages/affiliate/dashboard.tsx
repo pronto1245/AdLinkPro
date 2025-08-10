@@ -194,9 +194,9 @@ export default function AffiliateDashboard() {
     <div className="w-full space-y-6">
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Панель партнёра</h1>
+          <h1 className="text-3xl font-bold">{t('dashboard.partnerTitle')}</h1>
           <p className="text-muted-foreground mt-2">
-            Добро пожаловать в ваш кабинет партнёра
+            {t('dashboard.partnerWelcome')}
           </p>
         </div>
 

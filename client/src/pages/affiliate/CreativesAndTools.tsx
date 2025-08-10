@@ -137,9 +137,9 @@ export default function CreativesAndTools() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Креативы и инструменты</h1>
+        <h1 className="text-3xl font-bold">{t('creatives.title')}</h1>
         <p className="text-muted-foreground mt-2">
-          Баннеры, лендинги, преленды и текстовки для ваших кампаний
+          {t('creatives.subtitle')}
         </p>
       </div>
 
@@ -157,7 +157,7 @@ export default function CreativesAndTools() {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Поиск креативов..."
+                  placeholder={t('creatives.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -171,12 +171,12 @@ export default function CreativesAndTools() {
                 <SelectValue placeholder="Тип креатива" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Все типы</SelectItem>
-                <SelectItem value="banner">Баннеры</SelectItem>
-                <SelectItem value="landing">Лендинги</SelectItem>
-                <SelectItem value="prelanding">Преленды</SelectItem>
-                <SelectItem value="text">Текстовки</SelectItem>
-                <SelectItem value="video">Видео</SelectItem>
+                <SelectItem value="all">{t('creatives.allTypes')}</SelectItem>
+                <SelectItem value="banner">{t('creatives.banner')}</SelectItem>
+                <SelectItem value="landing">{t('creatives.landing')}</SelectItem>
+                <SelectItem value="prelanding">{t('creatives.prelanding')}</SelectItem>
+                <SelectItem value="text">{t('creatives.text')}</SelectItem>
+                <SelectItem value="video">{t('creatives.video')}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -300,11 +300,11 @@ export default function CreativesAndTools() {
                       </TableCell>
                       <TableCell>
                         <Badge className={getTypeColor(creative.type)}>
-                          {creative.type === 'banner' && 'Баннер'}
-                          {creative.type === 'landing' && 'Лендинг'}
-                          {creative.type === 'prelanding' && 'Преленд'}
-                          {creative.type === 'text' && 'Текст'}
-                          {creative.type === 'video' && 'Видео'}
+                          {creative.type === 'banner' && t('creatives.bannerType')}
+                          {creative.type === 'landing' && t('creatives.landingType')}
+                          {creative.type === 'prelanding' && t('creatives.prelandingType')}
+                          {creative.type === 'text' && t('creatives.textType')}
+                          {creative.type === 'video' && t('creatives.videoType')}
                         </Badge>
                       </TableCell>
                       <TableCell>{creative.offerName}</TableCell>

@@ -41,25 +41,25 @@ interface PartnerOffer {
 }
 
 // Функция для получения свойств бейджа категории
-function getCategoryBadgeProps(category: string) {
+function getCategoryBadgeProps(category: string, t: any) {
   const categories: Record<string, { label: string; className: string }> = {
-    gambling: { label: "Гемблинг", className: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300" },
-    dating: { label: "Знакомства", className: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300" },
-    finance: { label: "Финансы", className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" },
-    crypto: { label: "Крипто", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300" },
-    nutra: { label: "Нутра", className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" },
-    software: { label: "ПО", className: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300" },
+    gambling: { label: t('offers.gambling'), className: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300" },
+    dating: { label: t('offers.dating'), className: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300" },
+    finance: { label: t('offers.finance'), className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" },
+    crypto: { label: t('offers.crypto'), className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300" },
+    nutra: { label: t('offers.health'), className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" },
+    software: { label: t('offers.software'), className: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300" },
   };
-  return categories[category?.toLowerCase()] || { label: category || "Другое", className: "bg-gray-100 text-gray-800" };
+  return categories[category?.toLowerCase()] || { label: category || t('offers.default'), className: "bg-gray-100 text-gray-800" };
 }
 
-function getPayoutTypeBadgeProps(payoutType: string) {
+function getPayoutTypeBadgeProps(payoutType: string, t: any) {
   const types: Record<string, { label: string; className: string }> = {
-    cpa: { label: "CPA", className: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-300" },
-    cpl: { label: "CPL", className: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-300" },
-    cps: { label: "CPS", className: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900 dark:text-purple-300" },
+    cpa: { label: t('offers.cpa'), className: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-300" },
+    cpl: { label: t('offers.cpl'), className: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-300" },
+    cps: { label: t('offers.cps'), className: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900 dark:text-purple-300" },
     cpi: { label: "CPI", className: "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900 dark:text-orange-300" },
-    cpm: { label: "CPM", className: "bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-900 dark:text-pink-300" },
+    cpm: { label: t('offers.cpm'), className: "bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-900 dark:text-pink-300" },
   };
   return types[payoutType?.toLowerCase()] || { label: payoutType?.toUpperCase() || "CPA", className: "bg-gray-100 text-gray-800 border-gray-300" };
 }
@@ -175,8 +175,8 @@ export default function PartnerOffers() {
               </TableHeader>
               <TableBody>
                 {displayOffers.map((offer) => {
-                  const categoryProps = getCategoryBadgeProps(offer.category);
-                  const payoutTypeProps = getPayoutTypeBadgeProps(offer.payoutType);
+                  const categoryProps = getCategoryBadgeProps(offer.category, t);
+                  const payoutTypeProps = getPayoutTypeBadgeProps(offer.payoutType, t);
                   const cr = 0; // CR будет добавлен позже из реальной статистики
                   const requestStatus = offer.accessStatus || (offer.hasFullAccess ? 'approved' : 'none');
                   
