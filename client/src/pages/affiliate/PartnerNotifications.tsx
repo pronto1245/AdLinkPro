@@ -35,6 +35,15 @@ export default function PartnerNotifications() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  
+  // CRITICAL DEBUG: Проверяем токен в компоненте
+  React.useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    console.log('🔍 PartnerNotifications component - token check:', { 
+      token: token ? token.substring(0, 20) + '...' : 'NO_TOKEN',
+      user: user?.username 
+    });
+  }, [user]);
 
   // Получение уведомлений
   const { data: notifications = [], isLoading } = useQuery<Notification[]>({
@@ -42,37 +51,60 @@ export default function PartnerNotifications() {
     enabled: !!user?.id,
   });
 
-  // Мутация для отметки как прочитанное
+  // Функция для получения токена
+  const getAuthToken = () => {
+    const token = localStorage.getItem('auth_token');
+    console.log('🔍 Getting auth token:', { 
+      hasToken: !!token, 
+      isNull: token === 'null',
+      isEmpty: token === '',
+      tokenStart: token ? token.substring(0, 20) : 'NO_TOKEN'
+    });
+    return token && token !== 'null' && token !== 'undefined' && token.trim() !== '' ? token : null;
+  };
+
+  // Мутация для отметки как прочитанное - ПОЛНОСТЬЮ ПЕРЕПИСАНА
   const markAsReadMutation = useMutation({
+    mutationKey: ['markAsRead'],
     mutationFn: async (notificationId: string) => {
-      // CRITICAL FIX: Получаем свежий токен прямо в мутации
-      const token = localStorage.getItem('auth_token');
-      console.log('🔍 Mark as read - token check:', { token: token ? token.substring(0, 20) + '...' : 'NO_TOKEN' });
+      console.log('🚀 Starting markAsRead mutation for:', notificationId);
       
-      if (!token || token === 'null' || token === 'undefined' || token.trim() === '') {
-        console.error('❌ Invalid token in markAsReadMutation:', token);
-        throw new Error('No valid token found');
+      const authToken = getAuthToken();
+      if (!authToken) {
+        console.error('❌ No valid auth token found');
+        throw new Error('Authentication required - please re-login');
       }
       
-      console.log('✅ Using token for mark as read:', token.substring(0, 20) + '...');
+      console.log('✅ Valid token found, making request...');
       
-      const response = await fetch(`/api/notifications/${notificationId}/read`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      console.log('📡 Mark as read response:', response.status, response.statusText);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Mark as read failed:', response.status, errorText);
-        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+      try {
+        const response = await fetch(`/api/notifications/${notificationId}/read`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+        });
+        
+        console.log('📡 Response received:', {
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Request failed:', { status: response.status, error: errorText });
+          throw new Error(`Failed to mark as read: ${response.status} ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Mark as read successful:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Network error in markAsRead:', error);
+        throw error;
       }
-      
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
