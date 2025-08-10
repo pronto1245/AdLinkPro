@@ -118,15 +118,27 @@ export default function PartnerProfile() {
       }
     }
 
-    // Валидация Telegram (если заполнен)
-    if (formData.telegram.trim() && !formData.telegram.startsWith('@')) {
-      setFormData(prev => ({
-        ...prev,
-        telegram: '@' + prev.telegram.replace(/^@/, '')
-      }));
+    // Подготавливаем финальные данные
+    let finalFormData = { ...formData };
+    
+    // Валидация и форматирование Telegram (если заполнен)
+    if (formData.telegram.trim()) {
+      const telegramValue = formData.telegram.trim().replace(/^@/, '');
+      const telegramRegex = /^[a-zA-Z0-9_]{5,32}$/;
+      
+      if (!telegramRegex.test(telegramValue)) {
+        toast({
+          title: "Неверный формат Telegram",
+          description: "Telegram никнейм должен содержать 5-32 символа (буквы, цифры, подчеркивание).",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      finalFormData.telegram = '@' + telegramValue;
     }
 
-    updateProfileMutation.mutate(formData);
+    updateProfileMutation.mutate(finalFormData);
   };
 
   // Показываем скелетон при загрузке
@@ -289,13 +301,23 @@ export default function PartnerProfile() {
 
             <div className="space-y-2">
               <Label htmlFor="telegram">Telegram</Label>
-              <Input
-                id="telegram"
-                value={formData.telegram}
-                onChange={(e) => handleInputChange('telegram', e.target.value)}
-                placeholder="@username"
-                data-testid="input-telegram"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-3 text-muted-foreground">@</span>
+                <Input
+                  id="telegram"
+                  value={formData.telegram.startsWith('@') ? formData.telegram.slice(1) : formData.telegram}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/^@/, '');
+                    handleInputChange('telegram', value);
+                  }}
+                  placeholder="username"
+                  className="pl-8"
+                  data-testid="input-telegram"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Ваш Telegram никнейм (без @)
+              </p>
             </div>
           </CardContent>
         </Card>

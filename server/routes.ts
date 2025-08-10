@@ -3394,8 +3394,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Partner profile retrieved for user:", authUser.id);
       
-      // Return full profile data without password
-      const { passwordHash, ...profileData } = user;
+      // Return full profile data without password and sensitive fields
+      const { passwordHash, password, sessionToken, twoFactorSecret, ...profileData } = user;
       res.json(profileData);
     } catch (error) {
       console.error("Get partner profile error:", error);
