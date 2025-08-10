@@ -73,12 +73,23 @@ export function TopNavigation() {
           
           {/* Balance for partners */}
           {user.role === 'affiliate' && (
-            <div className="hidden md:flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-700">
-              <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <span className="font-bold text-lg text-green-700 dark:text-green-300">
-                ${financeData ? financeData.balance.toFixed(2) : '0.00'}
-              </span>
-              <span className="text-xs text-green-600/80 dark:text-green-400/80 font-medium">{t('common.balance')}</span>
+            <div className="hidden md:flex items-center space-x-3">
+              {/* Balance */}
+              <div className="flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-700">
+                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <span className="font-bold text-lg text-green-700 dark:text-green-300">
+                  ${financeData ? financeData.balance.toFixed(2) : '0.00'}
+                </span>
+                <span className="text-xs text-green-600/80 dark:text-green-400/80 font-medium">{t('common.balance')}</span>
+              </div>
+              {/* Pending */}
+              <div className="flex items-center space-x-2 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-700">
+                <DollarSign className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <span className="font-bold text-lg text-amber-700 dark:text-amber-300">
+                  ${financeData ? financeData.pendingPayouts.toFixed(2) : '0.00'}
+                </span>
+                <span className="text-xs text-amber-600/80 dark:text-amber-400/80 font-medium">{t('common.pending')}</span>
+              </div>
             </div>
           )}
           
