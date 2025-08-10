@@ -45,7 +45,11 @@
     "copiedToClipboard": "copied to clipboard",
     "accessGranted": "Access Granted",
     "available": "Available",
-    "rejected": "Rejected"
+    "rejected": "Rejected",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout",
+    "amount": "Amount"
   },
   "theme": {
     "light": "Light",
@@ -239,7 +243,9 @@
     "details": "Details",
     "statistics": "Statistics",
     "clicks": "Clicks",
-    "conversions": "Conversions"
+    "conversions": "Conversions",
+    "retryRequest": "Retry Request",
+    "retry": "Retry"
   },
   "auth": {
     "login": "Sign In",

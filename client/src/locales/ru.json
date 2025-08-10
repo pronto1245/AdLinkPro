@@ -48,6 +48,10 @@
     "accessGranted": "Доступ открыт",
     "available": "Доступен",
     "rejected": "Отклонено",
+    "settings": "Настройки",
+    "profile": "Профиль",
+    "logout": "Выход",
+    "amount": "Сумма",
     "payoutType": "Тип выплаты"
   },
   "theme": {
@@ -242,9 +246,11 @@
     "accessRejected": "Доступ отклонен",
     "requestAccessTooltip": "Запросить доступ к офферу",
     "details": "Детали",
-    "statistics": "Статистика",
+    "statistics": "Статистика", 
     "clicks": "Клики",
-    "conversions": "Конверсии"
+    "conversions": "Конверсии",
+    "retryRequest": "Повторный запрос",
+    "retry": "Повторить"
   },
   "auth": {
     "login": "Вход в систему",

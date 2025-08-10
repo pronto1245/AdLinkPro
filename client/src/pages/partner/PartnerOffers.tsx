@@ -376,17 +376,17 @@ export default function PartnerOffers() {
                           ) : offer.accessStatus === 'pending' ? (
                             <Button size="sm" variant="outline" disabled>
                               <Clock className="w-4 h-4 mr-2" />
-                              Ожидание
+                              {t('common.pending')}
                             </Button>
                           ) : offer.accessStatus === 'rejected' ? (
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleRequestAccess(offer)}
-                              title="Повторный запрос"
+                              title={t('offers.retryRequest', 'Повторный запрос')}
                               data-testid={`button-retry-${offer.id}`}
                             >
-                              Повторить
+                              {t('offers.retry', 'Повторить')}
                             </Button>
                           ) : (
                             <Button
@@ -394,7 +394,7 @@ export default function PartnerOffers() {
                               onClick={() => handleRequestAccess(offer)}
                               data-testid={`button-request-${offer.id}`}
                             >
-                              Запросить
+                              {t('offers.requestAccess')}
                             </Button>
                           )}
 
@@ -413,43 +413,23 @@ export default function PartnerOffers() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
                                 onClick={() => {
-                                  console.log('Детали оффера:', offer.id);
-                                  // TODO: Открыть модальное окно с деталями
+                                  // Navigate to offer details page
+                                  window.location.href = `/affiliate/offers/${offer.id}`;
                                 }}
                                 data-testid={`menu-details-${offer.id}`}
                               >
                                 <Info className="w-4 h-4 mr-2" />
-                                Детали
+                                {t('offers.details', 'Детали')}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => {
-                                  console.log('Статистика оффера:', offer.id);
-                                  // TODO: Открыть страницу статистики
+                                  // Navigate to statistics page for this offer
+                                  window.location.href = `/affiliate/statistics?offer=${offer.id}`;
                                 }}
                                 data-testid={`menu-statistics-${offer.id}`}
                               >
                                 <BarChart3 className="w-4 h-4 mr-2" />
-                                Статистика
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  console.log('Клики оффера:', offer.id);
-                                  // TODO: Показать статистику кликов
-                                }}
-                                data-testid={`menu-clicks-${offer.id}`}
-                              >
-                                <MousePointer className="w-4 h-4 mr-2" />
-                                Клики
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  console.log('Конверсии оффера:', offer.id);
-                                  // TODO: Показать статистику конверсий
-                                }}
-                                data-testid={`menu-conversions-${offer.id}`}
-                              >
-                                <Target className="w-4 h-4 mr-2" />
-                                Конверсии
+                                {t('offers.statistics', 'Статистика')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
