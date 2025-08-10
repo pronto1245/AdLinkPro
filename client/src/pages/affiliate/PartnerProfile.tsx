@@ -124,12 +124,12 @@ export default function PartnerProfile() {
     // Валидация и форматирование Telegram (если заполнен)
     if (formData.telegram.trim()) {
       const telegramValue = formData.telegram.trim().replace(/^@/, '');
-      const telegramRegex = /^[a-zA-Z0-9_]{5,32}$/;
+      const telegramRegex = /^[a-zA-Z0-9_]{3,32}$/;
       
       if (!telegramRegex.test(telegramValue)) {
         toast({
           title: "Неверный формат Telegram",
-          description: "Telegram никнейм должен содержать 5-32 символа (буквы, цифры, подчеркивание).",
+          description: "Telegram никнейм должен содержать 3-32 символа (буквы, цифры, подчеркивание).",
           variant: "destructive",
         });
         return;

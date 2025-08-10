@@ -216,7 +216,6 @@ const countryNameToCode: Record<string, string> = {
   'france': 'FR',
   'italy': 'IT',
   'kazakhstan': 'KZ',
-  'ukraine': 'UA',
   'brazil': 'BR',
   'india': 'IN',
   'philippines': 'PH',
