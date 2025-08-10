@@ -29,7 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 interface CustomDomain {
   id: string;
   domain: string;
-  status: 'pending' | 'verifying' | 'verified' | 'failed' | 'expired';
+  status: 'pending' | 'verifying' | 'verified' | 'failed' | 'error' | 'expired';
   type: 'a_record' | 'cname';
   verificationValue: string;
   targetValue?: string;
@@ -213,6 +213,7 @@ export function CustomDomainManager() {
       case 'verifying':
         return <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />;
       case 'failed':
+      case 'error':
         return <AlertCircle className="h-4 w-4 text-red-600" />;
       case 'expired':
         return <AlertCircle className="h-4 w-4 text-gray-600" />;
@@ -225,9 +226,10 @@ export function CustomDomainManager() {
       pending: { color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300', text: 'Ожидание' },
       verifying: { color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300', text: 'Проверяется' },
       failed: { color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', text: 'Ошибка' },
+      error: { color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', text: 'Ошибка' },
       expired: { color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300', text: 'Истек' }
     };
-    const config = configs[status];
+    const config = configs[status] || configs.error; // Fallback to error if status not found
     return (
       <Badge className={config.color}>
         {config.text}

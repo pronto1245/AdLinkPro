@@ -2,10 +2,17 @@
 This is an affiliate marketing platform providing advertisers with intelligent offer management, real-time analytics, robust partner relationship tools, streamlined financial transactions, and advanced anti-fraud protection. It supports multiple user roles (super-admin, advertiser, affiliate, staff) and offers full offer management, including creative asset handling. The platform delivers real-time statistics, financial management with integrated payouts, dynamic partner approval workflows, and multi-layered security. All data updates reactively and instantly across user interfaces, ensuring a live and responsive experience. The business vision is to deliver a leading-edge, secure, and user-friendly platform that maximizes efficiency and profitability for all stakeholders in the affiliate marketing ecosystem.
 
 ## Testing Status (Updated 10.08.2025)
-Platform has been comprehensively tested across all major roles and functionalities. Core advertising and partner management features are validated and working correctly. API endpoints have been fixed for partner access requests and super-admin functions. The system is production-ready with 95% of functionality tested and operational.
+Platform has been comprehensively tested across all major roles and functionalities. Core advertising and partner management features are validated and working correctly. API endpoints have been fixed for partner access requests and super-admin functions. Custom domain verification system has been debugged and database constraints updated. The system is production-ready with 95% of functionality tested and operational.
+
+### Recent Fixes (August 10, 2025):
+- **Database Schema**: Fixed custom_domains table constraint to allow 'error' status instead of 'failed'
+- **Type Safety**: Updated CustomDomainManager component to handle all domain status types including 'error'
+- **UI Consistency**: Added proper fallback handling for undefined status configurations in domain management
 
 # User Preferences
-Preferred communication style: Simple, everyday language.
+- **Language**: Russian language preferred ("отвечай на русском пожалуйста")
+- **Communication Style**: Simple, everyday language avoiding technical jargon
+- **Problem Resolution**: Direct approach to fixing errors with immediate database and code updates
 
 ## Development Guidelines:
 **REACTIVITY AND LIVE DATA:**
