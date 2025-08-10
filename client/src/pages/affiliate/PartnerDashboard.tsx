@@ -46,14 +46,58 @@ const MetricCard = ({ title, value, change, changeType, icon: Icon }: MetricCard
     return null;
   };
 
+  const getCardStyle = () => {
+    if (title === 'Клики') return 'border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/20 dark:to-background';
+    if (title === 'Конверсии') return 'border-l-4 border-l-green-500 bg-gradient-to-r from-green-50 to-white dark:from-green-950/20 dark:to-background';
+    if (title === 'Доход') return 'border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-50 to-white dark:from-amber-950/20 dark:to-background';
+    if (title === 'CR%') return 'border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50 to-white dark:from-purple-950/20 dark:to-background';
+    if (title === 'Уникальные клики') return 'border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-50 to-white dark:from-indigo-950/20 dark:to-background';
+    if (title === 'Активные офферы') return 'border-l-4 border-l-pink-500 bg-gradient-to-r from-pink-50 to-white dark:from-pink-950/20 dark:to-background';
+    if (title === 'Статус') return 'border-l-4 border-l-emerald-500 bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-950/20 dark:to-background';
+    return 'border-l-4 border-l-slate-500 bg-gradient-to-r from-slate-50 to-white dark:from-slate-950/20 dark:to-background';
+  };
+
+  const getTitleColor = () => {
+    if (title === 'Клики') return 'text-blue-700 dark:text-blue-300';
+    if (title === 'Конверсии') return 'text-green-700 dark:text-green-300';
+    if (title === 'Доход') return 'text-amber-700 dark:text-amber-300';
+    if (title === 'CR%') return 'text-purple-700 dark:text-purple-300';
+    if (title === 'Уникальные клики') return 'text-indigo-700 dark:text-indigo-300';
+    if (title === 'Активные офферы') return 'text-pink-700 dark:text-pink-300';
+    if (title === 'Статус') return 'text-emerald-700 dark:text-emerald-300';
+    return 'text-slate-700 dark:text-slate-300';
+  };
+
+  const getValueColor = () => {
+    if (title === 'Клики') return 'text-blue-600 dark:text-blue-400';
+    if (title === 'Конверсии') return 'text-green-600 dark:text-green-400';
+    if (title === 'Доход') return 'text-amber-600 dark:text-amber-400';
+    if (title === 'CR%') return 'text-purple-600 dark:text-purple-400';
+    if (title === 'Уникальные клики') return 'text-indigo-600 dark:text-indigo-400';
+    if (title === 'Активные офферы') return 'text-pink-600 dark:text-pink-400';
+    if (title === 'Статус') return 'text-emerald-600 dark:text-emerald-400';
+    return 'text-slate-600 dark:text-slate-400';
+  };
+
+  const getIconColor = () => {
+    if (title === 'Клики') return 'text-blue-500';
+    if (title === 'Конверсии') return 'text-green-500';
+    if (title === 'Доход') return 'text-amber-500';
+    if (title === 'CR%') return 'text-purple-500';
+    if (title === 'Уникальные клики') return 'text-indigo-500';
+    if (title === 'Активные офферы') return 'text-pink-500';
+    if (title === 'Статус') return 'text-emerald-500';
+    return 'text-slate-500';
+  };
+
   return (
-    <Card>
+    <Card className={getCardStyle()}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <CardTitle className={`text-sm font-medium ${getTitleColor()}`}>{title}</CardTitle>
+        <Icon className={`h-4 w-4 ${getIconColor()}`} />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className={`text-2xl font-bold ${getValueColor()}`}>{value}</div>
         {change && (
           <div className={`flex items-center gap-1 text-xs ${getChangeColor()}`}>
             {getChangeIcon()}
@@ -146,7 +190,7 @@ export default function PartnerDashboard() {
           <h1 className="text-3xl font-bold tracking-tight">Партнерский дашборд</h1>
           <p className="text-muted-foreground">Мониторинг производительности и аналитика</p>
         </div>
-        <Button variant="outline" onClick={handleRefresh}>
+        <Button variant="outline" onClick={handleRefresh} className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20">
           <RefreshCw className="h-4 w-4 mr-2" />
           Обновить
         </Button>
@@ -155,7 +199,7 @@ export default function PartnerDashboard() {
       {/* Main Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          title="Всего кликов"
+          title="Клики"
           value={metrics.totalClicks?.toLocaleString() || '0'}
           change="+12.5%"
           changeType="positive"
@@ -176,7 +220,7 @@ export default function PartnerDashboard() {
           icon={DollarSign}
         />
         <MetricCard
-          title="CR"
+          title="CR%"
           value={`${metrics.conversionRate?.toFixed(2) || '0'}%`}
           change="-0.8%"
           changeType="negative"
@@ -212,22 +256,22 @@ export default function PartnerDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <Card>
+      <Card className="border-l-4 border-l-cyan-500 bg-gradient-to-r from-cyan-50 to-white dark:from-cyan-950/20 dark:to-background">
         <CardHeader>
-          <CardTitle>Быстрые действия</CardTitle>
+          <CardTitle className="text-cyan-700 dark:text-cyan-300">Быстрые действия</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-2 md:grid-cols-3">
-            <Button variant="outline" className="justify-start">
-              <Target className="h-4 w-4 mr-2" />
+          <div className="grid gap-3 md:grid-cols-3">
+            <Button variant="outline" className="justify-start border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 shadow-md">
+              <Target className="h-4 w-4 mr-2 text-green-500" />
               Найти новые офферы
             </Button>
-            <Button variant="outline" className="justify-start">
-              <TrendingUp className="h-4 w-4 mr-2" />
+            <Button variant="outline" className="justify-start border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 shadow-md">
+              <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
               Проверить статистику
             </Button>
-            <Button variant="outline" className="justify-start">
-              <Users className="h-4 w-4 mr-2" />
+            <Button variant="outline" className="justify-start border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 shadow-md">
+              <Users className="h-4 w-4 mr-2 text-purple-500" />
               Связаться с менеджером
             </Button>
           </div>
@@ -235,9 +279,9 @@ export default function PartnerDashboard() {
       </Card>
 
       {/* Notifications */}
-      <Card>
+      <Card className="border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
         <CardHeader>
-          <CardTitle>Уведомления</CardTitle>
+          <CardTitle className="text-orange-700 dark:text-orange-300">Уведомления</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
