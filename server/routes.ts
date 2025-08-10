@@ -3381,6 +3381,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Partner support ticket creation
+  app.post("/api/partner/support/tickets", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { subject, message, category, urgency, contactMethod } = req.body;
+      
+      if (!subject?.trim() || !message?.trim() || !category) {
+        return res.status(400).json({ error: "Subject, message and category are required" });
+      }
+
+      const ticketNumber = `SUP-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+      
+      const ticketData = {
+        id: randomUUID(),
+        userId: authUser.id,
+        title: subject.trim(),
+        description: message.trim(),
+        status: 'open' as const,
+        priority: urgency || 'medium',
+        category: category,
+        metadata: JSON.stringify({
+          contactMethod: contactMethod || 'email',
+          userType: 'affiliate',
+          partnerNumber: authUser.partnerNumber || 'unknown'
+        }),
+        ticketNumber,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const ticket = await storage.createTicket(ticketData);
+      
+      // Send notification to managers (placeholder)
+      console.log(`New partner support ticket created: ${ticketNumber} by ${authUser.username}`);
+      
+      res.status(201).json({
+        id: ticket.id,
+        ticketNumber,
+        status: 'created',
+        estimatedResponse: urgency === 'critical' ? '2 hours' : 
+                         urgency === 'high' ? '6 hours' : 
+                         urgency === 'medium' ? '24 hours' : '48 hours'
+      });
+    } catch (error) {
+      console.error("Create partner support ticket error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Get advertiser's partners
   app.get("/api/advertiser/partners", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {

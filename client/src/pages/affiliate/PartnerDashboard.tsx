@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
+import { ContactManagerModal } from "@/components/partner/ContactManagerModal";
 import {
   Card,
   CardContent,
@@ -113,6 +114,7 @@ const MetricCard = ({ title, value, change, changeType, icon: Icon }: MetricCard
 
 export default function PartnerDashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [location, navigate] = useLocation();
@@ -148,11 +150,7 @@ export default function PartnerDashboard() {
   };
 
   const handleContactManager = () => {
-    toast({
-      title: "Связь с менеджером",
-      description: "Функция в разработке. Используйте контакты в профиле",
-      variant: "default",
-    });
+    setIsContactModalOpen(true);
   };
 
   if (isLoading) {
@@ -370,6 +368,12 @@ export default function PartnerDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Contact Manager Modal */}
+      <ContactManagerModal 
+        isOpen={isContactModalOpen} 
+        onClose={() => setIsContactModalOpen(false)} 
+      />
     </div>
   );
 }
