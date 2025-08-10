@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, Lock, FileText, Download, Link, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { OfferLogo } from "@/components/ui/offer-logo";
 import { getCountryFlag, getCountryName } from '@/utils/countries';
 
@@ -441,6 +441,8 @@ export default function OfferDetails() {
   const params = useParams();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [requestLoading, setRequestLoading] = useState(false);
   const offerId = params.id;
 
   // Загрузка актуальных данных оффера
@@ -489,7 +491,8 @@ export default function OfferDetails() {
   });
 
   const handleRequestAccess = async () => {
-    if (offerId && requestStatus === 'none') {
+    if (offerId && requestStatus === 'none' && !requestLoading) {
+      setRequestLoading(true);
       try {
         const response = await fetch("/api/partner/offer-access-request", {
           method: "POST",
@@ -508,8 +511,11 @@ export default function OfferDetails() {
             title: "Запрос отправлен",
             description: "Ваш запрос на доступ к офферу отправлен рекламодателю",
           });
-          // Обновляем кеш запросов
-          window.location.reload();
+          
+          // Обновляем кеш запросов доступа без перезагрузки страницы
+          await queryClient.invalidateQueries({ queryKey: ["/api/partner/access-requests"] });
+          await queryClient.invalidateQueries({ queryKey: [`/api/partner/offers/${offerId}`] });
+          await queryClient.invalidateQueries({ queryKey: ["/api/partner/offers"] });
         } else {
           throw new Error("Ошибка отправки запроса");
         }
@@ -519,6 +525,8 @@ export default function OfferDetails() {
           description: "Не удалось отправить запрос. Попробуйте еще раз.",
           variant: "destructive"
         });
+      } finally {
+        setRequestLoading(false);
       }
     }
   };
@@ -911,9 +919,10 @@ export default function OfferDetails() {
             {requestStatus === 'none' && (
               <Button 
                 onClick={handleRequestAccess}
+                disabled={requestLoading}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-8"
               >
-                Запросить доступ
+                {requestLoading ? "Отправка запроса..." : "Запросить доступ"}
               </Button>
             )}
             {requestStatus === 'pending' && (
