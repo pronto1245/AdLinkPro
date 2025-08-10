@@ -30,16 +30,6 @@ export function TopNavigation() {
     }
   }, [i18n]);
 
-  // Debug information
-  useEffect(() => {
-    console.log('TopNavigation Debug:', {
-      userRole: user?.role,
-      isAffiliate: user?.role === 'affiliate',
-      financeData,
-      language: i18n.language
-    });
-  }, [user, financeData, i18n.language]);
-
   // Fetch balance for partners only
   const { data: financeData } = useQuery<{
     balance: number;
@@ -50,6 +40,8 @@ export function TopNavigation() {
     enabled: !!user && user.role === 'affiliate',
     refetchInterval: 30000, // Refresh every 30 seconds
   });
+
+  // Debug information - Balance and Pending text are now hardcoded in Russian
 
   const handleLogout = () => {
     logout();
@@ -139,7 +131,7 @@ export function TopNavigation() {
                     {user.email}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {t(user.role)}
+                    {user.role === 'affiliate' ? 'Партнёр' : user.role === 'advertiser' ? 'Рекламодатель' : user.role}
                   </p>
                 </div>
               </DropdownMenuLabel>
