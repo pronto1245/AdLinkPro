@@ -52,6 +52,9 @@
     "profile": "Профиль",
     "logout": "Выход",
     "amount": "Сумма",
+    "disabled": "Отключен",
+    "pending": "Ожидание",
+    "cancel": "Отмена",
     "payoutType": "Тип выплаты"
   },
   "theme": {
@@ -251,6 +254,24 @@
     "conversions": "Конверсии",
     "retryRequest": "Повторный запрос",
     "retry": "Повторить"
+  },
+  "postbacks": {
+    "title": "Постбеки",
+    "subtitle": "Настройка интеграции с внешними трекерами",
+    "createProfile": "Создать профиль",
+    "createProfileTitle": "Создать постбек профиль",
+    "createProfileDescription": "Настройте интеграцию с вашим трекером для автоматической отправки данных о конверсиях",
+    "editProfileTitle": "Редактировать профиль",
+    "editProfileDescription": "Изменить настройки интеграции с трекером",
+    "testTitle": "Тестирование постбека",
+    "testDescription": "Отправить тестовый постбек для проверки настроек",
+    "profiles": "Профили",
+    "deliveryLogs": "Логи доставок",
+    "clickId": "Click ID",
+    "eventType": "Тип события",
+    "amount": "Сумма",
+    "currency": "Валюта",
+    "sendTest": "Отправить тест"
   },
   "auth": {
     "login": "Вход в систему",

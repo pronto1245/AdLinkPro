@@ -28,6 +28,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 interface PostbackProfile {
   id: string;
@@ -203,6 +204,7 @@ const defaultProfile: Partial<PostbackProfile> = {
 };
 
 export function AffiliatePostbacks() {
+  const { t } = useTranslation();
   
   // DEBUG: Проверяем токены при загрузке
   useEffect(() => {
@@ -642,9 +644,9 @@ export function AffiliatePostbacks() {
     <div className="p-6 space-y-6 bg-white min-h-screen">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Постбеки</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('postbacks.title', 'Постбеки')}</h1>
           <p className="text-muted-foreground">
-            Настройка интеграции с внешними трекерами
+            {t('postbacks.subtitle', 'Настройка интеграции с внешними трекерами')}
           </p>
         </div>
         <div className="flex space-x-2">
@@ -671,15 +673,15 @@ export function AffiliatePostbacks() {
           </div>
           <Button onClick={() => setIsCreateModalOpen(true)} data-testid="button-create-profile">
             <Plus className="h-4 w-4 mr-2" />
-            Создать профиль
+            {t('postbacks.createProfile', 'Создать профиль')}
           </Button>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="profiles">Профили</TabsTrigger>
-          <TabsTrigger value="logs">Логи доставок</TabsTrigger>
+          <TabsTrigger value="profiles">{t('postbacks.profiles', 'Профили')}</TabsTrigger>
+          <TabsTrigger value="logs">{t('postbacks.deliveryLogs', 'Логи доставок')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profiles" className="space-y-4">
@@ -719,7 +721,7 @@ export function AffiliatePostbacks() {
                       </div>
                       <div className="flex items-center space-x-2">
                         <Badge variant={profile.enabled ? "default" : "secondary"}>
-                          {profile.enabled ? 'Включен' : 'Отключен'}
+                          {profile.enabled ? t('common.active') : t('common.disabled')}
                         </Badge>
                       </div>
                     </div>
@@ -1028,9 +1030,9 @@ export function AffiliatePostbacks() {
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Создать постбек профиль</DialogTitle>
+            <DialogTitle>{t('postbacks.createProfileTitle', 'Создать постбек профиль')}</DialogTitle>
             <DialogDescription>
-              Настройте интеграцию с вашим трекером для автоматической отправки данных о конверсиях
+              {t('postbacks.createProfileDescription', 'Настройте интеграцию с вашим трекером для автоматической отправки данных о конверсиях')}
             </DialogDescription>
           </DialogHeader>
           <PostbackForm
@@ -1044,9 +1046,9 @@ export function AffiliatePostbacks() {
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Редактировать профиль</DialogTitle>
+            <DialogTitle>{t('postbacks.editProfileTitle', 'Редактировать профиль')}</DialogTitle>
             <DialogDescription>
-              Изменить настройки интеграции с трекером
+              {t('postbacks.editProfileDescription', 'Изменить настройки интеграции с трекером')}
             </DialogDescription>
           </DialogHeader>
           {selectedProfile && (
@@ -1068,15 +1070,15 @@ export function AffiliatePostbacks() {
       <Dialog open={isTestModalOpen} onOpenChange={setIsTestModalOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Тестирование постбека</DialogTitle>
+            <DialogTitle>{t('postbacks.testTitle', 'Тестирование постбека')}</DialogTitle>
             <DialogDescription>
-              Отправить тестовый постбек для проверки настроек
+              {t('postbacks.testDescription', 'Отправить тестовый постбек для проверки настроек')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Click ID</Label>
+                <Label>{t('postbacks.clickId', 'Click ID')}</Label>
                 <Input
                   value={testData.clickid}
                   onChange={(e) => setTestData({ ...testData, clickid: e.target.value })}
@@ -1085,7 +1087,7 @@ export function AffiliatePostbacks() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Тип события</Label>
+                <Label>{t('postbacks.eventType', 'Тип события')}</Label>
                 <Select value={testData.type} onValueChange={(value) => setTestData({ ...testData, type: value })}>
                   <SelectTrigger data-testid="select-test-type">
                     <SelectValue />
@@ -1098,7 +1100,7 @@ export function AffiliatePostbacks() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Сумма</Label>
+                <Label>{t('postbacks.amount', 'Сумма')}</Label>
                 <Input
                   value={testData.revenue}
                   onChange={(e) => setTestData({ ...testData, revenue: e.target.value })}
@@ -1107,7 +1109,7 @@ export function AffiliatePostbacks() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Валюта</Label>
+                <Label>{t('postbacks.currency', 'Валюта')}</Label>
                 <Input
                   value={testData.currency}
                   onChange={(e) => setTestData({ ...testData, currency: e.target.value })}
@@ -1118,7 +1120,7 @@ export function AffiliatePostbacks() {
             </div>
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setIsTestModalOpen(false)}>
-                Отмена
+                {t('common.cancel', 'Отмена')}
               </Button>
               <Button 
                 onClick={() => {
@@ -1136,7 +1138,7 @@ export function AffiliatePostbacks() {
                 ) : (
                   <Send className="h-4 w-4 mr-2" />
                 )}
-                Отправить тест
+                {t('postbacks.sendTest', 'Отправить тест')}
               </Button>
             </div>
           </div>

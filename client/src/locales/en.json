@@ -48,8 +48,11 @@
     "rejected": "Rejected",
     "settings": "Settings",
     "profile": "Profile",
-    "logout": "Logout",
-    "amount": "Amount"
+    "logout": "Logout", 
+    "amount": "Amount",
+    "disabled": "Disabled",
+    "pending": "Pending",
+    "cancel": "Cancel"
   },
   "theme": {
     "light": "Light",
@@ -246,6 +249,24 @@
     "conversions": "Conversions",
     "retryRequest": "Retry Request",
     "retry": "Retry"
+  },
+  "postbacks": {
+    "title": "Postbacks",
+    "subtitle": "Integration setup with external trackers",
+    "createProfile": "Create Profile",
+    "createProfileTitle": "Create Postback Profile",
+    "createProfileDescription": "Set up integration with your tracker for automatic conversion data delivery",
+    "editProfileTitle": "Edit Profile",
+    "editProfileDescription": "Modify tracker integration settings",
+    "testTitle": "Postback Testing",
+    "testDescription": "Send test postback to verify settings",
+    "profiles": "Profiles",
+    "deliveryLogs": "Delivery Logs",
+    "clickId": "Click ID",
+    "eventType": "Event Type",
+    "amount": "Amount",
+    "currency": "Currency",
+    "sendTest": "Send Test"
   },
   "auth": {
     "login": "Sign In",
