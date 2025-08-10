@@ -1,8 +1,8 @@
-import acme from 'acme-client';
+import * as acme from 'acme-client';
 import crypto from 'crypto';
 import { db } from '../db.js';
 import { customDomains } from '../../shared/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, and, lte } from 'drizzle-orm';
 
 export class LetsEncryptService {
   private static client: acme.Client | null = null;
@@ -29,7 +29,7 @@ export class LetsEncryptService {
       
       console.log('✅ Let\'s Encrypt ACME клиент инициализирован');
     } catch (error) {
-      console.error('❌ Ошибка инициализации Let\'s Encrypt:', error);
+      console.error('❌ Ошибка инициализации Let\'s Encrypt:', error instanceof Error ? error.message : String(error));
       throw error;
     }
   }
@@ -175,21 +175,22 @@ export class LetsEncryptService {
       };
 
     } catch (error) {
-      console.error(`❌ Ошибка выдачи SSL сертификата для ${domain}:`, error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`❌ Ошибка выдачи SSL сертификата для ${domain}:`, errorMessage);
       
       // Обновляем статус на ошибку
       await db
         .update(customDomains)
         .set({
           sslStatus: 'failed',
-          sslErrorMessage: error.message,
+          sslErrorMessage: errorMessage,
           updatedAt: new Date()
         })
         .where(eq(customDomains.id, domainId));
 
       return {
         success: false,
-        error: error.message
+        error: errorMessage
       };
     }
   }
@@ -254,7 +255,7 @@ export class LetsEncryptService {
           // Ждем между обновлениями чтобы не превысить rate limits
           await new Promise(resolve => setTimeout(resolve, 5000));
         } catch (error) {
-          console.error(`Ошибка обновления сертификата для ${domain.domain}:`, error);
+          console.error(`Ошибка обновления сертификата для ${domain.domain}:`, error instanceof Error ? error.message : String(error));
         }
       }
     } catch (error) {
