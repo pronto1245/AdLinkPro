@@ -128,7 +128,14 @@ export class CustomDomainService {
       if (isVerified) {
         try {
           console.log(`🔒 Инициируем выдачу SSL сертификата для ${domain.domain}`);
-          await this.requestSSLCertificate(domain.domain, domainId);
+          
+          // Выбираем между реальной и демо выдачей SSL
+          if (process.env.ENABLE_REAL_SSL === 'true') {
+            const { LetsEncryptService } = await import('./letsencrypt.js');
+            await LetsEncryptService.issueRealCertificate(domain.domain, domainId);
+          } else {
+            await this.requestSSLCertificate(domain.domain, domainId);
+          }
         } catch (sslError) {
           console.error(`SSL certificate request failed for ${domain.domain}:`, sslError);
           // Не делаем домен failed из-за SSL ошибки, только логируем
