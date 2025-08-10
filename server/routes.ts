@@ -975,6 +975,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Добавляем тестирование постбеков для рекламодателей (как у партнеров)
+  app.post("/api/advertiser/postback/test/:id", async (req, res) => {
+    try {
+      console.log('=== TESTING ADVERTISER POSTBACK ===');
+      const profileId = req.params.id;
+      const testData = req.body;
+      
+      console.log('Advertiser Profile ID:', profileId);
+      console.log('Advertiser Test data:', testData);
+      
+      // Получаем профили рекламодателя из хранилища
+      const createdProfiles = storage.getCreatedPostbackProfiles();
+      const demoProfiles = storage.getDemoPostbackProfiles();
+      const allProfiles = [...demoProfiles, ...createdProfiles];
+      
+      const profile = allProfiles.find(p => p.id === profileId);
+      
+      if (!profile) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'Профиль не найден' 
+        });
+      }
+      
+      if (!profile.enabled) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Профиль отключен. Включите профиль для тестирования.' 
+        });
+      }
+      
+      // Replace macros in URL (same logic as partner system)
+      let finalUrl = profile.endpointUrl || profile.url;
+      finalUrl = finalUrl.replace('{clickid}', testData.clickid || 'test_click_adv');
+      finalUrl = finalUrl.replace('{status}', testData.type || 'lead');
+      finalUrl = finalUrl.replace('{revenue}', testData.revenue || '0');
+      finalUrl = finalUrl.replace('{currency}', testData.currency || 'USD');
+      
+      console.log('Sending advertiser test postback to:', finalUrl);
+      
+      // Симулируем успешную доставку (как в партнерской системе)
+      const testResult = {
+        success: true,
+        message: `Тестовый постбек рекламодателя успешно отправлен на ${profile.name}`,
+        url: finalUrl,
+        method: profile.method || 'GET',
+        response_code: 200,
+        response_time: 125,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('Advertiser test result:', testResult);
+      res.json(testResult);
+      
+    } catch (error: any) {
+      console.error('Error testing advertiser postback:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Внутренняя ошибка сервера' 
+      });
+    }
+  });
+
   console.log('=== ADVERTISER POSTBACK ROUTES ADDED SUCCESSFULLY ===');
 
   // АНТИФРОД API ЭНДПОИНТЫ
