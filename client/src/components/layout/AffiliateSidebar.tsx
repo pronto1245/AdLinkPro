@@ -94,7 +94,12 @@ const sidebarItems = [
   }
 ];
 
-export default function AffiliateSidebar() {
+interface AffiliateSidebarProps {
+  isMobile?: boolean;
+  onClose?: () => void;
+}
+
+export default function AffiliateSidebar({ isMobile = false, onClose }: AffiliateSidebarProps) {
   const [location] = useLocation();
   const { collapsed, toggleCollapsed } = useSidebar();
 
@@ -102,7 +107,7 @@ export default function AffiliateSidebar() {
     <div 
       className={cn(
         "bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col transition-all duration-300 ease-in-out",
-        collapsed ? "w-16" : "w-64"
+        isMobile ? "w-64 shadow-lg" : (collapsed ? "w-16" : "w-64")
       )}
     >
       {/* Header */}
@@ -120,14 +125,16 @@ export default function AffiliateSidebar() {
             )}
           </div>
           <button
-            onClick={toggleCollapsed}
+            onClick={isMobile ? onClose : toggleCollapsed}
             className={cn(
               "p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
-              collapsed && "mx-auto"
+              collapsed && !isMobile && "mx-auto"
             )}
-            title={collapsed ? "Развернуть меню" : "Свернуть меню"}
+            title={isMobile ? "Закрыть меню" : (collapsed ? "Развернуть меню" : "Свернуть меню")}
           >
-            {collapsed ? (
+            {isMobile ? (
+              <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            ) : collapsed ? (
               <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             ) : (
               <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -148,19 +155,20 @@ export default function AffiliateSidebar() {
               <div
                 className={cn(
                   'flex items-center rounded-lg transition-colors group',
-                  collapsed ? 'px-3 py-3 justify-center' : 'px-3 py-2 space-x-3',
+                  (collapsed && !isMobile) ? 'px-3 py-3 justify-center' : 'px-3 py-2 space-x-3',
                   isActive
                     ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
                 )}
-                title={collapsed ? item.title : item.description}
+                title={(collapsed && !isMobile) ? item.title : item.description}
                 data-testid={`sidebar-link-${item.href.split('/').pop()}`}
+                onClick={() => isMobile && onClose?.()}
               >
                 <Icon className={cn(
                   'w-5 h-5 flex-shrink-0',
                   isActive ? 'text-green-600 dark:text-green-400' : ''
                 )} />
-                {!collapsed && (
+                {(!collapsed || isMobile) && (
                   <span className="font-medium truncate">{item.title}</span>
                 )}
               </div>

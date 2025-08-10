@@ -81,9 +81,9 @@ export function TopNavigation() {
           {/* Theme Toggle */}
           <ThemeToggle />
           
-          {/* Balance for partners */}
+          {/* Balance for partners - responsive design */}
           {user.role === 'affiliate' && (
-            <div className="flex items-center space-x-3">
+            <div className="hidden lg:flex items-center space-x-3">
               {/* Balance */}
               <div className="flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-700">
                 <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -99,6 +99,18 @@ export function TopNavigation() {
                   ${financeData ? financeData.pendingPayouts.toFixed(2) : '0.00'}
                 </span>
                 <span className="text-xs text-amber-600/80 dark:text-amber-400/80 font-medium">{i18n.language === 'ru' ? 'В ожидании' : 'Pending'}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Compact balance for mobile/tablet */}
+          {user.role === 'affiliate' && (
+            <div className="flex lg:hidden items-center space-x-2">
+              <div className="flex items-center space-x-1 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 px-2 py-1 rounded-lg border border-green-200 dark:border-green-700">
+                <DollarSign className="h-3 w-3 text-green-600 dark:text-green-400" />
+                <span className="font-bold text-sm text-green-700 dark:text-green-300">
+                  ${financeData ? financeData.balance.toFixed(0) : '0'}
+                </span>
               </div>
             </div>
           )}
