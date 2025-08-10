@@ -49,6 +49,8 @@ export default function PartnerNotifications() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+      // Также обновляем дашборд для синхронизации
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/dashboard'] });
     },
     onError: (error) => {
       toast({
@@ -66,6 +68,8 @@ export default function PartnerNotifications() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+      // Также обновляем дашборд для синхронизации  
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/dashboard'] });
       toast({
         title: "Успех",
         description: "Уведомление удалено",

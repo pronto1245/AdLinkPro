@@ -133,6 +133,12 @@ export default function PartnerDashboard() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  // Отдельный запрос для уведомлений, синхронизированный с основной страницей уведомлений
+  const { data: recentNotifications = [] } = useQuery({
+    queryKey: ['/api/notifications'],
+    staleTime: 30 * 1000, // 30 seconds
+  });
+
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
     queryClient.invalidateQueries({ queryKey: ['/api/partner/dashboard'] });
@@ -205,8 +211,8 @@ export default function PartnerDashboard() {
     );
   }
 
-  // Используем реальные данные с API
-  const { metrics, topOffers, notifications } = dashboardData || {
+  // Используем реальные данные с API  
+  const { metrics, topOffers } = dashboardData || {
     metrics: {
       totalClicks: 0,
       conversions: 0,
@@ -217,8 +223,7 @@ export default function PartnerDashboard() {
       activeOffers: 0,
       pendingRequests: 0
     },
-    topOffers: [],
-    notifications: []
+    topOffers: []
   };
 
   return (
@@ -340,21 +345,42 @@ export default function PartnerDashboard() {
         </CardContent>
       </Card>
 
-      {/* Notifications */}
+      {/* Recent Notifications */}
       <Card className="border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
-        <CardHeader>
-          <CardTitle className="text-orange-700 dark:text-orange-300">{t('notifications.title')}</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-orange-700 dark:text-orange-300">Последние уведомления</CardTitle>
+          {recentNotifications && recentNotifications.length > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/affiliate/notifications')}
+              className="text-orange-600 hover:text-orange-700 hover:bg-orange-100 dark:hover:bg-orange-950/20"
+              title="Посмотреть все уведомления"
+            >
+              Все уведомления
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {notifications && notifications.length > 0 ? (
-              notifications.map((notification: any) => (
+            {recentNotifications && recentNotifications.length > 0 ? (
+              // Показываем только последние 3 уведомления
+              recentNotifications.slice(0, 3).map((notification: any) => (
                 <div key={notification.id} className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                   <Target className="h-4 w-4 text-blue-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">{notification.title}</p>
-                    <p className="text-sm text-muted-foreground">{notification.message}</p>
-                    <Badge variant="secondary" className="mt-1">{notification.type}</Badge>
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{notification.title}</p>
+                        <p className="text-sm text-muted-foreground">{notification.message}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="secondary">{notification.type}</Badge>
+                          {!notification.is_read && (
+                            <Badge variant="destructive" className="text-xs px-1 py-0">новое</Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))
