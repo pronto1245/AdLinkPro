@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, LogOut, Mail, User, Globe } from 'lucide-react';
+import { Settings, LogOut, Mail, User, Globe, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,10 +13,22 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useQuery } from '@tanstack/react-query';
 
 export function PartnerTopNavigation() {
   const { user, logout } = useAuth();
   const { language, setLanguage } = useLanguage();
+
+  // Fetch balance for partners
+  const { data: financeData } = useQuery<{
+    balance: number;
+    pendingPayouts: number;
+    totalRevenue: number;
+  }>({
+    queryKey: ['/api/partner/finance/summary'],
+    enabled: !!user && user.role === 'affiliate',
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
 
   const handleLogout = () => {
     logout();
@@ -52,6 +64,17 @@ export function PartnerTopNavigation() {
 
         {/* Right side - Navigation items */}
         <div className="flex items-center space-x-3">
+          {/* Balance Display */}
+          {user.role === 'affiliate' && (
+            <div className="hidden md:flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-700">
+              <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <span className="font-bold text-lg text-green-700 dark:text-green-300">
+                ${financeData ? financeData.balance.toFixed(2) : '0.00'}
+              </span>
+              <span className="text-xs text-green-600/80 dark:text-green-400/80 font-medium">баланс</span>
+            </div>
+          )}
+
           {/* Language Toggle */}
           <Button
             variant="ghost"
