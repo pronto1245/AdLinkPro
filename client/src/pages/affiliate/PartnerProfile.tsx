@@ -1,59 +1,149 @@
-import { useState } from 'react';
-import { Save, User, Mail, Phone, MapPin, Calendar, Globe } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save, User, Mail, Phone, MapPin, Calendar, Globe, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 export default function PartnerProfile() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Загружаем полный профиль партнёра
+  const { data: profileData, isLoading: isProfileLoading, error } = useQuery({
+    queryKey: ['/api/partner/profile'],
+    enabled: !!user?.id,
+  });
 
   const [formData, setFormData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    company: user?.company || '',
-    country: user?.country || '',
-    timezone: user?.timezone || 'UTC',
-    currency: user?.currency || 'USD',
-    telegram: user?.telegram || '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    company: '',
+    country: '',
+    timezone: 'UTC',
+    currency: 'USD',
+    telegram: '',
     bio: '',
   });
+
+  // Обновляем форму при загрузке данных
+  useEffect(() => {
+    if (profileData) {
+      setFormData({
+        firstName: profileData.firstName || '',
+        lastName: profileData.lastName || '',
+        email: profileData.email || '',
+        phone: profileData.phone || '',
+        company: profileData.company || '',
+        country: profileData.country || '',
+        timezone: profileData.timezone || 'UTC',
+        currency: profileData.currency || 'USD',
+        telegram: profileData.telegram || '',
+        bio: profileData.bio || '',
+      });
+    }
+  }, [profileData]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = async () => {
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+  // Мутация для обновления профиля
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      return apiRequest('/api/partner/profile', 'PATCH', data);
+    },
+    onSuccess: (data) => {
       toast({
         title: "Профиль обновлён",
         description: "Ваши данные успешно сохранены.",
         variant: "default",
       });
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/profile'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    },
+    onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось сохранить изменения.",
+        title: "Ошибка сохранения",
+        description: error.message || "Не удалось сохранить изменения.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
+  });
+
+  const handleSave = () => {
+    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+      toast({
+        title: "Заполните обязательные поля",
+        description: "Имя и фамилия обязательны для заполнения.",
+        variant: "destructive",
+      });
+      return;
+    }
+    updateProfileMutation.mutate(formData);
   };
+
+  // Показываем скелетон при загрузке
+  if (isProfileLoading) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <Skeleton className="h-9 w-64 mb-2" />
+              <Skeleton className="h-4 w-96" />
+            </div>
+            <Skeleton className="h-10 w-24" />
+          </div>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-80" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {Array.from({ length: 4 }).map((_, j) => (
+                  <Skeleton key={j} className="h-10 w-full" />
+                ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Показываем ошибку если не удалось загрузить
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center space-y-4">
+              <RefreshCw className="h-12 w-12 text-red-500 mx-auto" />
+              <h3 className="text-lg font-semibold">Ошибка загрузки профиля</h3>
+              <p className="text-muted-foreground">Не удалось загрузить данные профиля</p>
+              <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/partner/profile'] })}>
+                Повторить
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -66,9 +156,13 @@ export default function PartnerProfile() {
               Управляйте своей личной информацией и настройками аккаунта
             </p>
           </div>
-          <Button onClick={handleSave} disabled={isLoading} data-testid="button-save-profile">
+          <Button 
+            onClick={handleSave} 
+            disabled={updateProfileMutation.isPending} 
+            data-testid="button-save-profile"
+          >
             <Save className="h-4 w-4 mr-2" />
-            {isLoading ? 'Сохранение...' : 'Сохранить'}
+            {updateProfileMutation.isPending ? 'Сохранение...' : 'Сохранить'}
           </Button>
         </div>
 
@@ -253,13 +347,19 @@ export default function PartnerProfile() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Дата регистрации</span>
                   <span className="text-sm text-muted-foreground">
-                    {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Неизвестно'}
+                    {profileData?.createdAt ? new Date(profileData.createdAt).toLocaleDateString('ru-RU') : 'Неизвестно'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Последний вход</span>
                   <span className="text-sm text-muted-foreground">
-                    {user?.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Неизвестно'}
+                    {profileData?.lastLoginAt ? new Date(profileData.lastLoginAt).toLocaleDateString('ru-RU') : 'Неизвестно'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Номер партнёра</span>
+                  <span className="text-sm font-mono text-blue-600 dark:text-blue-400">
+                    #{profileData?.partnerNumber || 'Не присвоен'}
                   </span>
                 </div>
               </div>

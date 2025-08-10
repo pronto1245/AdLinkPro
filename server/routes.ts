@@ -3381,6 +3381,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Partner Profile Management
+  app.get("/api/partner/profile", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      
+      // Get full user profile data
+      const user = await storage.getUser(authUser.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      console.log("Partner profile retrieved for user:", authUser.id);
+      
+      // Return full profile data without password
+      const { passwordHash, ...profileData } = user;
+      res.json(profileData);
+    } catch (error) {
+      console.error("Get partner profile error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/partner/profile", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const updateData = req.body;
+      
+      // Validate required fields
+      if (updateData.firstName && !updateData.firstName.trim()) {
+        return res.status(400).json({ error: "First name cannot be empty" });
+      }
+      if (updateData.lastName && !updateData.lastName.trim()) {
+        return res.status(400).json({ error: "Last name cannot be empty" });
+      }
+      
+      // Filter allowed fields for partner profile updates
+      const allowedFields = [
+        'firstName', 'lastName', 'phone', 'company', 
+        'country', 'timezone', 'currency', 'telegram'
+      ];
+      
+      const filteredData: any = {};
+      allowedFields.forEach(field => {
+        if (updateData[field] !== undefined) {
+          filteredData[field] = updateData[field];
+        }
+      });
+      
+      // Update user profile
+      const updatedUser = await storage.updateUser(authUser.id, filteredData);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      console.log("Partner profile updated successfully for user:", authUser.id, "fields:", Object.keys(filteredData));
+      
+      // Return updated profile without password
+      const { passwordHash, ...profileData } = updatedUser;
+      res.json(profileData);
+    } catch (error) {
+      console.error("Update partner profile error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Partner support ticket creation
   app.post("/api/partner/support/tickets", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
