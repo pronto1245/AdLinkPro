@@ -51,9 +51,10 @@
     "profile": "Profile", 
     "logout": "Logout",
     "amount": "Amount",
-    "disabled": "Disabled",
+    "disabled": "Disabled", 
     "pending": "Pending",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "active": "Active"
   },
   "theme": {
     "light": "Light",

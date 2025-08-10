@@ -721,7 +721,7 @@ export function AffiliatePostbacks() {
                       </div>
                       <div className="flex items-center space-x-2">
                         <Badge variant={profile.enabled ? "default" : "secondary"}>
-                          {profile.enabled ? t('common.active') : t('common.disabled')}
+                          {profile.enabled ? t('common.active', 'Включен') : t('common.disabled', 'Отключен')}
                         </Badge>
                       </div>
                     </div>

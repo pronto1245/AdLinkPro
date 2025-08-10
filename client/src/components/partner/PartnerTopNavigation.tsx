@@ -148,12 +148,12 @@ export function PartnerTopNavigation() {
               
               <DropdownMenuItem onClick={handleProfile} data-testid="menu-profile">
                 <User className="mr-2 h-4 w-4" />
-                <span>{t('common.profile')}</span>
+                <span>{t('common.profile', 'Профиль')}</span>
               </DropdownMenuItem>
 
               <DropdownMenuItem onClick={handleSettings} data-testid="menu-settings">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>{t('common.settings')}</span>
+                <span>{t('common.settings', 'Настройки')}</span>
               </DropdownMenuItem>
 
               <DropdownMenuSeparator />
@@ -164,7 +164,7 @@ export function PartnerTopNavigation() {
                 data-testid="menu-logout"
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>{t('common.logout')}</span>
+                <span>{t('common.logout', 'Выход')}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
