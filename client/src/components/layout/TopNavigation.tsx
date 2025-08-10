@@ -12,13 +12,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
+import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useQuery } from '@tanstack/react-query';
 
 export function TopNavigation() {
   const { user, logout } = useAuth();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
 
@@ -78,7 +78,7 @@ export function TopNavigation() {
               <span className="font-bold text-lg text-green-700 dark:text-green-300">
                 ${financeData ? financeData.balance.toFixed(2) : '0.00'}
               </span>
-              <span className="text-xs text-green-600/80 dark:text-green-400/80 font-medium">баланс</span>
+              <span className="text-xs text-green-600/80 dark:text-green-400/80 font-medium">{t('common.balance')}</span>
             </div>
           )}
           
