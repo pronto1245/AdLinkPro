@@ -10,6 +10,8 @@ Platform has been comprehensively tested across all major roles and functionalit
 - **Type Safety**: Updated CustomDomainManager component to handle all domain status types including 'error'
 - **UI Consistency**: Added proper fallback handling for undefined status configurations in domain management
 - **DNS Integration**: Implemented A record verification for root domains and resolved DNS propagation issues
+- **DNS Issue Identified**: Domain arbiconnect.store points to wrong IP (185.100.157.211) instead of correct Replit IP (34.117.33.233)
+- **User Instructions**: Created DNS fix guide with step-by-step instructions to update A record to correct IP address
 - **Tracking System**: Resolved TypeScript compilation errors in tracking routes and fixed method naming inconsistencies
 - **Database Methods**: Updated tracking.ts to use correct storage methods (createEvent, getTrackingClicks, getEvents)
 - **Routing Architecture**: Confirmed tracking system works correctly with proper click recording and redirect functionality
