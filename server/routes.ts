@@ -3395,11 +3395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { id: "2", name: "Crypto Trading", category: "Finance", clicks: 380, cr: 3.1, revenue: 720.30 },
           { id: "3", name: "Dating VIP", category: "Dating", clicks: 250, cr: 2.8, revenue: 340.80 }
         ],
-        notifications: [
-          { id: "1", type: "offer_approved", title: "Новый оффер одобрен", message: "Доступ к оффер 'Aviator Game' получен" },
-          { id: "2", type: "payment_processed", title: "Выплата обработана", message: "Выплата $450 отправлена на ваш счет" },
-          { id: "3", type: "offer_available", title: "Новый оффер", message: "Crypto Trading Pro теперь доступен" }
-        ]
+        notifications: await storage.getNotificationsByUserId(authUser.id)
       };
       
       res.json(dashboardData);
