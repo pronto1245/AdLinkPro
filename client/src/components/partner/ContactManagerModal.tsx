@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -101,6 +101,9 @@ export function ContactManagerModal({ isOpen, onClose }: ContactManagerModalProp
             <MessageCircle className="h-5 w-5 text-blue-500" />
             Связь с менеджером
           </DialogTitle>
+          <DialogDescription>
+            Создайте обращение к менеджеру. Мы ответим вам в течение указанного времени.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">

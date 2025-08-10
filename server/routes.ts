@@ -3396,17 +3396,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const ticketData = {
         id: randomUUID(),
         userId: authUser.id,
-        title: subject.trim(),
-        description: message.trim(),
+        subject: subject.trim(),
+        message: `${message.trim()}\n\n--- Детали обращения ---\nКатегория: ${category}\nПриоритет: ${urgency}\nСпособ связи: ${contactMethod}\nПартнер: ${authUser.partnerNumber || 'unknown'}`,
         status: 'open' as const,
         priority: urgency || 'medium',
-        category: category,
-        metadata: JSON.stringify({
-          contactMethod: contactMethod || 'email',
-          userType: 'affiliate',
-          partnerNumber: authUser.partnerNumber || 'unknown'
-        }),
-        ticketNumber,
         createdAt: new Date(),
         updatedAt: new Date()
       };
