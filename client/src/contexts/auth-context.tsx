@@ -106,6 +106,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken(data.token);
         localStorage.setItem('auth_token', data.token);
         console.log('✅ Token saved to localStorage successfully');
+        
+        // CRITICAL: Принудительно очищаем все кеши React Query после логина
+        if ((window as any).queryClient) {
+          console.log('🧹 Clearing React Query cache after login');
+          (window as any).queryClient.clear();
+        }
       } else {
         console.error('❌ Invalid token received from server:', data.token);
         throw new Error('Invalid token received from server');

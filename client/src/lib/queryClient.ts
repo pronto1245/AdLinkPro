@@ -132,6 +132,9 @@ export const queryClient = new QueryClient({
   },
 });
 
+// Делаем queryClient доступным глобально для очистки кеша после логина
+(window as any).queryClient = queryClient;
+
 // Предварительная загрузка критических данных
 export const prefetchCriticalData = async () => {
   await Promise.allSettled([
