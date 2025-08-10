@@ -67,6 +67,7 @@ function PostbackForm({
   onSubmit: (data: any) => void; 
   onCancel: () => void; 
 }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: postback?.name || '',
     endpoint_url: postback?.endpoint_url || '',
@@ -85,25 +86,25 @@ function PostbackForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <Tabs defaultValue="basic" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="basic">Основные</TabsTrigger>
-          <TabsTrigger value="settings">Настройки</TabsTrigger>
+          <TabsTrigger value="basic">{t('postbacks.basicTab', 'Основные')}</TabsTrigger>
+          <TabsTrigger value="settings">{t('postbacks.settingsTab', 'Настройки')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic" className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">Название</Label>
+              <Label htmlFor="name">{t('postbacks.name', 'Название')}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Keitaro Tracker"
+                placeholder={t('postbacks.placeholderName', 'Keitaro Tracker')}
                 required
                 data-testid="input-name"
               />
             </div>
             <div>
-              <Label htmlFor="priority">Приоритет</Label>
+              <Label htmlFor="priority">{t('postbacks.priority', 'Приоритет')}</Label>
               <Input
                 id="priority"
                 type="number"
@@ -117,13 +118,13 @@ function PostbackForm({
           </div>
 
           <div>
-            <Label htmlFor="endpoint_url">URL эндпоинта</Label>
+            <Label htmlFor="endpoint_url">{t('postbacks.endpointUrl', 'URL эндпоинта')}</Label>
             <Input
               id="endpoint_url"
               type="url"
               value={formData.endpoint_url}
               onChange={(e) => setFormData(prev => ({ ...prev, endpoint_url: e.target.value }))}
-              placeholder="https://your-tracker.com/postback"
+              placeholder={t('postbacks.placeholderEndpoint', 'https://your-tracker.com/postback')}
               required
               data-testid="input-endpoint-url"
             />
@@ -131,7 +132,7 @@ function PostbackForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="method">HTTP метод</Label>
+              <Label htmlFor="method">{t('postbacks.method', 'HTTP метод')}</Label>
               <Select 
                 value={formData.method} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, method: value as 'GET' | 'POST' }))}
@@ -146,7 +147,7 @@ function PostbackForm({
               </Select>
             </div>
             <div>
-              <Label htmlFor="tracker_type">Тип трекера</Label>
+              <Label htmlFor="tracker_type">{t('postbacks.trackerType', 'Тип трекера')}</Label>
               <Select 
                 value={formData.tracker_type} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, tracker_type: value }))}
@@ -155,7 +156,7 @@ function PostbackForm({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="custom">Пользовательский</SelectItem>
+                  <SelectItem value="custom">{t('postbacks.custom', 'Пользовательский')}</SelectItem>
                   <SelectItem value="keitaro">Keitaro</SelectItem>
                   <SelectItem value="binom">Binom</SelectItem>
                   <SelectItem value="voluum">Voluum</SelectItem>
@@ -171,15 +172,15 @@ function PostbackForm({
               onCheckedChange={(checked) => setFormData(prev => ({ ...prev, enabled: checked }))}
               data-testid="switch-enabled"
             />
-            <Label htmlFor="enabled">Включен</Label>
+            <Label htmlFor="enabled">{t('common.active', 'Включен')}</Label>
           </div>
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
           <div className="p-4 bg-gray-50 rounded-lg">
-            <h4 className="font-medium mb-2">Дополнительные настройки</h4>
+            <h4 className="font-medium mb-2">{t('postbacks.advancedSettings', 'Дополнительные настройки')}</h4>
             <p className="text-sm text-muted-foreground">
-              Расширенные параметры конфигурации будут добавлены в следующих версиях.
+              {t('postbacks.comingSoon', 'Расширенные параметры конфигурации будут добавлены в следующих версиях.')}
             </p>
           </div>
         </TabsContent>
@@ -187,10 +188,10 @@ function PostbackForm({
 
       <div className="flex justify-end space-x-2 pt-4 border-t">
         <Button type="button" variant="outline" onClick={onCancel} data-testid="button-cancel">
-          Отмена
+          {t('common.cancel', 'Отмена')}
         </Button>
         <Button type="submit" data-testid="button-submit">
-          {postback ? 'Обновить' : 'Создать'}
+          {postback ? t('common.update', 'Обновить') : t('common.create', 'Создать')}
         </Button>
       </div>
     </form>

@@ -311,7 +311,11 @@
     "refreshWarning": "IF BUTTONS ARE WHITE: Refresh page (Ctrl+F5) or clear cache!",
     "deliveryHistory": "History of postback delivery to trackers",
     "createError": "Creation Error",
-    "deleteError": "Deletion Error"
+    "deleteError": "Deletion Error",
+    "basicTab": "Basic",
+    "settingsTab": "Settings",
+    "advancedSettings": "Advanced Settings",
+    "comingSoon": "Advanced configuration parameters will be added in future versions."
   },
   "auth": {
     "login": "Sign In",
@@ -354,6 +358,7 @@
     "help": "Help"
   },
   "common": {
+    "update": "Update",
     "error": "Error",
     "loading": "Loading...",
     "save": "Save",
