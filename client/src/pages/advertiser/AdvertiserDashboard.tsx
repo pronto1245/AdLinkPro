@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Activity, 
   Target, 
@@ -23,28 +26,124 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tool
 
 interface DashboardMetrics {
   totalClicks: number;
+  uniqueVisitors: number;
   totalConversions: number;
   totalRevenue: number;
-  avgCR: number;
-  epc: number;
-  activeOffers: number;
-  partnersCount: number;
-  fraudActivity: number;
+  topCountry: string;
+  topDevice: string;
+  avgCR?: number;
+  epc?: number;
+  activeOffers?: number;
+  partnersCount?: number;
 }
 
-interface ChartData {
-  traffic: Array<{ date: string; clicks: number; uniqueClicks: number }>;
-  conversions: Array<{ date: string; leads: number; registrations: number; deposits: number }>;
+interface LiveStatistics {
+  date: string;
+  clicks: number;
+  uniqueClicks: number;
+  conversions: number;
+  revenue: number;
+  leads?: number;
+  registrations?: number;
+  deposits?: number;
 }
 
 export function AdvertiserDashboard() {
-  const { data: metrics, isLoading: metricsLoading } = useQuery<{ metrics: DashboardMetrics }>({
-    queryKey: ['/api/advertiser/dashboard'],
+  const { toast } = useToast();
+  const [dateRange, setDateRange] = useState<{from?: Date; to?: Date}>({
+    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+    to: new Date()
+  });
+  const [filters, setFilters] = useState({
+    country: 'all',
+    device: 'all',
+    offerId: 'all'
   });
 
-  const { data: chartData, isLoading: chartLoading } = useQuery<ChartData>({
-    queryKey: ['/api/advertiser/charts'],
+  const { data: metrics, isLoading: metricsLoading } = useQuery<DashboardMetrics>({
+    queryKey: ['/api/advertiser/dashboard-metrics'],
   });
+
+  const { data: liveStats, isLoading: chartLoading } = useQuery<LiveStatistics[]>({
+    queryKey: ['/api/advertiser/live-statistics', dateRange, filters],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (dateRange.from) params.append('dateFrom', dateRange.from.toISOString());
+      if (dateRange.to) params.append('dateTo', dateRange.to.toISOString());
+      if (filters.country !== 'all') params.append('country', filters.country);
+      if (filters.device !== 'all') params.append('device', filters.device);
+      if (filters.offerId !== 'all') params.append('offerId', filters.offerId);
+      
+      return fetch(`/api/advertiser/live-statistics?${params}`).then(res => res.json());
+    },
+  });
+
+  // Обработчики кнопок
+  const handleFiltersClick = () => {
+    // Открываем модальное окно с фильтрами (пока просто показываем фильтры)
+    toast({
+      title: "Фильтры",
+      description: "Фильтры уже доступны в боковой панели",
+    });
+  };
+
+  const handleExportClick = () => {
+    if (!liveStats || liveStats.length === 0) {
+      toast({
+        title: "Нет данных",
+        description: "Нет данных для экспорта",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Подготавливаем данные для экспорта
+    const csvContent = [
+      ['Дата', 'Клики', 'Уники', 'Конверсии', 'Доход', 'CR%', 'EPC'],
+      ...liveStats.map(stat => [
+        stat.date,
+        stat.clicks,
+        stat.uniqueClicks || stat.clicks,
+        stat.conversions,
+        stat.revenue.toFixed(2),
+        stat.clicks > 0 ? ((stat.conversions / stat.clicks) * 100).toFixed(2) : '0',
+        stat.clicks > 0 ? (stat.revenue / stat.clicks).toFixed(2) : '0'
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    // Создаем и скачиваем файл
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `dashboard-data-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    toast({
+      title: "Экспорт завершен",
+      description: "Данные успешно экспортированы в CSV файл",
+    });
+  };
+
+  // Вычисляем метрики из живых данных
+  const calculatedMetrics = React.useMemo(() => {
+    if (!liveStats || liveStats.length === 0) return null;
+    
+    const totalClicks = liveStats.reduce((sum, stat) => sum + stat.clicks, 0);
+    const totalConversions = liveStats.reduce((sum, stat) => sum + stat.conversions, 0);
+    const totalRevenue = liveStats.reduce((sum, stat) => sum + stat.revenue, 0);
+    const avgCR = totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0;
+    const epc = totalClicks > 0 ? totalRevenue / totalClicks : 0;
+    
+    return {
+      totalClicks,
+      totalConversions,
+      totalRevenue,
+      avgCR,
+      epc,
+      activeOffers: 5, // Заглушка
+      partnersCount: 12 // Заглушка
+    };
+  }, [liveStats]);
 
   const topOffers = [
     { id: 1, name: 'Casino Royal', cr: 15.2, status: 'active', revenue: 12500 },
@@ -66,7 +165,7 @@ export function AdvertiserDashboard() {
     );
   }
 
-  const overview = metrics?.metrics;
+  const overview = metrics || calculatedMetrics;
 
   return (
     <div className="space-y-6 p-6">
@@ -78,7 +177,7 @@ export function AdvertiserDashboard() {
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" data-testid="button-filter">
+          <Button variant="outline" size="sm" data-testid="button-filter" onClick={handleFiltersClick}>
             <Filter className="h-4 w-4 mr-2" />
             Фильтры
           </Button>
@@ -86,12 +185,99 @@ export function AdvertiserDashboard() {
             <Calendar className="h-4 w-4 mr-2" />
             Период
           </Button>
-          <Button variant="outline" size="sm" data-testid="button-export">
+          <Button variant="outline" size="sm" data-testid="button-export" onClick={handleExportClick}>
             <Download className="h-4 w-4 mr-2" />
             Экспорт
           </Button>
         </div>
       </div>
+
+      {/* Filters Section */}
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
+        <CardHeader>
+          <CardTitle className="text-lg">Фильтры и период</CardTitle>
+          <CardDescription>Настройте отображаемые данные</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Страна</label>
+              <Select value={filters.country} onValueChange={(value) => setFilters({...filters, country: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите страну" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все страны</SelectItem>
+                  <SelectItem value="US">США</SelectItem>
+                  <SelectItem value="CA">Канада</SelectItem>
+                  <SelectItem value="GB">Великобритания</SelectItem>
+                  <SelectItem value="DE">Германия</SelectItem>
+                  <SelectItem value="FR">Франция</SelectItem>
+                  <SelectItem value="RU">Россия</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Устройство</label>
+              <Select value={filters.device} onValueChange={(value) => setFilters({...filters, device: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите устройство" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все устройства</SelectItem>
+                  <SelectItem value="mobile">Мобильные</SelectItem>
+                  <SelectItem value="desktop">Десктоп</SelectItem>
+                  <SelectItem value="tablet">Планшеты</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Оффер</label>
+              <Select value={filters.offerId} onValueChange={(value) => setFilters({...filters, offerId: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите оффер" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все офферы</SelectItem>
+                  <SelectItem value="offer_1">Casino Royal</SelectItem>
+                  <SelectItem value="offer_2">Betting Pro</SelectItem>
+                  <SelectItem value="offer_3">Sports King</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Период</label>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setDateRange({
+                    from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                    to: new Date()
+                  })}
+                  className={dateRange.from && (Date.now() - dateRange.from.getTime()) <= 7 * 24 * 60 * 60 * 1000 ? 'bg-blue-100' : ''}
+                >
+                  7д
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setDateRange({
+                    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+                    to: new Date()
+                  })}
+                  className={dateRange.from && (Date.now() - dateRange.from.getTime()) <= 30 * 24 * 60 * 60 * 1000 && (Date.now() - dateRange.from.getTime()) > 7 * 24 * 60 * 60 * 1000 ? 'bg-blue-100' : ''}
+                >
+                  30д
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Main Statistics - 2 Rows x 3 Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -238,7 +424,7 @@ export function AdvertiserDashboard() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={chartData?.traffic || []}>
+              <LineChart data={liveStats || []}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
@@ -258,14 +444,14 @@ export function AdvertiserDashboard() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={chartData?.conversions || []}>
+              <AreaChart data={liveStats || []}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
                 <Area type="monotone" dataKey="leads" stackId="1" stroke="#3b82f6" fill="#3b82f6" name="Лиды" />
                 <Area type="monotone" dataKey="registrations" stackId="1" stroke="#10b981" fill="#10b981" name="Регистрации" />
-                <Area type="monotone" dataKey="deposits" stackId="1" stroke="#f59e0b" fill="#f59e0b" name="Депозиты" />
+                <Area type="monotone" dataKey="conversions" stackId="1" stroke="#f59e0b" fill="#f59e0b" name="Конверсии" />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
