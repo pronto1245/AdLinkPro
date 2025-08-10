@@ -23,6 +23,7 @@ import {
   AlertTriangle,
   RefreshCw,
   CheckCircle,
+  Bell,
 } from "lucide-react";
 
 interface MetricCardProps {
@@ -358,28 +359,11 @@ export default function PartnerDashboard() {
                 </div>
               ))
             ) : (
-              <>
-                <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                  <Target className="h-4 w-4 text-blue-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">{t('dashboard.welcome')}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('dashboard.welcomeMessage')}
-                    </p>
-                    <Badge variant="secondary" className="mt-1">{t('dashboard.system')}</Badge>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                  <TrendingUp className="h-4 w-4 text-green-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">Аккаунт активен</p>
-                    <p className="text-sm text-muted-foreground">
-                      Ваш партнёрский аккаунт готов к работе
-                    </p>
-                    <Badge variant="secondary" className="mt-1">Статус</Badge>
-                  </div>
-                </div>
-              </>
+              <div className="text-center py-8">
+                <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Уведомлений нет</h3>
+                <p className="text-gray-600 dark:text-gray-400">Здесь будут отображаться важные уведомления о ваших запросах</p>
+              </div>
             )}
           </div>
         </CardContent>
