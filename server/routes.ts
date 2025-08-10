@@ -3408,18 +3408,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const authUser = getAuthenticatedUser(req);
       const updateData = req.body;
       
-      // Allow empty values but not whitespace-only
-      if (updateData.firstName !== undefined && updateData.firstName !== '' && !updateData.firstName.trim()) {
-        return res.status(400).json({ error: "First name cannot be empty" });
+      // Allow empty values, only block whitespace-only non-empty strings
+      if (updateData.firstName && updateData.firstName.trim().length === 0) {
+        return res.status(400).json({ error: "First name cannot be whitespace only" });
       }
-      if (updateData.lastName !== undefined && updateData.lastName !== '' && !updateData.lastName.trim()) {
-        return res.status(400).json({ error: "Last name cannot be empty" });
+      if (updateData.lastName && updateData.lastName.trim().length === 0) {
+        return res.status(400).json({ error: "Last name cannot be whitespace only" });
       }
       
       // Validate Telegram if provided
       if (updateData.telegram !== undefined) {
-        if (updateData.telegram && updateData.telegram.trim()) {
-          const telegramValue = updateData.telegram.trim().replace(/^@/, '');
+        const trimmed = updateData.telegram.trim();
+        if (trimmed) {
+          // Remove @ prefix and validate
+          const telegramValue = trimmed.replace(/^@+/, '');
           const telegramRegex = /^[a-zA-Z0-9_]{3,32}$/;
           if (!telegramRegex.test(telegramValue)) {
             return res.status(400).json({ 
