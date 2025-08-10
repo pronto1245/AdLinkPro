@@ -54,7 +54,10 @@
     "disabled": "Disabled", 
     "pending": "Pending",
     "cancel": "Cancel",
-    "active": "Active"
+    "active": "Active",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete"
   },
   "theme": {
     "light": "Light",
@@ -290,8 +293,18 @@
     "attempt": "Attempt",
     "responseTime": "Response Time",
     "success": "Success",
-    "error": "Error",
-    "noLogsYet": "No delivery logs yet"
+    "error": "Error", 
+    "noLogsYet": "No delivery logs yet",
+    "quickSetup": "Quick setup with template",
+    "templateHelp": "Select a template to automatically fill settings for popular trackers",
+    "endpointSettings": "Endpoint Settings",
+    "testProfile": "Test Profile",
+    "testSuccess": "Test Success",
+    "testFailed": "Test Failed",
+    "testError": "Test Error",
+    "postbackSent": "Postback Sent",
+    "deleteProfile": "Delete Profile",
+    "editProfile": "Edit Profile"
   },
   "auth": {
     "login": "Sign In",

@@ -409,8 +409,8 @@ export function AffiliatePostbacks() {
     },
     onSuccess: (data) => {
       toast({ 
-        title: data.success ? 'Тест успешен' : 'Тест неудачен', 
-        description: data.message || 'Постбек отправлен'
+        title: data.success ? t('postbacks.testSuccess', 'Тест успешен') : t('postbacks.testFailed', 'Тест неудачен'), 
+        description: data.message || t('postbacks.postbackSent', 'Постбек отправлен')
       });
       setIsTestModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['/api/postback/logs'] });
@@ -418,7 +418,7 @@ export function AffiliatePostbacks() {
     onError: (error) => {
       console.error('Test mutation error:', error);
       toast({ 
-        title: 'Ошибка тестирования', 
+        title: t('postbacks.testError', 'Ошибка тестирования'), 
         description: error.message,
         variant: 'destructive'
       });
@@ -432,7 +432,7 @@ export function AffiliatePostbacks() {
       ...defaultProfile,
       ...template,
       name: template.name,
-      scopeType: 'global'
+      scope_type: 'global'
     });
   };
 
@@ -445,7 +445,7 @@ export function AffiliatePostbacks() {
         <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
           <h3 className="font-medium flex items-center gap-2">
             <Zap className="h-4 w-4 text-blue-500" />
-            Быстрая настройка по шаблону
+            {t('postbacks.quickSetup', 'Быстрая настройка по шаблону')}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             {Object.entries(trackerTemplates).map(([key, template]) => (
@@ -458,7 +458,7 @@ export function AffiliatePostbacks() {
                   const templateData = {
                     ...defaultProfile,
                     ...template,
-                    scopeType: 'global' as const
+                    scope_type: 'global' as const
                   };
                   setLocalFormData(templateData);
                 }}
@@ -477,7 +477,7 @@ export function AffiliatePostbacks() {
             ))}
           </div>
           <p className="text-sm text-muted-foreground">
-            Выберите шаблон для автоматического заполнения настроек популярных трекеров
+            {t('postbacks.templateHelp', 'Выберите шаблон для автоматического заполнения настроек популярных трекеров')}
           </p>
         </div>
 
@@ -495,7 +495,7 @@ export function AffiliatePostbacks() {
           
           <div className="space-y-2">
             <Label>{t('postbacks.trackerType', 'Тип трекера')}</Label>
-            <Select value={localFormData.trackerType} onValueChange={(value) => setLocalFormData({ ...localFormData, trackerType: value as 'keitaro' | 'custom' })}>
+            <Select value={localFormData.tracker_type} onValueChange={(value) => setLocalFormData({ ...localFormData, tracker_type: value as 'keitaro' | 'custom' })}>
               <SelectTrigger data-testid="select-tracker-type">
                 <SelectValue />
               </SelectTrigger>
@@ -508,7 +508,7 @@ export function AffiliatePostbacks() {
 
           <div className="space-y-2">
             <Label>{t('postbacks.scope', 'Область применения')}</Label>
-            <Select value={localFormData.scopeType} onValueChange={(value) => setLocalFormData({ ...localFormData, scopeType: value as any })}>
+            <Select value={localFormData.scope_type} onValueChange={(value) => setLocalFormData({ ...localFormData, scope_type: value as any })}>
               <SelectTrigger data-testid="select-scope-type">
                 <SelectValue />
               </SelectTrigger>
@@ -532,14 +532,14 @@ export function AffiliatePostbacks() {
 
         {/* Endpoint Settings */}
         <div className="space-y-4">
-          <h3 className="font-medium">Настройки эндпоинта</h3>
+          <h3 className="font-medium">{t('postbacks.endpointSettings', 'Настройки эндпоинта')}</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2 space-y-2">
               <Label>{t('postbacks.endpointUrl', 'URL эндпоинта')}</Label>
               <Input
-                value={localFormData.endpointUrl || ''}
-                onChange={(e) => setLocalFormData({ ...localFormData, endpointUrl: e.target.value })}
+                value={localFormData.endpoint_url || ''}
+                onChange={(e) => setLocalFormData({ ...localFormData, endpoint_url: e.target.value })}
                 placeholder={t('postbacks.placeholderEndpoint', 'https://mytracker.com/postback')}
                 data-testid="input-endpoint-url"
               />
@@ -570,14 +570,14 @@ export function AffiliatePostbacks() {
         <div className="space-y-4">
           <h3 className="font-medium">{t('postbacks.statusMapping', 'Маппинг статусов')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(localFormData.statusMap || {}).map(([key, value]) => (
+            {Object.entries(localFormData.status_map || {}).map(([key, value]) => (
               <div key={key} className="space-y-2">
                 <Label>{key}</Label>
                 <Input
                   value={value}
                   onChange={(e) => setLocalFormData({
                     ...localFormData,
-                    statusMap: { ...localFormData.statusMap, [key]: e.target.value }
+                    status_map: { ...localFormData.status_map, [key]: e.target.value }
                   })}
                   data-testid={`input-status-${key}`}
                 />
@@ -590,11 +590,11 @@ export function AffiliatePostbacks() {
         <div className="space-y-4">
           <h3 className="font-medium">{t('postbacks.paramsTemplate', 'Шаблон параметров')}</h3>
           <Textarea
-            value={JSON.stringify(localFormData.paramsTemplate || {}, null, 2)}
+            value={JSON.stringify(localFormData.params_template || {}, null, 2)}
             onChange={(e) => {
               try {
                 const parsed = JSON.parse(e.target.value);
-                setLocalFormData({ ...localFormData, paramsTemplate: parsed });
+                setLocalFormData({ ...localFormData, params_template: parsed });
               } catch (error) {
                 // Invalid JSON, don't update
               }
@@ -615,7 +615,7 @@ export function AffiliatePostbacks() {
             }}
             data-testid="button-cancel"
           >
-            Отмена
+{t('common.cancel', 'Отмена')}
           </Button>
           <Button
             onClick={() => {
@@ -630,10 +630,10 @@ export function AffiliatePostbacks() {
               console.log('Sanitized form data:', sanitizedData);
               onSave(sanitizedData);
             }}
-            disabled={!localFormData.name || !localFormData.endpointUrl}
+            disabled={!localFormData.name || !localFormData.endpoint_url}
             data-testid="button-save"
           >
-            Сохранить
+{t('common.save', 'Сохранить')}
           </Button>
         </div>
       </div>
@@ -666,7 +666,7 @@ export function AffiliatePostbacks() {
             className="bg-red-600 hover:bg-red-700 text-white"
             data-testid="button-test-create"
           >
-            🧪 ТЕСТ СОЗДАНИЯ
+🧪 {t('postbacks.testProfile', 'ТЕСТ СОЗДАНИЯ')}
           </Button>
           <div className="ml-4 p-3 bg-red-100 border-2 border-red-400 rounded text-sm font-bold">
             ⚠️ ЕСЛИ КНОПКИ БЕЛЫЕ: Обновите страницу (Ctrl+F5) или очистите кеш!
@@ -907,7 +907,7 @@ export function AffiliatePostbacks() {
                           title="Удалить этот профиль"
                         >
                           <Trash2 size={20} />
-                          УДАЛИТЬ
+{t('common.delete', 'УДАЛИТЬ')}
                         </button>
                       </div>
                     </div>
@@ -926,7 +926,7 @@ export function AffiliatePostbacks() {
                     }}
                     className="bg-red-600 hover:bg-red-700 text-white"
                   >
-                    ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА
+{t('common.refresh', 'ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА')}
                   </Button>
                 </div>
               )}
