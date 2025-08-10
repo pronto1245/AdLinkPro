@@ -13,8 +13,7 @@ import {
   ChevronRight,
   User,
   Cog,
-  Send,
-  Palette
+  Send
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -53,11 +52,6 @@ const getBaseSidebarItems = (t: any): Omit<SidebarItem, 'badge'>[] => [
     title: t('navigation.accessRequests'),
     href: "/affiliate/access-requests",
     icon: Send,
-  },
-  {
-    title: t('navigation.creatives'),
-    href: "/affiliate/creatives",
-    icon: Palette,
   },
   {
     title: t('navigation.team'),
