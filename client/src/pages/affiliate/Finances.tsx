@@ -37,6 +37,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import {
   Wallet,
   CreditCard,
@@ -59,6 +60,7 @@ export default function Finances() {
   const [withdrawalMethod, setWithdrawalMethod] = useState('');
   const [withdrawalDetails, setWithdrawalDetails] = useState('');
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   // Реальные данные финансов
@@ -78,8 +80,8 @@ export default function Finances() {
     },
     onSuccess: () => {
       toast({
-        title: "Запрос отправлен",
-        description: "Заявка на вывод средств создана и будет обработана в течение 24 часов.",
+        title: t('finances.messages.withdrawalRequested'),
+        description: t('finances.messages.withdrawalRequestedDesc'),
         variant: "default"
       });
       setWithdrawalOpen(false);
@@ -91,8 +93,8 @@ export default function Finances() {
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось создать заявку на вывод средств",
+        title: t('common.error'),
+        description: t('finances.messages.withdrawalError'),
         variant: "destructive"
       });
     }

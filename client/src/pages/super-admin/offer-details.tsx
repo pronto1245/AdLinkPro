@@ -3,7 +3,7 @@ import { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import OptimizedAnalyticsTable from '../../components/performance/OptimizedAnalyticsTable';
 import { useLanguage } from '../../contexts/language-context';
-import { getMultilingualText } from '../../lib/i18n';
+import { useTranslation } from 'react-i18next';
 import Sidebar from '../../components/layout/sidebar';
 import { useSidebar } from '../../contexts/sidebar-context';
 import Header from '../../components/layout/header';

@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "./contexts/auth-context";
-import { LanguageProvider } from "./contexts/language-context";
+
 import { SidebarProvider } from "./contexts/sidebar-context";
 import { ThemeProvider } from "./contexts/theme-context";
 import { NotificationProvider } from "@/components/NotificationToast";
@@ -81,6 +81,7 @@ import PostbackProfiles from '@/pages/advertiser/PostbackProfiles';
 import AffiliatePostbacks from '@/pages/affiliate/Postbacks';
 import PostbacksNew from '@/pages/affiliate/PostbacksNew';
 import { EventTesting } from '@/pages/EventTesting';
+import '@/lib/i18n'; // Initialize i18next
 
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
@@ -570,7 +571,6 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider>
-          <LanguageProvider>
             <AuthProvider>
               <NotificationProvider>
                 <PushNotificationProvider>
@@ -582,7 +582,6 @@ function App() {
                 </PushNotificationProvider>
               </NotificationProvider>
             </AuthProvider>
-          </LanguageProvider>
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>

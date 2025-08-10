@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/contexts/language-context';
-import { getMultilingualText } from '@/lib/i18n';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import Sidebar from '@/components/layout/sidebar';
 import { useSidebar } from '@/contexts/sidebar-context';
