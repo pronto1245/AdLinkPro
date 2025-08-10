@@ -68,10 +68,10 @@
     "conversions": "Конверсии",
     "theme": "Тема",
     "refresh": "Обновить",
-    "login": "Вход",
+    "login": "Вход", 
     "username": "Имя пользователя",
     "email": "Email",
-    "password": "Пароль", 
+    "password": "Пароль",
     "sign_in": "Войти",
     "theme": "Тема"
   },
@@ -227,7 +227,7 @@
   },
   "navigation": {
     "dashboard": "Дашборд",
-    "offers": "Офферы",
+    "offers": "Офферы", 
     "statistics": "Статистика",
     "finances": "Финансы",
     "team": "Команда",
@@ -241,6 +241,27 @@
     "accessRequests": "Запросы доступа",
     "partner": "Партнёр",
     "logout": "Выход"
+  },
+  "statistics": {
+    "totalClicks": "Всего кликов",
+    "totalConversions": "Всего конверсий",
+    "conversionRate": "Коэффициент конверсии",
+    "averageRevenue": "Средний доход",
+    "clicksToday": "Клики сегодня",
+    "conversionsToday": "Конверсии сегодня",
+    "revenueToday": "Доход сегодня",
+    "topOffers": "Топ офферы",
+    "topPartners": "Топ партнёры",
+    "recentActivity": "Последняя активность",
+    "performanceChart": "График производительности",
+    "last7Days": "Последние 7 дней",
+    "last30Days": "Последние 30 дней",
+    "thisMonth": "Этот месяц",
+    "lastMonth": "Прошлый месяц",
+    "columns": {
+      "clicks": "Клики",
+      "conversions": "Конверсии"
+    }
   },
   "dashboard": {
     "title": "Дашборд",
