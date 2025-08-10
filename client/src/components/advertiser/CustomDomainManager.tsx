@@ -433,7 +433,7 @@ export function CustomDomainManager() {
                                   <Label className="text-sm font-semibold">Тип записи</Label>
                                   <div className="flex items-center gap-2 mt-1">
                                     <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">
-                                      {domain.dnsInstructions?.type || (domain.type === 'cname' ? 'CNAME' : 'A')}
+                                      {domain.type === 'cname' ? 'CNAME' : domain.type === 'a_record' ? 'TXT' : 'TXT'}
                                     </code>
                                   </div>
                                 </div>
@@ -441,12 +441,23 @@ export function CustomDomainManager() {
                                   <Label className="text-sm font-semibold">Имя/Host</Label>
                                   <div className="flex items-center gap-2 mt-1">
                                     <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm break-all">
-                                      {domain.dnsInstructions?.host || (domain.type === 'cname' ? domain.domain.split('.')[0] : '@')}
+                                      {domain.type === 'cname' 
+                                        ? domain.domain.split('.')[0] 
+                                        : domain.domain.includes('.') 
+                                          ? domain.domain 
+                                          : '@'
+                                      }
                                     </code>
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      onClick={() => handleCopyToClipboard(domain.dnsInstructions?.host || (domain.type === 'cname' ? domain.domain.split('.')[0] : '@'))}
+                                      onClick={() => handleCopyToClipboard(
+                                        domain.type === 'cname' 
+                                          ? domain.domain.split('.')[0] 
+                                          : domain.domain.includes('.') 
+                                            ? domain.domain 
+                                            : '@'
+                                      )}
                                       title="Скопировать хост"
                                     >
                                       <Copy className="h-3 w-3" />
@@ -457,12 +468,19 @@ export function CustomDomainManager() {
                                   <Label className="text-sm font-semibold">Значение</Label>
                                   <div className="flex items-center gap-2 mt-1">
                                     <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm break-all">
-                                      {domain.dnsInstructions?.value || domain.verificationValue}
+                                      {domain.type === 'cname' 
+                                        ? (domain.targetValue || 'affiliate-tracker.replit.app')
+                                        : domain.verificationValue
+                                      }
                                     </code>
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      onClick={() => handleCopyToClipboard(domain.dnsInstructions?.value || domain.verificationValue)}
+                                      onClick={() => handleCopyToClipboard(
+                                        domain.type === 'cname' 
+                                          ? (domain.targetValue || 'affiliate-tracker.replit.app')
+                                          : domain.verificationValue
+                                      )}
                                       title="Скопировать значение"
                                     >
                                       <Copy className="h-3 w-3" />
@@ -477,7 +495,7 @@ export function CustomDomainManager() {
                                   <AlertDescription>
                                     {domain.type === 'cname' 
                                       ? `Добавьте CNAME запись в DNS настройках вашего домена. Это позволит использовать ваш собственный домен для трекинговых ссылок с белым лейблом.`
-                                      : `Добавьте A запись в DNS настройках вашего домена. После добавления записи нажмите "Проверить домен".`
+                                      : `Добавьте TXT запись в DNS настройках вашего домена для верификации. После добавления записи нажмите "Проверить домен".`
                                     }
                                   </AlertDescription>
                                 </Alert>
@@ -500,11 +518,19 @@ export function CustomDomainManager() {
                                   <ol className="list-decimal list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400">
                                     <li>Войдите в панель управления DNS вашего провайдера домена (GoDaddy, Namecheap, Cloudflare и т.д.)</li>
                                     <li>Найдите раздел "DNS Records", "DNS управление" или "Zone File"</li>
-                                    <li>Добавьте новую {domain.dnsInstructions?.type || domain.type.toUpperCase()} запись:</li>
+                                    <li>Добавьте новую {domain.type === 'cname' ? 'CNAME' : 'TXT'} запись:</li>
                                     <li className="ml-4">
-                                      • Тип: <strong>{domain.dnsInstructions?.type || domain.type.toUpperCase()}</strong><br/>
-                                      • Имя/Host: <strong>{domain.dnsInstructions?.host || (domain.type === 'cname' ? domain.domain.split('.')[0] : '@')}</strong><br/>
-                                      • Значение: <strong>{domain.dnsInstructions?.value || domain.verificationValue}</strong>
+                                      • Тип: <strong>{domain.type === 'cname' ? 'CNAME' : 'TXT'}</strong><br/>
+                                      • Имя/Host: <strong>{domain.type === 'cname' 
+                                        ? domain.domain.split('.')[0] 
+                                        : domain.domain.includes('.') 
+                                          ? domain.domain 
+                                          : '@'
+                                      }</strong><br/>
+                                      • Значение: <strong>{domain.type === 'cname' 
+                                        ? (domain.targetValue || 'affiliate-tracker.replit.app')
+                                        : domain.verificationValue
+                                      }</strong>
                                     </li>
                                     <li>Сохраните изменения (распространение DNS может занять 5-30 минут)</li>
                                     <li>Вернитесь сюда и нажмите "Проверить домен" для верификации</li>
@@ -514,8 +540,18 @@ export function CustomDomainManager() {
                                 {domain.type === 'cname' && (
                                   <div className="p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
                                     <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                                      <strong>Важно:</strong> CNAME запись должна указывать на track.partner-system.com, 
-                                      а имя записи должно точно совпадать с вашим доменом {domain.domain}
+                                      <strong>Важно:</strong> CNAME запись должна указывать на {domain.targetValue || 'affiliate-tracker.replit.app'}, 
+                                      а имя записи должно быть {domain.domain.split('.')[0]} (первая часть вашего домена)
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                {domain.type === 'a_record' && (
+                                  <div className="p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
+                                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                                      <strong>Важно для корневого домена:</strong> Добавьте TXT запись для верификации. 
+                                      Имя записи должно быть точно {domain.domain} (или @ для корневого домена), 
+                                      значение: {domain.verificationValue}
                                     </p>
                                   </div>
                                 )}
