@@ -1969,7 +1969,7 @@ export const customDomains = pgTable("custom_domains", {
   type: domainTypeEnum("type").notNull(),
   status: domainStatusEnum("status").notNull().default('pending'),
   verificationValue: varchar("verification_value", { length: 255 }).notNull(),
-  targetValue: varchar("target_value", { length: 255 }).notNull(),
+  targetValue: varchar("target_value", { length: 255 }),
   errorMessage: text("error_message"),
   lastChecked: timestamp("last_checked"),
   nextCheck: timestamp("next_check"),
