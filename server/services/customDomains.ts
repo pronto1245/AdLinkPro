@@ -55,7 +55,7 @@ export class CustomDomainService {
   // Верифицируем домен через DNS
   static async verifyDomain(domainId: string): Promise<{
     success: boolean;
-    status: 'verified' | 'failed';
+    status: 'verified' | 'error';
     error?: string;
   }> {
     const [domain] = await db
@@ -72,7 +72,7 @@ export class CustomDomainService {
       await db
         .update(customDomains)
         .set({ 
-          status: 'verifying',
+          status: 'pending',
           lastChecked: new Date(),
           errorMessage: null 
         })
@@ -84,35 +84,38 @@ export class CustomDomainService {
       if (domain.type === 'cname') {
         // Проверяем CNAME запись
         try {
-          const records = await resolveCname(domain.verificationRecord);
+          const records = await resolveCname(domain.domain);
           isVerified = records.some(record => 
             record.includes('platform.com') || record.includes(domain.verificationValue)
           );
           if (!isVerified) {
-            errorMessage = `CNAME record not found or incorrect. Expected: ${domain.verificationRecord} -> platform-verify.com`;
+            errorMessage = `CNAME record not found or incorrect. Expected: ${domain.domain} -> platform-verify.com`;
           }
-        } catch (error) {
+        } catch (error: any) {
           errorMessage = `Failed to resolve CNAME: ${error.message}`;
         }
       } else {
         // Проверяем TXT запись для A record
         try {
-          const records = await resolveTxt(domain.verificationRecord);
-          isVerified = records.some(record => 
-            Array.isArray(record) 
-              ? record.join('').includes(domain.verificationValue)
-              : record.includes(domain.verificationValue)
-          );
+          const records = await resolveTxt(domain.domain);
+          isVerified = records.some((record: any) => {
+            if (Array.isArray(record)) {
+              return record.join('').includes(domain.verificationValue);
+            } else if (typeof record === 'string') {
+              return record.includes(domain.verificationValue);
+            }
+            return false;
+          });
           if (!isVerified) {
-            errorMessage = `TXT record not found. Add: ${domain.verificationRecord} TXT ${domain.verificationValue}`;
+            errorMessage = `TXT record not found. Add: ${domain.domain} TXT ${domain.verificationValue}`;
           }
-        } catch (error) {
+        } catch (error: any) {
           errorMessage = `Failed to resolve TXT: ${error.message}`;
         }
       }
 
       // Обновляем статус домена
-      const newStatus: 'verified' | 'failed' = isVerified ? 'verified' : 'failed';
+      const newStatus: 'verified' | 'error' = isVerified ? 'verified' : 'error';
       
       await db
         .update(customDomains)
@@ -154,16 +157,16 @@ export class CustomDomainService {
       await db
         .update(customDomains)
         .set({ 
-          status: 'failed',
+          status: 'error',
           lastChecked: new Date(),
-          errorMessage: `Verification failed: ${error.message}`
+          errorMessage: `Verification failed: ${(error as Error).message}`
         })
         .where(eq(customDomains.id, domainId));
 
       return {
         success: false,
-        status: 'failed',
-        error: error.message
+        status: 'error',
+        error: (error as Error).message
       };
     }
   }
@@ -195,7 +198,7 @@ export class CustomDomainService {
         .update(customDomains)
         .set({
           sslStatus: 'failed',
-          sslErrorMessage: error.message,
+          sslErrorMessage: (error as Error).message,
           updatedAt: new Date()
         })
         .where(eq(customDomains.id, domainId));
@@ -287,7 +290,7 @@ MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC${Date.now().toString().slice
     } catch (error) {
       return {
         success: false,
-        message: `Ошибка выдачи SSL: ${error.message}`
+        message: `Ошибка выдачи SSL: ${(error as Error).message}`
       };
     }
   }
@@ -373,7 +376,7 @@ MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC${Date.now().toString().slice
         };
 
         const req = https.request(options, (res) => {
-          const cert = res.connection.getPeerCertificate();
+          const cert = (res.connection as any).getPeerCertificate();
           if (cert && cert.valid_to) {
             resolve({
               hasSSL: true,
@@ -406,16 +409,16 @@ MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC${Date.now().toString().slice
     if (domain.type === 'cname') {
       return {
         type: 'CNAME',
-        record: domain.verificationRecord,
+        record: domain.domain,
         value: 'platform-verify.com',
-        instructions: `Добавьте CNAME запись в DNS настройках вашего домена:\n\nИмя: ${domain.verificationRecord}\nЗначение: platform-verify.com\n\nПосле добавления записи нажмите "Проверить домен".`
+        instructions: `Добавьте CNAME запись в DNS настройках вашего домена:\n\nИмя: ${domain.domain}\nЗначение: platform-verify.com\n\nПосле добавления записи нажмите "Проверить домен".`
       };
     } else {
       return {
         type: 'TXT',
-        record: domain.verificationRecord,
+        record: domain.domain,
         value: domain.verificationValue,
-        instructions: `Добавьте TXT запись в DNS настройках вашего домена:\n\nИмя: ${domain.verificationRecord}\nЗначение: ${domain.verificationValue}\n\nПосле добавления записи нажмите "Проверить домен".`
+        instructions: `Добавьте TXT запись в DNS настройках вашего домена:\n\nИмя: ${domain.domain}\nЗначение: ${domain.verificationValue}\n\nПосле добавления записи нажмите "Проверить домен".`
       };
     }
   }
