@@ -116,7 +116,7 @@ export default function Statistics() {
         console.log('Error response:', errorData);
         
         if (response.status === 401 || response.status === 403) {
-          // Ошибка авторизации - перенаправляем на логин
+          // Auth error - redirect to login
           console.log('Auth error, redirecting to login');
           localStorage.removeItem('token');
           window.location.href = '/login';
@@ -267,7 +267,7 @@ export default function Statistics() {
   const PaginationControls = () => (
     <div className="flex items-center justify-between mt-4">
       <div className="text-sm text-muted-foreground">
-        Показано {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalItems)} из {totalItems} записей
+        {t('statistics.pagination.showing')} {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalItems)} {t('statistics.pagination.of')} {totalItems} {t('statistics.pagination.records')}
       </div>
       
       <div className="flex items-center gap-2">
@@ -278,7 +278,7 @@ export default function Statistics() {
           disabled={currentPage === 1}
         >
           <ChevronLeft className="h-4 w-4" />
-          Назад
+          {t('statistics.pagination.previous')}
         </Button>
         
         <div className="flex items-center gap-1">
@@ -301,7 +301,7 @@ export default function Statistics() {
           onClick={handleNextPage}
           disabled={currentPage === totalPages}
         >
-          Вперед
+          {t('statistics.pagination.next')}
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
@@ -331,8 +331,8 @@ export default function Statistics() {
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-6">
             <div className="text-center">
-              <h3 className="text-lg font-semibold text-red-800 mb-2">Ошибка загрузки данных</h3>
-              <p className="text-red-600">Не удалось загрузить статистику партнера</p>
+              <h3 className="text-lg font-semibold text-red-800 mb-2">{t('statistics.messages.loadingError')}</h3>
+              <p className="text-red-600">{t('statistics.messages.loadingErrorDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -396,10 +396,10 @@ export default function Statistics() {
                 onValueChange={(value) => setFilters(prev => ({ ...prev, offerId: value }))}
               >
                 <SelectTrigger data-testid="select-offer">
-                  <SelectValue placeholder="Все офферы" />
+                  <SelectValue placeholder={t('statistics.allOffers')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Все офферы</SelectItem>
+                  <SelectItem value="all">{t('statistics.allOffers')}</SelectItem>
                   {offers?.map((offer: any) => (
                     <SelectItem key={offer.id} value={offer.id}>
                       {offer.name}
@@ -409,29 +409,29 @@ export default function Statistics() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">География</label>
+              <label className="text-sm font-medium mb-2 block">{t('statistics.geo')}</label>
               <Select
                 value={filters.geo}
                 onValueChange={(value) => setFilters(prev => ({ ...prev, geo: value }))}
               >
                 <SelectTrigger data-testid="select-geo">
-                  <SelectValue placeholder="Все страны" />
+                  <SelectValue placeholder={t('statistics.allCountries')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Все страны</SelectItem>
-                  <SelectItem value="IN">Индия</SelectItem>
-                  <SelectItem value="US">США</SelectItem>
-                  <SelectItem value="DE">Германия</SelectItem>
-                  <SelectItem value="UK">Великобритания</SelectItem>
+                  <SelectItem value="all">{t('statistics.allCountries')}</SelectItem>
+                  <SelectItem value="IN">{t('statistics.countries.IN')}</SelectItem>
+                  <SelectItem value="US">{t('statistics.countries.US')}</SelectItem>
+                  <SelectItem value="DE">{t('statistics.countries.DE')}</SelectItem>
+                  <SelectItem value="UK">{t('statistics.countries.UK')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-end gap-2">
               <Button onClick={applyFilters} className="flex-1">
-                Применить
+                {t('statistics.applyFilters')}
               </Button>
               <Button variant="outline" onClick={resetFilters}>
-                Сброс
+                {t('statistics.resetFilters')}
               </Button>
             </div>
           </div>
@@ -442,7 +442,7 @@ export default function Statistics() {
       <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Всего кликов</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('statistics.columns.clicks')}</CardTitle>
             <MousePointer className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -452,7 +452,7 @@ export default function Statistics() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Конверсии</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('statistics.columns.conversions')}</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -462,7 +462,7 @@ export default function Statistics() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Доход</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('statistics.columns.revenue')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -474,7 +474,7 @@ export default function Statistics() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">CR</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('statistics.columns.cr')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -486,7 +486,7 @@ export default function Statistics() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">EPC</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('statistics.columns.epc')}</CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -531,7 +531,7 @@ export default function Statistics() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                Общая статистика кликов
+{t('statistics.tabs.overview')} - {t('statistics.columns.clicks')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -612,17 +612,17 @@ export default function Statistics() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe className="h-5 w-5 text-green-600" />
-                Статистика по географии
+{t('statistics.tabs.geography')} - {t('statistics.columns.clicks')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Страна</TableHead>
-                    <TableHead>Клики</TableHead>
-                    <TableHead>Конверсии</TableHead>
-                    <TableHead>Доход</TableHead>
+                    <TableHead>{t('statistics.columns.country')}</TableHead>
+                    <TableHead>{t('statistics.columns.clicks')}</TableHead>
+                    <TableHead>{t('statistics.columns.conversions')}</TableHead>
+                    <TableHead>{t('statistics.columns.revenue')}</TableHead>
                     <TableHead>CR</TableHead>
                     <TableHead>EPC</TableHead>
                   </TableRow>
@@ -658,17 +658,17 @@ export default function Statistics() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Monitor className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                Статистика по устройствам
+{t('statistics.tabs.devices')} - {t('statistics.columns.clicks')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Устройство</TableHead>
-                    <TableHead>Клики</TableHead>
-                    <TableHead>Конверсии</TableHead>
-                    <TableHead>Доход</TableHead>
+                    <TableHead>{t('statistics.columns.device')}</TableHead>
+                    <TableHead>{t('statistics.columns.clicks')}</TableHead>
+                    <TableHead>{t('statistics.columns.conversions')}</TableHead>
+                    <TableHead>{t('statistics.columns.revenue')}</TableHead>
                     <TableHead>CR</TableHead>
                     <TableHead>EPC</TableHead>
                   </TableRow>
@@ -709,17 +709,17 @@ export default function Statistics() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Search className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                Статистика по источникам
+{t('statistics.tabs.sources')} - {t('statistics.columns.clicks')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Источник</TableHead>
-                    <TableHead>Клики</TableHead>
-                    <TableHead>Конверсии</TableHead>
-                    <TableHead>Доход</TableHead>
+                    <TableHead>{t('statistics.columns.source')}</TableHead>
+                    <TableHead>{t('statistics.columns.clicks')}</TableHead>
+                    <TableHead>{t('statistics.columns.conversions')}</TableHead>
+                    <TableHead>{t('statistics.columns.revenue')}</TableHead>
                     <TableHead>CR</TableHead>
                     <TableHead>EPC</TableHead>
                   </TableRow>
@@ -755,17 +755,17 @@ export default function Statistics() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                Анализ SubID параметров
+{t('statistics.subid.title')}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Детальный анализ всех Sub1-Sub16 параметров с сохранением исходных данных
+{t('statistics.subid.description')}
               </p>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ClickID</TableHead>
+                    <TableHead>{t('statistics.columns.clickId')}</TableHead>
                     <TableHead>Sub1</TableHead>
                     <TableHead>Sub2</TableHead>
                     <TableHead>Sub3</TableHead>
@@ -793,10 +793,10 @@ export default function Statistics() {
                             setSelectedRowId(item.clickId);
                             setShowSubParams(true);
                           }}
-                          title="Посмотреть все Sub1-Sub16"
+                          title={t('statistics.actions.viewAllSub')}
                         >
                           <Eye className="h-3 w-3 mr-1" />
-                          Все
+{t('statistics.actions.viewAllSub')}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -813,24 +813,24 @@ export default function Statistics() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Eye className="h-5 w-5 text-indigo-600" />
-                Детальная статистика
+{t('statistics.subid.detailsTitle')}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Показано {((pagination.currentPage - 1) * pagination.itemsPerPage) + 1}-{Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} из {pagination.totalItems} записей
+                {t('statistics.pagination.showing')} {((pagination.currentPage - 1) * pagination.itemsPerPage) + 1}-{Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} {t('statistics.pagination.of')} {pagination.totalItems} {t('statistics.pagination.records')}
               </p>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Время</TableHead>
-                    <TableHead>Оффер</TableHead>
-                    <TableHead>ClickID</TableHead>
-                    <TableHead>IP</TableHead>
-                    <TableHead>Гео</TableHead>
-                    <TableHead>Устройство</TableHead>
-                    <TableHead>Статус</TableHead>
-                    <TableHead>Доход</TableHead>
+                    <TableHead>{t('statistics.columns.date')}</TableHead>
+                    <TableHead>{t('statistics.columns.offer')}</TableHead>
+                    <TableHead>{t('statistics.columns.clickId')}</TableHead>
+                    <TableHead>{t('statistics.columns.ip')}</TableHead>
+                    <TableHead>{t('statistics.columns.country')}</TableHead>
+                    <TableHead>{t('statistics.columns.device')}</TableHead>
+                    <TableHead>{t('statistics.columns.status')}</TableHead>
+                    <TableHead>{t('statistics.columns.revenue')}</TableHead>
                     <TableHead>SubID</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -871,7 +871,7 @@ export default function Statistics() {
                             setSelectedRowId(item.clickId);
                             setShowSubParams(true);
                           }}
-                          title="Просмотр всех SubID"
+                          title={t('statistics.actions.viewAllSub')}
                         >
                           <Eye className="h-3 w-3" />
                         </Button>
@@ -891,9 +891,9 @@ export default function Statistics() {
       <Dialog open={showSubParams} onOpenChange={setShowSubParams}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>SubID Параметры для {selectedRowId}</DialogTitle>
+            <DialogTitle>{t('statistics.subid.parametersFor')} {selectedRowId}</DialogTitle>
             <DialogDescription>
-              Полный список всех Sub1-Sub16 параметров с точным сохранением данных
+              {t('statistics.subid.fullList')}
             </DialogDescription>
           </DialogHeader>
           {selectedRowId && (
@@ -915,7 +915,7 @@ export default function Statistics() {
                           variant="ghost"
                           size="sm"
                           onClick={() => copyToClipboard(subValue, `Sub${i + 1}`)}
-                          title={`Копировать Sub${i + 1}`}
+                          title={t('statistics.actions.copyClickId')}
                         >
                           <Copy className="h-3 w-3" />
                         </Button>

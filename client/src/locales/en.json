@@ -246,6 +246,32 @@
       "copied": "Copied",
       "copiedDesc": "{{type}} copied to clipboard",
       "copyError": "Failed to copy to clipboard"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of",
+      "records": "records",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "geography": "Geography",
+    "countries": {
+      "IN": "India",
+      "US": "United States",
+      "DE": "Germany",
+      "UK": "United Kingdom"
+    },
+    "devices": {
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "tablet": "Tablet"
+    },
+    "subid": {
+      "title": "SubID Analysis",
+      "description": "Detailed analysis of all Sub1-Sub16 parameters with data preservation",
+      "detailsTitle": "Detailed Statistics",
+      "parametersFor": "SubID Parameters for",
+      "fullList": "Complete list of all Sub1-Sub16 parameters with exact data preservation"
     }
   }
 }
