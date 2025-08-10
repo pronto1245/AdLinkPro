@@ -14,6 +14,7 @@ import {
   User,
   Cog
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -30,44 +31,44 @@ interface SidebarItem {
   badgeVariant?: "default" | "secondary" | "destructive" | "outline";
 }
 
-const baseSidebarItems: Omit<SidebarItem, 'badge'>[] = [
+const getBaseSidebarItems = (t: any): Omit<SidebarItem, 'badge'>[] => [
   {
-    title: "Дашборд",
+    title: t('navigation.dashboard'),
     href: "/affiliate",
     icon: Home,
   },
   {
-    title: "Статистика",
+    title: t('navigation.statistics'),
     href: "/affiliate/statistics",
     icon: BarChart3,
   },
   {
-    title: "Офферы",
+    title: t('navigation.offers'),
     href: "/affiliate/offers",
     icon: Target,
   },
   {
-    title: "Команда",
+    title: t('navigation.team'),
     href: "/affiliate/team",
     icon: Users,
   },
   {
-    title: "Финансы",
+    title: t('navigation.finances'),
     href: "/affiliate/finances",
     icon: DollarSign,
   },
   {
-    title: "Постбеки",
+    title: t('navigation.postbacks'),
     href: "/affiliate/postbacks",
     icon: Settings,
   },
   {
-    title: "Профиль",
+    title: t('navigation.profile'),
     href: "/affiliate/profile",
     icon: User,
   },
   {
-    title: "Настройки",
+    title: t('navigation.settings'),
     href: "/affiliate/settings",
     icon: Cog,
   },
@@ -78,6 +79,7 @@ interface PartnerSidebarProps {
 }
 
 export function PartnerSidebar({ className }: PartnerSidebarProps) {
+  const { t } = useTranslation();
   const [location] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const { user, logout } = useAuth();
@@ -95,8 +97,9 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
   });
 
   // Create sidebar items with real data
+  const baseSidebarItems = getBaseSidebarItems(t);
   const sidebarItems: SidebarItem[] = baseSidebarItems.map(item => {
-    if (item.title === "Офферы") {
+    if (item.href === "/affiliate/offers") {
       return {
         ...item,
         badge: offers.length > 0 ? offers.length : undefined,

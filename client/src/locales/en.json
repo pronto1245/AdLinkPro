@@ -153,5 +153,99 @@
   "language": {
     "russian": "Русский",
     "english": "English"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "statistics": "Statistics",
+    "offers": "Offers",
+    "team": "Team",
+    "finances": "Finances",
+    "postbacks": "Postbacks",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "common": {
+    "error": "Error",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "copy": "Copy",
+    "back": "Back",
+    "next": "Next",
+    "search": "Search",
+    "filter": "Filter",
+    "actions": "Actions",
+    "status": "Status",
+    "date": "Date",
+    "name": "Name",
+    "description": "Description"
+  },
+  "statistics": {
+    "title": "Partner Statistics",
+    "subtitle": "Detailed analytics of clicks and conversions with real data",
+    "filters": "Filters",
+    "dateFrom": "Date from",
+    "dateTo": "Date to",
+    "offer": "Offer",
+    "geo": "Geo",
+    "device": "Device",
+    "allOffers": "All offers",
+    "allCountries": "All countries",
+    "allDevices": "All devices",
+    "desktop": "Desktop",
+    "mobile": "Mobile",
+    "tablet": "Tablet",
+    "applyFilters": "Apply filters",
+    "resetFilters": "Reset",
+    "export": "Export",
+    "tabs": {
+      "overview": "Overview",
+      "geography": "Geography",
+      "devices": "Devices",
+      "sources": "Sources",
+      "subid": "SubID",
+      "details": "Details"
+    },
+    "columns": {
+      "date": "Date/Time",
+      "offer": "Offer",
+      "country": "Country",
+      "clickId": "ClickID",
+      "status": "Status",
+      "revenue": "Revenue",
+      "actions": "Actions",
+      "clicks": "Clicks",
+      "conversions": "Conversions",
+      "cr": "CR",
+      "epc": "EPC",
+      "device": "Device",
+      "source": "Source",
+      "ip": "IP",
+      "sub1": "Sub1",
+      "sub2": "Sub2",
+      "sub3": "Sub3",
+      "sub4": "Sub4",
+      "sub5": "Sub5"
+    },
+    "status": {
+      "click": "Click",
+      "conversion": "Conversion"
+    },
+    "actions": {
+      "copyClickId": "Copy ClickID",
+      "viewSubId": "View SubID parameters",
+      "viewAllSub": "View all Sub1-Sub16"
+    },
+    "messages": {
+      "loadingError": "Loading error",
+      "loadingErrorDesc": "Failed to load partner statistics",
+      "copied": "Copied",
+      "copiedDesc": "{{type}} copied to clipboard",
+      "copyError": "Failed to copy to clipboard"
+    }
   }
 }

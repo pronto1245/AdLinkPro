@@ -153,5 +153,99 @@
   "language": {
     "russian": "Русский",
     "english": "English"
+  },
+  "navigation": {
+    "dashboard": "Дашборд",
+    "statistics": "Статистика",
+    "offers": "Офферы",
+    "team": "Команда",
+    "finances": "Финансы",
+    "postbacks": "Постбеки",
+    "profile": "Профиль",
+    "settings": "Настройки",
+    "logout": "Выход"
+  },
+  "common": {
+    "error": "Ошибка",
+    "loading": "Загрузка...",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "view": "Просмотр",
+    "copy": "Копировать",
+    "back": "Назад",
+    "next": "Далее",
+    "search": "Поиск",
+    "filter": "Фильтр",
+    "actions": "Действия",
+    "status": "Статус",
+    "date": "Дата",
+    "name": "Название",
+    "description": "Описание"
+  },
+  "statistics": {
+    "title": "Статистика партнёра",
+    "subtitle": "Детальная аналитика по кликам и конверсиям с реальными данными",
+    "filters": "Фильтры",
+    "dateFrom": "Дата от",
+    "dateTo": "Дата до", 
+    "offer": "Оффер",
+    "geo": "Гео",
+    "device": "Устройство",
+    "allOffers": "Все офферы",
+    "allCountries": "Все страны",
+    "allDevices": "Все устройства",
+    "desktop": "Десктоп",
+    "mobile": "Мобильное",
+    "tablet": "Планшет",
+    "applyFilters": "Применить фильтры",
+    "resetFilters": "Сбросить",
+    "export": "Экспорт",
+    "tabs": {
+      "overview": "Обзор",
+      "geography": "География", 
+      "devices": "Устройства",
+      "sources": "Источники",
+      "subid": "SubID",
+      "details": "Детали"
+    },
+    "columns": {
+      "date": "Дата/Время",
+      "offer": "Оффер",
+      "country": "Страна",
+      "clickId": "ClickID",
+      "status": "Статус",
+      "revenue": "Доход",
+      "actions": "Действия",
+      "clicks": "Клики",
+      "conversions": "Конверсии",
+      "cr": "CR",
+      "epc": "EPC",
+      "device": "Устройство",
+      "source": "Источник",
+      "ip": "IP",
+      "sub1": "Sub1",
+      "sub2": "Sub2",
+      "sub3": "Sub3",
+      "sub4": "Sub4", 
+      "sub5": "Sub5"
+    },
+    "status": {
+      "click": "Клик",
+      "conversion": "Конверсия"
+    },
+    "actions": {
+      "copyClickId": "Копировать ClickID",
+      "viewSubId": "Просмотр SubID параметров",
+      "viewAllSub": "Посмотреть все Sub1-Sub16"
+    },
+    "messages": {
+      "loadingError": "Ошибка загрузки данных",
+      "loadingErrorDesc": "Не удалось загрузить статистику партнера",
+      "copied": "Скопировано",
+      "copiedDesc": "{{type}} скопирован в буфер обмена",
+      "copyError": "Ошибка копирования"
+    }
   }
 }

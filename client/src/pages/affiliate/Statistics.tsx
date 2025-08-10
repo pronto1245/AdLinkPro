@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   Card,
   CardContent,
@@ -62,6 +63,7 @@ import { formatCurrency, formatCR } from "@/utils/formatting";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Statistics() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   
   const [activeTab, setActiveTab] = useState('overview');
@@ -177,14 +179,14 @@ export default function Statistics() {
     try {
       await navigator.clipboard.writeText(text);
       toast({
-        title: "Скопировано!",
-        description: `${label} скопировано в буфер обмена`,
+        title: t('statistics.messages.copied'),
+        description: t('statistics.messages.copiedDesc', { type: label }),
         duration: 2000
       });
     } catch (error) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось скопировать в буфер обмена",
+        title: t('common.error'),
+        description: t('statistics.messages.copyError'),
         variant: "destructive",
         duration: 2000
       });
@@ -345,16 +347,16 @@ export default function Statistics() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
             <BarChart3 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            Статистика Партнера
+            {t('statistics.title')}
           </h1>
           <p className="text-muted-foreground">
-            Детальная аналитика по кликам и конверсиям с реальными данными
+            {t('statistics.subtitle')}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => window.print()}>
             <Download className="h-4 w-4 mr-2" />
-            Экспорт
+            {t('statistics.export')}
           </Button>
         </div>
       </div>
@@ -364,13 +366,13 @@ export default function Statistics() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-4 w-4" />
-            Фильтры
+            {t('statistics.filters')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-6">
             <div>
-              <label className="text-sm font-medium mb-2 block">Дата от</label>
+              <label className="text-sm font-medium mb-2 block">{t('statistics.dateFrom')}</label>
               <Input
                 type="date"
                 value={filters.dateFrom}
@@ -379,7 +381,7 @@ export default function Statistics() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Дата до</label>
+              <label className="text-sm font-medium mb-2 block">{t('statistics.dateTo')}</label>
               <Input
                 type="date"
                 value={filters.dateTo}
@@ -388,7 +390,7 @@ export default function Statistics() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Оффер</label>
+              <label className="text-sm font-medium mb-2 block">{t('statistics.offer')}</label>
               <Select
                 value={filters.offerId}
                 onValueChange={(value) => setFilters(prev => ({ ...prev, offerId: value }))}
@@ -500,19 +502,19 @@ export default function Statistics() {
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            Обзор
+{t('statistics.tabs.overview')}
           </TabsTrigger>
           <TabsTrigger value="geography" className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-green-600" />
-            География
+{t('statistics.tabs.geography')}
           </TabsTrigger>
           <TabsTrigger value="devices" className="flex items-center gap-2">
             <Monitor className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            Устройства
+{t('statistics.tabs.devices')}
           </TabsTrigger>
           <TabsTrigger value="sources" className="flex items-center gap-2">
             <Search className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-            Источники
+{t('statistics.tabs.sources')}
           </TabsTrigger>
           <TabsTrigger value="subid" className="flex items-center gap-2">
             <Target className="h-4 w-4 text-teal-600 dark:text-teal-400" />
@@ -520,7 +522,7 @@ export default function Statistics() {
           </TabsTrigger>
           <TabsTrigger value="details" className="flex items-center gap-2">
             <Eye className="h-4 w-4 text-indigo-600" />
-            Детали
+{t('statistics.tabs.details')}
           </TabsTrigger>
         </TabsList>
 
@@ -536,13 +538,13 @@ export default function Statistics() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Дата/Время</TableHead>
-                    <TableHead>Оффер</TableHead>
-                    <TableHead>Гео</TableHead>
-                    <TableHead>ClickID</TableHead>
-                    <TableHead>Статус</TableHead>
-                    <TableHead>Доход</TableHead>
-                    <TableHead>Действия</TableHead>
+                    <TableHead>{t('statistics.columns.date')}</TableHead>
+                    <TableHead>{t('statistics.columns.offer')}</TableHead>
+                    <TableHead>{t('statistics.columns.country')}</TableHead>
+                    <TableHead>{t('statistics.columns.clickId')}</TableHead>
+                    <TableHead>{t('statistics.columns.status')}</TableHead>
+                    <TableHead>{t('statistics.columns.revenue')}</TableHead>
+                    <TableHead>{t('statistics.columns.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -565,7 +567,7 @@ export default function Statistics() {
                             variant="ghost"
                             size="sm"
                             onClick={() => copyToClipboard(item.clickId, 'ClickID')}
-                            title="Копировать ClickID"
+                            title={t('statistics.actions.copyClickId')}
                           >
                             <Copy className="h-3 w-3" />
                           </Button>
@@ -576,7 +578,7 @@ export default function Statistics() {
                           variant={item.status === 'conversion' ? 'default' : 'secondary'}
                           className={item.status === 'conversion' ? 'bg-green-100 text-green-800' : ''}
                         >
-                          {item.status === 'conversion' ? 'Конверсия' : 'Клик'}
+                          {item.status === 'conversion' ? t('statistics.status.conversion') : t('statistics.status.click')}
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium text-purple-600 dark:text-purple-400">
@@ -590,7 +592,7 @@ export default function Statistics() {
                             setSelectedRowId(item.clickId);
                             setShowSubParams(true);
                           }}
-                          title="Просмотр SubID параметров"
+                          title={t('statistics.actions.viewSubId')}
                         >
                           <Eye className="h-3 w-3 mr-1" />
                           SubID
@@ -855,7 +857,7 @@ export default function Statistics() {
                           variant={item.status === 'conversion' ? 'default' : 'secondary'}
                           className={item.status === 'conversion' ? 'bg-green-100 text-green-800' : ''}
                         >
-                          {item.status === 'conversion' ? 'Конверсия' : 'Клик'}
+                          {item.status === 'conversion' ? t('statistics.status.conversion') : t('statistics.status.click')}
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium text-purple-600 dark:text-purple-400">
