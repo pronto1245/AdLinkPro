@@ -214,10 +214,10 @@ export default function PostbacksNewPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       setShowForm(false);
-      toast({ title: "Профиль постбека создан", description: "Новый профиль постбека успешно создан" });
+      toast({ title: t('postbacks.postbackSaved', 'Профиль постбека создан'), description: t('postbacks.createSuccessDesc', 'Новый профиль постбека успешно создан') });
     },
     onError: () => {
-      toast({ title: "Ошибка", description: "Не удалось создать профиль постбека", variant: "destructive" });
+      toast({ title: t('postbacks.error', 'Ошибка'), description: t('postbacks.createErrorDesc', 'Не удалось создать профиль постбека'), variant: "destructive" });
     }
   });
 
@@ -228,7 +228,7 @@ export default function PostbacksNewPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       setShowForm(false);
       setSelectedPostback(null);
-      toast({ title: "Профиль обновлен", description: "Изменения сохранены" });
+      toast({ title: t('postbacks.postbackSaved', 'Профиль обновлен'), description: t('postbacks.updateSuccessDesc', 'Изменения сохранены') });
     }
   });
 
@@ -237,7 +237,7 @@ export default function PostbacksNewPage() {
     mutationFn: (id: string) => apiRequest(`/api/postback/profiles/${id}`, 'DELETE'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
-      toast({ title: "Профиль удален", description: "Профиль постбека успешно удален" });
+      toast({ title: t('postbacks.postbackDeleted', 'Профиль удален'), description: t('postbacks.deleteSuccessDesc', 'Профиль постбека успешно удален') });
     },
     onError: (error) => {
       toast({ 
@@ -263,22 +263,22 @@ export default function PostbacksNewPage() {
 
   // РАБОЧАЯ ФУНКЦИЯ УДАЛЕНИЯ ИЗ РЕКЛАМОДАТЕЛЯ
   const handleDelete = (id: string) => {
-    if (confirm('Вы уверены, что хотите удалить этот профиль постбека?')) {
+    if (confirm(t('common.confirmDelete', 'Вы уверены, что хотите удалить этот профиль постбека?'))) {
       deleteMutation.mutate(id);
     }
   };
 
   if (isLoading) {
-    return <div className="flex justify-center p-8" data-testid="loading-indicator">Загрузка...</div>;
+    return <div className="flex justify-center p-8" data-testid="loading-indicator">{t('common.loading', 'Загрузка...')}</div>;
   }
 
   return (
     <div className="space-y-6" data-testid="postback-profiles-page">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Профили постбеков</h1>
+          <h1 className="text-3xl font-bold">{t('postbacks.configuredPostbacks')}</h1>
           <p className="text-muted-foreground">
-            Управление настройками отправки данных во внешние системы
+            {t('postbacks.subtitle')}
           </p>
         </div>
         <Button 
@@ -286,7 +286,7 @@ export default function PostbacksNewPage() {
           data-testid="button-create-postback"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Создать профиль
+          {t('postbacks.createPostbackProfile')}
         </Button>
       </div>
 
@@ -304,7 +304,7 @@ export default function PostbacksNewPage() {
                     variant={postback.enabled ? "default" : "secondary"}
                     data-testid={`badge-status-${postback.id}`}
                   >
-                    {postback.enabled ? 'Включен' : 'Отключен'}
+                    {postback.enabled ? t('common.active', 'Включен') : t('common.disabled', 'Отключен')}
                   </Badge>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -313,7 +313,7 @@ export default function PostbacksNewPage() {
                     size="sm"
                     onClick={() => handleEdit(postback)}
                     data-testid={`button-edit-${postback.id}`}
-                    title="Редактировать профиль"
+                    title={t('common.edit', 'Редактировать')}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -324,7 +324,7 @@ export default function PostbacksNewPage() {
                     onClick={() => handleDelete(postback.id)}
                     disabled={deleteMutation.isPending}
                     data-testid={`button-delete-${postback.id}`}
-                    title="Удалить профиль"
+                    title={t('common.delete', 'Удалить')}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <Trash2 className="h-4 w-4" />

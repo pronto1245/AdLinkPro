@@ -31,12 +31,24 @@
     "failed": "Отклонено",
     "processing": "Обработка",
     "error": "Ошибка",
-    "refresh": "Обновить"
+    "refresh": "Обновить",
+    "name": "Название",
+    "payoutType": "Тип выплаты",
+    "login": "Вход",
+    "username": "Имя пользователя",
+    "email": "Email",
+    "password": "Пароль",
+    "sign_in": "Войти",
+    "loading": "Загрузка...",
+    "active": "Включен",
+    "disabled": "Отключен",
+    "confirmDelete": "Вы уверены, что хотите удалить?"
   },
   "theme": {
     "light": "Светлая",
     "dark": "Тёмная", 
-    "system": "Системная"
+    "system": "Системная",
+    "settings": "Настройки"
   },
   "language": {
     "select": "Выбрать язык",
@@ -121,7 +133,31 @@
   },
   "postbacks": {
     "title": "Постбеки",
-    "subtitle": "Настройка постбек URL для трекеров"
+    "subtitle": "Настройка постбек URL для трекеров",
+    "postbackSettings": "Настройки постбеков",
+    "createPostbackProfile": "Создать профиль постбека",
+    "postbackManagement": "Управление Постбеками",
+    "configuredPostbacks": "Настроенные постбеки",
+    "deliveryLogs": "Логи доставок",
+    "sendLogs": "Логи отправки",
+    "help": "Помощь",
+    "additionalSettings": "Дополнительные настройки",
+    "cancel": "Отмена",
+    "create": "Создать",
+    "update": "Обновить",
+    "postbackSaved": "Постбек сохранён",
+    "postbackDeleted": "Постбек удалён",
+    "testSent": "Тест отправлен",
+    "trackingUrlGenerator": "Генератор tracking URL",
+    "selectPartner": "Выберите партнёра",
+    "selectOffer": "Выберите оффер",
+    "urlGenerated": "URL сгенерирован",
+    "copied": "Скопировано",
+    "error": "Ошибка",
+    "createSuccessDesc": "Новый профиль постбека успешно создан",
+    "createErrorDesc": "Не удалось создать профиль постбека",
+    "updateSuccessDesc": "Изменения сохранены",
+    "deleteSuccessDesc": "Профиль постбека успешно удален"
   },
   "finances": {
     "title": "Финансы",
@@ -171,6 +207,9 @@
   "offers": {
     "title": "Офферы",
     "subtitle": "Доступные офферы для продвижения",
+    "availableOffers": "Доступные офферы",
+    "partnerOffers": "Партнерские офферы",
+    "offerDetails": "Детали оффера",
     "requestAccess": "Запросить доступ",
     "accessRequested": "Доступ запрошен",
     "accessApproved": "Доступ одобрен",
@@ -180,7 +219,14 @@
     "payout": "Выплата",
     "countries": "Страны",
     "conversionFlow": "Флоу конверсии",
-    "trafficSources": "Источники трафика"
+    "trafficSources": "Источники трафика",
+    "requestAccessToOffer": "Запросить доступ к офферу",
+    "myAccessRequests": "Мои запросы доступа",
+    "accessRequests": "Запросы доступа",
+    "requestSent": "Запрос отправлен",
+    "requestSentDesc": "Ваш запрос на доступ к офферу был отправлен рекламодателю",
+    "requestError": "Не удалось отправить запрос",
+    "loading": "Загрузка офферов..."
   },
   "auth": {
     "login": "Вход в систему",

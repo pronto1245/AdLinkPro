@@ -92,16 +92,16 @@ export default function PartnerOffers() {
     },
     onSuccess: () => {
       toast({
-        title: "Запрос отправлен",
-        description: "Ваш запрос на доступ к офферу был отправлен рекламодателю",
+        title: t('offers.requestSent', 'Запрос отправлен'),
+        description: t('offers.requestSentDesc', 'Ваш запрос на доступ к офферу был отправлен рекламодателю'),
         variant: "default",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/partner/offers"] });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось отправить запрос",
+        title: t('common.error', 'Ошибка'),
+        description: error.message || t('offers.requestError', 'Не удалось отправить запрос'),
         variant: "destructive",
       });
     },
@@ -137,7 +137,7 @@ export default function PartnerOffers() {
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary"></div>
-          <p>Загрузка офферов...</p>
+          <p>{t('offers.loading', 'Загрузка офферов...')}</p>
         </div>
       </div>
     );
@@ -150,12 +150,12 @@ export default function PartnerOffers() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Партнерские офферы</h1>
+          <h1 className="text-2xl font-bold">{t('offers.partnerOffers')}</h1>
           <p className="text-muted-foreground">
-            Просматривайте доступные офферы и запрашивайте доступ
+            {t('offers.subtitle')}
           </p>
         </div>
-        <Badge variant="outline">{displayOffers.length} офферов</Badge>
+        <Badge variant="outline">{displayOffers.length} {t('offers.title').toLowerCase()}</Badge>
       </div>
 
       <Card>
@@ -164,13 +164,13 @@ export default function PartnerOffers() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Название</TableHead>
-                  <TableHead>Категория</TableHead>
-                  <TableHead>Тип выплаты</TableHead>
-                  <TableHead>Гео</TableHead>
-                  <TableHead>Сумма</TableHead>
+                  <TableHead>{t('common.name', 'Название')}</TableHead>
+                  <TableHead>{t('offers.category')}</TableHead>
+                  <TableHead>{t('common.payoutType', 'Тип выплаты')}</TableHead>
+                  <TableHead>{t('offers.countries', 'Гео')}</TableHead>
+                  <TableHead>{t('common.amount')}</TableHead>
                   <TableHead>CR</TableHead>
-                  <TableHead className="text-right">Действия</TableHead>
+                  <TableHead className="text-right">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

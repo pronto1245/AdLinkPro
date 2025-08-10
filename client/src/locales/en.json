@@ -32,12 +32,23 @@
     "processing": "Processing",
     "error": "Error",
     "refresh": "Refresh",
-    "refresh": "Refresh"
+    "name": "Name",
+    "payoutType": "Payout Type",
+    "login": "Login",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "sign_in": "Sign In",
+    "loading": "Loading...",
+    "active": "Active",
+    "disabled": "Disabled",
+    "confirmDelete": "Are you sure you want to delete?"
   },
   "theme": {
     "light": "Light",
     "dark": "Dark",
-    "system": "System"
+    "system": "System",
+    "settings": "Settings"
   },
   "language": {
     "select": "Select language",
@@ -122,7 +133,31 @@
   },
   "postbacks": {
     "title": "Postbacks",
-    "subtitle": "Configure postback URLs for trackers"
+    "subtitle": "Configure postback URLs for trackers",
+    "postbackSettings": "Postback Settings",
+    "createPostbackProfile": "Create Postback Profile",
+    "postbackManagement": "Postback Management",
+    "configuredPostbacks": "Configured Postbacks",
+    "deliveryLogs": "Delivery Logs",
+    "sendLogs": "Send Logs",
+    "help": "Help",
+    "additionalSettings": "Additional Settings",
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update",
+    "postbackSaved": "Postback Saved",
+    "postbackDeleted": "Postback Deleted",
+    "testSent": "Test Sent",
+    "trackingUrlGenerator": "Tracking URL Generator",
+    "selectPartner": "Select Partner",
+    "selectOffer": "Select Offer",
+    "urlGenerated": "URL Generated",
+    "copied": "Copied",
+    "error": "Error",
+    "createSuccessDesc": "New postback profile successfully created",
+    "createErrorDesc": "Failed to create postback profile",
+    "updateSuccessDesc": "Changes saved",
+    "deleteSuccessDesc": "Postback profile successfully deleted"
   },
   "finances": {
     "title": "Finances",
@@ -172,6 +207,9 @@
   "offers": {
     "title": "Offers",
     "subtitle": "Available offers for promotion",
+    "availableOffers": "Available Offers",
+    "partnerOffers": "Partner Offers",
+    "offerDetails": "Offer Details",
     "requestAccess": "Request access",
     "accessRequested": "Access requested",
     "accessApproved": "Access approved",
@@ -181,7 +219,14 @@
     "payout": "Payout",
     "countries": "Countries",
     "conversionFlow": "Conversion flow",
-    "trafficSources": "Traffic sources"
+    "trafficSources": "Traffic sources",
+    "requestAccessToOffer": "Request Access to Offer",
+    "myAccessRequests": "My Access Requests",
+    "accessRequests": "Access Requests",
+    "requestSent": "Request Sent",
+    "requestSentDesc": "Your access request has been sent to the advertiser",
+    "requestError": "Failed to send request",
+    "loading": "Loading offers..."
   },
   "auth": {
     "login": "Sign In",
