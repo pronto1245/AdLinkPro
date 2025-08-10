@@ -20,10 +20,13 @@ export function PartnerTopNavigation() {
   const { language, setLanguage } = useLanguage();
 
   // Fetch balance for partners
-  const { data: financeData } = useQuery<{
+  const { data: financeData, isLoading } = useQuery<{
     balance: number;
     pendingPayouts: number;
     totalRevenue: number;
+    avgEPC: number;
+    avgCR: number;
+    totalPayouts: number;
   }>({
     queryKey: ['/api/partner/finance/summary'],
     enabled: !!user && user.role === 'affiliate',
@@ -66,12 +69,28 @@ export function PartnerTopNavigation() {
         <div className="flex items-center space-x-3">
           {/* Balance Display */}
           {user.role === 'affiliate' && (
-            <div className="hidden md:flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-700">
+            <div className="hidden md:flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer" title="Перейти к финансам">
               <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <span className="font-bold text-lg text-green-700 dark:text-green-300">
-                ${financeData ? financeData.balance.toFixed(2) : '0.00'}
-              </span>
-              <span className="text-xs text-green-600/80 dark:text-green-400/80 font-medium">баланс</span>
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-16 h-5 bg-green-200 dark:bg-green-700 rounded animate-pulse"></div>
+                  <span className="text-xs text-green-600/80 dark:text-green-400/80 font-medium">загрузка...</span>
+                </div>
+              ) : (
+                <>
+                  <span className="font-bold text-lg text-green-700 dark:text-green-300">
+                    ${financeData ? financeData.balance.toFixed(2) : '0.00'}
+                  </span>
+                  <span className="text-xs text-green-600/80 dark:text-green-400/80 font-medium">баланс</span>
+                  {financeData && financeData.pendingPayouts > 0 && (
+                    <div className="ml-2 flex items-center space-x-1 bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded-md">
+                      <span className="text-xs text-orange-700 dark:text-orange-300 font-medium">
+                        +${financeData.pendingPayouts.toFixed(2)} в ожидании
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
 
