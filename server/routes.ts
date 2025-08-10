@@ -3420,10 +3420,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (updateData.telegram !== undefined) {
         if (updateData.telegram && updateData.telegram.trim()) {
           const telegramValue = updateData.telegram.trim().replace(/^@/, '');
-          const telegramRegex = /^[a-zA-Z0-9_]{4,32}$/;
+          const telegramRegex = /^[a-zA-Z0-9_]{3,32}$/;
           if (!telegramRegex.test(telegramValue)) {
             return res.status(400).json({ 
-              error: "Invalid Telegram username format. Must be 4-32 characters (letters, digits, underscores only)" 
+              error: "Invalid Telegram username format. Must be 3-32 characters (letters, digits, underscores only)" 
             });
           }
           updateData.telegram = '@' + telegramValue;
