@@ -10035,33 +10035,150 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   // Get partner's own access requests
   app.get('/api/partner/access-requests', authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
-      const partnerId = req.user!.id;
-
-      const requests = await db.execute(sql`
-        SELECT 
-          oar.id,
-          oar.offer_id,
-          o.name as offer_name,
-          u.username as advertiser_name,
-          oar.status,
-          oar.request_note,
-          oar.partner_message,
-          oar.requested_at,
-          oar.reviewed_at,
-          oar.response_note,
-          oar.advertiser_response,
-          oar.expires_at
-        FROM offer_access_requests oar
-        LEFT JOIN offers o ON oar.offer_id = o.id
-        LEFT JOIN users u ON oar.advertiser_id = u.id
-        WHERE oar.partner_id = ${partnerId}
-        ORDER BY oar.requested_at DESC
-      `);
-
-      res.json(requests.rows);
+      const partnerId = getAuthenticatedUser(req).id;
+      
+      // Get access requests for this partner
+      const requests = await db.select()
+        .from(offerAccessRequests)
+        .where(eq(offerAccessRequests.partnerId, partnerId));
+      
+      // Enrich with offer details
+      const enrichedRequests = await Promise.all(
+        requests.map(async (request) => {
+          const offer = await storage.getOffer(request.offerId);
+          const advertiser = await storage.getUser(request.advertiserId);
+          
+          return {
+            ...request,
+            offer: offer ? {
+              id: offer.id,
+              name: offer.name,
+              category: offer.category,
+              payoutType: offer.payoutType,
+              payoutAmount: offer.payoutAmount,
+              currency: offer.currency,
+              description: offer.description
+            } : null,
+            advertiser: advertiser ? {
+              id: advertiser.id,
+              username: advertiser.username,
+              company: advertiser.company
+            } : null
+          };
+        })
+      );
+      
+      res.json(enrichedRequests);
     } catch (error) {
-      console.error('Get partner requests error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error("Get partner access requests error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Events API for super admin
+  app.get('/api/events', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const mockEvents = [
+        {
+          id: 'event_1',
+          type: 'conversion',
+          clickId: 'abc123',
+          offerId: 'offer_001',
+          partnerId: 'partner_001',
+          advertiserId: 'advertiser_001',
+          revenue: '100.00',
+          status: 'approved',
+          antifraudLevel: 'ok',
+          timestamp: new Date().toISOString()
+        },
+        {
+          id: 'event_2',
+          type: 'click',
+          clickId: 'def456',
+          offerId: 'offer_002',
+          partnerId: 'partner_002',
+          advertiserId: 'advertiser_001',
+          revenue: '0.00',
+          status: 'pending',
+          antifraudLevel: 'soft',
+          timestamp: new Date(Date.now() - 3600000).toISOString()
+        }
+      ];
+      res.json(mockEvents);
+    } catch (error) {
+      console.error("Get events error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Admin settings API
+  app.get('/api/admin/settings', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const settings = {
+        systemName: 'Affiliate Platform',
+        maintenanceMode: false,
+        registrationEnabled: true,
+        emailVerificationRequired: false,
+        maxPartnerApprovals: 100,
+        defaultCurrency: 'USD',
+        antifraudEnabled: true,
+        postbackRetryLimit: 3,
+        sessionTimeout: 3600,
+        ipWhitelistEnabled: false,
+        geoBlocking: {
+          enabled: false,
+          blockedCountries: []
+        },
+        notifications: {
+          emailEnabled: true,
+          telegramEnabled: false,
+          webhookEnabled: false
+        }
+      };
+      res.json(settings);
+    } catch (error) {
+      console.error("Get admin settings error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Admin antifraud API
+  app.get('/api/admin/antifraud', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const antifraudData = {
+        globalSettings: {
+          enabled: true,
+          strictMode: false,
+          autoBlock: true,
+          blockThreshold: 70
+        },
+        recentAlerts: [
+          {
+            id: 'alert_1',
+            type: 'high_fraud_score',
+            partnerId: 'partner_suspicious',
+            offerId: 'offer_001',
+            fraudScore: 85,
+            reason: 'Multiple clicks from same IP',
+            timestamp: new Date().toISOString(),
+            status: 'active'
+          }
+        ],
+        statistics: {
+          totalChecks: 15420,
+          blockedEvents: 234,
+          fraudRate: 1.52,
+          topFraudTypes: [
+            { type: 'bot_detected', count: 89 },
+            { type: 'vpn_usage', count: 67 },
+            { type: 'suspicious_pattern', count: 45 }
+          ]
+        }
+      };
+      res.json(antifraudData);
+    } catch (error) {
+      console.error("Get admin antifraud error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
