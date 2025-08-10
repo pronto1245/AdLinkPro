@@ -40,7 +40,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
           <div className="flex items-center space-x-3">
@@ -48,8 +48,8 @@ export default function Login() {
               <i className="fas fa-chart-network text-white"></i>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">FraudGuard</h1>
-              <p className="text-sm text-slate-600">Anti-Fraud Platform</p>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">FraudGuard</h1>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Anti-Fraud Platform</p>
             </div>
           </div>
         </div>
@@ -60,8 +60,8 @@ export default function Login() {
             <div className="flex justify-center">
               <select
                 value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="text-sm border border-slate-200 rounded px-3 py-1"
+                onChange={(e) => setLanguage(e.target.value as 'en' | 'ru')}
+                className="text-sm border border-slate-200 dark:border-slate-700 rounded px-3 py-1 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                 data-testid="language-select"
               >
                 <option value="en">🇺🇸 English</option>
@@ -70,27 +70,27 @@ export default function Login() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
-              <div className="font-medium text-blue-800 mb-2">Быстрый вход:</div>
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm">
+              <div className="font-medium text-blue-800 dark:text-blue-200 mb-2">Быстрый вход:</div>
               <div className="space-y-2">
                 <button
                   type="button"
                   onClick={() => { setUsername('superadmin'); setPassword('password123'); }}
-                  className="block w-full text-left p-2 text-blue-700 hover:bg-blue-100 rounded text-xs"
+                  className="block w-full text-left p-2 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 rounded text-xs"
                 >
                   <strong>👑 Супер-админ:</strong> superadmin / password123
                 </button>
                 <button
                   type="button"
                   onClick={() => { setUsername('advertiser1'); setPassword('password123'); }}
-                  className="block w-full text-left p-2 text-blue-700 hover:bg-blue-100 rounded text-xs"
+                  className="block w-full text-left p-2 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 rounded text-xs"
                 >
                   <strong>🏢 Рекламодатель:</strong> advertiser1 / password123
                 </button>
                 <button
                   type="button"
                   onClick={() => { setUsername('test_affiliate'); setPassword('password123'); }}
-                  className="block w-full text-left p-2 text-blue-700 hover:bg-blue-100 rounded text-xs"
+                  className="block w-full text-left p-2 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 rounded text-xs"
                 >
                   <strong>🤝 Партнер:</strong> test_affiliate / password123
                 </button>
