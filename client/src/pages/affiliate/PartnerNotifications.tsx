@@ -13,16 +13,19 @@ import { ru } from "date-fns/locale";
 
 interface Notification {
   id: string;
-  type: 'offer_request_approved' | 'offer_request_rejected' | 'offer_request_created' | 'general';
+  type: 'offer_request_approved' | 'offer_request_rejected' | 'offer_request_created' | 'general' | 'payment';
   title: string;
   message: string;
-  isRead: boolean;
-  createdAt: string;
+  is_read: boolean;
+  created_at: string;
   metadata?: {
     offerId?: string;
     offerName?: string;
     requestId?: string;
     rejectReason?: string;
+    amount?: number;
+    currency?: string;
+    method?: string;
   };
 }
 
@@ -116,6 +119,8 @@ export default function PartnerNotifications() {
         return <XCircle className="w-5 h-5 text-red-600" />;
       case 'offer_request_created':
         return <Clock className="w-5 h-5 text-blue-600" />;
+      case 'payment':
+        return <CheckCircle2 className="w-5 h-5 text-green-600" />;
       default:
         return <Bell className="w-5 h-5 text-gray-600" />;
     }
@@ -129,12 +134,14 @@ export default function PartnerNotifications() {
         return <Badge className="bg-red-100 text-red-800">Отклонено</Badge>;
       case 'offer_request_created':
         return <Badge className="bg-blue-100 text-blue-800">Новый запрос</Badge>;
+      case 'payment':
+        return <Badge className="bg-green-100 text-green-800">Выплата</Badge>;
       default:
         return <Badge className="bg-gray-100 text-gray-800">Общее</Badge>;
     }
   };
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   if (isLoading) {
     return (
@@ -192,7 +199,7 @@ export default function PartnerNotifications() {
                 <div
                   key={notification.id}
                   className={`p-4 rounded-lg border transition-colors ${
-                    notification.isRead 
+                    notification.is_read 
                       ? 'bg-gray-50 border-gray-200' 
                       : 'bg-blue-50 border-blue-200'
                   }`}
@@ -202,12 +209,12 @@ export default function PartnerNotifications() {
                       {getNotificationIcon(notification.type)}
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className={`font-medium ${notification.isRead ? 'text-gray-900' : 'text-blue-900'}`}>
+                          <h4 className={`font-medium ${notification.is_read ? 'text-gray-900' : 'text-blue-900'}`}>
                             {notification.title}
                           </h4>
                           {getNotificationBadge(notification.type)}
                         </div>
-                        <p className={`text-sm ${notification.isRead ? 'text-gray-600' : 'text-blue-700'}`}>
+                        <p className={`text-sm ${notification.is_read ? 'text-gray-600' : 'text-blue-700'}`}>
                           {notification.message}
                         </p>
                         {notification.metadata?.rejectReason && (
@@ -215,8 +222,13 @@ export default function PartnerNotifications() {
                             <strong>Причина отклонения:</strong> {notification.metadata.rejectReason}
                           </div>
                         )}
+                        {notification.metadata?.amount && (
+                          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm">
+                            <strong>Сумма:</strong> {notification.metadata.amount} {notification.metadata.currency || 'USD'}
+                          </div>
+                        )}
                         <p className="text-xs text-gray-500 mt-2">
-                          {formatDistanceToNow(new Date(notification.createdAt), { 
+                          {formatDistanceToNow(new Date(notification.created_at), { 
                             addSuffix: true, 
                             locale: ru 
                           })}
@@ -225,7 +237,7 @@ export default function PartnerNotifications() {
                     </div>
                     
                     <div className="flex items-center gap-2 ml-4">
-                      {!notification.isRead && (
+                      {!notification.is_read && (
                         <Button
                           onClick={() => handleMarkAsRead(notification.id)}
                           disabled={markAsReadMutation.isPending}

@@ -1743,6 +1743,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add conversion routes
   app.use('/api/conversion', conversionRoutes);
 
+  // =================== NOTIFICATIONS API ===================
+  
+  // Get notifications for current user
+  app.get('/api/notifications', authenticateToken, async (req, res) => {
+    try {
+      const userId = req.user?.id || req.userId;
+      
+      const result = await db.execute(sql`
+        SELECT id, user_id, type, title, message, is_read, metadata, created_at
+        FROM notifications 
+        WHERE user_id = ${userId}
+        ORDER BY created_at DESC
+      `);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Get notifications error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Mark notification as read
+  app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
+    try {
+      const userId = req.user?.id || req.userId;
+      const notificationId = req.params.id;
+      
+      await db.execute(sql`
+        UPDATE notifications 
+        SET is_read = true 
+        WHERE id = ${notificationId} AND user_id = ${userId}
+      `);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Mark notification as read error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Delete notification
+  app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
+    try {
+      const userId = req.user?.id || req.userId;
+      const notificationId = req.params.id;
+      
+      await db.execute(sql`
+        DELETE FROM notifications 
+        WHERE id = ${notificationId} AND user_id = ${userId}
+      `);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Delete notification error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Mark all notifications as read
+  app.put('/api/notifications/mark-all-read', authenticateToken, async (req, res) => {
+    try {
+      const userId = req.user?.id || req.userId;
+      
+      await db.execute(sql`
+        UPDATE notifications 
+        SET is_read = true 
+        WHERE user_id = ${userId} AND is_read = false
+      `);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Mark all notifications as read error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // =================== AUTH API ===================
+
   // Auth routes
   app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
     try {
