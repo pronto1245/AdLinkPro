@@ -202,8 +202,6 @@ const countryNameToCode: Record<string, string> = {
   'колумбия': 'CO',
   'перу': 'PE',
   'венесуэла': 'VE',
-  'армения': 'AM',
-  'алжир': 'DZ',
   'греция': 'GR',
   
   // Английские названия
@@ -220,6 +218,7 @@ const countryNameToCode: Record<string, string> = {
   'italy': 'IT',
   'kazakhstan': 'KZ',
   'ukraine': 'UA',
+  'украина': 'UA',
   'brazil': 'BR',
   'india': 'IN',
   'philippines': 'PH',
@@ -248,8 +247,6 @@ const countryNameToCode: Record<string, string> = {
   'belgium': 'BE',
   'ireland': 'IE',
   'israel': 'IL',
-  'armenia': 'AM',
-  'algeria': 'DZ',
   'greece': 'GR',
   'czech': 'CZ',
   'uae': 'AE',

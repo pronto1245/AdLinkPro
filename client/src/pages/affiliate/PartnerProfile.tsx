@@ -49,7 +49,7 @@ export default function PartnerProfile() {
         country: profileData.country || '',
         timezone: profileData.timezone || 'UTC',
         currency: profileData.currency || 'USD',
-        telegram: profileData.telegram || '',
+        telegram: profileData.telegram ? profileData.telegram.replace(/^@/, '') : '',
       });
     }
   }, [profileData]);

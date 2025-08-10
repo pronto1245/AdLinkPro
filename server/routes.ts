@@ -3417,15 +3417,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Validate Telegram if provided
-      if (updateData.telegram && updateData.telegram.trim()) {
-        const telegramValue = updateData.telegram.trim().replace(/^@/, '');
-        const telegramRegex = /^[a-zA-Z0-9_]{5,32}$/;
-        if (!telegramRegex.test(telegramValue)) {
-          return res.status(400).json({ 
-            error: "Invalid Telegram username format. Must be 5-32 characters (letters, digits, underscores only)" 
-          });
+      if (updateData.telegram !== undefined) {
+        if (updateData.telegram && updateData.telegram.trim()) {
+          const telegramValue = updateData.telegram.trim().replace(/^@/, '');
+          const telegramRegex = /^[a-zA-Z0-9_]{4,32}$/;
+          if (!telegramRegex.test(telegramValue)) {
+            return res.status(400).json({ 
+              error: "Invalid Telegram username format. Must be 4-32 characters (letters, digits, underscores only)" 
+            });
+          }
+          updateData.telegram = '@' + telegramValue;
+        } else {
+          // Allow empty telegram
+          updateData.telegram = '';
         }
-        updateData.telegram = '@' + telegramValue;
       }
 
       // Filter allowed fields for partner profile updates
