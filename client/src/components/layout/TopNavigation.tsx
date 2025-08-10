@@ -30,6 +30,16 @@ export function TopNavigation() {
     }
   }, [i18n]);
 
+  // Debug information
+  useEffect(() => {
+    console.log('TopNavigation Debug:', {
+      userRole: user?.role,
+      isAffiliate: user?.role === 'affiliate',
+      financeData,
+      language: i18n.language
+    });
+  }, [user, financeData, i18n.language]);
+
   // Fetch balance for partners only
   const { data: financeData } = useQuery<{
     balance: number;
@@ -81,7 +91,7 @@ export function TopNavigation() {
           
           {/* Balance for partners */}
           {user.role === 'affiliate' && (
-            <div className="hidden md:flex items-center space-x-3">
+            <div className="flex items-center space-x-3">
               {/* Balance */}
               <div className="flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-700">
                 <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
