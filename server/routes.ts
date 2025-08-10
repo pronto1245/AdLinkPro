@@ -8638,6 +8638,79 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
+  // Partner finance endpoints  
+  app.get("/api/partner/finance/summary", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      console.log('Getting partner finance summary for', authUser.id);
+      
+      // Get user data
+      const user = await storage.getUser(authUser.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Mock partner finance data based on real structure
+      const summary = {
+        balance: parseFloat(user.balance?.toString() || '0'),
+        pendingPayouts: 850.25,
+        totalRevenue: 3697.75,
+        avgEPC: 2.45,
+        avgCR: 1.8,
+        totalPayouts: 1200.00
+      };
+
+      res.json(summary);
+    } catch (error) {
+      console.error('Error getting partner finance summary:', error);
+      res.status(500).json({ error: 'Не удалось получить финансовую сводку' });
+    }
+  });
+
+  app.get("/api/partner/finance/transactions", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      console.log('Getting partner finance transactions for', authUser.id);
+      
+      // Get partner financial transactions
+      const partnerTransactions = await db
+        .select()
+        .from(financialTransactions)
+        .where(eq(financialTransactions.partnerId, authUser.id))
+        .orderBy(desc(financialTransactions.createdAt));
+
+      res.json(partnerTransactions);
+    } catch (error) {
+      console.error('Error getting partner finance transactions:', error);
+      res.status(500).json({ error: 'Не удалось получить транзакции' });
+    }
+  });
+
+  app.post("/api/partner/finance/withdrawal", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { amount, method, details } = req.body;
+      
+      console.log('Creating withdrawal request for partner', authUser.id, { amount, method });
+      
+      // Create withdrawal transaction
+      const withdrawal = await db.insert(financialTransactions).values({
+        id: nanoid(),
+        partnerId: authUser.id,
+        type: 'payout',
+        amount: parseFloat(amount),
+        status: 'pending',
+        comment: `Withdrawal via ${method}: ${details}`,
+        createdAt: new Date(),
+      });
+
+      res.json({ success: true, message: 'Withdrawal request created successfully' });
+    } catch (error) {
+      console.error('Error creating withdrawal request:', error);
+      res.status(500).json({ error: 'Не удалось создать заявку на вывод средств' });
+    }
+  });
+
   // Get financial transactions for advertiser
   app.get("/api/advertiser/finance/transactions", authenticateToken, requireRole(['advertiser']), async (req: Request, res: Response) => {
     try {

@@ -89,10 +89,10 @@ const trackerTemplates = {
   },
   binom: {
     name: 'Binom Tracker',
-    trackerType: 'custom' as const,
-    endpointUrl: 'https://your-binom-domain.com/click.php',
+    tracker_type: 'custom' as const,
+    endpoint_url: 'https://your-binom-domain.com/click.php',
     method: 'GET' as const,
-    paramsTemplate: {
+    params_template: {
       'cnv_id': '{{clickid}}',
       'cnv_status': '{{status}}',
       'payout': '{{revenue}}',

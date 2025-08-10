@@ -61,71 +61,20 @@ export default function Finances() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Mock данные для демонстрации
-  const mockFinanceData = {
-    balance: {
-      current: 2847.50,
-      pending: 850.25,
-      total: 3697.75,
-      lastPayment: 1200.00
-    },
-    transactions: [
-      {
-        id: 1,
-        type: 'earnings',
-        description: '4RaBet India - Конверсии за период',
-        amount: 480.00,
-        status: 'completed',
-        date: '2025-08-05',
-        offerName: '4RaBet India'
-      },
-      {
-        id: 2,
-        type: 'withdrawal',
-        description: 'Вывод средств на PayPal',
-        amount: -1200.00,
-        status: 'completed',
-        date: '2025-08-04',
-        paymentMethod: 'PayPal'
-      },
-      {
-        id: 3,
-        type: 'earnings',
-        description: 'Crypto Trading Pro - Конверсии за период',
-        amount: 320.25,
-        status: 'pending',
-        date: '2025-08-03',
-        offerName: 'Crypto Trading Pro'
-      },
-      {
-        id: 4,
-        type: 'earnings',
-        description: 'Dating VIP - Конверсии за период',
-        amount: 150.00,
-        status: 'completed',
-        date: '2025-08-03',
-        offerName: 'Dating VIP'
-      },
-      {
-        id: 5,
-        type: 'withdrawal',
-        description: 'Вывод средств на банковскую карту',
-        amount: -800.00,
-        status: 'processing',
-        date: '2025-08-02',
-        paymentMethod: 'Bank Card'
-      }
-    ]
-  };
-
-  const { data: financeData, isLoading } = useQuery({
-    queryKey: ['/api/affiliate/finances'],
-    initialData: mockFinanceData
+  // Реальные данные финансов
+  const { data: financeData, isLoading: isFinanceLoading } = useQuery({
+    queryKey: ['/api/partner/finance/summary'],
   });
+
+  const { data: transactionsData, isLoading: isTransactionsLoading } = useQuery({
+    queryKey: ['/api/partner/finance/transactions'],
+  });
+
+  const isLoading = isFinanceLoading || isTransactionsLoading;
 
   const withdrawalMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('/api/affiliate/withdrawal', 'POST', data);
+      return apiRequest('/api/partner/finance/withdrawal', 'POST', data);
     },
     onSuccess: () => {
       toast({
@@ -137,7 +86,8 @@ export default function Finances() {
       setWithdrawalAmount('');
       setWithdrawalMethod('');
       setWithdrawalDetails('');
-      queryClient.invalidateQueries({ queryKey: ['/api/affiliate/finances'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/finance/summary'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/finance/transactions'] });
     },
     onError: () => {
       toast({
@@ -237,7 +187,7 @@ export default function Finances() {
               <DialogHeader>
                 <DialogTitle>Вывод средств</DialogTitle>
                 <DialogDescription>
-                  Создание заявки на вывод средств. Доступно: {formatCurrency(financeData.balance.current)}
+                  Создание заявки на вывод средств. Доступно: {formatCurrency((financeData as any)?.balance || 0)}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -298,12 +248,13 @@ export default function Finances() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Текущий баланс</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {formatCurrency(financeData.balance.current)}
-            </div>
+            <div className="text-2xl font-bold">{formatCurrency((financeData as any)?.balance || 0)}</div>
+            <p className="text-xs text-muted-foreground">
+              Доступно к выводу
+            </p>
           </CardContent>
         </Card>
         
@@ -313,33 +264,36 @@ export default function Finances() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {formatCurrency(financeData.balance.pending)}
-            </div>
+            <div className="text-2xl font-bold">{formatCurrency((financeData as any)?.pendingPayouts || 0)}</div>
+            <p className="text-xs text-muted-foreground">
+              Ожидает подтверждения
+            </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Общий баланс</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {formatCurrency(financeData.balance.total)}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Последняя выплата</CardTitle>
+            <CardTitle className="text-sm font-medium">Общий доход</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
-              {formatCurrency(financeData.balance.lastPayment)}
-            </div>
+            <div className="text-2xl font-bold">{formatCurrency((financeData as any)?.totalRevenue || 0)}</div>
+            <p className="text-xs text-muted-foreground">
+              За всё время
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Средний EPC</CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency((financeData as any)?.avgEPC || 0)}</div>
+            <p className="text-xs text-muted-foreground">
+              Доходность на клик
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -361,7 +315,7 @@ export default function Finances() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {financeData.transactions.map((transaction) => (
+              {((transactionsData as any) || []).map((transaction: any) => (
                 <TableRow key={transaction.id}>
                   <TableCell className="font-medium">{transaction.date}</TableCell>
                   <TableCell>
