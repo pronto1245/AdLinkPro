@@ -92,8 +92,8 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
               <span className="text-white font-bold text-sm">P</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-bold">Партнер</span>
-              <span className="text-xs text-muted-foreground">{user?.username}</span>
+              <span className="text-lg font-bold text-black dark:text-white">Партнер</span>
+              <span className="text-xs text-black/60 dark:text-white/60">{user?.username}</span>
             </div>
           </div>
         )}
@@ -125,7 +125,7 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
                 "flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
                 isActive
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground"
+                  : "text-black dark:text-white"
               )}
               title={collapsed ? item.title : undefined}
             >
@@ -150,7 +150,7 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
         <Link
           href="/affiliate/notifications"
           className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground",
+            "flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-black dark:text-white",
           )}
           title={collapsed ? "Уведомления" : undefined}
         >
@@ -168,7 +168,7 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
           "flex items-center gap-3 px-3 py-2",
           collapsed && "justify-center"
         )}>
-          {!collapsed && <span className="font-medium text-muted-foreground">Тема</span>}
+          {!collapsed && <span className="font-medium text-black dark:text-white">Тема</span>}
           <ThemeToggle />
         </div>
         
@@ -176,7 +176,7 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
           variant="ghost"
           onClick={handleLogout}
           className={cn(
-            "w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+            "w-full justify-start gap-3 text-black dark:text-white hover:text-destructive hover:bg-destructive/10",
             collapsed && "px-3"
           )}
           title={collapsed ? "Выход" : undefined}
