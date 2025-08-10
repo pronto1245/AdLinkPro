@@ -140,9 +140,64 @@ export default function Finances() {
   };
 
   const getTransactionIcon = (type: string) => {
-    return type === 'earnings' ? 
-      <ArrowUpRight className="h-4 w-4 text-green-600" /> : 
-      <ArrowDownLeft className="h-4 w-4 text-red-600" />;
+    switch (type) {
+      case 'commission':
+      case 'bonus':
+        return <ArrowUpRight className="h-4 w-4 text-green-600" />;
+      case 'payout':
+        return <ArrowDownLeft className="h-4 w-4 text-red-600" />;
+      default:
+        return <DollarSign className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
+  const getTransactionType = (type: string) => {
+    switch (type) {
+      case 'commission':
+        return 'Комиссия';
+      case 'bonus':
+        return 'Бонус';
+      case 'payout':
+        return 'Вывод';
+      default:
+        return type;
+    }
+  };
+
+  const handleExportReport = async (format: 'csv' | 'json') => {
+    try {
+      const response = await fetch('/api/partner/finance/export?format=' + format, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to export');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `finance-report-${new Date().toISOString().split('T')[0]}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Отчёт загружен",
+        description: `Финансовый отчёт в формате ${format.toUpperCase()} успешно загружен`,
+        variant: "default"
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить отчёт",
+        variant: "destructive"
+      });
+    }
   };
 
   if (isLoading) {
@@ -236,10 +291,16 @@ export default function Finances() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Отчёт
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => handleExportReport('csv')} title="Скачать отчёт в CSV">
+              <Download className="h-4 w-4 mr-2" />
+              CSV
+            </Button>
+            <Button variant="outline" onClick={() => handleExportReport('json')} title="Скачать отчёт в JSON">
+              <Download className="h-4 w-4 mr-2" />
+              JSON
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -321,26 +382,42 @@ export default function Finances() {
             <TableBody>
               {((transactionsData as any) || []).map((transaction: any) => (
                 <TableRow key={transaction.id}>
-                  <TableCell className="font-medium">{transaction.date}</TableCell>
+                  <TableCell className="font-medium">
+                    {new Date(transaction.createdAt).toLocaleDateString('ru-RU')}
+                  </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center space-x-3">
                       {getTransactionIcon(transaction.type)}
-                      <span>{transaction.description}</span>
+                      <div>
+                        <div className="font-medium">
+                          {transaction.comment || 'Транзакция'}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {getTransactionType(transaction.type)}
+                        </div>
+                      </div>
                     </div>
                   </TableCell>
-                  <TableCell className={`font-medium ${
-                    transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {transaction.amount > 0 ? '+' : ''}{formatCurrency(Math.abs(transaction.amount))}
-                  </TableCell>
                   <TableCell>
-                    {getStatusBadge(transaction.status)}
+                    <span className={`font-medium ${
+                      (transaction.amount || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {(transaction.amount || 0) >= 0 ? '+' : ''}{formatCurrency(Math.abs(transaction.amount || 0))}
+                    </span>
                   </TableCell>
+                  <TableCell>{getStatusBadge(transaction.status)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {transaction.offerName || transaction.paymentMethod || '-'}
+                    ID: {transaction.id.substring(0, 8)}...
                   </TableCell>
                 </TableRow>
               ))}
+              {(!transactionsData || transactionsData.length === 0) && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                    Транзакции не найдены
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
