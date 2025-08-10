@@ -1030,7 +1030,7 @@ export function AffiliatePostbacks() {
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t('postbacks.createProfileTitle', 'Создать постбек профиль')}</DialogTitle>
+            <DialogTitle>{t('postbacks.createProfileTitle', 'Создать новый профиль')}</DialogTitle>
             <DialogDescription>
               {t('postbacks.createProfileDescription', 'Настройте интеграцию с вашим трекером для автоматической отправки данных о конверсиях')}
             </DialogDescription>

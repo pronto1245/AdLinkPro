@@ -255,8 +255,8 @@
     "title": "Postbacks",
     "subtitle": "Integration setup with external trackers",
     "createProfile": "Create Profile",
-    "createProfileTitle": "Create Postback Profile",
-    "createProfileDescription": "Set up integration with your tracker for automatic conversion data delivery",
+    "createProfileTitle": "Create New Profile",
+    "createProfileDescription": "Configure parameters for sending postbacks to external systems",
     "editProfileTitle": "Edit Profile",
     "editProfileDescription": "Modify tracker integration settings",
     "testTitle": "Postback Testing",
@@ -311,12 +311,7 @@
     "refreshWarning": "IF BUTTONS ARE WHITE: Refresh page (Ctrl+F5) or clear cache!",
     "deliveryHistory": "History of postback delivery to trackers",
     "createError": "Creation Error",
-    "deleteError": "Deletion Error",
-    "noLogsYet": "No delivery logs yet",
-    "createProfileTitle": "Create Postback Profile",
-    "createProfileDescription": "Configure integration with your tracker for automatic conversion data delivery",
-    "editProfileTitle": "Edit Profile",
-    "editProfileDescription": "Modify tracker integration settings"
+    "deleteError": "Deletion Error"
   },
   "auth": {
     "login": "Sign In",
