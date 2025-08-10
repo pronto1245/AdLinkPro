@@ -108,7 +108,7 @@ export default function Finances() {
       return;
     }
 
-    if (parseFloat(withdrawalAmount) > financeData.balance.current) {
+    if (parseFloat(withdrawalAmount) > (financeData as any)?.balance) {
       toast({
         title: "Недостаточно средств",
         description: "Сумма вывода превышает доступный баланс",
@@ -245,53 +245,57 @@ export default function Finances() {
 
       {/* Balance Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        {/* Текущий баланс - зеленый */}
+        <Card className="border-l-4 border-l-green-500 bg-gradient-to-br from-green-50 to-white dark:from-green-900/20 dark:to-background">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Текущий баланс</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">Текущий баланс</CardTitle>
+            <DollarSign className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency((financeData as any)?.balance || 0)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold text-green-700 dark:text-green-300">{formatCurrency((financeData as any)?.balance || 0)}</div>
+            <p className="text-xs text-green-600/80 dark:text-green-400/80">
               Доступно к выводу
             </p>
           </CardContent>
         </Card>
         
-        <Card>
+        {/* В ожидании - оранжевый */}
+        <Card className="border-l-4 border-l-orange-500 bg-gradient-to-br from-orange-50 to-white dark:from-orange-900/20 dark:to-background">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">В ожидании</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-orange-700 dark:text-orange-300">В ожидании</CardTitle>
+            <Clock className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency((financeData as any)?.pendingPayouts || 0)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">{formatCurrency((financeData as any)?.pendingPayouts || 0)}</div>
+            <p className="text-xs text-orange-600/80 dark:text-orange-400/80">
               Ожидает подтверждения
             </p>
           </CardContent>
         </Card>
         
-        <Card>
+        {/* Общий доход - синий */}
+        <Card className="border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-background">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Общий доход</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">Общий доход</CardTitle>
+            <TrendingUp className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency((financeData as any)?.totalRevenue || 0)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{formatCurrency((financeData as any)?.totalRevenue || 0)}</div>
+            <p className="text-xs text-blue-600/80 dark:text-blue-400/80">
               За всё время
             </p>
           </CardContent>
         </Card>
         
-        <Card>
+        {/* Средний EPC - фиолетовый */}
+        <Card className="border-l-4 border-l-purple-500 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-background">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Средний EPC</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">Средний EPC</CardTitle>
+            <Wallet className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency((financeData as any)?.avgEPC || 0)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">{formatCurrency((financeData as any)?.avgEPC || 0)}</div>
+            <p className="text-xs text-purple-600/80 dark:text-purple-400/80">
               Доходность на клик
             </p>
           </CardContent>
