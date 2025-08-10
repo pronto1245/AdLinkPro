@@ -13,6 +13,22 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
+interface PartnerProfileData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  company: string;
+  country: string;
+  timezone: string;
+  currency: string;
+  telegram: string;
+  partnerNumber: string;
+  createdAt: string;
+  lastLoginAt: string;
+}
+
 export default function PartnerProfile() {
   const { user } = useAuth();
   const { t } = useLanguage();
@@ -20,7 +36,7 @@ export default function PartnerProfile() {
   const queryClient = useQueryClient();
 
   // Загружаем полный профиль партнёра
-  const { data: profileData, isLoading: isProfileLoading, error } = useQuery({
+  const { data: profileData, isLoading: isProfileLoading, error } = useQuery<PartnerProfileData>({
     queryKey: ['/api/partner/profile'],
     enabled: !!user?.id,
   });
