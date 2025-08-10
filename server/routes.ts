@@ -4368,6 +4368,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Partner Statistics endpoint (alias for analytics)
+  app.get("/api/partner/statistics", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const userId = authUser.id;
+      
+      // Get real tracking clicks for partner
+      const trackingClicks = await storage.getTrackingClicks({ partnerId: userId });
+      
+      // Calculate metrics
+      const totalClicks = trackingClicks.length;
+      const conversions = trackingClicks.filter(click => click.status === 'conversion');
+      const totalConversions = conversions.length;
+      const totalRevenue = conversions.reduce((sum, conv) => sum + parseFloat(conv.revenue || '0'), 0);
+      const cr = totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : '0.00';
+      const epc = totalClicks > 0 ? (totalRevenue / totalClicks).toFixed(2) : '0.00';
+
+      res.json({
+        summary: {
+          totalClicks,
+          totalConversions,
+          totalRevenue: totalRevenue.toFixed(2),
+          conversionRate: cr,
+          epc,
+          currency: 'USD'
+        },
+        clicks: trackingClicks.map(click => ({
+          id: click.id,
+          clickId: click.click_id || click.id,
+          offerId: click.offer_id,
+          country: click.country || 'Unknown',
+          device: click.device || 'Unknown',
+          browser: click.browser || 'Unknown',
+          status: click.status || 'click',
+          revenue: parseFloat(click.revenue || '0').toFixed(2),
+          timestamp: click.created_at
+        }))
+      });
+    } catch (error) {
+      console.error("Partner statistics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Partner Creatives endpoint
+  app.get("/api/partner/creatives", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const userId = authUser.id;
+      
+      // Get offers available to this partner
+      const offers = await storage.getAvailableOffers(userId);
+      
+      // Mock creative data for available offers
+      const creatives = offers.map(offer => ({
+        id: `creative-${offer.id}`,
+        offerId: offer.id,
+        offerName: offer.name,
+        type: 'banner',
+        format: 'jpg',
+        size: '300x250',
+        url: `/api/partner/creatives/${offer.id}/banner.jpg`,
+        downloadUrl: `/api/partner/offers/${offer.id}/creatives/download`,
+        preview: `https://via.placeholder.com/300x250/0079f2/ffffff?text=${encodeURIComponent(offer.name)}`,
+        createdAt: new Date().toISOString()
+      }));
+
+      res.json({
+        creatives,
+        total: creatives.length
+      });
+    } catch (error) {
+      console.error("Partner creatives error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Partner Team endpoint
+  app.get("/api/partner/team", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      
+      // For partners, team could mean their referrals or sub-partners
+      // For now, return empty array since this is typically an advertiser feature
+      res.json({
+        team: [],
+        total: 0,
+        message: "Team management is available for advertisers"
+      });
+    } catch (error) {
+      console.error("Partner team error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Partner Postbacks endpoint
+  app.get("/api/partner/postbacks", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const userId = authUser.id;
+      
+      // Get postback profiles for this partner
+      // For now, return empty array since we don't have proper postback profiles setup for partners
+      const profiles: any[] = [];
+
+      res.json({
+        profiles: profiles.map(profile => ({
+          ...profile,
+          id: profile.id.toString(),
+          owner_id: profile.owner_id.toString(),
+          scope_id: profile.scope_id?.toString()
+        })),
+        total: profiles.length
+      });
+    } catch (error) {
+      console.error("Partner postbacks error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Endpoint для обновления токена в браузере
   app.get("/api/get-fresh-token", async (req, res) => {
     try {
