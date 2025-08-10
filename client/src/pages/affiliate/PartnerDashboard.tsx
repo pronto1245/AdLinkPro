@@ -22,6 +22,7 @@ import {
   Target,
   AlertTriangle,
   RefreshCw,
+  CheckCircle,
 } from "lucide-react";
 
 interface MetricCardProps {
