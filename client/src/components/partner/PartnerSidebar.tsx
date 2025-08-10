@@ -10,7 +10,9 @@ import {
   LogOut,
   Home,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  User,
+  Cog
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +60,16 @@ const baseSidebarItems: Omit<SidebarItem, 'badge'>[] = [
     title: "Постбеки",
     href: "/affiliate/postbacks",
     icon: Settings,
+  },
+  {
+    title: "Профиль",
+    href: "/affiliate/profile",
+    icon: User,
+  },
+  {
+    title: "Настройки",
+    href: "/affiliate/settings",
+    icon: Cog,
   },
 ];
 
