@@ -30,10 +30,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const savedToken = localStorage.getItem('auth_token');
-    if (savedToken) {
+    // Проверяем что токен не является строкой "null" или пустой строкой
+    if (savedToken && savedToken !== 'null' && savedToken !== 'undefined' && savedToken.trim() !== '') {
       setToken(savedToken);
       fetchUser(savedToken);
     } else {
+      // Очищаем некорректные токены
+      if (savedToken) {
+        localStorage.removeItem('auth_token');
+      }
       setLoading(false);
     }
   }, []);

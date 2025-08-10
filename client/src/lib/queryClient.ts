@@ -37,7 +37,22 @@ export async function apiRequest(
   if (localStorage.getItem('token')) {
     localStorage.removeItem('token');
   }
-  const token = localStorage.getItem('auth_token');
+  let token = localStorage.getItem('auth_token');
+  
+  // FIX: Check that token is not null string and not empty
+  if (token === 'null' || token === 'undefined' || !token || token.trim() === '') {
+    console.log('🚨 Invalid token detected, clearing:', token);
+    localStorage.removeItem('auth_token');
+    token = null;
+  }
+  
+  console.log('🔐 apiRequest token check:', {
+    url,
+    method: httpMethod,
+    hasToken: !!token,
+    tokenStart: token ? token.substring(0, 20) + '...' : 'NO_TOKEN'
+  });
+  
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...customHeaders
@@ -74,7 +89,8 @@ export const getQueryFn: <T>(options: {
     const token = localStorage.getItem('auth_token');
     const headers: Record<string, string> = {};
     
-    if (token) {
+    // FIX: Check that token is not null string and not empty
+    if (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') {
       headers.Authorization = `Bearer ${token}`;
     }
 
