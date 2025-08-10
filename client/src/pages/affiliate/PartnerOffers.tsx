@@ -307,21 +307,17 @@ export default function PartnerOffers() {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => navigate(`/affiliate/offers/${offer.id}`)}
+                                  >
                                     <Target className="h-4 w-4 mr-2" />
                                     {t('offers.details', 'Детали')}
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => navigate(`/affiliate/statistics?offer=${offer.id}`)}
+                                  >
                                     <BarChart3 className="h-4 w-4 mr-2" />
                                     {t('offers.statistics', 'Статистика')}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    <MousePointer className="h-4 w-4 mr-2" />
-                                    {t('offers.clicks', 'Клики')}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    <Zap className="h-4 w-4 mr-2" />
-                                    {t('offers.conversions', 'Конверсии')}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -465,21 +461,17 @@ export default function PartnerOffers() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => navigate(`/affiliate/offers/${offer.id}`)}
+                                >
                                   <Target className="h-4 w-4 mr-2" />
                                   {t('offers.details', 'Детали')}
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => navigate(`/affiliate/statistics?offer=${offer.id}`)}
+                                >
                                   <BarChart3 className="h-4 w-4 mr-2" />
                                   {t('offers.statistics', 'Статистика')}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <MousePointer className="h-4 w-4 mr-2" />
-                                  {t('offers.clicks', 'Клики')}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Zap className="h-4 w-4 mr-2" />
-                                  {t('offers.conversions', 'Конверсии')}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
