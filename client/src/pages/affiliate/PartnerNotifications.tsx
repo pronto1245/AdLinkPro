@@ -45,7 +45,25 @@ export default function PartnerNotifications() {
   // Мутация для отметки как прочитанное
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: string) => {
-      await apiRequest(`/api/notifications/${notificationId}/read`, 'PUT');
+      // CRITICAL FIX: Получаем свежий токен прямо в мутации
+      const token = localStorage.getItem('auth_token');
+      if (!token || token === 'null' || token === 'undefined') {
+        throw new Error('No valid token found');
+      }
+      
+      const response = await fetch(`/api/notifications/${notificationId}/read`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
@@ -64,7 +82,25 @@ export default function PartnerNotifications() {
   // Мутация для удаления уведомления
   const deleteNotificationMutation = useMutation({
     mutationFn: async (notificationId: string) => {
-      await apiRequest(`/api/notifications/${notificationId}`, 'DELETE');
+      // CRITICAL FIX: Получаем свежий токен прямо в мутации
+      const token = localStorage.getItem('auth_token');
+      if (!token || token === 'null' || token === 'undefined') {
+        throw new Error('No valid token found');
+      }
+      
+      const response = await fetch(`/api/notifications/${notificationId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
