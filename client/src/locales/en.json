@@ -94,7 +94,8 @@
     "todayConversions": "Today's Conversions",
     "todayRevenue": "Today's Revenue",
     "recentActivity": "Recent Activity",
-    "topOffers": "Top Offers"
+    "topOffers": "Top Offers",
+    "refresh": "Refresh"
   },
   "offers": {
     "title": "Offers",

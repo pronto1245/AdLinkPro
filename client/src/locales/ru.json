@@ -94,7 +94,8 @@
     "todayConversions": "Конверсии сегодня",
     "todayRevenue": "Доход сегодня",
     "recentActivity": "Последняя активность",
-    "topOffers": "Топ офферы"
+    "topOffers": "Топ офферы",
+    "refresh": "Обновить"
   },
   "offers": {
     "title": "Офферы",
