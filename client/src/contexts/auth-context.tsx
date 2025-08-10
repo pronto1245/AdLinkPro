@@ -112,10 +112,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log('🧹 Clearing React Query cache after login');
           (window as any).queryClient.clear();
         }
-        
-        // CRITICAL: Полностью перезагружаем страницу для сброса всех замыканий
-        console.log('🔄 Reloading page to reset all closures');
-        setTimeout(() => window.location.reload(), 100);
       } else {
         console.error('❌ Invalid token received from server:', data.token);
         throw new Error('Invalid token received from server');
