@@ -82,11 +82,20 @@ export default function PartnerProfile() {
   });
 
   const handleSave = () => {
-    // Валидация обязательных полей
-    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+    // Проверяем, что whitespace-only значения не допускаются
+    if (formData.firstName.trim() === '' && formData.firstName.length > 0) {
       toast({
-        title: "Заполните обязательные поля",
-        description: "Имя и фамилия обязательны для заполнения.",
+        title: "Неверное значение имени",
+        description: "Имя не может состоять только из пробелов.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (formData.lastName.trim() === '' && formData.lastName.length > 0) {
+      toast({
+        title: "Неверное значение фамилии", 
+        description: "Фамилия не может состоять только из пробелов.",
         variant: "destructive",
       });
       return;
