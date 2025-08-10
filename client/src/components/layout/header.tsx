@@ -52,11 +52,11 @@ export default function Header({ title, subtitle, children }: HeaderProps) {
           {/* Language Switcher */}
           <Select value={language} onValueChange={setLanguage}>
             <SelectTrigger className="w-[120px] text-sm border-0 bg-transparent" data-testid="language-switcher">
-              <SelectValue />
+              <SelectValue placeholder={t('language.select')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="en">🇺🇸 English</SelectItem>
-              <SelectItem value="ru">🇷🇺 Русский</SelectItem>
+              <SelectItem value="en">🇺🇸 {t('language.english')}</SelectItem>
+              <SelectItem value="ru">🇷🇺 {t('language.russian')}</SelectItem>
             </SelectContent>
           </Select>
           
@@ -98,20 +98,20 @@ export default function Header({ title, subtitle, children }: HeaderProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer" data-testid="menu-profile">
                 <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
+                <span>{t('common.profile')}</span>
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer" data-testid="menu-settings">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+                <span>{t('common.settings')}</span>
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer" data-testid="menu-help">
                 <HelpCircle className="mr-2 h-4 w-4" />
-                <span>Help</span>
+                <span>{t('navigation.help')}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer" onClick={logout} data-testid="menu-logout">
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span>{t('common.logout')}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Card, 
@@ -86,6 +87,7 @@ export default function AccessRequestsManager() {
   const [requestMessage, setRequestMessage] = useState("");
   
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   // Загрузка запросов доступа партнера
@@ -451,7 +453,7 @@ export default function AccessRequestsManager() {
                                 onClick={() => window.location.href = `/affiliate/offers/${request.offer?.id}`}
                                 data-testid={`button-get-link-${request.id}`}
                               >
-                                Забрать ссылку
+                                {t('offers.getLink', 'Забрать ссылку')}
                               </Button>
                             )}
                             
@@ -464,12 +466,12 @@ export default function AccessRequestsManager() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setSelectedRequest(request)}>
                                   <Eye className="h-4 w-4 mr-2" />
-                                  Детали
+                                  {t('offers.details', 'Детали')}
                                 </DropdownMenuItem>
                                 {request.status === 'approved' && request.offer && (
                                   <DropdownMenuItem onClick={() => window.location.href = `/affiliate/offers/${request.offer?.id}`}>
                                     <Globe className="h-4 w-4 mr-2" />
-                                    Перейти к офферу
+                                    {t('offers.viewDetails', 'Перейти к офферу')}
                                   </DropdownMenuItem>
                                 )}
                               </DropdownMenuContent>

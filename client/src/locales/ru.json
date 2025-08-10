@@ -43,6 +43,11 @@
     "active": "Включен",
     "disabled": "Отключен",
     "confirmDelete": "Вы уверены, что хотите удалить?",
+    "copied": "Скопировано",
+    "copiedToClipboard": "скопировано в буфер обмена",
+    "accessGranted": "Доступ открыт",
+    "available": "Доступен",
+    "rejected": "Отклонено",
     "payoutType": "Тип выплаты"
   },
   "theme": {
@@ -266,7 +271,8 @@
   },
   "language": {
     "russian": "Русский",
-    "english": "English"
+    "english": "English",
+    "select": "Выбрать язык"
   },
   "navigation": {
     "dashboard": "Дашборд",

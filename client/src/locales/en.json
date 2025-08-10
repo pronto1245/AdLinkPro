@@ -34,20 +34,18 @@
     "refresh": "Refresh",
     "name": "Name",
     "payoutType": "Payout Type",
-    "login": "Login",
     "username": "Username",
     "email": "Email",
     "password": "Password",
     "sign_in": "Sign In",
-    "loading": "Loading...",
     "active": "Active",
     "disabled": "Disabled",
     "confirmDelete": "Are you sure you want to delete?",
-    "login": "Login",
-    "username": "Username",
-    "email": "Email", 
-    "password": "Password",
-    "sign_in": "Sign In"
+    "copied": "Copied",
+    "copiedToClipboard": "copied to clipboard",
+    "accessGranted": "Access Granted",
+    "available": "Available",
+    "rejected": "Rejected"
   },
   "theme": {
     "light": "Light",
@@ -218,7 +216,7 @@
     "requestAccess": "Request access",
     "accessRequested": "Access requested",
     "accessApproved": "Access approved",
-    "getLink": "Get link",
+    "getLink": "Get Link",
     "viewDetails": "View details",
     "category": "Category",
     "payout": "Payout",
@@ -232,10 +230,8 @@
     "requestSentDesc": "Your access request has been sent to the advertiser",
     "requestError": "Failed to send request",
     "loading": "Loading offers...",
-    "getLink": "Get Link",
     "pending": "Pending",
     "rejected": "Rejected",
-    "requestAccess": "Request Access",
     "accessApprovedTooltip": "Access approved - get link",
     "requestPendingTooltip": "Request sent, awaiting advertiser review",
     "accessRejected": "Access rejected",
@@ -269,8 +265,9 @@
     "system": "System theme"
   },
   "language": {
-    "russian": "Русский",
-    "english": "English"
+    "russian": "Русский", 
+    "english": "English",
+    "select": "Select Language"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -281,7 +278,8 @@
     "postbacks": "Postbacks",
     "profile": "Profile",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "help": "Help"
   },
   "common": {
     "error": "Error",

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   Table,
   TableBody,
@@ -78,6 +79,7 @@ export default function PartnerOffers() {
   const [selectedOffer, setSelectedOffer] = useState<PartnerOffer | null>(null);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const { data: offers = [], isLoading } = useQuery<PartnerOffer[]>({
@@ -104,8 +106,8 @@ export default function PartnerOffers() {
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Скопировано",
-      description: `${label} скопирована в буфер обмена`,
+      title: t('common.copied'),
+      description: `${label} ${t('common.copiedToClipboard')}`,
     });
   };
 
@@ -121,28 +123,28 @@ export default function PartnerOffers() {
         return (
           <Badge className="bg-green-500 hover:bg-green-600 text-white">
             <CheckCircle className="w-3 h-3 mr-1" />
-            Доступ открыт
+            {t('common.accessGranted')}
           </Badge>
         );
       case 'pending':
         return (
           <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">
             <Clock className="w-3 h-3 mr-1" />
-            Ожидание
+            {t('common.pending')}
           </Badge>
         );
       case 'rejected':
         return (
           <Badge className="bg-red-500 hover:bg-red-600 text-white">
             <XCircle className="w-3 h-3 mr-1" />
-            Отклонено
+            {t('common.rejected')}
           </Badge>
         );
       case 'available':
         return (
           <Badge className="bg-blue-500 hover:bg-blue-600 text-white">
             <AlertCircle className="w-3 h-3 mr-1" />
-            Доступен
+            {t('common.available')}
           </Badge>
         );
       default:
