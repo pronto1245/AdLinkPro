@@ -61,7 +61,7 @@ interface DNSInstructions {
 
 export function CustomDomainManager() {
   const [newDomain, setNewDomain] = useState('');
-  const [domainType, setDomainType] = useState<'cname' | 'a_record'>('cname');
+  const [domainType, setDomainType] = useState<'cname' | 'a_record' | 'txt_record'>('cname');
   const [selectedDomain, setSelectedDomain] = useState<CustomDomain | null>(null);
   const [showInstructions, setShowInstructions] = useState(false);
   
@@ -76,7 +76,7 @@ export function CustomDomainManager() {
 
   // Добавление домена
   const addDomainMutation = useMutation({
-    mutationFn: async (data: { domain: string; type: 'cname' | 'a_record' }) => {
+    mutationFn: async (data: { domain: string; type: 'cname' | 'a_record' | 'txt_record' }) => {
       return apiRequest('/api/advertiser/profile/domains', 'POST', data);
     },
     onSuccess: (data) => {
@@ -282,13 +282,14 @@ export function CustomDomainManager() {
             </div>
             <div>
               <Label htmlFor="domain-type">Тип записи</Label>
-              <Select value={domainType} onValueChange={(value: 'cname' | 'a_record') => setDomainType(value)}>
+              <Select value={domainType} onValueChange={(value: 'cname' | 'a_record' | 'txt_record') => setDomainType(value)}>
                 <SelectTrigger data-testid="select-domain-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="cname">CNAME (рекомендуется)</SelectItem>
                   <SelectItem value="a_record">A запись</SelectItem>
+                  <SelectItem value="txt_record">TXT запись</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -433,7 +434,7 @@ export function CustomDomainManager() {
                                   <Label className="text-sm font-semibold">Тип записи</Label>
                                   <div className="flex items-center gap-2 mt-1">
                                     <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">
-                                      {domain.type === 'cname' ? 'CNAME' : domain.type === 'a_record' ? 'TXT' : 'TXT'}
+                                      {domain.type === 'cname' ? 'CNAME' : 'TXT'}
                                     </code>
                                   </div>
                                 </div>
