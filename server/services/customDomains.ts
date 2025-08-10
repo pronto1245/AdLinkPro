@@ -22,7 +22,9 @@ export class CustomDomainService {
     type?: 'a_record' | 'cname';
   }): Promise<CustomDomain> {
     const verificationValue = this.generateVerificationValue();
-    const verificationRecord = `_platform-verify.${data.domain}`;
+    const targetValue = data.type === 'cname' 
+      ? 'affiliate-tracker.replit.app' 
+      : '192.168.1.100'; // Пример IP для A записи
 
     const [customDomain] = await db
       .insert(customDomains)
@@ -31,8 +33,10 @@ export class CustomDomainService {
         domain: data.domain.toLowerCase(),
         type: data.type || 'cname',
         verificationValue,
-        verificationRecord,
+        targetValue,
         status: 'pending',
+        sslStatus: 'none',
+        isActive: false
       })
       .returning();
 
