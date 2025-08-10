@@ -52,18 +52,21 @@ const ROLE_PERMISSIONS = {
     name: 'Байер',
     color: 'bg-blue-100 text-blue-800',
     icon: <MousePointer className="h-4 w-4" />,
+    permissions: ['view_offers', 'generate_links', 'view_statistics'],
     defaultPermissions: ['view_offers', 'generate_links', 'view_statistics']
   },
   analyst: {
     name: 'Аналитик', 
     color: 'bg-green-100 text-green-800',
     icon: <BarChart3 className="h-4 w-4" />,
+    permissions: ['view_offers', 'view_statistics', 'view_creatives'],
     defaultPermissions: ['view_offers', 'view_statistics', 'view_creatives']
   },
   manager: {
     name: 'Менеджер',
     color: 'bg-purple-100 text-purple-800', 
     icon: <Shield className="h-4 w-4" />,
+    permissions: ['view_offers', 'generate_links', 'view_statistics', 'view_creatives', 'manage_team'],
     defaultPermissions: ['view_offers', 'generate_links', 'view_statistics', 'view_creatives', 'manage_team']
   }
 };
@@ -137,10 +140,11 @@ export default function TeamManagement() {
         description: "Информация об участнике команды обновлена",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Update member error:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось обновить участника команды",
+        description: error?.message || "Не удалось обновить участника команды",
         variant: "destructive",
       });
     }
@@ -528,6 +532,145 @@ export default function TeamManagement() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Member Modal */}
+      {editingMember && (
+        <Dialog open={!!editingMember} onOpenChange={() => setEditingMember(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Редактировать участника команды</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Email</Label>
+                <Input 
+                  value={editingMember.email} 
+                  disabled 
+                  className="bg-gray-50"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Email нельзя изменить
+                </p>
+              </div>
+              
+              <div>
+                <Label>Имя пользователя</Label>
+                <Input 
+                  value={editingMember.username} 
+                  disabled 
+                  className="bg-gray-50"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Имя пользователя нельзя изменить
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="editRole">Роль</Label>
+                <Select 
+                  value={editingMember.role} 
+                  onValueChange={(role: 'buyer' | 'analyst' | 'manager') => {
+                    const defaultPermissions = ROLE_PERMISSIONS[role].defaultPermissions;
+                    setEditingMember(prev => prev ? {
+                      ...prev,
+                      role,
+                      permissions: defaultPermissions
+                    } : null);
+                  }}
+                >
+                  <SelectTrigger data-testid="select-edit-role">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(ROLE_PERMISSIONS).map(([key, role]) => (
+                      <SelectItem key={key} value={key}>
+                        <div className="flex items-center gap-2">
+                          {role.icon}
+                          {role.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="editSubIdPrefix">Префикс SubID</Label>
+                <Input
+                  id="editSubIdPrefix"
+                  value={editingMember.subIdPrefix}
+                  onChange={(e) => setEditingMember(prev => prev ? {
+                    ...prev,
+                    subIdPrefix: e.target.value
+                  } : null)}
+                  placeholder="buyer1"
+                  data-testid="input-edit-subid"
+                />
+              </div>
+
+              <div>
+                <Label>Разрешения</Label>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {AVAILABLE_PERMISSIONS.map(permission => (
+                    <div key={permission.id} className="flex items-start space-x-2">
+                      <Checkbox
+                        id={`edit-${permission.id}`}
+                        checked={editingMember.permissions.includes(permission.id)}
+                        onCheckedChange={(checked) => {
+                          setEditingMember(prev => prev ? {
+                            ...prev,
+                            permissions: checked
+                              ? [...prev.permissions, permission.id]
+                              : prev.permissions.filter(p => p !== permission.id)
+                          } : null);
+                        }}
+                        data-testid={`checkbox-edit-permission-${permission.id}`}
+                      />
+                      <div className="grid gap-1.5 leading-none">
+                        <label 
+                          htmlFor={`edit-${permission.id}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {permission.name}
+                        </label>
+                        <p className="text-xs text-muted-foreground">
+                          {permission.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setEditingMember(null)}
+                  data-testid="button-cancel-edit"
+                >
+                  Отмена
+                </Button>
+                <Button 
+                  onClick={() => {
+                    if (editingMember) {
+                      updateMemberMutation.mutate({
+                        id: editingMember.id,
+                        role: editingMember.role,
+                        permissions: editingMember.permissions,
+                        subIdPrefix: editingMember.subIdPrefix
+                      });
+                    }
+                  }}
+                  disabled={updateMemberMutation.isPending}
+                  data-testid="button-save-edit"
+                >
+                  {updateMemberMutation.isPending ? 'Сохранение...' : 'Сохранить'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
