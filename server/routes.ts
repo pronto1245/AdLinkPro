@@ -3416,6 +3416,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Last name cannot be empty" });
       }
       
+      // Validate Telegram if provided
+      if (updateData.telegram && updateData.telegram.trim()) {
+        const telegramValue = updateData.telegram.trim().replace(/^@/, '');
+        const telegramRegex = /^[a-zA-Z0-9_]{5,32}$/;
+        if (!telegramRegex.test(telegramValue)) {
+          return res.status(400).json({ 
+            error: "Invalid Telegram username format. Must be 5-32 characters (letters, digits, underscores only)" 
+          });
+        }
+        updateData.telegram = '@' + telegramValue;
+      }
+
       // Filter allowed fields for partner profile updates
       const allowedFields = [
         'firstName', 'lastName', 'phone', 'company', 
@@ -3438,8 +3450,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Partner profile updated successfully for user:", authUser.id, "fields:", Object.keys(filteredData));
       
-      // Return updated profile without password
-      const { passwordHash, ...profileData } = updatedUser;
+      // Return updated profile without sensitive fields
+      const { passwordHash, password, sessionToken, twoFactorSecret, ...profileData } = updatedUser;
       res.json(profileData);
     } catch (error) {
       console.error("Update partner profile error:", error);
