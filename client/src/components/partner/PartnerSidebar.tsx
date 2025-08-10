@@ -76,6 +76,12 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
     enabled: !!user
   });
 
+  // Fetch notifications count
+  const { data: notifications = [] } = useQuery<any[]>({
+    queryKey: ['/api/notifications'],
+    enabled: !!user
+  });
+
   // Create sidebar items with real data
   const sidebarItems: SidebarItem[] = baseSidebarItems.map(item => {
     if (item.title === "Офферы") {
@@ -165,6 +171,7 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
           href="/affiliate/notifications"
           className={cn(
             "flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-black dark:text-white",
+            location === "/affiliate/notifications" && "bg-primary text-primary-foreground"
           )}
           title={collapsed ? "Уведомления" : undefined}
         >
@@ -172,7 +179,11 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
           {!collapsed && (
             <>
               <span className="flex-1">Уведомления</span>
-              <Badge variant="destructive" className="text-xs">2</Badge>
+              {notifications.filter((n: any) => !n.is_read).length > 0 && (
+                <Badge variant="destructive" className="text-xs">
+                  {notifications.filter((n: any) => !n.is_read).length}
+                </Badge>
+              )}
             </>
           )}
         </Link>

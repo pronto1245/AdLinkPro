@@ -8,6 +8,7 @@ import { LanguageProvider } from "./contexts/language-context";
 import { SidebarProvider } from "./contexts/sidebar-context";
 import { ThemeProvider } from "./contexts/theme-context";
 import { NotificationProvider } from "@/components/NotificationToast";
+import { NotificationProvider as PushNotificationProvider } from "./components/ui/notification-provider";
 import { WebSocketManager } from "@/components/WebSocketManager";
 import RoleBasedLayout from "./components/layout/RoleBasedLayout";
 import NotFound from "./pages/NotFound";
@@ -572,11 +573,13 @@ function App() {
           <LanguageProvider>
             <AuthProvider>
               <NotificationProvider>
-                <SidebarProvider>
-                  <Toaster />
-                  <WebSocketManager />
-                  <Router />
-                </SidebarProvider>
+                <PushNotificationProvider>
+                  <SidebarProvider>
+                    <Toaster />
+                    <WebSocketManager />
+                    <Router />
+                  </SidebarProvider>
+                </PushNotificationProvider>
               </NotificationProvider>
             </AuthProvider>
           </LanguageProvider>
