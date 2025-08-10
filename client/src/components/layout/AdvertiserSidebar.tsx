@@ -18,83 +18,7 @@ import {
   Send,
   Eye
 } from 'lucide-react';
-
-const sidebarItems = [
-  {
-    title: 'Главная',
-    href: '/advertiser',
-    icon: Home,
-    description: 'Обзор кабинета'
-  },
-  {
-    title: 'Мои офферы',
-    href: '/advertiser/offers',
-    icon: Target,
-    description: 'Управление офферами'
-  },
-  {
-    title: 'Полученные офферы',
-    href: '/advertiser/received-offers',
-    icon: Download,
-    description: 'Офферы от поставщиков'
-  },
-  {
-    title: 'Партнёры',
-    href: '/advertiser/partners',
-    icon: Users,
-    description: 'Управление партнёрами'
-  },
-  {
-    title: 'Запросы доступа',
-    href: '/advertiser/access-requests',
-    icon: MessageSquare,
-    description: 'Обработка запросов партнёров на доступ к офферам'
-  },
-
-  {
-    title: 'Финансы',
-    href: '/advertiser/finances',
-    icon: Wallet,
-    description: 'Финансовые операции'
-  },
-  {
-    title: 'Командный режим',
-    href: '/advertiser/team',
-    icon: Users,
-    description: 'Управление командой и права доступа'
-  },
-  {
-    title: 'Антифрод',
-    href: '/advertiser/antifraud',
-    icon: Shield,
-    description: 'Система защиты от фродового трафика'
-  },
-  {
-    title: 'Аналитика',
-    href: '/advertiser/analytics',
-    icon: BarChart3,
-    description: 'Детальная аналитика и отчёты'
-  },
-  {
-    title: 'Постбеки',
-    href: '/advertiser/postbacks',
-    icon: Send,
-    description: 'Настройка интеграций с трекерами'
-  },
-  {
-    title: 'Профиль',
-    href: '/advertiser/profile',
-    icon: Settings,
-    description: 'Настройки профиля'
-  },
-
-  {
-    title: 'Документы',
-    href: '/advertiser/documents',
-    icon: FileText,
-    description: 'Документооборот'
-  }
-];
+import { useTranslation } from 'react-i18next';
 
 interface AdvertiserSidebarProps {
   isMobile?: boolean;
@@ -104,6 +28,84 @@ interface AdvertiserSidebarProps {
 export default function AdvertiserSidebar({ isMobile = false, onClose }: AdvertiserSidebarProps) {
   const [location] = useLocation();
   const { collapsed, toggleCollapsed } = useSidebar();
+  const { t } = useTranslation();
+
+  const sidebarItems = [
+  {
+    title: t('sidebar.home'),
+    href: '/advertiser',
+    icon: Home,
+    description: t('sidebar.homeDesc')
+  },
+  {
+    title: t('sidebar.myOffers'),
+    href: '/advertiser/offers',
+    icon: Target,
+    description: t('sidebar.myOffersDesc')
+  },
+  {
+    title: t('sidebar.receivedOffers'),
+    href: '/advertiser/received-offers',
+    icon: Download,
+    description: t('sidebar.receivedOffersDesc')
+  },
+  {
+    title: t('sidebar.partners'),
+    href: '/advertiser/partners',
+    icon: Users,
+    description: t('sidebar.partnersDesc')
+  },
+  {
+    title: t('sidebar.accessRequests'),
+    href: '/advertiser/access-requests',
+    icon: MessageSquare,
+    description: t('sidebar.accessRequestsDesc')
+  },
+
+  {
+    title: t('sidebar.finances'),
+    href: '/advertiser/finances',
+    icon: Wallet,
+    description: t('sidebar.financesDesc')
+  },
+  {
+    title: t('sidebar.teamMode'),
+    href: '/advertiser/team',
+    icon: Users,
+    description: t('sidebar.teamModeDesc')
+  },
+  {
+    title: t('sidebar.antifraud'),
+    href: '/advertiser/antifraud',
+    icon: Shield,
+    description: t('sidebar.antifraudDesc')
+  },
+  {
+    title: t('sidebar.analytics'),
+    href: '/advertiser/analytics',
+    icon: BarChart3,
+    description: t('sidebar.analyticsDesc')
+  },
+  {
+    title: t('sidebar.postbacks'),
+    href: '/advertiser/postbacks',
+    icon: Send,
+    description: t('sidebar.postbacksDesc')
+  },
+  {
+    title: t('sidebar.profile'),
+    href: '/advertiser/profile',
+    icon: Settings,
+    description: t('sidebar.profileDesc')
+  },
+
+  {
+    title: t('sidebar.documents'),
+    href: '/advertiser/documents',
+    icon: FileText,
+    description: t('sidebar.documentsDesc')
+  }
+];
 
   return (
     <div 
