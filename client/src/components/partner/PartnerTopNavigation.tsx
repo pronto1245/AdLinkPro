@@ -18,7 +18,7 @@ import { useQuery } from '@tanstack/react-query';
 
 export function PartnerTopNavigation() {
   const { user, logout } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Fetch balance for partners
   const { data: financeData, isLoading } = useQuery<{
@@ -82,7 +82,7 @@ export function PartnerTopNavigation() {
                     <span className="font-bold text-lg text-green-700 dark:text-green-300">
                       ${financeData ? financeData.balance.toFixed(2) : '0.00'}
                     </span>
-                    <span className="text-xs text-green-600/80 dark:text-green-400/80 font-medium">Баланс</span>
+                    <span className="text-xs text-green-600/80 dark:text-green-400/80 font-medium">{i18n.language === 'ru' ? 'Баланс' : 'Balance'}</span>
                   </>
                 )}
               </div>
@@ -96,7 +96,7 @@ export function PartnerTopNavigation() {
                   <span className="font-bold text-lg text-orange-700 dark:text-orange-300">
                     ${financeData.pendingPayouts.toFixed(2)}
                   </span>
-                  <span className="text-xs text-orange-600/80 dark:text-orange-400/80 font-medium">В ожидании</span>
+                  <span className="text-xs text-orange-600/80 dark:text-orange-400/80 font-medium">{i18n.language === 'ru' ? 'В ожидании' : 'Pending'}</span>
                 </div>
               )}
             </div>
