@@ -63,10 +63,14 @@ const requireAdvertiser = async (req: express.Request, res: express.Response, ne
 // Auth middleware
 const authenticateToken = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.log('=== AUTHENTICATING TOKEN ===');
+  console.log('Request method:', req.method, 'URL:', req.url);
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   console.log('Auth header present:', !!authHeader);
   console.log('Token present:', !!token);
+  if (token) {
+    console.log('Token first 20 chars:', token.substring(0, 20) + '...');
+  }
 
   if (!token) {
     console.log('No token provided - returning 401');
@@ -1693,15 +1697,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mark notification as read
   app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
     try {
+      console.log('=== MARK NOTIFICATION AS READ ===');
       const userId = req.user?.id || req.userId;
       const notificationId = req.params.id;
+      console.log('UserId:', userId, 'NotificationId:', notificationId);
       
-      await db.execute(sql`
+      if (!userId) {
+        console.log('No userId found in request');
+        return res.status(401).json({ error: 'User ID required' });
+      }
+      
+      const result = await db.execute(sql`
         UPDATE notifications 
         SET is_read = true 
         WHERE id = ${notificationId} AND user_id = ${userId}
       `);
       
+      console.log('Update result:', result);
       res.json({ success: true });
     } catch (error) {
       console.error('Mark notification as read error:', error);
