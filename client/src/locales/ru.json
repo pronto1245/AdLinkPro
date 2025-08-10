@@ -67,7 +67,12 @@
     "update": "Обновить",
     "conversions": "Конверсии",
     "theme": "Тема",
-    "refresh": "Обновить"
+    "refresh": "Обновить",
+    "login": "Вход",
+    "username": "Имя пользователя",
+    "email": "Email",
+    "password": "Пароль", 
+    "sign_in": "Войти"
   },
   "navigation": {
     "partner": "Партнер"
@@ -138,13 +143,23 @@
   },
   "dashboard": {
     "advertiserDashboard": "Дашборд рекламодателя",
-    "performanceOverview": "Обзор эффективности",
+    "performanceOverview": "Обзор эффективности", 
     "clicks": "Клики",
     "conversions": "Конверсии",
     "revenue": "Доход",
     "epc": "EPC",
     "partnersCount": "Партнёры",
-    "offersCount": "Офферы"
+    "offersCount": "Офферы",
+    "partnerDashboard": "Панель партнера",
+    "welcomeBack": "Добро пожаловать",
+    "quickStats": "Быстрая статистика",
+    "recentActivity": "Последняя активность",
+    "availableOffers": "Доступные офферы",
+    "earnings": "Заработок",
+    "todayClicks": "Клики сегодня",
+    "thisMonth": "В этом месяце",
+    "viewAll": "Посмотреть все",
+    "noData": "Нет данных"
   },
   "postbacks": {
     "settings": "Настройки постбеков",
