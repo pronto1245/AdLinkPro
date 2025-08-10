@@ -304,7 +304,19 @@
     "testError": "Test Error",
     "postbackSent": "Postback Sent",
     "deleteProfile": "Delete Profile",
-    "editProfile": "Edit Profile"
+    "editProfile": "Edit Profile",
+    "loading": "Loading profiles...",
+    "noProfilesFound": "NO PROFILES FOUND!",
+    "debugInfo": "DEBUG - FULL INFORMATION",
+    "refreshWarning": "IF BUTTONS ARE WHITE: Refresh page (Ctrl+F5) or clear cache!",
+    "deliveryHistory": "History of postback delivery to trackers",
+    "createError": "Creation Error",
+    "deleteError": "Deletion Error",
+    "noLogsYet": "No delivery logs yet",
+    "createProfileTitle": "Create Postback Profile",
+    "createProfileDescription": "Configure integration with your tracker for automatic conversion data delivery",
+    "editProfileTitle": "Edit Profile",
+    "editProfileDescription": "Modify tracker integration settings"
   },
   "auth": {
     "login": "Sign In",

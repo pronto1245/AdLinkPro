@@ -373,7 +373,7 @@ export function AffiliatePostbacks() {
         return result;
       } catch (error) {
         console.error('🗑️ DELETE MUTATION - apiRequest error:', error);
-        throw new Error(`Ошибка удаления: ${error.message}`);
+        throw new Error(`Ошибка удаления: ${(error as any).message}`);
       }
     },
     onSuccess: (data) => {
@@ -391,10 +391,10 @@ export function AffiliatePostbacks() {
         queryClient.refetchQueries({ queryKey: ['/api/postback/profiles'] });
       }, 500);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('🗑️ DELETE MUTATION - Error:', error);
       toast({ 
-        title: 'Ошибка удаления профиля', 
+        title: t('postbacks.deleteError', 'Ошибка удаления профиля'), 
         description: `Не удалось удалить профиль: ${error.message}`,
         variant: 'destructive'
       });
@@ -655,9 +655,9 @@ export function AffiliatePostbacks() {
               console.log('🧪 MANUAL TEST CREATE PROFILE');
               const testProfile = {
                 name: `INTERFACE TEST ${Date.now()}`,
-                tracker_type: 'custom',
+                tracker_type: 'custom' as const,
                 endpoint_url: `http://test-interface.com/${Date.now()}`,
-                method: 'GET',
+                method: 'GET' as const,
                 enabled: true
               };
               console.log('🧪 Creating profile:', testProfile);
@@ -669,7 +669,7 @@ export function AffiliatePostbacks() {
 🧪 {t('postbacks.testProfile', 'ТЕСТ СОЗДАНИЯ')}
           </Button>
           <div className="ml-4 p-3 bg-red-100 border-2 border-red-400 rounded text-sm font-bold">
-            ⚠️ ЕСЛИ КНОПКИ БЕЛЫЕ: Обновите страницу (Ctrl+F5) или очистите кеш!
+⚠️ {t('postbacks.refreshWarning', 'ЕСЛИ КНОПКИ БЕЛЫЕ: Обновите страницу (Ctrl+F5) или очистите кеш!')}
           </div>
           <Button onClick={() => setIsCreateModalOpen(true)} data-testid="button-create-profile">
             <Plus className="h-4 w-4 mr-2" />
@@ -688,7 +688,7 @@ export function AffiliatePostbacks() {
           {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <RefreshCw className="h-6 w-6 animate-spin" />
-              <span className="ml-2">Загрузка профилей...</span>
+              <span className="ml-2">{t('postbacks.loading', 'Загрузка профилей...')}</span>
             </div>
           ) : (
             <div className="grid gap-4">
@@ -878,7 +878,7 @@ export function AffiliatePostbacks() {
                               
                             } catch (error) {
                               console.error('🚨 Исключение при удалении:', error);
-                              alert(`❌ Ошибка сети: ${error.message}`);
+                              alert(`❌ Ошибка сети: ${(error as any).message}`);
                             }
                           }}
                           style={{
@@ -915,7 +915,7 @@ export function AffiliatePostbacks() {
                 </Card>
               )) : (
                 <div className="text-center py-8 bg-red-50 border-4 border-red-500 rounded">
-                  <h2 className="text-red-800 font-bold text-xl mb-4">ПРОФИЛИ НЕ НАЙДЕНЫ!</h2>
+                  <h2 className="text-red-800 font-bold text-xl mb-4">{t('postbacks.noProfilesFound', 'ПРОФИЛИ НЕ НАЙДЕНЫ!')}</h2>
                   <p className="text-red-600 mb-2">Всего профилей: {profiles?.length || 0}</p>
                   <p className="text-red-600 mb-2">Тип данных: {typeof profiles}</p>
                   <p className="text-red-600 mb-4">Это массив: {Array.isArray(profiles) ? 'Да' : 'Нет'}</p>
@@ -932,14 +932,14 @@ export function AffiliatePostbacks() {
               )}
 
               <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
-                <h4 className="font-bold text-yellow-800 mb-2">ОТЛАДКА - ПОЛНАЯ ИНФОРМАЦИЯ</h4>
+                <h4 className="font-bold text-yellow-800 mb-2">{t('postbacks.debugInfo', 'ОТЛАДКА - ПОЛНАЯ ИНФОРМАЦИЯ')}</h4>
                 <div className="text-sm space-y-1">
                   <p><strong>Количество профилей:</strong> {profiles?.length || 0}</p>
                   <p><strong>isLoading:</strong> {isLoading ? 'true' : 'false'}</p>
                   <p><strong>deleteMutation.isPending:</strong> {deleteMutation.isPending ? 'true' : 'false'}</p>
                   <p><strong>updateMutation.isPending:</strong> {updateMutation.isPending ? 'true' : 'false'}</p>
                   <p><strong>createMutation.isPending:</strong> {createMutation.isPending ? 'true' : 'false'}</p>
-                  {profiles?.map((profile, index) => (
+                  {profiles?.map((profile: PostbackProfile, index: number) => (
                     <div key={profile.id} className="p-2 bg-white border rounded mt-2">
                       <p><strong>Профиль #{index + 1}:</strong></p>
                       <p>ID: {profile.id}</p>
@@ -957,9 +957,9 @@ export function AffiliatePostbacks() {
         <TabsContent value="logs" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Логи доставок</CardTitle>
+              <CardTitle>{t('postbacks.deliveryLogs', 'Логи доставок')}</CardTitle>
               <CardDescription>
-                История отправки постбеков в трекеры
+                {t('postbacks.deliveryHistory', 'История отправки постбеков в трекеры')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -977,7 +977,7 @@ export function AffiliatePostbacks() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {deliveries?.map((delivery: any) => (
+                    {Array.isArray(deliveries) && deliveries.map((delivery: any) => (
                       <TableRow key={delivery.id}>
                         <TableCell>
                           {new Date(delivery.created_at).toLocaleString('ru-RU')}
