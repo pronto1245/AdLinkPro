@@ -71,7 +71,7 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
   const { user, logout } = useAuth();
 
   // Fetch real offer count from API
-  const { data: offers = [] } = useQuery({
+  const { data: offers = [] } = useQuery<any[]>({
     queryKey: ['/api/partner/offers'],
     enabled: !!user
   });

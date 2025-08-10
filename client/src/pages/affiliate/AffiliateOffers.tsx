@@ -100,7 +100,7 @@ export default function AffiliateOffers() {
   const [selectedOffer, setSelectedOffer] = useState<PartnerOffer | null>(null);
 
   // Получаем доступные офферы партнера
-  const { data: offers = [], isLoading } = useQuery({
+  const { data: offers = [], isLoading } = useQuery<PartnerOffer[]>({
     queryKey: ['/api/partner/offers'],
     enabled: !!user
   });
@@ -453,7 +453,7 @@ export default function AffiliateOffers() {
             offer={{
               id: selectedOffer.id,
               name: selectedOffer.name,
-              advertiserName: selectedOffer.advertiserName
+              advertiser_name: selectedOffer.advertiser_name
             }}
           />
         )}
