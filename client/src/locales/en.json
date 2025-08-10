@@ -38,6 +38,7 @@
     "email": "Email",
     "password": "Password",
     "sign_in": "Sign In",
+    "login": "Login",
     "active": "Active",
     "disabled": "Disabled",
     "confirmDelete": "Are you sure you want to delete?",
@@ -47,8 +48,8 @@
     "available": "Available",
     "rejected": "Rejected",
     "settings": "Settings",
-    "profile": "Profile",
-    "logout": "Logout", 
+    "profile": "Profile", 
+    "logout": "Logout",
     "amount": "Amount",
     "disabled": "Disabled",
     "pending": "Pending",
@@ -266,7 +267,9 @@
     "eventType": "Event Type",
     "amount": "Amount",
     "currency": "Currency",
-    "sendTest": "Send Test"
+    "sendTest": "Send Test",
+    "configuredPostbacks": "Configured Postbacks", 
+    "createPostbackProfile": "Create Postback Profile"
   },
   "auth": {
     "login": "Sign In",

@@ -39,6 +39,7 @@
     "email": "Email",
     "password": "Пароль",
     "sign_in": "Войти",
+    "login": "Вход",
     "loading": "Загрузка...",
     "active": "Включен",
     "disabled": "Отключен",
@@ -48,7 +49,7 @@
     "accessGranted": "Доступ открыт",
     "available": "Доступен",
     "rejected": "Отклонено",
-    "settings": "Настройки",
+    "settings": "Настройки", 
     "profile": "Профиль",
     "logout": "Выход",
     "amount": "Сумма",
@@ -271,7 +272,9 @@
     "eventType": "Тип события",
     "amount": "Сумма",
     "currency": "Валюта",
-    "sendTest": "Отправить тест"
+    "sendTest": "Отправить тест",
+    "configuredPostbacks": "Настроенные постбеки",
+    "createPostbackProfile": "Создать постбек профиль"
   },
   "auth": {
     "login": "Вход в систему",
