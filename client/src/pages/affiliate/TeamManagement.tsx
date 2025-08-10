@@ -119,10 +119,12 @@ export default function TeamManagement() {
         description: "Новый участник команды успешно добавлен",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Create member error:', error);
+      const errorMessage = error?.message || error?.error || "Не удалось добавить участника команды";
       toast({
         title: "Ошибка",
-        description: "Не удалось добавить участника команды",
+        description: errorMessage,
         variant: "destructive",
       });
     }
