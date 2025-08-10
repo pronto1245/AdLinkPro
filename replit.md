@@ -20,6 +20,9 @@ Platform has been comprehensively tested across all major roles and functionalit
 - **Real-time Updates**: Dashboard now shows latest 3 notifications from database with automatic updates when notifications are deleted
 - **Database Integration**: Removed all demo/mock notification data, system now uses only real database records
 - **UI Synchronization**: Changes on notifications page immediately reflect in dashboard through React Query cache invalidation
+- **JWT Token Authentication Bug**: RESOLVED critical authentication issue where React Query mutations cached invalid tokens
+- **Notification Mark as Read**: Fixed "Mark as Read" button functionality by implementing direct localStorage token access in mutations
+- **Token Caching Issue**: Solved React Query closure problem where old tokens were cached in mutation functions
 
 # User Preferences
 - **Language**: Russian language preferred ("отвечай на русском пожалуйста")

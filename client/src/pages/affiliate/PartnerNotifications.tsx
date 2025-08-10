@@ -47,9 +47,14 @@ export default function PartnerNotifications() {
     mutationFn: async (notificationId: string) => {
       // CRITICAL FIX: Получаем свежий токен прямо в мутации
       const token = localStorage.getItem('auth_token');
-      if (!token || token === 'null' || token === 'undefined') {
+      console.log('🔍 Mark as read - token check:', { token: token ? token.substring(0, 20) + '...' : 'NO_TOKEN' });
+      
+      if (!token || token === 'null' || token === 'undefined' || token.trim() === '') {
+        console.error('❌ Invalid token in markAsReadMutation:', token);
         throw new Error('No valid token found');
       }
+      
+      console.log('✅ Using token for mark as read:', token.substring(0, 20) + '...');
       
       const response = await fetch(`/api/notifications/${notificationId}/read`, {
         method: 'PUT',
@@ -59,8 +64,12 @@ export default function PartnerNotifications() {
         },
       });
       
+      console.log('📡 Mark as read response:', response.status, response.statusText);
+      
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('❌ Mark as read failed:', response.status, errorText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
       }
       
       return response.json();
