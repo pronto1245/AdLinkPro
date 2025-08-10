@@ -42,7 +42,12 @@
     "loading": "Loading...",
     "active": "Active",
     "disabled": "Disabled",
-    "confirmDelete": "Are you sure you want to delete?"
+    "confirmDelete": "Are you sure you want to delete?",
+    "login": "Login",
+    "username": "Username",
+    "email": "Email", 
+    "password": "Password",
+    "sign_in": "Sign In"
   },
   "theme": {
     "light": "Light",
@@ -226,7 +231,19 @@
     "requestSent": "Request Sent",
     "requestSentDesc": "Your access request has been sent to the advertiser",
     "requestError": "Failed to send request",
-    "loading": "Loading offers..."
+    "loading": "Loading offers...",
+    "getLink": "Get Link",
+    "pending": "Pending",
+    "rejected": "Rejected",
+    "requestAccess": "Request Access",
+    "accessApprovedTooltip": "Access approved - get link",
+    "requestPendingTooltip": "Request sent, awaiting advertiser review",
+    "accessRejected": "Access rejected",
+    "requestAccessTooltip": "Request access to offer",
+    "details": "Details",
+    "statistics": "Statistics",
+    "clicks": "Clicks",
+    "conversions": "Conversions"
   },
   "auth": {
     "login": "Sign In",

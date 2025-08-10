@@ -259,9 +259,9 @@ export default function PartnerOffers() {
                                       size="sm"
                                       className="bg-green-600 hover:bg-green-700 text-white"
                                       onClick={() => handleRequestOffer(offer.id, requestStatus)}
-                                      title="Доступ одобрен - получить ссылку"
+                                      title={t('offers.accessApprovedTooltip', 'Доступ одобрен - получить ссылку')}
                                     >
-                                      Забрать ссылку
+                                      {t('offers.getLink', 'Забрать ссылку')}
                                     </Button>
                                   );
                                 } else if (requestStatus === 'pending') {
@@ -270,9 +270,9 @@ export default function PartnerOffers() {
                                       size="sm"
                                       disabled
                                       className="bg-yellow-500 text-white cursor-not-allowed opacity-90"
-                                      title="Запрос отправлен, ожидает рассмотрения рекламодателем"
+                                      title={t('offers.requestPendingTooltip', 'Запрос отправлен, ожидает рассмотрения рекламодателем')}
                                     >
-                                      В ожидании
+                                      {t('offers.pending', 'В ожидании')}
                                     </Button>
                                   );
                                 } else if (requestStatus === 'rejected') {
@@ -281,9 +281,9 @@ export default function PartnerOffers() {
                                       size="sm"
                                       disabled
                                       className="bg-red-500 text-white cursor-not-allowed opacity-90"
-                                      title={`Доступ отклонен${offer.rejectReason ? `: ${offer.rejectReason}` : ''}`}
+                                      title={`${t('offers.accessRejected', 'Доступ отклонен')}${offer.rejectReason ? `: ${offer.rejectReason}` : ''}`}
                                     >
-                                      Отклонен
+                                      {t('offers.rejected', 'Отклонен')}
                                     </Button>
                                   );
                                 } else {
@@ -292,9 +292,9 @@ export default function PartnerOffers() {
                                       size="sm"
                                       className="bg-blue-600 hover:bg-blue-700 text-white"
                                       onClick={() => handleRequestOffer(offer.id, requestStatus)}
-                                      title="Запросить доступ к офферу"
+                                      title={t('offers.requestAccessTooltip', 'Запросить доступ к офферу')}
                                     >
-                                      Запросить
+                                      {t('offers.requestAccess', 'Запросить')}
                                     </Button>
                                   );
                                 }
@@ -309,19 +309,19 @@ export default function PartnerOffers() {
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem>
                                     <Target className="h-4 w-4 mr-2" />
-                                    Детали
+                                    {t('offers.details', 'Детали')}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem>
                                     <BarChart3 className="h-4 w-4 mr-2" />
-                                    Статистика
+                                    {t('offers.statistics', 'Статистика')}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem>
                                     <MousePointer className="h-4 w-4 mr-2" />
-                                    Клики
+                                    {t('offers.clicks', 'Клики')}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem>
                                     <Zap className="h-4 w-4 mr-2" />
-                                    Конверсии
+                                    {t('offers.conversions', 'Конверсии')}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>

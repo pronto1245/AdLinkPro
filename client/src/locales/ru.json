@@ -42,7 +42,8 @@
     "loading": "Загрузка...",
     "active": "Включен",
     "disabled": "Отключен",
-    "confirmDelete": "Вы уверены, что хотите удалить?"
+    "confirmDelete": "Вы уверены, что хотите удалить?",
+    "payoutType": "Тип выплаты"
   },
   "theme": {
     "light": "Светлая",
@@ -226,7 +227,19 @@
     "requestSent": "Запрос отправлен",
     "requestSentDesc": "Ваш запрос на доступ к офферу был отправлен рекламодателю",
     "requestError": "Не удалось отправить запрос",
-    "loading": "Загрузка офферов..."
+    "loading": "Загрузка офферов...",
+    "getLink": "Забрать ссылку",
+    "pending": "В ожидании",
+    "rejected": "Отклонен",
+    "requestAccess": "Запросить",
+    "accessApprovedTooltip": "Доступ одобрен - получить ссылку",
+    "requestPendingTooltip": "Запрос отправлен, ожидает рассмотрения рекламодателем",
+    "accessRejected": "Доступ отклонен",
+    "requestAccessTooltip": "Запросить доступ к офферу",
+    "details": "Детали",
+    "statistics": "Статистика",
+    "clicks": "Клики",
+    "conversions": "Конверсии"
   },
   "auth": {
     "login": "Вход в систему",
