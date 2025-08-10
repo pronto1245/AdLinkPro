@@ -130,7 +130,8 @@ export class CustomDomainService {
           console.log(`🔒 Инициируем выдачу SSL сертификата для ${domain.domain}`);
           
           // Выбираем между реальной и демо выдачей SSL
-          if (process.env.ENABLE_REAL_SSL === 'true') {
+          // Для arbiconnect.store принудительно включаем реальный SSL
+          if (process.env.ENABLE_REAL_SSL === 'true' || domain.domain === 'arbiconnect.store') {
             const { LetsEncryptService } = await import('./letsencrypt.js');
             await LetsEncryptService.issueRealCertificate(domain.domain, domainId);
           } else {
