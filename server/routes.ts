@@ -3408,11 +3408,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const authUser = getAuthenticatedUser(req);
       const updateData = req.body;
       
-      // Validate required fields
-      if (updateData.firstName && !updateData.firstName.trim()) {
+      // Allow empty values but not whitespace-only
+      if (updateData.firstName !== undefined && updateData.firstName !== '' && !updateData.firstName.trim()) {
         return res.status(400).json({ error: "First name cannot be empty" });
       }
-      if (updateData.lastName && !updateData.lastName.trim()) {
+      if (updateData.lastName !== undefined && updateData.lastName !== '' && !updateData.lastName.trim()) {
         return res.status(400).json({ error: "Last name cannot be empty" });
       }
       
