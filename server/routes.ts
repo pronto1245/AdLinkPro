@@ -40,6 +40,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: User;
+      userId?: string;
     }
   }
 }
@@ -97,6 +98,7 @@ const authenticateToken = async (req: express.Request, res: express.Response, ne
     
     console.log('User authenticated successfully:', user.username, 'Role:', user.role);
     req.user = user;
+    req.userId = user.id; // Добавляем userId для совместимости
     console.log('=== AUTH MIDDLEWARE SUCCESS ===');
     next();
   } catch (error) {
