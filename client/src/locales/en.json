@@ -358,7 +358,12 @@
     "help": "Help"
   },
   "common": {
-    "update": "Update",
+    "update": "Update", 
+    "create": "Create",
+    "active": "Active",
+    "settings": "Settings",
+    "profile": "Profile", 
+    "logout": "Logout",
     "error": "Error",
     "loading": "Loading...",
     "save": "Save",

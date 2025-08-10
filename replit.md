@@ -1,45 +1,33 @@
 # Overview
-This is an affiliate marketing platform designed to provide advertisers with intelligent offer management, real-time analytics, robust partner relationship tools, streamlined financial transactions, and advanced anti-fraud protection. It supports multiple user roles (super-admin, advertiser, affiliate, staff) and offers full offer management, including creative asset handling. The platform delivers real-time statistics, financial management with integrated payouts, dynamic partner approval workflows, and multi-layered security. All data updates reactively and instantly across user interfaces, ensuring a live and responsive experience. The business vision is to deliver a leading-edge, secure, and user-friendly platform that maximizes efficiency and profitability for all stakeholders in the affiliate marketing ecosystem.
-
-## Recent Changes (2025-08-10)
-- ✅ **Partner Profile Complete API Migration**: ALL partner profile components now use real APIs instead of mock data - Dashboard, Settings, Profile, Finances, Offers, Statistics, Creatives, Team Management, Postback Management, Access Requests
-- ✅ **Finance System Real API Integration**: Finances.tsx converted from mockFinanceData to `/api/partner/finance/summary` and `/api/partner/finance/transactions` endpoints with withdrawal management
-- ✅ **Enhanced Form Validation Logic**: Corrected empty field handling vs whitespace-only validation, now properly allows empty strings but blocks whitespace-only inputs
-- ✅ **Partner Profile Complete Security Audit**: Fixed all password exposure vulnerabilities in API responses, eliminated sensitive field leakage (passwordHash, sessionToken, twoFactorSecret)
-- ✅ **Real-time API Testing**: All profile endpoints tested with curl, validated data persistence, confirmed security exclusions working correctly
-- ✅ **Contact Manager System**: Support ticket system with modal form, categories and priority levels, API integration
-- ✅ **Partner Team Management System**: Complete team management module with role-based access (buyer, analyst, manager), permissions system, SubID prefixes for traffic identification, automatic offer access inheritance, and secure user creation. Full CRUD API endpoints `/api/affiliate/team` with proper authentication and data isolation. Successfully tested with real user creation and team management functionality.
-- ✅ **Top Navigation Balance Display**: Added real-time balance display in header navigation for partners with green styling and auto-refresh every 30 seconds
-- ✅ **Enhanced Finance Cards UI**: Added beautiful color coding to finance metric cards - green for current balance, orange for pending, blue for total revenue, purple for average EPC. Includes gradient backgrounds and dark mode support.
-- ✅ **Complete Translation System Implementation**: Fully implemented dynamic Russian/English translation system across all partner interface elements including navigation, offers page (titles, descriptions, tables, buttons, tooltips, status indicators), postbacks page (interface elements, forms, notifications), and common UI components. All translations switch properly between languages using i18n.language conditional logic. Added comprehensive translation keys for offer management, postback settings, user interface elements, and toast notifications. Fixed PostbacksNew.tsx missing useTranslation import issue.
+This is an affiliate marketing platform providing advertisers with intelligent offer management, real-time analytics, robust partner relationship tools, streamlined financial transactions, and advanced anti-fraud protection. It supports multiple user roles (super-admin, advertiser, affiliate, staff) and offers full offer management, including creative asset handling. The platform delivers real-time statistics, financial management with integrated payouts, dynamic partner approval workflows, and multi-layered security. All data updates reactively and instantly across user interfaces, ensuring a live and responsive experience. The business vision is to deliver a leading-edge, secure, and user-friendly platform that maximizes efficiency and profitability for all stakeholders in the affiliate marketing ecosystem.
 
 # User Preferences
 Preferred communication style: Simple, everyday language.
 
-## Development Guidelines (КРИТИЧНО - всегда применять):
-**РЕАКТИВНОСТЬ И ЖИВЫЕ ДАННЫЕ:**
-- Все таблицы (офферы, статистика, финансы, креативы) ДОЛЖНЫ подтягивать данные с сервера
-- Формы (регистрация, постбек, добавление реквизитов) ДОЛЖНЫ отправлять данные в API и получать реальные ответы
-- Где API ещё нет — используй мок-серверы, но сразу оставляй структуру под продовые эндпоинты
-- Логика ДОЛЖНА быть реактивной и живой — меняется статус оффера, падает CR — это видно в панели
+## Development Guidelines:
+**REACTIVITY AND LIVE DATA:**
+- All tables (offers, statistics, finances, creatives) MUST pull data from the server.
+- Forms (registration, postback, payment details) MUST send data to the API and receive real responses.
+- Where an API doesn't exist yet, use mock servers, but immediately leave the structure for production endpoints.
+- Logic MUST be reactive and live – if an offer status changes, or CR drops, it should be visible in the panel.
 
-**ФУНКЦИОНАЛЬНАЯ ПРИВЯЗКА:**
-- Какие данные страница должна получать (откуда — API, endpoint, query params)
-- Какие действия пользователь может выполнять (нажатия, фильтры, изменения, кнопки)
-- Что должно обновляться / перерисовываться динамически
-- Какие функции, хендлеры и вызовы должны быть уже подключены или зарезервированы под будущую логику
-- Какие стороны завязаны на эту страницу (например, статистика, роли, офферы, финансы)
-- НЕ делать "голую" вёрстку — страница должна быть сразу связана с реальными данными и действиями
+**FUNCTIONAL BINDING:**
+- What data the page should receive (from where — API, endpoint, query params).
+- What actions the user can perform (clicks, filters, changes, buttons).
+- What should update / re-render dynamically.
+- Which functions, handlers, and calls should already be connected or reserved for future logic.
+- Which parties are tied to this page (e.g., statistics, roles, offers, finances).
+- DO NOT create "naked" markup – the page must be immediately connected to real data and actions.
 
-## UI/UX Design Rules (ВАЖНО - соблюдать во всех будущих изменениях):
-- Все кнопки с иконками ОБЯЗАТЕЛЬНО должны иметь атрибут title с подсказкой на русском языке
-- Подсказки должны кратко описывать действие кнопки (например: "Копировать URL", "Удалить оффер", "Редактировать")
-- Использовать цветовое кодирование иконок для разных действий (синий - копирование, зеленый - успех, красный - удаление, фиолетовый - просмотр)
-- Hover-эффекты с соответствующими цветными фонами для улучшения UX
-- Цветовое кодирование для ролей и статусов:
-  - Роли: Супер-админ (фиолетовый), Рекламодатель (синий), Партнёр (зеленый), Сотрудник (оранжевый)
-  - Рекламодатели: Привязан (индиго), Не привязан (серый)
-  - Права доступа: Статистика (зеленый), Офферы (фиолетовый), Пользователи (синий), Финансы (желтый), API (красный)
+## UI/UX Design Rules:
+- All buttons with icons MUST have a `title` attribute with a tooltip in Russian.
+- Tooltips should briefly describe the button's action (e.g., "Копировать URL", "Удалить оффер", "Редактировать").
+- Use color coding for icons for different actions (blue - copy, green - success, red - delete, purple - view).
+- Hover effects with corresponding colored backgrounds for improved UX.
+- Color coding for roles and statuses:
+  - Roles: Super-admin (purple), Advertiser (blue), Partner (green), Staff (orange).
+  - Advertisers: Attached (indigo), Not Attached (gray).
+  - Access Rights: Statistics (green), Offers (purple), Users (blue), Finance (yellow), API (red).
 
 # System Architecture
 
@@ -50,10 +38,7 @@ Preferred communication style: Simple, everyday language.
 - **Routing**: Wouter for client-side routing.
 - **Authentication**: Context-based with JWT tokens.
 - **Internationalization**: Custom language context supporting English and Russian.
-- **Feature Specifications**: Comprehensive offer management with filtering, statistics, CRUD operations, mass actions, status management, and duplication. Includes country display with flags, geo-specific payout amounts, color-coded status indicators, and a category system. Supports drag-n-drop reordering, CSV import/export, bulk actions, A/B testing, and template management. Advertiser profiles include account, API access, custom domain, notifications, and security tabs. Real-time WebSocket notifications.
-- **Creative Management System**: Role-based creative file management with ZIP archive upload/download, drag-n-drop interface, file validation, and cloud storage integration.
-- **Tracking Links**: Ultra-short tracking link system with custom domains, 12-character `clickid` and 8-character `partner_id`. Supports partner sub-parameters. Links are hidden until approved access.
-- **Automatic Custom Domain Links (2025-08-09)**: System automatically generates tracking links with arbiconnect.store domain for all new offers. DNS configured with CNAME: arbiconnect → affiliate-tracker.replit.app. When new offers are created, system creates tracking links for all active partners with format: https://arbiconnect.store/track/{offer_name}_{partner_number}
+- **Feature Specifications**: Comprehensive offer management (filtering, statistics, CRUD, mass actions, status, duplication, country flags, geo-specific payouts, color-coded status, category system, drag-n-drop, CSV import/export, bulk actions, A/B testing, template management). Advertiser profiles (account, API access, custom domain, notifications, security tabs). Real-time WebSocket notifications. Role-based creative file management with ZIP upload/download, drag-n-drop, file validation, cloud storage. Ultra-short tracking link system with custom domains and sub-parameters. Automatic custom domain links for new offers. Complete React-based event sending system with antifraud level configuration and real-time conversion creation.
 
 ## Backend
 - **Runtime**: Node.js with Express.js.
@@ -79,18 +64,16 @@ Preferred communication style: Simple, everyday language.
 - AI-powered detection, real-time risk assessment, dynamic smart alerts, and real fraud rate calculation.
 - Enhanced security features include IP blacklisting, rate limiting, login attempt protection, 2FA, real-time notifications, device monitoring with fingerprinting, and new device login notifications.
 - Comprehensive audit logging.
+- Full antifraud policy system integrated into postback queue processing.
 
 ## System-wide Features
 - **Performance**: Server-side compression, helmet security, rate limiting, connection pooling, query caching, client-side debouncing, memoization, lazy loading.
 - **Analytics**: Full integration of data from clicks, postbacks, offers, partners, fraud detection, financial, and CRM modules into comprehensive tables.
 - **API Integrity**: All database tables and major API endpoints functional with proper HTTP responses and CRUD operations.
-- **Postback System**: Complete external tracker integration with automatic postback delivery, macro replacement, retry logic, and monitoring. Supports Keitaro, Binom, RedTrack, Voluum, and custom tracker formats. Full functional parity between partner and advertiser systems - both support CRUD operations, testing, logging, and real database storage. Keitaro integration tested with subid and external_id parameters.
+- **Postback System**: Complete external tracker integration with automatic postback delivery, macro replacement, retry logic, and monitoring. Supports Keitaro, Binom, RedTrack, Voluum, and custom tracker formats. Full functional parity between partner and advertiser systems.
 - **Automatic Partner Link Generation**: Smart link generation with unique parameters and role-based access control.
 - **Real-time Event Tracking**: Automatic postback triggers on lp_click, lead, deposit, conversion events with full data preservation.
 - **Postback Testing & Monitoring**: Built-in testing tools for validating tracker configurations and monitoring delivery success rates.
-- **Frontend Event System (2025-08-09)**: Complete React-based event sending system with fetchJSON utility, useSendEvent hook, EventSender form component, QuickEventButtons for rapid testing, and EventHistory for tracking. Integrated with toast notifications and error handling. Supports antifraud level configuration and real-time conversion creation.
-- **Antifraud Integration (2025-08-09)**: Full antifraud policy system integrated into postback queue processing. Hard level blocks all profiles globally, soft level allows profile-specific policies (softOnlyPending blocks non-pending statuses). Complete logging and statistics tracking for blocked conversions with detailed error categorization.
-- **Keitaro Integration Status (2025-08-09)**: Postbacks successfully delivered to Keitaro with HTTP 200 responses. System uses final format: `?subid={client_id}&status={status}&payout={payout}`. Full support for lead/sale conversion types - lead for registration, sale for purchase. Multiple postback profiles supported for different conversion stages. Both UUID and short click ID formats (like `3tuglu44rt`, `ktr8x9m2qw`) fully supported. System automatically replaces parameters with actual values: subid=clickId, status=lead/sale based on conversion type, payout=revenue amount. Integration confirmed working with real Keitaro statistics receiving conversions correctly.
 
 # External Dependencies
 
