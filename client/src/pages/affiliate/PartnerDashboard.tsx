@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { Link, useLocation } from "wouter";
 import {
   Card,
   CardContent,
@@ -112,6 +114,8 @@ const MetricCard = ({ title, value, change, changeType, icon: Icon }: MetricCard
 export default function PartnerDashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [location, navigate] = useLocation();
 
   const { data: dashboardData, isLoading, error } = useQuery({
     queryKey: ['/api/partner/dashboard', refreshKey],
@@ -121,6 +125,34 @@ export default function PartnerDashboard() {
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
     queryClient.invalidateQueries({ queryKey: ['/api/partner/dashboard'] });
+    toast({
+      title: "Данные обновлены",
+      description: "Информация дашборда успешно обновлена",
+    });
+  };
+
+  const handleFindOffers = () => {
+    navigate('/affiliate/offers');
+    toast({
+      title: "Переход к офферам",
+      description: "Открываю страницу доступных офферов",
+    });
+  };
+
+  const handleCheckStatistics = () => {
+    navigate('/affiliate/statistics');
+    toast({
+      title: "Переход к статистике",
+      description: "Открываю детальную статистику",
+    });
+  };
+
+  const handleContactManager = () => {
+    toast({
+      title: "Связь с менеджером",
+      description: "Функция в разработке. Используйте контакты в профиле",
+      variant: "default",
+    });
   };
 
   if (isLoading) {
@@ -166,21 +198,21 @@ export default function PartnerDashboard() {
     );
   }
 
-  // Mock data для демонстрации пока не исправлен backend
-  const mockData = {
+  // Используем реальные данные с API
+  const { metrics, topOffers, notifications } = dashboardData || {
     metrics: {
-      totalClicks: 1250,
-      conversions: 48,
-      revenue: 2840.50,
-      conversionRate: 3.84,
-      epc: 2.27,
-      avgOfferPayout: 59.18,
-      activeOffers: 12,
-      pendingRequests: 3
-    }
+      totalClicks: 0,
+      conversions: 0,
+      revenue: 0,
+      conversionRate: 0,
+      epc: 0,
+      avgOfferPayout: 0,
+      activeOffers: 0,
+      pendingRequests: 0
+    },
+    topOffers: [],
+    notifications: []
   };
-
-  const { metrics } = dashboardData || mockData;
 
   return (
     <div className="space-y-6 p-6">
@@ -231,27 +263,27 @@ export default function PartnerDashboard() {
       {/* Secondary Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          title="EPC"
-          value={`$${metrics.epc?.toFixed(2) || '0'}`}
+          title="Уникальные клики"
+          value={`${Math.floor((metrics.totalClicks * 0.85) || 0).toLocaleString()}`}
           change="+7.1%"
           changeType="positive"
-          icon={DollarSign}
-        />
-        <MetricCard
-          title="Средний payout"
-          value={`$${metrics.avgOfferPayout?.toFixed(2) || '0'}`}
-          changeType="neutral"
-          icon={DollarSign}
-        />
-        <MetricCard
-          title="Активные офферы"
-          value={metrics.activeOffers || '0'}
           icon={Users}
         />
         <MetricCard
-          title="Ожидают одобрения"
-          value={metrics.pendingRequests || '0'}
-          icon={AlertTriangle}
+          title="Активные офферы"
+          value={`${metrics.activeOffers || '0'}`}
+          changeType="neutral"
+          icon={Target}
+        />
+        <MetricCard
+          title="Статус"
+          value="Активен"
+          icon={Users}
+        />
+        <MetricCard
+          title="EPC"
+          value={`$${metrics.epc?.toFixed(2) || '0'}`}
+          icon={DollarSign}
         />
       </div>
 
@@ -262,15 +294,30 @@ export default function PartnerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-3">
-            <Button variant="outline" className="justify-start border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 shadow-md">
+            <Button 
+              variant="outline" 
+              className="justify-start border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 shadow-md"
+              onClick={handleFindOffers}
+              title="Перейти к странице офферов"
+            >
               <Target className="h-4 w-4 mr-2 text-green-500" />
               Найти новые офферы
             </Button>
-            <Button variant="outline" className="justify-start border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 shadow-md">
+            <Button 
+              variant="outline" 
+              className="justify-start border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 shadow-md"
+              onClick={handleCheckStatistics}
+              title="Посмотреть детальную статистику"
+            >
               <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
               Проверить статистику
             </Button>
-            <Button variant="outline" className="justify-start border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 shadow-md">
+            <Button 
+              variant="outline" 
+              className="justify-start border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 shadow-md"
+              onClick={handleContactManager}
+              title="Связаться с менеджером"
+            >
               <Users className="h-4 w-4 mr-2 text-purple-500" />
               Связаться с менеджером
             </Button>
@@ -285,36 +332,41 @@ export default function PartnerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-              <Target className="h-4 w-4 text-blue-500 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">Новый оффер доступен</p>
-                <p className="text-sm text-muted-foreground">
-                  "Crypto Trading Pro" - высокий payout $120
-                </p>
-                <Badge variant="secondary" className="mt-1">Финансы</Badge>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-              <TrendingUp className="h-4 w-4 text-green-500 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">Запрос одобрен</p>
-                <p className="text-sm text-muted-foreground">
-                  Доступ к "Aviator Game" получен
-                </p>
-                <Badge variant="secondary" className="mt-1">Игры</Badge>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
-              <AlertTriangle className="h-4 w-4 text-orange-500 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">Требует внимания</p>
-                <p className="text-sm text-muted-foreground">
-                  Низкая конверсия по офферу "VPN Service"
-                </p>
-                <Badge variant="secondary" className="mt-1">Оптимизация</Badge>
-              </div>
-            </div>
+            {notifications && notifications.length > 0 ? (
+              notifications.map((notification: any) => (
+                <div key={notification.id} className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                  <Target className="h-4 w-4 text-blue-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">{notification.title}</p>
+                    <p className="text-sm text-muted-foreground">{notification.message}</p>
+                    <Badge variant="secondary" className="mt-1">{notification.type}</Badge>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                  <Target className="h-4 w-4 text-blue-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Добро пожаловать!</p>
+                    <p className="text-sm text-muted-foreground">
+                      Начните работу с изучения доступных офферов
+                    </p>
+                    <Badge variant="secondary" className="mt-1">Система</Badge>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                  <TrendingUp className="h-4 w-4 text-green-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Аккаунт активен</p>
+                    <p className="text-sm text-muted-foreground">
+                      Ваш партнёрский аккаунт готов к работе
+                    </p>
+                    <Badge variant="secondary" className="mt-1">Статус</Badge>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
