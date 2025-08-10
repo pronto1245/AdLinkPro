@@ -3466,6 +3466,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Partner password change
+  app.post("/api/partner/profile/change-password", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Current password and new password are required" });
+      }
+      
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: "New password must be at least 6 characters long" });
+      }
+      
+      // Verify current password
+      const user = await storage.getUser(authUser.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Check current password
+      const passwordValid = user.passwordHash ? 
+        bcrypt.compareSync(currentPassword, user.passwordHash) : 
+        user.password === currentPassword;
+        
+      if (!passwordValid) {
+        return res.status(400).json({ error: "Invalid current password" });
+      }
+      
+      // Update password
+      const hashedPassword = bcrypt.hashSync(newPassword, 10);
+      await storage.updateUser(authUser.id, { passwordHash: hashedPassword });
+      
+      console.log("Partner password changed successfully for user:", authUser.id);
+      res.json({ success: true, message: "Password updated successfully" });
+    } catch (error) {
+      console.error("Change partner password error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Partner support ticket creation
   app.post("/api/partner/support/tickets", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {

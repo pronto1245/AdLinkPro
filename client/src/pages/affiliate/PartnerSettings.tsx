@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, Bell, Shield, Eye, EyeOff, Key, Globe, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,15 +11,23 @@ import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 export default function PartnerSettings() {
   const { user } = useAuth();
   const { language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+
+  // Загружаем профиль партнёра с сервера
+  const { data: profileData, isLoading: isProfileLoading } = useQuery({
+    queryKey: ['/api/partner/profile'],
+    queryFn: async () => await apiRequest('/api/partner/profile', 'GET')
+  });
 
   const [notifications, setNotifications] = useState({
     emailOffers: true,
@@ -43,6 +51,18 @@ export default function PartnerSettings() {
     confirmPassword: '',
   });
 
+  // Инициализация данных из профиля
+  useEffect(() => {
+    if (profileData) {
+      setSecurity(prev => ({
+        ...prev,
+        twoFactorEnabled: profileData.twoFactorEnabled || false,
+        sessionTimeout: profileData.sessionTimeout || '24',
+        ipRestrictions: profileData.ipRestrictions || '',
+      }));
+    }
+  }, [profileData]);
+
   const handleNotificationChange = (key: string, value: boolean) => {
     setNotifications(prev => ({ ...prev, [key]: value }));
   };
@@ -55,28 +75,123 @@ export default function PartnerSettings() {
     setPasswords(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleSaveSettings = async () => {
-    setIsLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+  // Мутация для сохранения общих настроек
+  const updatePreferencesMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest('/api/partner/profile', 'PATCH', data);
+    },
+    onSuccess: () => {
       toast({
         title: "Настройки сохранены",
         description: "Ваши настройки успешно обновлены.",
         variant: "default",
       });
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/profile'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    },
+    onError: (error: any) => {
       toast({
         title: "Ошибка",
-        description: "Не удалось сохранить настройки.",
+        description: error.message || "Не удалось сохранить настройки.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
+  });
+
+  const handleSaveSettings = () => {
+    // Сохраняем язык и тему локально, остальные настройки отправляем на сервер
+    const settingsData = {
+      language,
+      timezone: profileData?.timezone || 'Europe/Moscow',
+    };
+    updatePreferencesMutation.mutate(settingsData);
   };
 
-  const handlePasswordUpdate = async () => {
+  // Мутация для смены пароля
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+      return apiRequest('/api/partner/profile/change-password', 'POST', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Пароль обновлён",
+        description: "Ваш пароль успешно изменён.",
+        variant: "default",
+      });
+      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка смены пароля",
+        description: error.message || "Неверный текущий пароль или ошибка сервера.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Мутация для сохранения настроек безопасности 
+  const updateSecurityMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest('/api/partner/profile', 'PATCH', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Настройки безопасности сохранены",
+        description: "Параметры безопасности обновлены.",
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/profile'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось сохранить настройки безопасности.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Мутация для настроек уведомлений
+  const updateNotificationsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest('/api/partner/profile', 'PATCH', { settings: data });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Настройки уведомлений сохранены",
+        description: "Предпочтения уведомлений обновлены.",
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/profile'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось сохранить настройки уведомлений.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handlePasswordUpdate = () => {
+    if (!passwords.currentPassword || !passwords.newPassword) {
+      toast({
+        title: "Заполните все поля",
+        description: "Введите текущий и новый пароль.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (passwords.newPassword.length < 6) {
+      toast({
+        title: "Слабый пароль",
+        description: "Пароль должен содержать не менее 6 символов.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (passwords.newPassword !== passwords.confirmPassword) {
       toast({
         title: "Ошибка",
@@ -86,26 +201,22 @@ export default function PartnerSettings() {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Пароль обновлён",
-        description: "Ваш пароль успешно изменён.",
-        variant: "default",
-      });
-      
-      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (error) {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось изменить пароль.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    changePasswordMutation.mutate({
+      currentPassword: passwords.currentPassword,
+      newPassword: passwords.newPassword
+    });
+  };
+
+  const handleSaveSecuritySettings = () => {
+    updateSecurityMutation.mutate({
+      twoFactorEnabled: security.twoFactorEnabled,
+      sessionTimeout: security.sessionTimeout,
+      ipRestrictions: security.ipRestrictions
+    });
+  };
+
+  const handleSaveNotifications = () => {
+    updateNotificationsMutation.mutate(notifications);
   };
 
   return (
@@ -168,9 +279,14 @@ export default function PartnerSettings() {
                     </Select>
                   </div>
                 </div>
-                <Button onClick={handleSaveSettings} disabled={isLoading} data-testid="button-save-general">
+                <Button 
+                  onClick={handleSaveSettings} 
+                  disabled={updatePreferencesMutation.isPending}
+                  data-testid="button-save-general"
+                  title="Сохранить общие настройки"
+                >
                   <Save className="h-4 w-4 mr-2" />
-                  Сохранить изменения
+                  {updatePreferencesMutation.isPending ? 'Сохранение...' : 'Сохранить изменения'}
                 </Button>
               </CardContent>
             </Card>
@@ -270,9 +386,14 @@ export default function PartnerSettings() {
                     data-testid="switch-push-payments"
                   />
                 </div>
-                <Button onClick={handleSaveSettings} disabled={isLoading} data-testid="button-save-notifications">
+                <Button 
+                  onClick={handleSaveNotifications} 
+                  disabled={updateNotificationsMutation.isPending}
+                  data-testid="button-save-notifications"
+                  title="Сохранить настройки уведомлений"
+                >
                   <Save className="h-4 w-4 mr-2" />
-                  Сохранить настройки
+                  {updateNotificationsMutation.isPending ? 'Сохранение...' : 'Сохранить настройки'}
                 </Button>
               </CardContent>
             </Card>
@@ -399,10 +520,27 @@ export default function PartnerSettings() {
                     data-testid="input-confirm-password"
                   />
                 </div>
-                <Button onClick={handlePasswordUpdate} disabled={isLoading} data-testid="button-update-password">
-                  <Key className="h-4 w-4 mr-2" />
-                  Обновить пароль
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handlePasswordUpdate} 
+                    disabled={changePasswordMutation.isPending}
+                    data-testid="button-update-password"
+                    title="Обновить пароль"
+                  >
+                    <Key className="h-4 w-4 mr-2" />
+                    {changePasswordMutation.isPending ? 'Обновление...' : 'Обновить пароль'}
+                  </Button>
+                  <Button 
+                    onClick={handleSaveSecuritySettings} 
+                    disabled={updateSecurityMutation.isPending}
+                    variant="outline"
+                    data-testid="button-save-security"
+                    title="Сохранить настройки безопасности"
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    {updateSecurityMutation.isPending ? 'Сохранение...' : 'Сохранить безопасность'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -426,7 +564,19 @@ export default function PartnerSettings() {
                         Удаление аккаунта приведёт к безвозвратной потере всех данных, 
                         статистики и настроек. Это действие нельзя отменить.
                       </p>
-                      <Button variant="destructive" size="sm" data-testid="button-delete-account">
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        data-testid="button-delete-account"
+                        title="Удалить аккаунт безвозвратно"
+                        onClick={() => {
+                          toast({
+                            title: "Функция недоступна",
+                            description: "Для удаления аккаунта свяжитесь с администрацией.",
+                            variant: "default",
+                          });
+                        }}
+                      >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Удалить аккаунт
                       </Button>
