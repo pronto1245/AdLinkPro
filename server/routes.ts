@@ -3422,10 +3422,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (trimmed) {
           // Remove @ prefix and validate
           const telegramValue = trimmed.replace(/^@+/, '');
-          const telegramRegex = /^[a-zA-Z0-9_]{3,32}$/;
+          const telegramRegex = /^[a-zA-Z0-9_]+$/;
           if (!telegramRegex.test(telegramValue)) {
             return res.status(400).json({ 
-              error: "Invalid Telegram username format. Must be 3-32 characters (letters, digits, underscores only)" 
+              error: "Invalid Telegram username format. Only letters, digits, and underscores allowed" 
             });
           }
           updateData.telegram = '@' + telegramValue;

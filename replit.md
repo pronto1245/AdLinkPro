@@ -4,8 +4,8 @@ This is an affiliate marketing platform designed to provide advertisers with int
 ## Recent Changes (2025-08-10)
 - ✅ **Partner Profile Complete Security Audit**: Fixed all password exposure vulnerabilities in API responses, eliminated sensitive field leakage (passwordHash, sessionToken, twoFactorSecret)
 - ✅ **Enhanced Form Validation Logic**: Corrected empty field handling vs whitespace-only validation, now properly allows empty strings but blocks whitespace-only inputs
-- ✅ **Telegram Validation Fixed**: Updated to 3-32 character range, handles multiple @ prefixes correctly, proper regex validation with clean error messages
-- ✅ **Data Integrity Improvements**: Removed duplicate country keys (ukraine/украина conflicts), cleaned countries.ts mapping file
+- ✅ **Telegram Validation Fully Liberalized**: Removed ALL character length restrictions per user request - now accepts 1+ characters (any length), only validates format (letters, digits, underscores)
+- ✅ **Data Integrity Improvements**: Removed duplicate country keys (ukraine/украина conflicts), cleaned countries.ts mapping file completely
 - ✅ **Real-time API Testing**: All profile endpoints tested with curl, validated data persistence, confirmed security exclusions working correctly
 - ✅ **Contact Manager System**: Support ticket system with modal form, categories and priority levels, API integration
 
