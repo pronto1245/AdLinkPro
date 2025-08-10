@@ -42,15 +42,30 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   // Mark as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (id: string) => {
+      // CRITICAL FIX: Используем правильный ключ токена
+      const token = localStorage.getItem('auth_token');
+      console.log('🔍 NotificationProvider markAsRead - token check:', { 
+        token: token ? token.substring(0, 20) + '...' : 'NO_TOKEN' 
+      });
+      
+      if (!token || token === 'null' || token === 'undefined') {
+        console.error('❌ No valid token in NotificationProvider');
+        throw new Error('Authentication required');
+      }
+      
       const response = await fetch(`/api/notifications/${id}/read`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
       
+      console.log('📡 NotificationProvider response:', response.status);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ NotificationProvider request failed:', response.status, errorText);
         throw new Error('Failed to mark notification as read');
       }
       
@@ -99,7 +114,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       // Аутентификация
       ws.send(JSON.stringify({
         type: 'auth',
-        token: localStorage.getItem('token')
+        token: localStorage.getItem('auth_token')
       }));
     };
 
