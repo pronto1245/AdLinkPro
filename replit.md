@@ -5,9 +5,11 @@ This is an affiliate marketing platform providing advertisers with intelligent o
 Platform has been comprehensively tested across all major roles and functionalities. Core advertising and partner management features are validated and working correctly. API endpoints have been fixed for partner access requests and super-admin functions. Custom domain verification system has been debugged and database constraints updated. The system is production-ready with 95% of functionality tested and operational.
 
 ### Recent Fixes (August 10, 2025):
+- **Custom Domain Setup**: Successfully configured arbiconnect.store with SSL certificate from Let's Encrypt
 - **Database Schema**: Fixed custom_domains table constraint to allow 'error' status instead of 'failed'
 - **Type Safety**: Updated CustomDomainManager component to handle all domain status types including 'error'
 - **UI Consistency**: Added proper fallback handling for undefined status configurations in domain management
+- **DNS Integration**: Implemented A record verification for root domains and resolved DNS propagation issues
 
 # User Preferences
 - **Language**: Russian language preferred ("отвечай на русском пожалуйста")
