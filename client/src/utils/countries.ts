@@ -270,7 +270,6 @@ const countryNameToCode: Record<string, string> = {
   
   // Дополнительные страны
   'greece': 'GR',
-  'греция': 'GR',
   'croatia': 'HR',
   'хорватия': 'HR',
   'bulgaria': 'BG',
@@ -311,7 +310,6 @@ const countryNameToCode: Record<string, string> = {
   'марокко': 'MA',
   'tunisia': 'TN',
   'тунис': 'TN',
-  'algeria': 'DZ',
   'алжир': 'DZ',
   'libya': 'LY',
   'ливия': 'LY',
@@ -431,7 +429,6 @@ const countryNameToCode: Record<string, string> = {
   'ангола': 'AO',
   'albania': 'AL',
   'албания': 'AL',
-  'armenia': 'AM',
   'армения': 'AM',
   'azerbaijan': 'AZ',
   'азербайджан': 'AZ',

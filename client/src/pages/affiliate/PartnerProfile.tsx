@@ -35,7 +35,6 @@ export default function PartnerProfile() {
     timezone: 'UTC',
     currency: 'USD',
     telegram: '',
-    bio: '',
   });
 
   // Обновляем форму при загрузке данных
@@ -51,7 +50,6 @@ export default function PartnerProfile() {
         timezone: profileData.timezone || 'UTC',
         currency: profileData.currency || 'USD',
         telegram: profileData.telegram || '',
-        bio: profileData.bio || '',
       });
     }
   }, [profileData]);
@@ -84,6 +82,7 @@ export default function PartnerProfile() {
   });
 
   const handleSave = () => {
+    // Валидация обязательных полей
     if (!formData.firstName.trim() || !formData.lastName.trim()) {
       toast({
         title: "Заполните обязательные поля",
@@ -92,6 +91,41 @@ export default function PartnerProfile() {
       });
       return;
     }
+
+    // Валидация email (если он изменен)
+    if (formData.email && formData.email !== profileData?.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        toast({
+          title: "Неверный формат email",
+          description: "Пожалуйста, введите корректный email адрес.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Валидация телефона (если заполнен)
+    if (formData.phone.trim()) {
+      const phoneRegex = /^[\+]?[\d\s\(\)\-]{7,20}$/;
+      if (!phoneRegex.test(formData.phone.trim())) {
+        toast({
+          title: "Неверный формат телефона",
+          description: "Пожалуйста, введите корректный номер телефона.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Валидация Telegram (если заполнен)
+    if (formData.telegram.trim() && !formData.telegram.startsWith('@')) {
+      setFormData(prev => ({
+        ...prev,
+        telegram: '@' + prev.telegram.replace(/^@/, '')
+      }));
+    }
+
     updateProfileMutation.mutate(formData);
   };
 
@@ -156,14 +190,23 @@ export default function PartnerProfile() {
               Управляйте своей личной информацией и настройками аккаунта
             </p>
           </div>
-          <Button 
-            onClick={handleSave} 
-            disabled={updateProfileMutation.isPending} 
-            data-testid="button-save-profile"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            {updateProfileMutation.isPending ? 'Сохранение...' : 'Сохранить'}
-          </Button>
+          <div className="flex items-center gap-3">
+            {profileData?.partnerNumber && (
+              <div className="text-sm text-muted-foreground">
+                ID: <span className="font-mono">{profileData.partnerNumber}</span>
+              </div>
+            )}
+            <Button 
+              onClick={handleSave} 
+              disabled={updateProfileMutation.isPending || isProfileLoading}
+              className="flex items-center gap-2"
+              data-testid="button-save-profile"
+              title="Сохранить изменения в профиле"
+            >
+              <Save className="h-4 w-4" />
+              {updateProfileMutation.isPending ? 'Сохранение...' : 'Сохранить'}
+            </Button>
+          </div>
         </div>
 
         {/* Profile Information */}
