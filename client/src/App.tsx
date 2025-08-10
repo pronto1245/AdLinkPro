@@ -71,6 +71,7 @@ import { PartnerLayout } from "@/components/partner/PartnerLayout";
 import Statistics from "@/pages/affiliate/Statistics";
 import PartnerLiveAnalytics from "@/pages/affiliate/PartnerLiveAnalytics";
 import Finances from "@/pages/affiliate/Finances";
+import AccessRequests from "@/pages/partner/AccessRequests";
 import { useAuth } from "./contexts/auth-context";
 import * as React from 'react';
 import Login from "@/pages/auth/login";
@@ -446,6 +447,14 @@ function Router() {
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PartnerLayout>
             <PartnerOffers />
+          </PartnerLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/access-requests">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PartnerLayout>
+            <AccessRequests />
           </PartnerLayout>
         </ProtectedRoute>
       </Route>

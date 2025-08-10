@@ -354,11 +354,14 @@
     "dashboard": "Дашборд",
     "statistics": "Статистика",
     "offers": "Офферы",
+    "accessRequests": "Запросы доступа",
+    "creatives": "Креативы",
     "team": "Команда",
     "finances": "Финансы",
     "postbacks": "Постбеки",
     "profile": "Профиль",
     "settings": "Настройки",
+    "notifications": "Уведомления",
     "logout": "Выход"
   },
   "common": {

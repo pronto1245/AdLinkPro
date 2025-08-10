@@ -12,7 +12,9 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
-  Cog
+  Cog,
+  Send,
+  Palette
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -46,6 +48,16 @@ const getBaseSidebarItems = (t: any): Omit<SidebarItem, 'badge'>[] => [
     title: t('navigation.offers'),
     href: "/affiliate/offers",
     icon: Target,
+  },
+  {
+    title: t('navigation.accessRequests'),
+    href: "/affiliate/access-requests",
+    icon: Send,
+  },
+  {
+    title: t('navigation.creatives'),
+    href: "/affiliate/creatives",
+    icon: Palette,
   },
   {
     title: t('navigation.team'),
@@ -188,12 +200,12 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
             "flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-black dark:text-white",
             location === "/affiliate/notifications" && "bg-primary text-primary-foreground"
           )}
-          title={collapsed ? "Уведомления" : undefined}
+          title={collapsed ? t('navigation.notifications') : undefined}
         >
           <Bell className="h-4 w-4 flex-shrink-0" />
           {!collapsed && (
             <>
-              <span className="flex-1">Уведомления</span>
+              <span className="flex-1">{t('navigation.notifications')}</span>
               {notifications.filter((n: any) => !n.is_read).length > 0 && (
                 <Badge variant="destructive" className="text-xs">
                   {notifications.filter((n: any) => !n.is_read).length}
@@ -219,10 +231,10 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
             "w-full justify-start gap-3 text-black dark:text-white hover:text-destructive hover:bg-destructive/10",
             collapsed && "px-3"
           )}
-          title={collapsed ? "Выход" : undefined}
+          title={collapsed ? t('navigation.logout') : undefined}
         >
           <LogOut className="h-4 w-4 flex-shrink-0" />
-          {!collapsed && <span>Выход</span>}
+          {!collapsed && <span>{t('navigation.logout')}</span>}
         </Button>
       </div>
     </div>
