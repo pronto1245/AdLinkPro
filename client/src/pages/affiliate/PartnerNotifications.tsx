@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,7 +37,7 @@ export default function PartnerNotifications() {
   const queryClient = useQueryClient();
   
   // CRITICAL DEBUG: Проверяем токен в компоненте
-  React.useEffect(() => {
+  useEffect(() => {
     const token = localStorage.getItem('auth_token');
     console.log('🔍 PartnerNotifications component - token check:', { 
       token: token ? token.substring(0, 20) + '...' : 'NO_TOKEN',
