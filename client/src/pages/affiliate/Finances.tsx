@@ -227,7 +227,7 @@ export default function Finances() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Финансы</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('finances.title')}</h1>
           <p className="text-muted-foreground">
             Управление балансом и выводом средств
           </p>

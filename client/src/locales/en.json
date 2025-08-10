@@ -30,7 +30,8 @@
     "completed": "Completed",
     "failed": "Failed",
     "processing": "Processing",
-    "error": "Error"
+    "error": "Error",
+    "refresh": "Refresh"
   },
   "theme": {
     "light": "Light",
@@ -52,7 +53,10 @@
     "postbacks": "Postbacks",
     "settings": "Settings",
     "users": "Users",
-    "reports": "Reports"
+    "reports": "Reports",
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "logout": "Logout"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -67,6 +71,32 @@
     "avgEPC": "Average EPC",
     "recentActivity": "Recent Activity",
     "topOffers": "Top Offers"
+  },
+  "offers": {
+    "title": "Offers",
+    "subtitle": "Available offers for promotion",
+    "noOffers": "No offers available",
+    "requestAccess": "Request Access"
+  },
+  "team": {
+    "title": "Team",
+    "subtitle": "Manage team members"
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Partner profile settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Account and system settings"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "System notifications and messages"
+  },
+  "postbacks": {
+    "title": "Postbacks",
+    "subtitle": "Configure postback URLs for trackers"
   },
   "finances": {
     "title": "Finances",

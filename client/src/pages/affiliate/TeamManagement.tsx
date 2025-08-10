@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -92,6 +93,7 @@ export default function TeamManagement() {
     subIdPrefix: ''
   });
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   // Fetch team members
@@ -214,7 +216,7 @@ export default function TeamManagement() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Управление командой</h1>
+          <h1 className="text-3xl font-bold">{t('team.title')}</h1>
           <p className="text-muted-foreground mt-2">
             Добавляйте байеров, аналитиков и менеджеров для работы с офферами
           </p>

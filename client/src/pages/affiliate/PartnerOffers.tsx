@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -73,6 +74,7 @@ function formatCR(cr: number | undefined): string {
 
 export default function PartnerOffers() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();

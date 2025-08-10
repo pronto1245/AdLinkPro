@@ -30,7 +30,8 @@
     "completed": "Завершено",
     "failed": "Отклонено",
     "processing": "Обработка",
-    "error": "Ошибка"
+    "error": "Ошибка",
+    "refresh": "Обновить"
   },
   "theme": {
     "light": "Светлая",
@@ -52,7 +53,10 @@
     "postbacks": "Постбеки",
     "settings": "Настройки",
     "users": "Пользователи",
-    "reports": "Отчёты"
+    "reports": "Отчёты",
+    "profile": "Профиль",
+    "notifications": "Уведомления",
+    "logout": "Выход"
   },
   "dashboard": {
     "title": "Дашборд",
@@ -67,6 +71,32 @@
     "avgEPC": "Средний EPC",
     "recentActivity": "Последняя активность",
     "topOffers": "Топ офферы"
+  },
+  "offers": {
+    "title": "Офферы",
+    "subtitle": "Доступные предложения для продвижения",
+    "noOffers": "Нет доступных офферов",
+    "requestAccess": "Запросить доступ"
+  },
+  "team": {
+    "title": "Команда",
+    "subtitle": "Управление участниками команды"
+  },
+  "profile": {
+    "title": "Профиль",
+    "subtitle": "Настройки профиля партнёра"
+  },
+  "settings": {
+    "title": "Настройки",
+    "subtitle": "Настройки аккаунта и системы"
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "subtitle": "Системные уведомления и сообщения"
+  },
+  "postbacks": {
+    "title": "Постбеки",
+    "subtitle": "Настройка постбек URL для трекеров"
   },
   "finances": {
     "title": "Финансы",

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -97,6 +98,7 @@ export default function PostbackManagement() {
   const [editingPostback, setEditingPostback] = useState<Postback | null>(null);
   const [testingPostback, setTestingPostback] = useState<string | null>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   // Fetch postbacks
@@ -224,7 +226,7 @@ export default function PostbackManagement() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Постбеки</h1>
+          <h1 className="text-3xl font-bold">{t('postbacks.title')}</h1>
           <p className="text-muted-foreground mt-2">
             Настройка уведомлений о конверсиях для трекеров
           </p>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "wouter";
 import { ContactManagerModal } from "@/components/partner/ContactManagerModal";
 import {
@@ -117,6 +118,7 @@ export default function PartnerDashboard() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [location, navigate] = useLocation();
 
   const { data: dashboardData, isLoading, error } = useQuery({
@@ -217,40 +219,40 @@ export default function PartnerDashboard() {
       {/* Header */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-black dark:text-white">Партнерский дашборд</h1>
-          <p className="text-black/70 dark:text-white/70">Мониторинг производительности и аналитика</p>
+          <h1 className="text-3xl font-bold tracking-tight text-black dark:text-white">{t('dashboard.title')}</h1>
+          <p className="text-black/70 dark:text-white/70">{t('dashboard.subtitle')}</p>
         </div>
         <Button variant="outline" onClick={handleRefresh} className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20">
           <RefreshCw className="h-4 w-4 mr-2" />
-          Обновить
+{t('common.refresh')}
         </Button>
       </div>
 
       {/* Main Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          title="Клики"
+          title={t('dashboard.totalClicks')}
           value={metrics.totalClicks?.toLocaleString() || '0'}
           change={dashboardData?.metrics?.clicksGrowth ? `${dashboardData.metrics.clicksGrowth > 0 ? '+' : ''}${dashboardData.metrics.clicksGrowth.toFixed(1)}%` : "+12.5%"}
           changeType="positive"
           icon={MousePointer}
         />
         <MetricCard
-          title="Конверсии"
+          title={t('dashboard.conversions')}
           value={metrics.conversions?.toLocaleString() || '0'}
           change="+5.2%"
           changeType="positive"
           icon={Target}
         />
         <MetricCard
-          title="Доход"
+          title={t('dashboard.revenue')}
           value={`$${metrics.revenue?.toLocaleString() || '0'}`}
           change="+18.3%"
           changeType="positive"
           icon={DollarSign}
         />
         <MetricCard
-          title="CR%"
+          title={t('dashboard.conversionRate')}
           value={`${metrics.conversionRate?.toFixed(2) || '0'}%`}
           change="-0.8%"
           changeType="negative"

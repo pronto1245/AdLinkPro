@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ interface Notification {
 export default function PartnerNotifications() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   // Получение уведомлений
@@ -160,7 +162,7 @@ export default function PartnerNotifications() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Bell className="w-6 h-6 text-blue-600" />
-          <h1 className="text-2xl font-bold">Уведомления</h1>
+          <h1 className="text-2xl font-bold">{t('notifications.title')}</h1>
           {unreadCount > 0 && (
             <Badge className="bg-red-100 text-red-800">
               {unreadCount} непрочитанных
