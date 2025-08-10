@@ -8,7 +8,7 @@ import {
   insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, insertReceivedOfferSchema,
   type User, users, offers, statistics, fraudAlerts, tickets, postbacks, postbackLogs, trackingClicks,
   transactions, fraudReports, fraudBlocks, financialTransactions, financialSummaries, payoutRequests,
-  offerAccessRequests, partnerOffers, creativeFiles, customDomains, trackingLinks
+  offerAccessRequests, partnerOffers, creativeFiles, customDomains, trackingLinks, partnerTeam
 } from "@shared/schema";
 import { 
   trackingClicks as newTrackingClicks, trackingEvents, postbackProfiles, postbackDeliveries, deliveryQueue,
@@ -17,7 +17,7 @@ import {
   sub2Config
 } from "@shared/postback-schema";
 import { sql, SQL } from "drizzle-orm";
-import { eq, and, gte, lte, count, sum, desc } from "drizzle-orm";
+import { eq, and, gte, lte, count, sum, desc, or } from "drizzle-orm";
 import { db, queryCache } from "./db";
 import { z } from "zod";
 import express from "express";
@@ -11486,6 +11486,242 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   });
 
 
+  // =================== PARTNER TEAM MANAGEMENT API ===================
+
+  // Get partner team members
+  app.get("/api/affiliate/team", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const partnerId = req.user!.id;
+      console.log('Getting partner team members for:', partnerId);
+
+      // Get team members from partner_team table
+      const teamMembers = await db
+        .select({
+          id: partnerTeam.id,
+          userId: partnerTeam.userId,
+          username: users.username,
+          email: users.email,
+          role: partnerTeam.role,
+          permissions: partnerTeam.permissions,
+          subIdPrefix: partnerTeam.subIdPrefix,
+          isActive: partnerTeam.isActive,
+          createdAt: partnerTeam.createdAt
+        })
+        .from(partnerTeam)
+        .leftJoin(users, eq(partnerTeam.userId, users.id))
+        .where(eq(partnerTeam.partnerId, partnerId));
+
+      console.log('Found partner team members:', teamMembers.length);
+      res.json(teamMembers);
+    } catch (error) {
+      console.error('Get partner team error:', error);
+      res.status(500).json({ error: 'Ошибка получения команды партнёра' });
+    }
+  });
+
+  // Create partner team member
+  app.post("/api/affiliate/team", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const partnerId = req.user!.id;
+      const { email, username, password, role, permissions, subIdPrefix } = req.body;
+
+      console.log('Creating partner team member:', { email, username, role, partnerId });
+
+      // Validate required fields
+      if (!email || !username || !password || !role) {
+        return res.status(400).json({ error: 'Недостаточно данных для создания сотрудника' });
+      }
+
+      // Check if user already exists
+      const existingUser = await db.select()
+        .from(users)
+        .where(or(eq(users.email, email), eq(users.username, username)))
+        .limit(1);
+
+      if (existingUser.length > 0) {
+        return res.status(400).json({ error: 'Пользователь с таким email или username уже существует' });
+      }
+
+      // Get partner's advertiser to inherit access
+      const partner = await storage.getUser(partnerId);
+      if (!partner) {
+        return res.status(404).json({ error: 'Партнёр не найден' });
+      }
+
+      console.log('Partner found:', { partner: partner.username, advertiserId: partner.advertiserId });
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create new user for team member
+      const newUser = await db.insert(users).values({
+        username,
+        email,
+        password: hashedPassword,
+        role: 'affiliate', // Team members are affiliates
+        ownerId: partnerId, // Owned by partner
+        advertiserId: partner.advertiserId, // Inherit partner's advertiser
+        isActive: true,
+        userType: 'team_member',
+        settings: JSON.stringify({
+          teamRole: role,
+          permissions: permissions || [],
+          isTeamMember: true
+        })
+      }).returning();
+
+      const createdUser = newUser[0];
+
+      // Add to partner team
+      const teamEntry = await db.insert(partnerTeam).values({
+        partnerId,
+        userId: createdUser.id,
+        role,
+        permissions: JSON.stringify(permissions || []),
+        subIdPrefix: subIdPrefix || '',
+        isActive: true
+      }).returning();
+
+      // Team member inherits partner's offers access
+      if (partner.advertiserId) {
+        console.log('Granting team member access to partner offers...');
+        
+        // Get partner's approved offers
+        const partnerOffers = await db.select()
+          .from(partnerOffers)
+          .where(and(
+            eq(partnerOffers.partnerId, partnerId),
+            eq(partnerOffers.isApproved, true)
+          ));
+
+        // Grant access to team member for all partner's offers
+        for (const offer of partnerOffers) {
+          await db.insert(partnerOffers).values({
+            partnerId: createdUser.id,
+            offerId: offer.offerId,
+            isApproved: true,
+            assignedAt: new Date(),
+            assignedBy: partnerId,
+            payout: offer.payout,
+            currency: offer.currency,
+            status: 'active'
+          }).onConflictDoNothing();
+        }
+
+        console.log(`Granted access to ${partnerOffers.length} offers for team member`);
+      }
+
+      res.status(201).json({
+        id: teamEntry[0].id,
+        userId: createdUser.id,
+        username: createdUser.username,
+        email: createdUser.email,
+        role,
+        permissions: permissions || [],
+        subIdPrefix: subIdPrefix || '',
+        isActive: true,
+        createdAt: teamEntry[0].createdAt,
+        message: 'Сотрудник успешно добавлен в команду'
+      });
+
+    } catch (error) {
+      console.error('Create partner team member error:', error);
+      res.status(500).json({ error: 'Ошибка создания сотрудника команды' });
+    }
+  });
+
+  // Update partner team member
+  app.patch("/api/affiliate/team/:id", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const partnerId = req.user!.id;
+      const { id } = req.params;
+      const updateData = req.body;
+
+      console.log('Updating partner team member:', { id, partnerId, updateData });
+
+      // Verify team member belongs to this partner
+      const teamMember = await db.select()
+        .from(partnerTeam)
+        .where(and(
+          eq(partnerTeam.id, id),
+          eq(partnerTeam.partnerId, partnerId)
+        ))
+        .limit(1);
+
+      if (teamMember.length === 0) {
+        return res.status(404).json({ error: 'Сотрудник команды не найден' });
+      }
+
+      // Update team member
+      const updated = await db.update(partnerTeam)
+        .set({
+          ...updateData,
+          permissions: updateData.permissions ? JSON.stringify(updateData.permissions) : undefined,
+          updatedAt: new Date()
+        })
+        .where(eq(partnerTeam.id, id))
+        .returning();
+
+      // Also update user settings if needed
+      if (updateData.isActive !== undefined) {
+        await db.update(users)
+          .set({ isActive: updateData.isActive })
+          .where(eq(users.id, teamMember[0].userId));
+      }
+
+      res.json(updated[0]);
+    } catch (error) {
+      console.error('Update partner team member error:', error);
+      res.status(500).json({ error: 'Ошибка обновления сотрудника команды' });
+    }
+  });
+
+  // Delete partner team member
+  app.delete("/api/affiliate/team/:id", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const partnerId = req.user!.id;
+      const { id } = req.params;
+
+      console.log('Deleting partner team member:', { id, partnerId });
+
+      // Verify team member belongs to this partner
+      const teamMember = await db.select()
+        .from(partnerTeam)
+        .where(and(
+          eq(partnerTeam.id, id),
+          eq(partnerTeam.partnerId, partnerId)
+        ))
+        .limit(1);
+
+      if (teamMember.length === 0) {
+        return res.status(404).json({ error: 'Сотрудник команды не найден' });
+      }
+
+      // Soft delete team member
+      await db.update(partnerTeam)
+        .set({
+          isActive: false,
+          updatedAt: new Date()
+        })
+        .where(eq(partnerTeam.id, id));
+
+      // Also deactivate user
+      await db.update(users)
+        .set({
+          isActive: false,
+          deletedAt: new Date(),
+          deletedBy: partnerId
+        })
+        .where(eq(users.id, teamMember[0].userId));
+
+      res.json({ message: 'Сотрудник команды удалён' });
+    } catch (error) {
+      console.error('Delete partner team member error:', error);
+      res.status(500).json({ error: 'Ошибка удаления сотрудника команды' });
+    }
+  });
+
+  // =================== END PARTNER TEAM MANAGEMENT ===================
   
   return httpServer;
 }

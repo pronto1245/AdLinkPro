@@ -99,10 +99,7 @@ export default function TeamManagement() {
   // Create team member mutation
   const createMemberMutation = useMutation({
     mutationFn: (data: CreateTeamMemberData) => 
-      apiRequest('/api/affiliate/team', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }),
+      apiRequest('/api/affiliate/team', 'POST', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/affiliate/team'] });
       setIsCreateDialogOpen(false);
@@ -131,10 +128,7 @@ export default function TeamManagement() {
   // Update team member mutation
   const updateMemberMutation = useMutation({
     mutationFn: ({ id, ...data }: Partial<TeamMember> & { id: string }) => 
-      apiRequest(`/api/affiliate/team/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-      }),
+      apiRequest(`/api/affiliate/team/${id}`, 'PATCH', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/affiliate/team'] });
       setEditingMember(null);
@@ -155,9 +149,7 @@ export default function TeamManagement() {
   // Delete team member mutation
   const deleteMemberMutation = useMutation({
     mutationFn: (id: string) => 
-      apiRequest(`/api/affiliate/team/${id}`, {
-        method: 'DELETE',
-      }),
+      apiRequest(`/api/affiliate/team/${id}`, 'DELETE'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/affiliate/team'] });
       toast({
