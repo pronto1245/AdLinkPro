@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Bell, Settings, HelpCircle, LogOut, Mail, User, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,9 +18,17 @@ import { useQuery } from '@tanstack/react-query';
 
 export function TopNavigation() {
   const { user, logout } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
+
+  // Force Russian language
+  useEffect(() => {
+    if (i18n.language !== 'ru') {
+      localStorage.setItem('i18nextLng', 'ru');
+      i18n.changeLanguage('ru');
+    }
+  }, [i18n]);
 
   // Fetch balance for partners only
   const { data: financeData } = useQuery<{

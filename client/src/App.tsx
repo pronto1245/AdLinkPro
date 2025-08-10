@@ -82,6 +82,7 @@ import AffiliatePostbacks from '@/pages/affiliate/Postbacks';
 import PostbacksNew from '@/pages/affiliate/PostbacksNew';
 import { EventTesting } from '@/pages/EventTesting';
 import '@/lib/i18n'; // Initialize i18next
+import { useTranslation } from 'react-i18next';
 
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
@@ -113,6 +114,14 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 
 function Router() {
   const { user } = useAuth();
+  const { i18n } = useTranslation();
+  
+  // Force Russian language on app load
+  React.useEffect(() => {
+    if (i18n.language !== 'ru') {
+      i18n.changeLanguage('ru');
+    }
+  }, [i18n]);
   
   return (
     <Switch>
