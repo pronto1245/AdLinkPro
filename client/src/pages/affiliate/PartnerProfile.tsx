@@ -276,13 +276,141 @@ export default function PartnerProfile() {
                   <SelectTrigger data-testid="select-country">
                     <SelectValue placeholder="Выберите страну" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="RU">🇷🇺 Россия</SelectItem>
-                    <SelectItem value="US">🇺🇸 США</SelectItem>
-                    <SelectItem value="DE">🇩🇪 Германия</SelectItem>
+                  <SelectContent className="max-h-60 overflow-y-auto">
+                    <SelectItem value="AF">🇦🇫 Афганистан</SelectItem>
+                    <SelectItem value="AL">🇦🇱 Албания</SelectItem>
+                    <SelectItem value="DZ">🇩🇿 Алжир</SelectItem>
+                    <SelectItem value="AD">🇦🇩 Андорра</SelectItem>
+                    <SelectItem value="AO">🇦🇴 Ангола</SelectItem>
+                    <SelectItem value="AR">🇦🇷 Аргентина</SelectItem>
+                    <SelectItem value="AM">🇦🇲 Армения</SelectItem>
+                    <SelectItem value="AU">🇦🇺 Австралия</SelectItem>
+                    <SelectItem value="AT">🇦🇹 Австрия</SelectItem>
+                    <SelectItem value="AZ">🇦🇿 Азербайджан</SelectItem>
+                    <SelectItem value="BD">🇧🇩 Бангладеш</SelectItem>
+                    <SelectItem value="BB">🇧🇧 Барбадос</SelectItem>
+                    <SelectItem value="BY">🇧🇾 Беларусь</SelectItem>
+                    <SelectItem value="BE">🇧🇪 Бельгия</SelectItem>
+                    <SelectItem value="BZ">🇧🇿 Белиз</SelectItem>
+                    <SelectItem value="BJ">🇧🇯 Бенин</SelectItem>
+                    <SelectItem value="BG">🇧🇬 Болгария</SelectItem>
+                    <SelectItem value="BO">🇧🇴 Боливия</SelectItem>
+                    <SelectItem value="BA">🇧🇦 Босния и Герцеговина</SelectItem>
+                    <SelectItem value="BW">🇧🇼 Ботсвана</SelectItem>
+                    <SelectItem value="BR">🇧🇷 Бразилия</SelectItem>
                     <SelectItem value="GB">🇬🇧 Великобритания</SelectItem>
-                    <SelectItem value="FR">🇫🇷 Франция</SelectItem>
+                    <SelectItem value="HU">🇭🇺 Венгрия</SelectItem>
+                    <SelectItem value="VE">🇻🇪 Венесуэла</SelectItem>
+                    <SelectItem value="VN">🇻🇳 Вьетнам</SelectItem>
+                    <SelectItem value="GA">🇬🇦 Габон</SelectItem>
+                    <SelectItem value="GH">🇬🇭 Гана</SelectItem>
+                    <SelectItem value="GT">🇬🇹 Гватемала</SelectItem>
+                    <SelectItem value="GW">🇬🇼 Гвинея-Бисау</SelectItem>
+                    <SelectItem value="GN">🇬🇳 Гвинея</SelectItem>
+                    <SelectItem value="DE">🇩🇪 Германия</SelectItem>
+                    <SelectItem value="GR">🇬🇷 Греция</SelectItem>
+                    <SelectItem value="GE">🇬🇪 Грузия</SelectItem>
+                    <SelectItem value="DK">🇩🇰 Дания</SelectItem>
+                    <SelectItem value="EG">🇪🇬 Египет</SelectItem>
+                    <SelectItem value="ZM">🇿🇲 Замбия</SelectItem>
+                    <SelectItem value="ZW">🇿🇼 Зимбабве</SelectItem>
+                    <SelectItem value="IL">🇮🇱 Израиль</SelectItem>
+                    <SelectItem value="IN">🇮🇳 Индия</SelectItem>
+                    <SelectItem value="ID">🇮🇩 Индонезия</SelectItem>
+                    <SelectItem value="JO">🇯🇴 Иордания</SelectItem>
+                    <SelectItem value="IQ">🇮🇶 Ирак</SelectItem>
+                    <SelectItem value="IR">🇮🇷 Иран</SelectItem>
+                    <SelectItem value="IE">🇮🇪 Ирландия</SelectItem>
+                    <SelectItem value="IS">🇮🇸 Исландия</SelectItem>
+                    <SelectItem value="ES">🇪🇸 Испания</SelectItem>
+                    <SelectItem value="IT">🇮🇹 Италия</SelectItem>
+                    <SelectItem value="YE">🇾🇪 Йемен</SelectItem>
+                    <SelectItem value="KZ">🇰🇿 Казахстан</SelectItem>
+                    <SelectItem value="KH">🇰🇭 Камбоджа</SelectItem>
+                    <SelectItem value="CM">🇨🇲 Камерун</SelectItem>
                     <SelectItem value="CA">🇨🇦 Канада</SelectItem>
+                    <SelectItem value="QA">🇶🇦 Катар</SelectItem>
+                    <SelectItem value="KE">🇰🇪 Кения</SelectItem>
+                    <SelectItem value="CY">🇨🇾 Кипр</SelectItem>
+                    <SelectItem value="KG">🇰🇬 Киргизия</SelectItem>
+                    <SelectItem value="CN">🇨🇳 Китай</SelectItem>
+                    <SelectItem value="CO">🇨🇴 Колумбия</SelectItem>
+                    <SelectItem value="CR">🇨🇷 Коста-Рика</SelectItem>
+                    <SelectItem value="CU">🇨🇺 Куба</SelectItem>
+                    <SelectItem value="KW">🇰🇼 Кувейт</SelectItem>
+                    <SelectItem value="LV">🇱🇻 Латвия</SelectItem>
+                    <SelectItem value="LS">🇱🇸 Лесото</SelectItem>
+                    <SelectItem value="LR">🇱🇷 Либерия</SelectItem>
+                    <SelectItem value="LB">🇱🇧 Ливан</SelectItem>
+                    <SelectItem value="LY">🇱🇾 Ливия</SelectItem>
+                    <SelectItem value="LT">🇱🇹 Литва</SelectItem>
+                    <SelectItem value="LU">🇱🇺 Люксембург</SelectItem>
+                    <SelectItem value="MU">🇲🇺 Маврикий</SelectItem>
+                    <SelectItem value="MG">🇲🇬 Мадагаскар</SelectItem>
+                    <SelectItem value="MK">🇲🇰 Македония</SelectItem>
+                    <SelectItem value="MW">🇲🇼 Малави</SelectItem>
+                    <SelectItem value="MY">🇲🇾 Малайзия</SelectItem>
+                    <SelectItem value="ML">🇲🇱 Мали</SelectItem>
+                    <SelectItem value="MT">🇲🇹 Мальта</SelectItem>
+                    <SelectItem value="MA">🇲🇦 Марокко</SelectItem>
+                    <SelectItem value="MX">🇲🇽 Мексика</SelectItem>
+                    <SelectItem value="MZ">🇲🇿 Мозамбик</SelectItem>
+                    <SelectItem value="MD">🇲🇩 Молдова</SelectItem>
+                    <SelectItem value="MN">🇲🇳 Монголия</SelectItem>
+                    <SelectItem value="MM">🇲🇲 Мьянма</SelectItem>
+                    <SelectItem value="NA">🇳🇦 Намибия</SelectItem>
+                    <SelectItem value="NP">🇳🇵 Непал</SelectItem>
+                    <SelectItem value="NE">🇳🇪 Нигер</SelectItem>
+                    <SelectItem value="NG">🇳🇬 Нигерия</SelectItem>
+                    <SelectItem value="NL">🇳🇱 Нидерланды</SelectItem>
+                    <SelectItem value="NZ">🇳🇿 Новая Зеландия</SelectItem>
+                    <SelectItem value="NO">🇳🇴 Норвегия</SelectItem>
+                    <SelectItem value="AE">🇦🇪 ОАЭ</SelectItem>
+                    <SelectItem value="OM">🇴🇲 Оман</SelectItem>
+                    <SelectItem value="PK">🇵🇰 Пакистан</SelectItem>
+                    <SelectItem value="PA">🇵🇦 Панама</SelectItem>
+                    <SelectItem value="PY">🇵🇾 Парагвай</SelectItem>
+                    <SelectItem value="PE">🇵🇪 Перу</SelectItem>
+                    <SelectItem value="PL">🇵🇱 Польша</SelectItem>
+                    <SelectItem value="PT">🇵🇹 Португалия</SelectItem>
+                    <SelectItem value="RU">🇷🇺 Россия</SelectItem>
+                    <SelectItem value="RW">🇷🇼 Руанда</SelectItem>
+                    <SelectItem value="RO">🇷🇴 Румыния</SelectItem>
+                    <SelectItem value="SV">🇸🇻 Сальвадор</SelectItem>
+                    <SelectItem value="SA">🇸🇦 Саудовская Аравия</SelectItem>
+                    <SelectItem value="SZ">🇸🇿 Свазиленд</SelectItem>
+                    <SelectItem value="SG">🇸🇬 Сингапур</SelectItem>
+                    <SelectItem value="SY">🇸🇾 Сирия</SelectItem>
+                    <SelectItem value="SK">🇸🇰 Словакия</SelectItem>
+                    <SelectItem value="SI">🇸🇮 Словения</SelectItem>
+                    <SelectItem value="US">🇺🇸 США</SelectItem>
+                    <SelectItem value="TJ">🇹🇯 Таджикистан</SelectItem>
+                    <SelectItem value="TH">🇹🇭 Таиланд</SelectItem>
+                    <SelectItem value="TZ">🇹🇿 Танзания</SelectItem>
+                    <SelectItem value="TN">🇹🇳 Тунис</SelectItem>
+                    <SelectItem value="TM">🇹🇲 Туркменистан</SelectItem>
+                    <SelectItem value="TR">🇹🇷 Турция</SelectItem>
+                    <SelectItem value="UG">🇺🇬 Уганда</SelectItem>
+                    <SelectItem value="UZ">🇺🇿 Узбекистан</SelectItem>
+                    <SelectItem value="UA">🇺🇦 Украина</SelectItem>
+                    <SelectItem value="UY">🇺🇾 Уругвай</SelectItem>
+                    <SelectItem value="PH">🇵🇭 Филиппины</SelectItem>
+                    <SelectItem value="FI">🇫🇮 Финляндия</SelectItem>
+                    <SelectItem value="FR">🇫🇷 Франция</SelectItem>
+                    <SelectItem value="HR">🇭🇷 Хорватия</SelectItem>
+                    <SelectItem value="TD">🇹🇩 Чад</SelectItem>
+                    <SelectItem value="CZ">🇨🇿 Чехия</SelectItem>
+                    <SelectItem value="CL">🇨🇱 Чили</SelectItem>
+                    <SelectItem value="CH">🇨🇭 Швейцария</SelectItem>
+                    <SelectItem value="SE">🇸🇪 Швеция</SelectItem>
+                    <SelectItem value="LK">🇱🇰 Шри-Ланка</SelectItem>
+                    <SelectItem value="EC">🇪🇨 Эквадор</SelectItem>
+                    <SelectItem value="EE">🇪🇪 Эстония</SelectItem>
+                    <SelectItem value="ET">🇪🇹 Эфиопия</SelectItem>
+                    <SelectItem value="ZA">🇿🇦 ЮАР</SelectItem>
+                    <SelectItem value="KR">🇰🇷 Южная Корея</SelectItem>
+                    <SelectItem value="JM">🇯🇲 Ямайка</SelectItem>
+                    <SelectItem value="JP">🇯🇵 Япония</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -292,12 +420,70 @@ export default function PartnerProfile() {
                   <SelectTrigger data-testid="select-timezone">
                     <SelectValue placeholder="Выберите часовой пояс" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="UTC">UTC</SelectItem>
-                    <SelectItem value="Europe/Moscow">UTC+3 (Москва)</SelectItem>
-                    <SelectItem value="Europe/London">UTC+0 (Лондон)</SelectItem>
-                    <SelectItem value="America/New_York">UTC-5 (Нью-Йорк)</SelectItem>
-                    <SelectItem value="America/Los_Angeles">UTC-8 (Лос-Анджелес)</SelectItem>
+                  <SelectContent className="max-h-60 overflow-y-auto">
+                    <SelectItem value="UTC">UTC+0 (Универсальное время)</SelectItem>
+                    
+                    {/* Европа */}
+                    <SelectItem value="Europe/London">UTC+0 (Лондон, Дублин)</SelectItem>
+                    <SelectItem value="Europe/Berlin">UTC+1 (Берлин, Рим, Париж)</SelectItem>
+                    <SelectItem value="Europe/Helsinki">UTC+2 (Хельсинки, Киев)</SelectItem>
+                    <SelectItem value="Europe/Moscow">UTC+3 (Москва, Минск)</SelectItem>
+                    <SelectItem value="Europe/Samara">UTC+4 (Самара)</SelectItem>
+                    <SelectItem value="Asia/Yekaterinburg">UTC+5 (Екатеринбург)</SelectItem>
+                    <SelectItem value="Asia/Omsk">UTC+6 (Омск)</SelectItem>
+                    <SelectItem value="Asia/Krasnoyarsk">UTC+7 (Красноярск)</SelectItem>
+                    <SelectItem value="Asia/Irkutsk">UTC+8 (Иркутск)</SelectItem>
+                    <SelectItem value="Asia/Yakutsk">UTC+9 (Якутск)</SelectItem>
+                    <SelectItem value="Asia/Vladivostok">UTC+10 (Владивосток)</SelectItem>
+                    <SelectItem value="Asia/Magadan">UTC+11 (Магадан)</SelectItem>
+                    <SelectItem value="Asia/Kamchatka">UTC+12 (Камчатка)</SelectItem>
+                    
+                    {/* Америка */}
+                    <SelectItem value="America/Los_Angeles">UTC-8 (Лос-Анджелес, Сан-Франциско)</SelectItem>
+                    <SelectItem value="America/Denver">UTC-7 (Денвер, Солт-Лейк-Сити)</SelectItem>
+                    <SelectItem value="America/Chicago">UTC-6 (Чикаго, Даллас)</SelectItem>
+                    <SelectItem value="America/New_York">UTC-5 (Нью-Йорк, Вашингтон)</SelectItem>
+                    <SelectItem value="America/Halifax">UTC-4 (Галифакс)</SelectItem>
+                    <SelectItem value="America/St_Johns">UTC-3:30 (Сент-Джонс)</SelectItem>
+                    <SelectItem value="America/Sao_Paulo">UTC-3 (Сан-Паулу, Буэнос-Айрес)</SelectItem>
+                    <SelectItem value="America/Noronha">UTC-2 (Фернанду-ди-Норонья)</SelectItem>
+                    <SelectItem value="America/Scoresbysund">UTC-1 (Азорские острова)</SelectItem>
+                    
+                    {/* Азия */}
+                    <SelectItem value="Asia/Dubai">UTC+4 (Дубай, Баку)</SelectItem>
+                    <SelectItem value="Asia/Karachi">UTC+5 (Карачи, Ташкент)</SelectItem>
+                    <SelectItem value="Asia/Kolkata">UTC+5:30 (Дели, Мумбаи)</SelectItem>
+                    <SelectItem value="Asia/Kathmandu">UTC+5:45 (Катманду)</SelectItem>
+                    <SelectItem value="Asia/Dhaka">UTC+6 (Дакка, Алма-Ата)</SelectItem>
+                    <SelectItem value="Asia/Yangon">UTC+6:30 (Янгон)</SelectItem>
+                    <SelectItem value="Asia/Bangkok">UTC+7 (Бангкок, Джакарта)</SelectItem>
+                    <SelectItem value="Asia/Shanghai">UTC+8 (Пекин, Сингапур)</SelectItem>
+                    <SelectItem value="Asia/Tokyo">UTC+9 (Токио, Сеул)</SelectItem>
+                    <SelectItem value="Australia/Adelaide">UTC+9:30 (Аделаида)</SelectItem>
+                    <SelectItem value="Australia/Sydney">UTC+10 (Сидней, Мельбурн)</SelectItem>
+                    <SelectItem value="Pacific/Norfolk">UTC+11 (Норфолк)</SelectItem>
+                    <SelectItem value="Pacific/Auckland">UTC+12 (Окленд)</SelectItem>
+                    <SelectItem value="Pacific/Chatham">UTC+12:45 (Чатем)</SelectItem>
+                    <SelectItem value="Pacific/Tongatapu">UTC+13 (Нукуалофа)</SelectItem>
+                    <SelectItem value="Pacific/Kiritimati">UTC+14 (Киритимати)</SelectItem>
+                    
+                    {/* Африка */}
+                    <SelectItem value="Africa/Casablanca">UTC+0 (Касабланка)</SelectItem>
+                    <SelectItem value="Africa/Lagos">UTC+1 (Лагос, Алжир)</SelectItem>
+                    <SelectItem value="Africa/Cairo">UTC+2 (Каир, Йоханнесбург)</SelectItem>
+                    <SelectItem value="Africa/Nairobi">UTC+3 (Найроби, Аддис-Абеба)</SelectItem>
+                    
+                    {/* Океания */}
+                    <SelectItem value="Pacific/Honolulu">UTC-10 (Гонолулу)</SelectItem>
+                    <SelectItem value="Pacific/Marquesas">UTC-9:30 (Маркизские острова)</SelectItem>
+                    <SelectItem value="Pacific/Gambier">UTC-9 (Гамбье)</SelectItem>
+                    <SelectItem value="Pacific/Pitcairn">UTC-8 (Питкэрн)</SelectItem>
+                    <SelectItem value="Pacific/Easter">UTC-6 (Остров Пасхи)</SelectItem>
+                    
+                    {/* Атлантика */}
+                    <SelectItem value="Atlantic/Cape_Verde">UTC-1 (Кабо-Верде)</SelectItem>
+                    <SelectItem value="Atlantic/Azores">UTC-1 (Азорские острова)</SelectItem>
+                    <SelectItem value="Atlantic/Reykjavik">UTC+0 (Рейкьявик)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
