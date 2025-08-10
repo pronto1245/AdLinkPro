@@ -7,6 +7,12 @@ import { PostbackService, type PostbackEvent } from '../services/postback.js';
 
 const router = Router();
 
+// Middleware для логирования всех запросов
+router.use((req, res, next) => {
+  console.log(`🔗 TRACKING REQUEST: ${req.method} ${req.path} from ${req.ip}`);
+  next();
+});
+
 // Click tracking endpoint - main entry point for partner traffic
 router.get('/click', async (req, res) => {
   try {
@@ -112,10 +118,10 @@ router.get('/click', async (req, res) => {
     };
 
     // Record click in database
-    const click = await storage.recordClick(clickData);
+    const click = await storage.createTrackingClick(clickData);
 
-    // Record 'open' event automatically
-    await storage.recordEvent({
+    // Record 'open' event automatically  
+    await storage.createEvent({
       clickid,
       advertiserId: clickData.advertiserId,
       partnerId: clickData.partnerId,
@@ -172,7 +178,7 @@ router.get('/click', async (req, res) => {
     }
 
     // Redirect to landing page
-    res.redirect(302, offer.landingUrl || offer.targetUrl || 'https://example.com');
+    res.redirect(302, offer.landingPageUrl || 'https://example.com');
   } catch (error) {
     console.error('Click tracking error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -185,13 +191,14 @@ router.post('/event', async (req, res) => {
     const eventData = insertEventSchema.parse(req.body);
     
     // Validate clickid exists
-    const click = await storage.getClick(eventData.clickid);
+    const clicks = await storage.getTrackingClicks({ clickId: eventData.clickid });
+    const click = clicks[0];
     if (!click) {
       return res.status(404).json({ error: 'Click not found' });
     }
 
     // Add advertiser and partner from click
-    const event = await storage.recordEvent({
+    const event = await storage.createEvent({
       ...eventData,
       advertiserId: click.advertiserId,
       partnerId: click.partnerId,
@@ -209,7 +216,7 @@ router.post('/event', async (req, res) => {
           offer_id: click.offerId,
           revenue: eventData.revenue?.toString() || '0.00',
           currency: eventData.currency || 'USD',
-          txid: eventData.transactionId || '',
+          txid: eventData.txid || '',
         },
         partnerId: click.partnerId,
         offerId: click.offerId,
@@ -242,13 +249,14 @@ router.post('/event', async (req, res) => {
 router.get('/click/:clickid', async (req, res) => {
   try {
     const { clickid } = req.params;
-    const click = await storage.getClick(clickid);
+    const clicks = await storage.getTrackingClicks({ clickId: clickid });
+    const click = clicks[0];
     
     if (!click) {
       return res.status(404).json({ error: 'Click not found' });
     }
 
-    const events = await storage.getEvents(clickid);
+    const events = await storage.getEvents({ clickId: clickid });
     
     res.json({
       click,
@@ -264,7 +272,7 @@ router.get('/click/:clickid', async (req, res) => {
 router.get('/events/:clickid', async (req, res) => {
   try {
     const { clickid } = req.params;
-    const events = await storage.getEvents(clickid);
+    const events = await storage.getEvents({ clickId: clickid });
     res.json(events);
   } catch (error) {
     console.error('Get events error:', error);
@@ -291,7 +299,8 @@ router.post('/postback/send', async (req, res) => {
     }
 
     // Get click data
-    const click = await storage.getClick(clickid);
+    const clicks = await storage.getTrackingClicks({ clickId: clickid });
+    const click = clicks[0];
     if (!click) {
       return res.status(404).json({ error: 'Click not found' });
     }
@@ -389,6 +398,86 @@ router.post('/postback/test', async (req, res) => {
   } catch (error) {
     console.error('Test postback error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Direct tracking link handler - redirects to offer landing page
+router.get('/:trackingCode', async (req, res) => {
+  try {
+    const { trackingCode } = req.params;
+    console.log(`🔥🔥🔥 TRACKING LINK HIT! Code: ${trackingCode} - URL: ${req.url}`);
+    console.log(`🔍 Looking for tracking code: ${trackingCode}`);
+    
+    // Find tracking link
+    const trackingLink = await storage.getTrackingLinkByCode(trackingCode);
+    console.log(`📊 Found tracking link:`, trackingLink ? `ID: ${trackingLink.id}` : 'NOT FOUND');
+    
+    if (!trackingLink) {
+      console.log(`❌ Tracking link not found for code: ${trackingCode}`);
+      return res.status(404).send('Tracking link not found');
+    }
+
+    // Get offer details
+    const offer = await storage.getOffer(trackingLink.offerId);
+    if (!offer) {
+      console.log(`❌ Offer not found for tracking link: ${trackingCode}`);
+      return res.status(404).send('Offer not found');
+    }
+
+    // Generate unique clickId
+    const clickId = nanoid(12);
+    
+    // Get IP and User Agent
+    const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip;
+    const userAgent = req.headers['user-agent'] || '';
+    
+    // Create click record
+    await storage.createTrackingClick({
+      clickId,
+      partnerId: trackingLink.partnerId,
+      offerId: trackingLink.offerId,
+      advertiserId: offer.advertiserId,
+      ip,
+      userAgent,
+      referrer: req.get('referer') || '',
+      subId1: trackingLink.subId1,
+      subId2: trackingLink.subId2,
+      subId3: trackingLink.subId3,
+      subId4: trackingLink.subId4,
+      subId5: trackingLink.subId5,
+      country: 'Unknown',
+      device: 'Unknown',
+      browser: 'Unknown',
+      os: 'Unknown',
+      status: 'click',
+      revenue: '0.00',
+      createdAt: new Date()
+    });
+
+    // Update tracking link click count
+    await storage.updateTrackingLinkStats(trackingCode, { clickCount: 1 });
+
+    // Build landing URL with parameters
+    let landingUrl = offer.landingPageUrl || 'https://example.com';
+    
+    // Replace macros in landing URL
+    landingUrl = landingUrl
+      .replace('{client_id}', clickId)
+      .replace('{external_id}', clickId)
+      .replace('{clickid}', clickId)
+      .replace('{sub1}', trackingLink.subId1 || '')
+      .replace('{sub2}', trackingLink.subId2 || '')
+      .replace('{sub3}', trackingLink.subId3 || '')
+      .replace('{sub4}', trackingLink.subId4 || '')
+      .replace('{sub5}', trackingLink.subId5 || '');
+
+    console.log(`🔗 Tracking link ${trackingCode} clicked. Redirecting to: ${landingUrl}`);
+
+    // Redirect to landing page
+    res.redirect(302, landingUrl);
+  } catch (error) {
+    console.error('Tracking link error:', error);
+    res.status(500).send('Internal server error');
   }
 });
 
