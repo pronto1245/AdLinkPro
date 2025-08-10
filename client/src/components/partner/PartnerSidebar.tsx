@@ -18,16 +18,17 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useQuery } from "@tanstack/react-query";
 
 interface SidebarItem {
   title: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  badge?: string;
+  badge?: string | number;
   badgeVariant?: "default" | "secondary" | "destructive" | "outline";
 }
 
-const sidebarItems: SidebarItem[] = [
+const baseSidebarItems: Omit<SidebarItem, 'badge'>[] = [
   {
     title: "Дашборд",
     href: "/affiliate",
@@ -42,10 +43,7 @@ const sidebarItems: SidebarItem[] = [
     title: "Офферы",
     href: "/affiliate/offers",
     icon: Target,
-    badge: "12",
-    badgeVariant: "secondary"
   },
-
   {
     title: "Команда",
     href: "/affiliate/team",
@@ -61,8 +59,6 @@ const sidebarItems: SidebarItem[] = [
     href: "/affiliate/postbacks",
     icon: Settings,
   },
-
-
 ];
 
 interface PartnerSidebarProps {
@@ -73,6 +69,24 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
   const [location] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const { user, logout } = useAuth();
+
+  // Fetch real offer count from API
+  const { data: offers = [] } = useQuery({
+    queryKey: ['/api/partner/offers'],
+    enabled: !!user
+  });
+
+  // Create sidebar items with real data
+  const sidebarItems: SidebarItem[] = baseSidebarItems.map(item => {
+    if (item.title === "Офферы") {
+      return {
+        ...item,
+        badge: offers.length > 0 ? offers.length : undefined,
+        badgeVariant: "secondary" as const
+      };
+    }
+    return item;
+  });
 
   const handleLogout = () => {
     logout();

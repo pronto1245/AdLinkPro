@@ -3,9 +3,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ExternalLink, BarChart3, DollarSign, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function AffiliateDashboard() {
   const { user } = useAuth();
+
+  // Fetch real offer count from API
+  const { data: offers = [] } = useQuery({
+    queryKey: ['/api/partner/offers'],
+    enabled: !!user
+  });
+
+  // Fetch real dashboard data
+  const { data: dashboardData } = useQuery({
+    queryKey: ['/api/partner/dashboard'],
+    enabled: !!user
+  });
 
   return (
     <div className="p-6 space-y-6">
@@ -21,7 +34,7 @@ export default function AffiliateDashboard() {
             <ExternalLink className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">5</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{offers.length}</div>
             <p className="text-xs text-blue-600/70 dark:text-blue-400/70">
               Офферы с партнерскими ссылками
             </p>
@@ -39,7 +52,7 @@ export default function AffiliateDashboard() {
             <BarChart3 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">0</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{dashboardData?.metrics?.totalClicks || 0}</div>
             <p className="text-xs text-green-600/70 dark:text-green-400/70">
               Клики за месяц
             </p>
@@ -55,7 +68,7 @@ export default function AffiliateDashboard() {
             <DollarSign className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">$0.00</div>
+            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">${dashboardData?.metrics?.revenue?.toFixed(2) || '0.00'}</div>
             <p className="text-xs text-amber-600/70 dark:text-amber-400/70">
               За текущий месяц
             </p>

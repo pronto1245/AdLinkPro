@@ -231,7 +231,7 @@ export default function PartnerDashboard() {
         <MetricCard
           title="Клики"
           value={metrics.totalClicks?.toLocaleString() || '0'}
-          change="+12.5%"
+          change={dashboardData?.metrics?.clicksGrowth ? `${dashboardData.metrics.clicksGrowth > 0 ? '+' : ''}${dashboardData.metrics.clicksGrowth.toFixed(1)}%` : "+12.5%"}
           changeType="positive"
           icon={MousePointer}
         />
