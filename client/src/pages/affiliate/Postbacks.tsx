@@ -484,43 +484,43 @@ export function AffiliatePostbacks() {
         {/* Basic Settings */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Название</Label>
+            <Label>{t('postbacks.name', 'Название')}</Label>
             <Input
               value={localFormData.name || ''}
               onChange={(e) => setLocalFormData({ ...localFormData, name: e.target.value })}
-              placeholder="Мой трекер"
+              placeholder={t('postbacks.placeholderName', 'Мой трекер')}
               data-testid="input-profile-name"
             />
           </div>
           
           <div className="space-y-2">
-            <Label>Тип трекера</Label>
+            <Label>{t('postbacks.trackerType', 'Тип трекера')}</Label>
             <Select value={localFormData.trackerType} onValueChange={(value) => setLocalFormData({ ...localFormData, trackerType: value as 'keitaro' | 'custom' })}>
               <SelectTrigger data-testid="select-tracker-type">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="keitaro">Keitaro</SelectItem>
-                <SelectItem value="custom">Пользовательский</SelectItem>
+                <SelectItem value="custom">{t('postbacks.custom', 'Пользовательский')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Область применения</Label>
+            <Label>{t('postbacks.scope', 'Область применения')}</Label>
             <Select value={localFormData.scopeType} onValueChange={(value) => setLocalFormData({ ...localFormData, scopeType: value as any })}>
               <SelectTrigger data-testid="select-scope-type">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="global">Глобально</SelectItem>
-                <SelectItem value="offer">Оффер</SelectItem>
+                <SelectItem value="global">{t('postbacks.global', 'Глобально')}</SelectItem>
+                <SelectItem value="offer">{t('postbacks.offer', 'Оффер')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Приоритет</Label>
+            <Label>{t('postbacks.priority', 'Приоритет')}</Label>
             <Input
               type="number"
               value={localFormData.priority || 100}
@@ -536,17 +536,17 @@ export function AffiliatePostbacks() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2 space-y-2">
-              <Label>URL эндпоинта</Label>
+              <Label>{t('postbacks.endpointUrl', 'URL эндпоинта')}</Label>
               <Input
                 value={localFormData.endpointUrl || ''}
                 onChange={(e) => setLocalFormData({ ...localFormData, endpointUrl: e.target.value })}
-                placeholder="https://mytracker.com/postback"
+                placeholder={t('postbacks.placeholderEndpoint', 'https://mytracker.com/postback')}
                 data-testid="input-endpoint-url"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Метод</Label>
+              <Label>{t('postbacks.method', 'Метод')}</Label>
               <Select 
                 value={String(localFormData.method || 'GET')} 
                 onValueChange={(value) => {
@@ -568,7 +568,7 @@ export function AffiliatePostbacks() {
 
         {/* Status Mapping */}
         <div className="space-y-4">
-          <h3 className="font-medium">Маппинг статусов</h3>
+          <h3 className="font-medium">{t('postbacks.statusMapping', 'Маппинг статусов')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(localFormData.statusMap || {}).map(([key, value]) => (
               <div key={key} className="space-y-2">
@@ -588,7 +588,7 @@ export function AffiliatePostbacks() {
 
         {/* Parameters Template */}
         <div className="space-y-4">
-          <h3 className="font-medium">Шаблон параметров</h3>
+          <h3 className="font-medium">{t('postbacks.paramsTemplate', 'Шаблон параметров')}</h3>
           <Textarea
             value={JSON.stringify(localFormData.paramsTemplate || {}, null, 2)}
             onChange={(e) => {
@@ -729,17 +729,17 @@ export function AffiliatePostbacks() {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <p className="text-sm font-medium">Эндпоинт</p>
+                        <p className="text-sm font-medium">{t('postbacks.endpoint', 'Эндпоинт')}</p>
                         <p className="text-sm text-muted-foreground truncate">
                           {profile.method} {profile.endpoint_url}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium">Последняя доставка</p>
+                        <p className="text-sm font-medium">{t('postbacks.lastDelivery', 'Последняя доставка')}</p>
                         <p className="text-sm text-muted-foreground">
                           {profile.last_delivery 
                             ? new Date(profile.last_delivery).toLocaleString('ru-RU')
-                            : 'Не было'
+                            : t('postbacks.never', 'Не было')
                           }
                         </p>
                       </div>
@@ -967,13 +967,13 @@ export function AffiliatePostbacks() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Время</TableHead>
-                      <TableHead>Профиль</TableHead>
+                      <TableHead>{t('postbacks.time', 'Время')}</TableHead>
+                      <TableHead>{t('postbacks.profile', 'Профиль')}</TableHead>
                       <TableHead>ClickID</TableHead>
-                      <TableHead>Статус</TableHead>
-                      <TableHead>Код ответа</TableHead>
-                      <TableHead>Попытка</TableHead>
-                      <TableHead>Время ответа</TableHead>
+                      <TableHead>{t('postbacks.status', 'Статус')}</TableHead>
+                      <TableHead>{t('postbacks.responseCode', 'Код ответа')}</TableHead>
+                      <TableHead>{t('postbacks.attempt', 'Попытка')}</TableHead>
+                      <TableHead>{t('postbacks.responseTime', 'Время ответа')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -993,9 +993,9 @@ export function AffiliatePostbacks() {
                             variant={delivery.response_code >= 200 && delivery.response_code < 300 ? "default" : "destructive"}
                           >
                             {delivery.response_code >= 200 && delivery.response_code < 300 ? (
-                              <><CheckCircle className="h-3 w-3 mr-1" />Успех</>
+                              <><CheckCircle className="h-3 w-3 mr-1" />{t('postbacks.success', 'Успех')}</>
                             ) : (
-                              <><XCircle className="h-3 w-3 mr-1" />Ошибка</>
+                              <><XCircle className="h-3 w-3 mr-1" />{t('postbacks.error', 'Ошибка')}</>
                             )}
                           </Badge>
                         </TableCell>
@@ -1014,7 +1014,7 @@ export function AffiliatePostbacks() {
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                           <Clock className="h-8 w-8 mx-auto mb-2" />
-                          Пока нет логов доставок
+                          {t('postbacks.noLogsYet', 'Пока нет логов доставок')}
                         </TableCell>
                       </TableRow>
                     )}

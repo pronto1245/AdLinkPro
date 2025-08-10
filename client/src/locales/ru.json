@@ -56,7 +56,8 @@
     "disabled": "Отключен",
     "pending": "Ожидание",
     "cancel": "Отмена",
-    "payoutType": "Тип выплаты"
+    "payoutType": "Тип выплаты",
+    "active": "Включен"
   },
   "theme": {
     "light": "Светлая",
@@ -270,7 +271,32 @@
     "currency": "Валюта",
     "sendTest": "Отправить тест",
     "configuredPostbacks": "Настроенные постбеки",
-    "createPostbackProfile": "Создать постбек профиль"
+    "createPostbackProfile": "Создать постбек профиль",
+    "name": "Название",
+    "trackerType": "Тип трекера",
+    "scope": "Область применения",
+    "priority": "Приоритет",
+    "endpointUrl": "URL эндпоинта",
+    "method": "Метод",
+    "statusMapping": "Маппинг статусов",
+    "paramsTemplate": "Шаблон параметров",
+    "endpoint": "Эндпоинт",
+    "lastDelivery": "Последняя доставка",
+    "never": "Не было",
+    "global": "Глобально",
+    "offer": "Оффер",
+    "custom": "Пользовательский",
+    "placeholderName": "Мой трекер",
+    "placeholderEndpoint": "https://mytracker.com/postback",
+    "time": "Время",
+    "profile": "Профиль",
+    "status": "Статус",
+    "responseCode": "Код ответа",
+    "attempt": "Попытка",
+    "responseTime": "Время ответа",
+    "success": "Успех",
+    "error": "Ошибка",
+    "noLogsYet": "Пока нет логов доставок"
   },
   "auth": {
     "login": "Вход в систему",
