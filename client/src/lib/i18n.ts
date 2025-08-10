@@ -20,7 +20,7 @@ i18n
   .init({
     resources,
     fallbackLng: 'en',
-    debug: false,
+    debug: true,
 
     interpolation: {
       escapeValue: false,
@@ -34,3 +34,12 @@ i18n
   });
 
 export default i18n;
+
+// Debug logging for i18n
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', () => {
+    console.log('i18n debug - current language:', i18n.language);
+    console.log('i18n debug - common.refresh translation:', i18n.t('common.refresh'));
+    console.log('i18n debug - all loaded resources:', i18n.store.data);
+  });
+}
