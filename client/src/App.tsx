@@ -570,7 +570,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <ThemeProvider>
+        <ThemeProvider defaultTheme="light">
             <AuthProvider>
               <NotificationProvider>
                 <PushNotificationProvider>
