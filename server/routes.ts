@@ -1800,6 +1800,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { expiresIn: '24h' }
       );
 
+      console.log('🔑 Login successful, generated token for user:', user.username);
+      console.log('Token first 20 chars:', token.substring(0, 20) + '...');
+
       // Update last login
       // lastLoginAt field removed from schema - skipping update
 

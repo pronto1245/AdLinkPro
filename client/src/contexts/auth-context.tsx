@@ -99,10 +99,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const data = await response.json();
       console.log('Login successful, user data:', data.user);
+      console.log('🔑 Token received from server:', data.token ? data.token.substring(0, 20) + '...' : 'NO_TOKEN');
       
-      setToken(data.token);
+      // CRITICAL FIX: Проверяем что токен не null перед сохранением
+      if (data.token && data.token !== 'null' && data.token !== null) {
+        setToken(data.token);
+        localStorage.setItem('auth_token', data.token);
+        console.log('✅ Token saved to localStorage successfully');
+      } else {
+        console.error('❌ Invalid token received from server:', data.token);
+        throw new Error('Invalid token received from server');
+      }
+      
       setUser(data.user);
-      localStorage.setItem('auth_token', data.token);
     } catch (error) {
       console.error('Login error:', error);
       throw error;
