@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { db } from '../db';
+import { db } from '../db.js';
 import { customDomains, offers, trackingLinks, type CustomDomain, type InsertCustomDomain } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import dns from 'dns';
@@ -347,7 +347,6 @@ MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC${Date.now().toString().slice
         .where(eq(trackingLinks.offerId, offerId));
     }
   }
-}
 
   static async checkSSL(domain: string): Promise<{
     hasSSL: boolean;
