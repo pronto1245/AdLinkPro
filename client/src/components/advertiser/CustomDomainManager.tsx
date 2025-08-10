@@ -33,7 +33,12 @@ interface CustomDomain {
   type: 'a_record' | 'cname';
   verificationValue: string;
   targetValue?: string;
-  sslStatus?: 'none' | 'pending' | 'issued' | 'expired';
+  sslStatus?: 'none' | 'pending' | 'issued' | 'expired' | 'failed';
+  sslCertificate?: string;
+  sslPrivateKey?: string;
+  sslValidUntil?: string;
+  sslIssuer?: string;
+  sslErrorMessage?: string;
   isActive?: boolean;
   lastChecked?: string | null;
   errorMessage?: string | null;
@@ -315,13 +320,25 @@ export function CustomDomainManager() {
                         {domain.sslStatus === 'issued' && (
                           <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
                             <Shield className="h-3 w-3 mr-1" />
-                            SSL
+                            SSL активен
                           </Badge>
                         )}
-                        {domain.status === 'verified' && !domain.sslStatus && (
+                        {domain.sslStatus === 'pending' && (
+                          <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                            <Clock className="h-3 w-3 mr-1" />
+                            SSL выдается
+                          </Badge>
+                        )}
+                        {domain.sslStatus === 'failed' && (
+                          <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            SSL ошибка
+                          </Badge>
+                        )}
+                        {domain.status === 'verified' && (!domain.sslStatus || domain.sslStatus === 'none') && (
                           <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
                             <Zap className="h-3 w-3 mr-1" />
-                            Готов
+                            Готов к SSL
                           </Badge>
                         )}
                       </div>
@@ -493,6 +510,47 @@ export function CustomDomainManager() {
                         <AlertCircle className="h-4 w-4" />
                         <AlertDescription>{domain.errorMessage}</AlertDescription>
                       </Alert>
+                    )}
+
+                    {/* SSL информация */}
+                    {domain.sslStatus && domain.sslStatus !== 'none' && (
+                      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                        <h5 className="font-medium mb-2 flex items-center gap-2">
+                          <Shield className="h-4 w-4" />
+                          SSL Сертификат
+                        </h5>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-600 dark:text-gray-400">Статус:</span>
+                            <span className="ml-2 font-medium">
+                              {domain.sslStatus === 'issued' && '✅ Выдан'}
+                              {domain.sslStatus === 'pending' && '⏳ Выдается'}
+                              {domain.sslStatus === 'failed' && '❌ Ошибка'}
+                              {domain.sslStatus === 'expired' && '⚠️ Истек'}
+                            </span>
+                          </div>
+                          {domain.sslIssuer && (
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Центр:</span>
+                              <span className="ml-2 font-medium">{domain.sslIssuer}</span>
+                            </div>
+                          )}
+                          {domain.sslValidUntil && (
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Действует до:</span>
+                              <span className="ml-2 font-medium">
+                                {new Date(domain.sslValidUntil).toLocaleDateString('ru-RU')}
+                              </span>
+                            </div>
+                          )}
+                          {domain.sslErrorMessage && (
+                            <div className="col-span-2">
+                              <span className="text-red-600 dark:text-red-400">Ошибка:</span>
+                              <span className="ml-2">{domain.sslErrorMessage}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )}
 
                     {/* Информация о последней проверке */}

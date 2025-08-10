@@ -1973,6 +1973,15 @@ export const customDomains = pgTable("custom_domains", {
   errorMessage: text("error_message"),
   lastChecked: timestamp("last_checked"),
   nextCheck: timestamp("next_check"),
+  // SSL Certificate fields
+  sslStatus: varchar("ssl_status", { length: 50 }).default('none'), // none, pending, issued, expired, failed
+  sslCertificate: text("ssl_certificate"),
+  sslPrivateKey: text("ssl_private_key"),
+  sslValidUntil: timestamp("ssl_valid_until"),
+  sslIssuer: varchar("ssl_issuer", { length: 255 }),
+  sslErrorMessage: text("ssl_error_message"),
+  isActive: boolean("is_active").default(false),
+  verifiedAt: timestamp("verified_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
