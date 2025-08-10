@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "./contexts/auth-context";
 
 import { SidebarProvider } from "./contexts/sidebar-context";
-import { ThemeProvider } from "./contexts/theme-context";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { NotificationProvider } from "@/components/NotificationToast";
 import { NotificationProvider as PushNotificationProvider } from "./components/ui/notification-provider";
 import { WebSocketManager } from "@/components/WebSocketManager";

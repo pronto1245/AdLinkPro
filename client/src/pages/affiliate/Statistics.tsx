@@ -308,7 +308,7 @@ export default function Statistics() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6 bg-white min-h-screen">
+      <div className="p-6 space-y-6 bg-background dark:bg-background min-h-screen">
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-10 w-32" />
@@ -325,7 +325,7 @@ export default function Statistics() {
 
   if (error) {
     return (
-      <div className="p-6 bg-white min-h-screen">
+      <div className="p-6 bg-background dark:bg-background min-h-screen">
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-6">
             <div className="text-center">
@@ -339,12 +339,12 @@ export default function Statistics() {
   }
 
   return (
-    <div className="space-y-6 p-6 bg-white min-h-screen">
+    <div className="space-y-6 p-6 bg-background dark:bg-background min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <BarChart3 className="h-8 w-8 text-blue-600" />
+            <BarChart3 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Статистика Партнера
           </h1>
           <p className="text-muted-foreground">
@@ -444,7 +444,7 @@ export default function Statistics() {
             <MousePointer className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.totalClicks.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.totalClicks.toLocaleString()}</div>
           </CardContent>
         </Card>
         
@@ -464,7 +464,7 @@ export default function Statistics() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
               {formatCurrency(stats.totalRevenue)}
             </div>
           </CardContent>
@@ -476,7 +476,7 @@ export default function Statistics() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
               {formatCR(stats.conversionRate / 100)}
             </div>
           </CardContent>
@@ -488,7 +488,7 @@ export default function Statistics() {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-teal-600">
+            <div className="text-2xl font-bold text-teal-600 dark:text-teal-400">
               {formatCurrency(stats.epc)}
             </div>
           </CardContent>
@@ -499,7 +499,7 @@ export default function Statistics() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-blue-600" />
+            <BarChart3 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             Обзор
           </TabsTrigger>
           <TabsTrigger value="geography" className="flex items-center gap-2">
@@ -507,15 +507,15 @@ export default function Statistics() {
             География
           </TabsTrigger>
           <TabsTrigger value="devices" className="flex items-center gap-2">
-            <Monitor className="h-4 w-4 text-purple-600" />
+            <Monitor className="h-4 w-4 text-purple-600 dark:text-purple-400" />
             Устройства
           </TabsTrigger>
           <TabsTrigger value="sources" className="flex items-center gap-2">
-            <Search className="h-4 w-4 text-orange-600" />
+            <Search className="h-4 w-4 text-orange-600 dark:text-orange-400" />
             Источники
           </TabsTrigger>
           <TabsTrigger value="subid" className="flex items-center gap-2">
-            <Target className="h-4 w-4 text-teal-600" />
+            <Target className="h-4 w-4 text-teal-600 dark:text-teal-400" />
             SubID
           </TabsTrigger>
           <TabsTrigger value="details" className="flex items-center gap-2">
@@ -528,7 +528,7 @@ export default function Statistics() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-blue-600" />
+                <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 Общая статистика кликов
               </CardTitle>
             </CardHeader>
@@ -547,10 +547,10 @@ export default function Statistics() {
                 </TableHeader>
                 <TableBody>
                   {tableData.map((item: any) => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id} className="bg-background dark:bg-card hover:bg-muted/50 dark:hover:bg-muted/50">
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium">{new Date(item.timestamp || item.createdAt).toLocaleDateString()}</span>
+                          <span className="font-medium text-foreground">{new Date(item.timestamp || item.createdAt).toLocaleDateString()}</span>
                           <span className="text-xs text-muted-foreground">{new Date(item.timestamp || item.createdAt).toLocaleTimeString()}</span>
                         </div>
                       </TableCell>
@@ -560,7 +560,7 @@ export default function Statistics() {
                       </TableCell>
                       <TableCell className="font-mono text-xs">
                         <div className="flex items-center gap-2">
-                          <span className="text-blue-600">{item.clickId}</span>
+                          <span className="text-blue-600 dark:text-blue-400 dark:text-blue-400">{item.clickId}</span>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -579,7 +579,7 @@ export default function Statistics() {
                           {item.status === 'conversion' ? 'Конверсия' : 'Клик'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-medium text-purple-600">
+                      <TableCell className="font-medium text-purple-600 dark:text-purple-400">
                         {formatCurrency(item.revenue)}
                       </TableCell>
                       <TableCell>
@@ -627,19 +627,19 @@ export default function Statistics() {
                 </TableHeader>
                 <TableBody>
                   {tableData.map((item: any) => (
-                    <TableRow key={item.country}>
+                    <TableRow key={item.country} className="bg-background dark:bg-card hover:bg-muted/50 dark:hover:bg-muted/50">
                       <TableCell>
                         <Badge variant="outline">{item.country}</Badge>
                       </TableCell>
                       <TableCell>{item.clicks}</TableCell>
                       <TableCell>{item.conversions}</TableCell>
-                      <TableCell className="font-medium text-purple-600">
+                      <TableCell className="font-medium text-purple-600 dark:text-purple-400">
                         {formatCurrency(item.revenue)}
                       </TableCell>
-                      <TableCell className="font-medium text-orange-600">
+                      <TableCell className="font-medium text-orange-600 dark:text-orange-400">
                         {item.cr}
                       </TableCell>
-                      <TableCell className="font-medium text-teal-600">
+                      <TableCell className="font-medium text-teal-600 dark:text-teal-400">
                         {item.epc}
                       </TableCell>
                     </TableRow>
@@ -655,7 +655,7 @@ export default function Statistics() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Monitor className="h-5 w-5 text-purple-600" />
+                <Monitor className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                 Статистика по устройствам
               </CardTitle>
             </CardHeader>
@@ -673,7 +673,7 @@ export default function Statistics() {
                 </TableHeader>
                 <TableBody>
                   {tableData.map((item: any) => (
-                    <TableRow key={item.device}>
+                    <TableRow key={item.device} className="bg-background dark:bg-card hover:bg-muted/50 dark:hover:bg-muted/50">
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {item.device === 'Desktop' && <Monitor className="h-4 w-4" />}
@@ -684,13 +684,13 @@ export default function Statistics() {
                       </TableCell>
                       <TableCell>{item.clicks}</TableCell>
                       <TableCell>{item.conversions}</TableCell>
-                      <TableCell className="font-medium text-purple-600">
+                      <TableCell className="font-medium text-purple-600 dark:text-purple-400">
                         {formatCurrency(item.revenue)}
                       </TableCell>
-                      <TableCell className="font-medium text-orange-600">
+                      <TableCell className="font-medium text-orange-600 dark:text-orange-400">
                         {item.cr}
                       </TableCell>
-                      <TableCell className="font-medium text-teal-600">
+                      <TableCell className="font-medium text-teal-600 dark:text-teal-400">
                         {item.epc}
                       </TableCell>
                     </TableRow>
@@ -706,7 +706,7 @@ export default function Statistics() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Search className="h-5 w-5 text-orange-600" />
+                <Search className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                 Статистика по источникам
               </CardTitle>
             </CardHeader>
@@ -724,19 +724,19 @@ export default function Statistics() {
                 </TableHeader>
                 <TableBody>
                   {tableData.map((item: any) => (
-                    <TableRow key={item.source}>
+                    <TableRow key={item.source} className="bg-background dark:bg-card hover:bg-muted/50 dark:hover:bg-muted/50">
                       <TableCell>
                         <Badge variant="outline">{item.source}</Badge>
                       </TableCell>
                       <TableCell>{item.clicks}</TableCell>
                       <TableCell>{item.conversions}</TableCell>
-                      <TableCell className="font-medium text-purple-600">
+                      <TableCell className="font-medium text-purple-600 dark:text-purple-400">
                         {formatCurrency(item.revenue)}
                       </TableCell>
-                      <TableCell className="font-medium text-orange-600">
+                      <TableCell className="font-medium text-orange-600 dark:text-orange-400">
                         {item.cr}
                       </TableCell>
-                      <TableCell className="font-medium text-teal-600">
+                      <TableCell className="font-medium text-teal-600 dark:text-teal-400">
                         {item.epc}
                       </TableCell>
                     </TableRow>
@@ -752,7 +752,7 @@ export default function Statistics() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-teal-600" />
+                <Target className="h-5 w-5 text-teal-600 dark:text-teal-400" />
                 Анализ SubID параметров
               </CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -774,15 +774,15 @@ export default function Statistics() {
                 </TableHeader>
                 <TableBody>
                   {tableData.slice(0, 10).map((item: any) => (
-                    <TableRow key={item.id || item.clickId}>
-                      <TableCell className="font-mono text-xs text-blue-600">
+                    <TableRow key={item.id || item.clickId} className="bg-background dark:bg-card hover:bg-muted/50 dark:hover:bg-muted/50">
+                      <TableCell className="font-mono text-xs text-blue-600 dark:text-blue-400 dark:text-blue-400">
                         {item.clickId}
                       </TableCell>
-                      <TableCell className="text-xs">{item.sub_1 || '-'}</TableCell>
-                      <TableCell className="text-xs">{item.sub_2 || '-'}</TableCell>
-                      <TableCell className="text-xs">{item.sub_3 || '-'}</TableCell>
-                      <TableCell className="text-xs">{item.sub_4 || '-'}</TableCell>
-                      <TableCell className="text-xs">{item.sub_5 || '-'}</TableCell>
+                      <TableCell className="text-xs text-foreground">{item.sub_1 || '-'}</TableCell>
+                      <TableCell className="text-xs text-foreground">{item.sub_2 || '-'}</TableCell>
+                      <TableCell className="text-xs text-foreground">{item.sub_3 || '-'}</TableCell>
+                      <TableCell className="text-xs text-foreground">{item.sub_4 || '-'}</TableCell>
+                      <TableCell className="text-xs text-foreground">{item.sub_5 || '-'}</TableCell>
                       <TableCell>
                         <Button
                           variant="outline"
@@ -834,15 +834,15 @@ export default function Statistics() {
                 </TableHeader>
                 <TableBody>
                   {tableData.map((item: any) => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id} className="bg-background dark:bg-card hover:bg-muted/50 dark:hover:bg-muted/50">
                       <TableCell className="text-xs">
                         <div className="flex flex-col">
-                          <span>{new Date(item.timestamp || item.createdAt).toLocaleDateString()}</span>
+                          <span className="text-foreground">{new Date(item.timestamp || item.createdAt).toLocaleDateString()}</span>
                           <span className="text-muted-foreground">{new Date(item.timestamp || item.createdAt).toLocaleTimeString()}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{getOfferName(item.offerId)}</TableCell>
-                      <TableCell className="font-mono text-xs text-blue-600">
+                      <TableCell className="font-medium text-foreground">{getOfferName(item.offerId)}</TableCell>
+                      <TableCell className="font-mono text-xs text-blue-600 dark:text-blue-400">
                         {item.clickId}
                       </TableCell>
                       <TableCell className="text-xs">{item.ip}</TableCell>
@@ -858,7 +858,7 @@ export default function Statistics() {
                           {item.status === 'conversion' ? 'Конверсия' : 'Клик'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-medium text-purple-600">
+                      <TableCell className="font-medium text-purple-600 dark:text-purple-400">
                         {formatCurrency(item.revenue)}
                       </TableCell>
                       <TableCell>
