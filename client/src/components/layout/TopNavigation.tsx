@@ -73,12 +73,12 @@ export function TopNavigation() {
           
           {/* Balance for partners */}
           {user.role === 'affiliate' && financeData && (
-            <div className="hidden md:flex items-center space-x-2 text-sm">
-              <DollarSign className="h-4 w-4 text-green-600" />
-              <span className="font-medium text-green-600">
+            <div className="hidden md:flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-700">
+              <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <span className="font-bold text-lg text-green-700 dark:text-green-300">
                 ${financeData.balance.toFixed(2)}
               </span>
-              <span className="text-xs text-muted-foreground">баланс</span>
+              <span className="text-xs text-green-600/80 dark:text-green-400/80 font-medium">баланс</span>
             </div>
           )}
           
