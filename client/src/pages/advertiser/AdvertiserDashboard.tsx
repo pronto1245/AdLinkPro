@@ -87,6 +87,14 @@ export function AdvertiserDashboard() {
     });
   };
 
+  const handleCalendarClick = () => {
+    // Можно открыть модальное окно календаря или показать встроенный picker
+    toast({
+      title: "Календарь",
+      description: "Используйте кнопки 7д/30д ниже для быстрого выбора периода",
+    });
+  };
+
   const handleExportClick = () => {
     if (!liveStats || liveStats.length === 0) {
       toast({
@@ -181,7 +189,7 @@ export function AdvertiserDashboard() {
             <Filter className="h-4 w-4 mr-2" />
             Фильтры
           </Button>
-          <Button variant="outline" size="sm" data-testid="button-calendar">
+          <Button variant="outline" size="sm" data-testid="button-calendar" onClick={handleCalendarClick}>
             <Calendar className="h-4 w-4 mr-2" />
             Период
           </Button>

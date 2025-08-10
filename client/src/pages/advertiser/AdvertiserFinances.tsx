@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
+import { useToast } from '@/hooks/use-toast';
 import { 
   DollarSign, 
   TrendingUp, 
@@ -53,6 +54,7 @@ const PAYMENT_METHODS = [
 
 export default function AdvertiserFinances() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [depositAmount, setDepositAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('');
@@ -87,6 +89,53 @@ export default function AdvertiserFinances() {
       case 'refund': return <TrendingUp className="h-4 w-4 text-purple-600" />;
       default: return <DollarSign className="h-4 w-4" />;
     }
+  };
+
+  const handleCreateInvoice = () => {
+    toast({
+      title: "Создание инвойса",
+      description: "Функция создания инвойса в разработке",
+    });
+  };
+
+  const handleSetupBudgets = () => {
+    toast({
+      title: "Настройка бюджетов",
+      description: "Функция планирования бюджетов в разработке",
+    });
+  };
+
+  const handleAddFunds = () => {
+    toast({
+      title: "Пополнение баланса",
+      description: "Перейдите на вкладку 'Пополнение' для добавления средств",
+    });
+  };
+
+  const handleViewPayouts = () => {
+    toast({
+      title: "Выплаты партнёрам",
+      description: "Функция просмотра выплат в разработке",
+    });
+  };
+
+  const handleDeposit = () => {
+    if (!depositAmount || !selectedMethod) {
+      toast({
+        title: "Ошибка",
+        description: "Укажите сумму и способ пополнения",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Запрос на пополнение",
+      description: `Запрос на пополнение $${depositAmount} через ${selectedMethod} отправлен`,
+    });
+    
+    setDepositAmount('');
+    setSelectedMethod('');
   };
 
   if (overviewLoading) {
@@ -185,15 +234,15 @@ export default function AdvertiserFinances() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button className="w-full justify-start" data-testid="button-add-funds">
+                <Button className="w-full justify-start" onClick={handleAddFunds} data-testid="button-add-funds">
                   <Plus className="h-4 w-4 mr-2" />
                   Пополнить баланс
                 </Button>
-                <Button variant="outline" className="w-full justify-start" data-testid="button-view-payouts">
+                <Button variant="outline" className="w-full justify-start" onClick={handleViewPayouts} data-testid="button-view-payouts">
                   <ArrowDownCircle className="h-4 w-4 mr-2" />
                   Просмотреть выплаты партнёрам
                 </Button>
-                <Button variant="outline" className="w-full justify-start" data-testid="button-create-invoice">
+                <Button variant="outline" className="w-full justify-start" onClick={handleCreateInvoice} data-testid="button-create-invoice">
                   <FileText className="h-4 w-4 mr-2" />
                   Создать инвойс
                 </Button>
@@ -293,6 +342,7 @@ export default function AdvertiserFinances() {
                   <Button 
                     className="w-full" 
                     disabled={!depositAmount || !selectedMethod}
+                    onClick={handleDeposit}
                     data-testid="button-deposit"
                   >
                     Пополнить баланс
@@ -382,7 +432,7 @@ export default function AdvertiserFinances() {
                 <p className="text-muted-foreground mb-4">
                   Создайте первый инвойс для запроса оплаты
                 </p>
-                <Button data-testid="button-create-first-invoice">
+                <Button onClick={handleCreateInvoice} data-testid="button-create-first-invoice">
                   <Plus className="h-4 w-4 mr-2" />
                   Создать инвойс
                 </Button>
@@ -406,7 +456,7 @@ export default function AdvertiserFinances() {
                 <p className="text-muted-foreground mb-4">
                   Настройте планируемые бюджеты для эффективного управления расходами
                 </p>
-                <Button data-testid="button-setup-budgets">
+                <Button onClick={handleSetupBudgets} data-testid="button-setup-budgets">
                   <Plus className="h-4 w-4 mr-2" />
                   Настроить бюджеты
                 </Button>

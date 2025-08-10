@@ -228,6 +228,27 @@ export default function AdvertiserProfile() {
     }
   });
 
+  // 2FA Toggle Mutation
+  const toggle2FAMutation = useMutation({
+    mutationFn: async (enable: boolean) => {
+      return apiRequest('/api/advertiser/2fa/toggle', 'POST', { enabled: enable });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      toast({
+        title: "2FA обновлена",
+        description: "Настройки двухфакторной аутентификации изменены",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось изменить настройки 2FA",
+        variant: "destructive",
+      });
+    },
+  });
+
   const generateTokenMutation = useMutation({
     mutationFn: async (tokenName: string) => {
       return apiRequest('/api/advertiser/api-tokens', {
@@ -384,6 +405,11 @@ export default function AdvertiserProfile() {
 
   const handleSaveNotifications = () => {
     updateNotificationsMutation.mutate(notificationForm);
+  };
+
+  const handle2FAToggle = () => {
+    const enable = !formData?.twoFactorEnabled;
+    toggle2FAMutation.mutate(enable);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -817,8 +843,16 @@ export default function AdvertiserProfile() {
                   Статус: <strong>{formData?.twoFactorEnabled ? 'Включена' : 'Отключена'}</strong>
                 </p>
               </div>
-              <Button variant="outline" disabled data-testid="button-toggle-2fa">
-                {formData?.twoFactorEnabled ? 'Отключить 2FA' : 'Включить 2FA'}
+              <Button 
+                variant="outline" 
+                onClick={handle2FAToggle}
+                disabled={toggle2FAMutation.isPending}
+                data-testid="button-toggle-2fa"
+              >
+                {toggle2FAMutation.isPending 
+                  ? 'Обработка...' 
+                  : (formData?.twoFactorEnabled ? 'Отключить 2FA' : 'Включить 2FA')
+                }
               </Button>
             </CardContent>
           </Card>
