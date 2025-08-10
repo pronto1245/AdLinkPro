@@ -149,6 +149,11 @@ export async function processPostbackTask(task: PostbackTask): Promise<DeliveryR
     advertiserId: task.advertiserId
   });
 
+  // Get relevant profiles first
+  const profiles = mockProfiles.filter(p => 
+    p.enabled && p.advertiserId === task.advertiserId
+  ).sort((a, b) => b.priority - a.priority);
+
   // Global antifraud blocking - hard level blocks all profiles
   if (task.antifraudLevel === "hard") {
     console.log('🚫 Postback blocked by antifraud (hard level) for all profiles');
@@ -180,11 +185,6 @@ export async function processPostbackTask(task: PostbackTask): Promise<DeliveryR
     
     return blockedResults;
   }
-
-  // Get relevant profiles
-  const profiles = mockProfiles.filter(p => 
-    p.enabled && p.advertiserId === task.advertiserId
-  ).sort((a, b) => b.priority - a.priority);
 
   if (profiles.length === 0) {
     console.log('⚠️ No postback profiles found for advertiser:', task.advertiserId);

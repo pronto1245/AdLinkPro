@@ -58,13 +58,13 @@ export default function AdvertiserFinances() {
   const [selectedMethod, setSelectedMethod] = useState('');
 
   // Финансовый обзор
-  const { data: financialOverview, isLoading: overviewLoading } = useQuery({
+  const { data: financialOverview, isLoading: overviewLoading } = useQuery<FinancialOverview>({
     queryKey: ['/api/advertiser/financial-overview'],
     enabled: !!user
   });
 
   // История транзакций
-  const { data: transactions, isLoading: transactionsLoading } = useQuery({
+  const { data: transactions, isLoading: transactionsLoading } = useQuery<Transaction[]>({
     queryKey: ['/api/advertiser/transactions'],
     enabled: !!user
   });
