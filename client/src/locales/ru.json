@@ -72,7 +72,8 @@
     "username": "Имя пользователя",
     "email": "Email",
     "password": "Пароль", 
-    "sign_in": "Войти"
+    "sign_in": "Войти",
+    "theme": "Тема"
   },
   "navigation": {
     "partner": "Партнер"
@@ -159,7 +160,8 @@
     "todayClicks": "Клики сегодня",
     "thisMonth": "В этом месяце",
     "viewAll": "Посмотреть все",
-    "noData": "Нет данных"
+    "noData": "Нет данных",
+    "conversions": "Конверсии"
   },
   "postbacks": {
     "settings": "Настройки постбеков",
