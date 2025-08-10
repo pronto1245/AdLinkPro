@@ -190,12 +190,7 @@ export default function TeamManagement() {
     }));
   };
 
-  const handleToggleStatus = (member: TeamMember) => {
-    updateMemberMutation.mutate({
-      id: member.id,
-      isActive: !member.isActive
-    });
-  };
+
 
   const handleDeleteMember = (member: TeamMember) => {
     if (confirm(`Вы уверены, что хотите удалить участника ${member.username}?`)) {
@@ -493,20 +488,6 @@ export default function TeamManagement() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleToggleStatus(member)}
-                            title={member.isActive ? 'Деактивировать' : 'Активировать'}
-                            data-testid={`button-toggle-${member.id}`}
-                          >
-                            {member.isActive ? (
-                              <UserX className="h-4 w-4" />
-                            ) : (
-                              <UserCheck className="h-4 w-4" />
-                            )}
-                          </Button>
-                          
-                          <Button
-                            variant="outline"
-                            size="sm"
                             onClick={() => setEditingMember(member)}
                             title="Редактировать"
                             data-testid={`button-edit-${member.id}`}
@@ -519,7 +500,7 @@ export default function TeamManagement() {
                             size="sm"
                             onClick={() => handleDeleteMember(member)}
                             title="Удалить"
-                            className="text-red-600 hover:text-red-700"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
                             data-testid={`button-delete-${member.id}`}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -611,6 +592,37 @@ export default function TeamManagement() {
               </div>
 
               <div>
+                <Label htmlFor="editIsActive">Статус</Label>
+                <Select 
+                  value={editingMember.isActive ? "active" : "inactive"} 
+                  onValueChange={(value) => {
+                    setEditingMember(prev => prev ? {
+                      ...prev,
+                      isActive: value === "active"
+                    } : null);
+                  }}
+                >
+                  <SelectTrigger data-testid="select-edit-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">
+                      <div className="flex items-center gap-2">
+                        <UserCheck className="h-4 w-4 text-green-600" />
+                        Активен
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="inactive">
+                      <div className="flex items-center gap-2">
+                        <UserX className="h-4 w-4 text-gray-600" />
+                        Неактивен
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <Label>Разрешения</Label>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {AVAILABLE_PERMISSIONS.map(permission => (
@@ -659,7 +671,8 @@ export default function TeamManagement() {
                         id: editingMember.id,
                         role: editingMember.role,
                         permissions: editingMember.permissions,
-                        subIdPrefix: editingMember.subIdPrefix
+                        subIdPrefix: editingMember.subIdPrefix,
+                        isActive: editingMember.isActive
                       });
                     }
                   }}
