@@ -30,9 +30,10 @@ interface MetricCardProps {
   change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
   icon: React.ComponentType<{ className?: string }>;
+  cardType?: 'clicks' | 'conversions' | 'revenue' | 'cr' | 'uniqueClicks' | 'activeOffers' | 'status' | 'epc';
 }
 
-const MetricCard = ({ title, value, change, changeType, icon: Icon }: MetricCardProps) => {
+const MetricCard = ({ title, value, change, changeType, icon: Icon, cardType }: MetricCardProps) => {
   const getChangeColor = () => {
     switch (changeType) {
       case 'positive':
@@ -51,46 +52,50 @@ const MetricCard = ({ title, value, change, changeType, icon: Icon }: MetricCard
   };
 
   const getCardStyle = () => {
-    if (title === 'Клики') return 'border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/20 dark:to-background';
-    if (title === 'Конверсии') return 'border-l-4 border-l-green-500 bg-gradient-to-r from-green-50 to-white dark:from-green-950/20 dark:to-background';
-    if (title === 'Доход') return 'border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-50 to-white dark:from-amber-950/20 dark:to-background';
-    if (title === 'CR%') return 'border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50 to-white dark:from-purple-950/20 dark:to-background';
-    if (title === 'Уникальные клики') return 'border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-50 to-white dark:from-indigo-950/20 dark:to-background';
-    if (title === 'Активные офферы') return 'border-l-4 border-l-pink-500 bg-gradient-to-r from-pink-50 to-white dark:from-pink-950/20 dark:to-background';
-    if (title === 'Статус') return 'border-l-4 border-l-emerald-500 bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-950/20 dark:to-background';
+    if (cardType === 'clicks') return 'border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/20 dark:to-background';
+    if (cardType === 'conversions') return 'border-l-4 border-l-green-500 bg-gradient-to-r from-green-50 to-white dark:from-green-950/20 dark:to-background';
+    if (cardType === 'revenue') return 'border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-50 to-white dark:from-amber-950/20 dark:to-background';
+    if (cardType === 'cr') return 'border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50 to-white dark:from-purple-950/20 dark:to-background';
+    if (cardType === 'uniqueClicks') return 'border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-50 to-white dark:from-indigo-950/20 dark:to-background';
+    if (cardType === 'activeOffers') return 'border-l-4 border-l-pink-500 bg-gradient-to-r from-pink-50 to-white dark:from-pink-950/20 dark:to-background';
+    if (cardType === 'status') return 'border-l-4 border-l-emerald-500 bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-950/20 dark:to-background';
+    if (cardType === 'epc') return 'border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-50 to-white dark:from-indigo-950/20 dark:to-background';
     return 'border-l-4 border-l-slate-500 bg-gradient-to-r from-slate-50 to-white dark:from-slate-950/20 dark:to-background';
   };
 
   const getTitleColor = () => {
-    if (title === 'Клики') return 'text-blue-700 dark:text-blue-300';
-    if (title === 'Конверсии') return 'text-green-700 dark:text-green-300';
-    if (title === 'Доход') return 'text-amber-700 dark:text-amber-300';
-    if (title === 'CR%') return 'text-purple-700 dark:text-purple-300';
-    if (title === 'Уникальные клики') return 'text-indigo-700 dark:text-indigo-300';
-    if (title === 'Активные офферы') return 'text-pink-700 dark:text-pink-300';
-    if (title === 'Статус') return 'text-emerald-700 dark:text-emerald-300';
+    if (cardType === 'clicks') return 'text-blue-700 dark:text-blue-300';
+    if (cardType === 'conversions') return 'text-green-700 dark:text-green-300';
+    if (cardType === 'revenue') return 'text-amber-700 dark:text-amber-300';
+    if (cardType === 'cr') return 'text-purple-700 dark:text-purple-300';
+    if (cardType === 'uniqueClicks') return 'text-indigo-700 dark:text-indigo-300';
+    if (cardType === 'activeOffers') return 'text-pink-700 dark:text-pink-300';
+    if (cardType === 'status') return 'text-emerald-700 dark:text-emerald-300';
+    if (cardType === 'epc') return 'text-indigo-700 dark:text-indigo-300';
     return 'text-slate-700 dark:text-slate-300';
   };
 
   const getValueColor = () => {
-    if (title === 'Клики') return 'text-blue-600 dark:text-blue-400';
-    if (title === 'Конверсии') return 'text-green-600 dark:text-green-400';
-    if (title === 'Доход') return 'text-amber-600 dark:text-amber-400';
-    if (title === 'CR%') return 'text-purple-600 dark:text-purple-400';
-    if (title === 'Уникальные клики') return 'text-indigo-600 dark:text-indigo-400';
-    if (title === 'Активные офферы') return 'text-pink-600 dark:text-pink-400';
-    if (title === 'Статус') return 'text-emerald-600 dark:text-emerald-400';
+    if (cardType === 'clicks') return 'text-blue-600 dark:text-blue-400';
+    if (cardType === 'conversions') return 'text-green-600 dark:text-green-400';
+    if (cardType === 'revenue') return 'text-amber-600 dark:text-amber-400';
+    if (cardType === 'cr') return 'text-purple-600 dark:text-purple-400';
+    if (cardType === 'uniqueClicks') return 'text-indigo-600 dark:text-indigo-400';
+    if (cardType === 'activeOffers') return 'text-pink-600 dark:text-pink-400';
+    if (cardType === 'status') return 'text-emerald-600 dark:text-emerald-400';
+    if (cardType === 'epc') return 'text-indigo-600 dark:text-indigo-400';
     return 'text-slate-600 dark:text-slate-400';
   };
 
   const getIconColor = () => {
-    if (title === 'Клики') return 'text-blue-500';
-    if (title === 'Конверсии') return 'text-green-500';
-    if (title === 'Доход') return 'text-amber-500';
-    if (title === 'CR%') return 'text-purple-500';
-    if (title === 'Уникальные клики') return 'text-indigo-500';
-    if (title === 'Активные офферы') return 'text-pink-500';
-    if (title === 'Статус') return 'text-emerald-500';
+    if (cardType === 'clicks') return 'text-blue-500';
+    if (cardType === 'conversions') return 'text-green-500';
+    if (cardType === 'revenue') return 'text-amber-500';
+    if (cardType === 'cr') return 'text-purple-500';
+    if (cardType === 'uniqueClicks') return 'text-indigo-500';
+    if (cardType === 'activeOffers') return 'text-pink-500';
+    if (cardType === 'status') return 'text-emerald-500';
+    if (cardType === 'epc') return 'text-indigo-500';
     return 'text-slate-500';
   };
 
@@ -130,24 +135,24 @@ export default function PartnerDashboard() {
     setRefreshKey(prev => prev + 1);
     queryClient.invalidateQueries({ queryKey: ['/api/partner/dashboard'] });
     toast({
-      title: "Данные обновлены",
-      description: "Информация дашборда успешно обновлена",
+      title: t('dashboard.dataUpdated'),
+      description: t('dashboard.dataUpdatedDescription'),
     });
   };
 
   const handleFindOffers = () => {
     navigate('/affiliate/offers');
     toast({
-      title: "Переход к офферам",
-      description: "Открываю страницу доступных офферов",
+      title: t('dashboard.navigateToOffers'),
+      description: t('dashboard.navigateToOffersDescription'),
     });
   };
 
   const handleCheckStatistics = () => {
     navigate('/affiliate/statistics');
     toast({
-      title: "Переход к статистике",
-      description: "Открываю детальную статистику",
+      title: t('dashboard.navigateToStatistics'),
+      description: t('dashboard.navigateToStatisticsDescription'),
     });
   };
 
@@ -236,6 +241,7 @@ export default function PartnerDashboard() {
           change={dashboardData?.metrics?.clicksGrowth ? `${dashboardData.metrics.clicksGrowth > 0 ? '+' : ''}${dashboardData.metrics.clicksGrowth.toFixed(1)}%` : "+12.5%"}
           changeType="positive"
           icon={MousePointer}
+          cardType="clicks"
         />
         <MetricCard
           title={t('dashboard.conversions')}
@@ -243,6 +249,7 @@ export default function PartnerDashboard() {
           change="+5.2%"
           changeType="positive"
           icon={Target}
+          cardType="conversions"
         />
         <MetricCard
           title={t('dashboard.revenue')}
@@ -250,6 +257,7 @@ export default function PartnerDashboard() {
           change="+18.3%"
           changeType="positive"
           icon={DollarSign}
+          cardType="revenue"
         />
         <MetricCard
           title={t('dashboard.conversionRate')}
@@ -257,40 +265,45 @@ export default function PartnerDashboard() {
           change="-0.8%"
           changeType="negative"
           icon={TrendingUp}
+          cardType="cr"
         />
       </div>
 
       {/* Secondary Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          title="Уникальные клики"
+          title={t('dashboard.uniqueClicks')}
           value={`${Math.floor((metrics.totalClicks * 0.85) || 0).toLocaleString()}`}
           change="+7.1%"
           changeType="positive"
           icon={Users}
+          cardType="uniqueClicks"
         />
         <MetricCard
-          title="Активные офферы"
+          title={t('dashboard.activeOffers')}
           value={`${metrics.activeOffers || '0'}`}
           changeType="neutral"
           icon={Target}
+          cardType="activeOffers"
         />
         <MetricCard
-          title="Статус"
-          value="Активен"
-          icon={Users}
+          title={t('dashboard.status')}
+          value={t('dashboard.active')}
+          icon={CheckCircle}
+          cardType="status"
         />
         <MetricCard
-          title="EPC"
+          title={t('dashboard.avgEPC')}
           value={`$${metrics.epc?.toFixed(2) || '0'}`}
           icon={DollarSign}
+          cardType="epc"
         />
       </div>
 
       {/* Quick Actions */}
       <Card className="border-l-4 border-l-cyan-500 bg-gradient-to-r from-cyan-50 to-white dark:from-cyan-950/20 dark:to-background">
         <CardHeader>
-          <CardTitle className="text-cyan-700 dark:text-cyan-300">Быстрые действия</CardTitle>
+          <CardTitle className="text-cyan-700 dark:text-cyan-300">{t('dashboard.quickActions')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-3">
@@ -298,28 +311,28 @@ export default function PartnerDashboard() {
               variant="outline" 
               className="justify-start border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 shadow-md"
               onClick={handleFindOffers}
-              title="Перейти к странице офферов"
+              title={t('dashboard.goToOffers')}
             >
               <Target className="h-4 w-4 mr-2 text-green-500" />
-              Найти новые офферы
+              {t('dashboard.findNewOffers')}
             </Button>
             <Button 
               variant="outline" 
               className="justify-start border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 shadow-md"
               onClick={handleCheckStatistics}
-              title="Посмотреть детальную статистику"
+              title={t('dashboard.viewDetailedStats')}
             >
               <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
-              Проверить статистику
+              {t('dashboard.checkStatistics')}
             </Button>
             <Button 
               variant="outline" 
               className="justify-start border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 shadow-md"
               onClick={handleContactManager}
-              title="Связаться с менеджером"
+              title={t('dashboard.contactManagerTitle')}
             >
               <Users className="h-4 w-4 mr-2 text-purple-500" />
-              Связаться с менеджером
+              {t('dashboard.contactManager')}
             </Button>
           </div>
         </CardContent>
@@ -328,7 +341,7 @@ export default function PartnerDashboard() {
       {/* Notifications */}
       <Card className="border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
         <CardHeader>
-          <CardTitle className="text-orange-700 dark:text-orange-300">Уведомления</CardTitle>
+          <CardTitle className="text-orange-700 dark:text-orange-300">{t('notifications.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -348,11 +361,11 @@ export default function PartnerDashboard() {
                 <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                   <Target className="h-4 w-4 text-blue-500 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">Добро пожаловать!</p>
+                    <p className="text-sm font-medium">{t('dashboard.welcome')}</p>
                     <p className="text-sm text-muted-foreground">
-                      Начните работу с изучения доступных офферов
+                      {t('dashboard.welcomeMessage')}
                     </p>
-                    <Badge variant="secondary" className="mt-1">Система</Badge>
+                    <Badge variant="secondary" className="mt-1">{t('dashboard.system')}</Badge>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
