@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Settings, HelpCircle, LogOut, Mail, User } from 'lucide-react';
+import { Bell, Settings, HelpCircle, LogOut, Mail, User, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -14,12 +14,24 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useQuery } from '@tanstack/react-query';
 
 export function TopNavigation() {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const [hasNotifications, setHasNotifications] = useState(true);
   const [notificationCount, setNotificationCount] = useState(3);
+
+  // Fetch balance for partners only
+  const { data: financeData } = useQuery<{
+    balance: number;
+    pendingPayouts: number;
+    totalRevenue: number;
+  }>({
+    queryKey: ['/api/partner/finance/summary'],
+    enabled: !!user && user.role === 'affiliate',
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
 
   const handleLogout = () => {
     logout();
@@ -55,9 +67,21 @@ export function TopNavigation() {
         </div>
 
         {/* Right side - User menu items */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-4">
           {/* Theme Toggle */}
           <ThemeToggle />
+          
+          {/* Balance for partners */}
+          {user.role === 'affiliate' && financeData && (
+            <div className="hidden md:flex items-center space-x-2 text-sm">
+              <DollarSign className="h-4 w-4 text-green-600" />
+              <span className="font-medium text-green-600">
+                ${financeData.balance.toFixed(2)}
+              </span>
+              <span className="text-xs text-muted-foreground">баланс</span>
+            </div>
+          )}
+          
           {/* Email */}
           <div className="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
             <Mail className="h-4 w-4" />
