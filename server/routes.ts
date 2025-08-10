@@ -11509,7 +11509,10 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         })
         .from(partnerTeam)
         .leftJoin(users, eq(partnerTeam.userId, users.id))
-        .where(eq(partnerTeam.partnerId, partnerId));
+        .where(and(
+          eq(partnerTeam.partnerId, partnerId),
+          eq(partnerTeam.isActive, true)
+        ));
 
       console.log('Found partner team members:', teamMembers.length);
       res.json(teamMembers);
