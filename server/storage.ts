@@ -4,6 +4,7 @@ import {
   cryptoWallets, cryptoTransactions, fraudReports, fraudRules, 
   deviceTracking, ipAnalysis, fraudBlocks, receivedOffers, offerAccessRequests, userNotifications,
   creativeFiles, customDomains, apiTokens, clicks, events, postbackProfiles, postbackDeliveries,
+  referralCommissions,
   type User, type InsertUser, type Offer, type InsertOffer,
   type PartnerOffer, type InsertPartnerOffer, type TrackingLink, type InsertTrackingLink,
   type Transaction, type InsertTransaction, type Postback, type InsertPostback,
@@ -370,6 +371,13 @@ export interface IStorage {
   markNotificationAsRead(notificationId: string, userId: string): Promise<void>;
   markAllNotificationsAsRead(userId: string): Promise<void>;
   deleteNotification(notificationId: string, userId: string): Promise<void>;
+
+  // Referral System
+  getReferralUsers(userId: string): Promise<any[]>;
+  getReferralCommissions(userId: string): Promise<any[]>;
+  getReferralStats(userId: string): Promise<any>;
+  createReferralCommission(data: any): Promise<any>;
+  generateReferralCode(): Promise<string>;
 
   // Advanced tracking and statistics
   recordClick(clickData: InsertTrackingClick): Promise<TrackingClick>;
@@ -6247,6 +6255,138 @@ class MemStorage implements IStorage {
       .where(eq(postbackDeliveries.id, id))
       .returning();
     return updatedDelivery;
+  }
+
+  // Referral System Implementation
+  async getReferralUsers(userId: string): Promise<any[]> {
+    // Получаем пользователей, которых пригласил текущий пользователь
+    const referredUsers = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        role: users.role,
+        userType: users.userType,
+        registrationDate: users.createdAt,
+        status: users.isActive,
+        country: users.country
+      })
+      .from(users)
+      .where(eq(users.referredBy, userId))
+      .orderBy(desc(users.createdAt));
+
+    return referredUsers;
+  }
+
+  async getReferralCommissions(userId: string): Promise<any[]> {
+    // Получаем комиссии реферала
+    const commissions = await db
+      .select({
+        id: referralCommissions.id,
+        referredUserId: referralCommissions.referredUserId,
+        transactionId: referralCommissions.transactionId,
+        originalAmount: referralCommissions.originalAmount,
+        commissionAmount: referralCommissions.commissionAmount,
+        commissionRate: referralCommissions.commissionRate,
+        status: referralCommissions.status,
+        createdAt: referralCommissions.createdAt,
+        paidAt: referralCommissions.paidAt,
+        // Присоединяем данные о пользователе
+        referredUsername: users.username,
+        referredEmail: users.email
+      })
+      .from(referralCommissions)
+      .leftJoin(users, eq(referralCommissions.referredUserId, users.id))
+      .where(eq(referralCommissions.referrerId, userId))
+      .orderBy(desc(referralCommissions.createdAt));
+
+    return commissions;
+  }
+
+  async getReferralStats(userId: string): Promise<any> {
+    // Получаем статистику реферальной программы
+    const [totalReferrals] = await db
+      .select({ count: count() })
+      .from(users)
+      .where(eq(users.referredBy, userId));
+
+    const [totalCommissions] = await db
+      .select({ 
+        total: sum(referralCommissions.commissionAmount),
+        count: count()
+      })
+      .from(referralCommissions)
+      .where(eq(referralCommissions.referrerId, userId));
+
+    const [paidCommissions] = await db
+      .select({ 
+        total: sum(referralCommissions.commissionAmount),
+        count: count()
+      })
+      .from(referralCommissions)
+      .where(and(
+        eq(referralCommissions.referrerId, userId),
+        eq(referralCommissions.status, 'paid')
+      ));
+
+    const [pendingCommissions] = await db
+      .select({ 
+        total: sum(referralCommissions.commissionAmount),
+        count: count()
+      })
+      .from(referralCommissions)
+      .where(and(
+        eq(referralCommissions.referrerId, userId),
+        eq(referralCommissions.status, 'pending')
+      ));
+
+    return {
+      totalReferrals: totalReferrals.count || 0,
+      totalCommissions: parseFloat(totalCommissions.total || '0'),
+      totalCommissionsCount: totalCommissions.count || 0,
+      paidCommissions: parseFloat(paidCommissions.total || '0'),
+      paidCommissionsCount: paidCommissions.count || 0,
+      pendingCommissions: parseFloat(pendingCommissions.total || '0'),
+      pendingCommissionsCount: pendingCommissions.count || 0
+    };
+  }
+
+  async createReferralCommission(data: any): Promise<any> {
+    const [commission] = await db
+      .insert(referralCommissions)
+      .values({
+        id: randomUUID(),
+        ...data,
+        createdAt: new Date()
+      })
+      .returning();
+
+    return commission;
+  }
+
+  async generateReferralCode(): Promise<string> {
+    // Генерируем уникальный 8-символьный hex код
+    let code: string;
+    let isUnique = false;
+    
+    while (!isUnique) {
+      code = Math.random().toString(16).substring(2, 10).toUpperCase();
+      
+      // Проверяем уникальность
+      const existingUser = await db
+        .select()
+        .from(users)
+        .where(eq(users.referralCode, code))
+        .limit(1);
+      
+      if (existingUser.length === 0) {
+        isUnique = true;
+      }
+    }
+    
+    return code!;
   }
 }
 

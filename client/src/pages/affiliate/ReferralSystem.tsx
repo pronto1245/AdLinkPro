@@ -77,9 +77,9 @@ const ReferralSystem: React.FC = () => {
     enabled: !!user && user.role === 'affiliate'
   });
 
-  // Получаем детальную статистику рефералов
-  const { data: detailedData, isLoading: isLoadingDetailed } = useQuery<DetailedReferralData>({
-    queryKey: ['/api/partner/referral-details'],
+  // Получаем общую статистику рефералов с историей комиссий
+  const { data: generalStats } = useQuery({
+    queryKey: ['/api/referrals/stats'],
     enabled: !!user && user.role === 'affiliate'
   });
 
@@ -231,7 +231,7 @@ const ReferralSystem: React.FC = () => {
                 >
                   {copied ? <CheckCircle className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
                 </Button>
-                {navigator.share && (
+                {typeof navigator !== 'undefined' && navigator.share && (
                   <Button
                     onClick={shareReferralLink}
                     variant="outline"
@@ -345,7 +345,7 @@ const ReferralSystem: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="details" className="space-y-6">
-          {(isLoadingDetailed || !detailedData) ? (
+          {!generalStats ? (
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
@@ -360,10 +360,10 @@ const ReferralSystem: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-green-600">
-                      ${detailedData.stats.totalEarned}
+                      ${generalStats.earnings?.total_earned || '0.00'}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      От {detailedData.stats.totalTransactions} транзакций
+                      От {generalStats.earnings?.total_transactions || 0} транзакций
                     </p>
                   </CardContent>
                 </Card>
@@ -375,7 +375,7 @@ const ReferralSystem: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-yellow-600">
-                      ${detailedData.stats.pendingAmount}
+                      ${generalStats.earnings?.pending_amount || '0.00'}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Ожидает выплаты
@@ -385,15 +385,15 @@ const ReferralSystem: React.FC = () => {
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Приглашенных рекламодателей</CardTitle>
+                    <CardTitle className="text-sm font-medium">Приглашенных пользователей</CardTitle>
                     <Target className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-purple-600">
-                      {detailedData.stats.totalReferrals}
+                      {generalStats.referrals?.total_referred || 0}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Активных: {detailedData.stats.activeReferrals}
+                      Активных: {generalStats.referrals?.active_referrals || 0}
                     </p>
                   </CardContent>
                 </Card>
@@ -405,7 +405,7 @@ const ReferralSystem: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-orange-600">
-                      ${detailedData.stats.totalTransactions > 0 ? (parseFloat(detailedData.stats.totalEarned) / detailedData.stats.totalTransactions).toFixed(2) : '0.00'}
+                      ${generalStats.earnings?.total_transactions > 0 ? (parseFloat(generalStats.earnings.total_earned) / generalStats.earnings.total_transactions).toFixed(2) : '0.00'}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       За транзакцию
@@ -414,52 +414,52 @@ const ReferralSystem: React.FC = () => {
                 </Card>
               </div>
 
-              {/* Приглашенные рекламодатели */}
+              {/* Приглашенные пользователи */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Приглашенные рекламодатели</CardTitle>
+                  <CardTitle>Приглашенные пользователи</CardTitle>
                   <CardDescription>
-                    Подробная информация о всех рекламодателях, которых вы пригласили
+                    Подробная информация о всех пользователях, которых вы пригласили
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Рекламодатель</TableHead>
+                        <TableHead>Пользователь</TableHead>
                         <TableHead>Email</TableHead>
+                        <TableHead>Роль</TableHead>
                         <TableHead>Статус</TableHead>
-                        <TableHead>Потрачено всего</TableHead>
-                        <TableHead>Ваша комиссия</TableHead>
                         <TableHead>Дата регистрации</TableHead>
-                        <TableHead>Последняя выплата</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {detailedData.referredUsers?.map((advertiser) => (
-                        <TableRow key={advertiser.id}>
-                          <TableCell className="font-medium">{advertiser.username}</TableCell>
-                          <TableCell>{advertiser.email}</TableCell>
+                      {generalStats.referrals?.referred_users?.map((user: any) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">{user.username}</TableCell>
+                          <TableCell>{user.email}</TableCell>
                           <TableCell>
-                            <Badge variant={advertiser.status === 'active' ? 'default' : 'secondary'}>
-                              {advertiser.status === 'active' ? 'Активен' : 'Неактивен'}
+                            <Badge variant="outline">
+                              {user.userType || user.role}
                             </Badge>
                           </TableCell>
-                          <TableCell>${advertiser.total_spent}</TableCell>
-                          <TableCell className="text-green-600 font-semibold">
-                            ${advertiser.total_commission}
+                          <TableCell>
+                            <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
+                              {user.status === 'active' ? 'Активен' : 'Неактивен'}
+                            </Badge>
                           </TableCell>
                           <TableCell>
-                            {new Date(advertiser.registered_at).toLocaleDateString('ru-RU')}
-                          </TableCell>
-                          <TableCell>
-                            {advertiser.last_payout ? 
-                              new Date(advertiser.last_payout).toLocaleDateString('ru-RU') : 
-                              'Нет выплат'
-                            }
+                            {new Date(user.registered_at).toLocaleDateString('ru-RU')}
                           </TableCell>
                         </TableRow>
                       ))}
+                      {(!generalStats.referrals?.referred_users || generalStats.referrals.referred_users.length === 0) && (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                            Пока нет приглашенных пользователей
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -470,47 +470,45 @@ const ReferralSystem: React.FC = () => {
                 <CardHeader>
                   <CardTitle>История комиссионных выплат</CardTitle>
                   <CardDescription>
-                    Полная история всех комиссионных выплат от ваших приглашенных рекламодателей
+                    Полная история всех комиссионных выплат
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Рекламодатель</TableHead>
-                        <TableHead>Сумма выплаты</TableHead>
-                        <TableHead>Комиссия</TableHead>
-                        <TableHead>Ставка</TableHead>
+                        <TableHead>Пользователь</TableHead>
+                        <TableHead>Сумма</TableHead>
                         <TableHead>Статус</TableHead>
                         <TableHead>Дата создания</TableHead>
-                        <TableHead>Дата выплаты</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {detailedData.commissionHistory?.map((commission) => (
+                      {generalStats.commission_history?.map((commission: any) => (
                         <TableRow key={commission.id}>
-                          <TableCell className="font-medium">{commission.advertiser_name}</TableCell>
-                          <TableCell>${commission.original_amount}</TableCell>
-                          <TableCell className="text-green-600 font-semibold">
-                            ${commission.commission_amount}
+                          <TableCell className="font-medium">
+                            {commission.referredUser?.username || 'Неизвестно'}
                           </TableCell>
-                          <TableCell>{(parseFloat(commission.commission_rate) * 100).toFixed(1)}%</TableCell>
+                          <TableCell className="text-green-600 font-semibold">
+                            ${commission.amount}
+                          </TableCell>
                           <TableCell>
                             <Badge variant={commission.status === 'paid' ? 'default' : 'secondary'}>
                               {commission.status === 'paid' ? 'Выплачено' : 'Ожидает'}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {new Date(commission.created_at).toLocaleDateString('ru-RU')}
-                          </TableCell>
-                          <TableCell>
-                            {commission.paid_at ? 
-                              new Date(commission.paid_at).toLocaleDateString('ru-RU') : 
-                              '—'
-                            }
+                            {new Date(commission.createdAt).toLocaleDateString('ru-RU')}
                           </TableCell>
                         </TableRow>
                       ))}
+                      {(!generalStats.commission_history || generalStats.commission_history.length === 0) && (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                            Пока нет комиссионных выплат
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>

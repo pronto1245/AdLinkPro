@@ -1858,10 +1858,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Hash password
       const hashedPassword = await bcrypt.hash(userData.password as string, 10);
       
+      // Генерируем уникальный реферальный код для нового пользователя
+      const referralCode = await storage.generateReferralCode();
+      
       const user = await storage.createUser({
         ...userData,
         password: hashedPassword,
         referredBy, // Добавляем ID пригласившего
+        referralCode, // Добавляем реферальный код
       });
       
       // Отправляем уведомление рефереру о новом пользователе
@@ -1949,47 +1953,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const authUser = getAuthenticatedUser(req);
       
-      // Получаем всех приведенных пользователей
-      const referredUsers = await db.select()
-        .from(users)
-        .where(eq(users.referredBy, authUser.id));
-      
-      // Получаем заработанные комиссии
-      const earnings = await db.execute(sql`
-        SELECT 
-          SUM(commission_amount) as total_earned,
-          COUNT(*) as total_transactions,
-          AVG(commission_rate) as avg_rate
-        FROM referral_earnings 
-        WHERE referrer_id = ${authUser.id} AND status = 'paid'
-      `);
-      
-      // Получаем ожидающие выплаты
-      const pending = await db.execute(sql`
-        SELECT SUM(commission_amount) as pending_amount
-        FROM referral_earnings 
-        WHERE referrer_id = ${authUser.id} AND status = 'pending'
-      `);
+      // Используем новые методы storage для получения данных
+      const referredUsers = await storage.getReferralUsers(authUser.id);
+      const commissions = await storage.getReferralCommissions(authUser.id);
+      const stats = await storage.getReferralStats(authUser.id);
       
       res.json({
         referrals: {
-          total_referred: referredUsers.length,
-          active_referrals: referredUsers.filter(u => u.status === 'active').length,
+          total_referred: stats.totalReferrals,
+          active_referrals: referredUsers.filter(u => u.status).length,
           referred_users: referredUsers.map(u => ({
             id: u.id,
             username: u.username,
             email: u.email,
-            status: u.status,
-            registered_at: u.createdAt,
-            balance: u.balance
+            status: u.status ? 'active' : 'inactive',
+            registered_at: u.registrationDate,
+            balance: u.balance || '0.00'
           }))
         },
         earnings: {
-          total_earned: earnings.rows[0]?.total_earned || '0.00',
-          pending_amount: pending.rows[0]?.pending_amount || '0.00',
-          total_transactions: earnings.rows[0]?.total_transactions || 0,
+          total_earned: stats.paidCommissions.toFixed(2),
+          pending_amount: stats.pendingCommissions.toFixed(2),
+          total_transactions: stats.totalCommissionsCount,
           commission_rate: authUser.referralCommission || '5.00'
-        }
+        },
+        commission_history: commissions.map(c => ({
+          id: c.id,
+          amount: c.commissionAmount,
+          status: c.status,
+          createdAt: c.createdAt,
+          referredUser: {
+            username: c.referredUsername,
+            email: c.referredEmail
+          }
+        }))
       });
     } catch (error) {
       console.error('Referral stats error:', error);
