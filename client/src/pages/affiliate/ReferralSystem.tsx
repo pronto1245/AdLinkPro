@@ -35,9 +35,8 @@ interface ReferralStats {
 }
 
 interface DetailedReferralData {
-  referral_link: string;
-  referral_code: string;
-  invited_advertisers: Array<{
+  referralCode: string;
+  referredUsers: Array<{
     id: string;
     username: string;
     email: string;
@@ -47,7 +46,7 @@ interface DetailedReferralData {
     registered_at: string;
     last_payout: string;
   }>;
-  commission_history: Array<{
+  commissionHistory: Array<{
     id: string;
     advertiser_name: string;
     original_amount: string;
@@ -57,13 +56,13 @@ interface DetailedReferralData {
     created_at: string;
     paid_at: string;
   }>;
-  summary: {
-    total_commission_earned: string;
-    pending_commission: string;
-    total_advertisers_invited: number;
-    active_advertisers: number;
-    total_transactions: number;
-    average_commission_per_transaction: string;
+  stats: {
+    totalReferrals: number;
+    activeReferrals: number;
+    totalEarned: string;
+    totalTransactions: number;
+    paidAmount: string;
+    pendingAmount: string;
   };
 }
 
@@ -80,7 +79,7 @@ const ReferralSystem: React.FC = () => {
 
   // Получаем детальную статистику рефералов
   const { data: detailedData, isLoading: isLoadingDetailed } = useQuery<DetailedReferralData>({
-    queryKey: ['/api/affiliate/referral-details'],
+    queryKey: ['/api/partner/referral-details'],
     enabled: !!user && user.role === 'affiliate'
   });
 
@@ -361,10 +360,10 @@ const ReferralSystem: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-green-600">
-                      ${detailedData.summary.total_commission_earned}
+                      ${detailedData.stats.totalEarned}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      От {detailedData.summary.total_transactions} транзакций
+                      От {detailedData.stats.totalTransactions} транзакций
                     </p>
                   </CardContent>
                 </Card>
@@ -376,7 +375,7 @@ const ReferralSystem: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-yellow-600">
-                      ${detailedData.summary.pending_commission}
+                      ${detailedData.stats.pendingAmount}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Ожидает выплаты
@@ -391,10 +390,10 @@ const ReferralSystem: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-purple-600">
-                      {detailedData.summary.total_advertisers_invited}
+                      {detailedData.stats.totalReferrals}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Активных: {detailedData.summary.active_advertisers}
+                      Активных: {detailedData.stats.activeReferrals}
                     </p>
                   </CardContent>
                 </Card>
@@ -406,7 +405,7 @@ const ReferralSystem: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-orange-600">
-                      ${detailedData.summary.average_commission_per_transaction}
+                      ${detailedData.stats.totalTransactions > 0 ? (parseFloat(detailedData.stats.totalEarned) / detailedData.stats.totalTransactions).toFixed(2) : '0.00'}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       За транзакцию
@@ -437,7 +436,7 @@ const ReferralSystem: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {detailedData.invited_advertisers.map((advertiser) => (
+                      {detailedData.referredUsers?.map((advertiser) => (
                         <TableRow key={advertiser.id}>
                           <TableCell className="font-medium">{advertiser.username}</TableCell>
                           <TableCell>{advertiser.email}</TableCell>
@@ -488,7 +487,7 @@ const ReferralSystem: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {detailedData.commission_history.map((commission) => (
+                      {detailedData.commissionHistory?.map((commission) => (
                         <TableRow key={commission.id}>
                           <TableCell className="font-medium">{commission.advertiser_name}</TableCell>
                           <TableCell>${commission.original_amount}</TableCell>

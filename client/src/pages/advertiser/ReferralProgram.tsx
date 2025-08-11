@@ -35,7 +35,7 @@ interface ReferralStats {
 }
 
 interface DetailedReferralStats {
-  invited_advertisers: Array<{
+  invited_partners: Array<{
     id: string;
     username: string;
     email: string;
@@ -56,10 +56,10 @@ interface DetailedReferralStats {
     paid_at: string;
   }>;
   summary: {
-    total_commission_earned: string;
+    total_commission_paid: string;
     pending_commission: string;
-    total_advertisers_invited: number;
-    active_advertisers: number;
+    total_partners_invited: number;
+    active_partners: number;
     total_transactions: number;
     average_commission_per_transaction: string;
   };
@@ -306,7 +306,7 @@ export default function ReferralProgram() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-green-600">
-                    ${detailedStats.summary.total_commission_earned}
+                    ${detailedStats.summary.total_commission_paid}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     От {detailedStats.summary.total_transactions} транзакций
@@ -331,15 +331,15 @@ export default function ReferralProgram() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Приглашенных рекламодателей</CardTitle>
+                  <CardTitle className="text-sm font-medium">Приглашенных партнеров</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-purple-600">
-                    {detailedStats.summary.total_advertisers_invited}
+                    {detailedStats.summary.total_partners_invited}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Активных: {detailedStats.summary.active_advertisers}
+                    Активных: {detailedStats.summary.active_partners}
                   </p>
                 </CardContent>
               </Card>
@@ -360,19 +360,19 @@ export default function ReferralProgram() {
               </Card>
             </div>
 
-            {/* Приглашенные рекламодатели */}
+            {/* Приглашенные партнеры */}
             <Card>
               <CardHeader>
-                <CardTitle>Приглашенные рекламодатели</CardTitle>
+                <CardTitle>Приглашенные партнеры</CardTitle>
                 <CardDescription>
-                  Список всех рекламодателей, которых вы пригласили в систему
+                  Список всех партнеров, которых вы пригласили в систему
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Рекламодатель</TableHead>
+                      <TableHead>Партнер</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Статус</TableHead>
                       <TableHead>Потрачено всего</TableHead>
@@ -381,7 +381,7 @@ export default function ReferralProgram() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {detailedStats.invited_advertisers.map((advertiser) => (
+                    {detailedStats.invited_partners?.map((advertiser) => (
                       <TableRow key={advertiser.id}>
                         <TableCell className="font-medium">{advertiser.username}</TableCell>
                         <TableCell>{advertiser.email}</TableCell>
@@ -416,7 +416,7 @@ export default function ReferralProgram() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Рекламодатель</TableHead>
+                      <TableHead>Партнер</TableHead>
                       <TableHead>Сумма выплаты</TableHead>
                       <TableHead>Комиссия</TableHead>
                       <TableHead>Ставка</TableHead>
@@ -425,7 +425,7 @@ export default function ReferralProgram() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {detailedStats.commission_history.map((commission) => (
+                    {detailedStats.commission_history?.map((commission) => (
                       <TableRow key={commission.id}>
                         <TableCell className="font-medium">{commission.advertiser_name}</TableCell>
                         <TableCell>${commission.original_amount}</TableCell>
