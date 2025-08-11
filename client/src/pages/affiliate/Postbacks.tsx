@@ -206,49 +206,8 @@ const defaultProfile: Partial<PostbackProfile> = {
 export function AffiliatePostbacks() {
   const { t } = useTranslation();
   
-  // DEBUG: Проверяем токены при загрузке
-  useEffect(() => {
-    console.log('🔍 ОТЛАДКА ТОКЕНОВ ПРИ ЗАГРУЗКЕ:');
-    console.log('localStorage.token:', localStorage.getItem('token'));
-    console.log('localStorage.auth_token:', localStorage.getItem('auth_token'));
-    console.log('Все ключи localStorage:', Object.keys(localStorage));
-    
-    // Устанавливаем правильный токен если его нет
-    const currentToken = localStorage.getItem('token') || localStorage.getItem('auth_token');
-    if (!currentToken) {
-      console.log('❌ Токен не найден! Установка токена партнера...');
-      const affiliateToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA0YjA2Yzg3LWM2Y2YtNDQwOS1hZjY0LTNlMDViZjZjOWM3YyIsInVzZXJuYW1lIjoidGVzdF9hZmZpbGlhdGUiLCJyb2xlIjoiYWZmaWxpYXRlIiwiYWR2ZXJ0aXNlcklkIjpudWxsLCJpYXQiOjE3NTQ3Njg2NjIsImV4cCI6MTc1NDg1NTA2Mn0.GiEfmbEtVG5u-L0TN6RMgW3s3VkJMhULHG9Gn1VzNOc';
-      localStorage.setItem('token', affiliateToken);
-      localStorage.setItem('auth_token', affiliateToken);
-      console.log('✅ Токен установлен');
-    }
-  }, []);
-  // Debug fetch calls with stack trace
-  React.useEffect(() => {
-    const originalFetch = window.fetch;
-    window.fetch = function(url: RequestInfo | URL, init?: RequestInit) {
-      if (init && init.method !== undefined) {
-        console.log('🔍 FETCH CALL:', {
-          url: String(url),
-          method: init.method,
-          methodType: typeof init.method,
-          methodValue: JSON.stringify(init.method),
-          stack: new Error().stack
-        });
-        
-        if (typeof init.method !== 'string') {
-          // Тихо обрабатываем ошибки типа метода
-          debugger; // Pause in debugger
-          throw new Error(`Invalid method type: ${typeof init.method}. Expected string, got ${typeof init.method}`);
-        }
-      }
-      return originalFetch.call(this, url, init);
-    };
-    
-    return () => {
-      window.fetch = originalFetch;
-    };
-  }, []);
+  // Убрано для чистой консоли продакшена
+  // Убрано для чистой консоли продакшена
 
   const [selectedProfile, setSelectedProfile] = useState<PostbackProfile | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -265,9 +224,9 @@ export function AffiliatePostbacks() {
   const { data: profiles = [], isLoading, refetch } = useQuery({
     queryKey: ['/api/postback/profiles'],
     queryFn: async () => {
-      console.log('🔄 Fetching profiles directly...');
+      // Убрано для чистой консоли продакшена
       const result = await apiRequest('/api/postback/profiles', 'GET');
-      console.log('📊 Profiles received:', result);
+      // Убрано для чистой консоли продакшена
       return result || [];
     },
     refetchInterval: 1000, // Автообновление каждую секунду

@@ -30,7 +30,7 @@ export function useWebSocket() {
       ws.current = new WebSocket(wsUrl);
 
       ws.current.onopen = () => {
-        console.log('WebSocket connected');
+        // Убрано для чистой консоли продакшена
         setConnectionState('connected');
         reconnectAttempts.current = 0;
         
@@ -54,7 +54,7 @@ export function useWebSocket() {
       };
 
       ws.current.onclose = () => {
-        console.log('WebSocket disconnected');
+        // Убрано для чистой консоли продакшена
         setConnectionState('disconnected');
         
         // Попытка переподключения
@@ -129,7 +129,7 @@ export function useWebSocket() {
         
       case 'auth_success':
         // Успешная аутентификация через WebSocket
-        console.log('WebSocket authenticated successfully');
+        // Убрано для чистой консоли продакшена
         break;
         
       default:
