@@ -3,6 +3,8 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import compression from "compression";
 import helmet from "helmet";
+import path from "path";
+import fs from "fs";
 
 const app = express();
 
@@ -21,6 +23,27 @@ app.use(compression({
     return compression.filter(req, res);
   }
 }));
+
+// ACME Challenge handler ПЕРЕД helmet для Let's Encrypt SSL
+app.get('/.well-known/acme-challenge/:token', (req, res) => {
+  try {
+    const token = req.params.token;
+    const challengeFile = path.join(process.cwd(), 'public', '.well-known', 'acme-challenge', token);
+    
+    if (fs.existsSync(challengeFile)) {
+      const content = fs.readFileSync(challengeFile, 'utf8');
+      console.log(`✅ ACME Challenge обслужен: ${token} -> ${content.substring(0, 20)}...`);
+      res.setHeader('Content-Type', 'text/plain');
+      res.send(content);
+    } else {
+      console.log(`❌ ACME Challenge файл не найден: ${token}`);
+      res.status(404).send('Challenge not found');
+    }
+  } catch (error) {
+    console.error('Ошибка обработки ACME challenge:', error);
+    res.status(500).send('Internal server error');
+  }
+});
 
 // Безопасность
 app.use(helmet({
