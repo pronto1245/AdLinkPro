@@ -358,7 +358,17 @@ export default function AdvertiserProfile() {
 
   const testTelegramMutation = useMutation({
     mutationFn: async (type: string) => {
-      return apiRequest('/api/telegram/test-notification', 'POST', { type });
+      return apiRequest('/api/telegram/test', 'POST', { 
+        userId: user?.id, 
+        type: type,
+        data: {
+          offerName: 'Test Offer',
+          partnerName: 'Test Partner', 
+          amount: 100,
+          currency: 'USD',
+          country: 'RU'
+        }
+      });
     },
     onSuccess: () => {
       toast({

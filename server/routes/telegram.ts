@@ -33,15 +33,25 @@ export function addTelegramRoutes(app: Express) {
           country: data?.country || 'RU',
           source: data?.source || 'test'
         });
-      } else if (type === 'fraud') {
+      } else if (type === 'fraud_alert' || type === 'fraud') {
         await telegramBot.notifyFraud({
           userId,
           type: data?.type || 'suspicious_activity',
-          description: data?.description || 'Test fraud alert',
+          description: data?.description || 'Тестовое уведомление о подозрительной активности',
           severity: data?.severity || 'medium',
           ipAddress: data?.ipAddress || '127.0.0.1',
           country: data?.country || 'RU'
         });
+      } else if (type === 'offer_alert') {
+        await telegramBot.sendMessage(
+          (await storage.getUserById(userId))?.telegramChatId,
+          `🚀 <b>НОВОЕ ПРЕДЛОЖЕНИЕ!</b>\n\nДоступен новый оффер: ${data?.offerName || 'Test Offer'}\nПовышенные выплаты до ${data?.payout || '150%'}!\n\n⏰ <b>Время:</b> ${new Date().toLocaleString('ru-RU')}`
+        );
+      } else if (type === 'system_message') {
+        await telegramBot.sendMessage(
+          (await storage.getUserById(userId))?.telegramChatId,
+          `🔧 <b>СИСТЕМНОЕ УВЕДОМЛЕНИЕ</b>\n\nВаш аккаунт успешно обновлен.\nВсе функции работают стабильно.\n\n⏰ <b>Время:</b> ${new Date().toLocaleString('ru-RU')}`
+        );
       } else if (type === 'report') {
         await telegramBot.sendDailyReport(userId);
       }
