@@ -12877,12 +12877,21 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   });
 
   // Тестовая отправка уведомления в Telegram
-  app.post('/api/telegram/test-notification', authenticateToken, async (req, res) => {
+  app.post('/api/telegram/test', authenticateToken, async (req, res) => {
     try {
       const userId = (req as any).user.id;
       const { type = 'conversion' } = req.body;
       
       console.log('🧪 Testing Telegram notification:', { userId, type });
+
+      // Проверяем что у пользователя есть telegramChatId
+      const user = await storage.getUser(userId);
+      if (!user?.telegramChatId) {
+        console.log('❌ User has no telegramChatId:', userId);
+        return res.status(400).json({ error: 'Telegram not linked. Please link your account first.' });
+      }
+
+      console.log('✅ User has Telegram Chat ID:', user.telegramChatId);
 
       const { telegramBot } = await import('./services/telegramBot');
 
@@ -12896,7 +12905,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           country: 'RU',
           source: 'test'
         });
-      } else if (type === 'fraud') {
+      } else if (type === 'fraud_alert') {
         await telegramBot.notifyFraud({
           userId,
           type: 'suspicious_activity',
@@ -12905,6 +12914,26 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           ipAddress: '127.0.0.1',
           country: 'RU'
         });
+      } else if (type === 'offer_alert') {
+        await telegramBot.sendMessage(
+          user.telegramChatId,
+          '🚨 <b>Алерт по офферу!</b>\n\n' +
+          '📊 <b>Оффер:</b> Test Casino Offer\n' +
+          '⚠️ <b>Проблема:</b> Низкий CR (менее 5%)\n' +
+          '📈 <b>Рекомендация:</b> Проверить качество трафика\n\n' +
+          '🕐 <i>Время:</i> ' + new Date().toLocaleString('ru-RU'),
+          'HTML'
+        );
+      } else if (type === 'system_message') {
+        await telegramBot.sendMessage(
+          user.telegramChatId,
+          '🔔 <b>Системное уведомление</b>\n\n' +
+          '✅ Тест системных уведомлений прошёл успешно!\n\n' +
+          '📝 Это сообщение подтверждает, что ваш Telegram аккаунт ' +
+          'правильно привязан к платформе ArbiConnect.\n\n' +
+          '🕐 <i>Время:</i> ' + new Date().toLocaleString('ru-RU'),
+          'HTML'
+        );
       } else if (type === 'report') {
         await telegramBot.sendDailyReport(userId);
       }
