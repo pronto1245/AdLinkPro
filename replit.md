@@ -5,6 +5,7 @@ This platform is an affiliate marketing solution designed to optimize offer mana
 - **Language**: Russian language preferred ("отвечай на русском пожалуйста")
 - **Communication Style**: Simple, everyday language avoiding technical jargon
 - **Problem Resolution**: Direct approach to fixing errors with immediate database and code updates
+- **SSL Configuration**: Real SSL certificates only, no demo/simulation modes (August 11, 2025)
 
 # System Architecture
 

@@ -79,8 +79,8 @@ export class LetsEncryptService {
     }
   }
 
-  // Выдача реального SSL сертификата
-  static async issueRealCertificate(domain: string, domainId: string): Promise<{
+  // Выдача SSL сертификата (основной метод)
+  static async issueCertificate(domain: string, domainId: string): Promise<{
     success: boolean;
     certificate?: string;
     privateKey?: string;
@@ -250,7 +250,7 @@ export class LetsEncryptService {
       for (const domain of expiringDomains) {
         try {
           console.log(`🔄 Обновляем сертификат для ${domain.domain}`);
-          await this.issueRealCertificate(domain.domain, domain.id);
+          await this.issueCertificate(domain.domain, domain.id);
           
           // Ждем между обновлениями чтобы не превысить rate limits
           await new Promise(resolve => setTimeout(resolve, 5000));

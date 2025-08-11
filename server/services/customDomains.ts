@@ -158,9 +158,9 @@ export class CustomDomainService {
         })
         .where(eq(customDomains.id, domainId));
 
-      // Симуляция процесса выдачи SSL сертификата Let's Encrypt
-      // В реальном приложении здесь будет интеграция с ACME протоколом
-      await this.simulateSSLIssuance(domain, domainId);
+      // Реальная интеграция с Let's Encrypt
+      const { LetsEncryptService } = await import('./letsencrypt.js');
+      await LetsEncryptService.issueCertificate(domain, domainId);
       
     } catch (error) {
       console.error(`SSL issuance failed for ${domain}:`, error);
@@ -177,42 +177,7 @@ export class CustomDomainService {
     }
   }
 
-  // Симуляция выдачи SSL сертификата
-  private static async simulateSSLIssuance(domain: string, domainId: string): Promise<void> {
-    // Симулируем задержку выдачи сертификата (обычно 1-3 минуты)
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    
-    // Генерируем "сертификат" для демонстрации
-    const mockCertificate = `-----BEGIN CERTIFICATE-----
-MIIFXzCCA0egAwIBAgISA${Date.now().toString().slice(-10)}
-... (mock certificate data) ...
------END CERTIFICATE-----`;
 
-    const mockPrivateKey = `-----BEGIN PRIVATE KEY-----
-MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC${Date.now().toString().slice(-15)}
-... (mock private key data) ...
------END PRIVATE KEY-----`;
-
-    const validUntil = new Date();
-    validUntil.setMonth(validUntil.getMonth() + 3); // Сертификат действует 3 месяца
-
-    // Обновляем домен с выданным сертификатом
-    await db
-      .update(customDomains)
-      .set({
-        sslStatus: 'issued',
-        sslCertificate: mockCertificate,
-        sslPrivateKey: mockPrivateKey,
-        sslValidUntil: validUntil,
-        sslIssuer: 'Let\'s Encrypt (Demo)',
-        sslErrorMessage: null,
-        isActive: true,
-        updatedAt: new Date()
-      })
-      .where(eq(customDomains.id, domainId));
-
-    console.log(`✅ SSL сертификат успешно выдан для ${domain}`);
-  }
 
   // Принудительная выдача SSL для уже верифицированного домена
   static async issueSSLForDomain(domainId: string, advertiserId: string): Promise<{

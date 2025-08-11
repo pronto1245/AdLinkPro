@@ -108,6 +108,15 @@ app.use((req, res, next) => {
     res.sendFile('update-token.html', { root: '.' });
   });
 
+  // ACME Challenge поддержка для Let's Encrypt (ПЕРЕД Vite middleware)
+  app.use('/.well-known/acme-challenge', express.static('public/.well-known/acme-challenge', {
+    dotfiles: 'allow',
+    setHeaders: (res) => {
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Content-Type', 'text/plain');
+    }
+  }));
+
   // Import tracking service and storage for short links
   const { TrackingLinkService } = await import('./services/trackingLinks.js');
   const { storage } = await import('./storage.js');
