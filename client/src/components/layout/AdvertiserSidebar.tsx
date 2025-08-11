@@ -69,12 +69,6 @@ export default function AdvertiserSidebar({ isMobile = false, onClose }: Adverti
     icon: UserPlus,
     description: 'Реферальная программа и статистика'
   },
-  {
-    title: 'Статистика рефералов',
-    href: '/advertiser/referral-statistics',
-    icon: TrendingUp,
-    description: 'Детальная статистика приглашенных партнеров'
-  },
 
   {
     title: t('sidebar.finances'),

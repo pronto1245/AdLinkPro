@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Settings, Users, DollarSign, UserPlus, TrendingUp } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
@@ -32,6 +34,37 @@ interface ReferralStats {
   };
 }
 
+interface DetailedReferralStats {
+  invited_advertisers: Array<{
+    id: string;
+    username: string;
+    email: string;
+    status: string;
+    total_spent: string;
+    total_commission: string;
+    registered_at: string;
+    last_payout: string;
+  }>;
+  commission_history: Array<{
+    id: string;
+    advertiser_name: string;
+    original_amount: string;
+    commission_amount: string;
+    commission_rate: string;
+    status: string;
+    created_at: string;
+    paid_at: string;
+  }>;
+  summary: {
+    total_commission_earned: string;
+    pending_commission: string;
+    total_advertisers_invited: number;
+    active_advertisers: number;
+    total_transactions: number;
+    average_commission_per_transaction: string;
+  };
+}
+
 export default function ReferralProgram() {
   const [isEnabled, setIsEnabled] = useState(true);
   const { toast } = useToast();
@@ -40,6 +73,12 @@ export default function ReferralProgram() {
   // Запрос данных статистики
   const { data: referralStats, isLoading } = useQuery<ReferralStats>({
     queryKey: ['/api/referrals/stats'],
+    enabled: isEnabled
+  });
+
+  // Запрос детальной статистики
+  const { data: detailedStats, isLoading: isLoadingDetailed } = useQuery<DetailedReferralStats>({
+    queryKey: ['/api/advertiser/referral-statistics'],
     enabled: isEnabled
   });
 
@@ -86,13 +125,15 @@ export default function ReferralProgram() {
             Управление реферальной программой для партнеров
           </p>
         </div>
-        <Link href="/advertiser/referral-statistics">
-          <Button variant="outline" data-testid="button-referral-statistics">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Статистика рефералов
-          </Button>
-        </Link>
       </div>
+
+      <Tabs defaultValue="program" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="program">Настройки программы</TabsTrigger>
+          <TabsTrigger value="statistics">Детальная статистика</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="program" className="space-y-6">
 
       {/* Настройки программы */}
       <Card>
@@ -247,6 +288,169 @@ export default function ReferralProgram() {
           </CardContent>
         </Card>
       )}
+      </TabsContent>
+
+      <TabsContent value="statistics" className="space-y-6">
+        {(isLoadingDetailed || !detailedStats) ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : (
+          <>
+            {/* Общая статистика */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Всего заработано</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">
+                    ${detailedStats.summary.total_commission_earned}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    От {detailedStats.summary.total_transactions} транзакций
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">К выплате</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-600">
+                    ${detailedStats.summary.pending_commission}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Ожидает выплаты
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Приглашенных рекламодателей</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-600">
+                    {detailedStats.summary.total_advertisers_invited}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Активных: {detailedStats.summary.active_advertisers}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Средняя комиссия</CardTitle>
+                  <UserPlus className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-orange-600">
+                    ${detailedStats.summary.average_commission_per_transaction}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    За транзакцию
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Приглашенные рекламодатели */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Приглашенные рекламодатели</CardTitle>
+                <CardDescription>
+                  Список всех рекламодателей, которых вы пригласили в систему
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Рекламодатель</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Статус</TableHead>
+                      <TableHead>Потрачено всего</TableHead>
+                      <TableHead>Ваша комиссия</TableHead>
+                      <TableHead>Дата регистрации</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {detailedStats.invited_advertisers.map((advertiser) => (
+                      <TableRow key={advertiser.id}>
+                        <TableCell className="font-medium">{advertiser.username}</TableCell>
+                        <TableCell>{advertiser.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={advertiser.status === 'active' ? 'default' : 'secondary'}>
+                            {advertiser.status === 'active' ? 'Активен' : 'Неактивен'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>${advertiser.total_spent}</TableCell>
+                        <TableCell className="text-green-600 font-semibold">
+                          ${advertiser.total_commission}
+                        </TableCell>
+                        <TableCell>
+                          {new Date(advertiser.registered_at).toLocaleDateString('ru-RU')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            {/* История комиссий */}
+            <Card>
+              <CardHeader>
+                <CardTitle>История комиссий</CardTitle>
+                <CardDescription>
+                  Все транзакции с вашими комиссионными выплатами
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Рекламодатель</TableHead>
+                      <TableHead>Сумма выплаты</TableHead>
+                      <TableHead>Комиссия</TableHead>
+                      <TableHead>Ставка</TableHead>
+                      <TableHead>Статус</TableHead>
+                      <TableHead>Дата</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {detailedStats.commission_history.map((commission) => (
+                      <TableRow key={commission.id}>
+                        <TableCell className="font-medium">{commission.advertiser_name}</TableCell>
+                        <TableCell>${commission.original_amount}</TableCell>
+                        <TableCell className="text-green-600 font-semibold">
+                          ${commission.commission_amount}
+                        </TableCell>
+                        <TableCell>{(parseFloat(commission.commission_rate) * 100).toFixed(1)}%</TableCell>
+                        <TableCell>
+                          <Badge variant={commission.status === 'paid' ? 'default' : 'secondary'}>
+                            {commission.status === 'paid' ? 'Выплачено' : 'Ожидает'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(commission.created_at).toLocaleDateString('ru-RU')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </TabsContent>
+      </Tabs>
     </div>
   );
 }

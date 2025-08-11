@@ -31,6 +31,9 @@ Platform has been comprehensively tested across all major roles and functionalit
 - **Referral Registration Logic**: Registration endpoint now processes ?ref= parameter to link new users to referrers
 - **Database Referral Schema**: Added referral_code, referred_by, and referral_commission fields to users table
 - **Commission Calculation**: Updated logic to charge advertisers 5% when making payouts to referred partners
+- **Referral UI Consolidation (August 11, 2025)**: Simplified navigation by integrating all referral functionality into tabbed interfaces
+- **Referral Statistics Integration**: Combined settings and detailed statistics in single pages with tabs instead of separate menu items
+- **UI Cleanup**: Removed standalone referral statistics pages, consolidated functionality in main referral pages with "Настройки" and "Статистика" tabs
 
 # User Preferences
 - **Language**: Russian language preferred ("отвечай на русском пожалуйста")

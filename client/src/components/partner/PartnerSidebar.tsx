@@ -66,11 +66,6 @@ const getBaseSidebarItems = (t: any): Omit<SidebarItem, 'badge'>[] => [
     icon: UserPlus,
   },
   {
-    title: 'Детали рефералов',
-    href: "/affiliate/referral-details", 
-    icon: TrendingUp,
-  },
-  {
     title: t('navigation.finances'),
     href: "/affiliate/finances",
     icon: DollarSign,
