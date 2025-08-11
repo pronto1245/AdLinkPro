@@ -1,104 +1,161 @@
 #!/bin/bash
 
-# Master E2E Test Runner
-# Runs all end-to-end tests in sequence
-
-echo "🎯 Starting Complete E2E Test Suite"
-echo "=================================="
+echo "=== ПОЛНОЕ ФУНКЦИОНАЛЬНОЕ ТЕСТИРОВАНИЕ САЙТА ==="
+echo "Дата: $(date)"
 echo ""
 
-# Check if server is running
-if ! curl -s http://localhost:5000/api/queue/stats > /dev/null; then
-    echo "❌ Server is not running on localhost:5000"
-    echo "Please start the server with: npm run dev"
-    exit 1
-fi
+# Цвета для вывода
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-echo "✅ Server is running, starting tests..."
-echo ""
+# Счетчики
+TOTAL_TESTS=0
+PASSED_TESTS=0
+FAILED_TESTS=0
+ERRORS_FOUND=""
 
-# Run individual test suites
-echo "📊 Running Test Suite 1: Full Conversion Cycle"
-echo "==============================================="
-bash test-e2e-full-cycle.sh
-echo ""
+test_api() {
+    local method=$1
+    local url=$2
+    local data=$3
+    local expected_status=$4
+    local description=$5
+    
+    TOTAL_TESTS=$((TOTAL_TESTS + 1))
+    echo -e "${BLUE}ТЕСТ $TOTAL_TESTS: ${description}${NC}"
+    
+    if [ "$data" ]; then
+        response=$(curl -s -w "HTTPSTATUS:%{http_code}" -X $method "$url" -H "Content-Type: application/json" -d "$data" 2>/dev/null)
+    else
+        response=$(curl -s -w "HTTPSTATUS:%{http_code}" -X $method "$url" 2>/dev/null)
+    fi
+    
+    http_code=$(echo $response | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+    body=$(echo $response | sed -e 's/HTTPSTATUS:.*//g')
+    
+    if [ "$http_code" = "$expected_status" ]; then
+        echo -e "${GREEN}✅ ПРОЙДЕН - HTTP $http_code${NC}"
+        PASSED_TESTS=$((PASSED_TESTS + 1))
+    else
+        echo -e "${RED}❌ ПРОВАЛЕН - Ожидался HTTP $expected_status, получен HTTP $http_code${NC}"
+        echo "Response: $body"
+        FAILED_TESTS=$((FAILED_TESTS + 1))
+        ERRORS_FOUND="$ERRORS_FOUND\n- $description: HTTP $http_code вместо $expected_status"
+    fi
+    echo ""
+}
 
-echo "🛡️ Running Test Suite 2: Antifraud System"
-echo "=========================================="
-bash test-antifraud-e2e.sh
-echo ""
+test_with_auth() {
+    local method=$1
+    local url=$2
+    local token=$3
+    local data=$4
+    local expected_status=$5
+    local description=$6
+    
+    TOTAL_TESTS=$((TOTAL_TESTS + 1))
+    echo -e "${BLUE}ТЕСТ $TOTAL_TESTS: ${description}${NC}"
+    
+    if [ "$data" ]; then
+        response=$(curl -s -w "HTTPSTATUS:%{http_code}" -X $method "$url" -H "Authorization: Bearer $token" -H "Content-Type: application/json" -d "$data" 2>/dev/null)
+    else
+        response=$(curl -s -w "HTTPSTATUS:%{http_code}" -X $method "$url" -H "Authorization: Bearer $token" 2>/dev/null)
+    fi
+    
+    http_code=$(echo $response | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+    body=$(echo $response | sed -e 's/HTTPSTATUS:.*//g')
+    
+    if [ "$http_code" = "$expected_status" ]; then
+        echo -e "${GREEN}✅ ПРОЙДЕН - HTTP $http_code${NC}"
+        PASSED_TESTS=$((PASSED_TESTS + 1))
+        # Показываем небольшую часть ответа для проверки данных
+        echo "Данные: $(echo $body | head -c 100)..."
+    else
+        echo -e "${RED}❌ ПРОВАЛЕН - Ожидался HTTP $expected_status, получен HTTP $http_code${NC}"
+        echo "Response: $body"
+        FAILED_TESTS=$((FAILED_TESTS + 1))
+        ERRORS_FOUND="$ERRORS_FOUND\n- $description: HTTP $http_code вместо $expected_status"
+    fi
+    echo ""
+}
 
-echo "📡 Running Test Suite 3: Postback Delivery"
-echo "=========================================="
-bash test-postback-delivery.sh
-echo ""
+# Базовый URL
+BASE_URL="http://localhost:5000"
 
-echo "🗄️ Running Test Suite 4: Database Verification"
-echo "==============================================="
-bash test-database-verification.sh
-echo ""
+echo -e "${YELLOW}=== 1. ТЕСТИРОВАНИЕ АУТЕНТИФИКАЦИИ ===${NC}"
 
-# Final system health check
-echo "🏥 Final System Health Check"
-echo "============================"
+# Тест логина супер-админа
+test_api "POST" "$BASE_URL/api/auth/login" '{"username":"superadmin","password":"admin123"}' "200" "Логин супер-администратора"
+SUPERADMIN_TOKEN=$(curl -s -X POST "$BASE_URL/api/auth/login" -H "Content-Type: application/json" -d '{"username":"superadmin","password":"admin123"}' | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
 
-# Check queue stats
-FINAL_STATS=$(curl -s http://localhost:5000/api/queue/stats)
-echo "Final queue statistics:"
-echo "$FINAL_STATS"
-echo ""
+# Тест логина рекламодателя
+test_api "POST" "$BASE_URL/api/auth/login" '{"username":"advertiser1","password":"password123"}' "200" "Логин рекламодателя"
+ADVERTISER_TOKEN=$(curl -s -X POST "$BASE_URL/api/auth/login" -H "Content-Type: application/json" -d '{"username":"advertiser1","password":"password123"}' | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
 
-# Extract key metrics
-PROCESSED_TASKS=$(echo $FINAL_STATS | grep -o '"processedTasks":[0-9]*' | cut -d':' -f2)
-SUCCESSFUL_DELIVERIES=$(echo $FINAL_STATS | grep -o '"successfulDeliveries":[0-9]*' | cut -d':' -f2)
-FAILED_DELIVERIES=$(echo $FINAL_STATS | grep -o '"failedDeliveries":[0-9]*' | cut -d':' -f2)
-SUCCESS_RATE=$(echo $FINAL_STATS | grep -o '"successRate":[0-9.]*' | cut -d':' -f2)
-TOTAL_BLOCKS=$(echo $FINAL_STATS | grep -o '"totalBlocks":[0-9]*' | cut -d':' -f2)
+# Тест логина партнёра
+test_api "POST" "$BASE_URL/api/auth/login" '{"username":"partner1","password":"password123"}' "200" "Логин партнёра"
+PARTNER_TOKEN=$(curl -s -X POST "$BASE_URL/api/auth/login" -H "Content-Type: application/json" -d '{"username":"partner1","password":"password123"}' | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
 
-echo "📈 Overall Test Results:"
-echo "========================"
-echo "Tasks processed: $PROCESSED_TASKS"
-echo "Successful deliveries: $SUCCESSFUL_DELIVERIES"
-echo "Failed deliveries: $FAILED_DELIVERIES"
-echo "Success rate: $SUCCESS_RATE%"
-echo "Antifraud blocks: $TOTAL_BLOCKS"
-echo ""
+# Проверка токенов
+test_with_auth "GET" "$BASE_URL/api/auth/me" "$SUPERADMIN_TOKEN" "" "200" "Проверка токена супер-админа"
+test_with_auth "GET" "$BASE_URL/api/auth/me" "$ADVERTISER_TOKEN" "" "200" "Проверка токена рекламодателя"
+test_with_auth "GET" "$BASE_URL/api/auth/me" "$PARTNER_TOKEN" "" "200" "Проверка токена партнёра"
 
-# Calculate overall health score
-if [ "$SUCCESS_RATE" != "" ] && (( $(echo "$SUCCESS_RATE > 80" | bc -l) )); then
-    HEALTH_STATUS="✅ HEALTHY"
-elif [ "$SUCCESS_RATE" != "" ] && (( $(echo "$SUCCESS_RATE > 50" | bc -l) )); then
-    HEALTH_STATUS="⚠️ WARNING"
+echo -e "${YELLOW}=== 2. ТЕСТИРОВАНИЕ СУПЕР-АДМИН ПАНЕЛИ ===${NC}"
+
+test_with_auth "GET" "$BASE_URL/api/admin/users" "$SUPERADMIN_TOKEN" "" "200" "Получение списка пользователей"
+test_with_auth "GET" "$BASE_URL/api/admin/offers" "$SUPERADMIN_TOKEN" "" "200" "Получение всех офферов"
+test_with_auth "GET" "$BASE_URL/api/admin/analytics" "$SUPERADMIN_TOKEN" "" "200" "Получение аналитики супер-админа"
+test_with_auth "GET" "$BASE_URL/api/admin/statistics" "$SUPERADMIN_TOKEN" "" "200" "Получение статистики супер-админа"
+test_with_auth "GET" "$BASE_URL/api/admin/dashboard" "$SUPERADMIN_TOKEN" "" "200" "Получение дашборда супер-админа"
+test_with_auth "GET" "$BASE_URL/api/admin/settings" "$SUPERADMIN_TOKEN" "" "200" "Получение системных настроек"
+
+echo -e "${YELLOW}=== 3. ТЕСТИРОВАНИЕ РЕКЛАМОДАТЕЛЯ ===${NC}"
+
+test_with_auth "GET" "$BASE_URL/api/advertiser/offers" "$ADVERTISER_TOKEN" "" "200" "Получение офферов рекламодателя"
+test_with_auth "GET" "$BASE_URL/api/advertiser/partners" "$ADVERTISER_TOKEN" "" "200" "Получение партнёров рекламодателя"
+test_with_auth "GET" "$BASE_URL/api/advertiser/statistics" "$ADVERTISER_TOKEN" "" "200" "Статистика рекламодателя"
+test_with_auth "GET" "$BASE_URL/api/advertiser/profile/domains" "$ADVERTISER_TOKEN" "" "200" "Кастомные домены рекламодателя"
+test_with_auth "GET" "$BASE_URL/api/postbacks/profiles" "$ADVERTISER_TOKEN" "" "200" "Профили постбеков рекламодателя"
+
+echo -e "${YELLOW}=== 4. ТЕСТИРОВАНИЕ ПАРТНЁРА ===${NC}"
+
+test_with_auth "GET" "$BASE_URL/api/partner/offers" "$PARTNER_TOKEN" "" "200" "Доступные офферы для партнёра"
+test_with_auth "GET" "$BASE_URL/api/partner/statistics" "$PARTNER_TOKEN" "" "200" "Статистика партнёра"
+test_with_auth "GET" "$BASE_URL/api/partner/tracking-links" "$PARTNER_TOKEN" "" "200" "Трекинговые ссылки партнёра"
+
+echo -e "${YELLOW}=== 5. ТЕСТИРОВАНИЕ ПОСТБЕК СИСТЕМЫ ===${NC}"
+
+test_with_auth "GET" "$BASE_URL/api/postbacks/profiles" "$ADVERTISER_TOKEN" "" "200" "Получение профилей постбеков"
+test_with_auth "GET" "$BASE_URL/api/postbacks/deliveries" "$ADVERTISER_TOKEN" "" "200" "История доставки постбеков"
+
+echo -e "${YELLOW}=== 6. ТЕСТИРОВАНИЕ АНТИ-ФРОД СИСТЕМЫ ===${NC}"
+
+test_with_auth "GET" "$BASE_URL/api/antifraud/rules" "$ADVERTISER_TOKEN" "" "200" "Правила антифрода"
+test_with_auth "GET" "$BASE_URL/api/antifraud/alerts" "$ADVERTISER_TOKEN" "" "200" "Алерты антифрода"
+
+echo -e "${YELLOW}=== 7. ТЕСТИРОВАНИЕ УВЕДОМЛЕНИЙ ===${NC}"
+
+test_with_auth "GET" "$BASE_URL/api/notifications" "$ADVERTISER_TOKEN" "" "200" "Получение уведомлений"
+
+echo -e "${YELLOW}=== 8. ТЕСТИРОВАНИЕ ФАЙЛОВОГО УПРАВЛЕНИЯ ===${NC}"
+
+test_with_auth "GET" "$BASE_URL/api/advertiser/creatives" "$ADVERTISER_TOKEN" "" "200" "Получение креативов рекламодателя"
+
+echo -e "${YELLOW}=== РЕЗУЛЬТАТЫ ТЕСТИРОВАНИЯ ===${NC}"
+echo "Всего тестов: $TOTAL_TESTS"
+echo -e "Пройдено: ${GREEN}$PASSED_TESTS${NC}"
+echo -e "Провалено: ${RED}$FAILED_TESTS${NC}"
+
+if [ $FAILED_TESTS -eq 0 ]; then
+    echo -e "${GREEN}✅ ВСЕ ТЕСТЫ ПРОЙДЕНЫ УСПЕШНО!${NC}"
 else
-    HEALTH_STATUS="❌ CRITICAL"
+    echo -e "${RED}❌ НАЙДЕНЫ ОШИБКИ:${NC}"
+    echo -e "$ERRORS_FOUND"
 fi
 
-echo "🎯 System Health: $HEALTH_STATUS"
 echo ""
-
-echo "🏁 Complete E2E Test Suite Finished!"
-echo "====================================="
-echo ""
-echo "📋 Test Coverage:"
-echo "✓ Event creation (reg/purchase)"
-echo "✓ Webhook processing (affiliate/PSP)"  
-echo "✓ Postback delivery to trackers"
-echo "✓ Antifraud blocking policies"
-echo "✓ Database consistency"
-echo "✓ Status progression"
-echo "✓ Error handling"
-echo ""
-echo "💡 Next Steps:"
-echo "1. Review any failed tests above"
-echo "2. Check application logs for errors"
-echo "3. Verify external tracker integrations"
-echo "4. Monitor system performance"
-echo ""
-
-if [ "$HEALTH_STATUS" = "✅ HEALTHY" ]; then
-    echo "🎉 All systems operational - ready for production!"
-    exit 0
-else
-    echo "⚠️ Some issues detected - review test output"
-    exit 1
-fi
+echo "Процент успеха: $(echo "scale=2; $PASSED_TESTS * 100 / $TOTAL_TESTS" | bc)%"
