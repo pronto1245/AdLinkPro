@@ -47,12 +47,6 @@ export default function AdvertiserSidebar({ isMobile = false, onClose }: Adverti
     description: t('sidebar.myOffersDesc')
   },
   {
-    title: t('sidebar.receivedOffers'),
-    href: '/advertiser/received-offers',
-    icon: Download,
-    description: t('sidebar.receivedOffersDesc')
-  },
-  {
     title: t('sidebar.partners'),
     href: '/advertiser/partners',
     icon: Users,
