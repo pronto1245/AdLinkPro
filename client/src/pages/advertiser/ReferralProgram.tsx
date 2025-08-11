@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Settings, Users, DollarSign, UserPlus, TrendingUp } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
@@ -12,97 +13,81 @@ import { apiRequest } from '@/lib/queryClient';
 interface ReferralStats {
   referrals: {
     total_referred: number;
-    active_partners: number;
-    total_commissions_paid: number;
-    commission_rate: number;
+    active_referrals: number;
+    referred_users: Array<{
+      id: string;
+      username: string;
+      email: string;
+      status: string;
+      registered_at: string;
+      balance: string;
+    }>;
   };
-  recent_referrals: Array<{
-    id: string;
-    referrer_name: string;
-    referred_name: string;
-    date: string;
-    status: string;
-  }>;
-  commission_summary?: {
-    this_month?: number;
-    last_month?: number;
-    total_paid?: number;
+  earnings: {
+    total_earned: string;
+    pending_amount: string;
+    total_transactions: string;
+    commission_rate: string;
   };
 }
 
-export function ReferralProgram() {
+export default function ReferralProgram() {
+  const [isEnabled, setIsEnabled] = useState(true);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isEnabled, setIsEnabled] = useState(true);
 
-  // Получаем текущие настройки реферальной программы
-  const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ['/api/auth/me'],
-  });
-
-  // Получаем статистику реферальной программы
-  const { data: referralStats, isLoading: statsLoading } = useQuery<ReferralStats>({
+  // Запрос данных статистики
+  const { data: referralStats, isLoading } = useQuery<ReferralStats>({
     queryKey: ['/api/referrals/stats'],
-    enabled: !!user,
+    enabled: isEnabled
   });
 
-  // Мутация для изменения статуса реферальной программы
+  // Мутация для переключения программы
   const toggleProgramMutation = useMutation({
-    mutationFn: async (enabled: boolean) => {
-      return apiRequest('/api/advertiser/referral-program/toggle', {
-        method: 'POST',
-        body: JSON.stringify({ enabled }),
-      });
-    },
-    onSuccess: (data, enabled) => {
-      toast({
-        title: enabled ? 'Реферальная программа включена' : 'Реферальная программа отключена',
-        description: enabled 
-          ? 'Партнеры теперь могут видеть и использовать реферальные ссылки'
-          : 'Реферальные ссылки скрыты от партнеров',
-      });
-      setIsEnabled(enabled);
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    mutationFn: (enabled: boolean) => 
+      apiRequest('/api/advertiser/referral-program/toggle', 'POST', { enabled }),
+    onSuccess: (data) => {
+      setIsEnabled(data.enabled);
       queryClient.invalidateQueries({ queryKey: ['/api/referrals/stats'] });
+      toast({
+        title: data.enabled ? 'Программа включена' : 'Программа отключена',
+        description: data.enabled 
+          ? 'Партнеры теперь могут приглашать новых партнеров' 
+          : 'Реферальная программа временно приостановлена'
+      });
     },
     onError: () => {
       toast({
         title: 'Ошибка',
-        description: 'Не удалось изменить настройки реферальной программы',
-        variant: 'destructive',
+        description: 'Не удалось изменить статус программы',
+        variant: 'destructive'
       });
-    },
+    }
   });
 
-  React.useEffect(() => {
-    if (user?.referralProgramEnabled !== undefined) {
-      setIsEnabled(user.referralProgramEnabled);
-    }
-  }, [user]);
-
-  if (userLoading || statsLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Загрузка...</div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="container mx-auto py-6 space-y-6">
+      {/* Заголовок */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Реферальная программа</h1>
-          <p className="text-muted-foreground">
-            Управляйте настройками реферальной программы и отслеживайте статистику
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Реферальная программа
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Управление реферальной программой для партнеров
           </p>
         </div>
-        <Badge variant={isEnabled ? 'default' : 'secondary'}>
-          {isEnabled ? 'Активна' : 'Отключена'}
-        </Badge>
       </div>
 
-      {/* Основные настройки */}
+      {/* Настройки программы */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -118,10 +103,7 @@ export function ReferralProgram() {
             <div className="space-y-1">
               <Label htmlFor="referral-program">Реферальная программа</Label>
               <p className="text-sm text-muted-foreground">
-                {isEnabled 
-                  ? 'Партнеры могут приглашать других партнеров и получать комиссию 5%'
-                  : 'Реферальные ссылки скрыты от партнеров'
-                }
+                Партнеры получают 5% комиссии с выплат приглашенным партнерам
               </p>
             </div>
             <Switch
@@ -132,20 +114,13 @@ export function ReferralProgram() {
               data-testid="switch-referral-program"
             />
           </div>
-
-          {isEnabled && (
-            <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
-                Как работает система:
-              </h4>
-              <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                <li>• Партнеры получают уникальные реферальные коды</li>
-                <li>• При регистрации по реферальной ссылке устанавливается связь</li>
-                <li>• При выплате партнеру автоматически начисляется 5% реферальной комиссии</li>
-                <li>• Дополнительная комиссия списывается с вашего баланса</li>
-              </ul>
-            </div>
-          )}
+          <Separator />
+          <div className="text-sm text-muted-foreground">
+            {isEnabled 
+              ? '✅ Программа активна — партнеры могут приглашать новых участников'
+              : '⏸️ Программа приостановлена — новые приглашения недоступны'
+            }
+          </div>
         </CardContent>
       </Card>
 
@@ -158,36 +133,38 @@ export function ReferralProgram() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{referralStats.referrals.total_referred}</div>
+              <div className="text-2xl font-bold">
+                {referralStats.referrals.total_referred}
+              </div>
               <p className="text-xs text-muted-foreground">
-                Активных: {referralStats.referrals.active_partners}
+                Активных: {referralStats.referrals.active_referrals}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Комиссия этот месяц</CardTitle>
+              <CardTitle className="text-sm font-medium">Заработано комиссий</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${referralStats.commission_summary?.this_month?.toFixed(2) || '0.00'}
+                ${referralStats.earnings.total_earned}
               </div>
               <p className="text-xs text-muted-foreground">
-                Прошлый месяц: ${referralStats.commission_summary?.last_month?.toFixed(2) || '0.00'}
+                В ожидании: ${referralStats.earnings.pending_amount}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Всего выплачено</CardTitle>
+              <CardTitle className="text-sm font-medium">Всего транзакций</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${referralStats.commission_summary?.total_paid?.toFixed(2) || '0.00'}
+                {referralStats.earnings.total_transactions}
               </div>
               <p className="text-xs text-muted-foreground">
                 За все время
@@ -202,7 +179,7 @@ export function ReferralProgram() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {referralStats.referrals.commission_rate}%
+                {referralStats.earnings.commission_rate}%
               </div>
               <p className="text-xs text-muted-foreground">
                 С каждой выплаты
@@ -212,29 +189,27 @@ export function ReferralProgram() {
         </div>
       )}
 
-      {/* Последние рефералы */}
-      {isEnabled && referralStats?.recent_referrals.length > 0 && (
+      {/* Список рефералов */}
+      {isEnabled && referralStats?.referrals.referred_users && referralStats.referrals.referred_users.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Недавние рефералы</CardTitle>
-            <CardDescription>Последние приглашения партнеров</CardDescription>
+            <CardTitle>Приглашенные пользователи</CardTitle>
+            <CardDescription>Список всех рефералов в вашей программе</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {referralStats.recent_referrals.map((referral) => (
-                <div key={referral.id} className="flex items-center justify-between p-3 border rounded-lg">
+              {referralStats.referrals.referred_users.map((user) => (
+                <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
-                    <p className="font-medium">{referral.referred_name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Приглашен: {referral.referrer_name}
-                    </p>
+                    <p className="font-medium">{user.username}</p>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
                   </div>
                   <div className="text-right">
-                    <Badge variant={referral.status === 'active' ? 'default' : 'secondary'}>
-                      {referral.status === 'active' ? 'Активен' : 'Неактивен'}
+                    <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
+                      {user.status === 'active' ? 'Активен' : 'Неактивен'}
                     </Badge>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {new Date(referral.date).toLocaleDateString('ru-RU')}
+                      Баланс: ${user.balance}
                     </p>
                   </div>
                 </div>

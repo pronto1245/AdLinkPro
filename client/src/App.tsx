@@ -67,7 +67,7 @@ import PartnerSettings from "@/pages/affiliate/PartnerSettings";
 import AdvertiserAccessRequests from '@/pages/advertiser/AdvertiserAccessRequests';
 import ReferralStats from '@/pages/advertiser/ReferralStats';
 import ReferralSystem from '@/pages/affiliate/ReferralSystem';
-import { ReferralProgram } from '@/pages/advertiser/ReferralProgram';
+import ReferralProgram from '@/pages/advertiser/ReferralProgram';
 
 import { PartnerLayout } from "@/components/partner/PartnerLayout";
 import Statistics from "@/pages/affiliate/Statistics";
