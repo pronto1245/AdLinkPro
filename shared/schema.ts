@@ -79,6 +79,10 @@ export const users: any = pgTable("users", {
   holdAmount: decimal("hold_amount", { precision: 15, scale: 2 }).default('0.00'),
   registrationApproved: boolean("registration_approved").default(false),
   documentsVerified: boolean("documents_verified").default(false),
+  // Referral system
+  referralCode: text("referral_code").unique(), // Unique code for referrals (e.g., "ABC123")
+  referredBy: varchar("referred_by").references(() => users.id), // Who referred this user
+  referralCommission: decimal("referral_commission", { precision: 5, scale: 2 }).default('5.00'), // Commission % for referrals
   // Settings
   settings: jsonb("settings"),
 });
