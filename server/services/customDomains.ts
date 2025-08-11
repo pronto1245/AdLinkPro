@@ -142,43 +142,6 @@ export class CustomDomainService {
       };
     }
   }
-          // Для arbiconnect.store принудительно включаем реальный SSL
-          if (process.env.ENABLE_REAL_SSL === 'true' || domain.domain === 'arbiconnect.store') {
-            const { LetsEncryptService } = await import('./letsencrypt.js');
-            await LetsEncryptService.issueRealCertificate(domain.domain, domainId);
-          } else {
-            await this.requestSSLCertificate(domain.domain, domainId);
-          }
-        } catch (sslError) {
-          console.error(`SSL certificate request failed for ${domain.domain}:`, sslError);
-          // Не делаем домен failed из-за SSL ошибки, только логируем
-        }
-      }
-
-      return {
-        success: isVerified,
-        status: newStatus,
-        error: isVerified ? undefined : errorMessage
-      };
-
-    } catch (error) {
-      // Обновляем статус на ошибку
-      await db
-        .update(customDomains)
-        .set({ 
-          status: 'error',
-          lastChecked: new Date(),
-          errorMessage: `Verification failed: ${(error as Error).message}`
-        })
-        .where(eq(customDomains.id, domainId));
-
-      return {
-        success: false,
-        status: 'error',
-        error: (error as Error).message
-      };
-    }
-  }
 
   // Автоматическая выдача SSL сертификата
   static async requestSSLCertificate(domain: string, domainId: string): Promise<void> {

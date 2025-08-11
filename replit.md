@@ -44,6 +44,7 @@ Platform has been comprehensively tested across all major roles and functionalit
 - **Zero Error State**: All LSP diagnostics clear, WebSocket functioning, API endpoints responding correctly
 - **Domain Limitations (August 11, 2025)**: Implemented restriction limiting advertisers to maximum 1 custom domain with proper validation and error handling
 - **UI Streamlining**: Removed "Полученные офферы" button from advertiser sidebar to simplify navigation
+- **Domain Verification Fix**: Resolved critical bug where domain verification button was hanging due to syntax errors and DNS timeout issues
 
 # User Preferences
 - **Language**: Russian language preferred ("отвечай на русском пожалуйста")
