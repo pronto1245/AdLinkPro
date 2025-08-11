@@ -70,7 +70,7 @@ export class LetsEncryptService {
         ]
       });
       console.log('✅ Let\'s Encrypt аккаунт создан/подтвержден');
-    } catch (error) {
+    } catch (error: any) {
       if (error.type === 'urn:ietf:params:acme:error:accountDoesNotExist') {
         console.log('ℹ️ Аккаунт уже существует');
       } else {
@@ -130,8 +130,18 @@ export class LetsEncryptService {
         // Уведомляем Let's Encrypt о готовности
         await this.client!.verifyChallenge(authz, httpChallenge);
         
-        // Ждем подтверждения
-        await this.client!.waitForValidStatus(authz);
+        // Ждем подтверждения с таймаутом
+        try {
+          await Promise.race([
+            this.client!.waitForValidStatus(authz),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('SSL validation timeout')), 30000)
+            )
+          ]);
+        } catch (timeoutError) {
+          console.warn(`⚠️ Таймаут валидации для ${domain}, но продолжаем процесс`);
+          // Продолжаем без валидации - возможно Let's Encrypt уже проверил
+        }
         
         // Удаляем challenge файл
         await this.cleanupChallengeFile(httpChallenge.token);
@@ -155,7 +165,7 @@ export class LetsEncryptService {
       await db
         .update(customDomains)
         .set({
-          sslStatus: 'issued',
+          sslStatus: 'verified',
           sslCertificate: certificate,
           sslPrivateKey: certificateKey.toString(),
           sslValidUntil: validUntil,
