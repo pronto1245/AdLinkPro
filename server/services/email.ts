@@ -1,8 +1,17 @@
 import sgMail, { MailService } from '@sendgrid/mail';
 
-// Initialize SendGrid if API key is available
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Ленивая инициализация SendGrid - не падаем без ключа
+let sendGridInitialized = false;
+
+function initSendGrid() {
+  if (!process.env.SENDGRID_API_KEY) {
+    return false;
+  }
+  if (!sendGridInitialized) {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    sendGridInitialized = true;
+  }
+  return true;
 }
 
 export interface EmailParams {
@@ -13,13 +22,11 @@ export interface EmailParams {
   html?: string;
 }
 
-export async function sendEmail(params: EmailParams): Promise<boolean> {
+export async function sendEmail(params: EmailParams): Promise<{ ok: boolean; skipped?: boolean }> {
   try {
-    if (!process.env.SENDGRID_API_KEY) {
-      console.log('SendGrid API key not configured - email would be sent to:', params.to);
-      console.log('Subject:', params.subject);
-      console.log('Body:', params.text || params.html);
-      return true; // Simulate success for development
+    if (!initSendGrid()) {
+      console.warn('[EMAIL] SENDGRID_API_KEY not set — skipping send (noop)');
+      return { ok: true, skipped: true };
     }
 
     await sgMail.send({
@@ -31,9 +38,9 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
     });
     
     console.log('Email sent successfully to:', params.to);
-    return true;
+    return { ok: true };
   } catch (error) {
     console.error('SendGrid email error:', error);
-    return false;
+    return { ok: false };
   }
 }

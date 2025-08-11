@@ -73,18 +73,26 @@ export const config = {
   ENABLE_REAL_TIME_ANALYTICS: getEnvBool('ENABLE_REAL_TIME_ANALYTICS', true),
 };
 
-// Минимальная валидация - требуется только JWT_SECRET
+// Строгая production валидация - только JWT_SECRET обязателен
 export function validateConfig(): void {
-  console.log('🔧 [ENV] Minimal environment validation...');
+  const requiredProd = ['JWT_SECRET']; // 🚨 только JWT в проде
   
-  // ТОЛЬКО JWT_SECRET критичен для работы аутентификации
-  if (!config.JWT_SECRET) {
-    console.error('❌ [ENV] CRITICAL: JWT_SECRET is required for authentication');
-    console.error('Please set JWT_SECRET environment variable or app will use fallback');
+  const missing = requiredProd.filter(k => !process.env[k]?.trim());
+  if (process.env.NODE_ENV === 'production' && missing.length) {
+    console.error('[ENV] Missing required prod vars:', missing.join(', '));
+    process.exit(1); // валимся ТОЛЬКО если нет JWT_SECRET
   }
   
-  // Все остальные сервисы полностью опциональны - не логируем предупреждения
-  console.log('✅ [ENV] Minimal validation complete - starting application');
+  // Всё остальное — не критично, просто предупреждаем
+  [
+    'SENDGRID_API_KEY','VOLUUM_TOKEN','KEITARO_TOKEN','BINOM_TOKEN','REDTRACK_TOKEN',
+    'GOOGLE_CLOUD_PROJECT_ID','GOOGLE_CLOUD_STORAGE_BUCKET',
+    'GOOGLE_APPLICATION_CREDENTIALS'
+  ].forEach(k => { 
+    if (!process.env[k]) console.warn(`[ENV] Optional var not set: ${k}`);
+  });
+  
+  console.log('✅ [ENV] Validation complete - starting application');
 }
 
 export default config;
