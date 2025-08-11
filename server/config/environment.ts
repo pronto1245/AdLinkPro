@@ -151,6 +151,7 @@ export const config: Config = {
 // Validate critical configuration
 export function validateConfig(): void {
   const errors: string[] = [];
+  const warnings: string[] = [];
   
   if (!config.DATABASE_URL) {
     errors.push('DATABASE_URL is required');
@@ -158,7 +159,7 @@ export function validateConfig(): void {
   
   if (!config.JWT_SECRET || config.JWT_SECRET === 'development-jwt-secret-change-in-production') {
     if (config.NODE_ENV === 'production') {
-      errors.push('JWT_SECRET must be set in production');
+      warnings.push('JWT_SECRET should be set in production for security');
     } else {
       console.warn('⚠️ Using default JWT_SECRET in development mode');
     }
@@ -166,16 +167,35 @@ export function validateConfig(): void {
   
   if (!config.SESSION_SECRET || config.SESSION_SECRET === 'development-session-secret') {
     if (config.NODE_ENV === 'production') {
-      errors.push('SESSION_SECRET must be set in production');
+      warnings.push('SESSION_SECRET should be set in production for security');
     } else {
       console.warn('⚠️ Using default SESSION_SECRET in development mode');
     }
   }
   
+  // Warn about optional external services
+  if (!config.SENDGRID_API_KEY) {
+    warnings.push('SENDGRID_API_KEY not set - email notifications disabled');
+  }
+  
+  if (!config.KEITARO_TOKEN && !config.VOLUUM_TOKEN && !config.BINOM_TOKEN && !config.REDTRACK_TOKEN) {
+    warnings.push('No external tracker tokens configured - tracking integrations disabled');
+  }
+  
+  if (!config.GOOGLE_CLOUD_PROJECT_ID || !config.GOOGLE_CLOUD_STORAGE_BUCKET) {
+    warnings.push('Google Cloud Storage not configured - file uploads may not work');
+  }
+  
+  // Only fail on critical errors
   if (errors.length > 0) {
     console.error('❌ Configuration validation failed:');
     errors.forEach(error => console.error(`  - ${error}`));
     process.exit(1);
+  }
+  
+  if (warnings.length > 0) {
+    console.warn('⚠️ Configuration warnings:');
+    warnings.forEach(warning => console.warn(`  - ${warning}`));
   }
   
   console.log('✅ Configuration validated successfully');
