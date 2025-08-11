@@ -17,7 +17,8 @@ import {
   MessageSquare,
   Send,
   Eye,
-  UserPlus
+  UserPlus,
+  TrendingUp
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -67,6 +68,12 @@ export default function AdvertiserSidebar({ isMobile = false, onClose }: Adverti
     href: '/advertiser/referrals',
     icon: UserPlus,
     description: 'Реферальная программа и статистика'
+  },
+  {
+    title: 'Статистика рефералов',
+    href: '/advertiser/referral-statistics',
+    icon: TrendingUp,
+    description: 'Детальная статистика приглашенных партнеров'
   },
 
   {

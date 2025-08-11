@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Settings, Users, DollarSign, UserPlus, TrendingUp } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
+import { Link } from 'wouter';
 
 interface ReferralStats {
   referrals: {
@@ -85,6 +86,12 @@ export default function ReferralProgram() {
             Управление реферальной программой для партнеров
           </p>
         </div>
+        <Link href="/advertiser/referral-statistics">
+          <Button variant="outline" data-testid="button-referral-statistics">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Статистика рефералов
+          </Button>
+        </Link>
       </div>
 
       {/* Настройки программы */}

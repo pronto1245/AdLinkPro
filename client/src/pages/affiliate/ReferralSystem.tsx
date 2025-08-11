@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
+import { Link } from 'wouter';
 
 interface ReferralStats {
   referral_code: string;
@@ -104,6 +105,12 @@ const ReferralSystem: React.FC = () => {
             Приглашайте рекламодателей и получайте 5% с их выплат партнерам
           </p>
         </div>
+        <Link href="/affiliate/referral-details">
+          <Button variant="outline" data-testid="button-referral-details">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Детальная статистика
+          </Button>
+        </Link>
       </div>
 
       {/* Основная статистика */}

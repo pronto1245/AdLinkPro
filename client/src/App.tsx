@@ -68,6 +68,8 @@ import AdvertiserAccessRequests from '@/pages/advertiser/AdvertiserAccessRequest
 import ReferralStats from '@/pages/advertiser/ReferralStats';
 import ReferralSystem from '@/pages/affiliate/ReferralSystem';
 import ReferralProgram from '@/pages/advertiser/ReferralProgram';
+import ReferralStatistics from '@/pages/advertiser/ReferralStatistics';
+import ReferralDetails from '@/pages/affiliate/ReferralDetails';
 
 import { PartnerLayout } from "@/components/partner/PartnerLayout";
 import Statistics from "@/pages/affiliate/Statistics";
@@ -350,6 +352,14 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
+      <Route path="/advertiser/referral-statistics">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <RoleBasedLayout>
+            <ReferralStatistics />
+          </RoleBasedLayout>
+        </ProtectedRoute>
+      </Route>
+      
       <Route path="/advertiser/analytics">
         <ProtectedRoute allowedRoles={['advertiser']}>
           <RoleBasedLayout>
@@ -485,6 +495,14 @@ function Router() {
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PartnerLayout>
             <ReferralSystem />
+          </PartnerLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/referral-details">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PartnerLayout>
+            <ReferralDetails />
           </PartnerLayout>
         </ProtectedRoute>
       </Route>

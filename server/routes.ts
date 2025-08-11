@@ -17,7 +17,7 @@ import {
   sub2Config
 } from "@shared/postback-schema";
 import { sql, SQL } from "drizzle-orm";
-import { eq, and, gte, lte, count, sum, desc, or } from "drizzle-orm";
+import { eq, and, gte, lte, count, sum, desc, or, ilike, isNull, isNotNull, inArray, avg } from "drizzle-orm";
 import { db, queryCache } from "./db";
 import { z } from "zod";
 import express from "express";
