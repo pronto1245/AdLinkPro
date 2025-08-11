@@ -758,6 +758,82 @@ export default function AdvertiserProfile() {
             <h2 className="text-2xl font-semibold">Telegram интеграция</h2>
           </div>
 
+          {/* ИНСТРУКЦИЯ ПО ПОДКЛЮЧЕНИЮ */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <div className="h-8 w-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 dark:text-blue-400 font-bold text-sm">📖</span>
+                </div>
+                <span>Инструкция по подключению</span>
+              </CardTitle>
+              <CardDescription>
+                Пошаговое руководство для подключения Telegram бота
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid gap-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="h-6 w-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                    <div>
+                      <h4 className="font-medium">Найдите бота в Telegram</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Перейдите к боту <code className="bg-muted px-1 py-0.5 rounded">@integracia7980_bot</code> или по ссылке: 
+                        <a href="https://t.me/integracia7980_bot" target="_blank" rel="noopener noreferrer" 
+                           className="text-blue-600 hover:underline ml-1">
+                          https://t.me/integracia7980_bot
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="h-6 w-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                    <div>
+                      <h4 className="font-medium">Получите Chat ID</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Напишите боту команду <code className="bg-muted px-1 py-0.5 rounded">/start</code>
+                        <br />
+                        Бот пришлёт вам ваш Chat ID (например: <code className="bg-muted px-1 py-0.5 rounded">123456789</code>)
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="h-6 w-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                    <div>
+                      <h4 className="font-medium">Привяжите в профиле</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Скопируйте полученный Chat ID и вставьте его в поле ниже, затем нажмите "Привязать"
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="h-6 w-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
+                    <div>
+                      <h4 className="font-medium">Протестируйте уведомления</h4>
+                      <p className="text-sm text-muted-foreground">
+                        После успешной привязки используйте кнопки тестирования для проверки всех типов уведомлений
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mt-4">
+                  <h5 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Доступные команды бота:</h5>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div><code className="bg-blue-100 dark:bg-blue-800 px-1 py-0.5 rounded text-xs">/start</code> - получить Chat ID</div>
+                    <div><code className="bg-blue-100 dark:bg-blue-800 px-1 py-0.5 rounded text-xs">/help</code> - помощь</div>
+                    <div><code className="bg-blue-100 dark:bg-blue-800 px-1 py-0.5 rounded text-xs">/stats</code> - статистика</div>
+                    <div><code className="bg-blue-100 dark:bg-blue-800 px-1 py-0.5 rounded text-xs">/report</code> - дневной отчёт</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Подключение к Telegram боту</CardTitle>
@@ -782,7 +858,7 @@ export default function AdvertiserProfile() {
                     </Button>
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">
-                    Получите ваш Chat ID, написав боту @userinfobot в Telegram
+                    Получите ваш Chat ID, написав команду /start боту <code className="bg-muted px-1 py-0.5 rounded">@integracia7980_bot</code>
                   </div>
                 </div>
 
