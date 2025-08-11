@@ -32,20 +32,19 @@ interface NotificationData {
 export async function createNotification(data: NotificationData): Promise<void> {
   try {
     await db.insert(userNotifications).values({
-      id: randomUUID(),
       userId: data.userId,
       type: data.type,
       title: data.title,
       message: data.message,
-      metadata: data.metadata || {},
-      isRead: false,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      data: data.metadata || {},
+      channel: 'system',
+      status: 'sent',
+      isRead: false
     });
 
     // Отправляем WebSocket уведомление для реального времени
-    if (global.sendWebSocketNotification) {
-      global.sendWebSocketNotification(data.userId, {
+    if ((global as any).sendWebSocketNotification) {
+      (global as any).sendWebSocketNotification(data.userId, {
         type: 'notification',
         data: {
           type: data.priority === 'urgent' ? 'error' : data.priority === 'high' ? 'warning' : 'info',
@@ -112,6 +111,27 @@ export async function notifyOfferCreated(advertiserId: string, offerData: any) {
     },
     priority: 'medium'
   });
+}
+
+// === ЗАПРОСЫ НА ДОСТУП К ОФФЕРАМ ===
+export async function notifyOfferAccessRequest(advertiserId: string, partnerData: any, offerData: any, requestNote?: string) {
+  await createNotification({
+    userId: advertiserId,
+    type: 'offer_request_created',
+    title: '📋 Запрос доступа к офферу',
+    message: `Партнер "${partnerData.username}" запросил доступ к офферу "${offerData.name}"`,
+    metadata: {
+      partnerId: partnerData.id,
+      partnerName: partnerData.username,
+      offerId: offerData.id,
+      offerName: offerData.name,
+      requestNote: requestNote || '',
+      action: 'review_required'
+    },
+    priority: 'high'
+  });
+  
+  console.log(`✅ Уведомление о запросе доступа отправлено рекламодателю ${advertiserId} от партнера ${partnerData.username} для оффера "${offerData.name}"`);
 }
 
 export async function notifyOfferRequestCreated(advertiserId: string, requestData: any) {

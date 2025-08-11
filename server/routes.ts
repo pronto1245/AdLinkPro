@@ -1680,14 +1680,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user?.id || req.userId;
       
-      const result = await db.execute(sql`
+      // Объединяем данные из обеих таблиц уведомлений
+      const userNotifications = await db.execute(sql`
+        SELECT id, user_id, type, title, message, is_read, data as metadata, created_at
+        FROM user_notifications 
+        WHERE user_id = ${userId}
+      `);
+      
+      const oldNotifications = await db.execute(sql`
         SELECT id, user_id, type, title, message, is_read, metadata, created_at
         FROM notifications 
         WHERE user_id = ${userId}
-        ORDER BY created_at DESC
       `);
       
-      res.json(result.rows);
+      // Объединяем и сортируем по дате
+      const allNotifications = [...userNotifications.rows, ...oldNotifications.rows]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      
+      res.json(allNotifications);
     } catch (error) {
       console.error('Get notifications error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -1708,7 +1718,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const result = await db.execute(sql`
-        UPDATE notifications 
+        UPDATE user_notifications 
         SET is_read = true 
         WHERE id = ${notificationId} AND user_id = ${userId}
       `);
@@ -1728,7 +1738,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const notificationId = req.params.id;
       
       await db.execute(sql`
-        DELETE FROM notifications 
+        DELETE FROM user_notifications 
         WHERE id = ${notificationId} AND user_id = ${userId}
       `);
       
@@ -1745,7 +1755,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.id || req.userId;
       
       await db.execute(sql`
-        UPDATE notifications 
+        UPDATE user_notifications 
         SET is_read = true 
         WHERE user_id = ${userId} AND is_read = false
       `);
@@ -11008,11 +11018,12 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       // Send notification to advertiser
       try {
         const partner = await storage.getUser(userId);
-        const advertiser = await storage.getUser(offer.advertiserId);
         
-        if (partner && advertiser) {
-          const { notifyOfferAccessRequest } = await import('./services/notification');
-          await notifyOfferAccessRequest(advertiser, partner, offer, message);
+        if (partner) {
+          console.log(`📤 Отправляем уведомление рекламодателю ${offer.advertiserId} о запросе от ${partner.username} на оффер "${offer.name}"`);
+          
+          const { notifyOfferAccessRequest } = await import('./services/notification-helper');
+          await notifyOfferAccessRequest(offer.advertiserId, partner, offer, message);
         }
       } catch (notifyError) {
         console.error('Failed to send notification:', notifyError);
