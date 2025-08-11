@@ -1,7 +1,7 @@
 // BullMQ worker for postback delivery
 import { Worker } from "bullmq";
 import { pbQueue, PostbackTask } from "./enqueue";
-import { env } from "../utils/env";
+import { config } from "../config/environment.js";
 import crypto from "crypto";
 
 // Mock database interface - in production, use real Drizzle
@@ -471,7 +471,7 @@ export const worker = new Worker<PostbackTask>("postbacks", async (job) => {
   
 }, { 
   connection: { 
-    url: env.REDIS_URL,
+    url: config.REDIS_URL,
     maxRetriesPerRequest: 3,
     retryDelayOnFailover: 100,
     lazyConnect: true

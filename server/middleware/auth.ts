@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { storage } from '../storage.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+import { config } from '../config/environment.js';
+const JWT_SECRET = config.JWT_SECRET;
 
 export interface AuthenticatedRequest extends Request {
   user?: {

@@ -1,6 +1,6 @@
 // Enhanced queue system with BullMQ integration
 import { Queue } from "bullmq";
-import { env } from "../utils/env";
+import { config } from "../config/environment.js";
 import { Status } from '../domain/status';
 
 export type PostbackTask = {
@@ -46,7 +46,7 @@ let pbQueue: Queue<PostbackTask> | null = null;
 // Check Redis availability
 async function checkRedisAvailability(): Promise<boolean> {
   try {
-    const redis = new (await import('ioredis')).default(env.REDIS_URL);
+    const redis = new (await import('ioredis')).default(config.REDIS_URL);
     await redis.ping();
     await redis.disconnect();
     return true;
@@ -66,7 +66,7 @@ async function initializeQueue(): Promise<Queue<PostbackTask> | null> {
     redisAvailable = true;
     pbQueue = new Queue<PostbackTask>("postbacks", { 
       connection: { 
-        url: env.REDIS_URL,
+        url: config.REDIS_URL,
         maxRetriesPerRequest: 3,
         retryDelayOnFailover: 100,
         lazyConnect: true

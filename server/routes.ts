@@ -46,7 +46,8 @@ declare global {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+import { config } from './config/environment.js';
+const JWT_SECRET = config.JWT_SECRET;
 
 // Advertiser role middleware  
 const requireAdvertiser = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -11194,7 +11195,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           // Аутентификация пользователя через токен
           const jwt = await import('jsonwebtoken');
           try {
-            const decoded = jwt.default.verify(message.token, process.env.JWT_SECRET || 'your-secret-key') as any;
+            const decoded = jwt.default.verify(message.token, config.JWT_SECRET) as any;
             userId = decoded.id;
             userConnections.set(userId, ws);
             console.log(`User ${userId} authenticated via WebSocket`);
