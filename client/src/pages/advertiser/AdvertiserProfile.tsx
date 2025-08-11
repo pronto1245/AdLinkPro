@@ -207,10 +207,7 @@ export default function AdvertiserProfile() {
 
   const changePasswordMutation = useMutation({
     mutationFn: async (passwordData: { currentPassword: string; newPassword: string }) => {
-      return apiRequest('/api/advertiser/profile/change-password', {
-        method: 'POST',
-        body: passwordData
-      });
+      return apiRequest('/api/advertiser/profile/change-password', 'POST', passwordData);
     },
     onSuccess: () => {
       toast({
@@ -251,10 +248,7 @@ export default function AdvertiserProfile() {
 
   const generateTokenMutation = useMutation({
     mutationFn: async (tokenName: string) => {
-      return apiRequest('/api/advertiser/api-tokens', {
-        method: 'POST',
-        body: { name: tokenName }
-      });
+      return apiRequest('/api/advertiser/api-tokens', 'POST', { name: tokenName });
     },
     onSuccess: () => {
       toast({
@@ -274,9 +268,7 @@ export default function AdvertiserProfile() {
 
   const deleteTokenMutation = useMutation({
     mutationFn: async (tokenId: string) => {
-      return apiRequest(`/api/advertiser/api-tokens/${tokenId}`, {
-        method: 'DELETE'
-      });
+      return apiRequest(`/api/advertiser/api-tokens/${tokenId}`, 'DELETE');
     },
     onSuccess: () => {
       toast({
@@ -298,10 +290,7 @@ export default function AdvertiserProfile() {
 
   const updateWebhookMutation = useMutation({
     mutationFn: async (webhookData: WebhookSettings) => {
-      return apiRequest('/api/advertiser/profile/webhook', {
-        method: 'PATCH',
-        body: webhookData
-      });
+      return apiRequest('/api/advertiser/profile/webhook', 'PATCH', webhookData);
     },
     onSuccess: () => {
       toast({
