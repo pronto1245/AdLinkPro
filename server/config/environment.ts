@@ -73,36 +73,18 @@ export const config = {
   ENABLE_REAL_TIME_ANALYTICS: getEnvBool('ENABLE_REAL_TIME_ANALYTICS', true),
 };
 
-// Валидация НЕ падает - только информирует
+// Минимальная валидация - требуется только JWT_SECRET
 export function validateConfig(): void {
-  console.log('🔧 [ENV] Environment configuration check...');
+  console.log('🔧 [ENV] Minimal environment validation...');
   
-  // Информативные сообщения без ошибок
-  if (!config.DATABASE_URL) {
-    console.log('📌 [ENV] DATABASE_URL will be validated by database connection');
+  // ТОЛЬКО JWT_SECRET критичен для работы аутентификации
+  if (!config.JWT_SECRET) {
+    console.error('❌ [ENV] CRITICAL: JWT_SECRET is required for authentication');
+    console.error('Please set JWT_SECRET environment variable or app will use fallback');
   }
   
-  if (!config.JWT_SECRET || config.JWT_SECRET.includes('development')) {
-    console.log('🔧 [ENV] Using generated JWT_SECRET for production safety');
-  }
-  
-  if (!config.SESSION_SECRET || config.SESSION_SECRET.includes('development')) {
-    console.log('🔧 [ENV] Using production-safe SESSION_SECRET');
-  }
-  
-  if (!config.SENDGRID_API_KEY) {
-    console.log('📧 [ENV] SENDGRID_API_KEY not set - email notifications disabled');
-  }
-  
-  if (!config.KEITARO_TOKEN && !config.VOLUUM_TOKEN && !config.BINOM_TOKEN && !config.REDTRACK_TOKEN) {
-    console.log('🔗 [ENV] No external tracker tokens - tracking integrations disabled');
-  }
-  
-  if (!config.GOOGLE_CLOUD_PROJECT_ID || !config.GOOGLE_CLOUD_STORAGE_BUCKET) {
-    console.log('☁️ [ENV] Google Cloud Storage not configured - using fallback storage');
-  }
-  
-  console.log('✅ [ENV] Configuration validated - application ready to start');
+  // Все остальные сервисы полностью опциональны - не логируем предупреждения
+  console.log('✅ [ENV] Minimal validation complete - starting application');
 }
 
 export default config;
