@@ -26,7 +26,7 @@ i18n
     resources,
     lng: 'ru', // Force Russian as default language
     fallbackLng: 'ru',
-    debug: true, // Enable debug to see what's happening
+    debug: false, // Disable debug to reduce console noise
 
     interpolation: {
       escapeValue: false,
