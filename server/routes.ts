@@ -8,7 +8,7 @@ import {
   insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, insertReceivedOfferSchema,
   type User, users, offers, statistics, fraudAlerts, tickets, postbacks, postbackLogs, trackingClicks,
   transactions, fraudReports, fraudBlocks, financialTransactions, financialSummaries, payoutRequests,
-  offerAccessRequests, partnerOffers, creativeFiles, customDomains, trackingLinks, partnerTeam
+  offerAccessRequests, partnerOffers, creativeFiles, customDomains, trackingLinks, partnerTeam, referralCommissions
 } from "@shared/schema";
 import { 
   trackingClicks as newTrackingClicks, trackingEvents, postbackProfiles, postbackDeliveries, deliveryQueue,
