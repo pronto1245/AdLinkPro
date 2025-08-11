@@ -3833,20 +3833,7 @@ export class DatabaseStorage implements IStorage {
     return filtered;
   }
 
-  // Postback templates methods for DatabaseStorage
-  async getPostbackTemplates(): Promise<any[]> {
-    console.log('DatabaseStorage: getting postback templates from database');
-    try {
-      const { db } = await import('./db');
-      const { postbackTemplates } = await import('@shared/schema');
-      const templates = await db.select().from(postbackTemplates);
-      console.log(`DatabaseStorage: Found ${templates.length} postback templates`);
-      return templates;
-    } catch (error) {
-      console.error('DatabaseStorage: Error getting postback templates:', error);
-      return [];
-    }
-  }
+  // Duplicate getPostbackTemplates method removed - using the one with filters parameter
 
   async createPostbackTemplate(data: any): Promise<any> {
     console.log('DatabaseStorage: creating postback template:', data);
@@ -5054,50 +5041,11 @@ class MemStorage implements IStorage {
 
 
 
-  // Profile Management Methods - moved up from bottom
-  async getApiTokens(userId: string): Promise<any[]> {
-    return [
-      {
-        id: '1',
-        name: 'Main API Token',
-        token: 'tk_test_1234567890abcdef',
-        createdAt: '2025-08-01T10:00:00Z',
-        lastUsed: '2025-08-06T15:30:00Z'
-      }
-    ];
-  }
-
-  async generateApiToken(userId: string, name: string): Promise<any> {
-    const token = 'tk_' + randomUUID().replace(/-/g, '').substring(0, 32);
-    return {
-      id: randomUUID(),
-      name,
-      token,
-      createdAt: new Date().toISOString(),
-      lastUsed: null
-    };
-  }
-
-  async deleteApiToken(userId: string, tokenId: string): Promise<void> {
-    // Mock deletion - in real implementation would delete from database
-  }
+  // Duplicate API token methods removed - using versions at line 5243 with more features
 
 
 
-  async getWebhookSettings(userId: string): Promise<any> {
-    return {
-      defaultUrl: 'https://example.com/webhook',
-      ipWhitelist: ['192.168.1.1', '10.0.0.1'],
-      enabled: true
-    };
-  }
-
-  async updateWebhookSettings(userId: string, settings: any): Promise<any> {
-    return {
-      ...settings,
-      updatedAt: new Date().toISOString()
-    };
-  }
+  // Webhook settings methods moved to avoid duplicates - using version at line 5382
 
   // Stub implementations for all other IStorage methods
   async getUsersWithFilters(): Promise<any> { return { data: [], total: 0 }; }
