@@ -15,12 +15,21 @@ import { useAuth } from '@/contexts/auth-context';
 import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
+
+interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
 
 export function TopNavigation() {
   const { user, logout } = useAuth();
   const { t, i18n } = useTranslation();
-  const [hasNotifications, setHasNotifications] = useState(true);
-  const [notificationCount, setNotificationCount] = useState(3);
+  const [, setLocation] = useLocation();
 
   // Force Russian language
   useEffect(() => {
@@ -29,6 +38,16 @@ export function TopNavigation() {
       i18n.changeLanguage('ru');
     }
   }, [i18n]);
+
+  // Fetch notifications for notification count
+  const { data: notifications = [] } = useQuery<Notification[]>({
+    queryKey: ['/api/notifications'],
+    enabled: !!user?.id,
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  // Calculate unread count
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   // Fetch balance for partners only
   const { data: financeData } = useQuery<{
@@ -48,8 +67,12 @@ export function TopNavigation() {
   };
 
   const handleNotificationClick = () => {
-    // Handle notification click
-    console.log('Notifications clicked');
+    // Navigate to notifications page based on user role
+    if (user?.role === 'advertiser') {
+      setLocation('/advertiser/notifications');
+    } else if (user?.role === 'affiliate') {
+      setLocation('/affiliate/notifications');
+    }
   };
 
   const handleSettingsClick = () => {
@@ -159,18 +182,18 @@ export function TopNavigation() {
           <Button
             variant="ghost"
             size="icon"
-            className="relative"
+            className="relative hover:bg-blue-50 dark:hover:bg-blue-900/20"
             onClick={handleNotificationClick}
-            title="Уведомления"
+            title={`Уведомления${unreadCount > 0 ? ` (${unreadCount} непрочитанных)` : ''}`}
             data-testid="button-notifications"
           >
-            <Bell className="h-5 w-5" />
-            {hasNotifications && (
+            <Bell className={`h-5 w-5 ${unreadCount > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`} />
+            {unreadCount > 0 && (
               <Badge 
                 variant="destructive" 
-                className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs font-bold bg-red-500 hover:bg-red-600 animate-pulse"
               >
-                {notificationCount}
+                {unreadCount > 99 ? '99+' : unreadCount}
               </Badge>
             )}
           </Button>
