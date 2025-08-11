@@ -14,26 +14,44 @@ import { apiRequest } from '@/lib/queryClient';
 import { Link } from 'wouter';
 
 interface AdvertiserReferralStats {
-  totalCommissionsPaid: number;
-  pendingCommissions: number;
-  totalPartnersInvited: number;
-  activePartners: number;
-  referralProgramEnabled: boolean;
-  invitedPartners: Array<{
+  referredPartners: Array<{
     id: string;
     username: string;
     email: string;
-    isActive: boolean;
+    firstName?: string;
+    lastName?: string;
+    referralCode?: string;
     createdAt: string;
-    totalCommissions: string;
+    referrerInfo?: {
+      id: string;
+      username: string;
+      email: string;
+    } | null;
   }>;
+  commissionStats: {
+    totalCommissions: string;
+    totalTransactions: number;
+    paidCommissions: string;
+    pendingCommissions: string;
+  };
   commissionHistory: Array<{
     id: string;
     amount: string;
+    rate: string;
+    originalAmount: string;
     status: string;
     createdAt: string;
-    originalAmount: string;
-    referrerName: string;
+    paidAt?: string;
+    referrer: {
+      id: string;
+      username: string;
+      email: string;
+    };
+    referredUser: {
+      id: string;
+      username: string;
+      email: string;
+    };
   }>;
 }
 
@@ -147,10 +165,10 @@ export default function ReferralProgram() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {referralStats.totalPartnersInvited}
+                {referralStats.referredPartners.length}
               </div>
               <p className="text-xs text-muted-foreground">
-                Активных: {referralStats.activePartners}
+                Активных: {referralStats.referredPartners.filter(p => p.referrerInfo).length}
               </p>
             </CardContent>
           </Card>
@@ -162,10 +180,10 @@ export default function ReferralProgram() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${referralStats.totalCommissionsPaid.toFixed(2)}
+                ${referralStats.commissionStats.paidCommissions}
               </div>
               <p className="text-xs text-muted-foreground">
-                В ожидании: ${referralStats.pendingCommissions.toFixed(2)}
+                В ожидании: ${referralStats.commissionStats.pendingCommissions}
               </p>
             </CardContent>
           </Card>
@@ -177,7 +195,7 @@ export default function ReferralProgram() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {referralStats.commissionHistory.length}
+                {referralStats.commissionStats.totalTransactions}
               </div>
               <p className="text-xs text-muted-foreground">
                 За все время
@@ -203,7 +221,7 @@ export default function ReferralProgram() {
       )}
 
       {/* Список приглашенных партнеров */}
-      {referralStats?.invitedPartners && referralStats.invitedPartners.length > 0 && (
+      {referralStats?.referredPartners && referralStats.referredPartners.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Приглашенные партнеры</CardTitle>
@@ -211,18 +229,18 @@ export default function ReferralProgram() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {referralStats.invitedPartners.map((partner) => (
+              {referralStats.referredPartners.map((partner) => (
                 <div key={partner.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <p className="font-medium">{partner.username}</p>
                     <p className="text-sm text-muted-foreground">{partner.email}</p>
                   </div>
                   <div className="text-right">
-                    <Badge variant={partner.isActive ? 'default' : 'secondary'}>
-                      {partner.isActive ? 'Активен' : 'Неактивен'}
+                    <Badge variant={partner.referrerInfo ? 'default' : 'secondary'}>
+                      {partner.referrerInfo ? 'Приглашен партнером' : 'Прямая регистрация'}
                     </Badge>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Комиссий: ${partner.totalCommissions}
+                      Код: {partner.referralCode || 'Нет'}
                     </p>
                   </div>
                 </div>
@@ -271,10 +289,10 @@ export default function ReferralProgram() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-green-600">
-                    ${referralStats.totalCommissionsPaid.toFixed(2)}
+                    ${referralStats.commissionStats.paidCommissions}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    От {referralStats.commissionHistory.length} транзакций
+                    От {referralStats.commissionStats.totalTransactions} транзакций
                   </p>
                 </CardContent>
               </Card>
@@ -286,7 +304,7 @@ export default function ReferralProgram() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-blue-600">
-                    ${referralStats.pendingCommissions.toFixed(2)}
+                    ${referralStats.commissionStats.pendingCommissions}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Ожидает выплаты
@@ -301,10 +319,10 @@ export default function ReferralProgram() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-purple-600">
-                    {referralStats.totalPartnersInvited}
+                    {referralStats.referredPartners.length}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Активных: {referralStats.activePartners}
+                    Приглашенных: {referralStats.referredPartners.filter(p => p.referrerInfo).length}
                   </p>
                 </CardContent>
               </Card>
@@ -316,8 +334,8 @@ export default function ReferralProgram() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-orange-600">
-                    ${referralStats.commissionHistory.length > 0 ? 
-                      (referralStats.totalCommissionsPaid / referralStats.commissionHistory.length).toFixed(2) : 
+                    ${referralStats.commissionStats.totalTransactions > 0 ? 
+                      (parseFloat(referralStats.commissionStats.paidCommissions) / referralStats.commissionStats.totalTransactions).toFixed(2) : 
                       '0.00'
                     }
                   </div>
@@ -343,29 +361,29 @@ export default function ReferralProgram() {
                       <TableHead>Партнер</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Статус</TableHead>
-                      <TableHead>Комиссий выплачено</TableHead>
+                      <TableHead>Реферальный код</TableHead>
                       <TableHead>Дата регистрации</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {referralStats.invitedPartners?.map((partner) => (
+                    {referralStats.referredPartners?.map((partner) => (
                       <TableRow key={partner.id}>
                         <TableCell className="font-medium">{partner.username}</TableCell>
                         <TableCell>{partner.email}</TableCell>
                         <TableCell>
-                          <Badge variant={partner.isActive ? 'default' : 'secondary'}>
-                            {partner.isActive ? 'Активен' : 'Неактивен'}
+                          <Badge variant={partner.referrerInfo ? 'default' : 'secondary'}>
+                            {partner.referrerInfo ? 'Приглашен' : 'Прямо'}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-green-600 font-semibold">
-                          ${partner.totalCommissions}
+                          {partner.referralCode || 'Нет кода'}
                         </TableCell>
                         <TableCell>
                           {new Date(partner.createdAt).toLocaleDateString('ru-RU')}
                         </TableCell>
                       </TableRow>
                     ))}
-                    {(!referralStats.invitedPartners || referralStats.invitedPartners.length === 0) && (
+                    {(!referralStats.referredPartners || referralStats.referredPartners.length === 0) && (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                           Пока нет приглашенных партнеров
@@ -399,7 +417,7 @@ export default function ReferralProgram() {
                   <TableBody>
                     {referralStats.commissionHistory?.map((commission) => (
                       <TableRow key={commission.id}>
-                        <TableCell className="font-medium">{commission.referrerName || 'Неизвестно'}</TableCell>
+                        <TableCell className="font-medium">{commission.referrer.username || 'Неизвестно'}</TableCell>
                         <TableCell className="text-green-600 font-semibold">
                           ${commission.amount}
                         </TableCell>
