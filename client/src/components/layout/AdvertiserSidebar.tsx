@@ -18,6 +18,7 @@ import {
   Send,
   Eye,
   UserPlus,
+  Bell,
   TrendingUp
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -62,6 +63,12 @@ export default function AdvertiserSidebar({ isMobile = false, onClose }: Adverti
     href: '/advertiser/access-requests',
     icon: MessageSquare,
     description: t('sidebar.accessRequestsDesc')
+  },
+  {
+    title: 'Уведомления',
+    href: '/advertiser/notifications',
+    icon: Bell,
+    description: 'Системные уведомления и оповещения'
   },
   {
     title: 'Рефералы',
