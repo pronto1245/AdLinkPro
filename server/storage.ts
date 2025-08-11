@@ -867,6 +867,9 @@ export class DatabaseStorage implements IStorage {
       // Delete tracking links (this was causing the constraint violation)
       await db.delete(trackingLinks).where(eq(trackingLinks.offerId, id));
       
+      // Delete postbacks related to this offer (new constraint violation fix)
+      await db.delete(postbacks).where(eq(postbacks.offerId, id));
+      
       // Delete postback logs related to this offer 
       // Note: postbackLogs doesn't have offerId field, so skip this
       // await db.delete(postbackLogs).where(eq(postbackLogs.offerId, id));
