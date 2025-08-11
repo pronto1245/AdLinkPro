@@ -23,10 +23,10 @@ interface ReferralStats {
     date: string;
     status: string;
   }>;
-  commission_summary: {
-    this_month: number;
-    last_month: number;
-    total_paid: number;
+  commission_summary?: {
+    this_month?: number;
+    last_month?: number;
+    total_paid?: number;
   };
 }
 
@@ -172,10 +172,10 @@ export function ReferralProgram() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${referralStats.commission_summary.this_month.toFixed(2)}
+                ${referralStats.commission_summary?.this_month?.toFixed(2) || '0.00'}
               </div>
               <p className="text-xs text-muted-foreground">
-                Прошлый месяц: ${referralStats.commission_summary.last_month.toFixed(2)}
+                Прошлый месяц: ${referralStats.commission_summary?.last_month?.toFixed(2) || '0.00'}
               </p>
             </CardContent>
           </Card>
@@ -187,7 +187,7 @@ export function ReferralProgram() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${referralStats.commission_summary.total_paid.toFixed(2)}
+                ${referralStats.commission_summary?.total_paid?.toFixed(2) || '0.00'}
               </div>
               <p className="text-xs text-muted-foreground">
                 За все время
