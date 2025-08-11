@@ -11024,6 +11024,26 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           
           const { notifyOfferAccessRequest } = await import('./services/notification-helper');
           await notifyOfferAccessRequest(offer.advertiserId, partner, offer, message);
+          
+          // Отправляем WebSocket уведомление напрямую
+          const connection = userConnections.get(offer.advertiserId);
+          if (connection && connection.readyState === WebSocket.OPEN) {
+            connection.send(JSON.stringify({
+              type: 'offer_access_request',
+              data: {
+                partnerUsername: partner.username,
+                offerName: offer.name,
+                offerId: offer.id,
+                partnerId: partner.id,
+                message: message,
+                requestId: newRequest.id
+              },
+              timestamp: new Date().toISOString()
+            }));
+            console.log(`🔔 WebSocket уведомление отправлено рекламодателю ${offer.advertiserId}`);
+          } else {
+            console.log(`⚠️ WebSocket соединение не найдено для пользователя ${offer.advertiserId}`);
+          }
         }
       } catch (notifyError) {
         console.error('Failed to send notification:', notifyError);
