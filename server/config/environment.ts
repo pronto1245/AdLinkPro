@@ -153,11 +153,9 @@ export function validateConfig(): void {
   const errors: string[] = [];
   const warnings: string[] = [];
   
-  // Только DATABASE_URL критически необходим
-  if (!config.DATABASE_URL || config.DATABASE_URL === 'postgresql://postgres:password@localhost:5432/affiliate_platform') {
-    if (config.NODE_ENV === 'production') {
-      errors.push('DATABASE_URL must be set to real database in production');
-    }
+  // DATABASE_URL обязателен для любого окружения
+  if (!config.DATABASE_URL) {
+    errors.push('DATABASE_URL is required for database connectivity');
   }
   
   // JWT_SECRET - предупреждение в продакшене, работа в разработке
