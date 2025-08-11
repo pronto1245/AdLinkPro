@@ -11025,24 +11025,32 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           const { notifyOfferAccessRequest } = await import('./services/notification-helper');
           await notifyOfferAccessRequest(offer.advertiserId, partner, offer, message);
           
-          // Отправляем WebSocket уведомление напрямую
-          const connection = userConnections.get(offer.advertiserId);
-          if (connection && connection.readyState === WebSocket.OPEN) {
-            connection.send(JSON.stringify({
-              type: 'offer_access_request',
-              data: {
-                partnerUsername: partner.username,
-                offerName: offer.name,
-                offerId: offer.id,
-                partnerId: partner.id,
-                message: message,
-                requestId: newRequest.id
-              },
-              timestamp: new Date().toISOString()
-            }));
-            console.log(`🔔 WebSocket уведомление отправлено рекламодателю ${offer.advertiserId}`);
-          } else {
-            console.log(`⚠️ WebSocket соединение не найдено для пользователя ${offer.advertiserId}`);
+          // Отправляем WebSocket уведомление напрямую для запросов доступа
+          try {
+            const connection = userConnections.get(offer.advertiserId);
+            if (connection && connection.readyState === WebSocket.OPEN) {
+              const wsMessage = {
+                type: 'offer_access_request',
+                data: {
+                  partnerUsername: partner.username,
+                  offerName: offer.name,
+                  offerId: offer.id,
+                  partnerId: partner.id,
+                  message: message,
+                  requestId: newRequest.id
+                },
+                timestamp: new Date().toISOString()
+              };
+              
+              connection.send(JSON.stringify(wsMessage));
+              console.log(`🔔 LIVE WebSocket уведомление отправлено рекламодателю ${offer.advertiserId} о запросе "${offer.name}"`);
+            } else {
+              console.log(`⚠️ WebSocket соединение недоступно для рекламодателя ${offer.advertiserId}`);
+              console.log(`🔍 Активные соединения: ${userConnections.size}`);
+              console.log(`🔍 Соединения:`, Array.from(userConnections.keys()));
+            }
+          } catch (wsError) {
+            console.error('❌ Ошибка отправки WebSocket уведомления:', wsError);
           }
         }
       } catch (notifyError) {

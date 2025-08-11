@@ -43,17 +43,24 @@ export async function createNotification(data: NotificationData): Promise<void> 
     });
 
     // Отправляем WebSocket уведомление для реального времени
-    if ((global as any).sendWebSocketNotification) {
-      (global as any).sendWebSocketNotification(data.userId, {
-        type: 'notification',
-        data: {
-          type: data.priority === 'urgent' ? 'error' : data.priority === 'high' ? 'warning' : 'info',
-          title: data.title,
-          message: data.message,
-          metadata: data.metadata
-        },
-        timestamp: new Date().toISOString()
-      });
+    try {
+      if ((global as any).sendWebSocketNotification) {
+        (global as any).sendWebSocketNotification(data.userId, {
+          type: 'notification',
+          data: {
+            type: data.priority === 'urgent' ? 'error' : data.priority === 'high' ? 'warning' : 'info',
+            title: data.title,
+            message: data.message,
+            metadata: data.metadata
+          },
+          timestamp: new Date().toISOString()
+        });
+        console.log(`🔔 WebSocket уведомление отправлено пользователю ${data.userId}`);
+      } else {
+        console.log(`⚠️ sendWebSocketNotification не доступен для ${data.userId}`);
+      }
+    } catch (wsError) {
+      console.error('❌ Ошибка отправки WebSocket уведомления:', wsError);
     }
 
     console.log(`✅ Notification created: ${data.type} for user ${data.userId}`);

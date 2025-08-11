@@ -41,7 +41,9 @@ Platform has been comprehensively tested across all major roles and functionalit
 - **Real-time Event Notifications**: Added automatic notifications for offer creation, partner requests, fraud alerts, and financial transactions
 - **Notification Helper Service**: Created centralized notification management with 20+ event types and WebSocket real-time delivery
 - **Cross-platform Integration**: Connected notifications to storage operations, fraud detection, financial processing, and partner management
-- **Zero Error State**: All LSP diagnostics clear, WebSocket functioning, API endpoints responding correctly
+- **Notification Database Fix**: Resolved critical bug where API endpoints read from wrong notification table, unified user_notifications system
+- **WebSocket Live Updates**: Enhanced WebSocket notification delivery with improved error handling and connection status logging
+- **Real-time Partner Requests**: All partner access requests now create instant notifications and WebSocket messages for advertisers
 - **Domain Limitations (August 11, 2025)**: Implemented restriction limiting advertisers to maximum 1 custom domain with proper validation and error handling
 - **UI Streamlining**: Removed "Полученные офферы" button from advertiser sidebar to simplify navigation
 - **Domain Verification Fix**: Resolved critical bug where domain verification button was hanging due to syntax errors and DNS timeout issues
