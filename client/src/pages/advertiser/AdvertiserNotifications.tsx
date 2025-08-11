@@ -306,22 +306,34 @@ export default function AdvertiserNotifications() {
                 {notifications.map((notification) => (
                   <TableRow 
                     key={notification.id}
-                    className={`${!notification.is_read ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''}`}
+                    className={`transition-colors ${
+                      !notification.is_read 
+                        ? 'bg-blue-50/80 dark:bg-blue-950/30 border-l-4 border-l-blue-500' 
+                        : 'bg-gray-50/30 dark:bg-gray-800/20 hover:bg-gray-50/50 dark:hover:bg-gray-800/30'
+                    }`}
                   >
                     <TableCell>
                       <div className="flex items-center justify-center">
+                        {!notification.is_read && (
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-2" />
+                        )}
                         {getNotificationIcon(notification.type)}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getBadgeVariant(notification.type)} className="text-xs">
+                      <Badge 
+                        variant={getBadgeVariant(notification.type)} 
+                        className={`text-xs ${!notification.is_read ? 'ring-2 ring-blue-200' : ''}`}
+                      >
                         {getTypeText(notification.type)}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className={`${!notification.is_read ? 'font-semibold' : ''}`}>
-                        <div className="font-medium">{notification.title}</div>
-                        <div className="text-sm text-muted-foreground mt-1">
+                      <div className={`${!notification.is_read ? 'font-semibold text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>
+                        <div className={`${!notification.is_read ? 'font-bold' : 'font-medium'}`}>
+                          {notification.title}
+                        </div>
+                        <div className={`text-sm mt-1 ${!notification.is_read ? 'text-gray-700 dark:text-gray-200' : 'text-muted-foreground'}`}>
                           {notification.message}
                         </div>
                         {notification.metadata && (
@@ -340,7 +352,7 @@ export default function AdvertiserNotifications() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm text-muted-foreground">
+                      <div className={`text-sm ${!notification.is_read ? 'text-gray-600 dark:text-gray-300 font-medium' : 'text-muted-foreground'}`}>
                         {formatDistanceToNow(new Date(notification.created_at), {
                           addSuffix: true,
                           locale: ru
@@ -349,25 +361,33 @@ export default function AdvertiserNotifications() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        {!notification.is_read && (
+                        {!notification.is_read ? (
                           <Button
                             onClick={() => markAsReadMutation.mutate(notification.id)}
                             disabled={markAsReadMutation.isPending}
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
+                            className="bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600"
                             title="Отметить как прочитанное"
                           >
-                            <Check className="h-4 w-4 text-green-600" />
+                            <Check className="h-4 w-4 mr-1" />
+                            Прочитано
                           </Button>
+                        ) : (
+                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Прочитано
+                          </Badge>
                         )}
                         <Button
                           onClick={() => deleteMutation.mutate(notification.id)}
                           disabled={deleteMutation.isPending}
                           variant="ghost"
                           size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                           title="Удалить уведомление"
                         >
-                          <Trash2 className="h-4 w-4 text-red-600" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
