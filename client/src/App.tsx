@@ -69,6 +69,7 @@ import AdvertiserNotifications from '@/pages/advertiser/AdvertiserNotifications'
 import ReferralStats from '@/pages/advertiser/ReferralStats';
 import ReferralSystemFixed from '@/pages/affiliate/ReferralSystemFixed';
 import ReferralProgram from '@/pages/advertiser/ReferralProgram';
+import FileUploadTest from '@/pages/FileUploadTest';
 
 
 import { PartnerLayout } from "@/components/partner/PartnerLayout";
@@ -599,6 +600,15 @@ function Router() {
           <PartnerLayout>
             <EventTesting />
           </PartnerLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      {/* File Upload Test Routes */}
+      <Route path="/file-upload-test">
+        <ProtectedRoute allowedRoles={['super_admin', 'advertiser', 'affiliate']}>
+          <RoleBasedLayout>
+            <FileUploadTest />
+          </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
       

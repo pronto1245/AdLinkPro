@@ -1,7 +1,8 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { ObjectStorageService, objectStorageClient } from "./objectStorage";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage.js";
+import { ObjectPermission } from "./objectAcl.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { 
@@ -12698,6 +12699,95 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   });
 
   // =================== END TELEGRAM BOT INTEGRATION ===================
+
+  // ======================
+  // OBJECT STORAGE ROUTES
+  // ======================
+
+  // Endpoint для получения публичных файлов
+  app.get("/public-objects/:filePath(*)", async (req, res) => {
+    const filePath = req.params.filePath;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const file = await objectStorageService.searchPublicObject(filePath);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      console.error("Error searching for public object:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Endpoint для получения приватных файлов с проверкой доступа
+  app.get("/objects/:objectPath(*)", authenticateToken, async (req, res) => {
+    // Gets the authenticated user id.
+    const userId = req.user?.id;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(
+        req.path,
+      );
+      const canAccess = await objectStorageService.canAccessObjectEntity({
+        objectFile,
+        userId: userId,
+        requestedPermission: ObjectPermission.READ,
+      });
+      if (!canAccess) {
+        return res.sendStatus(401);
+      }
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error checking object access:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
+  // Endpoint для получения upload URL
+  app.post("/api/objects/upload", authenticateToken, async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Endpoint для обновления ACL политики после загрузки
+  app.put("/api/objects/metadata", authenticateToken, async (req, res) => {
+    if (!req.body.fileURL) {
+      return res.status(400).json({ error: "fileURL is required" });
+    }
+
+    // Gets the authenticated user id.
+    const userId = req.user?.id;
+
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.fileURL,
+        {
+          owner: userId!,
+          // Для affiliate платформы делаем файлы приватными по умолчанию
+          visibility: "private",
+          // Дополнительные ACL правила можно добавить здесь
+        },
+      );
+
+      res.status(200).json({
+        objectPath: objectPath,
+      });
+    } catch (error) {
+      console.error("Error setting file metadata:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
 
   return httpServer;
 }
