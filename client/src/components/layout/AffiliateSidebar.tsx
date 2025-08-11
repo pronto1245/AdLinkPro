@@ -69,6 +69,12 @@ const sidebarItems = [
     description: 'Управление командой'
   },
   {
+    title: 'Рефералы',
+    href: '/affiliate/referrals',
+    icon: Users,
+    description: 'Реферальная программа'
+  },
+  {
     title: 'Финансы',
     href: '/affiliate/finances',
     icon: Wallet,

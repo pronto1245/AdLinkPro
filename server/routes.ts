@@ -1997,6 +1997,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API для получения статистики рефералов (партнер)
+  app.get("/api/partner/referral-stats", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      console.log(`🔍 Getting partner referral stats for: ${authUser.username}`);
+
+      // Получаем реферальный код партнера
+      const partner = await db.select()
+        .from(users)
+        .where(eq(users.id, authUser.id))
+        .limit(1);
+
+      if (!partner.length) {
+        return res.status(404).json({ error: 'Partner not found' });
+      }
+
+      const referralCode = partner[0].referralCode;
+
+      // Находим всех рекламодателей, приглашенных этим партнером
+      const referredAdvertisers = await db.select()
+        .from(users)
+        .where(and(
+          eq(users.referredBy, authUser.id),
+          eq(users.role, 'advertiser')
+        ));
+
+      // Получаем комиссии этого партнера
+      const commissions = await db.select()
+        .from(referralCommissions)
+        .where(eq(referralCommissions.referrerId, authUser.id));
+
+      // Рассчитываем статистику
+      const totalEarned = commissions
+        .filter(c => c.status === 'paid')
+        .reduce((sum, c) => sum + parseFloat(c.commissionAmount), 0);
+
+      const pendingAmount = commissions
+        .filter(c => c.status === 'pending')
+        .reduce((sum, c) => sum + parseFloat(c.commissionAmount), 0);
+
+      const stats = {
+        referral_code: referralCode,
+        total_referrals: referredAdvertisers.length,
+        active_referrals: referredAdvertisers.filter(a => a.isActive).length,
+        total_earned: totalEarned.toFixed(2),
+        pending_amount: pendingAmount.toFixed(2),
+        total_transactions: commissions.length,
+        referred_advertisers: referredAdvertisers.map(advertiser => ({
+          id: advertiser.id,
+          username: advertiser.username,
+          email: advertiser.email,
+          isActive: advertiser.isActive,
+          createdAt: advertiser.createdAt,
+          totalCommissions: commissions
+            .filter(c => c.referredUserId === advertiser.id)
+            .reduce((sum, c) => sum + parseFloat(c.commissionAmount), 0)
+            .toFixed(2)
+        })),
+        commission_history: commissions.map(commission => ({
+          id: commission.id,
+          amount: commission.commissionAmount,
+          status: commission.status,
+          createdAt: commission.createdAt,
+          originalAmount: commission.originalAmount
+        }))
+      };
+
+      console.log(`✅ Partner referral stats retrieved for ${authUser.username}:`, {
+        referrals: stats.total_referrals,
+        earned: stats.total_earned
+      });
+
+      res.json(stats);
+    } catch (error) {
+      console.error('Error getting partner referral stats:', error);
+      res.status(500).json({ error: 'Failed to get referral stats' });
+    }
+  });
+
   // API для начисления комиссий (вызывается при выплатах)
   app.post("/api/referrals/calculate-commission", authenticateToken, async (req, res) => {
     try {

@@ -66,6 +66,7 @@ import PartnerProfile from "@/pages/affiliate/PartnerProfile";
 import PartnerSettings from "@/pages/affiliate/PartnerSettings";
 import AdvertiserAccessRequests from '@/pages/advertiser/AdvertiserAccessRequests';
 import ReferralStats from '@/pages/advertiser/ReferralStats';
+import ReferralSystem from '@/pages/affiliate/ReferralSystem';
 
 import { PartnerLayout } from "@/components/partner/PartnerLayout";
 import Statistics from "@/pages/affiliate/Statistics";
@@ -475,6 +476,14 @@ function Router() {
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PartnerLayout>
             <AffiliateTeamManagement />
+          </PartnerLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/affiliate/referrals">
+        <ProtectedRoute allowedRoles={['affiliate']}>
+          <PartnerLayout>
+            <ReferralSystem />
           </PartnerLayout>
         </ProtectedRoute>
       </Route>
