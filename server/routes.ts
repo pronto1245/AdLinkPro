@@ -172,6 +172,29 @@ const requireUserAccess = async (req: Request, res: Response, next: NextFunction
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // ACME Challenge handler для Let's Encrypt SSL (должен быть первым!)
+  app.get('/.well-known/acme-challenge/:token', (req, res) => {
+    try {
+      const token = req.params.token;
+      const fs = require('fs');
+      const path = require('path');
+      
+      const challengeFile = path.join(process.cwd(), 'public', '.well-known', 'acme-challenge', token);
+      
+      if (fs.existsSync(challengeFile)) {
+        const content = fs.readFileSync(challengeFile, 'utf8');
+        console.log(`✅ ACME Challenge обслужен: ${token} -> ${content.substring(0, 20)}...`);
+        res.type('text/plain').send(content);
+      } else {
+        console.log(`❌ ACME Challenge файл не найден: ${token}`);
+        res.status(404).send('Challenge not found');
+      }
+    } catch (error) {
+      console.error('Ошибка обработки ACME challenge:', error);
+      res.status(500).send('Internal server error');
+    }
+  });
+
   // Import tracking and postback routes
   const trackingRoutes = await import('./routes/tracking');
   const postbackRoutes = await import('./routes/postbacks');
