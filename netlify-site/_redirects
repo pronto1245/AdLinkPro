@@ -1,0 +1,17 @@
+# Redirect rules for Netlify
+
+# SPA (Single Page Application) fallback
+/*    /index.html   200
+
+# Custom 404 page (опционально)
+# /404.html  /404.html  404
+
+# Защита от прямого доступа к служебным файлам
+/netlify.toml  /  301
+/_headers      /  301  
+/_redirects    /  301
+
+# SEO-friendly URLs (если понадобятся)
+/demo          /#demo          301
+/features      /#features      301
+/contact       /#contact       301

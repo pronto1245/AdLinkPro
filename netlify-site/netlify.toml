@@ -1,0 +1,57 @@
+[build]
+  # Папка с готовым сайтом
+  publish = "."
+  
+  # Команда сборки (не нужна для статических файлов)
+  command = "echo 'Static site ready for deploy!'"
+
+[build.environment]
+  # Environment variables для Netlify
+  NODE_VERSION = "18"
+  
+# Настройки для SPA (Single Page Application)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Настройки заголовков для лучшей производительности
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+# Настройки форм (если понадобятся в будущем)
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+# Edge functions и serverless функции не нужны для статического сайта
