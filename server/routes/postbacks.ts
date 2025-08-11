@@ -2,12 +2,12 @@ import { Router } from 'express';
 import { storage } from '../storage';
 import { insertPostbackProfileSchema } from '@shared/schema';
 import { z } from 'zod';
-import { authMiddleware } from '../middleware/auth';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
 // Get postback profiles for current user
-router.get('/profiles', authMiddleware, async (req, res) => {
+router.get('/profiles', authenticateToken, async (req, res) => {
   try {
     const { userId, role } = req.user;
     const ownerScope = role === 'super_admin' ? 'owner' : role === 'advertiser' ? 'advertiser' : 'partner';
@@ -21,7 +21,7 @@ router.get('/profiles', authMiddleware, async (req, res) => {
 });
 
 // Create postback profile
-router.post('/profiles', authMiddleware, async (req, res) => {
+router.post('/profiles', authenticateToken, async (req, res) => {
   try {
     const { userId, role } = req.user;
     const ownerScope = role === 'super_admin' ? 'owner' : role === 'advertiser' ? 'advertiser' : 'partner';
@@ -48,7 +48,7 @@ router.post('/profiles', authMiddleware, async (req, res) => {
 });
 
 // Update postback profile
-router.put('/profiles/:id', authMiddleware, async (req, res) => {
+router.put('/profiles/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = insertPostbackProfileSchema.partial().parse(req.body);
@@ -69,7 +69,7 @@ router.put('/profiles/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete postback profile
-router.delete('/profiles/:id', authMiddleware, async (req, res) => {
+router.delete('/profiles/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     await storage.deletePostbackProfile(id);
@@ -81,7 +81,7 @@ router.delete('/profiles/:id', authMiddleware, async (req, res) => {
 });
 
 // Get postback deliveries
-router.get('/deliveries', authMiddleware, async (req, res) => {
+router.get('/deliveries', authenticateToken, async (req, res) => {
   try {
     const { profileId, status } = req.query;
     
@@ -98,7 +98,7 @@ router.get('/deliveries', authMiddleware, async (req, res) => {
 });
 
 // Test postback profile (dry run)
-router.post('/profiles/:id/test', authMiddleware, async (req, res) => {
+router.post('/profiles/:id/test', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { clickid, eventType, revenue } = req.body;

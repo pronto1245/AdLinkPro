@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { storage } from '../storage.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -14,42 +14,7 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-export const authMiddleware = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ message: 'No token provided' });
-      return;
-    }
-
-    const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    
-    // Get user from storage
-    const user = await storage.getUser(decoded.userId);
-    if (!user) {
-      res.status(401).json({ message: 'User not found' });
-      return;
-    }
-
-    req.user = {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      ownerId: user.ownerId
-    };
-
-    next();
-  } catch (error) {
-    console.error('Auth middleware error:', error);
-    res.status(401).json({ message: 'Invalid token' });
-  }
-};
+// Удален старый authMiddleware - используем только authenticateToken
 
 export const requireRole = (roles: string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -65,16 +30,20 @@ export const requireRole = (roles: string[]) => {
   };
 };
 
-// Экспортируем функции для совместимости с другими файлами
+// Главный middleware для аутентификации
 export const authenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-  console.log('=== AUTHENTICATING TOKEN ===');
+  console.log('🚨🚨🚨 MAIN AUTH MIDDLEWARE CALLED 🚨🚨🚨');
+  console.log('=== AUTHENTICATING TOKEN (DEBUG MODE) ===');
   console.log('Request method:', req.method, 'URL:', req.url);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   console.log('Auth header present:', !!authHeader);
+  console.log('Auth header value:', authHeader);
   console.log('Token present:', !!token);
   if (token) {
     console.log('Token first 20 chars:', token.substring(0, 20) + '...');
+    console.log('Token full length:', token.length);
   }
 
   if (!token) {
@@ -87,6 +56,7 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
     console.log('JWT decoded successfully:', decoded);
+    console.log('JWT_SECRET used for verification:', JWT_SECRET);
     
     const userId = decoded.userId || decoded.id;
     console.log('Extracted userId:', userId);
@@ -118,6 +88,8 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
     next();
   } catch (error) {
     console.log('JWT verification error:', error);
+    console.log('Error type:', error.constructor.name);
+    console.log('Error message:', error.message);
     console.log('=== AUTH MIDDLEWARE FAILED ===');
     res.sendStatus(403);
   }

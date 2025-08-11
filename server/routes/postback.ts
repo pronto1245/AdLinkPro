@@ -3,12 +3,12 @@ import { z } from 'zod';
 import { db } from '../db.js';
 import { postbackProfiles, postbackDeliveries } from '../../shared/schema.js';
 import { eq, and, desc } from 'drizzle-orm';
-import { authMiddleware } from '../middleware/auth.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
 // Apply auth middleware to all routes
-router.use(authMiddleware);
+router.use(authenticateToken);
 
 // Postback profile schema
 const postbackProfileSchema = z.object({

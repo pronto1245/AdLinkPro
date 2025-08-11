@@ -4231,7 +4231,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all available offers for partner with AUTOMATIC tracking links
   app.get("/api/partner/offers", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
+      console.log('=== PARTNER OFFERS ROUTE HANDLER STARTED ===');
+      console.log('User in request:', req.user);
       const partnerId = getAuthenticatedUser(req).id;
+      console.log('Extracted partner ID:', partnerId);
       
       // Отключаем HTTP кеширование
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -10429,85 +10432,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
 
   // ============ OFFER ACCESS REQUEST SYSTEM ============
 
-  // Get available offers for partners (with access status)
-  app.get('/api/partner/offers', authenticateToken, requireRole(['affiliate']), async (req, res) => {
-    try {
-      const partnerId = req.user!.id;
-
-      // Get all offers with partner access information
-      const offersResult = await db.execute(sql`
-        SELECT 
-          o.id,
-          o.name,
-          o.description,
-          o.logo,
-          o.category,
-          o.countries,
-          o.payout,
-          o.currency,
-          o.cr,
-          o.status,
-          o.advertiser_id,
-          u.username as advertiser_name,
-          u.company as advertiser_company,
-          o.partner_approval_type,
-          o.preview_url,
-          po.status as partner_offer_status,
-          oar.status as access_request_status,
-          oar.id as access_request_id,
-          oar.response_note as reject_reason,
-          CASE 
-            WHEN o.partner_approval_type = 'auto' THEN 'auto_approved'
-            WHEN po.status = 'active' THEN 'approved' 
-            WHEN oar.status = 'pending' THEN 'pending'
-            WHEN oar.status = 'rejected' THEN 'rejected'
-            WHEN oar.status = 'approved' THEN 'approved'
-            WHEN o.partner_approval_type = 'by_request' OR o.partner_approval_type = 'manual' THEN 'available'
-            ELSE 'available'
-          END as access_status,
-          CASE 
-            WHEN o.partner_approval_type = 'auto' THEN true
-            WHEN po.status = 'active' THEN true
-            WHEN oar.status = 'approved' THEN true
-            ELSE false
-          END as has_full_access
-        FROM offers o
-        LEFT JOIN users u ON o.advertiser_id = u.id
-        LEFT JOIN partner_offers po ON o.id = po.offer_id AND po.partner_id = ${partnerId}
-        LEFT JOIN offer_access_requests oar ON o.id = oar.offer_id AND oar.partner_id = ${partnerId}
-        WHERE o.status = 'active'
-        ORDER BY o.created_at DESC
-      `);
-
-      // Format the response
-      const offers = offersResult.rows.map(offer => ({
-        id: offer.id,
-        name: offer.name,
-        description: offer.description,
-        logo: offer.logo,
-        category: offer.category || 'Other',
-        countries: Array.isArray(offer.countries) ? offer.countries : (offer.countries ? [offer.countries] : []),
-        payout: offer.payout || '0',
-        currency: offer.currency || 'USD',
-        cr: parseFloat(offer.cr) || 0,
-        status: offer.status,
-        advertiserId: offer.advertiser_id,
-        advertiser_name: offer.advertiser_name || 'Unknown',
-        advertiser_company: offer.advertiser_company,
-        accessStatus: offer.access_status,
-        hasFullAccess: offer.has_full_access,
-        partnerApprovalType: offer.partner_approval_type,
-        previewUrl: offer.preview_url,
-        accessRequestId: offer.access_request_id,
-        rejectReason: offer.reject_reason
-      }));
-
-      res.json(offers);
-    } catch (error) {
-      console.error('Get partner offers error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
+  // DUPLICATE ROUTE REMOVED - Using main partner offers route from line 4232
 
 
 
