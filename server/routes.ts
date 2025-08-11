@@ -1864,6 +1864,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         referredBy, // Добавляем ID пригласившего
       });
       
+      // Отправляем уведомление рефереру о новом пользователе
+      if (referredBy && ref) {
+        try {
+          const referrer = await db.select().from(users).where(eq(users.id, referredBy)).limit(1);
+          if (referrer.length > 0) {
+            const { notifyNewReferral } = await import('./services/notification');
+            await notifyNewReferral(referrer[0], user);
+            console.log('🔗 New referral notification sent to:', referrer[0].username);
+          }
+        } catch (notifyError) {
+          console.error('❌ Failed to send referral notification:', notifyError);
+        }
+      }
+      
       // Send registration notification
       await notificationService.sendNotification({
         type: 'user_registration',
@@ -1927,6 +1941,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.log('/api/auth/me - Error:', error);
       res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // API для статистики рефералов
+  app.get("/api/referrals/stats", authenticateToken, async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      
+      // Получаем всех приведенных пользователей
+      const referredUsers = await db.select()
+        .from(users)
+        .where(eq(users.referredBy, authUser.id));
+      
+      // Получаем заработанные комиссии
+      const earnings = await db.execute(sql`
+        SELECT 
+          SUM(commission_amount) as total_earned,
+          COUNT(*) as total_transactions,
+          AVG(commission_rate) as avg_rate
+        FROM referral_earnings 
+        WHERE referrer_id = ${authUser.id} AND status = 'paid'
+      `);
+      
+      // Получаем ожидающие выплаты
+      const pending = await db.execute(sql`
+        SELECT SUM(commission_amount) as pending_amount
+        FROM referral_earnings 
+        WHERE referrer_id = ${authUser.id} AND status = 'pending'
+      `);
+      
+      res.json({
+        referrals: {
+          total_referred: referredUsers.length,
+          active_referrals: referredUsers.filter(u => u.status === 'active').length,
+          referred_users: referredUsers.map(u => ({
+            id: u.id,
+            username: u.username,
+            email: u.email,
+            status: u.status,
+            registered_at: u.createdAt,
+            balance: u.balance
+          }))
+        },
+        earnings: {
+          total_earned: earnings.rows[0]?.total_earned || '0.00',
+          pending_amount: pending.rows[0]?.pending_amount || '0.00',
+          total_transactions: earnings.rows[0]?.total_transactions || 0,
+          commission_rate: authUser.referralCommission || '5.00'
+        }
+      });
+    } catch (error) {
+      console.error('Referral stats error:', error);
+      res.status(500).json({ error: 'Failed to get referral statistics' });
+    }
+  });
+
+  // API для начисления комиссий (вызывается при выплатах)
+  app.post("/api/referrals/calculate-commission", authenticateToken, async (req, res) => {
+    try {
+      const { transactionId, userId, amount } = req.body;
+      
+      // Находим кто привел этого пользователя
+      const referredUser = await db.select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+      
+      if (!referredUser.length || !referredUser[0].referredBy) {
+        return res.json({ message: 'No referrer found' });
+      }
+      
+      const referrer = await db.select()
+        .from(users)
+        .where(eq(users.id, referredUser[0].referredBy))
+        .limit(1);
+      
+      if (!referrer.length) {
+        return res.json({ message: 'Referrer not found' });
+      }
+      
+      // Вычисляем комиссию (5% по умолчанию)
+      const commissionRate = referrer[0].referralCommission || 5.00;
+      const commissionAmount = (parseFloat(amount) * parseFloat(commissionRate.toString())) / 100;
+      
+      // Записываем комиссию
+      await db.execute(sql`
+        INSERT INTO referral_earnings (
+          referrer_id, referred_id, transaction_id, 
+          commission_amount, commission_rate, original_amount, status
+        ) VALUES (
+          ${referrer[0].id}, ${userId}, ${transactionId},
+          ${commissionAmount}, ${commissionRate}, ${amount}, 'pending'
+        )
+      `);
+      
+      // Отправляем уведомление о новой комиссии
+      const { notifyReferralEarning } = await import('./services/notification');
+      await notifyReferralEarning(referrer[0], {
+        referredUser: referredUser[0].username,
+        commissionAmount,
+        originalAmount: amount
+      });
+      
+      console.log(`💰 Referral commission calculated: ${commissionAmount} for ${referrer[0].username}`);
+      
+      res.json({
+        success: true,
+        commission: {
+          amount: commissionAmount,
+          rate: commissionRate,
+          referrer: referrer[0].username
+        }
+      });
+    } catch (error) {
+      console.error('Commission calculation error:', error);
+      res.status(500).json({ error: 'Failed to calculate commission' });
     }
   });
 

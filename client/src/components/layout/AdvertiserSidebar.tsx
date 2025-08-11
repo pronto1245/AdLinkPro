@@ -16,7 +16,8 @@ import {
   Menu,
   MessageSquare,
   Send,
-  Eye
+  Eye,
+  UserPlus
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -60,6 +61,12 @@ export default function AdvertiserSidebar({ isMobile = false, onClose }: Adverti
     href: '/advertiser/access-requests',
     icon: MessageSquare,
     description: t('sidebar.accessRequestsDesc')
+  },
+  {
+    title: 'Рефералы',
+    href: '/advertiser/referrals',
+    icon: UserPlus,
+    description: 'Реферальная программа и статистика'
   },
 
   {
