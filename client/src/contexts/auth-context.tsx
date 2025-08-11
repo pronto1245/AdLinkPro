@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
       }
     } catch (error) {
-      console.error('Error fetching user:', error);
+      // Тихо обрабатываем ошибки загрузки пользователя
       localStorage.removeItem('auth_token');
       setToken(null);
       setUser(null);
@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Login failed' }));
-        console.error('Login failed with error:', errorData);
+        // Ошибки логина обрабатываются в UI
         throw new Error(errorData.error || 'Login failed');
       }
       
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           (window as any).queryClient.clear();
         }
       } else {
-        console.error('❌ Invalid token received from server:', data.token);
+        // Ошибки с недействительным токеном обрабатываются в UI
         throw new Error('Invalid token received from server');
       }
       

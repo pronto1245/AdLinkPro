@@ -34,10 +34,10 @@ export function useWebSocket() {
         setConnectionState('connected');
         reconnectAttempts.current = 0;
         
-        // Отправляем аутентификацию
+        // Безопасная отправка аутентификации с проверкой состояния
         const token = localStorage.getItem('auth_token');
-        if (token) {
-          ws.current?.send(JSON.stringify({
+        if (token && ws.current?.readyState === WebSocket.OPEN) {
+          ws.current.send(JSON.stringify({
             type: 'auth',
             token
           }));
@@ -49,7 +49,7 @@ export function useWebSocket() {
           const message: WebSocketMessage = JSON.parse(event.data);
           handleMessage(message);
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          // Тихо обрабатываем ошибки парсинга сообщений
         }
       };
 
@@ -68,11 +68,12 @@ export function useWebSocket() {
       };
 
       ws.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        // Тихо обрабатываем WebSocket ошибки без вывода в консоль
+        // console.error('WebSocket error:', error);
       };
 
     } catch (error) {
-      console.error('Error creating WebSocket connection:', error);
+      // Тихо обрабатываем ошибки подключения WebSocket
       setConnectionState('disconnected');
     }
   };
@@ -133,7 +134,7 @@ export function useWebSocket() {
         
       default:
         // Только предупреждение для действительно неизвестных типов
-        console.warn('Unknown message type:', message.type);
+        // Тихо игнорируем неизвестные типы сообщений
     }
   };
 
