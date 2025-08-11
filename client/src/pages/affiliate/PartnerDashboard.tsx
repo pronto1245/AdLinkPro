@@ -245,24 +245,24 @@ export default function PartnerDashboard() {
         <MetricCard
           title={t('dashboard.totalClicks')}
           value={metrics.totalClicks?.toLocaleString() || '0'}
-          change={dashboardData?.metrics?.clicksGrowth ? `${dashboardData.metrics.clicksGrowth > 0 ? '+' : ''}${dashboardData.metrics.clicksGrowth.toFixed(1)}%` : "+12.5%"}
-          changeType="positive"
+          change={dashboardData?.metrics?.clicksGrowth ? `${dashboardData.metrics.clicksGrowth > 0 ? '+' : ''}${dashboardData.metrics.clicksGrowth.toFixed(1)}%` : undefined}
+          changeType={dashboardData?.metrics?.clicksGrowth > 0 ? "positive" : "negative"}
           icon={MousePointer}
           cardType="clicks"
         />
         <MetricCard
           title={t('dashboard.conversions')}
           value={metrics.conversions?.toLocaleString() || '0'}
-          change="+5.2%"
-          changeType="positive"
+          change={dashboardData?.metrics?.conversionsGrowth ? `${dashboardData.metrics.conversionsGrowth > 0 ? '+' : ''}${dashboardData.metrics.conversionsGrowth.toFixed(1)}%` : undefined}
+          changeType={dashboardData?.metrics?.conversionsGrowth > 0 ? "positive" : "negative"}
           icon={Target}
           cardType="conversions"
         />
         <MetricCard
           title={t('dashboard.revenue')}
           value={`$${metrics.revenue?.toLocaleString() || '0'}`}
-          change="+18.3%"
-          changeType="positive"
+          change={dashboardData?.metrics?.revenueGrowth ? `${dashboardData.metrics.revenueGrowth > 0 ? '+' : ''}${dashboardData.metrics.revenueGrowth.toFixed(1)}%` : undefined}
+          changeType={dashboardData?.metrics?.revenueGrowth > 0 ? "positive" : "negative"}
           icon={DollarSign}
           cardType="revenue"
         />

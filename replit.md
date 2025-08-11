@@ -8,6 +8,7 @@ This platform is an affiliate marketing solution designed to optimize offer mana
 - **SSL Configuration**: Real SSL certificates only, no demo/simulation modes (August 11, 2025)
 - **Telegram Integration**: Real bot @integracia7980_bot fully integrated and working (August 11, 2025)
 - **Data Integrity**: Complete removal of ALL demo data, test records, API tokens, and mock logic - everything works with real live data in real-time (August 11, 2025)
+- **Dashboard Requirements**: All dashboards (advertiser, partner, super-admin) must use only real PostgreSQL data with live API endpoints (August 11, 2025)
 
 # System Architecture
 
@@ -55,6 +56,7 @@ This platform is an affiliate marketing solution designed to optimize offer mana
 - **Real-time Event Tracking**: Automatic postback triggers on lp_click, lead, deposit, conversion events with full data preservation in PostgreSQL.
 - **Postback Testing & Monitoring**: Built-in testing tools for validating tracker configurations and monitoring delivery success rates.
 - **Data Integrity**: Complete elimination of demo data - all systems use real-time PostgreSQL data, real DNS verification, real SSL certificates, and authentic blockchain integration requirements.
+- **Live Dashboard System**: All role-based dashboards (advertiser, partner/affiliate, super-admin) implemented with real-time PostgreSQL data endpoints, eliminating all mock data, demo statistics, and placeholder values (August 11, 2025)
 
 # External Dependencies
 

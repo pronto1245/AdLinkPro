@@ -197,12 +197,20 @@ export default function Dashboard() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.activePartners')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {metrics?.activePartners?.toLocaleString() || '1,247'}
+                    {metrics?.activePartners?.toLocaleString() || '0'}
                   </p>
-                  <div className="flex items-center mt-1">
-                    <ArrowUpRight className="w-4 h-4 text-green-500" />
-                    <span className="text-sm text-green-600">+12%</span>
-                  </div>
+                  {metrics?.partnersGrowth && (
+                    <div className="flex items-center mt-1">
+                      {metrics.partnersGrowth > 0 ? (
+                        <ArrowUpRight className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <ArrowDownRight className="w-4 h-4 text-red-500" />
+                      )}
+                      <span className={`text-sm ${metrics.partnersGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {metrics.partnersGrowth > 0 ? '+' : ''}{metrics.partnersGrowth.toFixed(1)}%
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -218,12 +226,20 @@ export default function Dashboard() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.activeOffers')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {metrics?.activeOffers?.toLocaleString() || '89'}
+                    {metrics?.activeOffers?.toLocaleString() || '0'}
                   </p>
-                  <div className="flex items-center mt-1">
-                    <ArrowUpRight className="w-4 h-4 text-green-500" />
-                    <span className="text-sm text-green-600">+5%</span>
-                  </div>
+                  {metrics?.offersGrowth && (
+                    <div className="flex items-center mt-1">
+                      {metrics.offersGrowth > 0 ? (
+                        <ArrowUpRight className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <ArrowDownRight className="w-4 h-4 text-red-500" />
+                      )}
+                      <span className={`text-sm ${metrics.offersGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {metrics.offersGrowth > 0 ? '+' : ''}{metrics.offersGrowth.toFixed(1)}%
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -239,12 +255,20 @@ export default function Dashboard() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.todayClicks')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {metrics?.todayClicks?.toLocaleString() || '15,420'}
+                    {metrics?.todayClicks?.toLocaleString() || '0'}
                   </p>
-                  <div className="flex items-center mt-1">
-                    <ArrowDownRight className="w-4 h-4 text-red-500" />
-                    <span className="text-sm text-red-600">-3%</span>
-                  </div>
+                  {metrics?.clicksGrowth && (
+                    <div className="flex items-center mt-1">
+                      {metrics.clicksGrowth > 0 ? (
+                        <ArrowUpRight className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <ArrowDownRight className="w-4 h-4 text-red-500" />
+                      )}
+                      <span className={`text-sm ${metrics.clicksGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {metrics.clicksGrowth > 0 ? '+' : ''}{metrics.clicksGrowth.toFixed(1)}%
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -260,7 +284,7 @@ export default function Dashboard() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.conversions')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {metrics?.conversions?.toLocaleString() || '1,205'}
+                    {metrics?.conversions?.toLocaleString() || '0'}
                   </p>
                   <div className="flex items-center mt-1">
                     <ArrowUpRight className="w-4 h-4 text-green-500" />
@@ -281,7 +305,7 @@ export default function Dashboard() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.platformRevenue')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    ${metrics?.platformRevenue?.toLocaleString() || '45,789'}
+                    ${metrics?.platformRevenue?.toLocaleString() || '0'}
                   </p>
                   <div className="flex items-center mt-1">
                     <ArrowUpRight className="w-4 h-4 text-green-500" />
@@ -302,7 +326,7 @@ export default function Dashboard() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.fraudRate')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {metrics?.fraudRate?.toFixed(1) || '2.3'}%
+                    {metrics?.fraudRate?.toFixed(1) || '0.0'}%
                   </p>
                   <div className="flex items-center mt-1">
                     <ArrowDownRight className="w-4 h-4 text-green-500" />
@@ -322,7 +346,7 @@ export default function Dashboard() {
                 <div>
                   <p className="text-sm font-medium text-cyan-700 dark:text-cyan-300">CR (Conversion Rate)</p>
                   <p className="text-3xl font-bold text-cyan-900 dark:text-cyan-100">
-                    {metrics?.cr?.toFixed(2) || '3.13'}%
+                    {metrics?.cr?.toFixed(2) || '0.00'}%
                   </p>
                 </div>
                 <div className="text-right">

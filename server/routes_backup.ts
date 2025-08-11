@@ -12798,15 +12798,3 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         await telegramBot.sendDailyReport(userId);
       }
 
-
-      res.json({ success: true, message: 'Test notification sent' });
-    } catch (error) {
-      console.error('❌ Test notification error:', error);
-      res.status(500).json({ error: 'Failed to send test notification' });
-    }
-  });
-
-  // =================== END TELEGRAM BOT INTEGRATION ===================
-
-  return httpServer;
-}

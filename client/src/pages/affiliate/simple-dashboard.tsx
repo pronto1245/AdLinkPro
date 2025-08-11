@@ -16,10 +16,18 @@ export default function AffiliateDashboard() {
     enabled: !!user
   });
 
-  // Fetch real dashboard data
+  // Real-time dashboard data from PostgreSQL
   const { data: dashboardData } = useQuery({
     queryKey: ['/api/partner/dashboard'],
-    enabled: !!user
+    queryFn: async () => {
+      const response = await fetch('/api/partner/dashboard', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+      });
+      if (!response.ok) throw new Error('Failed to load dashboard data');
+      return response.json();
+    },
+    enabled: !!user,
+    refetchInterval: 30000 // Real-time updates every 30 seconds
   });
 
   return (
@@ -54,7 +62,7 @@ export default function AffiliateDashboard() {
             <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">{(dashboardData as any)?.metrics?.totalClicks || 0}</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">{dashboardData?.metrics?.totalClicks || 0}</div>
             <p className="text-xs text-green-600/70 dark:text-green-400/70">
               {t('dashboard.totalClicks')} 
             </p>
@@ -70,7 +78,7 @@ export default function AffiliateDashboard() {
             <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-amber-500" />
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400">${(dashboardData as any)?.metrics?.revenue?.toFixed(2) || '0.00'}</div>
+            <div className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400">${dashboardData?.metrics?.revenue?.toFixed(2) || '0.00'}</div>
             <p className="text-xs text-amber-600/70 dark:text-amber-400/70">
               {t('dashboard.todayRevenue')}
             </p>
