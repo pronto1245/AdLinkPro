@@ -25,6 +25,7 @@ import { randomUUID } from "crypto";
 import { nanoid } from "nanoid";
 import { notificationService } from "./services/notification";
 import { auditLog, checkIPBlacklist, rateLimiter, loginRateLimiter, recordFailedLogin, trackDevice, detectFraud, getAuditLogs } from "./middleware/security";
+import { authenticateToken, getAuthenticatedUser, requireRole } from "./middleware/auth";
 import { PostbackService } from "./services/postback";
 import conversionRoutes from "./routes/conversion";
 import analyticsRoutes from "./routes/analytics";
@@ -60,75 +61,9 @@ const requireAdvertiser = async (req: express.Request, res: express.Response, ne
   next();
 };
 
-// Auth middleware
-const authenticateToken = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.log('=== AUTHENTICATING TOKEN ===');
-  console.log('Request method:', req.method, 'URL:', req.url);
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  console.log('Auth header present:', !!authHeader);
-  console.log('Token present:', !!token);
-  if (token) {
-    console.log('Token first 20 chars:', token.substring(0, 20) + '...');
-  }
+// Auth middleware now imported from middleware/auth.ts
 
-  if (!token) {
-    console.log('No token provided - returning 401');
-    // Добавляем специальный заголовок для фронтенда
-    res.setHeader('X-Auth-Error', 'token-missing');
-    return res.status(401).json({ error: 'Authentication required', code: 'TOKEN_MISSING' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    console.log('JWT decoded successfully:', decoded);
-    
-    // Проверяем userId в токене (может быть id или userId)
-    const userId = decoded.userId || decoded.id;
-    console.log('Extracted userId:', userId);
-    
-    if (!userId) {
-      console.log('No userId found in token - returning 403');
-      return res.sendStatus(403);
-    }
-    
-    const user = await storage.getUser(userId);
-    console.log('User lookup result:', user ? `Found: ${user.username}` : 'Not found');
-    
-    if (!user) {
-      console.log('User not found for ID:', userId, '- returning 403');
-      return res.sendStatus(403);
-    }
-    
-    console.log('User authenticated successfully:', user.username, 'Role:', user.role);
-    req.user = user;
-    req.userId = user.id; // Добавляем userId для совместимости
-    console.log('=== AUTH MIDDLEWARE SUCCESS ===');
-    next();
-  } catch (error) {
-    console.log('JWT verification error:', error);
-    console.log('=== AUTH MIDDLEWARE FAILED ===');
-    return res.sendStatus(403);
-  }
-};
-
-// Helper to assert user is authenticated
-const getAuthenticatedUser = (req: Request): User => {
-  if (!req.user) {
-    throw new Error('User not authenticated');
-  }
-  return req.user;
-};
-
-// Role-based access control with hierarchy
-const requireRole = (roles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-      return res.sendStatus(403);
-    }
-    next();
-  };
-};
+// Role-based middleware now imported from middleware/auth.ts
 
 // Check if user can access another user based on hierarchy
 const canAccessUser = (currentUser: User, targetUserId: string): boolean => {
