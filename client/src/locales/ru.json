@@ -67,12 +67,45 @@
     "overview": "Обзор", 
     "stats": "Статистика",
     "recent": "Недавние",
-    "conversions": "Конверсии"
+    "conversions": "Конверсии",
+    "charts": {
+      "conversionTitle": "Конверсии",
+      "conversionDesc": "График конверсий по дням",
+      "trafficTitle": "Трафик",
+      "trafficDesc": "Объем трафика по источникам",
+      "revenueTitle": "Доходы",
+      "revenueDesc": "Динамика доходов",
+      "geoTitle": "География",
+      "geoDesc": "Распределение по странам"
+    },
+    "activities": {
+      "title": "Последние действия",
+      "desc": "История активности системы"
+    },
+    "quickActions": {
+      "title": "Быстрые действия",
+      "desc": "Основные операции системы",
+      "addOffer": "Добавить оффер",
+      "addUser": "Добавить пользователя",
+      "postback": "Постбеки",
+      "analytics": "Аналитика",
+      "fraud": "Антифрод",
+      "finances": "Финансы"
+    }
   },
   "sidebar": {
     "home": "Главная",
     "homeDesc": "Обзор кабинета",
-    "myOffers": "Мои офферы", 
+    "myOffers": "Мои офферы",
+    "dashboard": "Дашборд",
+    "users": "Пользователи", 
+    "userAnalytics": "Аналитика пользователей",
+    "roles": "Роли",
+    "offers": "Офферы",
+    "blacklist": "Черный список",
+    "auditLogs": "Логи аудита",
+    "systemSettings": "Настройки системы",
+    "support": "Поддержка", 
     "myOffersDesc": "Управление офферами",
     "receivedOffers": "Полученные офферы",
     "receivedOffersDesc": "Офферы от поставщиков",
@@ -566,7 +599,8 @@
     "profile": "Профиль",
     "settings": "Настройки",
     "notifications": "Уведомления",
-    "logout": "Выход"
+    "logout": "Выход",
+    "help": "Помощь"
   },
   "common": {
     "update": "Обновить",
