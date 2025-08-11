@@ -161,13 +161,19 @@ export class CustomDomainService {
       // Реальная интеграция с Let's Encrypt с обработкой таймаутов
       const { LetsEncryptService } = await import('./letsencrypt.js');
       
-      // Запускаем процесс с таймаутом
+      // Запускаем процесс с агрессивным таймаутом
       const sslPromise = LetsEncryptService.issueCertificate(domain, domainId);
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('SSL process timeout after 2 minutes')), 120000)
+        setTimeout(() => reject(new Error('SSL process timeout after 90 seconds')), 90000)
       );
       
-      await Promise.race([sslPromise, timeoutPromise]);
+      try {
+        await Promise.race([sslPromise, timeoutPromise]);
+        console.log(`✅ SSL процесс завершен успешно для ${domain}`);
+      } catch (error) {
+        console.error(`❌ SSL процесс прерван для ${domain}:`, error.message);
+        throw error;
+      }
       
     } catch (error) {
       console.error(`SSL issuance failed for ${domain}:`, error);

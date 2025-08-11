@@ -130,17 +130,19 @@ export class LetsEncryptService {
         // Уведомляем Let's Encrypt о готовности
         await this.client!.verifyChallenge(authz, httpChallenge);
         
-        // Ждем подтверждения с таймаутом
+        // Ждем подтверждения с коротким таймаутом
         try {
+          console.log(`⏳ Ждем валидацию challenge для ${domain}...`);
           await Promise.race([
             this.client!.waitForValidStatus(authz),
             new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('SSL validation timeout')), 30000)
+              setTimeout(() => reject(new Error('SSL validation timeout')), 15000)
             )
           ]);
+          console.log(`✅ Challenge валидирован успешно для ${domain}`);
         } catch (timeoutError) {
-          console.warn(`⚠️ Таймаут валидации для ${domain}, но продолжаем процесс`);
-          // Продолжаем без валидации - возможно Let's Encrypt уже проверил
+          console.warn(`⚠️ Таймаут валидации (15 сек) для ${domain}, пропускаем валидацию`);
+          // Продолжаем без ожидания - Let's Encrypt валидирует в фоне
         }
         
         // Удаляем challenge файл
@@ -152,11 +154,23 @@ export class LetsEncryptService {
         commonName: domain
       });
 
-      // Финализируем заказ
-      await this.client!.finalizeOrder(order, csr);
+      // Финализируем заказ с таймаутом
+      console.log(`🔄 Финализируем заказ сертификата для ${domain}...`);
+      await Promise.race([
+        this.client!.finalizeOrder(order, csr),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Order finalization timeout')), 30000)
+        )
+      ]);
       
-      // Получаем сертификат
-      const certificate = await this.client!.getCertificate(order);
+      // Получаем сертификат с таймаутом
+      console.log(`📥 Получаем сертификат для ${domain}...`);
+      const certificate = await Promise.race([
+        this.client!.getCertificate(order),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Certificate retrieval timeout')), 30000)
+        )
+      ]) as string;
 
       // Сохраняем сертификат в базу
       const validUntil = new Date();
