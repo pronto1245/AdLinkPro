@@ -137,54 +137,54 @@ const ReferralSystemFixed: React.FC = () => {
             </Card>
           )}
 
-          {/* Реферальная ссылка */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <LinkIcon className="h-5 w-5" />
-                Ваша реферальная ссылка
-              </CardTitle>
-              <CardDescription>
-                Поделитесь этой ссылкой с потенциальными рекламодателями
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  value={`${window.location.origin}/register?ref=${stats.referral_code}`}
-                  readOnly
-                  className="font-mono"
-                  data-testid="input-referral-link"
-                />
-                <Button
-                  onClick={copyReferralLink}
-                  variant="outline"
-                  size="icon"
-                  disabled={!isProgramEnabled}
-                  title="Копировать ссылку"
-                  data-testid="button-copy-link"
-                >
-                  {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
-                <Button
-                  onClick={shareReferralLink}
-                  variant="outline"
-                  size="icon"
-                  disabled={!isProgramEnabled}
-                  title="Поделиться ссылкой"
-                  data-testid="button-share-link"
-                >
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="referral-code">Ваш реферальный код:</Label>
-                <Badge variant="secondary" className="font-mono">
-                  {stats.referral_code}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Реферальная ссылка - показываем только когда программа включена */}
+          {isProgramEnabled && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LinkIcon className="h-5 w-5" />
+                  Ваша реферальная ссылка
+                </CardTitle>
+                <CardDescription>
+                  Поделитесь этой ссылкой с потенциальными рекламодателями
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    value={`${window.location.origin}/register?ref=${stats.referral_code}`}
+                    readOnly
+                    className="font-mono"
+                    data-testid="input-referral-link"
+                  />
+                  <Button
+                    onClick={copyReferralLink}
+                    variant="outline"
+                    size="icon"
+                    title="Копировать ссылку"
+                    data-testid="button-copy-link"
+                  >
+                    {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    onClick={shareReferralLink}
+                    variant="outline"
+                    size="icon"
+                    title="Поделиться ссылкой"
+                    data-testid="button-share-link"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="referral-code">Ваш реферальный код:</Label>
+                  <Badge variant="secondary" className="font-mono">
+                    {stats.referral_code}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Статистика */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
