@@ -83,6 +83,7 @@ export const users: any = pgTable("users", {
   referralCode: text("referral_code").unique(), // Unique code for referrals (e.g., "ABC123")
   referredBy: varchar("referred_by").references(() => users.id), // Who referred this user
   referralCommission: decimal("referral_commission", { precision: 5, scale: 2 }).default('5.00'), // Commission % for referrals
+  referralProgramEnabled: boolean("referral_program_enabled").default(true), // Включена ли реферальная программа у рекламодателя
   // Settings
   settings: jsonb("settings"),
 });
@@ -1322,6 +1323,20 @@ export const creativeFiles = pgTable("creative_files", {
   uploadedBy: varchar("uploaded_by").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Referral Commissions table for tracking partner referral earnings
+export const referralCommissions = pgTable("referral_commissions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  referrerId: varchar("referrer_id").notNull().references(() => users.id), // Партнер-реферер
+  referredUserId: varchar("referred_user_id").notNull().references(() => users.id), // Приглашенный пользователь
+  transactionId: varchar("transaction_id"), // ID транзакции выплаты
+  originalAmount: decimal("original_amount", { precision: 15, scale: 2 }).notNull(), // Оригинальная сумма выплаты
+  commissionAmount: decimal("commission_amount", { precision: 15, scale: 2 }).notNull(), // Размер комиссии
+  commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).notNull(), // Процент комиссии
+  status: text("status").notNull().default('pending'), // 'pending', 'paid', 'cancelled'
+  createdAt: timestamp("created_at").defaultNow(),
+  paidAt: timestamp("paid_at"),
 });
 
 export const creativeSets = pgTable("creative_sets", {

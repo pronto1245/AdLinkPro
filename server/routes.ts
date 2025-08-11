@@ -2037,6 +2037,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter(c => c.status === 'pending')
         .reduce((sum, c) => sum + parseFloat(c.commissionAmount), 0);
 
+      // Получаем информацию о рекламодателе (владельце партнера)
+      let programEnabled = true; // По умолчанию включена
+      
+      if (partner[0].ownerId) {
+        const advertiser = await db.select({
+          referralProgramEnabled: users.referralProgramEnabled
+        })
+        .from(users)
+        .where(eq(users.id, partner[0].ownerId))
+        .limit(1);
+        
+        if (advertiser.length > 0) {
+          programEnabled = advertiser[0].referralProgramEnabled ?? true;
+        }
+      }
+
       const stats = {
         referral_code: referralCode,
         total_referrals: referredAdvertisers.length,
@@ -2044,6 +2060,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         total_earned: totalEarned.toFixed(2),
         pending_amount: pendingAmount.toFixed(2),
         total_transactions: commissions.length,
+        program_enabled: programEnabled,
         referred_advertisers: referredAdvertisers.map(advertiser => ({
           id: advertiser.id,
           username: advertiser.username,
@@ -2073,6 +2090,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error getting partner referral stats:', error);
       res.status(500).json({ error: 'Failed to get referral stats' });
+    }
+  });
+
+  // API для переключения реферальной программы рекламодателем
+  app.post("/api/advertiser/referral-program/toggle", authenticateToken, async (req, res) => {
+    try {
+      const { enabled } = req.body;
+      
+      if (!req.user || req.user.role !== 'advertiser') {
+        return res.status(403).json({ error: 'Only advertisers can manage referral program' });
+      }
+      
+      // Обновляем настройку реферальной программы
+      await db.update(users)
+        .set({ 
+          referralProgramEnabled: enabled,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, req.user.id));
+      
+      console.log(`📋 Advertiser ${req.user.username} ${enabled ? 'enabled' : 'disabled'} referral program`);
+      
+      res.json({ 
+        success: true, 
+        enabled,
+        message: enabled 
+          ? 'Реферальная программа включена' 
+          : 'Реферальная программа отключена'
+      });
+      
+    } catch (error) {
+      console.error('Error toggling referral program:', error);
+      res.status(500).json({ error: 'Failed to toggle referral program' });
     }
   });
 
