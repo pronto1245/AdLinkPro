@@ -24,6 +24,22 @@ app.use(compression({
   }
 }));
 
+// HTTPS редирект middleware (ПЕРЕД ACME handler)
+app.use((req, res, next) => {
+  // Разрешаем ACME challenge на HTTP для Let's Encrypt
+  if (req.path.startsWith('/.well-known/acme-challenge/')) {
+    return next();
+  }
+  
+  // В production режиме принудительно редиректим на HTTPS
+  if (process.env.NODE_ENV === 'production' && req.header('x-forwarded-proto') !== 'https') {
+    console.log(`🔒 HTTPS редирект: ${req.get('host')}${req.url}`);
+    return res.redirect(301, `https://${req.get('host')}${req.url}`);
+  }
+  
+  next();
+});
+
 // ACME Challenge handler ПЕРЕД helmet для Let's Encrypt SSL
 app.get('/.well-known/acme-challenge/:token', (req, res) => {
   try {
@@ -131,14 +147,7 @@ app.use((req, res, next) => {
     res.sendFile('update-token.html', { root: '.' });
   });
 
-  // ACME Challenge поддержка для Let's Encrypt (ПЕРЕД Vite middleware)
-  app.use('/.well-known/acme-challenge', express.static('public/.well-known/acme-challenge', {
-    dotfiles: 'allow',
-    setHeaders: (res) => {
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Content-Type', 'text/plain');
-    }
-  }));
+  // ACME Challenge статическая поддержка удалена - используем только Express handler из начала файла
 
   // Import tracking service and storage for short links
   const { TrackingLinkService } = await import('./services/trackingLinks.js');
