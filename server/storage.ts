@@ -47,10 +47,13 @@ export interface IStorage {
   getCreatedPostbackProfiles(): any[];
   savePostbackProfile(profile: any): void;
   
-  // Postback deliveries
+  // Postback deliveries and profiles
   savePostbackDelivery(delivery: any): Promise<void>;
-  deletePostbackProfile(profileId: string): boolean;
-  updatePostbackProfile(profileId: string, updateData: any): any;
+  deletePostbackProfile(profileId: string): Promise<void>;
+  updatePostbackProfile(profileId: string, updateData: any): Promise<any>;
+  createPostbackProfile(data: InsertPostbackProfile): Promise<PostbackProfile>;
+  getPostbackProfiles(ownerId: string, ownerScope?: string): Promise<PostbackProfile[]>;
+  getPostbackDeliveries(profileId?: string, status?: string): Promise<PostbackDelivery[]>;
 
   // Enhanced user management
   getUsersWithFilters(filters: {
@@ -642,44 +645,7 @@ export class DatabaseStorage implements IStorage {
     return null;
   }
 
-  async deletePostbackProfile(id: string): Promise<void> {
-    console.log('🗑️ deletePostbackProfile called with:', id);
-    
-    try {
-      // Сначала пытаемся удалить из базы данных
-      const result = await db.execute(sql.raw(`
-        DELETE FROM postback_profiles 
-        WHERE id = '${id}'
-        RETURNING *
-      `));
-      if (result.rows && result.rows.length > 0) {
-        console.log('🗑️ Profile deleted from database successfully');
-        return;
-      }
-    } catch (error) {
-      console.error('❌ Error deleting from database:', error);
-    }
-    
-    // Fallback: проверяем в созданных профилях (память)
-    const createdIndex = this.createdPostbackProfiles.findIndex(p => p.id === id);
-    if (createdIndex !== -1) {
-      console.log('🗑️ Found profile in memory, deleting...');
-      this.createdPostbackProfiles.splice(createdIndex, 1);
-      console.log('🗑️ Profile deleted from memory successfully');
-      return;
-    }
-
-    // Проверяем в демо профилях (временно удаляем, но они вернутся при перезагрузке)
-    const demoIndex = this.demoPostbackProfiles.findIndex(p => p.id === id);
-    if (demoIndex !== -1) {
-      console.log('🗑️ Found profile in demo profiles, deleting temporarily...');
-      this.demoPostbackProfiles.splice(demoIndex, 1);
-      console.log('🗑️ Demo profile deleted temporarily');
-      return;
-    }
-
-    console.log('❌ Profile not found for deletion:', id);
-  }
+  // OLD METHOD REMOVED - USING DB VERSION AT LINE 1402
 
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -1355,6 +1321,59 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('❌ Error getting postback deliveries:', error);
       return [];
+    }
+  }
+
+  // CREATE POSTBACK PROFILE - MISSING METHOD
+  async createPostbackProfile(data: InsertPostbackProfile): Promise<PostbackProfile> {
+    console.log('🚀 createPostbackProfile called with:', data);
+    
+    try {
+      const [profile] = await db
+        .insert(postbackProfiles)
+        .values(data)
+        .returning();
+      
+      console.log('✅ Created postback profile:', profile.id);
+      return profile;
+    } catch (error) {
+      console.error('❌ Error creating postback profile:', error);
+      throw error;
+    }
+  }
+
+  // UPDATE POSTBACK PROFILE - MISSING METHOD
+  async updatePostbackProfile(id: string, data: Partial<InsertPostbackProfile>): Promise<PostbackProfile> {
+    console.log('🚀 updatePostbackProfile called with:', { id, data });
+    
+    try {
+      const [profile] = await db
+        .update(postbackProfiles)
+        .set(data)
+        .where(eq(postbackProfiles.id, id))
+        .returning();
+      
+      console.log('✅ Updated postback profile:', profile.id);
+      return profile;
+    } catch (error) {
+      console.error('❌ Error updating postback profile:', error);
+      throw error;
+    }
+  }
+
+  // DELETE POSTBACK PROFILE - MISSING METHOD
+  async deletePostbackProfile(id: string): Promise<void> {
+    console.log('🚀 deletePostbackProfile called with:', id);
+    
+    try {
+      await db
+        .delete(postbackProfiles)
+        .where(eq(postbackProfiles.id, id));
+      
+      console.log('✅ Deleted postback profile:', id);
+    } catch (error) {
+      console.error('❌ Error deleting postback profile:', error);
+      throw error;
     }
   }
 

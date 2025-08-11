@@ -1821,6 +1821,17 @@ export const insertPostbackTemplateSchema = createInsertSchema(postbackTemplates
   updatedAt: true,
 });
 
+export const insertPostbackProfileSchema = createInsertSchema(postbackProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPostbackDeliverySchema = createInsertSchema(postbackDeliveries).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertPostbackDeliveryLogSchema = createInsertSchema(postbackDeliveryLogs).omit({
   id: true,
   createdAt: true,
@@ -1844,6 +1855,10 @@ export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type Transaction = typeof transactions.$inferSelect;
 export type InsertPostback = z.infer<typeof insertPostbackSchema>;
 export type Postback = typeof postbacks.$inferSelect;
+export type PostbackProfile = typeof postbackProfiles.$inferSelect;
+export type InsertPostbackProfile = z.infer<typeof insertPostbackProfileSchema>;
+export type PostbackDelivery = typeof postbackDeliveries.$inferSelect;
+export type InsertPostbackDelivery = z.infer<typeof insertPostbackDeliverySchema>;
 export type InsertTicket = z.infer<typeof insertTicketSchema>;
 export type Ticket = typeof tickets.$inferSelect;
 export type InsertFraudAlert = z.infer<typeof insertFraudAlertSchema>;
@@ -2073,21 +2088,4 @@ export const insertEventSchema = createInsertSchema(events).omit({
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 
-// Postback Profiles Types
-export const insertPostbackProfileSchema = createInsertSchema(postbackProfiles).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export type PostbackProfile = typeof postbackProfiles.$inferSelect;
-export type InsertPostbackProfile = z.infer<typeof insertPostbackProfileSchema>;
-
-// Postback Deliveries Types
-export const insertPostbackDeliverySchema = createInsertSchema(postbackDeliveries).omit({
-  id: true,
-  createdAt: true,
-});
-
-export type PostbackDelivery = typeof postbackDeliveries.$inferSelect;
-export type InsertPostbackDelivery = z.infer<typeof insertPostbackDeliverySchema>;
+// DUPLICATE SCHEMA DEFINITIONS REMOVED - USING VERSIONS AT LINES 1824, 1830
