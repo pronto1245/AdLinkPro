@@ -1,0 +1,13 @@
+# Netlify redirects for SPA routing
+
+/dashboard          /#dashboard         200
+/offers             /#offers            200  
+/partners           /#partners          200
+/analytics          /#analytics         200
+/postback           /#postback          200
+/login              /                   200
+/admin              /                   200
+/advertiser         /                   200
+
+# Fallback for all other routes
+/*                  /index.html         200
