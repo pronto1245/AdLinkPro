@@ -3818,6 +3818,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(customDomain);
     } catch (error) {
       console.error("Add custom domain error:", error);
+      
+      // Обработка ошибки лимита доменов
+      if (error.message && error.message.includes('Domain limit exceeded')) {
+        return res.status(400).json({ 
+          error: "Превышен лимит доменов",
+          details: "Каждый рекламодатель может добавить только 1 кастомный домен. Удалите существующий домен для добавления нового."
+        });
+      }
+      
       res.status(500).json({ error: "Internal server error" });
     }
   });

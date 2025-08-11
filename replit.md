@@ -42,6 +42,8 @@ Platform has been comprehensively tested across all major roles and functionalit
 - **Notification Helper Service**: Created centralized notification management with 20+ event types and WebSocket real-time delivery
 - **Cross-platform Integration**: Connected notifications to storage operations, fraud detection, financial processing, and partner management
 - **Zero Error State**: All LSP diagnostics clear, WebSocket functioning, API endpoints responding correctly
+- **Domain Limitations (August 11, 2025)**: Implemented restriction limiting advertisers to maximum 1 custom domain with proper validation and error handling
+- **UI Streamlining**: Removed "Полученные офферы" button from advertiser sidebar to simplify navigation
 
 # User Preferences
 - **Language**: Russian language preferred ("отвечай на русском пожалуйста")

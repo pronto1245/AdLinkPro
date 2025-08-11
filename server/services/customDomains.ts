@@ -21,6 +21,16 @@ export class CustomDomainService {
     domain: string;
     type?: 'a_record' | 'cname';
   }): Promise<CustomDomain> {
+    // Проверяем лимит доменов для рекламодателя (максимум 1 домен)
+    const existingDomains = await db
+      .select()
+      .from(customDomains)
+      .where(eq(customDomains.advertiserId, data.advertiserId));
+
+    if (existingDomains.length >= 1) {
+      throw new Error('Domain limit exceeded. Each advertiser can add only 1 custom domain.');
+    }
+
     const verificationValue = this.generateVerificationValue();
     const targetValue = data.type === 'cname' 
       ? 'affiliate-tracker.replit.app' 
