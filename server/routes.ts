@@ -2002,56 +2002,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { transactionId, userId, amount } = req.body;
       
-      // Находим кто привел этого пользователя
-      const referredUser = await db.select()
+      // Новая логика: userId это партнер, которому рекламодатель делает выплату
+      const partnerReceivingPayout = await db.select()
         .from(users)
         .where(eq(users.id, userId))
         .limit(1);
       
-      if (!referredUser.length || !referredUser[0].referredBy) {
-        return res.json({ message: 'No referrer found' });
+      if (!partnerReceivingPayout.length) {
+        return res.json({ message: 'Partner not found' });
+      }
+
+      // Проверяем, что это партнер (affiliate)
+      if (partnerReceivingPayout[0].role !== 'affiliate') {
+        return res.json({ message: 'Commission only applies to partner payouts' });
       }
       
-      const referrer = await db.select()
+      // Проверяем, есть ли у этого партнера реферер (другой партнер)
+      if (!partnerReceivingPayout[0].referredBy) {
+        return res.json({ message: 'No referrer found for this partner' });
+      }
+      
+      const referrerPartner = await db.select()
         .from(users)
-        .where(eq(users.id, referredUser[0].referredBy))
+        .where(eq(users.id, partnerReceivingPayout[0].referredBy))
         .limit(1);
       
-      if (!referrer.length) {
-        return res.json({ message: 'Referrer not found' });
+      if (!referrerPartner.length) {
+        return res.json({ message: 'Referrer partner not found' });
+      }
+
+      // Проверяем, что реферер тоже партнер
+      if (referrerPartner[0].role !== 'affiliate') {
+        return res.json({ message: 'Referrer must be a partner' });
       }
       
-      // Вычисляем комиссию (5% по умолчанию)
-      const commissionRate = referrer[0].referralCommission || 5.00;
-      const commissionAmount = (parseFloat(amount) * parseFloat(commissionRate.toString())) / 100;
+      // Вычисляем комиссию (5% от выплаты партнеру)
+      // Комиссию платит рекламодатель рефереру-партнеру
+      const commissionRate = 5.00;
+      const commissionAmount = (parseFloat(amount) * commissionRate) / 100;
       
-      // Записываем комиссию
-      await db.execute(sql`
-        INSERT INTO referral_earnings (
-          referrer_id, referred_id, transaction_id, 
-          commission_amount, commission_rate, original_amount, status
-        ) VALUES (
-          ${referrer[0].id}, ${userId}, ${transactionId},
-          ${commissionAmount}, ${commissionRate}, ${amount}, 'pending'
-        )
-      `);
+      // Записываем комиссию в нашу таблицу
+      await db.insert(referralCommissions).values({
+        referrerId: referrerPartner[0].id,
+        referredUserId: userId, // партнер, получающий выплату
+        transactionId: transactionId,
+        originalAmount: amount,
+        commissionAmount: commissionAmount.toString(),
+        commissionRate: commissionRate,
+        status: 'pending',
+        createdAt: new Date()
+      });
       
-      // Отправляем уведомление о новой комиссии
+      // Отправляем уведомление партнеру-рефереру
       const { notifyReferralEarning } = await import('./services/notification');
-      await notifyReferralEarning(referrer[0], {
-        referredUser: referredUser[0].username,
+      await notifyReferralEarning(referrerPartner[0], {
+        referredUser: partnerReceivingPayout[0].username,
         commissionAmount,
         originalAmount: amount
       });
       
-      console.log(`💰 Referral commission calculated: ${commissionAmount} for ${referrer[0].username}`);
+      console.log(`💰 Partner referral commission: ${commissionAmount} for ${referrerPartner[0].username} (referred ${partnerReceivingPayout[0].username})`);
       
       res.json({
         success: true,
         commission: {
           amount: commissionAmount,
           rate: commissionRate,
-          referrer: referrer[0].username
+          referrer: referrerPartner[0].username,
+          referred: partnerReceivingPayout[0].username,
+          message: 'Commission will be paid by advertiser to referring partner'
         }
       });
     } catch (error) {
