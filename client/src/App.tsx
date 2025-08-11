@@ -66,7 +66,7 @@ import PartnerProfile from "@/pages/affiliate/PartnerProfile";
 import PartnerSettings from "@/pages/affiliate/PartnerSettings";
 import AdvertiserAccessRequests from '@/pages/advertiser/AdvertiserAccessRequests';
 import ReferralStats from '@/pages/advertiser/ReferralStats';
-import ReferralSystem from '@/pages/affiliate/ReferralSystem';
+import ReferralSystemFixed from '@/pages/affiliate/ReferralSystemFixed';
 import ReferralProgram from '@/pages/advertiser/ReferralProgram';
 
 
@@ -487,7 +487,7 @@ function Router() {
       <Route path="/affiliate/referrals">
         <ProtectedRoute allowedRoles={['affiliate']}>
           <PartnerLayout>
-            <ReferralSystem />
+            <ReferralSystemFixed />
           </PartnerLayout>
         </ProtectedRoute>
       </Route>
