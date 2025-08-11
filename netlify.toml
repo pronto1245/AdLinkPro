@@ -4,6 +4,16 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  NODE_ENV = "production"
+  JWT_SECRET = "production-jwt-secret-change-in-production"
+  SESSION_SECRET = "production-session-secret"
+  SENDGRID_API_KEY = ""
+  VOLUUM_TOKEN = ""
+  KEITARO_TOKEN = ""
+  BINOM_TOKEN = ""
+  REDTRACK_TOKEN = ""
+  GOOGLE_CLOUD_PROJECT_ID = ""
+  GOOGLE_CLOUD_STORAGE_BUCKET = ""
 
 [[redirects]]
   from = "/api/*"
