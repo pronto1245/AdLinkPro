@@ -39,24 +39,55 @@ export interface ConversionRow {
   antifraudLevel?: "ok" | "soft" | "hard" | null;
 }
 
-// Initialize BullMQ queue with Redis connection
-export const pbQueue = new Queue<PostbackTask>("postbacks", { 
-  connection: { 
-    url: env.REDIS_URL,
-    maxRetriesPerRequest: 3,
-    retryDelayOnFailover: 100,
-    lazyConnect: true
-  },
-  defaultJobOptions: {
-    removeOnComplete: 5000,
-    removeOnFail: 5000,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
-    },
+// Redis availability tracking
+let redisAvailable = false;
+let pbQueue: Queue<PostbackTask> | null = null;
+
+// Check Redis availability
+async function checkRedisAvailability(): Promise<boolean> {
+  try {
+    const redis = new (await import('ioredis')).default(env.REDIS_URL);
+    await redis.ping();
+    await redis.disconnect();
+    return true;
+  } catch (error) {
+    return false;
   }
-});
+}
+
+// Initialize BullMQ queue only if Redis is available
+async function initializeQueue(): Promise<Queue<PostbackTask> | null> {
+  if (pbQueue) return pbQueue;
+  
+  const isRedisAvailable = await checkRedisAvailability();
+  
+  if (isRedisAvailable) {
+    console.log('✅ Redis is available, initializing BullMQ queue');
+    redisAvailable = true;
+    pbQueue = new Queue<PostbackTask>("postbacks", { 
+      connection: { 
+        url: env.REDIS_URL,
+        maxRetriesPerRequest: 3,
+        retryDelayOnFailover: 100,
+        lazyConnect: true
+      },
+      defaultJobOptions: {
+        removeOnComplete: 5000,
+        removeOnFail: 5000,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      }
+    });
+    return pbQueue;
+  } else {
+    console.log('⚠️ Redis unavailable, will use autonomous processing');
+    redisAvailable = false;
+    return null;
+  }
+}
 
 /**
  * Enqueues postback tasks for conversion events using BullMQ
@@ -97,26 +128,33 @@ export async function enqueuePostbacks(conversion: ConversionRow): Promise<void>
       details: conversion.details
     };
 
-    // Try to add to BullMQ queue
-    try {
-      const job = await pbQueue.add("deliver", task, {
-        jobId: `postback_${conversion.id}_${Date.now()}`,
-        removeOnComplete: 5000,
-        removeOnFail: 5000,
-        attempts: 5,
-        backoff: {
-          type: 'exponential',
-          delay: 2000,
-        },
-        delay: getPostbackDelay(conversion.conversionStatus)
-      });
-      
-      console.log('✅ Postback task enqueued with BullMQ ID:', job.id);
-      return;
-      
-    } catch (redisError) {
-      console.log('🔄 BullMQ unavailable, falling back to direct processing');
-      // Fall through to simulation
+    // Try to initialize and use BullMQ queue
+    const queue = await initializeQueue();
+    
+    if (queue) {
+      try {
+        const job = await queue.add("deliver", task, {
+          jobId: `postback_${conversion.id}_${Date.now()}`,
+          removeOnComplete: 5000,
+          removeOnFail: 5000,
+          attempts: 5,
+          backoff: {
+            type: 'exponential',
+            delay: 2000,
+          },
+          delay: getPostbackDelay(conversion.conversionStatus)
+        });
+        
+        console.log('✅ Postback task enqueued with BullMQ ID:', job.id);
+        return;
+        
+      } catch (redisError) {
+        console.log('🔄 BullMQ connection lost, falling back to direct processing');
+        redisAvailable = false;
+        pbQueue = null;
+      }
+    } else {
+      console.log('🔄 Using autonomous processing (Redis unavailable)');
     }
     
     // Fallback: Use autonomous processor
@@ -243,10 +281,23 @@ function getPostbackDelay(status: Status): number {
  */
 export async function getQueueStats() {
   try {
-    const waiting = await pbQueue.getWaiting();
-    const active = await pbQueue.getActive();
-    const completed = await pbQueue.getCompleted();
-    const failed = await pbQueue.getFailed();
+    const queue = await initializeQueue();
+    
+    if (!queue) {
+      return {
+        waiting: 0,
+        active: 0,
+        completed: 0,
+        failed: 0,
+        total: 0,
+        error: 'Redis unavailable'
+      };
+    }
+    
+    const waiting = await queue.getWaiting();
+    const active = await queue.getActive();
+    const completed = await queue.getCompleted();
+    const failed = await queue.getFailed();
     
     return {
       waiting: waiting.length,

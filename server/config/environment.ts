@@ -68,7 +68,7 @@ const getEnvVar = (key: string, defaultValue?: string): string => {
     console.warn(`Environment variable ${key} is not set`);
     return '';
   }
-  return value;
+  return value || '';
 };
 
 const getEnvBool = (key: string, defaultValue = false): boolean => {
