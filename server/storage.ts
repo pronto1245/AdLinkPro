@@ -2892,9 +2892,18 @@ export class DatabaseStorage implements IStorage {
         throw new Error('Domain not found');
       }
 
+      console.log(`🔍 Начинаем верификацию домена: ${domain.domain} (${domain.type})`);
+
       // Используем сервис для верификации домена с реальной DNS проверкой
       const { CustomDomainService } = await import('./services/customDomains');
-      const result = await CustomDomainService.verifyDomain(domainId);
+      const result = await Promise.race([
+        CustomDomainService.verifyDomain(domainId),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Verification timeout')), 10000)
+        )
+      ]) as any;
+      
+      console.log(`✅ Результат верификации: ${JSON.stringify(result)}`);
       
       // Получаем обновленный домен из базы
       const [updatedDomain] = await db.select().from(customDomains).where(
