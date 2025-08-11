@@ -53,6 +53,7 @@ interface AdvertiserReferralStats {
       email: string;
     };
   }>;
+  programEnabled: boolean;
 }
 
 export default function ReferralProgram() {
@@ -64,6 +65,13 @@ export default function ReferralProgram() {
   const { data: referralStats, isLoading } = useQuery<AdvertiserReferralStats>({
     queryKey: ['/api/advertiser/referral-stats'],
   });
+
+  // Синхронизируем локальное состояние с данными сервера
+  React.useEffect(() => {
+    if (referralStats?.programEnabled !== undefined) {
+      setIsEnabled(referralStats.programEnabled);
+    }
+  }, [referralStats?.programEnabled]);
 
   // Мутация для переключения программы
   const toggleProgramMutation = useMutation({

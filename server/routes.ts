@@ -2134,6 +2134,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const authUser = getAuthenticatedUser(req);
       
+      // Получаем текущий статус реферальной программы рекламодателя
+      const currentUser = await db.select()
+        .from(users)
+        .where(eq(users.id, authUser.id))
+        .limit(1);
+        
+      const referralProgramEnabled = currentUser[0]?.referralProgramEnabled ?? true;
+
       // Получаем всех партнеров, приглашенных к этому рекламодателю
       const referredPartners = await db
         .select({
@@ -2241,7 +2249,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           amount: Number(commission.amount).toFixed(2),
           originalAmount: Number(commission.originalAmount).toFixed(2),
           rate: Number(commission.rate).toFixed(2)
-        }))
+        })),
+        programEnabled: referralProgramEnabled
       });
 
     } catch (error) {
