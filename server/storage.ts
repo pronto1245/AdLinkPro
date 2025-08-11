@@ -1284,6 +1284,32 @@ export class DatabaseStorage implements IStorage {
       .insert(transactions)
       .values(transaction)
       .returning();
+    
+    // Добавляем уведомления для финансовых транзакций
+    try {
+      const { notifyFinancialUpdate } = await import('./services/notification-helper');
+      
+      if (newTransaction.type === 'payout' && newTransaction.toUserId) {
+        await notifyFinancialUpdate(newTransaction.toUserId, {
+          transactionId: newTransaction.id,
+          type: 'payout_received',
+          amount: newTransaction.amount,
+          currency: newTransaction.currency || 'USD',
+          status: newTransaction.status
+        });
+      } else if (newTransaction.type === 'deposit' && newTransaction.fromUserId) {
+        await notifyFinancialUpdate(newTransaction.fromUserId, {
+          transactionId: newTransaction.id,
+          type: 'deposit_processed',
+          amount: newTransaction.amount,
+          currency: newTransaction.currency || 'USD',
+          status: newTransaction.status
+        });
+      }
+    } catch (notifyError) {
+      console.error('❌ Failed to send transaction notification:', notifyError);
+    }
+    
     return newTransaction;
   }
 
@@ -1293,6 +1319,27 @@ export class DatabaseStorage implements IStorage {
       .set(data)
       .where(eq(transactions.id, id))
       .returning();
+    
+    // Уведомляем об изменении статуса транзакции
+    try {
+      const { notifyFinancialUpdate } = await import('./services/notification-helper');
+      
+      if (data.status && transaction.status !== 'pending') {
+        const targetUserId = transaction.toUserId || transaction.fromUserId;
+        if (targetUserId) {
+          await notifyFinancialUpdate(targetUserId, {
+            transactionId: transaction.id,
+            type: 'status_update',
+            amount: transaction.amount,
+            currency: transaction.currency || 'USD',
+            status: transaction.status
+          });
+        }
+      }
+    } catch (notifyError) {
+      console.error('❌ Failed to send transaction update notification:', notifyError);
+    }
+    
     return transaction;
   }
 
@@ -5836,6 +5883,19 @@ class MemStorage implements IStorage {
     } catch (dbError) {
       console.error(`❌ Ошибка синхронизации оффера ${offerId} с базой:`, dbError);
       // НЕ прерываем процесс - оффер остается в MemStorage для совместимости
+    }
+    
+    // Уведомляем рекламодателя о создании нового оффера
+    try {
+      const { notifyOfferCreated } = await import('./services/notification-helper');
+      await notifyOfferCreated(newOffer.advertiserId, {
+        id: newOffer.id,
+        name: newOffer.name,
+        payout: newOffer.payout,
+        category: newOffer.category
+      });
+    } catch (notifyError) {
+      console.error('❌ Failed to send offer created notification:', notifyError);
     }
     
     // Офферы создаются, но не автоматически одобряются - партнеры должны запрашивать доступ

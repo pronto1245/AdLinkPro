@@ -199,6 +199,32 @@ export class FraudService {
           severity: 'high',
           isResolved: false
         });
+
+        // Отправляем уведомление о высоком риске фрода
+        try {
+          const { notifyAntifraudAlert } = await import('../services/notification-helper');
+          // Получаем информацию о клике для определения получателя уведомления
+          const clickInfo = await db.select().from(trackingClicks).where(eq(trackingClicks.clickId, clickId)).limit(1);
+          if (clickInfo.length > 0) {
+            const click = clickInfo[0];
+            // Получаем информацию об оффере для определения рекламодателя
+            const { offers } = await import('../../shared/schema');
+            const offerInfo = await db.select().from(offers).where(eq(offers.id, click.offerId)).limit(1);
+            
+            // Уведомляем владельца оффера или рекламодателя
+            if (offerInfo.length > 0 && offerInfo[0].advertiserId) {
+              await notifyAntifraudAlert(offerInfo[0].advertiserId, {
+                id: clickId,
+                riskLevel: result.riskLevel,
+                type: 'high_risk_click',
+                ip: click.ip || '',
+                details: result.reasons.join(', ')
+              });
+            }
+          }
+        } catch (notifyError) {
+          console.error('❌ Failed to send fraud alert notification:', notifyError);
+        }
       }
     } catch (error) {
       console.error('Error updating click fraud data:', error);

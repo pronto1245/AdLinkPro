@@ -1875,11 +1875,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const referrer = await db.select().from(users).where(eq(users.id, referredBy)).limit(1);
           if (referrer.length > 0) {
             const { notifyNewReferral } = await import('./services/notification');
+            const { notifyReferralJoined } = await import('./services/notification-helper');
             await notifyNewReferral(referrer[0], user);
+            await notifyReferralJoined(referrer[0].id, {
+              id: user.id,
+              username: user.username,
+              referralCode: ref
+            });
             console.log('🔗 New referral notification sent to:', referrer[0].username);
           }
         } catch (notifyError) {
           console.error('❌ Failed to send referral notification:', notifyError);
+        }
+      }
+
+      // Уведомляем рекламодателя о новом партнере (если это партнер)
+      if (user.role === 'affiliate' && user.ownerId) {
+        try {
+          const { notifyPartnerJoined } = await import('./services/notification-helper');
+          await notifyPartnerJoined(user.ownerId, {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            country: user.country
+          });
+        } catch (notifyError) {
+          console.error('❌ Failed to send partner joined notification:', notifyError);
         }
       }
       
@@ -2508,10 +2529,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Отправляем уведомление партнеру-рефереру
       const { notifyReferralEarning } = await import('./services/notification');
+      const { notifyReferralCommission } = await import('./services/notification-helper');
       await notifyReferralEarning(referrerPartner[0], {
         referredUser: partnerReceivingPayout[0].username,
         commissionAmount,
         originalAmount: amount
+      });
+      
+      // Новая система уведомлений для реферальных комиссий
+      await notifyReferralCommission(referrerPartner[0].id, {
+        amount: commissionAmount.toString(),
+        currency: 'USD',
+        referralName: partnerReceivingPayout[0].username,
+        source: 'payout_commission'
       });
       
       console.log(`💰 Partner referral commission: ${commissionAmount} for ${referrerPartner[0].username} (referred ${partnerReceivingPayout[0].username})`);
@@ -4546,7 +4576,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Создана/обновлена связь партнер-оффер для ${request.partnerId} - ${request.offerId}`);
       }
 
-      // Уведомления пропускаем для простоты
+      // Отправляем уведомления через новую систему
+      try {
+        const partner = await storage.getUser(request.partnerId);
+        if (partner && offer) {
+          const { notifyOfferRequestCreated } = await import('./services/notification-helper');
+          if (status === 'approved') {
+            await notifyOfferRequestCreated(partner.id, {
+              id: requestId,
+              partnerId: request.partnerId,
+              partnerName: partner.username,
+              offerId: request.offerId,
+              offerName: offer.name,
+              message: `Заявка одобрена: ${message || 'Без комментариев'}`
+            });
+          }
+        }
+      } catch (notifyError) {
+        console.error('❌ Failed to send offer access notification:', notifyError);
+      }
+      
       console.log(`Запрос доступа ${requestId} успешно обработан`);
       
       res.json(updatedRequest);
