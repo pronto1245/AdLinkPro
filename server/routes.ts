@@ -12831,6 +12831,92 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
 
   // =================== END PARTNER TEAM MANAGEMENT ===================
 
+  // =================== TELEGRAM BOT INTEGRATION ===================
+  
+  // Webhook для получения сообщений от Telegram
+  app.post('/api/telegram/webhook', async (req, res) => {
+    try {
+      console.log('📥 Telegram webhook received:', JSON.stringify(req.body, null, 2));
+      
+      const { telegramBot } = await import('./services/telegramBot');
+      await telegramBot.handleUpdate(req.body);
+      res.status(200).json({ ok: true });
+    } catch (error) {
+      console.error('❌ Telegram webhook error:', error);
+      res.status(200).json({ ok: true }); // Всегда отвечаем 200, чтобы Telegram не ретраил
+    }
+  });
+
+  // Привязка Telegram Chat ID к пользователю
+  app.patch('/api/telegram/link', authenticateToken, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { telegramChatId } = req.body;
+      
+      if (!telegramChatId) {
+        return res.status(400).json({ error: 'telegramChatId is required' });
+      }
+
+      console.log('🔗 Linking Telegram Chat ID:', { userId, telegramChatId });
+
+      await storage.updateUser(userId, { telegramChatId: parseInt(telegramChatId) });
+      
+      // Отправляем приветственное сообщение
+      const { telegramBot } = await import('./services/telegramBot');
+      await telegramBot.sendMessage(
+        parseInt(telegramChatId),
+        '✅ <b>Аккаунт успешно привязан!</b>\n\nТеперь вы будете получать уведомления о конверсиях, fraud алертах и других важных событиях.',
+        'HTML'
+      );
+
+      res.json({ success: true, message: 'Telegram linked successfully' });
+    } catch (error) {
+      console.error('❌ Telegram link error:', error);
+      res.status(500).json({ error: 'Failed to link Telegram' });
+    }
+  });
+
+  // Тестовая отправка уведомления в Telegram
+  app.post('/api/telegram/test-notification', authenticateToken, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { type = 'conversion' } = req.body;
+      
+      console.log('🧪 Testing Telegram notification:', { userId, type });
+
+      const { telegramBot } = await import('./services/telegramBot');
+
+      if (type === 'conversion') {
+        await telegramBot.notifyConversion({
+          userId,
+          offerName: 'Test Casino Offer',
+          partnerName: 'Test Partner',
+          amount: 250,
+          currency: 'USD',
+          country: 'RU',
+          source: 'test'
+        });
+      } else if (type === 'fraud') {
+        await telegramBot.notifyFraud({
+          userId,
+          type: 'suspicious_activity',
+          description: 'Тестовое уведомление о подозрительной активности',
+          severity: 'medium',
+          ipAddress: '127.0.0.1',
+          country: 'RU'
+        });
+      } else if (type === 'report') {
+        await telegramBot.sendDailyReport(userId);
+      }
+
+      res.json({ success: true, message: 'Test notification sent' });
+    } catch (error) {
+      console.error('❌ Test notification error:', error);
+      res.status(500).json({ error: 'Failed to send test notification' });
+    }
+  });
+
+  // =================== END TELEGRAM BOT INTEGRATION ===================
 
   
   return httpServer;

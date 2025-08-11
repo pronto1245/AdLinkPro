@@ -28,8 +28,10 @@ import { nanoid } from "nanoid";
 export interface IStorage {
   // User management
   getUser(id: string): Promise<User | undefined>;
+  getUserById(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByTelegramChatId(chatId: number): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, data: Partial<InsertUser>): Promise<User>;
   getUsers(role?: string): Promise<User[]>;
@@ -677,6 +679,16 @@ export class DatabaseStorage implements IStorage {
 
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserById(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByTelegramChatId(chatId: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.telegramChatId, chatId));
     return user || undefined;
   }
 

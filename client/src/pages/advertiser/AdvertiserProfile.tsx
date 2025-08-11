@@ -120,6 +120,8 @@ export default function AdvertiserProfile() {
     sms: false
   });
 
+  const [telegramChatId, setTelegramChatId] = useState('');
+
   const { data: profile, isLoading } = useQuery({
     queryKey: ['/api/auth/me'],
     enabled: !!user
@@ -167,6 +169,15 @@ export default function AdvertiserProfile() {
         telegram: (user as any).settings?.notifications?.telegram || false,
         sms: (user as any).settings?.notifications?.sms || false
       });
+
+      setTelegramChatId((user as any).telegramChatId ? String((user as any).telegramChatId) : '');
+      
+      // Также обновляем formData с Telegram полем
+      setFormData(prev => ({
+        ...prev,
+        telegram: (user as any).telegram || '',
+        telegramChatId: (user as any).telegramChatId || null
+      }));
     }
   }, [user]);
 
@@ -325,6 +336,45 @@ export default function AdvertiserProfile() {
     }
   });
 
+  const linkTelegramMutation = useMutation({
+    mutationFn: async (chatId: string) => {
+      return apiRequest('/api/telegram/link', 'PATCH', { telegramChatId: chatId });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Telegram привязан",
+        description: "Аккаунт Telegram успешно привязан к профилю"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка привязки",
+        description: "Не удалось привязать Telegram аккаунт",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const testTelegramMutation = useMutation({
+    mutationFn: async (type: string) => {
+      return apiRequest('/api/telegram/test-notification', 'POST', { type });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Тест отправлен",
+        description: "Тестовое уведомление отправлено в Telegram"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка отправки",
+        description: "Не удалось отправить тестовое уведомление",
+        variant: "destructive"
+      });
+    }
+  });
+
   // --- HANDLERS ---
   const handleProfileSave = () => {
     updateProfileMutation.mutate(formData);
@@ -426,6 +476,22 @@ export default function AdvertiserProfile() {
     }));
   };
 
+  const handleLinkTelegram = () => {
+    if (!telegramChatId) {
+      toast({
+        title: "Ошибка",
+        description: "Введите Chat ID",
+        variant: "destructive"
+      });
+      return;
+    }
+    linkTelegramMutation.mutate(telegramChatId);
+  };
+
+  const handleTestTelegram = (type: string) => {
+    testTelegramMutation.mutate(type);
+  };
+
   const getStatusBadge = (status: 'pending' | 'verified' | 'error') => {
     const variants = {
       pending: { color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300', text: 'Ожидание' },
@@ -452,10 +518,11 @@ export default function AdvertiserProfile() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="account" data-testid="tab-account">Аккаунт</TabsTrigger>
           <TabsTrigger value="api" data-testid="tab-api">API-доступ</TabsTrigger>
-          <TabsTrigger value="domain" data-testid="tab-domain">Кастомный домен</TabsTrigger>
+          <TabsTrigger value="telegram" data-testid="tab-telegram">Telegram</TabsTrigger>
+          <TabsTrigger value="domain" data-testid="tab-domain">Домен</TabsTrigger>
           <TabsTrigger value="notifications" data-testid="tab-notifications">Уведомления</TabsTrigger>
           <TabsTrigger value="security" data-testid="tab-security">Безопасность</TabsTrigger>
         </TabsList>
@@ -671,6 +738,182 @@ export default function AdvertiserProfile() {
               <Button onClick={handleWebhookSave} data-testid="button-save-webhook">
                 Сохранить настройки Webhook
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TELEGRAM TAB */}
+        <TabsContent value="telegram" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Telegram интеграция</h2>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Подключение к Telegram боту</CardTitle>
+              <CardDescription>
+                Привяжите ваш Telegram аккаунт для получения уведомлений и управления через бота
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="telegram-chat-id">Chat ID</Label>
+                  <div className="flex space-x-2">
+                    <Input
+                      id="telegram-chat-id"
+                      value={telegramChatId}
+                      onChange={(e) => setTelegramChatId(e.target.value)}
+                      placeholder="Например: 123456789"
+                      data-testid="input-telegram-chat-id"
+                    />
+                    <Button onClick={handleLinkTelegram} disabled={linkTelegramMutation.isPending} data-testid="button-link-telegram">
+                      {linkTelegramMutation.isPending ? 'Привязка...' : 'Привязать'}
+                    </Button>
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    Получите ваш Chat ID, написав боту @userinfobot в Telegram
+                  </div>
+                </div>
+
+                {profile?.telegramChatId && (
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                      <span className="text-green-700 dark:text-green-300 font-medium">
+                        Telegram подключён (Chat ID: {profile.telegramChatId})
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {profile?.telegramChatId && (
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-medium mb-4">Тестирование уведомлений</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleTestTelegram('conversion')}
+                      disabled={testTelegramMutation.isPending}
+                      data-testid="button-test-conversion"
+                    >
+                      Тест уведомления о конверсии
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleTestTelegram('offer_alert')}
+                      disabled={testTelegramMutation.isPending}
+                      data-testid="button-test-offer-alert"
+                    >
+                      Тест алерта по офферу
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleTestTelegram('fraud_alert')}
+                      disabled={testTelegramMutation.isPending}
+                      data-testid="button-test-fraud-alert"
+                    >
+                      Тест антифрод алерта
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleTestTelegram('system_message')}
+                      disabled={testTelegramMutation.isPending}
+                      data-testid="button-test-system"
+                    >
+                      Тест системного сообщения
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Настройки Telegram уведомлений</CardTitle>
+              <CardDescription>
+                Выберите типы уведомлений для получения в Telegram
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Уведомления о конверсиях</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Получать сообщения при новых лидах и депозитах
+                    </p>
+                  </div>
+                  <Switch
+                    checked={notificationForm.telegram}
+                    onCheckedChange={(checked) =>
+                      setNotificationForm(prev => ({ ...prev, telegram: checked }))
+                    }
+                    data-testid="switch-telegram-conversions"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Антифрод алерты</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Предупреждения о подозрительной активности
+                    </p>
+                  </div>
+                  <Switch
+                    defaultChecked={true}
+                    data-testid="switch-telegram-fraud"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Системные уведомления</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Сообщения о важных изменениях в системе
+                    </p>
+                  </div>
+                  <Switch
+                    defaultChecked={true}
+                    data-testid="switch-telegram-system"
+                  />
+                </div>
+              </div>
+
+              <Button onClick={handleSaveNotifications} data-testid="button-save-telegram-settings">
+                Сохранить настройки Telegram
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Команды бота</CardTitle>
+              <CardDescription>
+                Доступные команды для управления через Telegram бота
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center py-2 border-b">
+                  <code className="bg-muted px-2 py-1 rounded text-sm">/stats</code>
+                  <span className="text-sm text-muted-foreground">Статистика по офферам</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b">
+                  <code className="bg-muted px-2 py-1 rounded text-sm">/offers</code>
+                  <span className="text-sm text-muted-foreground">Список активных офферов</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b">
+                  <code className="bg-muted px-2 py-1 rounded text-sm">/balance</code>
+                  <span className="text-sm text-muted-foreground">Текущий баланс</span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <code className="bg-muted px-2 py-1 rounded text-sm">/help</code>
+                  <span className="text-sm text-muted-foreground">Справка по командам</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

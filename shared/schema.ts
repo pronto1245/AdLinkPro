@@ -50,6 +50,7 @@ export const users: any = pgTable("users", {
   company: text("company"),
   phone: text("phone"),
   telegram: text("telegram"),
+  telegramChatId: bigint("telegram_chat_id", { mode: 'number' }),
   country: text("country"),
   language: text("language").default('en'),
   timezone: text("timezone").default('UTC'),
