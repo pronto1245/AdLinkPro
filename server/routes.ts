@@ -2126,6 +2126,218 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Статистика реферальной программы для рекламодателя
+  app.get("/api/advertiser/referral-stats", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      
+      // Получаем всех партнеров, приглашенных к этому рекламодателю
+      const referredPartners = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          referralCode: users.referralCode,
+          createdAt: users.createdAt,
+          referrerInfo: {
+            id: sql<string>`referrer.id`,
+            username: sql<string>`referrer.username`,
+            email: sql<string>`referrer.email`
+          }
+        })
+        .from(users)
+        .leftJoin(sql`${users} as referrer`, eq(users.referredBy, sql`referrer.id`))
+        .where(and(
+          eq(users.role, 'affiliate'),
+          eq(users.ownerId, authUser.id),
+          isNotNull(users.referredBy)
+        ))
+        .orderBy(desc(users.createdAt));
+
+      // Получаем статистику комиссий за реферальную программу
+      const commissionStats = await db
+        .select({
+          totalCommissions: sum(referralCommissions.commissionAmount),
+          totalTransactions: count(referralCommissions.id),
+          paidCommissions: sum(sql`CASE WHEN ${referralCommissions.status} = 'paid' THEN ${referralCommissions.commissionAmount} ELSE 0 END`),
+          pendingCommissions: sum(sql`CASE WHEN ${referralCommissions.status} = 'pending' THEN ${referralCommissions.commissionAmount} ELSE 0 END`)
+        })
+        .from(referralCommissions)
+        .where(
+          inArray(referralCommissions.referredUserId, 
+            db.select({ id: users.id })
+              .from(users)
+              .where(and(
+                eq(users.role, 'affiliate'),
+                eq(users.ownerId, authUser.id),
+                isNotNull(users.referredBy)
+              ))
+          )
+        );
+
+      // Детальная история комиссий
+      const commissionHistory = await db
+        .select({
+          id: referralCommissions.id,
+          amount: referralCommissions.commissionAmount,
+          rate: referralCommissions.commissionRate,
+          originalAmount: referralCommissions.originalAmount,
+          status: referralCommissions.status,
+          createdAt: referralCommissions.createdAt,
+          paidAt: referralCommissions.paidAt,
+          referrer: {
+            id: sql<string>`referrer.id`,
+            username: sql<string>`referrer.username`,
+            email: sql<string>`referrer.email`
+          },
+          referredUser: {
+            id: sql<string>`referred.id`,
+            username: sql<string>`referred.username`,
+            email: sql<string>`referred.email`
+          }
+        })
+        .from(referralCommissions)
+        .leftJoin(sql`${users} as referrer`, eq(referralCommissions.referrerId, sql`referrer.id`))
+        .leftJoin(sql`${users} as referred`, eq(referralCommissions.referredUserId, sql`referred.id`))
+        .where(
+          inArray(referralCommissions.referredUserId, 
+            db.select({ id: users.id })
+              .from(users)
+              .where(and(
+                eq(users.role, 'affiliate'),
+                eq(users.ownerId, authUser.id),
+                isNotNull(users.referredBy)
+              ))
+          )
+        )
+        .orderBy(desc(referralCommissions.createdAt))
+        .limit(100);
+
+      const stats = commissionStats[0] || {
+        totalCommissions: '0.00',
+        totalTransactions: 0,
+        paidCommissions: '0.00',
+        pendingCommissions: '0.00'
+      };
+
+      res.json({
+        referredPartners: referredPartners.map(partner => ({
+          ...partner,
+          referrerInfo: partner.referrerInfo.id ? partner.referrerInfo : null
+        })),
+        commissionStats: {
+          totalCommissions: Number(stats.totalCommissions || 0).toFixed(2),
+          totalTransactions: Number(stats.totalTransactions || 0),
+          paidCommissions: Number(stats.paidCommissions || 0).toFixed(2),
+          pendingCommissions: Number(stats.pendingCommissions || 0).toFixed(2)
+        },
+        commissionHistory: commissionHistory.map(commission => ({
+          ...commission,
+          amount: Number(commission.amount).toFixed(2),
+          originalAmount: Number(commission.originalAmount).toFixed(2),
+          rate: Number(commission.rate).toFixed(2)
+        }))
+      });
+
+    } catch (error) {
+      console.error('Error fetching advertiser referral stats:', error);
+      res.status(500).json({ error: 'Failed to fetch referral statistics' });
+    }
+  });
+
+  // Детальная статистика реферальной программы для партнера
+  app.get("/api/partner/referral-details", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      
+      // Получаем всех пользователей, приглашенных этим партнером
+      const referredUsers = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          role: users.role,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          company: users.company,
+          createdAt: users.createdAt,
+          lastLoginAt: users.lastLoginAt,
+          isActive: users.isActive,
+          status: users.status
+        })
+        .from(users)
+        .where(eq(users.referredBy, authUser.id))
+        .orderBy(desc(users.createdAt));
+
+      // Получаем историю всех комиссий этого партнера
+      const commissionHistory = await db
+        .select({
+          id: referralCommissions.id,
+          amount: referralCommissions.commissionAmount,
+          rate: referralCommissions.commissionRate,
+          originalAmount: referralCommissions.originalAmount,
+          status: referralCommissions.status,
+          createdAt: referralCommissions.createdAt,
+          paidAt: referralCommissions.paidAt,
+          transactionId: referralCommissions.transactionId,
+          referredUser: {
+            id: sql<string>`referred.id`,
+            username: sql<string>`referred.username`,
+            email: sql<string>`referred.email`,
+            role: sql<string>`referred.role`
+          }
+        })
+        .from(referralCommissions)
+        .leftJoin(sql`${users} as referred`, eq(referralCommissions.referredUserId, sql`referred.id`))
+        .where(eq(referralCommissions.referrerId, authUser.id))
+        .orderBy(desc(referralCommissions.createdAt))
+        .limit(200);
+
+      // Статистика по статусам комиссий
+      const commissionStats = await db
+        .select({
+          totalEarned: sum(referralCommissions.commissionAmount),
+          totalTransactions: count(referralCommissions.id),
+          paidAmount: sum(sql`CASE WHEN ${referralCommissions.status} = 'paid' THEN ${referralCommissions.commissionAmount} ELSE 0 END`),
+          pendingAmount: sum(sql`CASE WHEN ${referralCommissions.status} = 'pending' THEN ${referralCommissions.commissionAmount} ELSE 0 END`)
+        })
+        .from(referralCommissions)
+        .where(eq(referralCommissions.referrerId, authUser.id));
+
+      const stats = commissionStats[0] || {
+        totalEarned: '0.00',
+        totalTransactions: 0,
+        paidAmount: '0.00',
+        pendingAmount: '0.00'
+      };
+
+      res.json({
+        referralCode: authUser.referralCode,
+        referredUsers: referredUsers,
+        commissionHistory: commissionHistory.map(commission => ({
+          ...commission,
+          amount: Number(commission.amount).toFixed(2),
+          originalAmount: Number(commission.originalAmount).toFixed(2),
+          rate: Number(commission.rate).toFixed(2)
+        })),
+        stats: {
+          totalReferrals: referredUsers.length,
+          activeReferrals: referredUsers.filter(u => u.isActive && u.status === 'active').length,
+          totalEarned: Number(stats.totalEarned || 0).toFixed(2),
+          totalTransactions: Number(stats.totalTransactions || 0),
+          paidAmount: Number(stats.paidAmount || 0).toFixed(2),
+          pendingAmount: Number(stats.pendingAmount || 0).toFixed(2)
+        }
+      });
+
+    } catch (error) {
+      console.error('Error fetching partner referral details:', error);
+      res.status(500).json({ error: 'Failed to fetch referral details' });
+    }
+  });
+
   // API для начисления комиссий (вызывается при выплатах)
   app.post("/api/referrals/calculate-commission", authenticateToken, async (req, res) => {
     try {
