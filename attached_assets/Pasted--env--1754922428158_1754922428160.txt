@@ -1,0 +1,203 @@
+Создать и заполнить секреты окружения в проде (а не в коде/репо).
+
+Добавить валидацию env с разными правилами для development и production.
+
+Заменить «падение сразу» на понятный preflight-лог и нормальный код выхода; включить readiness/liveness (если k8s).
+
+Для Google Cloud указать один из двух путей аутентификации: Workload Identity или GOOGLE_APPLICATION_CREDENTIALS (JSON-ключ).
+
+1) .env.example (шаблон)
+Сделай такой файл в репозитории (без реальных значений), чтобы команда и CI не гадали:
+# Core
+NODE_ENV=development
+PORT=3000
+APP_URL=http://localhost:3000
+
+# Auth
+JWT_SECRET=changeme_in_prod
+JWT_EXPIRES_IN=7d
+
+# Email
+SENDGRID_API_KEY=
+SENDGRID_FROM_EMAIL=no-reply@yourdomain.com
+
+# Tracker tokens (если вызываем их API)
+VOLUUM_TOKEN=
+KEITARO_TOKEN=
+BINOM_TOKEN=
+REDTRACK_TOKEN=
+
+# Google Cloud (выбери один способ)
+# Способ A: Workload Identity / Application Default Credentials
+GOOGLE_PROJECT_ID=
+GOOGLE_CLOUD_REGION=
+GCS_BUCKET=
+PUBSUB_TOPIC_EVENTS=
+
+# Способ B: сервисный JSON-ключ (не коммитить! положить вне репо)
+# GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcp-sa.json
+# или инлайн:
+# GOOGLE_CLOUD_CREDENTIALS_JSON={"type":"service_account", ...}
+2) Валидация env (TS, безопасная для prod)
+Подключи на старте. В деве — допускаем пустые интеграции, в проде — всё строго.
+// src/config/env.ts
+import 'dotenv/config';
+import { z } from 'zod';
+
+const base = z.object({
+  NODE_ENV: z.enum(['development','test','production']).default('development'),
+  PORT: z.coerce.number().default(3000),
+  APP_URL: z.string().url().optional(),
+
+  JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 chars'),
+  JWT_EXPIRES_IN: z.string().default('7d'),
+
+  SENDGRID_API_KEY: z.string().optional(),
+  SENDGRID_FROM_EMAIL: z.string().email().default('no-reply@example.com'),
+
+  VOLUUM_TOKEN: z.string().optional(),
+  KEITARO_TOKEN: z.string().optional(),
+  BINOM_TOKEN: z.string().optional(),
+  REDTRACK_TOKEN: z.string().optional(),
+
+  GOOGLE_PROJECT_ID: z.string().optional(),
+  GOOGLE_CLOUD_REGION: z.string().optional(),
+  GCS_BUCKET: z.string().optional(),
+  PUBSUB_TOPIC_EVENTS: z.string().optional(),
+
+  GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
+  GOOGLE_CLOUD_CREDENTIALS_JSON: z.string().optional(),
+});
+
+const parsed = base.safeParse(process.env);
+if (!parsed.success) {
+  // В деве – печатаем варнинги; в проде – валимся
+  const issues = parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('\n');
+  if (process.env.NODE_ENV === 'production') {
+    console.error('[ENV] Validation failed in production:\n' + issues);
+    process.exit(1); // чёткий выход, чтобы оркестратор не гонял бесконечно
+  } else {
+    console.warn('[ENV] Validation warnings (development):\n' + issues);
+  }
+}
+
+const env = parsed.success ? parsed.data : (process.env as any);
+
+// Доп. жёсткие проверки только для production
+if (env.NODE_ENV === 'production') {
+  const must = ['JWT_SECRET'];
+  const missing = must.filter(k => !env[k] || String(env[k]).trim() === '');
+  if (missing.length) {
+    console.error('[ENV] Missing required prod vars: ' + missing.join(', '));
+    process.exit(1);
+  }
+}
+
+export default env as z.infer<typeof base>;
+3) Безопасные заглушки в дев-режиме
+Пример: почта и внешние постбеки не ломают дев-сборку.
+// src/services/email.ts
+import env from '../config/env';
+export async function sendEmail(to: string, subj: string, html: string) {
+  if (!env.SENDGRID_API_KEY) {
+    if (env.NODE_ENV !== 'production') {
+      console.log('[DEV email]', { to, subj }); // заглушка
+      return { ok: true, dev: true };
+    }
+    throw new Error('SENDGRID_API_KEY is required in production');
+  }
+  // ... реальный вызов SendGrid
+}
+То же — для Voluum/Keitaro/Binom/Redtrack: если токена нет в dev — логируем, в prod — ошибка при конфиге.
+
+4) Google Cloud — выбери вариант
+A) Workload Identity / ADC (предпочтительно в k8s/GCE):
+
+Не нужен JSON-ключ.
+
+Установи только GOOGLE_PROJECT_ID, GCS_BUCKET, PUBSUB_TOPIC_EVENTS.
+
+Библиотеки GCP сами возьмут креды из окружения кластера.
+
+B) JSON-ключ сервисного аккаунта (Docker/k8s/VM):
+
+Помести файл в секреты контейнера, смонтируй как /secrets/gcp-sa.json.
+
+Проставь GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcp-sa.json или положи JSON в GOOGLE_CLOUD_CREDENTIALS_JSON и при старте запиши во временный файл.
+
+5) Где положить секреты (варианты)
+Docker Compose:
+.env локально, в проде — docker secrets или переменные окружения в CI.
+
+Kubernetes:
+Secret + ConfigMap, монтируй envFrom. Пример:
+apiVersion: v1
+kind: Secret
+metadata: { name: app-secrets }
+type: Opaque
+stringData:
+  JWT_SECRET: "replace-me"
+  SENDGRID_API_KEY: "sg-..."
+  VOLUUM_TOKEN: "..."
+  KEITARO_TOKEN: "..."
+  BINOM_TOKEN: "..."
+  REDTRACK_TOKEN: "..."
+  GOOGLE_PROJECT_ID: "your-project"
+  GCS_BUCKET: "your-bucket"
+  PUBSUB_TOPIC_EVENTS: "events"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: app }
+spec:
+  template:
+    spec:
+      containers:
+      - name: app
+        image: your/image:tag
+        envFrom:
+        - secretRef: { name: app-secrets }
+Netlify/Vercel/Render/Heroku:
+В консоли проекта → Settings → Environment Variables → добавь все ключи.
+
+GitHub Actions → сервер:
+Secrets в репо/организации → передай как env: в step деплоя.
+
+6) Предотвращаем «crash loop» красиво
+Текущий process.exit(1) в проде — ок, но оркестратор будет перезапускать.
+Решение: поставить readinessProbe/livenessProbe и не выпускать трафик до прохождения preflight.
+
+Пример для k8s:
+readinessProbe:
+  httpGet: { path: /healthz, port: 3000 }
+  initialDelaySeconds: 5
+  periodSeconds: 5
+livenessProbe:
+  httpGet: { path: /livez, port: 3000 }
+  initialDelaySeconds: 15
+  periodSeconds: 10
+В приложении:
+// src/http/health.ts
+import express from 'express';
+import env from '../config/env';
+const app = express();
+let ready = false;
+
+app.get('/livez', (_req,res)=>res.send('ok'));
+app.get('/healthz', (_req,res)=> ready ? res.send('ok') : res.status(503).send('not-ready'));
+
+export function setReady(v:boolean){ ready=v; }
+export default app;
+После успешной инициализации сервисов вызываем setReady(true).
+
+7) CI-валидация конфигурации (чтобы падало до деплоя)
+Добавь job в CI, который запускает ts-node src/config/env.ts с NODE_ENV=production и пустыми секретами — job должен падать, напоминая заполнить ключи на окружении (а не в репо). Это остановит невалидный релиз.
+
+8) Мини-памятка по значениям
+JWT_SECRET: 32+ случайных символа (генерируй openssl rand -base64 48).
+
+SENDGRID_API_KEY: ключ с правами mail send.
+
+VOLUUM_TOKEN / KEITARO_TOKEN / BINOM_TOKEN / REDTRACK_TOKEN: лучше хранить по рекламодателю в БД зашифрованными (KMS), а не как глобальные — но глобальный ключ для системных запросов всё равно нужен.
+
+GOOGLE_*: проект, регион, и либо ADC (Workload Identity), либо JSON-ключ.

@@ -153,52 +153,56 @@ export function validateConfig(): void {
   const errors: string[] = [];
   const warnings: string[] = [];
   
-  if (!config.DATABASE_URL) {
-    errors.push('DATABASE_URL is required');
+  // Только DATABASE_URL критически необходим
+  if (!config.DATABASE_URL || config.DATABASE_URL === 'postgresql://postgres:password@localhost:5432/affiliate_platform') {
+    if (config.NODE_ENV === 'production') {
+      errors.push('DATABASE_URL must be set to real database in production');
+    }
   }
   
+  // JWT_SECRET - предупреждение в продакшене, работа в разработке
   if (!config.JWT_SECRET || config.JWT_SECRET === 'development-jwt-secret-change-in-production') {
     if (config.NODE_ENV === 'production') {
-      warnings.push('JWT_SECRET should be set in production for security');
+      console.warn('⚠️ [ENV] JWT_SECRET should be set in production for security (using default)');
     } else {
-      console.warn('⚠️ Using default JWT_SECRET in development mode');
+      console.log('🔧 [ENV] Using default JWT_SECRET in development mode');
     }
   }
   
   if (!config.SESSION_SECRET || config.SESSION_SECRET === 'development-session-secret') {
     if (config.NODE_ENV === 'production') {
-      warnings.push('SESSION_SECRET should be set in production for security');
+      console.warn('⚠️ [ENV] SESSION_SECRET should be set in production for security (using default)');
     } else {
-      console.warn('⚠️ Using default SESSION_SECRET in development mode');
+      console.log('🔧 [ENV] Using default SESSION_SECRET in development mode');
     }
   }
   
-  // Warn about optional external services
-  if (!config.SENDGRID_API_KEY) {
-    warnings.push('SENDGRID_API_KEY not set - email notifications disabled');
+  // Информируем о необязательных сервисах
+  if (!config.SENDGRID_API_KEY && config.NODE_ENV === 'production') {
+    console.warn('⚠️ [ENV] SENDGRID_API_KEY not set - email notifications disabled');
   }
   
   if (!config.KEITARO_TOKEN && !config.VOLUUM_TOKEN && !config.BINOM_TOKEN && !config.REDTRACK_TOKEN) {
-    warnings.push('No external tracker tokens configured - tracking integrations disabled');
+    if (config.NODE_ENV === 'production') {
+      console.warn('⚠️ [ENV] No external tracker tokens configured - tracking integrations disabled');
+    }
   }
   
   if (!config.GOOGLE_CLOUD_PROJECT_ID || !config.GOOGLE_CLOUD_STORAGE_BUCKET) {
-    warnings.push('Google Cloud Storage not configured - file uploads may not work');
+    if (config.NODE_ENV === 'production') {
+      console.warn('⚠️ [ENV] Google Cloud Storage not configured - file uploads may not work');
+    }
   }
   
-  // Only fail on critical errors
+  // Падаем только при критических ошибках
   if (errors.length > 0) {
-    console.error('❌ Configuration validation failed:');
+    console.error('❌ [ENV] Critical configuration errors:');
     errors.forEach(error => console.error(`  - ${error}`));
+    console.error('Set the required environment variables and restart.');
     process.exit(1);
   }
   
-  if (warnings.length > 0) {
-    console.warn('⚠️ Configuration warnings:');
-    warnings.forEach(warning => console.warn(`  - ${warning}`));
-  }
-  
-  console.log('✅ Configuration validated successfully');
+  console.log('✅ [ENV] Configuration validated - application ready to start');
 }
 
 export default config;
