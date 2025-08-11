@@ -32,51 +32,30 @@ export const requireRole = (roles: string[]) => {
 
 // Главный middleware для аутентификации
 export const authenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-  console.log('🚨🚨🚨 MAIN AUTH MIDDLEWARE CALLED 🚨🚨🚨');
-  console.log('=== AUTHENTICATING TOKEN (DEBUG MODE) ===');
-  console.log('Request method:', req.method, 'URL:', req.url);
-  console.log('Headers:', JSON.stringify(req.headers, null, 2));
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  console.log('Auth header present:', !!authHeader);
-  console.log('Auth header value:', authHeader);
-  console.log('Token present:', !!token);
-  if (token) {
-    console.log('Token first 20 chars:', token.substring(0, 20) + '...');
-    console.log('Token full length:', token.length);
-  }
 
   if (!token) {
-    console.log('No token provided - returning 401');
-    res.setHeader('X-Auth-Error', 'token-missing');
     res.status(401).json({ error: 'Authentication required', code: 'TOKEN_MISSING' });
     return;
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    console.log('JWT decoded successfully:', decoded);
-    console.log('JWT_SECRET used for verification:', JWT_SECRET);
-    
     const userId = decoded.userId || decoded.id;
-    console.log('Extracted userId:', userId);
     
     if (!userId) {
-      console.log('No userId found in token - returning 403');
       res.sendStatus(403);
       return;
     }
     
     const user = await storage.getUser(userId);
-    console.log('User lookup result:', user ? `Found: ${user.username}` : 'Not found');
     
     if (!user) {
-      console.log('User not found for ID:', userId, '- returning 403');
       res.sendStatus(403);
       return;
     }
     
-    console.log('User authenticated successfully:', user.username, 'Role:', user.role);
     req.user = {
       id: user.id,
       username: user.username,
@@ -84,13 +63,9 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
       role: user.role,
       ownerId: user.ownerId
     };
-    console.log('=== AUTH MIDDLEWARE SUCCESS ===');
     next();
   } catch (error) {
-    console.log('JWT verification error:', error);
-    console.log('Error type:', error.constructor.name);
-    console.log('Error message:', error.message);
-    console.log('=== AUTH MIDDLEWARE FAILED ===');
+    console.error('JWT verification failed:', error.message);
     res.sendStatus(403);
   }
 };

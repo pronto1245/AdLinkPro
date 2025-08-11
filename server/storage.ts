@@ -1309,6 +1309,55 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(postbacks).where(eq(postbacks.userId, userId));
   }
 
+  // NEW POSTBACK PROFILES SYSTEM - WORKING VERSION
+  async getPostbackProfiles(ownerId: string, ownerScope?: string): Promise<PostbackProfile[]> {
+    console.log('🚀 getPostbackProfiles WORKING METHOD called with:', { ownerId, ownerScope });
+    
+    try {
+      const conditions = [eq(postbackProfiles.ownerId, ownerId)];
+      
+      if (ownerScope) {
+        conditions.push(eq(postbackProfiles.ownerScope, ownerScope as any));
+      }
+      
+      const result = await db.select().from(postbackProfiles).where(and(...conditions));
+      console.log('✅ Found postback profiles:', result.length);
+      return result;
+    } catch (error) {
+      console.error('❌ Error getting postback profiles:', error);
+      return [];
+    }
+  }
+
+  async getPostbackDeliveries(profileId?: string, status?: string): Promise<PostbackDelivery[]> {
+    console.log('🚀 getPostbackDeliveries WORKING METHOD called with:', { profileId, status });
+    
+    try {
+      const conditions = [];
+      
+      if (profileId) {
+        conditions.push(eq(postbackDeliveries.profileId, profileId));
+      }
+      
+      if (status) {
+        conditions.push(eq(postbackDeliveries.status, status as any));
+      }
+      
+      let query = db.select().from(postbackDeliveries);
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+      
+      const result = await query.orderBy(desc(postbackDeliveries.createdAt));
+      console.log('✅ Found postback deliveries:', result.length);
+      return result;
+    } catch (error) {
+      console.error('❌ Error getting postback deliveries:', error);
+      return [];
+    }
+  }
+
   async createPostback(postback: InsertPostback): Promise<Postback> {
     const [newPostback] = await db
       .insert(postbacks)
@@ -6147,6 +6196,10 @@ class MemStorage implements IStorage {
     return `https://track.example.com/click?${baseParams.toString()}`;
   }
 
+  // DELETED OLD CONFLICTING METHOD - KEEPING ONLY VERSION AT LINE 1316
+
+  // DELETED OLD CONFLICTING METHOD - KEEPING ONLY VERSION AT LINE 1335
+
   // New tracking system implementation
   async recordClick(clickData: InsertClick): Promise<Click> {
     const [click] = await db.insert(clicks).values(clickData).returning();
@@ -6167,17 +6220,6 @@ class MemStorage implements IStorage {
     return await db.select().from(events).where(eq(events.clickid, clickid));
   }
 
-  // Postback profiles management
-  async getPostbackProfiles(ownerId: string, ownerScope?: string): Promise<PostbackProfile[]> {
-    let query = db.select().from(postbackProfiles).where(eq(postbackProfiles.ownerId, ownerId));
-    
-    if (ownerScope) {
-      query = query.where(eq(postbackProfiles.ownerScope, ownerScope as any));
-    }
-    
-    return await query;
-  }
-
   async createPostbackProfile(profile: InsertPostbackProfile): Promise<PostbackProfile> {
     const [newProfile] = await db.insert(postbackProfiles).values(profile).returning();
     return newProfile;
@@ -6196,24 +6238,10 @@ class MemStorage implements IStorage {
     await db.delete(postbackProfiles).where(eq(postbackProfiles.id, id));
   }
 
-  // Postback delivery management
+  // Postback delivery management (other methods)
   async recordPostbackDelivery(delivery: InsertPostbackDelivery): Promise<PostbackDelivery> {
     const [newDelivery] = await db.insert(postbackDeliveries).values(delivery).returning();
     return newDelivery;
-  }
-
-  async getPostbackDeliveries(profileId?: string, status?: string): Promise<PostbackDelivery[]> {
-    let query = db.select().from(postbackDeliveries);
-    
-    if (profileId) {
-      query = query.where(eq(postbackDeliveries.profileId, profileId));
-    }
-    
-    if (status) {
-      query = query.where(eq(postbackDeliveries.status, status as any));
-    }
-    
-    return await query.orderBy(desc(postbackDeliveries.createdAt));
   }
 
   async updatePostbackDelivery(id: string, data: Partial<InsertPostbackDelivery>): Promise<PostbackDelivery> {

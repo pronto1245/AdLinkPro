@@ -1,0 +1,34 @@
+{
+  "login": "Войти",
+  "username": "Имя пользователя",
+  "email": "Email",
+  "password": "Пароль",
+  "sign_in": "Войти в систему",
+  "navigation": {
+    "partner": "Партнер",
+    "offers": "Предложения",
+    "statistics": "Статистика",
+    "finances": "Финансы",
+    "profile": "Профиль"
+  },
+  "common": {
+    "theme": "Тема",
+    "amount": "Сумма",
+    "currency": "Валюта",
+    "status": "Статус",
+    "actions": "Действия",
+    "loading": "Загрузка..."
+  },
+  "offers": {
+    "gambling": "Гэмблинг",
+    "dating": "Знакомства", 
+    "finance": "Финансы",
+    "crypto": "Криптовалюты",
+    "health": "Здоровье",
+    "software": "Программное обеспечение",
+    "cpa": "CPA",
+    "cpl": "CPL",
+    "cps": "CPS",
+    "cpm": "CPM"
+  }
+}

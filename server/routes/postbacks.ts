@@ -9,11 +9,26 @@ const router = Router();
 // Get postback profiles for current user
 router.get('/profiles', authenticateToken, async (req, res) => {
   try {
-    const { userId, role } = req.user;
+    console.log('🔍 Storage object keys:', Object.keys(storage));
+    console.log('🔍 Storage prototype methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(storage)));
+    
+    const { id, role } = req.user;
+    const userId = id; // Use id field as userId
     const ownerScope = role === 'super_admin' ? 'owner' : role === 'advertiser' ? 'advertiser' : 'partner';
     
-    const profiles = await storage.getPostbackProfiles(userId, ownerScope);
-    res.json(profiles);
+    console.log('📋 Calling getPostbackProfiles with:', { userId, ownerScope });
+    
+    // Проверяем существует ли метод
+    console.log('🔍 Method exists:', typeof storage.getPostbackProfiles === 'function');
+    
+    if (typeof storage.getPostbackProfiles === 'function') {
+      const profiles = await storage.getPostbackProfiles(userId, ownerScope);
+      res.json(profiles);
+    } else {
+      console.error('❌ getPostbackProfiles method not found on storage object');
+      console.error('Available methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(storage)).filter(name => name.includes('Postback')));
+      res.status(500).json({ error: 'Method not implemented' });
+    }
   } catch (error) {
     console.error('Get postback profiles error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -23,7 +38,8 @@ router.get('/profiles', authenticateToken, async (req, res) => {
 // Create postback profile
 router.post('/profiles', authenticateToken, async (req, res) => {
   try {
-    const { userId, role } = req.user;
+    const { id, role } = req.user;
+    const userId = id;
     const ownerScope = role === 'super_admin' ? 'owner' : role === 'advertiser' ? 'advertiser' : 'partner';
     
     const profileData = insertPostbackProfileSchema.parse({
@@ -83,14 +99,20 @@ router.delete('/profiles/:id', authenticateToken, async (req, res) => {
 // Get postback deliveries
 router.get('/deliveries', authenticateToken, async (req, res) => {
   try {
+    console.log('🔍 Checking storage for getPostbackDeliveries method');
+    
     const { profileId, status } = req.query;
     
-    const deliveries = await storage.getPostbackDeliveries(
-      profileId as string,
-      status as string
-    );
-    
-    res.json(deliveries);
+    if (typeof storage.getPostbackDeliveries === 'function') {
+      const deliveries = await storage.getPostbackDeliveries(
+        profileId as string,
+        status as string
+      );
+      res.json(deliveries);
+    } else {
+      console.error('❌ getPostbackDeliveries method not found on storage object');
+      res.status(500).json({ error: 'Method not implemented' });
+    }
   } catch (error) {
     console.error('Get postback deliveries error:', error);
     res.status(500).json({ error: 'Internal server error' });
