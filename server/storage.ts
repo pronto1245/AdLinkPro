@@ -642,7 +642,7 @@ export class DatabaseStorage implements IStorage {
     return null;
   }
 
-  async deletePostbackProfile(id: string): Promise<boolean> {
+  async deletePostbackProfile(id: string): Promise<void> {
     console.log('🗑️ deletePostbackProfile called with:', id);
     
     try {
@@ -654,7 +654,7 @@ export class DatabaseStorage implements IStorage {
       `));
       if (result.rows && result.rows.length > 0) {
         console.log('🗑️ Profile deleted from database successfully');
-        return true;
+        return;
       }
     } catch (error) {
       console.error('❌ Error deleting from database:', error);
@@ -666,7 +666,7 @@ export class DatabaseStorage implements IStorage {
       console.log('🗑️ Found profile in memory, deleting...');
       this.createdPostbackProfiles.splice(createdIndex, 1);
       console.log('🗑️ Profile deleted from memory successfully');
-      return true;
+      return;
     }
 
     // Проверяем в демо профилях (временно удаляем, но они вернутся при перезагрузке)
@@ -675,11 +675,10 @@ export class DatabaseStorage implements IStorage {
       console.log('🗑️ Found profile in demo profiles, deleting temporarily...');
       this.demoPostbackProfiles.splice(demoIndex, 1);
       console.log('🗑️ Demo profile deleted temporarily');
-      return true;
+      return;
     }
 
     console.log('❌ Profile not found for deletion:', id);
-    return false;
   }
 
   async getUser(id: string): Promise<User | undefined> {
