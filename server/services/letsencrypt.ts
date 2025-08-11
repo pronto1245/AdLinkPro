@@ -14,10 +14,8 @@ export class LetsEncryptService {
       // Генерируем ключ аккаунта или загружаем существующий
       this.accountKey = await this.getOrCreateAccountKey();
       
-      // Создаем ACME клиент (staging для тестов, production для реальных сертификатов)
-      const directoryUrl = process.env.NODE_ENV === 'production' 
-        ? acme.directory.letsencrypt.production
-        : acme.directory.letsencrypt.staging;
+      // Используем только production API для реальных SSL сертификатов
+      const directoryUrl = acme.directory.letsencrypt.production;
 
       this.client = new acme.Client({
         directoryUrl,
@@ -27,7 +25,7 @@ export class LetsEncryptService {
       // Создаем аккаунт если его нет
       await this.createAccount();
       
-      console.log('✅ Let\'s Encrypt ACME клиент инициализирован');
+      console.log('✅ Let\'s Encrypt ACME клиент инициализирован (Production API)');
     } catch (error) {
       console.error('❌ Ошибка инициализации Let\'s Encrypt:', error instanceof Error ? error.message : String(error));
       throw error;
@@ -127,22 +125,47 @@ export class LetsEncryptService {
         // /.well-known/acme-challenge/{httpChallenge.token} -> keyAuthorization
         await this.deployChallengeFile(httpChallenge.token, keyAuthorization);
 
+        // Даем время Let's Encrypt на проверку файла (3 секунды)
+        console.log(`⏳ Ждем 3 секунды для готовности challenge файла...`);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
         // Уведомляем Let's Encrypt о готовности
+        console.log(`📤 Уведомляем Let's Encrypt о готовности challenge для ${domain}...`);
         await this.client!.verifyChallenge(authz, httpChallenge);
         
-        // Ждем подтверждения с коротким таймаутом
+        // Ждем подтверждения с улучшенной логикой
+        console.log(`⏳ Ждем валидацию challenge для ${domain} (максимум 20 секунд)...`);
+        
         try {
-          console.log(`⏳ Ждем валидацию challenge для ${domain}...`);
-          await Promise.race([
-            this.client!.waitForValidStatus(authz),
-            new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('SSL validation timeout')), 15000)
-            )
-          ]);
-          console.log(`✅ Challenge валидирован успешно для ${domain}`);
-        } catch (timeoutError) {
-          console.warn(`⚠️ Таймаут валидации (15 сек) для ${domain}, пропускаем валидацию`);
-          // Продолжаем без ожидания - Let's Encrypt валидирует в фоне
+          // Используем более длительный таймаут но с проверками
+          const validationPromise = this.client!.waitForValidStatus(authz);
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Validation timeout')), 20000)
+          );
+          
+          await Promise.race([validationPromise, timeoutPromise]);
+          console.log(`✅ Challenge успешно валидирован для ${domain}`);
+          
+        } catch (error) {
+          console.warn(`⚠️ Таймаут или ошибка валидации для ${domain}, проверяем статус...`);
+          
+          // Проверяем финальный статус авторизации
+          const finalAuthz = await this.client!.getAuthorization(authz);
+          console.log(`📋 Финальный статус авторизации: ${finalAuthz.status}`);
+          
+          if (finalAuthz.status !== 'valid') {
+            // Проверяем детали ошибки
+            if (finalAuthz.challenges) {
+              for (const challenge of finalAuthz.challenges) {
+                if (challenge.error) {
+                  console.error(`❌ Ошибка challenge: ${JSON.stringify(challenge.error)}`);
+                }
+              }
+            }
+            throw new Error(`Challenge validation failed: ${finalAuthz.status}`);
+          }
+          
+          console.log(`✅ Авторизация в итоге действительна для ${domain}`);
         }
         
         // Удаляем challenge файл
@@ -154,23 +177,36 @@ export class LetsEncryptService {
         commonName: domain
       });
 
-      // Финализируем заказ с таймаутом
+      // Финализируем заказ с проверкой статуса
       console.log(`🔄 Финализируем заказ сертификата для ${domain}...`);
-      await Promise.race([
-        this.client!.finalizeOrder(order, csr),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Order finalization timeout')), 30000)
-        )
-      ]);
+      try {
+        await Promise.race([
+          this.client!.finalizeOrder(order, csr),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Order finalization timeout')), 30000)
+          )
+        ]);
+        console.log(`✅ Заказ финализирован для ${domain}`);
+      } catch (error) {
+        console.error(`❌ Ошибка финализации заказа для ${domain}:`, error.message);
+        throw error;
+      }
       
-      // Получаем сертификат с таймаутом
+      // Получаем сертификат с проверкой готовности
       console.log(`📥 Получаем сертификат для ${domain}...`);
-      const certificate = await Promise.race([
-        this.client!.getCertificate(order),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Certificate retrieval timeout')), 30000)
-        )
-      ]) as string;
+      let certificate: string;
+      try {
+        certificate = await Promise.race([
+          this.client!.getCertificate(order),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Certificate retrieval timeout')), 30000)
+          )
+        ]) as string;
+        console.log(`✅ Сертификат получен для ${domain}`);
+      } catch (error) {
+        console.error(`❌ Ошибка получения сертификата для ${domain}:`, error.message);
+        throw error;
+      }
 
       // Сохраняем сертификат в базу
       const validUntil = new Date();
@@ -190,8 +226,7 @@ export class LetsEncryptService {
         })
         .where(eq(customDomains.id, domainId));
 
-      console.log(`✅ Реальный SSL сертификат успешно выдан для ${domain}`);
-
+      console.log(`🎉 SSL сертификат успешно выдан для ${domain}`);
       return {
         success: true,
         certificate,
