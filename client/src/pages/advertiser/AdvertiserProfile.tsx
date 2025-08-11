@@ -183,10 +183,7 @@ export default function AdvertiserProfile() {
   // --- MUTATIONS ---
   const updateProfileMutation = useMutation({
     mutationFn: async (data: Partial<AdvertiserProfile>) => {
-      return apiRequest('/api/advertiser/profile', {
-        method: 'PATCH',
-        body: data
-      });
+      return apiRequest('/api/advertiser/profile', 'PATCH', data);
     },
     onSuccess: () => {
       toast({
@@ -310,10 +307,7 @@ export default function AdvertiserProfile() {
 
   const updateNotificationsMutation = useMutation({
     mutationFn: async (notificationsData: { email: boolean; telegram: boolean; sms: boolean }) => {
-      return apiRequest('/api/advertiser/profile/notifications', {
-        method: 'PATCH',
-        body: { notifications: notificationsData }
-      });
+      return apiRequest('/api/advertiser/profile/notifications', 'PATCH', { notifications: notificationsData });
     },
     onSuccess: () => {
       toast({
