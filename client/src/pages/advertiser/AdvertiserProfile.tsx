@@ -974,34 +974,7 @@ export default function AdvertiserProfile() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Команды бота</CardTitle>
-              <CardDescription>
-                Доступные команды для управления через Telegram бота
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b">
-                  <code className="bg-muted px-2 py-1 rounded text-sm">/stats</code>
-                  <span className="text-sm text-muted-foreground">Статистика по офферам</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b">
-                  <code className="bg-muted px-2 py-1 rounded text-sm">/offers</code>
-                  <span className="text-sm text-muted-foreground">Список активных офферов</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b">
-                  <code className="bg-muted px-2 py-1 rounded text-sm">/balance</code>
-                  <span className="text-sm text-muted-foreground">Текущий баланс</span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <code className="bg-muted px-2 py-1 rounded text-sm">/help</code>
-                  <span className="text-sm text-muted-foreground">Справка по командам</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+
         </TabsContent>
 
         {/* DOMAIN TAB */}
