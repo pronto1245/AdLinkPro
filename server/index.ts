@@ -31,11 +31,17 @@ app.use((req, res, next) => {
     return next();
   }
   
-  // В production режиме принудительно редиректим на HTTPS
-  if (process.env.NODE_ENV === 'production' && req.header('x-forwarded-proto') !== 'https') {
-    console.log(`🔒 HTTPS редирект: ${req.get('host')}${req.url}`);
-    return res.redirect(301, `https://${req.get('host')}${req.url}`);
+  // Принудительный HTTPS редирект для custom доменов
+  const host = req.get('host') || '';
+  const isCustomDomain = !host.includes('replit') && !host.includes('localhost') && host !== '127.0.0.1';
+  const isHttps = req.header('x-forwarded-proto') === 'https' || req.secure;
+  
+  if (isCustomDomain && !isHttps) {
+    console.log(`🔒 HTTPS редирект для ${host}: ${req.url}`);
+    return res.redirect(301, `https://${host}${req.url}`);
   }
+  
+  console.log(`📡 Запрос: ${host}${req.url} | Custom: ${isCustomDomain} | HTTPS: ${isHttps}`);
   
   next();
 });
