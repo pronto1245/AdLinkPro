@@ -114,8 +114,8 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 минут кеширования
-      gcTime: 10 * 60 * 1000, // 10 минут в кеше (новый API)
+      staleTime: 30 * 1000, // 30 секунд для живых данных
+      gcTime: 5 * 60 * 1000, // 5 минут в кеше (более быстрое обновление)
       retry: (failureCount, error: any) => {
         // Не повторяем при 4xx ошибках
         if (error?.message?.includes('4')) return false;
