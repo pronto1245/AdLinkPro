@@ -19,11 +19,7 @@ export async function apiRequest(
   // Убираем лишние логи для чистоты консоли
 
   if (typeof method !== 'string') {
-    console.error('❌ INVALID METHOD IN apiRequest:', {
-      method,
-      methodType: typeof method,
-      stack: new Error().stack
-    });
+    // Тихо обрабатываем неверный тип метода
     throw new Error(`Invalid method in apiRequest: ${typeof method}. Expected string, got ${typeof method}`);
   }
 

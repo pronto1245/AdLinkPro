@@ -106,7 +106,7 @@ export function CreativeUploader({
         
         if (!uploadResponse.ok) {
           const errorText = await uploadResponse.text();
-          console.error('Upload URL error:', errorText);
+          // Тихо обрабатываем ошибки загрузки URL
           throw new Error(`Failed to get upload URL: ${uploadResponse.status}`);
         }
 
@@ -162,7 +162,7 @@ export function CreativeUploader({
       }, 2000);
 
     } catch (error) {
-      console.error('❌ Ошибка загрузки:', error);
+      // Тихо обрабатываем ошибки загрузки
       setUploadProgress(0);
       toast({
         title: "❌ Ошибка загрузки",

@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       setUser(data.user);
     } catch (error) {
-      console.error('Login error:', error);
+      // Ошибки логина обрабатываются в UI
       throw error;
     }
   };

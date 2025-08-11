@@ -151,7 +151,7 @@ const LandingPagesCard = ({
       setTransformedUrls(prev => ({ ...prev, [landing.id]: transformedUrl }));
       return transformedUrl;
     } catch (error) {
-      console.error('Failed to transform landing URL:', error);
+      // Тихо обрабатываем ошибки трансформации URL
       return landing.url; // Fallback to original
     } finally {
       setLoading(prev => ({ ...prev, [landing.id]: false }));
@@ -636,7 +636,7 @@ export default function OfferDetails() {
         description: "ZIP-архив с креативами готов к использованию",
       });
     } catch (error) {
-      console.error('Download error:', error);
+      // Тихо обрабатываем ошибки скачивания
       toast({
         title: "Ошибка скачивания",
         description: "Не удалось скачать креативы",

@@ -83,7 +83,7 @@ export default function AdvertiserNotifications() {
       });
     },
     onError: (error: any) => {
-      console.error('❌ Ошибка отметки как прочитанное:', error);
+      // Тихо обрабатываем ошибки отметки как прочитанное
       toast({
         title: "❌ Ошибка",
         description: error.message || "Не удалось отметить уведомление",
@@ -124,7 +124,7 @@ export default function AdvertiserNotifications() {
       });
     },
     onError: (error: any) => {
-      console.error('❌ Ошибка удаления:', error);
+      // Тихо обрабатываем ошибки удаления
       toast({
         title: "❌ Ошибка",
         description: error.message || "Не удалось удалить уведомление",

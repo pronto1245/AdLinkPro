@@ -157,7 +157,7 @@ export default function PartnerLiveAnalytics() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Export failed:', error);
+      // Тихо обрабатываем ошибки экспорта
     }
   };
 

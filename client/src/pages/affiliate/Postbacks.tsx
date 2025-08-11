@@ -237,13 +237,7 @@ export function AffiliatePostbacks() {
         });
         
         if (typeof init.method !== 'string') {
-          console.error('❌ BAD METHOD TYPE:', {
-            url,
-            method: init.method,
-            methodType: typeof init.method,
-            fullInit: init,
-            stack: new Error().stack
-          });
+          // Тихо обрабатываем ошибки типа метода
           debugger; // Pause in debugger
           throw new Error(`Invalid method type: ${typeof init.method}. Expected string, got ${typeof init.method}`);
         }
@@ -307,7 +301,7 @@ export function AffiliatePostbacks() {
       }, 100);
     },
     onError: (error) => {
-      console.error('Create mutation error:', error);
+      // Тихо обрабатываем ошибки создания
       toast({ 
         title: 'Ошибка создания', 
         description: error.message,
@@ -344,7 +338,7 @@ export function AffiliatePostbacks() {
       toast({ title: 'Профиль обновлен', description: 'Постбек профиль успешно обновлен' });
     },
     onError: (error) => {
-      console.error('❌ Update mutation error:', error);
+      // Тихо обрабатываем ошибки обновления
       toast({ 
         title: 'Ошибка обновления', 
         description: error.message,
@@ -372,7 +366,7 @@ export function AffiliatePostbacks() {
         
         return result;
       } catch (error) {
-        console.error('🗑️ DELETE MUTATION - apiRequest error:', error);
+        // Тихо обрабатываем ошибки удаления
         throw new Error(`Ошибка удаления: ${(error as any).message}`);
       }
     },
@@ -392,7 +386,7 @@ export function AffiliatePostbacks() {
       }, 500);
     },
     onError: (error: any) => {
-      console.error('🗑️ DELETE MUTATION - Error:', error);
+      // Тихо обрабатываем ошибки удаления
       toast({ 
         title: t('postbacks.deleteError', 'Ошибка удаления профиля'), 
         description: `Не удалось удалить профиль: ${error.message}`,
@@ -416,7 +410,7 @@ export function AffiliatePostbacks() {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/logs'] });
     },
     onError: (error) => {
-      console.error('Test mutation error:', error);
+      // Тихо обрабатываем ошибки тестирования
       toast({ 
         title: t('postbacks.testError', 'Ошибка тестирования'), 
         description: error.message,
@@ -872,12 +866,12 @@ export function AffiliatePostbacks() {
                                 window.location.reload();
                               } else {
                                 const errorText = await deleteResponse.text();
-                                console.error('🚨 Ошибка сервера:', errorText);
+                                // Тихо обрабатываем ошибки сервера
                                 alert(`❌ Ошибка ${deleteResponse.status}: ${errorText}`);
                               }
                               
                             } catch (error) {
-                              console.error('🚨 Исключение при удалении:', error);
+                              // Тихо обрабатываем исключения при удалении
                               alert(`❌ Ошибка сети: ${(error as any).message}`);
                             }
                           }}
