@@ -60,45 +60,18 @@ export default function Support() {
   const [filterPriority, setFilterPriority] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Mock support tickets data
-  const supportTickets = [
-    {
-      id: '1',
-      subject: 'Payment not processed',
-      category: 'Finance',
-      priority: 'high',
-      status: 'open',
-      createdAt: '2024-08-04T10:30:00Z',
-      updatedAt: '2024-08-04T14:20:00Z',
-      user: { name: 'John Doe', email: 'john@example.com', role: 'affiliate' },
-      description: 'My payment has been pending for 3 days...',
-      responses: 2,
+  // Real-time support tickets from PostgreSQL database
+  const { data: supportTickets = [] } = useQuery({
+    queryKey: ['/api/admin/support/tickets'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/support/tickets', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
+      });
+      if (!response.ok) throw new Error('Ошибка загрузки тикетов поддержки');
+      return response.json();
     },
-    {
-      id: '2',
-      subject: 'Offer approval request',
-      category: 'Offers',
-      priority: 'medium',
-      status: 'in_progress',
-      createdAt: '2024-08-03T09:15:00Z',
-      updatedAt: '2024-08-04T11:45:00Z',
-      user: { name: 'Jane Smith', email: 'jane@example.com', role: 'advertiser' },
-      description: 'Need to get my new offer approved quickly...',
-      responses: 5,
-    },
-    {
-      id: '3',
-      subject: 'Account verification issue',
-      category: 'Account',
-      priority: 'low',
-      status: 'resolved',
-      createdAt: '2024-08-02T16:20:00Z',
-      updatedAt: '2024-08-03T10:30:00Z',
-      user: { name: 'Mike Johnson', email: 'mike@example.com', role: 'affiliate' },
-      description: 'Cannot verify my account documents...',
-      responses: 3,
-    },
-  ];
+    refetchInterval: 10000 // Real-time updates every 10 seconds
+  });
 
   const form = useForm<TicketFormData>({
     resolver: zodResolver(ticketSchema),

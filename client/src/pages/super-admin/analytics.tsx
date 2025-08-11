@@ -135,7 +135,7 @@ export default function Analytics() {
     { value: 'lowRoi', label: 'Низкий ROI' }
   ];
 
-  // Fetch analytics data
+  // Real-time analytics data from PostgreSQL database
   const { data: analyticsData = [], isLoading } = useQuery<AnalyticsData[]>({
     queryKey: ['/api/admin/analytics', { 
       search: searchTerm,
@@ -168,9 +168,10 @@ export default function Analytics() {
       const response = await fetch(`/api/admin/analytics?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch analytics data');
+      if (!response.ok) throw new Error('Ошибка загрузки аналитики');
       return response.json();
     },
+    refetchInterval: 30000, // Real-time updates every 30 seconds
   });
 
   // Column visibility toggle

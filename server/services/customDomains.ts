@@ -94,12 +94,34 @@ export class CustomDomainService {
 
       console.log(`⏳ Статус обновлен на pending для ${domain.domain}`);
 
-      // Для тестов всегда возвращаем успешную верификацию
-      // В продакшене заменить на реальную DNS проверку
-      let isVerified = true;
+      // Реальная DNS проверка домена
+      const dns = await import('dns').then(m => m.promises);
+      let isVerified = false;
       let errorMessage = '';
 
-      console.log(`✅ Симуляция DNS проверки для ${domain.domain} - SUCCESS`);
+      try {
+        if (domain.type === 'cname') {
+          // Проверяем CNAME запись
+          const cnameRecords = await dns.resolveCname(domain.domain);
+          const expectedCname = `${domain.domain}.arbiconnect.app`;
+          isVerified = cnameRecords.some(record => record.includes('arbiconnect.app'));
+          console.log(`🔍 CNAME проверка для ${domain.domain}: ${isVerified ? 'SUCCESS' : 'FAILED'}`);
+        } else if (domain.type === 'a_record') {
+          // Проверяем A запись
+          const aRecords = await dns.resolve4(domain.domain);
+          const expectedIp = process.env.SERVER_IP || '0.0.0.0';
+          isVerified = aRecords.includes(expectedIp);
+          console.log(`🔍 A-record проверка для ${domain.domain}: ${isVerified ? 'SUCCESS' : 'FAILED'}`);
+        }
+        
+        if (!isVerified) {
+          errorMessage = `DNS запись не найдена или неверная для ${domain.type}`;
+        }
+      } catch (error: any) {
+        console.error(`❌ DNS ошибка для ${domain.domain}:`, error.message);
+        isVerified = false;
+        errorMessage = error.message;
+      }
 
       // Обновляем статус домена
       const newStatus: 'verified' | 'error' = isVerified ? 'verified' : 'error';
@@ -175,7 +197,7 @@ export class CustomDomainService {
         throw error;
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error(`SSL issuance failed for ${domain}:`, error);
       
       // Обновляем статус на ошибку
@@ -183,7 +205,7 @@ export class CustomDomainService {
         .update(customDomains)
         .set({
           sslStatus: 'failed',
-          sslErrorMessage: (error as Error).message,
+          sslErrorMessage: error?.message || 'SSL error',
           updatedAt: new Date()
         })
         .where(eq(customDomains.id, domainId));
@@ -344,7 +366,8 @@ export class CustomDomainService {
 
         req.end();
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('SSL check failed:', error?.message);
       return { hasSSL: false };
     }
   }
