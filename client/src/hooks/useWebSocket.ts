@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useNotifications } from '@/components/NotificationToast';
 
 export interface WebSocketMessage {
-  type: 'notification' | 'offer_access_request' | 'offer_access_response' | 'system';
+  type: 'notification' | 'offer_access_request' | 'offer_access_response' | 'system' | 'auth_success' | 'ping' | 'pong';
   data: any;
   timestamp: string;
 }
@@ -126,8 +126,14 @@ export function useWebSocket() {
         });
         break;
         
+      case 'auth_success':
+        // Успешная аутентификация через WebSocket
+        console.log('WebSocket authenticated successfully');
+        break;
+        
       default:
-        console.log('Unknown message type:', message.type);
+        // Только предупреждение для действительно неизвестных типов
+        console.warn('Unknown message type:', message.type);
     }
   };
 
