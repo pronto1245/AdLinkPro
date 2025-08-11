@@ -1829,6 +1829,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/register", async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
+      const { ref } = req.query; // Реферальный код из URL параметра
       
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(userData.username as string) || 
@@ -1838,12 +1839,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "User already exists" });
       }
 
+      // Проверяем реферальный код, если передан
+      let referredBy = null;
+      if (ref) {
+        const { users } = await import('@shared/schema');
+        const { eq } = await import('drizzle-orm');
+        const { db } = await import('./db');
+        
+        const referrer = await db.select().from(users).where(eq(users.referralCode, ref as string)).limit(1);
+        if (referrer.length > 0) {
+          referredBy = referrer[0].id;
+          console.log('🔗 User referred by:', referrer[0].username, 'Code:', ref);
+        } else {
+          console.log('❌ Invalid referral code:', ref);
+        }
+      }
+
       // Hash password
       const hashedPassword = await bcrypt.hash(userData.password as string, 10);
       
       const user = await storage.createUser({
         ...userData,
         password: hashedPassword,
+        referredBy, // Добавляем ID пригласившего
       });
       
       // Send registration notification

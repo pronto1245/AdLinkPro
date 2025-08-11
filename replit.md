@@ -25,6 +25,10 @@ Platform has been comprehensively tested across all major roles and functionalit
 - **JWT Token Authentication Bug**: RESOLVED critical authentication issue where React Query mutations cached invalid tokens
 - **Notification Mark as Read**: Fixed "Mark as Read" button functionality by implementing direct localStorage token access in mutations
 - **Token Caching Issue**: Solved React Query closure problem where old tokens were cached in mutation functions
+- **Referral System Implementation**: COMPLETED full referral link system with database schema, auto-code generation, registration handling, and UI components
+- **Referral Code Auto-Generation**: New affiliate users automatically receive unique 8-character hex referral codes
+- **Referral Registration Logic**: Registration endpoint now processes ?ref= parameter to link new users to referrers
+- **Database Referral Schema**: Added referral_code, referred_by, and referral_commission fields to users table
 
 # User Preferences
 - **Language**: Russian language preferred ("отвечай на русском пожалуйста")

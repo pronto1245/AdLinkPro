@@ -683,10 +683,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    // Если создается партнер (affiliate), присваиваем ему порядковый номер
+    // Если создается партнер (affiliate), присваиваем ему порядковый номер и реферальный код
     if (insertUser.role === 'affiliate') {
       const partnerNumber = await this.getNextPartnerNumber();
       insertUser.partnerNumber = partnerNumber;
+      
+      // Генерируем уникальный реферальный код
+      if (!insertUser.referralCode) {
+        const crypto = await import('crypto');
+        insertUser.referralCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+        console.log('🔗 Generated referral code for new affiliate:', insertUser.referralCode);
+      }
     }
     
     const [user] = await db
