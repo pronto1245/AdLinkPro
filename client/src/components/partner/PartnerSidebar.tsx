@@ -13,7 +13,8 @@ import {
   ChevronRight,
   User,
   Cog,
-  Send
+  Send,
+  UserPlus
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,11 @@ const getBaseSidebarItems = (t: any): Omit<SidebarItem, 'badge'>[] => [
     title: t('navigation.team'),
     href: "/affiliate/team",
     icon: Users,
+  },
+  {
+    title: 'Рефералы',
+    href: "/affiliate/referrals",
+    icon: UserPlus,
   },
   {
     title: t('navigation.finances'),
