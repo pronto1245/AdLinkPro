@@ -3977,52 +3977,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Internal server error" });
     }
   });
-
-  // Get partner dashboard data
   app.get("/api/partner/dashboard", authenticateToken, requireRole(['affiliate']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
-      console.log('Getting partner dashboard for', authUser.id);
+      console.log('Getting clean partner dashboard for', authUser.id);
       
-      // Return demo data for partner dashboard
+      // Return clean data without any demo values 
       const dashboardData = {
         metrics: {
-          totalClicks: 1250,
-          conversions: 48,
-          revenue: 2840.50,
-          conversionRate: 3.84,
-          epc: 2.27,
-          avgOfferPayout: 59.18,
-          activeOffers: 12,
-          pendingRequests: 3
+          totalClicks: 0,
+          conversions: 0,
+          revenue: 0,
+          conversionRate: 0,
+          epc: 0,
+          avgOfferPayout: 0,
+          activeOffers: 0,
+          pendingRequests: 0
         },
         chartData: {
-          clicks: [
-            { date: "2025-08-01", value: 185 },
-            { date: "2025-08-02", value: 203 },
-            { date: "2025-08-03", value: 178 },
-            { date: "2025-08-04", value: 234 },
-            { date: "2025-08-05", value: 198 }
-          ],
-          conversions: [
-            { date: "2025-08-01", value: 7 },
-            { date: "2025-08-02", value: 9 },
-            { date: "2025-08-03", value: 6 },
-            { date: "2025-08-04", value: 12 },
-            { date: "2025-08-05", value: 8 }
-          ]
+          clicks: [],
+          conversions: []
         },
-        topOffers: [
-          { id: "1", name: "4RaBet India", category: "Gaming", clicks: 420, cr: 4.2, revenue: 580.50 },
-          { id: "2", name: "Crypto Trading", category: "Finance", clicks: 380, cr: 3.1, revenue: 720.30 },
-          { id: "3", name: "Dating VIP", category: "Dating", clicks: 250, cr: 2.8, revenue: 340.80 }
-        ],
+        topOffers: [],
         notifications: await storage.getNotificationsByUserId(authUser.id)
       };
       
       res.json(dashboardData);
     } catch (error) {
-      console.error("Get partner dashboard error:", error);
+      console.error("Get clean partner dashboard error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -8054,7 +8036,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           })
           .from(statistics);
       } catch (error) {
-        clicksResult = [{ totalClicks: 1250, totalLeads: 320, totalConversions: 85, totalRevenue: 2400 }];
+        clicksResult = [{ totalClicks: 0, totalLeads: 0, totalConversions: 0, totalRevenue: 0 }];
       }
 
       try {
@@ -9487,11 +9469,11 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         // Fallback to user balance only if financial_transactions table doesn't exist
         const summary = {
           balance: parseFloat(user.balance?.toString() || '0'),
-          pendingPayouts: 89.45,
-          totalRevenue: 772.75,
-          avgEPC: 2.45,
-          avgCR: 1.8,
-          totalPayouts: 500.00
+          pendingPayouts: 0,
+          totalRevenue: 0,
+          avgEPC: 0,
+          avgCR: 0,
+          totalPayouts: 0
         };
         res.json(summary);
       }
@@ -9516,73 +9498,9 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
 
         res.json(partnerTransactions);
       } catch (dbError) {
-        console.log('Financial transactions table issue, using mock data');
-        // Mock data based on our created transactions
-        const mockTransactions = [
-          {
-            id: 'txn_005',
-            partnerId: authUser.id,
-            type: 'commission',
-            amount: 89.45,
-            status: 'pending',
-            comment: 'Pending commission from Crypto Exchange',
-            createdAt: new Date().toISOString()
-          },
-          {
-            id: 'txn_004',
-            partnerId: authUser.id,
-            type: 'commission',
-            amount: 156.80,
-            status: 'completed',
-            comment: 'Commission from Dating App',
-            createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-          },
-          {
-            id: 'txn_003',
-            partnerId: authUser.id,
-            type: 'commission',
-            amount: 98.75,
-            status: 'completed',
-            comment: 'Commission from Forex Trading',
-            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-          },
-          {
-            id: 'txn_002',
-            partnerId: authUser.id,
-            type: 'commission',
-            amount: 182.25,
-            status: 'completed',
-            comment: 'Commission from Sports Betting',
-            createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-          },
-          {
-            id: 'txn_006',
-            partnerId: authUser.id,
-            type: 'payout',
-            amount: -500.00,
-            status: 'completed',
-            comment: 'Withdrawal to Bank Account',
-            createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
-          },
-          {
-            id: 'txn_001',
-            partnerId: authUser.id,
-            type: 'commission',
-            amount: 245.50,
-            status: 'completed',
-            comment: 'Commission from Casino Offer #1',
-            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-          },
-          {
-            id: 'txn_007',
-            partnerId: authUser.id,
-            type: 'bonus',
-            amount: 50.00,
-            status: 'completed',
-            comment: 'Weekly performance bonus',
-            createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
-          }
-        ];
+        console.log('Financial transactions table issue, using empty data');
+        // Return empty array when no data available
+        const mockTransactions = [];
         res.json(mockTransactions);
       }
     } catch (error) {
@@ -9631,36 +9549,8 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           .where(eq(financialTransactions.partnerId, authUser.id))
           .orderBy(desc(financialTransactions.createdAt));
       } catch (dbError) {
-        // Use mock data as fallback
-        transactions = [
-          {
-            id: 'txn_005',
-            partnerId: authUser.id,
-            type: 'commission',
-            amount: 89.45,
-            status: 'pending',
-            comment: 'Pending commission from Crypto Exchange',
-            createdAt: new Date().toISOString()
-          },
-          {
-            id: 'txn_004',
-            partnerId: authUser.id,
-            type: 'commission',
-            amount: 156.80,
-            status: 'completed',
-            comment: 'Commission from Dating App',
-            createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-          },
-          {
-            id: 'txn_003',
-            partnerId: authUser.id,
-            type: 'commission',
-            amount: 98.75,
-            status: 'completed',
-            comment: 'Commission from Forex Trading',
-            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-          }
-        ];
+        // Return empty array when no data available  
+        transactions = [];
       }
 
       if (format === 'csv') {

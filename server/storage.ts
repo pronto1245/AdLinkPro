@@ -4852,7 +4852,7 @@ class MemStorage implements IStorage {
     {
       id: '3',
       username: 'test_affiliate',
-      email: 'affiliate@example.com', 
+      email: 'affiliate@test.com',
       password: 'password123',
       role: 'affiliate',
       firstName: 'Тест',
@@ -4866,7 +4866,7 @@ class MemStorage implements IStorage {
       timezone: 'UTC',
       currency: 'USD',
       kycStatus: 'approved',
-      balance: '1250.00',
+      balance: '0.00',
       holdAmount: '0.00',
       registrationApproved: true,
       documentsVerified: true,
