@@ -1,0 +1,4 @@
+СКОПИРУЙТЕ ЭТОТ ТЕКСТ И СОХРАНИТЕ КАК _redirects
+
+/api/* /.netlify/functions/:splat 200
+/* /index.html 200
