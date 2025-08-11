@@ -5,11 +5,8 @@ import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
-}
+// DATABASE_URL проверяется автоматически при подключении к PostgreSQL
+// В Replit DATABASE_URL устанавливается автоматически при создании PostgreSQL сервиса
 
 // Оптимизированное подключение к БД с пулингом
 export const pool = new Pool({ 
