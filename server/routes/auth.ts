@@ -42,9 +42,13 @@ router.post('/login', async (req, res) => {
     );
 
     return res.json({
-      user: { id: user.id, username: user.username, role: user.role },
-      token,
-    });
+  success: true,
+  message: 'ok',
+  user,
+  token,
+  data: { user, token }, // на случай если фронт ждёт data.*
+});
+
   } catch (err) {
     console.error('auth/login error:', err);
     return res.status(500).json({ error: 'Internal error' });
