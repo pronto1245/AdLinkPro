@@ -31,7 +31,8 @@ export default function OffersManagement() {
   // Add global error handler for debugging
   React.useEffect(() => {
     const handler = (event: PromiseRejectionEvent) => {
-      // Тихо обрабатываем unhandled promise rejections
+      console.error('Unhandled promise rejection:', event.reason);
+      console.error('Stack trace:', event.reason?.stack);
       // Don't prevent default to see the actual error
     };
     window.addEventListener('unhandledrejection', handler);

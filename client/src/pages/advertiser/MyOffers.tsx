@@ -163,7 +163,7 @@ export default function MyOffers() {
       console.log('Статус оффера успешно изменен:', variables.status);
     },
     onError: (error) => {
-      // Тихо обрабатываем ошибки изменения статуса
+      console.error('Ошибка при изменении статуса:', error);
       // Здесь можно добавить toast уведомление об ошибке
     }
   });
@@ -266,7 +266,7 @@ export default function MyOffers() {
               console.log('Cleaned blob URL for offer:', offer.id);
             }
           } catch (error) {
-            // Тихо обрабатываем ошибки очистки blob URL
+            console.error('Failed to clean blob URL:', error);
           }
         }
       });

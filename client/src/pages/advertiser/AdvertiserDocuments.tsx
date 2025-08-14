@@ -76,7 +76,7 @@ export default function AdvertiserDocuments() {
         const response = await apiRequest('/api/advertiser/documentation');
         return response as DocumentationSection[];
       } catch (error) {
-        // Тихо обрабатываем ошибки загрузки документации
+        console.error('Failed to fetch documentation:', error);
         return [] as DocumentationSection[];
       }
     }

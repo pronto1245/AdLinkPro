@@ -1,5 +1,3 @@
-import type { Config } from 'tailwindcss'
-
 export default {
   content: [
     './client/index.html',
@@ -7,4 +5,5 @@ export default {
   ],
   theme: { extend: {} },
   plugins: [],
-} satisfies Config
+}
+

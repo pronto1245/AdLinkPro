@@ -49,7 +49,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       });
       
       if (!token || token === 'null' || token === 'undefined') {
-        // Тихо обрабатываем отсутствие токена
+        console.error('❌ No valid token in NotificationProvider');
         throw new Error('Authentication required');
       }
       
@@ -65,7 +65,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       
       if (!response.ok) {
         const errorText = await response.text();
-        // Тихо обрабатываем ошибки API
+        console.error('❌ NotificationProvider request failed:', response.status, errorText);
         throw new Error('Failed to mark notification as read');
       }
       
@@ -111,13 +111,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     
     ws.onopen = () => {
       console.log('WebSocket connected');
-      // Безопасная аутентификация с проверкой состояния
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-          type: 'auth',
-          token: localStorage.getItem('auth_token')
-        }));
-      }
+      // Аутентификация
+      ws.send(JSON.stringify({
+        type: 'auth',
+        token: localStorage.getItem('auth_token')
+      }));
     };
 
     ws.onmessage = (event) => {
@@ -134,7 +132,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
           console.log('WebSocket authenticated successfully');
         }
       } catch (error) {
-        // Тихо обрабатываем ошибки парсинга WebSocket сообщений
+        console.error('WebSocket message parse error:', error);
       }
     };
 
@@ -143,7 +141,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     };
 
     ws.onerror = (error) => {
-      // Тихо обрабатываем ошибки WebSocket подключения
+      console.error('WebSocket error:', error);
     };
 
     return () => {

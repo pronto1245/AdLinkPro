@@ -138,7 +138,7 @@ export default function AdvertiserPostbackSettings() {
       }
     },
     onError: (error: any) => {
-      // Тихо обрабатываем ошибки тестирования
+      console.error('Test error:', error);
       toast({
         title: "Ошибка",
         description: error.message || "Произошла ошибка при тестировании постбека",

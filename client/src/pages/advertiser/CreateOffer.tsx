@@ -441,7 +441,7 @@ export default function CreateOffer() {
       
       if (!response.ok) {
         const errorText = await response.text();
-        // Тихо обрабатываем ошибки API
+        console.error('❌ Ошибка API:', errorText);
         throw new Error(`Не удалось получить URL: ${response.status}`);
       }
       
@@ -454,7 +454,7 @@ export default function CreateOffer() {
         url: data.uploadURL,
       };
     } catch (error) {
-      // Тихо обрабатываем ошибки получения upload URL
+      console.error('💥 Ошибка получения upload URL:', error);
       toast({
         title: "Ошибка загрузки",
         description: "Не удалось получить URL для загрузки креативов",
@@ -488,7 +488,7 @@ export default function CreateOffer() {
         description: 'ZIP архив с креативами успешно загружен',
       });
     } else {
-      // Тихо обрабатываем неуспешную загрузку креативов
+      console.error('❌ Неуспешная загрузка креативов:', result);
       toast({
         title: 'Ошибка загрузки',
         description: 'Не удалось загрузить креативы. Попробуйте снова.',

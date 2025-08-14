@@ -30,14 +30,14 @@ export function useWebSocket() {
       ws.current = new WebSocket(wsUrl);
 
       ws.current.onopen = () => {
-        // Убрано для чистой консоли продакшена
+        console.log('WebSocket connected');
         setConnectionState('connected');
         reconnectAttempts.current = 0;
         
-        // Безопасная отправка аутентификации с проверкой состояния
+        // Отправляем аутентификацию
         const token = localStorage.getItem('auth_token');
-        if (token && ws.current?.readyState === WebSocket.OPEN) {
-          ws.current.send(JSON.stringify({
+        if (token) {
+          ws.current?.send(JSON.stringify({
             type: 'auth',
             token
           }));
@@ -49,12 +49,12 @@ export function useWebSocket() {
           const message: WebSocketMessage = JSON.parse(event.data);
           handleMessage(message);
         } catch (error) {
-          // Тихо обрабатываем ошибки парсинга сообщений
+          console.error('Error parsing WebSocket message:', error);
         }
       };
 
       ws.current.onclose = () => {
-        // Убрано для чистой консоли продакшена
+        console.log('WebSocket disconnected');
         setConnectionState('disconnected');
         
         // Попытка переподключения
@@ -68,12 +68,11 @@ export function useWebSocket() {
       };
 
       ws.current.onerror = (error) => {
-        // Тихо обрабатываем WebSocket ошибки без вывода в консоль
-        // console.error('WebSocket error:', error);
+        console.error('WebSocket error:', error);
       };
 
     } catch (error) {
-      // Тихо обрабатываем ошибки подключения WebSocket
+      console.error('Error creating WebSocket connection:', error);
       setConnectionState('disconnected');
     }
   };
@@ -129,12 +128,12 @@ export function useWebSocket() {
         
       case 'auth_success':
         // Успешная аутентификация через WebSocket
-        // Убрано для чистой консоли продакшена
+        console.log('WebSocket authenticated successfully');
         break;
         
       default:
         // Только предупреждение для действительно неизвестных типов
-        // Тихо игнорируем неизвестные типы сообщений
+        console.warn('Unknown message type:', message.type);
     }
   };
 

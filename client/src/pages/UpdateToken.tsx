@@ -24,7 +24,7 @@ export default function UpdateToken() {
       
       if (!response.ok) {
         const errorText = await response.text();
-        // Тихо обрабатываем ошибки API
+        console.error('API Error:', errorText);
         throw new Error(`Ошибка API: ${response.status}`);
       }
       
@@ -59,7 +59,7 @@ export default function UpdateToken() {
       }, 2000);
       
     } catch (error) {
-      // Тихо обрабатываем ошибки обновления токена
+      console.error('Update token error:', error);
       toast({
         title: "Ошибка",
         description: "Не удалось обновить токен",
