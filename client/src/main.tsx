@@ -1,3 +1,17 @@
+import { AuthProvider } from "./contexts/auth-context";
+
+// ...
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <ThemeProvider defaultTheme="light" storageKey="affiliate-platform-theme">
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
+  </StrictMode>
+);
 import './index.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
