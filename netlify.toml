@@ -1,5 +1,5 @@
 [build]
-  base = ""                         # из корня репозитория
+  base = ""
   command = "npm ci && npm run build:client"
   publish = "client/dist"
 
@@ -7,7 +7,7 @@
   NODE_VERSION = "20"
   VITE_API_URL = "https://central-matelda-pronto12-95b8129d.koyeb.app"
 
-# Проксируем API на Koyeb (ОБЯЗАТЕЛЬНО — первым)
+# Прокси /api на Koyeb (первым, обязательно)
 [[redirects]]
   from = "/api/*"
   to = "https://central-matelda-pronto12-95b8129d.koyeb.app/api/:splat"
