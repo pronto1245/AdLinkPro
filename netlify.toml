@@ -1,13 +1,7 @@
 [build]
-  base = "client"
-  publish = "dist"
-  command = "npm ci && npm run build"
-
-[build.environment]
-  NODE_VERSION = "20"
-  VITE_API_URL = "https://central-matelda-pronto12-95b8129d.koyeb.app"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Стартовать сборку из папки client
+base = "client"
+# Папка, которую надо публиковать (относительно base)
+publish = "dist"
+# Команда сборки (выполнится внутри client/)
+command = "npm ci && npm run build"
