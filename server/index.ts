@@ -29,3 +29,6 @@ if (fs.existsSync(publicDir)) {
   app.get('*', (_req, res) => res.sendFile(path.join(publicDir, 'index.html')));
 }
 /* --- end --- */
+
+import authRoutes from './routes/auth';
+app.use('/api/auth', authRoutes);
