@@ -4,7 +4,7 @@ services:
     env: docker
     repo: https://github.com/pronto1245/AdLinkPro
     region: frankfurt
-    plan: starter
+    plan: starter   # для web-сервиса можно оставить starter (это не БД)
     healthCheckPath: /health
     autoDeploy: true
     buildFilter:
@@ -51,5 +51,5 @@ services:
 databases:
   - name: affiliate-pro-db
     region: frankfurt
-    plan: starter
-
+    plan: basic-256mb          # ВАЖНО: не starter; актуальный план
+    postgresMajorVersion: "17" # можно убрать, если не нужно фиксировать версию
