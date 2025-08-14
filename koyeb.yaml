@@ -3,7 +3,7 @@ services:
   - name: app
     type: web
     build:
-      dockerfile: Dockerfile.koyeb.final
+      dockerfile: Dockerfile.koyeb.ultra
     ports:
       - port: 5000
         protocol: http

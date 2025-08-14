@@ -5,7 +5,7 @@ WORKDIR /app
 # Копируем package.json
 COPY package*.json ./
 
-# Устанавливаем зависимости
+# Устанавливаем ВСЕ зависимости (включая dev для tsx)
 RUN npm install
 
 # Копируем весь проект
