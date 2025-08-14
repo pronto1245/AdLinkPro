@@ -1,48 +1,39 @@
-# ---------- deps: ставим зависимости client и server ----------
+# ---------- deps ----------
 FROM node:20-alpine AS deps
 WORKDIR /app
-# Нужны тулзы для нативных модулей (на всякий случай)
 RUN apk add --no-cache python3 make g++
 
-# Копируем только манифесты, чтобы кешировалось
+# копируем только манифесты для кеша
 COPY server/package*.json server/
 COPY client/package*.json client/
 
-# Ставим зависимости отдельно в каждую часть
-RUN npm ci --prefix server
-RUN npm ci --prefix client
+# если есть package-lock.json -> npm ci, иначе -> npm install
+RUN if [ -f server/package-lock.json ]; then npm ci --prefix server; else npm install --prefix server; fi
+RUN if [ -f client/package-lock.json ]; then npm ci --prefix client; else npm install --prefix client; fi
 
-# ---------- build: собираем фронт и бэкенд ----------
+# ---------- build ----------
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# Переносим установленные node_modules
+# перенесем зависимости и дальше исходники
 COPY --from=deps /app /app
-
-# Копируем исходники
 COPY server server
 COPY client client
 COPY shared shared
 
-# (Опционально) если нужно прокинуть переменную в Vite:
-# ARG VITE_API_URL
-# ENV VITE_API_URL=${VITE_API_URL}
-
-# Сборка фронта (Vite)
+# сборка фронта и бэка
 RUN npm run build --prefix client
-
-# Сборка бэкенда (TS → JS)
 RUN npm run build --prefix server
 
-# Кладём собранный фронт туда, откуда его отдаст сервер
+# кладем собранный фронт туда, откуда его отдаст сервер
 RUN mkdir -p server/public && cp -r client/dist/* server/public/
 
-# ---------- runtime: лёгкий образ только с тем, что нужно на проде ----------
+# ---------- runtime ----------
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Копируем prod-зависимости сервера и сборки
+# только нужное на прод
 COPY --from=deps /app/server/node_modules server/node_modules
 COPY --from=build /app/server/dist server/dist
 COPY --from=build /app/server/public server/public
@@ -51,4 +42,3 @@ COPY shared shared
 
 EXPOSE 5000
 CMD ["node", "server/dist/index.js"]
-
