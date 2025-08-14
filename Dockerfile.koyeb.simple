@@ -13,11 +13,11 @@ COPY . .
 RUN echo '#!/bin/sh\nnode_modules/.bin/tsx server/index.ts' > start.sh && chmod +x start.sh
 
 # Expose port
-EXPOSE 8000
+EXPOSE 5000
 
 # Environment variables
 ENV NODE_ENV=production
-ENV PORT=8000
+ENV PORT=5000
 
 # Start with tsx directly (no build needed)
 CMD ["./start.sh"]

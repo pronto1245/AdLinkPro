@@ -47,9 +47,9 @@ koyeb auth login
 koyeb app create affiliate-marketing-platform \
   --git https://github.com/username/affiliate-pro \
   --docker-dockerfile Dockerfile.koyeb.simple \
-  --ports 8000:http \
+  --ports 5000:http \
   --env NODE_ENV=production \
-  --env PORT=8000
+  --env PORT=5000
 ```
 
 ## ⚠️ РЕШЕНИЕ ОШИБКИ BUILD:
@@ -101,7 +101,7 @@ koyeb service update app \
 DATABASE_URL=postgresql://user:pass@host:5432/db
 JWT_SECRET=your-super-secret-jwt-key  
 SESSION_SECRET=your-session-secret
-PORT=8000
+PORT=5000
 ```
 
 **Опциональные переменные:**

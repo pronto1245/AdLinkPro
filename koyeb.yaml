@@ -5,17 +5,17 @@ services:
     build:
       dockerfile: Dockerfile.koyeb.simple
     ports:
-      - port: 8000
+      - port: 5000
         protocol: http
     env:
       - key: NODE_ENV
         value: production
       - key: PORT  
-        value: "8000"
+        value: "5000"
     health_check:
       http:
         path: /api/health
-        port: 8000
+        port: 5000
     scaling:
       min: 1
       max: 1

@@ -15,11 +15,11 @@ COPY . .
 RUN npm run build
 
 # Expose port (Koyeb automatically assigns PORT)
-EXPOSE 8000
+EXPOSE 5000
 
 # Set environment
 ENV NODE_ENV=production
-ENV PORT=8000
+ENV PORT=5000
 
 # Start production server
 CMD ["npm", "start"]
