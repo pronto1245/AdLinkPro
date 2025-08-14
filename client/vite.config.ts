@@ -1,13 +1,17 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { fileURLToPath, URL } from 'node:url'
+import path from 'path'
 
 export default defineConfig({
+  root: path.resolve(__dirname),                 // корень фронта — client/
   plugins: [react()],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@': path.resolve(__dirname, 'src'),       // импорт вида "@/..."
     },
   },
-  build: { outDir: 'dist', emptyOutDir: true }
+  build: {
+    outDir: path.resolve(__dirname, 'dist'),     // итоговая папка: client/dist
+    emptyOutDir: true,
+  },
 })
