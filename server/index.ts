@@ -32,21 +32,29 @@ app.options('*', corsMw);
 // --- health ---
 app.get('/health', (_req, res) => res.status(200).json({ ok: true }));
 
-// --- API: МОНТИРУЕМ ВСЁ ---
-// auth (у тебя путь /api/auth/login уже работает — оставляем как есть)
+// --- API: монтируем всё ---
+// auth уже работает как /api/auth/login — оставляем
 app.use('/api', authRouter);
 
-// остальные роутеры
+// admin и прочие по /api/*
 app.use('/api', adminRouter);
-app.use('/api', analyticsRouter);
-app.use('/api', analyticsEnhancedRouter);
 app.use('/api', postbackRouter);
 app.use('/api', postbacksRouter);
 app.use('/api', conversionRouter);
 app.use('/api', trackingRouter);
 app.use('/api', telegramRouter);
 
-// --- static SPA из dist/public (если фронт собирается в образ) ---
+// analytics: ДВА маунта чтобы гарантировать путь /api/analytics/summary
+// 1) если в роутере пути объявлены как '/analytics/...'
+app.use('/api', analyticsRouter);
+// 2) если в роутере пути объявлены как '/summary', '/events', и т.п.
+app.use('/api/analytics', analyticsRouter);
+
+// analytics-enhanced — аналогично
+app.use('/api', analyticsEnhancedRouter);
+app.use('/api/analytics-enhanced', analyticsEnhancedRouter);
+
+// --- static SPA из dist/public (если фронт собран внутрь образа) ---
 const publicDir = path.join(__dirname, 'public');
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
