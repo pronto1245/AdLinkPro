@@ -45,27 +45,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUser = async (authToken: string) => {
     try {
-      // Убрано для чистой консоли продакшена
+      console.log('Fetching user with token:', authToken?.substring(0, 20) + '...');
       const response = await fetch('/api/auth/me', {
         headers: {
           'Authorization': `Bearer ${authToken}`,
         },
       });
       
-      // Убрано для чистой консоли продакшена
+      console.log('Auth response status:', response.status);
       
       if (response.ok) {
         const userData = await response.json();
-        // Убрано для чистой консоли продакшена
+        console.log('User data received:', userData);
         setUser(userData);
       } else {
-        // Убрано для чистой консоли продакшена
+        console.log('Auth failed, removing token');
         localStorage.removeItem('auth_token');
         setToken(null);
         setUser(null);
       }
     } catch (error) {
-      // Тихо обрабатываем ошибки загрузки пользователя
+      console.error('Error fetching user:', error);
       localStorage.removeItem('auth_token');
       setToken(null);
       setUser(null);
@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      // Убрано для чистой консоли продакшена
+      console.log('Attempting login with:', { username, password: '***' });
       
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -89,36 +89,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }),
       });
       
-      // Убрано для чистой консоли продакшена
+      console.log('Login response status:', response.status);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Login failed' }));
-        // Ошибки логина обрабатываются в UI
+        console.error('Login failed with error:', errorData);
         throw new Error(errorData.error || 'Login failed');
       }
       
       const data = await response.json();
-      // Убрано для чистой консоли продакшена
+      console.log('Login successful, user data:', data.user);
+      console.log('🔑 Token received from server:', data.token ? data.token.substring(0, 20) + '...' : 'NO_TOKEN');
       
       // CRITICAL FIX: Проверяем что токен не null перед сохранением
       if (data.token && data.token !== 'null' && data.token !== null) {
         setToken(data.token);
         localStorage.setItem('auth_token', data.token);
-        // Убрано для чистой консоли продакшена
+        console.log('✅ Token saved to localStorage successfully');
         
         // CRITICAL: Принудительно очищаем все кеши React Query после логина
         if ((window as any).queryClient) {
-          // Убрано для чистой консоли продакшена
+          console.log('🧹 Clearing React Query cache after login');
           (window as any).queryClient.clear();
         }
       } else {
-        // Ошибки с недействительным токеном обрабатываются в UI
+        console.error('❌ Invalid token received from server:', data.token);
         throw new Error('Invalid token received from server');
       }
       
       setUser(data.user);
     } catch (error) {
-      // Ошибки логина обрабатываются в UI
+      console.error('Login error:', error);
       throw error;
     }
   };
@@ -129,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // CRITICAL: Полная очистка всех токенов
     localStorage.removeItem('auth_token');
     localStorage.removeItem('token'); // старый формат
-    // Убрано для чистой консоли продакшена
+    console.log('🧹 Полная очистка токенов при выходе');
   };
 
   return (

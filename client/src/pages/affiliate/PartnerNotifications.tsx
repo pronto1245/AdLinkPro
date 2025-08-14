@@ -71,7 +71,7 @@ export default function PartnerNotifications() {
       
       const authToken = getAuthToken();
       if (!authToken) {
-        // Тихо обрабатываем отсутствие токена
+        console.error('❌ No valid auth token found');
         throw new Error('Authentication required - please re-login');
       }
       
@@ -94,7 +94,7 @@ export default function PartnerNotifications() {
         
         if (!response.ok) {
           const errorText = await response.text();
-          // Тихо обрабатываем ошибки запросов
+          console.error('❌ Request failed:', { status: response.status, error: errorText });
           throw new Error(`Failed to mark as read: ${response.status} ${response.statusText}`);
         }
         
@@ -102,7 +102,7 @@ export default function PartnerNotifications() {
         console.log('✅ Mark as read successful:', result);
         return result;
       } catch (error) {
-        // Тихо обрабатываем сетевые ошибки
+        console.error('❌ Network error in markAsRead:', error);
         throw error;
       }
     },

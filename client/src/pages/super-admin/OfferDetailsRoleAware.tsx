@@ -192,7 +192,7 @@ export default function SuperAdminOfferDetailsRoleAware() {
         description: "ZIP архив с креативами успешно скачивается",
       });
     } catch (error) {
-      // Тихо обрабатываем ошибки скачивания
+      console.error('Download error:', error);
       toast({
         title: "Ошибка скачивания",
         description: "Не удалось скачать креативы",
@@ -228,7 +228,7 @@ export default function SuperAdminOfferDetailsRoleAware() {
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/offers'] });
     },
     onError: (error) => {
-      // Тихо обрабатываем ошибки обновления креативов
+      console.error('Update creatives error:', error);
       toast({
         title: "Ошибка загрузки",
         description: "Не удалось загрузить креативы",

@@ -610,7 +610,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                                   description: "Логотип успешно загружен"
                                 });
                               } else {
-                                // Тихо обрабатываем ошибки пути логотипа
+                                console.error('Could not find uploads folder in path:', pathParts);
                                 toast({
                                   title: "Ошибка",
                                   description: "Не удалось извлечь ID логотипа из URL",
@@ -618,7 +618,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                                 });
                               }
                             } catch (error) {
-                              // Тихо обрабатываем ошибки парсинга URL логотипа
+                              console.error('Error parsing logo upload URL:', error);
                               toast({
                                 title: "Ошибка",
                                 description: "Не удалось обработать URL логотипа",
@@ -713,7 +713,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                                   description: "Изображение успешно загружено"
                                 });
                               } else {
-                                // Тихо обрабатываем ошибки пути изображения
+                                console.error('Could not find uploads folder in path:', pathParts);
                                 toast({
                                   title: "Ошибка",
                                   description: "Не удалось извлечь ID изображения из URL",
@@ -721,7 +721,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                                 });
                               }
                             } catch (error) {
-                              // Тихо обрабатываем ошибки парсинга URL изображения
+                              console.error('Error parsing image upload URL:', error);
                               toast({
                                 title: "Ошибка",
                                 description: "Не удалось обработать URL изображения",

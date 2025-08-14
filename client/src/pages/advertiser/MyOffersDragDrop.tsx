@@ -185,7 +185,7 @@ const MyOffersDragDrop: React.FC = () => {
           });
           imported++;
         } catch (error) {
-          // Тихо обрабатываем ошибки импорта строки
+          console.error('Ошибка импорта строки:', line, error);
         }
       }
       toast({

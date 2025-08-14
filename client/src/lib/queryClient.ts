@@ -16,10 +16,20 @@ export async function apiRequest(
   // CRITICAL FIX: Ensure method is always a string
   const httpMethod = typeof method === 'string' ? method : 'GET';
   
-  // Убираем лишние логи для чистоты консоли
+  console.log('🔧 apiRequest call:', {
+    url,
+    originalMethod: method,
+    methodType: typeof method,
+    finalMethod: httpMethod,
+    methodValue: JSON.stringify(method)
+  });
 
   if (typeof method !== 'string') {
-    // Тихо обрабатываем неверный тип метода
+    console.error('❌ INVALID METHOD IN apiRequest:', {
+      method,
+      methodType: typeof method,
+      stack: new Error().stack
+    });
     throw new Error(`Invalid method in apiRequest: ${typeof method}. Expected string, got ${typeof method}`);
   }
 
@@ -31,12 +41,17 @@ export async function apiRequest(
   
   // FIX: Check that token is not null string and not empty
   if (token === 'null' || token === 'undefined' || !token || token.trim() === '') {
-    // Тихо очищаем недействительные токены
+    console.log('🚨 Invalid token detected, clearing:', token);
     localStorage.removeItem('auth_token');
     token = null;
   }
   
-  // Убираем лишние логи токенов для чистоты консоли
+  console.log('🔐 apiRequest token check:', {
+    url,
+    method: httpMethod,
+    hasToken: !!token,
+    tokenStart: token ? token.substring(0, 20) + '...' : 'NO_TOKEN'
+  });
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

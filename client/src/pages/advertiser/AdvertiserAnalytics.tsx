@@ -350,7 +350,7 @@ export function AdvertiserAnalytics() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      // Тихо обрабатываем ошибки экспорта
+      console.error('Export failed:', error);
     }
   };
 
