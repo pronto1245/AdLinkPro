@@ -1,0 +1,15 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Устанавливаем зависимости
+COPY package*.json ./
+RUN npm install
+
+# Копируем весь проект
+COPY . .
+
+# Запускаем в development режиме через tsx
+EXPOSE $PORT
+
+CMD ["npm", "run", "dev"]
