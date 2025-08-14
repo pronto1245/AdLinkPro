@@ -2,10 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import path from 'node:path';
 import fs from 'node:fs';
-import analyticsRouter from './routes/analytics';
-import affiliateRouter from './routes/affiliate';
-import advertiserRouter from './routes/advertiser';
-import { requireAuth } from './middleware/auth';
 import authRouter from './routes/auth';
 
 const app = express();
@@ -39,9 +35,6 @@ app.get('/health', (_req, res) => res.status(200).json({ ok: true }));
 
 /** ----- API: auth ----- */
 app.use('/api/auth', authRouter);
-app.use('/api/analytics', requireAuth, analyticsRouter);
-app.use('/api/affiliate', requireAuth, affiliateRouter);
-app.use('/api/advertiser', requireAuth, advertiserRouter);
 
 /** ----- API: analytics summary (заглушка, чтобы не было 404) ----- */
 app.get('/api/analytics/summary', (_req, res) => {
