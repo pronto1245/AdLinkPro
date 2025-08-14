@@ -110,6 +110,86 @@ const requireUserAccess = async (req: Request, res: Response, next: NextFunction
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
+  // Health check endpoint - должен быть ПЕРВЫМ перед аутентификацией
+  app.get('/health', (req, res) => {
+    res.json({ ok: true, timestamp: new Date().toISOString() });
+  });
+
+  app.get('/api/health', (req, res) => {
+    res.json({ ok: true, timestamp: new Date().toISOString() });
+  });
+
+  // Seed test users endpoint
+  app.post('/api/users/seed', async (req, res) => {
+    try {
+      console.log('=== SEEDING TEST USERS ===');
+      
+      // Check if users already exist
+      const existingUsers = await storage.getAllUsers();
+      if (existingUsers.length > 0) {
+        console.log(`Found ${existingUsers.length} existing users`);
+        return res.json({ message: 'Users already exist', count: existingUsers.length });
+      }
+
+      // Create test users
+      const testUsers = [
+        {
+          id: randomUUID(),
+          username: 'superadmin',
+          email: 'admin@example.com',
+          password: 'password123', // Will be hashed in storage
+          role: 'super_admin',
+          firstName: 'Super',
+          lastName: 'Admin',
+          company: 'Platform Inc',
+          language: 'en',
+          isActive: true,
+          referralCode: nanoid(8)
+        },
+        {
+          id: randomUUID(),
+          username: 'advertiser1',
+          email: 'advertiser1@example.com', 
+          password: 'password123',
+          role: 'advertiser',
+          firstName: 'John',
+          lastName: 'Advertiser',
+          company: 'AdCorp LLC',
+          language: 'en',
+          isActive: true,
+          referralCode: nanoid(8)
+        },
+        {
+          id: randomUUID(),
+          username: 'affiliate1',
+          email: 'affiliate@test.com',
+          password: 'password123',
+          role: 'affiliate', 
+          firstName: 'Jane',
+          lastName: 'Partner',
+          company: 'Traffic Solutions',
+          language: 'en',
+          isActive: true,
+          referralCode: nanoid(8)
+        }
+      ];
+
+      // Create users in storage
+      for (const userData of testUsers) {
+        await storage.createUser(userData);
+        console.log(`✅ Created user: ${userData.username} (${userData.role})`);
+      }
+
+      res.json({ 
+        message: 'Test users created successfully',
+        users: testUsers.map(u => ({ username: u.username, role: u.role, email: u.email }))
+      });
+    } catch (error) {
+      console.error('Seed users error:', error);
+      res.status(500).json({ error: 'Failed to seed users' });
+    }
+  });
+
   // Import tracking and postback routes
   const trackingRoutes = await import('./routes/tracking');
   const postbackRoutes = await import('./routes/postbacks');
