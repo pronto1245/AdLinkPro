@@ -1,30 +1,32 @@
-# syntax=docker/dockerfile:1
+# --- Build stage ---
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# Нужны тулчейны для нативных модулей
+# для возможных нативных модулей
 RUN apk add --no-cache python3 make g++
 
-# Устанавливаем зависимости (если lock «сломался», откатываемся на install)
+# сперва только манифесты — кэш зависимостей
 COPY package*.json ./
-RUN npm ci || npm install
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
-# Копируем исходники и билдим
+# весь проект
 COPY . .
+
+# сборка: client (Vite) + server (esbuild -> CJS)
 RUN npm run build
 
-# Гарантируем CJS-энтрипоинт: если есть dist/index.js — переименуем в .cjs
+# если бандл сервера .js — переименуем в .cjs
 RUN [ -f dist/index.cjs ] || ( [ -f dist/index.js ] && mv dist/index.js dist/index.cjs ) || true
 
-# Оставляем только прод-зависимости для рантайма
+# отрезаем dev-зависимости
 RUN npm prune --omit=dev
 
-# --- Runner ---
+# --- Runtime stage ---
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Берём собранный код и уже «пропруденные» модули из build-слоя
+# берём собранное и node_modules из build-слоя
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 COPY package*.json ./

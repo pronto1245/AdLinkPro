@@ -50,7 +50,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
 
   body {
@@ -115,7 +115,25 @@
   }
 }
 
-/* safety-утилита на случай @apply border-border в css */
+/* safety-утилита на случай border-color: hsl(var(--border)); в css */
 @layer utilities {
   .border-border { border-color: hsl(var(--border)) }
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS-переменные для tailwind цветов */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+}
+
+/* Если кто-то делает border-color: hsl(var(--border)); — дадим такую утилиту */
+@layer utilities {
+  .border-border { border-color: hsl(var(--border)); }
 }
