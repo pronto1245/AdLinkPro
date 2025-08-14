@@ -1,55 +1,119 @@
-import path from 'node:path';
-import express from "express";
-const app = express();
-const PORT = Number(process.env.PORT) || 5000;
-
-app.get("/health", (_req, res) => res.json({ ok: true }));
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server listening on http://0.0.0.0:${PORT}`);
-});
-
-// health-check для Koyeb
-app.get('/health', (_req, res) => res.json({ ok: true }));
-
-// Раздача фронта из dist/public
-app.use(express.static(path.join(process.cwd(), 'dist', 'public')));
-app.get('*', (_req, res) => {
-  res.sendFile(path.join(process.cwd(), 'dist', 'public', 'index.html'));
-});
-/* --- health & static --- */
-app.get('/health', (_req, res) => res.status(200).send('OK'));
-
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { Pool } from 'pg';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
-const publicDir = path.join(__dirname, 'public');
+dotenv.config();
+
+const app = express();
+
+// ---------- ENV ----------
+const PORT = Number(process.env.PORT || 5000);
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
+const DATABASE_URL = process.env.DATABASE_URL;
+
+// CORS: список через запятую или "*"
+const ORIGIN_RAW = process.env.CORS_ORIGIN || '*';
+const ALLOWED_ORIGINS = ORIGIN_RAW.split(',').map(s => s.trim());
+const CORS_CREDENTIALS = String(process.env.CORS_CREDENTIALS || '').toLowerCase() === 'true';
+
+// ---------- MIDDLEWARE ----------
+app.use(express.json());
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true);
+      if (ALLOWED_ORIGINS.includes('*')) return cb(null, true);
+      if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      return cb(new Error('CORS: Origin not allowed'));
+    },
+    credentials: CORS_CREDENTIALS,
+    methods: process.env.CORS_METHODS || 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+    allowedHeaders: process.env.CORS_HEADERS || 'Content-Type,Authorization',
+  })
+);
+
+// ---------- DB ----------
+if (!DATABASE_URL) {
+  console.error('DATABASE_URL is not set');
+  process.exit(1);
+}
+
+const pool = new Pool({
+  connectionString: DATABASE_URL,
+  ssl: { rejectUnauthorized: false }, // Neon требует SSL
+});
+
+// ---------- HEALTH ----------
+app.get('/health', (_req, res) => res.status(200).json({ ok: true }));
+
+// ---------- AUTH ----------
+/**
+ * Ожидает JSON: { "username": "superadmin", "password": "password123" }
+ * Таблица users: id, username, password_hash, role
+ */
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = (req.body || {}) as { username?: string; password?: string };
+
+    if (!username || !password) {
+      return res.status(400).json({ error: 'username and password are required' });
+    }
+
+    const q = `SELECT id, username, password_hash, role FROM users WHERE username = $1 LIMIT 1`;
+    const { rows } = await pool.query(q, [username]);
+
+    if (!rows.length) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const user = rows[0] as { id: number; username: string; password_hash: string; role: string };
+    const ok = await bcrypt.compare(password, user.password_hash);
+    if (!ok) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { sub: user.id, username: user.username, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    return res.json({
+      user: { id: user.id, username: user.username, role: user.role },
+      token,
+    });
+  } catch (err: any) {
+    console.error('Login error:', err);
+    return res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+// ---------- STATIC FRONT (dist/public) ----------
+const __filename = typeof __dirname === 'undefined' ? fileURLToPath(import.meta.url) : __filename;
+// @ts-ignore
+const __dirnameLocal = typeof __dirname === 'undefined' ? path.dirname(__filename) : __dirname;
+
+const publicDir = path.join(__dirnameLocal, 'public');
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
   app.get('*', (_req, res) => res.sendFile(path.join(publicDir, 'index.html')));
 }
-/* --- end --- */
 
-import authRoutes from './routes/auth';
-app.use('/api/auth', authRoutes);
+// ---------- START ----------
+app.listen(PORT, () => {
+  console.log(`API listening on :${PORT}`);
+});
 
-// --- TEMP auth stub for Netlify demo ---
-app.options('/api/*', (_req, res) => res.sendStatus(204)); // preflight для CORS
-
-app.post('/api/auth/login', express.json(), (req, res) => {
-  const { username, password } = req.body || {};
-
-  const users = [
-    { username: 'superadmin',     password: 'password123', role: 'superadmin' },
-    { username: 'advertiser1',    password: 'password123', role: 'advertiser' },
-    { username: 'test_affiliate', password: 'password123', role: 'affiliate'  },
-  ];
-
-  const u = users.find(x => x.username === username && x.password === password);
-  if (!u) return res.status(401).json({ error: 'Invalid credentials' });
-
-  return res.json({
-    user: { username: u.username, role: u.role },
-    token: 'dev-token' // потом заменим на реальный JWT
-  });
+// ---------- SAFETY ----------
+process.on('unhandledRejection', (r) => console.error('unhandledRejection:', r));
+process.on('uncaughtException', (e) => {
+  console.error('uncaughtException:', e);
+  process.exit(1);
 });
