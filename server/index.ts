@@ -3,14 +3,15 @@ import cors from 'cors';
 import path from 'node:path';
 import fs from 'node:fs';
 
-// Роуты
 import authRouter from './routes/auth';
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
 
-// CORS (просто и понятно). Можно сузить Origin через переменную CORS_ORIGIN.
-const allowed = (process.env.CORS_ORIGIN || 'https://adlinkpro.netlify.app').split(',').map(s => s.trim());
+// CORS (разрешаем Netlify-домен)
+const allowed = (process.env.CORS_ORIGIN || 'https://adlinkpro.netlify.app')
+  .split(',')
+  .map(s => s.trim());
 
 const corsMw = cors({
   origin: (origin, cb) => {
@@ -23,7 +24,7 @@ const corsMw = cors({
   allowedHeaders: process.env.CORS_HEADERS || 'Content-Type,Authorization',
 });
 
-// Порядок посредников
+// Порядок посредников критичен
 app.use(express.json());
 app.use(corsMw);
 app.options('*', corsMw);
@@ -34,7 +35,7 @@ app.get('/health', (_req, res) => res.status(200).json({ ok: true }));
 // API
 app.use('/api/auth', authRouter);
 
-// (опц.) статика, если когда-то соберём фронт в образ
+// (опционально) статика, если когда-то положим фронт в образ Docker
 const publicDir = path.join(__dirname, 'public');
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
