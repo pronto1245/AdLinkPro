@@ -60,5 +60,14 @@ if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
   app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(publicDir, 'index.html')));
 }
+// --- TEMP analytics stubs (уберём, когда подключим реальную логику) ---
+
+app.get("/api/analytics/summary", (_req, res) => {
+  res.json({ clicks: 0, conversions: 0, revenue: 0, ctr: 0 });
+});
+
+app.get("/api/:scope(affiliate|advertiser)/analytics/summary", (req, res) => {
+  res.json({ clicks: 0, conversions: 0, revenue: 0, ctr: 0, scope: req.params.scope });
+});
 
 app.listen(PORT, () => console.log(`API listening on :${PORT}`));
