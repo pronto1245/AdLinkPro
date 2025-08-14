@@ -43,10 +43,10 @@ git push -u origin main
 npm install -g @koyeb/cli
 koyeb auth login
 
-# Создать приложение (используем упрощенный Dockerfile)
+# Создать приложение (ИСПОЛЬЗУЕМ ВЕРСИЮ БЕЗ СБОРКИ)
 koyeb app create affiliate-marketing-platform \
   --git https://github.com/username/affiliate-pro \
-  --docker-dockerfile Dockerfile.koyeb.simple \
+  --docker-dockerfile Dockerfile.koyeb.nobuild \
   --ports 5000:http \
   --env NODE_ENV=production \
   --env PORT=5000
