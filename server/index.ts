@@ -41,7 +41,7 @@ app.use('/api/analytics', analyticsRouter);
 app.use('/api/affiliate', affiliateRouter);
 app.use('/api/advertiser', advertiserRouter);
 
-// опционально — статика, если когда-то положим фронт внутрь образа
+// (опционально) статика, если когда-нибудь положим фронт в образ
 const publicDir = path.join(__dirname, 'public');
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
