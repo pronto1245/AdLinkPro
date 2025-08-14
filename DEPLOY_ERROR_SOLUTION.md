@@ -12,11 +12,11 @@ error: failed to solve: process "/bin/sh -c npm run build" did not complete succ
 
 ## ✅ ГОТОВОЕ РЕШЕНИЕ:
 
-### 🎯 ИСПОЛЬЗУЙТЕ: `Dockerfile.koyeb.nobuild`
+### 🎯 ИСПОЛЬЗУЙТЕ: `Dockerfile.koyeb.final`
 
 В Koyeb Dashboard:
 1. **Build Settings** → Docker
-2. **Dockerfile path**: `Dockerfile.koyeb.nobuild`
+2. **Dockerfile path**: `Dockerfile.koyeb.final`
 3. **Deploy**
 
 ### 📋 Почему это работает:
