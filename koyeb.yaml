@@ -1,0 +1,21 @@
+name: affiliate-marketing-platform
+services:
+  - name: app
+    type: web
+    build:
+      dockerfile: Dockerfile.koyeb
+    ports:
+      - port: 8000
+        protocol: http
+    env:
+      - key: NODE_ENV
+        value: production
+      - key: PORT  
+        value: "8000"
+    health_check:
+      http:
+        path: /health
+        port: 8000
+    scaling:
+      min: 1
+      max: 1
