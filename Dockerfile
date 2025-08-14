@@ -1,33 +1,54 @@
-FROM node:18-alpine
+# ---------- deps: ставим зависимости client и server ----------
+FROM node:20-alpine AS deps
+WORKDIR /app
+# Нужны тулзы для нативных модулей (на всякий случай)
+RUN apk add --no-cache python3 make g++
 
+# Копируем только манифесты, чтобы кешировалось
+COPY server/package*.json server/
+COPY client/package*.json client/
+
+# Ставим зависимости отдельно в каждую часть
+RUN npm ci --prefix server
+RUN npm ci --prefix client
+
+# ---------- build: собираем фронт и бэкенд ----------
+FROM node:20-alpine AS build
 WORKDIR /app
 
-# Копируем файлы зависимостей
-COPY package*.json ./
-RUN npm ci --only=production
+# Переносим установленные node_modules
+COPY --from=deps /app /app
 
-# Копируем исходники и собираем
-COPY . .
-RUN npm run build
+# Копируем исходники
+COPY server server
+COPY client client
+COPY shared shared
 
-# Создаём пользователя для безопасности
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
-USER nextjs
+# (Опционально) если нужно прокинуть переменную в Vite:
+# ARG VITE_API_URL
+# ENV VITE_API_URL=${VITE_API_URL}
+
+# Сборка фронта (Vite)
+RUN npm run build --prefix client
+
+# Сборка бэкенда (TS → JS)
+RUN npm run build --prefix server
+
+# Кладём собранный фронт туда, откуда его отдаст сервер
+RUN mkdir -p server/public && cp -r client/dist/* server/public/
+
+# ---------- runtime: лёгкий образ только с тем, что нужно на проде ----------
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Копируем prod-зависимости сервера и сборки
+COPY --from=deps /app/server/node_modules server/node_modules
+COPY --from=build /app/server/dist server/dist
+COPY --from=build /app/server/public server/public
+COPY server/package*.json server/
+COPY shared shared
 
 EXPOSE 5000
+CMD ["node", "server/dist/index.js"]
 
-ENV NODE_ENV=production
-ENV PORT=5000
-ENV JWT_SECRET=production-jwt-secret-change-in-production
-ENV SESSION_SECRET=production-session-secret
-ENV SENDGRID_API_KEY=""
-ENV VOLUUM_TOKEN=""
-ENV KEITARO_TOKEN=""
-ENV BINOM_TOKEN=""
-ENV REDTRACK_TOKEN=""
-ENV GOOGLE_CLOUD_PROJECT_ID=""
-ENV GOOGLE_CLOUD_STORAGE_BUCKET=""
-
-# Запускаем продакшн сборку
-CMD ["npm", "start"]
