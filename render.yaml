@@ -1,0 +1,55 @@
+services:
+  - type: web
+    name: affiliate-pro-app
+    env: docker
+    repo: https://github.com/pronto1245/AdLinkPro
+    region: frankfurt
+    plan: starter
+    healthCheckPath: /health
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - server/**
+        - shared/**
+        - client/**
+        - Dockerfile
+        - render.yaml
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: affiliate-pro-db
+          property: connectionString
+      - key: SEED_ON_START
+        value: "true"
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: VOLUUM_TOKEN
+        sync: false
+      - key: KEITARO_TOKEN
+        sync: false
+      - key: BINOM_TOKEN
+        sync: false
+      - key: REDTRACK_TOKEN
+        sync: false
+      - key: GOOGLE_CLOUD_PROJECT_ID
+        sync: false
+      - key: GOOGLE_CLOUD_STORAGE_BUCKET
+        sync: false
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        sync: false
+
+databases:
+  - name: affiliate-pro-db
+    region: frankfurt
+    plan: starter
+
