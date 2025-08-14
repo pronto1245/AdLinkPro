@@ -32,3 +32,24 @@ if (fs.existsSync(publicDir)) {
 
 import authRoutes from './routes/auth';
 app.use('/api/auth', authRoutes);
+
+// --- TEMP auth stub for Netlify demo ---
+app.options('/api/*', (_req, res) => res.sendStatus(204)); // preflight для CORS
+
+app.post('/api/auth/login', express.json(), (req, res) => {
+  const { username, password } = req.body || {};
+
+  const users = [
+    { username: 'superadmin',     password: 'password123', role: 'superadmin' },
+    { username: 'advertiser1',    password: 'password123', role: 'advertiser' },
+    { username: 'test_affiliate', password: 'password123', role: 'affiliate'  },
+  ];
+
+  const u = users.find(x => x.username === username && x.password === password);
+  if (!u) return res.status(401).json({ error: 'Invalid credentials' });
+
+  return res.json({
+    user: { username: u.username, role: u.role },
+    token: 'dev-token' // потом заменим на реальный JWT
+  });
+});
