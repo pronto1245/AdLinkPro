@@ -67,6 +67,33 @@ app.get('/.well-known/acme-challenge/:token', (req, res) => {
   }
 });
 
+// CORS configuration - ДОЛЖНО БЫТЬ ПЕРЕД HELMET
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'https://adlinkpro.netlify.app',
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'https://localhost:3000',
+    'https://localhost:5000'
+  ];
+  
+  if (allowedOrigins.includes(origin as string)) {
+    res.setHeader('Access-Control-Allow-Origin', origin as string);
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
+
 // Безопасность
 app.use(helmet({
   contentSecurityPolicy: process.env.NODE_ENV === 'production',
