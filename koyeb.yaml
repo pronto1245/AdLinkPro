@@ -3,7 +3,7 @@ services:
   - name: app
     type: web
     build:
-      dockerfile: Dockerfile.koyeb
+      dockerfile: Dockerfile.koyeb.simple
     ports:
       - port: 8000
         protocol: http
@@ -14,7 +14,7 @@ services:
         value: "8000"
     health_check:
       http:
-        path: /health
+        path: /api/health
         port: 8000
     scaling:
       min: 1

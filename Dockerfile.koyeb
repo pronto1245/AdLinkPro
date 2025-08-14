@@ -5,17 +5,21 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies (including dev dependencies for build)
 RUN npm install
 
 # Copy source code
 COPY . .
+
+# Build the application
+RUN npm run build
 
 # Expose port (Koyeb automatically assigns PORT)
 EXPOSE 8000
 
 # Set environment
 ENV NODE_ENV=production
+ENV PORT=8000
 
-# Start command
-CMD ["npm", "run", "dev"]
+# Start production server
+CMD ["npm", "start"]

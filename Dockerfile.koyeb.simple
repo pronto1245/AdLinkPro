@@ -1,0 +1,23 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install --production
+
+# Copy all source code
+COPY . .
+
+# Create simple start script that works without build
+RUN echo '#!/bin/sh\nnode_modules/.bin/tsx server/index.ts' > start.sh && chmod +x start.sh
+
+# Expose port
+EXPOSE 8000
+
+# Environment variables
+ENV NODE_ENV=production
+ENV PORT=8000
+
+# Start with tsx directly (no build needed)
+CMD ["./start.sh"]

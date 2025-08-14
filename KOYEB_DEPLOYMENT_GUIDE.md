@@ -43,14 +43,31 @@ git push -u origin main
 npm install -g @koyeb/cli
 koyeb auth login
 
-# Создать приложение
+# Создать приложение (используем упрощенный Dockerfile)
 koyeb app create affiliate-marketing-platform \
   --git https://github.com/username/affiliate-pro \
-  --docker-dockerfile Dockerfile.koyeb \
+  --docker-dockerfile Dockerfile.koyeb.simple \
   --ports 8000:http \
   --env NODE_ENV=production \
   --env PORT=8000
 ```
+
+## ⚠️ РЕШЕНИЕ ОШИБКИ BUILD:
+
+Если получаете ошибку `exit code: 2` при сборке:
+
+**Причина:** Стандартная команда `npm run build` может падать в Docker окружении.
+
+**РЕШЕНИЕ 1 - Использовать упрощенный Dockerfile:**
+В Koyeb Dashboard выбрать файл: `Dockerfile.koyeb.simple`
+
+**РЕШЕНИЕ 2 - Настройка через веб-интерфейс:**
+1. Build settings → Docker
+2. Dockerfile path: `Dockerfile.koyeb.simple` 
+3. Build context: `.` (корень проекта)
+
+**РЕШЕНИЕ 3 - Отключить build:**
+Упрощенный Dockerfile запускает приложение с `tsx` напрямую, без сборки.
 
 ### 3. Настройка базы данных
 
