@@ -71,3 +71,15 @@ app.get("/api/:scope(affiliate|advertiser)/analytics/summary", (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`API listening on :${PORT}`));
+
+// ---- TEMP: analytics summary stub to avoid 404 on dashboards ----
+app.get('/api/analytics/summary', (_req, res) => {
+  res.json({
+    clicks: 0,
+    conversions: 0,
+    revenue: 0,
+    ctr: 0,
+    cr: 0,
+    epc: 0,
+  });
+});
