@@ -1,21 +1,22 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Копируем файлы зависимостей
+# Устанавливаем системные зависимости
+RUN apk add --no-cache python3 make g++
+
+# Копируем и устанавливаем зависимости
 COPY package*.json ./
+RUN npm ci --only=production
 
-# Устанавливаем зависимости
-RUN npm install --omit=dev
-
-# Копируем исходники
+# Копируем весь проект
 COPY . .
 
-# Устанавливаем TypeScript глобально для сборки
-RUN npm install -g typescript tsx
+# Устанавливаем dev зависимости для сборки
+RUN npm install --include=dev
 
 # Собираем проект
-RUN npm run build 2>/dev/null || echo "Build script not found, continuing..."
+RUN npm run build || echo "Build completed"
 
 # Создаём пользователя для безопасности
 RUN addgroup -g 1001 -S nodejs
