@@ -1,8 +1,12 @@
 [build]
+  # Собираем из корня
   base = ""
+  # Ставим зависимости в корне и собираем фронт через скрипт ниже
   command = "npm ci && npm run build:client"
+  # Папка, которую Netlify опубликует
   publish = "client/dist"
 
 [build.environment]
   NODE_VERSION = "20"
+  # Твой API на Koyeb (всегда подставляю твой сабдомен)
   VITE_API_URL = "https://central-matelda-pronto12-95b8129d.koyeb.app"
