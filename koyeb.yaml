@@ -3,7 +3,7 @@ services:
   - name: app
     type: web
     build:
-      dockerfile: Dockerfile.koyeb.simple
+      dockerfile: Dockerfile.koyeb.nobuild
     ports:
       - port: 5000
         protocol: http

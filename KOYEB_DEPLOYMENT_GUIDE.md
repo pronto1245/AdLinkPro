@@ -56,18 +56,23 @@ koyeb app create affiliate-marketing-platform \
 
 Если получаете ошибку `exit code: 2` при сборке:
 
-**Причина:** Стандартная команда `npm run build` может падать в Docker окружении.
+**Причина:** В монорепозитории нет отдельного `client/package.json`, и команда `vite build` ищет клиентские файлы не в том месте.
 
-**РЕШЕНИЕ 1 - Использовать упрощенный Dockerfile:**
-В Koyeb Dashboard выбрать файл: `Dockerfile.koyeb.simple`
+**РЕШЕНИЕ 1 - БЕЗ СБОРКИ (РЕКОМЕНДУЕТСЯ):**
+В Koyeb Dashboard выбрать файл: `Dockerfile.koyeb.nobuild`
+- Использует `npm run dev` даже в production
+- Vite серверит файлы динамически
+- Избегает проблем со сборкой
 
-**РЕШЕНИЕ 2 - Настройка через веб-интерфейс:**
-1. Build settings → Docker
-2. Dockerfile path: `Dockerfile.koyeb.simple` 
-3. Build context: `.` (корень проекта)
+**РЕШЕНИЕ 2 - С ИСПРАВЛЕННОЙ СБОРКОЙ:**
+Dockerfile: `Dockerfile.koyeb` (исправлен для монорепозитория)
+- Правильно копирует все папки (client/, server/, shared/)
+- Выполняет `vite build` из корня проекта
+- Использует собранные файлы в production
 
-**РЕШЕНИЕ 3 - Отключить build:**
-Упрощенный Dockerfile запускает приложение с `tsx` напрямую, без сборки.
+**РЕШЕНИЕ 3 - Простая версия:**
+Dockerfile: `Dockerfile.koyeb.simple` (как было ранее)
+- Запускается с `tsx` без сборки
 
 ### 3. Настройка базы данных
 
