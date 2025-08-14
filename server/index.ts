@@ -17,7 +17,7 @@ const PORT = Number(process.env.PORT || 5000);
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 const DATABASE_URL = process.env.DATABASE_URL;
 
-// CORS: список через запятую или "*"
+// CORS: список доменов через запятую или "*"
 const ORIGIN_RAW = process.env.CORS_ORIGIN || '*';
 const ALLOWED_ORIGINS = ORIGIN_RAW.split(',').map(s => s.trim());
 const CORS_CREDENTIALS = String(process.env.CORS_CREDENTIALS || '').toLowerCase() === 'true';
@@ -25,19 +25,21 @@ const CORS_CREDENTIALS = String(process.env.CORS_CREDENTIALS || '').toLowerCase(
 // ---------- MIDDLEWARE ----------
 app.use(express.json());
 
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin) return cb(null, true);
-      if (ALLOWED_ORIGINS.includes('*')) return cb(null, true);
-      if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-      return cb(new Error('CORS: Origin not allowed'));
-    },
-    credentials: CORS_CREDENTIALS,
-    methods: process.env.CORS_METHODS || 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-    allowedHeaders: process.env.CORS_HEADERS || 'Content-Type,Authorization',
-  })
-);
+const corsMw = cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    if (ALLOWED_ORIGINS.includes('*')) return cb(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    return cb(new Error('CORS: Origin not allowed'));
+  },
+  credentials: CORS_CREDENTIALS,
+  methods: process.env.CORS_METHODS || 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+  allowedHeaders: process.env.CORS_HEADERS || 'Content-Type,Authorization',
+});
+
+app.use(corsMw);
+// ВАЖНО: явно разрешаем preflight для всех путей
+app.options('*', corsMw);
 
 // ---------- DB ----------
 if (!DATABASE_URL) {
@@ -47,17 +49,13 @@ if (!DATABASE_URL) {
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
-  ssl: { rejectUnauthorized: false }, // Neon требует SSL
+  ssl: { rejectUnauthorized: false }, // Neon использует SSL
 });
 
 // ---------- HEALTH ----------
 app.get('/health', (_req, res) => res.status(200).json({ ok: true }));
 
-// ---------- AUTH ----------
-/**
- * Ожидает JSON: { "username": "superadmin", "password": "password123" }
- * Таблица users: id, username, password_hash, role
- */
+// ---------- AUTH (реальный) ----------
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = (req.body || {}) as { username?: string; password?: string };
