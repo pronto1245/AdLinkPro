@@ -15,3 +15,9 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[[redirects]]
+  from = "/ws"
+  to = "wss://central-matelda-pronto12-95b8129d.koyeb.app/ws"
+  status = 200
+  force = true
