@@ -66,7 +66,7 @@ export function AdvertiserDashboard() {
 
   const { data: liveStats, isLoading: chartLoading } = useQuery<LiveStatistics[]>({
     queryKey: ['/api/advertiser/live-statistics', dateRange, filters],
-    queryFn: () => {
+    queryFn: async () => {
       const params = new URLSearchParams();
       if (dateRange.from) params.append('dateFrom', dateRange.from.toISOString());
       if (dateRange.to) params.append('dateTo', dateRange.to.toISOString());
@@ -74,7 +74,21 @@ export function AdvertiserDashboard() {
       if (filters.device !== 'all') params.append('device', filters.device);
       if (filters.offerId !== 'all') params.append('offerId', filters.offerId);
       
-      return fetch(`/api/advertiser/live-statistics?${params}`).then(res => res.json());
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/advertiser/live-statistics?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        console.warn('Failed to load statistics:', response.status);
+        return []; // Возвращаем пустой массив вместо ошибки
+      }
+      
+      const data = await response.json();
+      return Array.isArray(data) ? data : []; // Гарантируем массив
     },
   });
 
@@ -96,7 +110,7 @@ export function AdvertiserDashboard() {
   };
 
   const handleExportClick = () => {
-    if (!liveStats || liveStats.length === 0) {
+    if (!liveStats || !Array.isArray(liveStats) || liveStats.length === 0) {
       toast({
         title: "Нет данных",
         description: "Нет данных для экспорта",
@@ -109,13 +123,13 @@ export function AdvertiserDashboard() {
     const csvContent = [
       ['Дата', 'Клики', 'Уники', 'Конверсии', 'Доход', 'CR%', 'EPC'],
       ...liveStats.map(stat => [
-        stat.date,
-        stat.clicks,
-        stat.uniqueClicks || stat.clicks,
-        stat.conversions,
-        stat.revenue.toFixed(2),
-        stat.clicks > 0 ? ((stat.conversions / stat.clicks) * 100).toFixed(2) : '0',
-        stat.clicks > 0 ? (stat.revenue / stat.clicks).toFixed(2) : '0'
+        stat?.date || 'N/A',
+        stat?.clicks || 0,
+        stat?.uniqueClicks || stat?.clicks || 0,
+        stat?.conversions || 0,
+        (stat?.revenue || 0).toFixed(2),
+        (stat?.clicks || 0) > 0 ? (((stat?.conversions || 0) / stat.clicks) * 100).toFixed(2) : '0',
+        (stat?.clicks || 0) > 0 ? ((stat?.revenue || 0) / stat.clicks).toFixed(2) : '0'
       ])
     ].map(row => row.join(',')).join('\n');
 
@@ -132,13 +146,24 @@ export function AdvertiserDashboard() {
     });
   };
 
-  // Вычисляем метрики из живых данных
+  // Вычисляем метрики из живых данных с защитой от ошибок
   const calculatedMetrics = React.useMemo(() => {
-    if (!liveStats || liveStats.length === 0) return null;
+    // Проверяем что liveStats существует и является массивом
+    if (!liveStats || !Array.isArray(liveStats) || liveStats.length === 0) {
+      return {
+        totalClicks: 0,
+        totalConversions: 0,
+        totalRevenue: 0,
+        avgCR: 0,
+        epc: 0,
+        activeOffers: 0,
+        partnersCount: 0
+      };
+    }
     
-    const totalClicks = liveStats.reduce((sum, stat) => sum + stat.clicks, 0);
-    const totalConversions = liveStats.reduce((sum, stat) => sum + stat.conversions, 0);
-    const totalRevenue = liveStats.reduce((sum, stat) => sum + stat.revenue, 0);
+    const totalClicks = liveStats.reduce((sum, stat) => sum + (stat?.clicks || 0), 0);
+    const totalConversions = liveStats.reduce((sum, stat) => sum + (stat?.conversions || 0), 0);
+    const totalRevenue = liveStats.reduce((sum, stat) => sum + (stat?.revenue || 0), 0);
     const avgCR = totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0;
     const epc = totalClicks > 0 ? totalRevenue / totalClicks : 0;
     

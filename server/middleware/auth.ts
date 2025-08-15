@@ -66,7 +66,7 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
     };
     next();
   } catch (error) {
-    console.error('JWT verification failed:', error.message);
+    console.error('JWT verification failed:', (error as Error).message);
     res.sendStatus(403);
   }
 };
