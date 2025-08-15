@@ -211,20 +211,19 @@ export default function PartnerDashboard() {
     );
   }
 
-  // Используем реальные данные с API  
-  const { metrics, topOffers } = dashboardData || {
-    metrics: {
-      totalClicks: 0,
-      conversions: 0,
-      revenue: 0,
-      conversionRate: 0,
-      epc: 0,
-      avgOfferPayout: 0,
-      activeOffers: 0,
-      pendingRequests: 0
-    },
-    topOffers: []
+  // Используем реальные данные с API с правильной типизацией
+  const metrics = dashboardData?.metrics || {
+    totalClicks: 0,
+    conversions: 0,
+    revenue: 0,
+    conversionRate: 0,
+    epc: 0,
+    avgOfferPayout: 0,
+    activeOffers: 0,
+    pendingRequests: 0
   };
+  
+  const topOffers = dashboardData?.topOffers || [];
 
   return (
     <div className="space-y-6 p-6">
@@ -349,7 +348,7 @@ export default function PartnerDashboard() {
       <Card className="border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-orange-700 dark:text-orange-300">Последние уведомления</CardTitle>
-          {recentNotifications && recentNotifications.length > 0 && (
+          {Array.isArray(recentNotifications) && recentNotifications.length > 0 && (
             <Button 
               variant="ghost" 
               size="sm" 
@@ -363,9 +362,9 @@ export default function PartnerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {recentNotifications && recentNotifications.length > 0 ? (
+            {Array.isArray(recentNotifications) && recentNotifications.length > 0 ? (
               // Показываем только последние 3 уведомления
-              recentNotifications.slice(0, 3).map((notification: any) => (
+              recentNotifications.slice(0, 3).map((notification: any, index: number) => (
                 <div key={notification.id} className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                   <Target className="h-4 w-4 text-blue-500 mt-0.5" />
                   <div className="flex-1">
