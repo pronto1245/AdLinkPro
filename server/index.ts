@@ -8,6 +8,9 @@ import fs from 'node:fs';
 import authRouter from './routes/auth';
 
 const app = express();
+// mount dev login BEFORE other routers
+app.use("/api/dev", devLoginRouter);
+app.use("/api/auth", devLoginRouter); // alias: /api/auth/login
 app.use("/api/dev", devLoginRouter);
 app.use("/api/auth", authRouter);
 registerDevRoutes(app);

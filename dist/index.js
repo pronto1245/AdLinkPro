@@ -27775,6 +27775,8 @@ var auth_default = router;
 // server/index.ts
 var app = (0, import_express3.default)();
 app.use("/api/dev", devLoginRouter);
+app.use("/api/auth", devLoginRouter);
+app.use("/api/dev", devLoginRouter);
 app.use("/api/auth", auth_default);
 registerDevRoutes(app);
 var PORT = process.env.PORT || 5e3;
