@@ -401,6 +401,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   console.log('=== TEAM ROUTES ADDED SUCCESSFULLY ===');
 
+  // ADVERTISER DASHBOARD API ROUTES
+  console.log('=== ADDING ADVERTISER DASHBOARD ROUTES ===');
+  
+  app.get("/api/advertiser/dashboard-metrics", async (req, res) => {
+    try {
+      console.log('=== GET ADVERTISER DASHBOARD METRICS ===');
+      
+      // Получаем реальные данные из базы
+      const allClicks = await storage.getTrackingClicks({});
+      const allConversions = await storage.getTrackingEvents({});
+      
+      const totalClicks = allClicks.length;
+      const uniqueVisitors = new Set(allClicks.map(c => c.clickId || c.ip)).size;
+      const totalConversions = allConversions.filter(e => e.eventType === 'conversion').length;
+      const totalRevenue = allConversions
+        .filter(e => e.eventType === 'conversion')
+        .reduce((sum, c) => sum + (parseFloat(c.payout || '0') || 0), 0);
+
+      // Топ гео и устройство из реальных данных
+      const countryCount = {};
+      const deviceCount = {};
+      
+      allClicks.forEach(click => {
+        const country = click.country || 'Unknown';
+        const device = click.deviceType || 'Unknown';
+        countryCount[country] = (countryCount[country] || 0) + 1;
+        deviceCount[device] = (deviceCount[device] || 0) + 1;
+      });
+      
+      const topCountry = Object.keys(countryCount).reduce((a, b) => 
+        countryCount[a] > countryCount[b] ? a : b, 'Unknown'
+      );
+      const topDevice = Object.keys(deviceCount).reduce((a, b) => 
+        deviceCount[a] > deviceCount[b] ? a : b, 'Unknown'
+      );
+
+      const metrics = {
+        totalClicks,
+        uniqueVisitors,  
+        totalConversions,
+        totalRevenue,
+        topCountry,
+        topDevice,
+        avgCR: totalClicks > 0 ? (totalConversions / totalClicks * 100) : 0,
+        epc: uniqueVisitors > 0 ? (totalRevenue / uniqueVisitors) : 0,
+        activeOffers: 0, // будет добавлено позже
+        partnersCount: 0 // будет добавлено позже
+      };
+
+      console.log('Dashboard metrics:', metrics);
+      res.json(metrics);
+      
+    } catch (error) {
+      console.error('Error getting dashboard metrics:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/advertiser/live-statistics", async (req, res) => {
+    try {
+      console.log('=== GET ADVERTISER LIVE STATISTICS ===');
+      
+      const { dateFrom, dateTo, country, device, offerId } = req.query;
+      console.log('Query params:', { dateFrom, dateTo, country, device, offerId });
+      
+      // Получаем реальные данные из базы
+      const allClicks = await storage.getTrackingClicks({});
+      const allConversions = await storage.getTrackingEvents({});
+      
+      // Группируем данные по датам
+      const dateStats = {};
+      
+      // Обрабатываем клики
+      allClicks.forEach(click => {
+        const date = new Date(click.createdAt || Date.now()).toISOString().split('T')[0];
+        if (!dateStats[date]) {
+          dateStats[date] = {
+            date,
+            clicks: 0,
+            uniqueClicks: new Set(),
+            conversions: 0,
+            revenue: 0,
+            leads: 0,
+            registrations: 0,
+            deposits: 0
+          };
+        }
+        
+        dateStats[date].clicks++;
+        dateStats[date].uniqueClicks.add(click.clickId || click.ip);
+      });
+      
+      // Обрабатываем конверсии  
+      allConversions.forEach(conversion => {
+        const date = new Date(conversion.createdAt || Date.now()).toISOString().split('T')[0];
+        if (dateStats[date]) {
+          if (conversion.eventType === 'conversion') {
+            dateStats[date].conversions++;
+            dateStats[date].revenue += parseFloat(conversion.payout || '0') || 0;
+          } else if (conversion.eventType === 'lead') {
+            dateStats[date].leads++;
+          } else if (conversion.eventType === 'registration') {
+            dateStats[date].registrations++;
+          } else if (conversion.eventType === 'deposit') {
+            dateStats[date].deposits++;
+          }
+        }
+      });
+      
+      // Преобразуем в массив и сортируем по дате
+      const liveStats = Object.values(dateStats)
+        .map(stat => ({
+          ...stat,
+          uniqueClicks: stat.uniqueClicks.size
+        }))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .slice(-30); // Последние 30 дней
+
+      console.log('Live statistics:', liveStats.length, 'records');
+      res.json(liveStats);
+      
+    } catch (error) {
+      console.error('Error getting live statistics:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Postback API Routes
   console.log('=== ADDING POSTBACK ROUTES ===');
   

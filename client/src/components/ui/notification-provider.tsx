@@ -107,7 +107,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   useEffect(() => {
     if (!user) return;
 
-    const ws = new WebSocket(`ws://localhost:5000/ws`);
+    const ws = new WebSocket(`${import.meta.env.VITE_API_BASE_URL?.replace('http', 'ws') || (import.meta.env.DEV ? 'ws://localhost:5000' : `ws://${window.location.host}`)}/ws`);
     
     ws.onopen = () => {
       console.log('WebSocket connected');

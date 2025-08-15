@@ -72,12 +72,10 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigins = [
     'https://adlinkpro.netlify.app',
-    'https://adlinkpro.koyeb.app',
+    'https://adlinkpro.koyeb.app', 
     'http://localhost:3000',
     'http://localhost:5000',
-    'http://localhost:5000',
-    'https://localhost:3000',
-    'https://localhost:5000'
+    'https://localhost:3000'
   ];
   
   if (allowedOrigins.includes(origin as string)) {
