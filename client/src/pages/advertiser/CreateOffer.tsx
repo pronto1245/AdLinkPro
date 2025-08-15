@@ -551,9 +551,10 @@ export default function CreateOffer() {
       navigate('/advertiser/offers');
     },
     onError: (error) => {
+      console.error('Offer creation error:', error);
       toast({
         title: 'Ошибка создания',
-        description: 'Не удалось создать оффер. Попробуйте снова.',
+        description: error?.message || 'Не удалось создать оффер. Попробуйте снова.',
         variant: 'destructive'
       });
     }

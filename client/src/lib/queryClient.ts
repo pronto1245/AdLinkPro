@@ -65,12 +65,25 @@ export async function apiRequest(
   // Get token from localStorage (both old and new format)
   let token = localStorage.getItem('auth_token') || localStorage.getItem('token');
   
+  // DEBUG: Log token status for CreateOffer debugging
+  if (url.includes('/api/advertiser/offers') && method === 'POST') {
+    console.log('🔍 CreateOffer Debug - Token status:', {
+      hasAuthToken: !!localStorage.getItem('auth_token'),
+      hasToken: !!localStorage.getItem('token'), 
+      tokenLength: token?.length || 0,
+      tokenStart: token?.substring(0, 20) || 'none'
+    });
+  }
+  
   // FIX: Check that token is not null string and not empty
   if (token === 'null' || token === 'undefined' || !token || token.trim() === '') {
     // Clear invalid tokens
     localStorage.removeItem('auth_token');
     localStorage.removeItem('token');
     token = null;
+    if (url.includes('/api/advertiser/offers') && method === 'POST') {
+      console.log('❌ No valid token found for CreateOffer request');
+    }
   }
   
   const headers: Record<string, string> = {
@@ -88,6 +101,14 @@ export async function apiRequest(
     body: body ? JSON.stringify(body) : undefined,
     credentials: "include",
   });
+
+  if (url.includes('/api/advertiser/offers') && method === 'POST') {
+    console.log('📡 CreateOffer API Response:', {
+      status: res.status,
+      statusText: res.statusText,
+      ok: res.ok
+    });
+  }
 
   await throwIfResNotOk(res);
   
