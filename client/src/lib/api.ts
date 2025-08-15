@@ -1,29 +1,40 @@
-const API_BASE = import.meta.env.VITE_API_URL ?? '';
+const API_BASE = (import.meta as any).env?.VITE_API_URL ?? '';
 
-function shouldSkipAuth(path: string) {
-  // На /api/auth/* токен НЕ отправляем
-  return path.startsWith('/api/auth/');
+async function safeError(res: Response) {
+  try {
+    const data = await res.json();
+    return (data && (data.error || data.message)) || '';
+  } catch {
+    return '';
+  }
 }
 
-export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const headers = new Headers(init?.headers);
+export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const headers = new Headers(init.headers);
   headers.set('Content-Type', 'application/json');
 
-  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
-  if (token && !shouldSkipAuth(path)) headers.set('Authorization', `Bearer ${token}`);
-
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`HTTP ${res.status}${text ? `: ${text}` : ''}`);
+  // ВАЖНО: не шлём Authorization на /api/auth/*
+  if (!path.startsWith('/api/auth/')) {
+    const token = localStorage.getItem('token');
+    if (token) headers.set('Authorization', `Bearer ${token}`);
   }
-  const ct = res.headers.get('content-type') || '';
-  if (!ct.includes('application/json')) return {} as T;
-  return (await res.json()) as T;
+
+  const res = await fetch(`${API_BASE}${path}`, { ...init, headers, credentials: 'include' });
+  if (!res.ok) {
+    const msg = await safeError(res);
+    throw new Error(msg || `HTTP ${res.status}`);
+  }
+
+  const ct = res.headers.get('content-type') ?? '';
+  return (ct.includes('application/json') ? await res.json() : ({} as T));
 }
 
-export async function login(username: string, password: string) {
-  type LoginResponse = { user: { id: number; username: string; role: string }; token: string };
+export type LoginResponse = {
+  user: { id: number; username: string; role: string };
+  token: string;
+};
+
+export function login(username: string, password: string) {
   return api<LoginResponse>('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify({ username, password }),
