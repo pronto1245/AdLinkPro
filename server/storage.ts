@@ -167,10 +167,12 @@ export interface IStorage {
     endDate?: Date;
   }): Promise<any[]>;
   
-  // Tracking clicks
+  // Tracking clicks and events
   getTrackingClicks(filters?: any): Promise<any[]>;
   createTrackingClick(data: any): Promise<any>;
   updateTrackingClick(clickId: string, updates: any): Promise<any>;
+  getTrackingEvents(filters?: any): Promise<any[]>;
+  createTrackingEvent(data: any): Promise<any>;
 
   // Advertiser Dashboard
   getAdvertiserDashboard(advertiserId: string, filters: {
@@ -3237,6 +3239,78 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error getting tracking clicks:', error);
       return [];
+    }
+  }
+
+  async getTrackingEvents(filters?: any): Promise<any[]> {
+    try {
+      console.log('getTrackingEvents called with filters:', filters);
+      
+      // Используем прямой SQL для получения данных из events таблицы
+      if (filters?.partnerId && filters?.offerId) {
+        console.log('Querying events with both partnerId and offerId');
+        const result = await db.execute(sql`
+          SELECT * FROM events 
+          WHERE partner_id = ${filters.partnerId} AND offer_id = ${filters.offerId}
+          ORDER BY created_at DESC
+        `);
+        console.log('Events query result:', result.rows?.length, 'rows');
+        return result.rows || [];
+      } else if (filters?.partnerId) {
+        console.log('Querying events with partnerId only:', filters.partnerId);
+        const result = await db.execute(sql`
+          SELECT * FROM events 
+          WHERE partner_id = ${filters.partnerId}
+          ORDER BY created_at DESC
+        `);
+        console.log('Events query result:', result.rows?.length, 'rows');
+        return result.rows || [];
+      } else if (filters?.offerId) {
+        console.log('Querying events with offerId only');
+        const result = await db.execute(sql`
+          SELECT * FROM events 
+          WHERE offer_id = ${filters.offerId}
+          ORDER BY created_at DESC
+        `);
+        console.log('Events query result:', result.rows?.length, 'rows');
+        return result.rows || [];
+      } else {
+        console.log('Querying all tracking events');
+        const result = await db.execute(sql`
+          SELECT * FROM events 
+          ORDER BY created_at DESC
+        `);
+        console.log('Events query result:', result.rows?.length, 'rows');
+        return result.rows || [];
+      }
+    } catch (error) {
+      console.error('Error getting tracking events:', error);
+      return [];
+    }
+  }
+
+  async createTrackingEvent(data: any): Promise<any> {
+    try {
+      const [newEvent] = await db
+        .insert(events)
+        .values({
+          id: data.id || nanoid(),
+          clickId: data.clickId,
+          partnerId: data.partnerId,
+          offerId: data.offerId,
+          eventType: data.eventType,
+          payout: data.payout,
+          revenue: data.revenue,
+          currency: data.currency || 'USD',
+          metadata: data.metadata || {},
+          createdAt: data.createdAt || new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      return newEvent;
+    } catch (error) {
+      console.error('Error creating tracking event:', error);
+      throw error;
     }
   }
 
