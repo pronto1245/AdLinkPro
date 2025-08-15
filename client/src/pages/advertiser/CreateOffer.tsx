@@ -405,15 +405,15 @@ export default function CreateOffer() {
   // Получаем ID пользователя из локального хранилища или используем заглушку
   const getUserId = () => {
     try {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
+      const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+      if (token && token !== 'null' && token.trim() !== '') {
         const payload = JSON.parse(atob(token.split('.')[1]));
         return payload.id;
       }
     } catch (e) {
       console.warn('Error parsing token:', e);
     }
-    return null;
+    return 'anonymous'; // Fallback for testing
   };
   
   const [formData, setFormData] = useState<OfferFormData>(initialFormData);

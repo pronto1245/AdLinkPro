@@ -62,15 +62,11 @@ export async function apiRequest(
   // Build full API URL
   const fullUrl = buildApiUrl(url);
 
-  // CRITICAL FIX: Only use auth_token, clear old token format
-  if (localStorage.getItem('token')) {
-    localStorage.removeItem('token');
-  }
-  let token = localStorage.getItem('auth_token');
+  // Get token from localStorage (both old and new format)
+  let token = localStorage.getItem('auth_token') || localStorage.getItem('token');
   
   // FIX: Check that token is not null string and not empty
   if (token === 'null' || token === 'undefined' || !token || token.trim() === '') {
-    localStorage.removeItem('auth_token');
     token = null;
   }
   

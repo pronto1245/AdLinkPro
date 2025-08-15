@@ -131,7 +131,7 @@ export default function PartnerDashboard() {
   const { data: dashboardData, isLoading, error } = useQuery({
     queryKey: ['/api/partner/dashboard', refreshKey],
     staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  }) as { data: any, isLoading: boolean, error: any };
 
   // Отдельный запрос для уведомлений, синхронизированный с основной страницей уведомлений
   const { data: recentNotifications = [] } = useQuery({
