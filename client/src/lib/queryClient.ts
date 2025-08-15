@@ -2,8 +2,20 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    let errorMessage = `HTTP ${res.status}: ${res.statusText}`;
+    
+    try {
+      const errorData = await res.json();
+      if (errorData.error) {
+        errorMessage = errorData.error;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    } catch {
+      // Failed to parse JSON, use default message
+    }
+    
+    throw new Error(errorMessage);
   }
 }
 
@@ -106,13 +118,30 @@ export async function apiRequest(
     console.log('📡 CreateOffer API Response:', {
       status: res.status,
       statusText: res.statusText,
-      ok: res.ok
+      ok: res.ok,
+      headers: Object.fromEntries(res.headers.entries())
     });
   }
 
-  await throwIfResNotOk(res);
+  // CRITICAL FIX: Check response first before consuming body
+  if (!res.ok) {
+    let errorMessage = `HTTP ${res.status}: ${res.statusText}`;
+    
+    try {
+      const errorData = await res.json();
+      if (errorData.error) {
+        errorMessage = errorData.error;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    } catch {
+      // Failed to parse JSON, use default message
+    }
+    
+    throw new Error(errorMessage);
+  }
   
-  // Return JSON if content exists
+  // Return JSON if content exists - only for successful responses
   const text = await res.text();
   return text ? JSON.parse(text) : null;
 }
