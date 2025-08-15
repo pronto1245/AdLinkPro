@@ -1,17 +1,25 @@
-FROM node:20-alpine
+FROM node:20-alpine AS deps
 WORKDIR /app
-
-# 1) ставим ВСЕ зависимости (включая dev)
 COPY package*.json ./
 RUN npm ci
 
-# 2) копируем исходники и собираем (esbuild уже есть)
+FROM node:20-alpine AS build
+WORKDIR /app
+RUN apk add --no-cache libc6-compat
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-# 3) оставляем только prod-deps (урезаем образ)
-RUN npm prune --omit=dev && npm cache clean --force
-
+FROM node:20-alpine AS runner
+WORKDIR /app
 ENV NODE_ENV=production
-# Koyeb подставляет PORT, приложение должно слушать process.env.PORT
+
+# ставим только prod-deps
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+# берем только собранный dist
+COPY --from=build /app/dist ./dist
+
+# Koyeb сам передаст PORT
 CMD ["npm","start"]
