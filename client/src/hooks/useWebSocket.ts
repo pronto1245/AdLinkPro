@@ -1,28 +1,46 @@
 import { useEffect, useRef } from 'react';
 
+function resolveWsUrl(): string | null {
+  // 1) Явная переменная окружения побеждает всегда
+  const envUrl = (import.meta as any).env?.VITE_WS_URL?.trim?.();
+  if (envUrl) return envUrl;
+
+  // 2) DEV → localhost
+  if (!(import.meta as any).env?.PROD) {
+    return 'ws://localhost:5000/ws';
+  }
+
+  // 3) PROD → тот же хост, wss, путь /ws (Netlify redirect прокинет на Koyeb)
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  if (typeof window !== 'undefined' && isHttps) {
+    return `wss://${window.location.host}/ws`;
+  }
+
+  // если почему-то не https в проде — не подключаемся
+  return null;
+}
+
 export function useWebSocket(token?: string) {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    // В проде отключено, пока не зададим VITE_WS_URL
-    const WS_URL = import.meta?.env?.VITE_WS_URL as string | undefined;
-    if (!WS_URL) return;
+    const url = resolveWsUrl();
+    // Нет URL → выходим молча (напр., бэк без сокетов)
+    if (!url || !token) return;
 
-    if (!token || wsRef.current) return;
     try {
-      const url = new URL(WS_URL);
-      if (token) url.searchParams.set('token', token);
-      const ws = new WebSocket(url.toString());
+      const wsUrl = `${url}${url.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
+      const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
-        // console.debug('WS open');
+        // console.log('[WS] open');
       };
       ws.onmessage = () => {
-        // console.debug('WS message', ev.data);
+        // тихо
       };
       ws.onerror = () => {
-        // console.debug('WS error', err);
+        // тихо
       };
       ws.onclose = () => {
         wsRef.current = null;
@@ -38,5 +56,4 @@ export function useWebSocket(token?: string) {
   }, [token]);
 }
 
-// На всякий случай — дефолтный экспорт тоже
 export default useWebSocket;
