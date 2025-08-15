@@ -1,3 +1,5 @@
+import bcrypt from "bcrypt";
+import { Pool } from "pg";
 import rateLimit from "express-rate-limit";
 import compression from "compression";
 import cors from "cors";
@@ -13,6 +15,72 @@ import fs from 'node:fs';
 import authRouter from './routes/auth';
 
 const app = express();
+
+// == PG & Users table ==
+const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+
+async function ensureUsersTable() {
+  await pool.query(`
+  CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    username TEXT UNIQUE NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('OWNER','ADVERTISER','PARTNER')),
+    password_hash TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  );`);
+}
+ensureUsersTable().catch(err=>console.error('ensureUsersTable error', err));
+
+// DEV сидирование (только если ALLOW_SEED=1)
+if (process.env.ALLOW_SEED === '1') {
+  app.post('/api/dev/seed-users', async (req,res) => {
+    try {
+      const users = [
+        { email: process.env.OWNER_EMAIL || '9791207@gmail.com', username: 'owner',   role: 'OWNER',      pass: process.env.OWNER_PASSWORD || 'owner123' },
+        { email: process.env.ADVERTISER_EMAIL || '12345@gmail.com', username: 'advertiser', role: 'ADVERTISER', pass: process.env.ADVERTISER_PASSWORD || 'adv123' },
+        { email: process.env.PARTNER_EMAIL || '4321@gmail.com', username: 'partner', role: 'PARTNER',    pass: process.env.PARTNER_PASSWORD || 'partner123' },
+      ];
+      for (const u of users) {
+        const hash = await bcrypt.hash(u.pass, 10);
+        await pool.query(
+          `INSERT INTO users (email, username, role, password_hash)
+             VALUES ($1,$2,$3,$4)
+             ON CONFLICT (email) DO UPDATE SET username=EXCLUDED.username, role=EXCLUDED.role, password_hash=EXCLUDED.password_hash, updated_at=now()`,
+          [u.email, u.username, u.role, hash]
+        );
+      }
+      res.json({ ok:true, seeded: true });
+    } catch(e) {
+      console.error('seed-users error', e);
+      res.status(500).json({ error:'seed failed' });
+    }
+  });
+}
+
+// Обновленный боевой /api/auth/login: ищем в БД по email ИЛИ username
+app.post('/api/auth/login', async (req,res,next) => {
+  try {
+    const { email, username, password } = req.body || {};
+    if (!password || (!email && !username)) return res.status(400).json({ error:'email/username and password are required' });
+
+    const q = email ? ['email', email] : ['username', username];
+    const r = await pool.query(`SELECT id, email, username, role, password_hash FROM users WHERE ${q[0]} = $1 LIMIT 1`, [q[1]]);
+    if (!r.rows.length) return res.status(401).json({ error:'invalid credentials' });
+
+    const u = r.rows[0];
+    const ok = await bcrypt.compare(password, u.password_hash);
+    if (!ok) return res.status(401).json({ error:'invalid credentials' });
+
+    const token = jwt.sign({ sub: String(u.id), role: u.role, email: u.email, username: u.username }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    return res.json({ token });
+  } catch(e) {
+    console.error('auth/login error', e);
+    return res.status(500).json({ error:'auth failed' });
+  }
+});
+
 /* __HEALTH_ALIAS_BEGIN__ */
 app.get('/api/health', (req,res) => res.json({ ok:true }));
 /* __HEALTH_ALIAS_END__ */
