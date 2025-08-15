@@ -1,6 +1,82 @@
-node_modules
-dist
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Production builds
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# OS generated files
 .DS_Store
-server/public
-vite.config.ts.*
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
+
+# Database
+*.db
+*.sqlite
+
+# Security files
+.admin_password_hash
+.admin_token
+.advertiser_token*
+.auth_header
+.clean_*
+.complete_*
+.current_token
+.dns_monitor_pid
+.final_*
+.fresh_*
+.new_*
+.old_token
+.partner_*
+.superadmin_token
+.test_*
+.token
+.working_token
+
+# Archives
 *.tar.gz
+*.zip
+*.rar
+
+# Documentation (keep main docs)
+*REPORT*.md
+*GUIDE*.md
+*INSTRUCTIONS*.md
+!README*.md
