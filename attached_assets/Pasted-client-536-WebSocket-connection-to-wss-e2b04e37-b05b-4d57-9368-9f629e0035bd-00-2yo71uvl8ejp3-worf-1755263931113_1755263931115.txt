@@ -1,0 +1,125 @@
+client:536 WebSocket connection to 'wss://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev/?token=QCqgJm1p7AFX' failed: 
+setupWebSocket @ client:536
+client:536 Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=QCqgJm1p7AFX' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)
+chunk-44NJKXUD.js?v=01223068:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/offers' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/offers:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/notifications' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/notifications:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/finance/summary' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/finance/summary:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/dashboard' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/dashboard:1  Failed to load resource: net::ERR_FAILED
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/dashboard' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/dashboard:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/dashboard' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/dashboard:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/dashboard' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/dashboard:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/dashboard' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/dashboard:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/dashboard' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/dashboard:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/dashboard' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/dashboard:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/dashboard' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/dashboard:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/dashboard' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/dashboard:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/dashboard' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/dashboard:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/dashboard' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/dashboard:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/notifications' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/notifications:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/finance/summary' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/finance/summary:1  Failed to load resource: net::ERR_FAILED
+login:1 Access to fetch at 'http://localhost:5000/api/notifications' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/notifications:1  Failed to load resource: net::ERR_FAILED
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+advertiser:1 Access to fetch at 'http://localhost:5000/api/advertiser/dashboard-metrics' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/advertiser/dashboard-metrics:1  Failed to load resource: net::ERR_FAILED
+advertiser:1 Access to fetch at 'http://localhost:5000/api/notifications' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/notifications:1  Failed to load resource: net::ERR_FAILED
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+advertiser/offers:1 Access to fetch at 'http://localhost:5000/api/advertiser/offers' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/advertiser/offers:1  Failed to load resource: net::ERR_FAILED
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+advertiser/offers/new:1 Access to fetch at 'http://localhost:5000/api/advertiser/tracking-domains' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/advertiser/tracking-domains:1  Failed to load resource: net::ERR_FAILED
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+advertiser/offers:1 Access to fetch at 'http://localhost:5000/api/advertiser/offers' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/advertiser/offers:1  Failed to load resource: net::ERR_FAILED
+advertiser/offers:1 Access to fetch at 'http://localhost:5000/api/notifications' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/notifications:1  Failed to load resource: net::ERR_FAILED
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+advertiser/offers/new:1 Access to fetch at 'http://localhost:5000/api/advertiser/tracking-domains' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/advertiser/tracking-domains:1  Failed to load resource: net::ERR_FAILED
+advertiser/offers/new:1 Access to fetch at 'http://localhost:5000/api/advertiser/offers' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/advertiser/offers:1  Failed to load resource: net::ERR_FAILED
+advertiser/offers/new:1 Access to fetch at 'http://localhost:5000/api/advertiser/offers' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/advertiser/offers:1  Failed to load resource: net::ERR_FAILED
+advertiser/offers/new:1 Access to fetch at 'http://localhost:5000/api/advertiser/offers' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/advertiser/offers:1  Failed to load resource: net::ERR_FAILED
+advertiser/offers/new:1 Access to fetch at 'http://localhost:5000/api/advertiser/offers' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/advertiser/offers:1  Failed to load resource: net::ERR_FAILED
+advertiser/offers/new:1 Access to fetch at 'http://localhost:5000/api/advertiser/offers' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/advertiser/offers:1  Failed to load resource: net::ERR_FAILED
+advertiser/offers/new:1 Access to fetch at 'http://localhost:5000/api/advertiser/offers' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/advertiser/offers:1  Failed to load resource: net::ERR_FAILED
+advertiser/offers/new:1 Access to fetch at 'http://localhost:5000/api/notifications' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/notifications:1  Failed to load resource: net::ERR_FAILED
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+advertiser:1 Access to fetch at 'http://localhost:5000/api/advertiser/dashboard-metrics' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/advertiser/dashboard-metrics:1  Failed to load resource: net::ERR_FAILED
+login:1 Access to fetch at 'http://localhost:5000/api/notifications' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/notifications:1  Failed to load resource: net::ERR_FAILED
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+App.tsx:105 ProtectedRoute debug: Object
+App.tsx:117 ACCESS GRANTED - Rendering component
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/offers' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/offers:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/dashboard' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/dashboard:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/notifications' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/notifications:1  Failed to load resource: net::ERR_FAILED
+affiliate:1 Access to fetch at 'http://localhost:5000/api/partner/finance/summary' from origin 'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+localhost:5000/api/partner/finance/summary:1  Failed to load resource: net::ERR_FAILED

@@ -107,12 +107,33 @@ export async function apiRequest(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(fullUrl, {
-    method: httpMethod,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-    credentials: "include",
-  });
+  let res;
+  try {
+    res = await fetch(fullUrl, {
+      method: httpMethod,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+      credentials: "include",
+      mode: 'cors'
+    });
+  } catch (fetchError: any) {
+    // Handle network errors that cause "Failed to fetch"
+    if (fetchError.name === 'TypeError' && fetchError.message.includes('fetch')) {
+      // Try without credentials if CORS error
+      try {
+        res = await fetch(fullUrl, {
+          method: httpMethod,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+          mode: 'cors'
+        });
+      } catch (secondError) {
+        throw new Error(`Network error: ${fetchError.message}`);
+      }
+    } else {
+      throw fetchError;
+    }
+  }
 
   if (url.includes('/api/advertiser/offers') && method === 'POST') {
     console.log('📡 CreateOffer API Response:', {
@@ -186,26 +207,13 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       staleTime: 30 * 1000, // 30 секунд для живых данных
       gcTime: 5 * 60 * 1000, // 5 минут в кеше (более быстрое обновление)
-      retry: (failureCount, error: any) => {
-        // ИЗМЕНЕНО: Полностью отключаем retry для предотвращения promise rejections
-        return false;
-      },
+      retry: false, // Отключаем retry для предотвращения promise rejections
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
       // Добавляем глобальный error handler
-      onError: (error: Error) => {
-        // Тихо логируем ошибки без выброса unhandled promise rejection
-        console.warn('Query error handled:', error.message);
-      },
+      // Убираем onError чтобы избежать TypeScript ошибок
     },
     mutations: {
-      retry: (failureCount, error: any) => {
-        if (error?.message?.includes('4')) return false;
-        return failureCount < 1;
-      },
-      // Добавляем глобальный error handler для mutations
-      onError: (error: Error) => {
-        console.warn('Mutation error handled:', error.message);
-      },
+      retry: false, // Отключаем retry для mutations
     },
   },
   // Добавляем глобальный error boundary для QueryClient
