@@ -3,11 +3,7 @@
   command = "npm ci && npm run build:client"
   publish = "client/dist"
 
-[build.environment]
-  NODE_VERSION = "20"
-  VITE_API_URL = "https://central-matelda-pronto12-95b8129d.koyeb.app"
-
-# Прокси /api на Koyeb (первым, обязательно)
+# Проксируем все /api/* на Koyeb
 [[redirects]]
   from = "/api/*"
   to = "https://central-matelda-pronto12-95b8129d.koyeb.app/api/:splat"
