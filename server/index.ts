@@ -2,8 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'node:path';
 import fs from 'node:fs';
-
-import authRouter from './routes/auth'; // логин уже работает
+import authRouter from './routes/auth';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,7 +32,7 @@ app.get('/health', (_req, res) => res.status(200).json({ ok: true }));
 // --- API: логин
 app.use('/api', authRouter);
 
-// --- ПРОСТЕЙШАЯ ПРОВЕРКА ТОКЕНА ДЛЯ СТАБОВ ---
+// --- простая проверка токена для стабов ---
 function requireAuth(req: any, res: any, next: any) {
   const h = String(req.headers.authorization || '');
   if (!h.startsWith('Bearer ')) {
@@ -42,7 +41,7 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
-// --- СТАБЫ ДЛЯ ПАРТНЁРА / УВЕДОМЛЕНИЙ (чтобы не было 404) ---
+// --- СТАБЫ, чтобы фронт не падал ---
 app.get('/api/partner/offers', requireAuth, (_req, res) => {
   res.json({
     offers: [
@@ -53,10 +52,7 @@ app.get('/api/partner/offers', requireAuth, (_req, res) => {
 });
 
 app.get('/api/partner/dashboard', requireAuth, (_req, res) => {
-  res.json({
-    clicks: 0, conversions: 0, revenue: 0,
-    ctr: 0, cr: 0, epc: 0,
-  });
+  res.json({ clicks: 0, conversions: 0, revenue: 0, ctr: 0, cr: 0, epc: 0 });
 });
 
 app.get('/api/partner/finance/summary', requireAuth, (_req, res) => {
@@ -67,7 +63,7 @@ app.get('/api/notifications', requireAuth, (_req, res) => {
   res.json({ items: [] });
 });
 
-// --- (опционально) статика SPA если когда-то положишь фронт в образ ---
+// --- статика SPA если вдруг положишь фронт внутрь образа ---
 const publicDir = path.join(__dirname, 'public');
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
