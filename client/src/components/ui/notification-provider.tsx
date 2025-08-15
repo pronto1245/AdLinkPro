@@ -103,8 +103,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     }
   }, [notifications, displayedNotifications, showPushNotifications]);
 
-  // WebSocket для real-time уведомлений
+  // WebSocket для real-time уведомлений - ВРЕМЕННО ОТКЛЮЧЕН
   useEffect(() => {
+    // ОТКЛЮЧЕНО: WebSocket подключение вызывает unhandled promise rejections
+    return;
+    
     if (!user) return;
 
     const ws = new WebSocket(`${import.meta.env.VITE_API_BASE_URL?.replace('http', 'ws') || (import.meta.env.DEV ? 'ws://localhost:5000' : `ws://${window.location.host}`)}/ws`);
