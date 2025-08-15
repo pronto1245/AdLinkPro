@@ -1,21 +1,24 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const { t, language, setLanguage } = useLanguage();
+  const { i18n, t } = useTranslation();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  
+  const language = i18n.language || 'ru';
+  const setLanguage = (lang: string) => i18n.changeLanguage(lang);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,14 +27,13 @@ export default function Login() {
     try {
       await login(username, password);
       
-      // Small delay to ensure user data is set before redirect
-      setTimeout(() => {
-        setLocation('/');
-      }, 100);
+      // Redirect immediately after successful login
+      setLocation('/');
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
-        title: "Login Failed",
-        description: error.message || "Invalid credentials",
+        title: "Ошибка входа",
+        description: error.message || "Неверные учетные данные",
         variant: "destructive",
       });
     } finally {

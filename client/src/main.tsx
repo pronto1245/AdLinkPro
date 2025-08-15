@@ -3,6 +3,16 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import "./lib/i18n";
 import App from "./App";
+
+// Global error handling to prevent white screens
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+  event.preventDefault(); // Prevent the default action
+});
+
+window.addEventListener('error', (event) => {
+  console.error('Global error:', event.error);
+});
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
