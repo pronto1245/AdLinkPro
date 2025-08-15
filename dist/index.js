@@ -27745,41 +27745,6 @@ app.use(import_express2.default.json());
 app.use(corsMw);
 app.options("*", corsMw);
 app.get("/health", (_req, res) => res.status(200).json({ ok: true }));
-
-// __DEV_API_EARLY__
-try {
-  const exp = require('express');
-  const jwt = require('jsonwebtoken');
-  if (typeof app?.use === 'function') {
-    const r = exp.Router();
-    // /api/me — всегда
-    r.get('/me', (req, res) => {
-      try {
-        const h = req.headers.authorization || '';
-        const token = h.split(' ')[1];
-        if (!token) return res.status(401).json({ error: 'no token' });
-        const payload = jwt.verify(token, process.env.JWT_SECRET);
-        return res.json({ id: payload.sub, role: payload.role, email: payload.email, username: payload.username });
-      } catch {
-        return res.status(401).json({ error: 'invalid token' });
-      }
-    });
-    // /api/dev/dev-token — только когда ALLOW_SEED=1
-    if (process.env.ALLOW_SEED === '1') {
-      r.post('/dev/dev-token', (req, res) => {
-        const secret = process.env.JWT_SECRET;
-        if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });
-        const token = jwt.sign(
-          { sub:'dev-admin', role:'ADMIN', email:process.env.SEED_EMAIL||'admin@example.com', username:process.env.SEED_USERNAME||'admin' },
-          secret, { expiresIn:'7d' }
-        );
-        return res.json({ token });
-      });
-    }
-    app.use('/api', r);
-  }
-} catch (e) { try { console.error('dev api early insert error', e && e.message ? e.message : e); } catch(_) {} }
-// __/DEV_API_EARLY__
 app.use("/api", auth_default);
 function requireAuth(req, res, next) {
   const h = String(req.headers.authorization || "");
@@ -27810,72 +27775,6 @@ if (import_node_fs.default.existsSync(publicDir)) {
   app.use(import_express2.default.static(publicDir));
   app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(import_node_path.default.join(publicDir, "index.html")));
 }
-
-
-// __DEV_ROUTES_INSERTED__
-try {
-  const exp = require('express');
-  const jwt = require('jsonwebtoken');
-  if (typeof app?.use === 'function') {
-    try { app.use(exp.json()); } catch {}
-    if (process.env.ALLOW_SEED === '1') {
-      app.post('/api/dev/dev-token', (req, res) => {
-        const secret = process.env.JWT_SECRET;
-        if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });
-        const token = jwt.sign(
-          { sub: 'dev-admin', role: 'ADMIN', email: process.env.SEED_EMAIL || 'admin@example.com', username: process.env.SEED_USERNAME || 'admin' },
-          secret, { expiresIn: '7d' }
-        );
-        return res.json({ token });
-      });
-    }
-    app.get('/api/me', (req, res) => {
-      try {
-        const h = req.headers.authorization || '';
-        const token = h.split(' ')[1];
-        if (!token) return res.status(401).json({ error: 'no token' });
-        const payload = jwt.verify(token, process.env.JWT_SECRET);
-        return res.json({ id: payload.sub, role: payload.role, email: payload.email, username: payload.username });
-      } catch {
-        return res.status(401).json({ error: 'invalid token' });
-      }
-    });
-  }
-} catch (e) { try { console.error('dev routes insert error', e && e.message ? e.message : e);} catch(_){} }
-// __/DEV_ROUTES_INSERTED__
-
-
-// __DEV_ROUTES_SAFE_INSERT__
-try {
-  const exp = require('express');
-  const jwt = require('jsonwebtoken');
-  if (typeof app?.use === 'function') {
-    try { app.use(exp.json()); } catch {}
-    if (process.env.ALLOW_SEED === '1') {
-      app.post('/api/dev/dev-token', (req, res) => {
-        const secret = process.env.JWT_SECRET;
-        if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });
-        const token = jwt.sign(
-          { sub: 'dev-admin', role: 'ADMIN', email: process.env.SEED_EMAIL || 'admin@example.com', username: process.env.SEED_USERNAME || 'admin' },
-          secret, { expiresIn: '7d' }
-        );
-        return res.json({ token });
-      });
-    }
-    app.get('/api/me', (req, res) => {
-      try {
-        const h = req.headers.authorization || '';
-        const token = h.split(' ')[1];
-        if (!token) return res.status(401).json({ error: 'no token' });
-        const payload = jwt.verify(token, process.env.JWT_SECRET);
-        return res.json({ id: payload.sub, role: payload.role, email: payload.email, username: payload.username });
-      } catch {
-        return res.status(401).json({ error: 'invalid token' });
-      }
-    });
-  }
-} catch (e) { try { console.error('dev routes safe insert error', e && e.message ? e.message : e); } catch(_){} }
-// __/DEV_ROUTES_SAFE_INSERT__
 app.listen(PORT, () => console.log(`API listening on :${PORT}`));
 (() => {
   const setup = async () => {
