@@ -1,66 +1,31 @@
-// client/src/lib/api.ts
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
-const API_BASE = 'https://central-matelda-pronto12-95b8129d.koyeb.app'; // всегда ваш сабдомен
-
-function buildHeaders(init?: RequestInit, withAuth = true) {
-  const h = new Headers(init?.headers);
-  if (!h.has('Content-Type')) h.set('Content-Type', 'application/json');
-  h.set('Accept', 'application/json');
-  if (withAuth && typeof localStorage !== 'undefined') {
-    const t = localStorage.getItem('token');
-    if (t) h.set('Authorization', `Bearer ${t}`);
-  }
-  return h;
-}
-
-async function parseJsonSafely<T>(res: Response): Promise<T> {
-  const ct = res.headers.get('content-type') || '';
-  if (ct.includes('application/json')) return (await res.json()) as T;
-  const txt = await res.text().catch(() => '');
-  return (txt ? (JSON.parse(txt) as T) : ({} as T));
+function shouldSkipAuth(path: string) {
+  // На /api/auth/* токен НЕ отправляем
+  return path.startsWith('/api/auth/');
 }
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const isLogin = /\/api\/auth\/login$/.test(path);     // на логин не подмешиваем старый токен
-  const headers = buildHeaders(init, !isLogin);
-  const url = `${API_BASE}${path}`;
+  const headers = new Headers(init?.headers);
+  headers.set('Content-Type', 'application/json');
 
-  const res = await fetch(url, { ...init, headers, mode: 'cors' });
+  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+  if (token && !shouldSkipAuth(path)) headers.set('Authorization', `Bearer ${token}`);
 
+  const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
   if (!res.ok) {
-    try {
-      const err: any = await parseJsonSafely<any>(res);
-      const msg = err?.message || err?.error || `HTTP ${res.status}`;
-      throw new Error(msg);
-    } catch {
-      throw new Error(`HTTP ${res.status}`);
-    }
+    const text = await res.text().catch(() => '');
+    throw new Error(`HTTP ${res.status}${text ? `: ${text}` : ''}`);
   }
-  return await parseJsonSafely<T>(res);
-}
-
-export function setToken(token: string | null) {
-  if (typeof localStorage === 'undefined') return;
-  if (!token) localStorage.removeItem('token');
-  else localStorage.setItem('token', token);
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) return {} as T;
+  return (await res.json()) as T;
 }
 
 export async function login(username: string, password: string) {
-  type LoginResp =
-    | { user?: any; token?: string; success?: boolean; message?: string }
-    | { success?: boolean; message?: string; data?: { user?: any; token?: string } }
-    | any;
-
-  const res = await api<LoginResp>('/api/auth/login', {
+  type LoginResponse = { user: { id: number; username: string; role: string }; token: string };
+  return api<LoginResponse>('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify({ username, password }),
   });
-
-  const token = res?.token ?? res?.data?.token;
-  const user  = res?.user  ?? res?.data?.user;
-  if (!token || !user) throw new Error(res?.message || 'Login response shape invalid');
-
-  setToken(token);
-  return { user, token };
 }
-
