@@ -4,44 +4,40 @@ import path from 'node:path';
 import fs from 'node:fs';
 
 import authRouter from './routes/auth';
-import analyticsRouter from './routes/analytics';
-import affiliateRouter from './routes/affiliate';
-import advertiserRouter from './routes/advertiser';
+import partnerRouter from './routes/partner';
+import notificationsRouter from './routes/notifications';
 
 const app = express();
-const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
+const PORT = process.env.PORT || 5000;
 
-// CORS: разрешаем Netlify
-const allowed = (process.env.CORS_ORIGIN || 'https://adlinkpro.netlify.app')
-  .split(',')
-  .map(s => s.trim());
-
+// --- CORS ---
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://adlinkpro.netlify.app',
+];
 const corsMw = cors({
-  origin: (origin, cb) => {
+  origin(origin, cb) {
     if (!origin) return cb(null, true);
-    if (allowed.includes('*') || allowed.includes(origin)) return cb(null, true);
-    return cb(new Error(`CORS blocked: ${origin}`), false);
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(null, false);
   },
-  credentials: false,
-  methods: process.env.CORS_METHODS || 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-  allowedHeaders: process.env.CORS_HEADERS || 'Content-Type,Authorization',
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+  credentials: true,
 });
-
-// ВАЖНО: порядок
 app.use(express.json());
 app.use(corsMw);
 app.options('*', corsMw);
 
-// health
+// --- Health ---
 app.get('/health', (_req, res) => res.status(200).json({ ok: true }));
 
-// API
-app.use('/api/auth', authRouter);
-app.use('/api/analytics', analyticsRouter);
-app.use('/api/affiliate', affiliateRouter);
-app.use('/api/advertiser', advertiserRouter);
+// --- API ---
+app.use('/api', authRouter);           // /api/auth/*
+app.use('/api', partnerRouter);        // /api/partner/*
+app.use('/api', notificationsRouter);  // /api/notifications
 
-// (опционально) статика, если когда-нибудь положим фронт в образ
+// --- (опционально) статика SPA, если когда-то кладёшь фронт внутрь образа ---
 const publicDir = path.join(__dirname, 'public');
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
