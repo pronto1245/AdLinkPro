@@ -27725,6 +27725,7 @@ var auth_default = router;
 
 // server/index.ts
 var app = (0, import_express2.default)();
+app.use("/api/auth", auth_default);
 registerDevRoutes(app);
 var PORT = process.env.PORT || 5e3;
 var allowedOrigins = [

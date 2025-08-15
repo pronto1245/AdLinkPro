@@ -1,3 +1,4 @@
+import { authRouter } from "./auth.routes";
 import { registerDevRoutes } from "./dev-routes";
 import express from 'express';
 import cors from 'cors';
@@ -6,6 +7,7 @@ import fs from 'node:fs';
 import authRouter from './routes/auth';
 
 const app = express();
+app.use("/api/auth", authRouter);
 registerDevRoutes(app);
 const PORT = process.env.PORT || 5000;
 
