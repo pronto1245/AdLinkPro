@@ -1,38 +1,34 @@
 import { useEffect, useRef } from 'react';
-import { useAuth } from '@/contexts/auth-context';
 
-export default function useWebSocket() {
-  const { token } = useAuth();
+export function useWebSocket(token?: string) {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    // В проде не коннектимся, если нет явного VITE_WS_URL.
-    if (import.meta.env.PROD && !import.meta.env.VITE_WS_URL) {
-      return;
-    }
+    // В проде отключено, пока не зададим VITE_WS_URL
+    const WS_URL = import.meta?.env?.VITE_WS_URL as string | undefined;
+    if (!WS_URL) return;
 
-    const base =
-      import.meta.env.VITE_WS_URL ||
-      (location.protocol === 'https:' ? `wss://${location.host}` : `ws://${location.host}`);
-
-    const url = `${base}/ws${token ? `?token=${encodeURIComponent(token)}` : ''}`;
-
+    if (!token || wsRef.current) return;
     try {
-      const ws = new WebSocket(url);
+      const url = new URL(WS_URL);
+      if (token) url.searchParams.set('token', token);
+      const ws = new WebSocket(url.toString());
       wsRef.current = ws;
 
       ws.onopen = () => {
-        // console.debug('WS connected');
+        // console.debug('WS open');
       };
-      ws.onmessage = () => {};
+      ws.onmessage = () => {
+        // console.debug('WS message', ev.data);
+      };
       ws.onerror = () => {
-        // Тихо. Не спамим консоль.
+        // console.debug('WS error', err);
       };
       ws.onclose = () => {
         wsRef.current = null;
       };
     } catch {
-      // игнор
+      // ignore
     }
 
     return () => {
@@ -41,3 +37,6 @@ export default function useWebSocket() {
     };
   }, [token]);
 }
+
+// На всякий случай — дефолтный экспорт тоже
+export default useWebSocket;
