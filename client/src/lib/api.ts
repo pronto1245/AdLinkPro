@@ -1,42 +1,28 @@
-const API_BASE = import.meta.env.VITE_API_URL || ''; // пусто => /api/* пойдут через Netlify proxy
+const API_BASE = import.meta.env.DEV ? (import.meta.env.VITE_API_URL || '') : '';
 
-function jsonOrEmpty<T>(res: Response): Promise<T> {
-  const ct = res.headers.get('content-type') || '';
-  if (!ct.includes('application/json')) return Promise.resolve({} as T);
-  return res.json() as Promise<T>;
-}
+export async function api<T>(path: string, init?: RequestInit & { skipAuth?: boolean }): Promise<T> {
+  const headers = new Headers(init?.headers);
+  headers.set('Content-Type', 'application/json');
 
-export async function api<T>(path: string, init: RequestInit = {}) {
-  const headers = new Headers(init.headers);
-  if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-
-  // На /api/auth/* НЕ добавляем Authorization (логин/рефреш)
-  const needsAuth = !/^\/?api\/auth\//.test(path.replace(/^\//, ''));
-  if (needsAuth) {
+  if (!init?.skipAuth) {
     const token = localStorage.getItem('token');
     if (token) headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers,
-    // Важно: не шлём куки/креды — они нам не нужны, мы на JWT
-    credentials: 'omit',
-    mode: 'cors',
-  });
-
+  const res = await fetch(`${API_BASE}${path}`, { ...init, headers, credentials: 'include' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return jsonOrEmpty<T>(res);
+
+  const ct = res.headers.get('content-type') || '';
+  return ct.includes('application/json') ? (await res.json()) as T : ({} as T);
 }
 
 export async function login(username: string, password: string) {
-  type LoginResponse = { user: { id: number; username: string; role: string }; token: string };
-  const data = await api<LoginResponse>('/api/auth/login', {
+  const data: any = await api('/api/auth/login', {
     method: 'POST',
+    skipAuth: true,
     body: JSON.stringify({ username, password }),
-    // на всякий случай явно:
-    credentials: 'omit',
   });
-  localStorage.setItem('token', data.token);
+  const token = data?.token ?? data?.data?.token;
+  if (token) localStorage.setItem('token', token);
   return data;
 }
