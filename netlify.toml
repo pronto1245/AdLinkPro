@@ -12,3 +12,10 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# proxy /api/health to backend /health
+[[redirects]]
+from = "/api/health"
+to   = "https://central-matelda-pronto12-95b8129d.koyeb.app/health"
+status = 200
+force  = true

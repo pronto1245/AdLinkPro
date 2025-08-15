@@ -31900,6 +31900,7 @@ var auth_default = router;
 
 // server/index.ts
 var app = (0, import_express3.default)();
+app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.set("trust proxy", process.env.TRUST_PROXY === "1" ? 1 : 0);
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use((0, import_compression.default)());

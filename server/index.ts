@@ -13,6 +13,9 @@ import fs from 'node:fs';
 import authRouter from './routes/auth';
 
 const app = express();
+/* __HEALTH_ALIAS_BEGIN__ */
+app.get('/api/health', (req,res) => res.json({ ok:true }));
+/* __HEALTH_ALIAS_END__ */
 /* __HARDENING_BEGIN__ */
 app.set('trust proxy', (process.env.TRUST_PROXY === '1') ? 1 : 0);
 app.use(helmet({ crossOriginResourcePolicy: false }));
