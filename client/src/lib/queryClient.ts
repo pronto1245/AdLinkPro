@@ -67,6 +67,9 @@ export async function apiRequest(
   
   // FIX: Check that token is not null string and not empty
   if (token === 'null' || token === 'undefined' || !token || token.trim() === '') {
+    // Clear invalid tokens
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('token');
     token = null;
   }
   
@@ -102,11 +105,8 @@ export const getQueryFn: <T>(options: {
     // Build full API URL
     const fullUrl = buildApiUrl(queryKey[0] as string);
     
-    // CRITICAL FIX: Only use auth_token, clear old token format
-    if (localStorage.getItem('token')) {
-      localStorage.removeItem('token');
-    }
-    const token = localStorage.getItem('auth_token');
+    // Get valid token from localStorage
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
     const headers: Record<string, string> = {};
     
     // FIX: Check that token is not null string and not empty
