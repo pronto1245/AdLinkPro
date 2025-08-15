@@ -21,6 +21,15 @@ async function throwIfResNotOk(res: Response) {
 
 // Get API base URL from environment
 const getApiBaseUrl = (): string => {
+  // Check if running in browser and on Replit domain
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname.includes('replit.dev')) {
+      // Use same domain with port 5000 for Replit
+      return `${window.location.protocol}//${hostname}:5000`;
+    }
+  }
+  
   // In production, use environment variable, fallback to current domain
   const envApiUrl = import.meta.env.VITE_API_BASE_URL;
   

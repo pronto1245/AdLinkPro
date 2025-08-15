@@ -72,7 +72,9 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigins = [
     'https://adlinkpro.netlify.app',
-    'https://adlinkpro.koyeb.app', 
+    'https://adlinkpro.koyeb.app',
+    // Add current Replit domain
+    'https://e2b04e37-b05b-4d57-9368-9f629e0035bd-00-2yo71uvl8ejp3.worf.replit.dev', 
     'http://localhost:3000',
     'http://localhost:5000',
     'https://localhost:3000'
