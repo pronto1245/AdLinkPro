@@ -7,12 +7,15 @@ export const WebSocketManager: React.FC = () => {
   useEffect(() => {
     if (!user) return;
 
-    // WebSocket logic будет добавлена позже
+    // WebSocket logic будет добавлена позже - временно отключена
     console.log("WebSocket Manager initialized for user:", user.username);
-
-    return () => {
+    
+    // Симулируем подключение без реальных WebSocket операций
+    const cleanup = () => {
       console.log("WebSocket Manager cleanup");
     };
+
+    return cleanup;
   }, [user]);
 
   return null;

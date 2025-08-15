@@ -18,6 +18,9 @@ export function useWebSocket() {
   const maxReconnectAttempts = 5;
 
   const connect = () => {
+    // ВРЕМЕННО ОТКЛЮЧЕН - WebSocket вызывает unhandled promise rejections
+    return;
+    
     if (!user || ws.current?.readyState === WebSocket.OPEN) {
       return;
     }
@@ -158,6 +161,9 @@ export function useWebSocket() {
   };
 
   useEffect(() => {
+    // ВРЕМЕННО ОТКЛЮЧЕН - WebSocket connection вызывает unhandled promise rejections
+    return () => {};
+    
     if (user) {
       connect();
     } else {

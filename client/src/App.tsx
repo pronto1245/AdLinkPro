@@ -9,7 +9,7 @@ import { SidebarProvider } from "./contexts/sidebar-context";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { NotificationProvider } from "./components/ui/notification-provider";
 import { NotificationProvider as PushNotificationProvider } from "./components/ui/notification-provider";
-import { WebSocketManager } from "./components/WebSocketManager";
+// import { WebSocketManager } from "./components/WebSocketManager"; // Временно отключен
 import RoleBasedLayout from "./components/layout/RoleBasedLayout";
 import NotFound from "./pages/NotFound";
 import Dashboard from "@/pages/super-admin/dashboard";
@@ -630,7 +630,7 @@ function App() {
                 <PushNotificationProvider>
                   <SidebarProvider>
                     <Toaster />
-                    <WebSocketManager />
+                    {/* <WebSocketManager /> // Временно отключен для исправления promise rejections */}
                     <Router />
                   </SidebarProvider>
                 </PushNotificationProvider>
