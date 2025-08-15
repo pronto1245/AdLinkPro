@@ -1,3 +1,7 @@
+import rateLimit from "express-rate-limit";
+import compression from "compression";
+import cors from "cors";
+import helmet from "helmet";
 import jwt from "jsonwebtoken";
 import { devLoginRouter } from "./dev.login";
 import { authRouter } from "./auth.routes";
@@ -9,6 +13,16 @@ import fs from 'node:fs';
 import authRouter from './routes/auth';
 
 const app = express();
+/* __HARDENING_BEGIN__ */
+app.set('trust proxy', (process.env.TRUST_PROXY === '1') ? 1 : 0);
+app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(compression());
+app.use(cors({
+  origin: (process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*'),
+  credentials: true
+}));
+app.use(rateLimit({ windowMs: 15*60*1000, max: 300 }));
+/* __HARDENING_END__ */
 /* __AUTH_LOGIN_OVERRIDE_BEGIN__ */
 app.post("/api/auth/login", require("express").json(), (req, res) => {
   try {
