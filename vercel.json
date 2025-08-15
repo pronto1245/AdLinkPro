@@ -3,33 +3,23 @@
   "builds": [
     {
       "src": "server/index.ts",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "client/**/*",
-      "use": "@vercel/static"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["server/**", "shared/**"]
+      }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server/index.ts"
+      "dest": "/server/index.ts"
     },
     {
       "src": "/(.*)",
-      "dest": "dist/public/$1"
+      "dest": "/server/index.ts"
     }
   ],
   "env": {
-    "NODE_ENV": "production",
-    "JWT_SECRET": "production-jwt-secret-change-in-production",
-    "SESSION_SECRET": "production-session-secret",
-    "SENDGRID_API_KEY": "",
-    "VOLUUM_TOKEN": "",
-    "KEITARO_TOKEN": "",
-    "BINOM_TOKEN": "",
-    "REDTRACK_TOKEN": "",
-    "GOOGLE_CLOUD_PROJECT_ID": "",
-    "GOOGLE_CLOUD_STORAGE_BUCKET": ""
+    "NODE_ENV": "production"
   }
 }

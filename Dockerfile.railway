@@ -1,15 +1,27 @@
+# Railway production Dockerfile
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Устанавливаем зависимости
+# Copy package files
 COPY package*.json ./
-RUN npm install
+COPY tsconfig.json ./
 
-# Копируем весь проект
-COPY . .
+# Install dependencies
+RUN npm ci --only=production
 
-# Запускаем в development режиме через tsx
+# Copy source code
+COPY server ./server
+COPY shared ./shared
+
+# Build the application
+RUN npm run build:server
+
+# Expose port
 EXPOSE $PORT
 
-CMD ["npm", "run", "dev"]
+# Set production environment
+ENV NODE_ENV=production
+
+# Start the application
+CMD ["node", "dist/server/index.js"]

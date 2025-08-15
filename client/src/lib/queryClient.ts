@@ -7,6 +7,45 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Get API base URL from environment
+const getApiBaseUrl = (): string => {
+  // In production, use environment variable, fallback to current domain
+  const envApiUrl = import.meta.env.VITE_API_BASE_URL;
+  
+  if (envApiUrl) {
+    return envApiUrl;
+  }
+  
+  // Development fallback
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5000';
+  }
+  
+  // Production fallback - same domain
+  return '';
+};
+
+// Build full API URL
+const buildApiUrl = (endpoint: string): string => {
+  const baseUrl = getApiBaseUrl();
+  
+  // If endpoint already has protocol, return as is
+  if (endpoint.startsWith('http')) {
+    return endpoint;
+  }
+  
+  // If no base URL (same domain), return endpoint as is
+  if (!baseUrl) {
+    return endpoint;
+  }
+  
+  // Combine base URL with endpoint
+  const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  
+  return `${cleanBase}${cleanEndpoint}`;
+};
+
 export async function apiRequest(
   url: string,
   method: string = 'GET',
@@ -16,12 +55,12 @@ export async function apiRequest(
   // CRITICAL FIX: Ensure method is always a string
   const httpMethod = typeof method === 'string' ? method : 'GET';
   
-  // Убираем лишние логи для чистоты консоли
-
   if (typeof method !== 'string') {
-    // Тихо обрабатываем неверный тип метода
     throw new Error(`Invalid method in apiRequest: ${typeof method}. Expected string, got ${typeof method}`);
   }
+
+  // Build full API URL
+  const fullUrl = buildApiUrl(url);
 
   // CRITICAL FIX: Only use auth_token, clear old token format
   if (localStorage.getItem('token')) {
@@ -31,12 +70,9 @@ export async function apiRequest(
   
   // FIX: Check that token is not null string and not empty
   if (token === 'null' || token === 'undefined' || !token || token.trim() === '') {
-    // Тихо очищаем недействительные токены
     localStorage.removeItem('auth_token');
     token = null;
   }
-  
-  // Убираем лишние логи токенов для чистоты консоли
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -47,7 +83,7 @@ export async function apiRequest(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(url, {
+  const res = await fetch(fullUrl, {
     method: httpMethod,
     headers,
     body: body ? JSON.stringify(body) : undefined,
@@ -67,6 +103,9 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    // Build full API URL
+    const fullUrl = buildApiUrl(queryKey[0] as string);
+    
     // CRITICAL FIX: Only use auth_token, clear old token format
     if (localStorage.getItem('token')) {
       localStorage.removeItem('token');
@@ -79,7 +118,7 @@ export const getQueryFn: <T>(options: {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const res = await fetch(queryKey[0] as string, {
+    const res = await fetch(fullUrl, {
       method: 'GET',
       headers,
       credentials: "include",
