@@ -35,10 +35,31 @@ export default function PartnerProfile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Загружаем полный профиль партнёра
+  // Загружаем полный профиль партнёра с error handling
   const { data: profileData, isLoading: isProfileLoading, error } = useQuery<PartnerProfileData>({
     queryKey: ['/api/partner/profile'],
+    queryFn: async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) throw new Error('No auth token');
+        
+        const response = await fetch('/api/partner/profile', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+          console.warn('Profile API failed:', response.status);
+          throw new Error(`Profile fetch failed: ${response.status}`);
+        }
+        
+        return response.json();
+      } catch (error) {
+        console.error('Profile error:', error);
+        throw error;
+      }
+    },
     enabled: !!user?.id,
+    retry: false // Prevent multiple retry attempts
   });
 
   const [formData, setFormData] = useState({
