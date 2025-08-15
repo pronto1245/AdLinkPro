@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { devLoginRouter } from "./dev.login";
 import { authRouter } from "./auth.routes";
 import { registerDevRoutes } from "./dev-routes";
@@ -8,6 +9,33 @@ import fs from 'node:fs';
 import authRouter from './routes/auth';
 
 const app = express();
+/* __AUTH_LOGIN_OVERRIDE_BEGIN__ */
+app.post("/api/auth/login", require("express").json(), (req, res) => {
+  try {
+    const users = [
+      { email: process.env.OWNER_EMAIL || "9791207@gmail.com",     password: process.env.OWNER_PASSWORD || "owner123",    role: "OWNER",      sub: "owner-1",    username: "owner" },
+      { email: process.env.ADVERTISER_EMAIL || "12345@gmail.com",  password: process.env.ADVERTISER_PASSWORD || "adv123", role: "ADVERTISER", sub: "adv-1",      username: "advertiser" },
+      { email: process.env.PARTNER_EMAIL || "4321@gmail.com",      password: process.env.PARTNER_PASSWORD || "partner123",role: "PARTNER",    sub: "partner-1",  username: "partner" },
+    ];
+    const b = req.body || {};
+    const ident = String((b.email || b.username || "")).toLowerCase();
+    const pass = String(b.password || "");
+    if (!ident || !pass) return res.status(400).json({ error: "email/username and password are required" });
+
+    const u = users.find(x => x.email.toLowerCase() === ident || x.username.toLowerCase() === ident);
+    if (!u || u.password !== pass) return res.status(401).json({ error: "invalid credentials" });
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
+
+    const token = jwt.sign({ sub: u.sub, role: u.role, email: u.email, username: u.username }, secret, { expiresIn: "7d" });
+    return res.json({ token });
+  } catch(e) {
+    try { console.error("auth login override error:", e && e.message ? e.message : e); } catch(_){}
+    return res.status(500).json({ error: "internal error" });
+  }
+});
+/* __AUTH_LOGIN_OVERRIDE_END__ */
 // mount dev login BEFORE other routers
 app.use("/api/dev", devLoginRouter);
 app.use("/api/auth", devLoginRouter); // alias: /api/auth/login
