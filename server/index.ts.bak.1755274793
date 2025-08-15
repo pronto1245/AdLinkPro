@@ -71,34 +71,3 @@ if (fs.existsSync(publicDir)) {
 }
 
 app.listen(PORT, () => console.log(`API listening on :${PORT}`));
-// @ts-nocheck
-/* === DEV AUTH HELPERS (inline v3) === */
-;(() => {
-  const setup = async () => {
-    try {
-      try { app.use(require('express').json()); } catch(e) {}
-      let jwt; try { jwt = require('jsonwebtoken'); } catch(e) { try { jwt = (await import('jsonwebtoken')).default; } catch(e2) { jwt = await import('jsonwebtoken'); } }
-      if (process.env.ALLOW_SEED === '1') {
-        app.post('/api/dev/dev-token', (req,res) => {
-          const secret = process.env.JWT_SECRET;
-          if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });
-          const token = jwt.sign({ sub:'dev-admin', role:'ADMIN', email: process.env.SEED_EMAIL || 'admin@example.com', username: process.env.SEED_USERNAME || 'admin' }, secret, { expiresIn: '7d' });
-          res.json({ token });
-        });
-      }
-      app.get('/api/me', (req,res) => {
-        try {
-          const h = req.headers.authorization || '';
-          const token = h.split(' ')[1];
-          if (!token) return res.status(401).json({ error:'no token' });
-          const payload = jwt.verify(token, process.env.JWT_SECRET);
-          res.json({ id: payload.sub, role: payload.role, email: payload.email, username: payload.username });
-        } catch(e) {
-          res.status(401).json({ error:'invalid token' });
-        }
-      });
-    } catch (e) { try { console.error('dev-auth inline error', e && e.message ? e.message : e); } catch(_) {} }
-  };
-  setup();
-})();
-/* === /DEV AUTH HELPERS === */
