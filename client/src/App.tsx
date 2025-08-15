@@ -7,9 +7,9 @@ import { AuthProvider } from "./contexts/auth-context";
 
 import { SidebarProvider } from "./contexts/sidebar-context";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { NotificationProvider } from "@/components/NotificationToast";
+import { NotificationProvider } from "./components/ui/notification-provider";
 import { NotificationProvider as PushNotificationProvider } from "./components/ui/notification-provider";
-import { WebSocketManager } from "@/components/WebSocketManager";
+import { WebSocketManager } from "./components/WebSocketManager";
 import RoleBasedLayout from "./components/layout/RoleBasedLayout";
 import NotFound from "./pages/NotFound";
 import Dashboard from "@/pages/super-admin/dashboard";
