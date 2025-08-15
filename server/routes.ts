@@ -404,7 +404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ADVERTISER DASHBOARD API ROUTES
   console.log('=== ADDING ADVERTISER DASHBOARD ROUTES ===');
   
-  app.get("/api/advertiser/dashboard-metrics", async (req, res) => {
+  app.get("/api/advertiser/dashboard-metrics", authenticateToken, async (req, res) => {
     try {
       console.log('=== GET ADVERTISER DASHBOARD METRICS ===');
       
@@ -459,7 +459,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/advertiser/live-statistics", async (req, res) => {
+  app.get("/api/advertiser/live-statistics", authenticateToken, async (req, res) => {
     try {
       console.log('=== GET ADVERTISER LIVE STATISTICS ===');
       
