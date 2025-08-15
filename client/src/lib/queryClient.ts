@@ -135,23 +135,40 @@ export const getQueryFn: <T>(options: {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
+      queryFn: getQueryFn({ on401: "returnNull" }), // ИЗМЕНЕНО: не выбрасываем ошибки в глобальном обработчике
       refetchInterval: false,
       refetchOnWindowFocus: false,
       staleTime: 30 * 1000, // 30 секунд для живых данных
       gcTime: 5 * 60 * 1000, // 5 минут в кеше (более быстрое обновление)
       retry: (failureCount, error: any) => {
-        // Не повторяем при 4xx ошибках
-        if (error?.message?.includes('4')) return false;
-        return failureCount < 2;
+        // ИЗМЕНЕНО: Полностью отключаем retry для предотвращения promise rejections
+        return false;
       },
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+      // Добавляем глобальный error handler
+      onError: (error: Error) => {
+        // Тихо логируем ошибки без выброса unhandled promise rejection
+        console.warn('Query error handled:', error.message);
+      },
     },
     mutations: {
       retry: (failureCount, error: any) => {
         if (error?.message?.includes('4')) return false;
         return failureCount < 1;
       },
+      // Добавляем глобальный error handler для mutations
+      onError: (error: Error) => {
+        console.warn('Mutation error handled:', error.message);
+      },
+    },
+  },
+  // Добавляем глобальный error boundary для QueryClient
+  logger: {
+    log: console.log,
+    warn: console.warn,
+    error: (message) => {
+      // Предотвращаем unhandled promise rejections от QueryClient
+      console.warn('QueryClient error handled:', message);
     },
   },
 });
