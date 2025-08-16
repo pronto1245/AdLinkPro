@@ -14,17 +14,14 @@ const resources = {
   },
 };
 
-// Force Russian language in localStorage
-localStorage.setItem('i18nextLng', 'ru');
-
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'ru', // Force Russian as default language
-    fallbackLng: 'ru',
-    debug: false, // Disable debug after fixing
+    lng: 'ru', // Default Russian language
+    fallbackLng: 'en',
+    debug: false,
 
     interpolation: {
       escapeValue: false,

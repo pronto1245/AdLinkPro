@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/contexts/language-context';
+import { useTranslation } from 'react-i18next';
 
 interface Activity {
   id: string;
@@ -56,7 +56,7 @@ const defaultActivities: Activity[] = [
 ];
 
 export default function RecentActivity({ activities = defaultActivities }: RecentActivityProps) {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   const getIconColor = (iconBg: string) => {
     if (iconBg.includes('green')) return 'text-green-600';

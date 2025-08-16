@@ -9,7 +9,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/contexts/auth-context';
-import { useLanguage } from '@/contexts/language-context';
+import { useTranslation } from 'react-i18next';
+
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
 import { 
@@ -32,7 +33,7 @@ import { format, addDays } from 'date-fns';
 
 export default function AuditLogs() {
   const { token } = useAuth();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState<string>('all');

@@ -4,11 +4,11 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { AuthProvider } from "./contexts/auth-context";
-
 import { SidebarProvider } from "./contexts/sidebar-context";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { NotificationProvider } from "./components/ui/notification-provider";
 import { NotificationProvider as PushNotificationProvider } from "./components/ui/notification-provider";
+import "./lib/i18n"; // Initialize i18n
 // import { WebSocketManager } from "./components/WebSocketManager"; // Временно отключен
 import RoleBasedLayout from "./components/layout/RoleBasedLayout";
 import NotFound from "./pages/NotFound";

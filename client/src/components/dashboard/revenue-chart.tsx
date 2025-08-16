@@ -1,13 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useLanguage } from '@/contexts/language-context';
+import { useTranslation } from 'react-i18next';
 
 interface RevenueChartProps {
   data?: any[];
 }
 
 export default function RevenueChart({ data = [] }: RevenueChartProps) {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   return (
     <Card className="lg:col-span-2">

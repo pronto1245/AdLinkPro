@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Plus, Edit, Trash2, ExternalLink, Copy, Eye, RotateCcw } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { apiRequest } from '@/lib/queryClient';
 import TrackingUrlGenerator from './TrackingUrlGenerator';
 
@@ -81,7 +81,7 @@ https://tracker.com/postback?cid={clickid}&status={status}&sum={payout}&offer={o
 `;
 
 export default function PostbackManager() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);

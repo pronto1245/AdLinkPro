@@ -1,4 +1,9 @@
 {
+  "language": {
+    "select": "Select language",
+    "russian": "Russian",
+    "english": "English"
+  },
   "common": {
     "loading": "Loading...",
     "save": "Save",
@@ -56,8 +61,28 @@
     "cancel": "Cancel",
     "active": "Active",
     "save": "Save",
-    "edit": "Edit",
-    "delete": "Delete"
+    "edit": "Edit", 
+    "delete": "Delete",
+    "loading": "Loading...",
+    "view": "View",
+    "inactive": "Inactive"
+  },
+  "roles": {
+    "description": "Create and configure user roles with access permissions",
+    "createRole": "Create Role",
+    "totalRoles": "Total Roles",
+    "globalRoles": "Global Roles",
+    "advertiserRoles": "Advertiser Roles",
+    "activeRoles": "Active Roles",
+    "allRoles": "All Roles",
+    "global": "Global",
+    "advertiser": "Advertiser",
+    "scope": "Scope",
+    "permissions": "Permissions",
+    "globalRole": "Global",
+    "advertiserRole": "Advertiser",
+    "noRoles": "No roles found",
+    "noDescription": "No description available"
   },
   "theme": {
     "light": "Light",
@@ -69,6 +94,37 @@
     "select": "Select language",
     "russian": "Русский",
     "english": "English"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "userAnalytics": "User Analytics",
+    "roles": "Roles",
+    "offers": "Offers",
+    "finances": "Finances",
+    "antifraud": "Anti-fraud",
+    "postbacks": "Postbacks",
+    "blacklist": "Blacklist",
+    "auditLogs": "Audit Logs",
+    "systemSettings": "System Settings",
+    "analytics": "Analytics",
+    "support": "Support",
+    "team": "Team",
+    "statistics": "Statistics",
+    "profile": "Profile",
+    "creatives": "Creatives",
+    "home": "Home",
+    "homeDesc": "Cabinet overview",
+    "myOffers": "My Offers",
+    "myOffersDesc": "Manage offers",
+    "partners": "Partners",
+    "partnersDesc": "Manage partners",
+    "accessRequests": "Access Requests",
+    "accessRequestsDesc": "Access requests to offers",
+    "referrals": "Referrals",
+    "referralsDesc": "Referral program",
+    "notifications": "Notifications",
+    "notificationsDesc": "System notifications"
   },
   "navigation": {
     "dashboard": "Dashboard",
