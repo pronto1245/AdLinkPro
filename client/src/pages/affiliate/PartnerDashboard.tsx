@@ -9,10 +9,10 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Skeleton } from "../components/ui/skeleton";
-import { Badge } from "../components/ui/badge";
+} from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { Skeleton } from "../../components/ui/skeleton";
+import { Badge } from "../../components/ui/badge";
 import {
   TrendingUp,
   TrendingDown,

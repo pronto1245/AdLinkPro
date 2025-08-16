@@ -1,6 +1,6 @@
 import { useAuth } from "../../contexts/auth-context";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
 import { Link } from "wouter";
 import { ExternalLink, BarChart3, DollarSign, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";

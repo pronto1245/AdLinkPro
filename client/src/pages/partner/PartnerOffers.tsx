@@ -8,24 +8,24 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../components/ui/table";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Input } from "../components/ui/input";
+} from "../../components/ui/table";
+import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from "../../components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../components/ui/dropdown-menu";
+} from "../../components/ui/dropdown-menu";
 import { 
   Search, 
   Eye, 
