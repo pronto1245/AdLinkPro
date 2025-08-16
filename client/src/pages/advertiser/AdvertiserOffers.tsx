@@ -111,11 +111,15 @@ const AdvertiserOffers = () => {
   // Обновляем локальное состояние при загрузке данных с сервера
   React.useEffect(() => {
     if (offers && offers.length > 0) {
+      console.log('AdvertiserOffers: Loaded offers from API:', offers.length, offers);
       // Сортируем по дате создания (новые сверху) при первой загрузке
       const sorted = [...offers].sort((a: any, b: any) => 
         new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
       );
       setLocalOffers(sorted);
+      console.log('AdvertiserOffers: Local offers set:', sorted.length);
+    } else {
+      console.log('AdvertiserOffers: No offers received or empty array:', offers);
     }
   }, [offers]);
 
@@ -290,9 +294,23 @@ const AdvertiserOffers = () => {
           <div className="h-8 bg-gray-200 rounded w-1/4"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
         </div>
+        <p className="text-center text-gray-500 mt-4">Загрузка офферов...</p>
       </div>
     );
   }
+
+  // Показываем информацию о количестве офферов
+  const totalOffers = localOffers.length;
+  const filteredCount = filtered.length;
+
+  console.log('AdvertiserOffers render:', { 
+    totalOffers, 
+    filteredCount, 
+    search, 
+    selectedStatus,
+    isLoading,
+    offersFromAPI: offers?.length || 0 
+  });
 
 
 
@@ -300,9 +318,9 @@ const AdvertiserOffers = () => {
     <div className="w-full space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Мои офферы</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Мои офферы ({totalOffers})</h1>
           <p className="text-muted-foreground">
-            Управление офферами и отслеживание статистики
+            Управление офферами и отслеживание статистики. Показано: {filteredCount} из {totalOffers}
           </p>
         </div>
         <Button 
