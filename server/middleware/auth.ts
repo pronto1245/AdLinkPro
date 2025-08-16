@@ -36,24 +36,39 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
+  // Enhanced logging for production debugging
+  console.log('🔐 Authentication attempt:', {
+    hasAuthHeader: !!authHeader,
+    tokenLength: token?.length || 0,
+    tokenStart: token?.substring(0, 20) || 'none',
+    url: req.url,
+    method: req.method
+  });
+
   if (!token) {
+    console.log('❌ No token provided');
     res.status(401).json({ error: 'Authentication required', code: 'TOKEN_MISSING' });
     return;
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
+    console.log('✅ Token decoded successfully:', { userId: decoded.userId || decoded.id, role: decoded.role });
+    
     const userId = decoded.userId || decoded.id;
     
     if (!userId) {
-      res.sendStatus(403);
+      console.log('❌ No userId in token');
+      res.status(403).json({ error: 'Invalid token format', code: 'NO_USER_ID' });
       return;
     }
     
     const user = await storage.getUser(userId);
+    console.log('👤 User lookup result:', { found: !!user, userId });
     
     if (!user) {
-      res.sendStatus(403);
+      console.log('❌ User not found in database');
+      res.status(403).json({ error: 'User not found', code: 'USER_NOT_FOUND' });
       return;
     }
     
@@ -64,10 +79,16 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
       role: user.role,
       ownerId: user.ownerId
     };
+    console.log('🎉 Authentication successful for user:', user.id);
     next();
   } catch (error) {
-    console.error('JWT verification failed:', (error as Error).message);
-    res.sendStatus(403);
+    console.error('❌ JWT verification failed:', {
+      message: (error as Error).message,
+      tokenStart: token?.substring(0, 20),
+      JWT_SECRET_exists: !!JWT_SECRET,
+      JWT_SECRET_length: JWT_SECRET?.length || 0
+    });
+    res.status(403).json({ error: 'Invalid token', code: 'TOKEN_INVALID', details: (error as Error).message });
   }
 };
 

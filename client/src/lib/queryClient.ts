@@ -86,24 +86,27 @@ export async function apiRequest(
   // Get token from localStorage (both old and new format)
   let token = localStorage.getItem('auth_token') || localStorage.getItem('token');
   
-  // DEBUG: Log token status for CreateOffer debugging
-  if (url.includes('/api/advertiser/offers') && method === 'POST') {
-    console.log('🔍 CreateOffer Debug - Token status:', {
-      hasAuthToken: !!localStorage.getItem('auth_token'),
-      hasToken: !!localStorage.getItem('token'), 
-      tokenLength: token?.length || 0,
-      tokenStart: token?.substring(0, 20) || 'none'
-    });
-  }
+  // Enhanced token validation and debugging
+  console.log('🔍 API Request Debug:', {
+    url: url.substring(0, 50),
+    method,
+    hasAuthToken: !!localStorage.getItem('auth_token'),
+    hasToken: !!localStorage.getItem('token'), 
+    tokenLength: token?.length || 0,
+    tokenStart: token?.substring(0, 20) || 'none'
+  });
   
-  // FIX: Check that token is not null string and not empty
-  if (token === 'null' || token === 'undefined' || !token || token.trim() === '') {
+  // CRITICAL FIX: Improved token validation
+  if (token === 'null' || token === 'undefined' || !token || token.trim() === '' || token === 'null') {
     // Clear invalid tokens
     localStorage.removeItem('auth_token');
     localStorage.removeItem('token');
     token = null;
-    if (url.includes('/api/advertiser/offers') && method === 'POST') {
-      console.log('❌ No valid token found for CreateOffer request');
+    console.log('❌ Invalid token detected and cleared');
+    
+    // For authenticated requests, throw error immediately
+    if (url.includes('/api/') && !url.includes('/api/auth/login') && !url.includes('/api/health')) {
+      throw new Error('Authentication required - please log in again');
     }
   }
   
@@ -144,14 +147,14 @@ export async function apiRequest(
     }
   }
 
-  if (url.includes('/api/advertiser/offers') && method === 'POST') {
-    console.log('📡 CreateOffer API Response:', {
-      status: res.status,
-      statusText: res.statusText,
-      ok: res.ok,
-      headers: Object.fromEntries(res.headers.entries())
-    });
-  }
+  // Enhanced response logging for all API calls
+  console.log('📡 API Response:', {
+    url: url.substring(0, 50),
+    method,
+    status: res.status,
+    statusText: res.statusText,
+    ok: res.ok
+  });
 
   // CRITICAL FIX: Check response first before consuming body
   if (!res.ok) {
