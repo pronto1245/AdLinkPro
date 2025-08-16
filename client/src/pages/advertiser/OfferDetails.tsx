@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useParams } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
-import { Badge } from "../../components/ui/badge";
-import { Separator } from "../../components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Separator } from "../components/ui/separator";
 import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, FileText, Upload, Download, Edit } from "lucide-react";
 import { useToast } from "../../hooks/use-toast";
 import { useLocation } from "wouter";
