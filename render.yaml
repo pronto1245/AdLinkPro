@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: adlinkpro
+    env: node
+    buildCommand: npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromService:
+          type: pserv
+          name: postgres
+          property: connectionString
