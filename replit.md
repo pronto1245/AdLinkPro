@@ -1,39 +1,14 @@
 # Overview
-This platform is an affiliate marketing solution designed to optimize offer management, provide real-time analytics, and streamline financial operations for advertisers and affiliates. It supports multiple user roles (super-admin, advertiser, affiliate, staff) with distinct functionalities, including comprehensive offer and creative asset management. The system ensures real-time data updates across all interfaces, offering a responsive and secure experience with complete bilingual support (Russian/English). Its vision is to be a leading-edge, secure, and user-friendly platform that enhances efficiency and profitability within the affiliate marketing ecosystem. Currently deployed and actively used by multiple user roles in production environment.
+This platform is an affiliate marketing solution designed to optimize offer management, provide real-time analytics, and streamline financial operations for advertisers and affiliates. It supports multiple user roles (super-admin, advertiser, affiliate, staff) with distinct functionalities, including comprehensive offer and creative asset management. The system ensures real-time data updates across all interfaces, offering a responsive and secure experience with complete bilingual support (Russian/English). Its vision is to be a leading-edge, secure, and user-friendly platform that enhances efficiency and profitability within the affiliate marketing ecosystem.
 
 # User Preferences
 - **Language**: Russian language preferred ("отвечай на русском пожалуйста")
 - **Communication Style**: Simple, everyday language avoiding technical jargon
-- **Problem Resolution**: Complete comprehensive code review and error fixing rather than individual issue reporting (August 11, 2025)
-- **SSL Configuration**: Real SSL certificates only, no demo/simulation modes (August 11, 2025)
-- **Telegram Integration**: Real bot @integracia7980_bot fully integrated and working (August 11, 2025)
-- **Data Integrity**: COMPLETED - All demo data, test records, API tokens, and mock logic fully removed (August 11, 2025)
-- **Dashboard Requirements**: COMPLETED - All dashboards use real PostgreSQL data with live API endpoints (August 11, 2025)
-- **Error Handling**: COMPLETED - All critical system errors resolved including authentication, notifications, translations, and API endpoints (August 11, 2025)
-- **Deployment Configuration**: COMPLETED - Completely rewrote environment validation logic to eliminate all process.exit calls and make all environment variables optional with safe defaults (August 11, 2025)
-- **JWT_SECRET Validation**: COMPLETED - Removed all hardcoded JWT_SECRET validation, deleted conflicting server/utils/env.ts, unified all imports to use server/config/environment.ts with safe defaults (August 11, 2025)
-- **Deployment Crash Loop**: COMPLETED - Fixed all required environment variables causing deployment failures, implemented production-safe defaults for JWT_SECRET and SESSION_SECRET, eliminated all process.exit calls from configuration validation (August 11, 2025)
-- **Environment Validation**: COMPLETED - Simplified validation to require only JWT_SECRET, all other services are completely optional with graceful degradation (August 11, 2025)
-- **Lazy Service Loading**: COMPLETED - All external services (SendGrid, trackers, Google Cloud) use lazy initialization and graceful degradation patterns (August 11, 2025)
-- **GitHub Deployment**: COMPLETED - Created deployment configurations for Railway, Vercel, Netlify with GitHub Actions CI/CD workflow (August 11, 2025)
-- **Object Storage Integration**: COMPLETED - Full Object Storage integration for static site deployment to Netlify, supporting both public and private file storage (August 11, 2025)
-- **Project Transfer**: COMPLETED - Full source code handover with comprehensive documentation, deployment guides, and production-ready configuration files (August 11, 2025)
-- **GitHub Integration**: COMPLETED - Repository AdLinkPro created with collaborator access for automated code management and CI/CD deployment (August 15, 2025)
-- **Custom Security Secrets**: COMPLETED - User configured custom JWT_SECRET and SESSION_SECRET for production deployment security (August 15, 2025)
-- **Production Deployment Ready**: COMPLETED - Koyeb + Netlify deployment scripts and configurations ready with user's custom security credentials (August 15, 2025)
-- **Complete Repository Archive**: COMPLETED - Created ADLINKPRO_FINAL_GITHUB_READY.tar.gz with full project source code, documentation, and update instructions for GitHub repository management (August 15, 2025)
-- **Final Architecture Audit**: COMPLETED - Comprehensive audit completed with all critical errors resolved (storage.getTrackingEvents, database synchronization, API endpoints). System verified as production-ready with stable server operation and functional authentication (August 15, 2025)
-- **TypeScript Production Errors**: COMPLETED - Fixed all critical TypeScript errors for production deployment. Resolved 238 compilation errors including users table type definitions, offer creation interface, removed broken backup files (routes_backup.ts, storage_broken.ts), fixed syntax errors in Postbacks.tsx. Application compiles successfully with Vite build. Some minor type issues remain but don't affect production functionality (August 16, 2025)
-- **All Roles Production Verification**: COMPLETED - Verified and fixed all user roles (super_admin, advertiser, affiliate, staff) for production deployment. All role-based routes, components, and authentication working correctly in deployed environment (August 16, 2025)
-- **Final TypeScript Cleanup**: COMPLETED - Eliminated all critical compilation errors, removed problematic backup files (i18n_backup.ts, routes_backup.ts, storage_broken.ts), fixed API request methods in DomainVerification.tsx and header.tsx, improved null safety in useWebSocket.ts. Application successfully builds and deploys with stable server operation for all user roles (August 16, 2025)
-- **Production Authentication Fix**: COMPLETED - Resolved 403 Forbidden errors on offer creation API, enhanced token validation and authentication middleware with detailed logging, successfully tested with HTTP 201 response (August 16, 2025)
-- **Complete Russian Localization**: COMPLETED - Fixed mixed Russian/English interface display, updated all role labels (Супер Админ, Рекламодатель, Партнер), completed sidebar menu translation, changed platform branding to AdLinkPro (August 16, 2025)
-- **Translation System Unification**: COMPLETED - Completely eliminated LanguageContext vs react-i18next conflicts by removing all LanguageContext files, unified entire project on react-i18next system, added all missing partner dashboard translations (totalClicks, conversions, revenue, etc.), fixed translation key display issues. All role interfaces now translate correctly between Russian/English without conflicts (August 16, 2025)
-- **Missing Translation Keys Fix**: COMPLETED - Fixed remaining "Partner Offers" and "Configured Postbacks" displaying in English when Russian selected. Added missing "partnerOffers": "Офферы партнера" and "configuredPostbacks": "Настроенные постбеки" translations. Complete bilingual interface achieved with proper react-i18next integration (August 16, 2025)
-- **Dashboard Translation Complete**: COMPLETED - Replaced all hardcoded strings in PartnerDashboard.tsx with react-i18next translations, improved quick action buttons design (compact with icons), added missing translations for errors and notifications, fixed TypeScript errors in Postbacks.tsx. Complete unified Russian/English translation system working in production (August 16, 2025)
-- **Replit Deployments Ready**: COMPLETED - Application fully prepared for Replit Deployments with proper build scripts, environment configuration, and database connectivity. All functionality verified working in current environment and ready for production deployment via Replit's native deployment system (August 16, 2025)
-- **Super Admin Offers Access Fix**: COMPLETED - Fixed role-based access control issue where super_admin could not view offers due to frontend/backend permission mismatch. Added 'super_admin' role to backend endpoint /api/advertiser/offers (super_admin sees all offers via getAllOffers(), advertisers see only their own), and to frontend route protection in App.tsx. API returns 200 OK with proper authentication and offers display working for super_admin (August 16, 2025)
-- **Advertiser Offers Access Complete Fix**: COMPLETED - Resolved advertiser empty offers page issue by fixing authentication and testing API endpoints. Advertiser can now successfully view their own 14 offers and create new offers via API. Created test offer "Новый тестовый оффер от рекламодателя" (ID: 07eb3d7d-3fc7-4fbd-9dd9-d983193003b3) with automatic tracking link generation. Both super_admin and advertiser roles now have full functional access to their respective offer sets (August 16, 2025)
+- **Problem Resolution**: Complete comprehensive code review and error fixing rather than individual issue reporting
+- **SSL Configuration**: Real SSL certificates only, no demo/simulation modes
+- **Telegram Integration**: Real bot @integracia7980_bot fully integrated and working
+- **Custom Security Secrets**: User configured custom JWT_SECRET and SESSION_SECRET for production deployment security
+- **Replit Deployments Ready**: Application fully prepared for Replit Deployments with proper build scripts, environment configuration, and database connectivity. All functionality verified working in current environment and ready for production deployment via Replit's native deployment system
 
 # System Architecture
 
@@ -43,7 +18,7 @@ This platform is an affiliate marketing solution designed to optimize offer mana
 - **State Management**: React Query for server state management and caching.
 - **Routing**: Wouter for client-side routing.
 - **Authentication**: Context-based with JWT tokens.
-- **Internationalization**: Custom language context supporting English and Russian.
+- **Internationalization**: `react-i18next` for bilingual support (English and Russian).
 - **Feature Specifications**: Comprehensive offer management (filtering, statistics, CRUD, mass actions, duplication, geo-specific payouts, category system, CSV import/export, bulk actions, A/B testing, template management). Advertiser profiles with account, API access, custom domain, notifications, and security tabs. Real-time WebSocket notifications. Role-based creative file management with ZIP upload/download, drag-n-drop, and file validation. Ultra-short tracking link system with custom domains and sub-parameters. Automatic custom domain links for new offers. React-based event sending system with antifraud level configuration and real-time conversion creation.
 
 ## Backend
@@ -64,7 +39,7 @@ This platform is an affiliate marketing solution designed to optimize offer mana
 ## Role-Based Access Control
 - **Super Admin (Owner)**: Full platform control.
 - **Advertiser**: Manages own offers, partners, and campaigns with isolated access and white-label branding.
-- **Affiliate**: Access to offers, tracking links, and statistics. Data isolation verified across roles.
+- **Affiliate**: Access to offers, tracking links, and statistics.
 
 ## Anti-Fraud System
 - AI-powered detection, real-time risk assessment, dynamic smart alerts, and real fraud rate calculation.
@@ -74,14 +49,14 @@ This platform is an affiliate marketing solution designed to optimize offer mana
 
 ## System-wide Features
 - **Performance**: Server-side compression, helmet security, rate limiting, connection pooling, query caching, client-side debouncing, memoization, lazy loading.
-- **Analytics**: Full integration of data from clicks, postbacks, offers, partners, fraud detection, financial, and CRM modules into comprehensive tables with real-time PostgreSQL data only.
+- **Analytics**: Full integration of data from clicks, postbacks, offers, partners, fraud detection, financial, and CRM modules into comprehensive tables with real-time PostgreSQL data.
 - **API Integrity**: All database tables and major API endpoints functional with proper HTTP responses and CRUD operations using live PostgreSQL data.
 - **Postback System**: Complete external tracker integration with automatic postback delivery, macro replacement, retry logic, and monitoring. Supports various tracker formats with live data.
 - **Automatic Partner Link Generation**: Smart link generation with unique parameters and role-based access control.
 - **Real-time Event Tracking**: Automatic postback triggers on lp_click, lead, deposit, conversion events with full data preservation in PostgreSQL.
 - **Postback Testing & Monitoring**: Built-in testing tools for validating tracker configurations and monitoring delivery success rates.
-- **Data Integrity**: Complete elimination of demo data - all systems use real-time PostgreSQL data, real DNS verification, real SSL certificates, and authentic blockchain integration requirements.
-- **Live Dashboard System**: All role-based dashboards (advertiser, partner/affiliate, super-admin) implemented with real-time PostgreSQL data endpoints, eliminating all mock data, demo statistics, and placeholder values (August 11, 2025)
+- **Data Integrity**: All systems use real-time PostgreSQL data, real DNS verification, real SSL certificates, and authentic blockchain integration requirements.
+- **Live Dashboard System**: All role-based dashboards (advertiser, partner/affiliate, super-admin) implemented with real-time PostgreSQL data endpoints.
 
 # External Dependencies
 
@@ -98,6 +73,7 @@ This platform is an affiliate marketing solution designed to optimize offer mana
 - **React Query**: Data synchronization for React.
 - **Uppy**: Modular file uploader.
 - **@dnd-kit**: For drag-n-drop functionality.
+- **react-i18next**: Internationalization framework.
 
 ## Authentication & Security
 - **JWT**: JSON Web Tokens for authentication.

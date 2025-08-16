@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { healthRouter } from "./routes/health";
 import compression from "compression";
 import helmet from "helmet";
 import path from "path";
@@ -176,6 +177,9 @@ app.use((req, res, next) => {
 
   next();
 });
+
+// Health check endpoint for deployment monitoring
+app.use('/api', healthRouter);
 
 (async () => {
   const server = await registerRoutes(app);

@@ -1,0 +1,43 @@
+{
+  "name": "adlinkpro-production",
+  "description": "AdLinkPro Affiliate Marketing Platform - Production Ready",
+  "type": "autoscale",
+  "build": {
+    "command": "npm install && npm run build",
+    "environment": "production",
+    "include": [
+      "dist/",
+      "node_modules/",
+      "package.json",
+      "package-lock.json",
+      "drizzle.config.ts",
+      "shared/"
+    ]
+  },
+  "run": {
+    "command": "node dist/index.js",
+    "port": 5000,
+    "environment": {
+      "NODE_ENV": "production",
+      "PORT": "5000"
+    }
+  },
+  "secrets": [
+    "JWT_SECRET",
+    "SESSION_SECRET",
+    "DATABASE_URL"
+  ],
+  "resources": {
+    "cpu": "0.5",
+    "memory": "1Gi",
+    "maxInstances": 3
+  },
+  "health": {
+    "path": "/api/health",
+    "timeout": 30,
+    "interval": 60
+  },
+  "migrations": {
+    "preStart": "npm run db:push --yes"
+  }
+}
