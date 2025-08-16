@@ -53,12 +53,6 @@ export default function AdvertiserSidebar({ isMobile = false, onClose }: Adverti
     description: t('sidebar.partnersDesc')
   },
   {
-    title: 'Ссылки приглашения',
-    href: '/advertiser/partner-invite-links',
-    icon: Send,
-    description: 'Создание и управление ссылками для регистрации партнеров'
-  },
-  {
     title: t('sidebar.accessRequests'),
     href: '/advertiser/access-requests',
     icon: MessageSquare,

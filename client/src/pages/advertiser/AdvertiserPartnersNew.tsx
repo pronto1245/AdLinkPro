@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
+import { InvitePartnersModal } from '@/components/partner/InvitePartnersModal';
 import {
   Search,
   Filter,
@@ -197,6 +198,7 @@ export function AdvertiserPartnersNew() {
   // Состояние модальных окон
   const [selectedPartnerForStats, setSelectedPartnerForStats] = useState<Partner | null>(null);
   const [selectedPartnerForDetails, setSelectedPartnerForDetails] = useState<Partner | null>(null);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   // Загрузка партнеров - API теперь возвращает массив партнёров напрямую
   const { data: partnersArray, isLoading } = useQuery({
@@ -371,12 +373,12 @@ export function AdvertiserPartnersNew() {
         </div>
         <div className="flex gap-2">
           <Button 
-            onClick={() => window.location.href = '/advertiser/partner-invite-links'}
+            onClick={() => setIsInviteModalOpen(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white"
             data-testid="button-partner-invites"
           >
             <Send className="w-4 h-4 mr-2" />
-            Пригласить партнеров
+            Ссылки приглашений
           </Button>
         </div>
       </div>
@@ -1085,6 +1087,12 @@ export function AdvertiserPartnersNew() {
           </div>
         </div>
       )}
+
+      {/* Модальное окно приглашения партнеров */}
+      <InvitePartnersModal 
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+      />
     </div>
   );
 }

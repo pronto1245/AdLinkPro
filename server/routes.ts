@@ -13534,5 +13534,124 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
+  // === INVITE LINKS API ENDPOINTS ===
+  
+  // Get all invite links for the authenticated advertiser
+  app.get("/api/invite-links", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      
+      // Mock data for now - in a real app, you'd store this in database
+      const inviteLinks = [
+        {
+          id: '1',
+          name: 'VIP партнеры',
+          token: 'vip_partners_token_123',
+          url: `${req.protocol}://${req.get('host')}/auth/register-partner?token=vip_partners_token_123`,
+          isActive: true,
+          createdAt: '2025-01-01T10:00:00Z',
+          expiresAt: '2025-02-01T10:00:00Z',
+          usageCount: 5,
+          maxUsage: 100,
+          description: 'Приглашения для VIP партнеров с особыми условиями'
+        },
+        {
+          id: '2',
+          name: 'Тестовые партнеры',
+          token: 'test_partners_token_456',
+          url: `${req.protocol}://${req.get('host')}/auth/register-partner?token=test_partners_token_456`,
+          isActive: false,
+          createdAt: '2025-01-02T12:00:00Z',
+          usageCount: 2,
+          description: 'Тестовые ссылки для пробных партнеров'
+        }
+      ];
+      
+      res.json(inviteLinks);
+    } catch (error) {
+      console.error("Get invite links error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create new invite link
+  app.post("/api/invite-links", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { name, description, maxUsage, expiryDays } = req.body;
+      
+      if (!name?.trim()) {
+        return res.status(400).json({ error: "Name is required" });
+      }
+      
+      // Generate unique token
+      const token = `invite_${nanoid(16)}`;
+      const createdAt = new Date().toISOString();
+      const expiresAt = expiryDays ? new Date(Date.now() + parseInt(expiryDays) * 24 * 60 * 60 * 1000).toISOString() : null;
+      
+      // Create new invite link object
+      const newInviteLink = {
+        id: nanoid(),
+        name: name.trim(),
+        token,
+        url: `${req.protocol}://${req.get('host')}/auth/register-partner?token=${token}`,
+        isActive: true,
+        createdAt,
+        expiresAt,
+        usageCount: 0,
+        maxUsage: maxUsage ? parseInt(maxUsage) : null,
+        description: description?.trim() || null,
+        advertiserId: authUser.id
+      };
+      
+      // In a real app, save to database here
+      console.log("Created invite link:", newInviteLink);
+      
+      res.status(201).json(newInviteLink);
+    } catch (error) {
+      console.error("Create invite link error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Toggle invite link active status
+  app.patch("/api/invite-links/:id/toggle", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const linkId = req.params.id;
+      
+      // In a real app, fetch from database and update
+      console.log(`Toggling invite link ${linkId} for user ${authUser.id}`);
+      
+      // Mock response
+      const updatedLink = {
+        id: linkId,
+        isActive: Math.random() > 0.5, // Random toggle for demo
+        updatedAt: new Date().toISOString()
+      };
+      
+      res.json(updatedLink);
+    } catch (error) {
+      console.error("Toggle invite link error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Delete invite link
+  app.delete("/api/invite-links/:id", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const linkId = req.params.id;
+      
+      // In a real app, delete from database
+      console.log(`Deleting invite link ${linkId} for user ${authUser.id}`);
+      
+      res.json({ success: true, message: "Invite link deleted" });
+    } catch (error) {
+      console.error("Delete invite link error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   return httpServer;
 }
