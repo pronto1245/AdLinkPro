@@ -91,8 +91,8 @@ interface PartnersResponse {
 // Статус badge компонент
 const getApprovalStatusBadge = (status: string) => {
   const variants = {
-    pending: { variant: 'warning' as const, icon: Clock, text: 'Ожидает одобрения' },
-    approved: { variant: 'success' as const, icon: UserCheck, text: 'Одобрен' },
+    pending: { variant: 'secondary' as const, icon: Clock, text: 'Ожидает одобрения' },
+    approved: { variant: 'default' as const, icon: UserCheck, text: 'Одобрен' },
     rejected: { variant: 'destructive' as const, icon: UserX, text: 'Отклонен' },
     blocked: { variant: 'destructive' as const, icon: Shield, text: 'Заблокирован' }
   };
@@ -111,8 +111,8 @@ const getApprovalStatusBadge = (status: string) => {
 // Риск badge компонент
 const getRiskBadge = (risk: string) => {
   const variants = {
-    low: { variant: 'success' as const, text: 'Низкий' },
-    medium: { variant: 'warning' as const, text: 'Средний' },
+    low: { variant: 'default' as const, text: 'Низкий' },
+    medium: { variant: 'secondary' as const, text: 'Средний' },
     high: { variant: 'destructive' as const, text: 'Высокий' }
   };
   
@@ -134,24 +134,20 @@ export function AdvertiserPartnersNew() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [riskFilter, setRiskFilter] = useState('all');
 
-  // Загрузка партнеров
-  const { data: partnersData, isLoading } = useQuery({
+  // Загрузка партнеров - API теперь возвращает массив партнёров напрямую
+  const { data: partnersArray, isLoading } = useQuery({
     queryKey: ['/api/advertiser/partners', { 
       search: searchTerm, 
       status: statusFilter === 'all' ? undefined : statusFilter,
       riskLevel: riskFilter === 'all' ? undefined : riskFilter
     }],
-    queryFn: () => apiRequest<PartnersResponse>('/api/advertiser/partners', {
-      method: 'GET'
-    })
+    queryFn: () => apiRequest('/api/advertiser/partners')
   });
 
   // Мутация для одобрения партнера
   const approveMutation = useMutation({
     mutationFn: (partnerId: string) => 
-      apiRequest(`/api/advertiser/partners/${partnerId}/approve`, {
-        method: 'POST'
-      }),
+      apiRequest(`/api/advertiser/partners/${partnerId}/approve`, 'POST'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/partners'] });
       toast({
@@ -171,9 +167,7 @@ export function AdvertiserPartnersNew() {
   // Мутация для отклонения партнера
   const rejectMutation = useMutation({
     mutationFn: (partnerId: string) => 
-      apiRequest(`/api/advertiser/partners/${partnerId}/reject`, {
-        method: 'POST'
-      }),
+      apiRequest(`/api/advertiser/partners/${partnerId}/reject`, 'POST'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/partners'] });
       toast({
@@ -193,9 +187,7 @@ export function AdvertiserPartnersNew() {
   // Мутация для блокировки/разблокировки партнера
   const toggleBlockMutation = useMutation({
     mutationFn: (partnerId: string) => 
-      apiRequest(`/api/advertiser/partners/${partnerId}/toggle-block`, {
-        method: 'POST'
-      }),
+      apiRequest(`/api/advertiser/partners/${partnerId}/toggle-block`, 'POST'),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/partners'] });
       toast({
@@ -225,11 +217,56 @@ export function AdvertiserPartnersNew() {
     toggleBlockMutation.mutate(partnerId);
   };
 
-  const partners = partnersData?.partners || [];
-  const summary = partnersData?.summary;
+  // Преобразуем простые данные партнёров в ожидаемый формат
+  const partners = (partnersArray || []).map((partner: any) => ({
+    ...partner,
+    displayName: `${partner.firstName || ''} ${partner.lastName || ''}`.trim() || partner.username,
+    partnerNumber: partner.partnerNumber || `P${partner.username}`,
+    company: partner.company || 'Individual',
+    country: partner.country || 'Unknown',
+    registeredAt: partner.createdAt || new Date().toISOString(),
+    balance: partner.balance || '0.00',
+    stats: {
+      totalClicks: 0,
+      uniqueClicks: 0,
+      totalLeads: 0,
+      totalRevenue: '0.00',
+      totalPayout: '0.00',
+      totalProfit: '0.00',
+      conversionRate: '0.00',
+      epc: '0.00',
+      roi: '0.00',
+      offersCount: 0,
+      activeOffersCount: 0,
+      riskLevel: 'low' as const,
+      lastActivityDays: 0,
+      avgDailyClicks: 0,
+      avgDailyRevenue: '0.00'
+    },
+    payoutSettings: {
+      hasCustomPayouts: false,
+      customOffers: 0
+    }
+  }));
+  
+  // Создаём summary на основе данных партнёров
+  const summary = {
+    totalPartners: partners.length,
+    activePartners: partners.filter(p => p.isActive).length,
+    pendingPartners: partners.filter(p => p.approvalStatus === 'pending').length,
+    approvedPartners: partners.filter(p => p.approvalStatus === 'approved').length,
+    blockedPartners: partners.filter(p => p.approvalStatus === 'blocked').length,
+    totalRevenue: '0.00',
+    totalPayout: '0.00',
+    totalProfit: '0.00',
+    totalClicks: 0,
+    totalLeads: 0,
+    avgConversionRate: '0.00',
+    avgEpc: '0.00'
+  };
 
   // Фильтрация партнеров
-  const filteredPartners = partners.filter(partner => {
+  const filteredPartners = partners.filter((partner: Partner) => {
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       if (!partner.displayName.toLowerCase().includes(searchLower) &&
