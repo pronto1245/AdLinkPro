@@ -133,6 +133,9 @@ export function AdvertiserPartnersNew() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [riskFilter, setRiskFilter] = useState('all');
+  
+  // Состояние модальных окон
+  const [selectedPartnerForStats, setSelectedPartnerForStats] = useState<Partner | null>(null);
 
   // Загрузка партнеров - API теперь возвращает массив партнёров напрямую
   const { data: partnersArray, isLoading } = useQuery({
@@ -495,6 +498,7 @@ export function AdvertiserPartnersNew() {
                   
                   <TableCell>
                     <div className="flex items-center gap-1">
+                      {/* Кнопки одобрения/отклонения только для pending */}
                       {partner.approvalStatus === 'pending' && (
                         <>
                           <Button
@@ -522,7 +526,8 @@ export function AdvertiserPartnersNew() {
                         </>
                       )}
                       
-                      {partner.approvalStatus === 'approved' && (
+                      {/* Кнопка блокировки/разблокировки для одобренных и отклонённых */}
+                      {(partner.approvalStatus === 'approved' || partner.approvalStatus === 'rejected') && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -539,6 +544,18 @@ export function AdvertiserPartnersNew() {
                         </Button>
                       )}
                       
+                      {/* Кнопка статистики - всегда видна */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedPartnerForStats(partner)}
+                        title="Статистика партнера"
+                        data-testid={`button-stats-${partner.id}`}
+                      >
+                        <TrendingUp className="w-4 h-4" />
+                      </Button>
+                      
+                      {/* Кнопка email - всегда видна */}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -549,10 +566,14 @@ export function AdvertiserPartnersNew() {
                         <Mail className="w-4 h-4" />
                       </Button>
                       
+                      {/* Кнопка просмотра деталей - всегда видна */}
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => {/* Открыть детали партнера */}}
+                        onClick={() => {
+                          // TODO: Открыть детали партнера  
+                          console.log('Открыть детали партнёра:', partner.id);
+                        }}
                         title="Просмотр деталей"
                         data-testid={`button-view-${partner.id}`}
                       >
@@ -579,6 +600,124 @@ export function AdvertiserPartnersNew() {
           )}
         </CardContent>
       </Card>
+
+      {/* Модальное окно статистики партнёра */}
+      {selectedPartnerForStats && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">
+                Статистика партнёра: {selectedPartnerForStats.displayName}
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedPartnerForStats(null)}
+                title="Закрыть"
+              >
+                ×
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {selectedPartnerForStats.stats.totalClicks}
+                    </div>
+                    <div className="text-sm text-gray-600">Всего кликов</div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      ${selectedPartnerForStats.stats.totalRevenue}
+                    </div>
+                    <div className="text-sm text-gray-600">Общий доход</div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {selectedPartnerForStats.stats.conversionRate}%
+                    </div>
+                    <div className="text-sm text-gray-600">Конверсия</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Детальная статистика</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Уникальные клики:</span>
+                      <span className="font-medium">{selectedPartnerForStats.stats.uniqueClicks}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Всего лидов:</span>
+                      <span className="font-medium">{selectedPartnerForStats.stats.totalLeads}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>EPC:</span>
+                      <span className="font-medium">${selectedPartnerForStats.stats.epc}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>ROI:</span>
+                      <span className="font-medium">{selectedPartnerForStats.stats.roi}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Активных офферов:</span>
+                      <span className="font-medium">{selectedPartnerForStats.stats.activeOffersCount}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Информация о партнёре</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Email:</span>
+                      <span className="font-medium">{selectedPartnerForStats.email}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Статус:</span>
+                      <span>{getApprovalStatusBadge(selectedPartnerForStats.approvalStatus)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Компания:</span>
+                      <span className="font-medium">{selectedPartnerForStats.company}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Страна:</span>
+                      <span className="font-medium">{selectedPartnerForStats.country}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Уровень риска:</span>
+                      <span>{getRiskBadge(selectedPartnerForStats.stats.riskLevel)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
