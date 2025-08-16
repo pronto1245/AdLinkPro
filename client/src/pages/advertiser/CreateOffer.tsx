@@ -569,10 +569,13 @@ export default function CreateOffer() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 Starting offer creation process...');
     
     // Валидация пользователя
     const userId = getUserId();
+    console.log('👤 Retrieved user ID:', userId);
     if (!userId) {
+      console.error('❌ No user ID found');
       toast({
         title: 'Ошибка авторизации',
         description: 'Не удалось определить пользователя. Войдите в систему заново.',
@@ -639,6 +642,7 @@ export default function CreateOffer() {
       return;
     }
 
+    console.log('✅ All validations passed, creating offer with data:', formData);
     createOfferMutation.mutate(formData);
   };
 
