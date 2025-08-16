@@ -3,7 +3,7 @@ import {
   postbacks, postbackLogs, postbackTemplates, tickets, fraudAlerts, customRoles, userRoleAssignments,
   cryptoWallets, cryptoTransactions, fraudReports, fraudRules, 
   deviceTracking, ipAnalysis, fraudBlocks, receivedOffers, offerAccessRequests, userNotifications,
-  creativeFiles, customDomains, apiTokens, clicks, events, postbackProfiles, postbackDeliveries,
+  creativeFiles, customDomains, apiTokens, inviteLinks, clicks, events, postbackProfiles, postbackDeliveries,
   referralCommissions,
   type User, type InsertUser, type Offer, type InsertOffer,
   type PartnerOffer, type InsertPartnerOffer, type TrackingLink, type InsertTrackingLink,
@@ -15,6 +15,7 @@ import {
   type FraudBlock, type InsertFraudBlock, type ReceivedOffer, type InsertReceivedOffer,
   type OfferAccessRequest, type InsertOfferAccessRequest, type UserNotification, type InsertUserNotification,
   type CustomDomain, type InsertCustomDomain, type ApiToken, type InsertApiToken,
+  type InviteLink, type InsertInviteLink,
   type Click, type InsertClick, type Event, type InsertEvent,
   type PostbackProfile, type InsertPostbackProfile, type PostbackDelivery, type InsertPostbackDelivery
 } from "@shared/schema";
@@ -269,6 +270,13 @@ export interface IStorage {
   addCustomDomain(advertiserId: string, data: { domain: string; type: string }): Promise<any>;
   verifyCustomDomain(advertiserId: string, domainId: string): Promise<any>;
   deleteCustomDomain(advertiserId: string, domainId: string): Promise<void>;
+  
+  // Invite Links methods
+  getInviteLinks(advertiserId: string): Promise<any[]>;
+  createInviteLink(advertiserId: string, data: { name: string; description?: string; maxUsage?: number; expiryDays?: number }): Promise<any>;
+  toggleInviteLink(advertiserId: string, linkId: string): Promise<any>;
+  deleteInviteLink(advertiserId: string, linkId: string): Promise<void>;
+  incrementInviteLinkUsage(token: string): Promise<void>;
   
   // KYC documents
   getKycDocuments(): Promise<any[]>;
@@ -2895,6 +2903,109 @@ export class DatabaseStorage implements IStorage {
       );
     } catch (error) {
       console.error('Error deleting custom domain:', error);
+      throw error;
+    }
+  }
+
+  // Invite Links implementation
+  async getInviteLinks(advertiserId: string): Promise<any[]> {
+    try {
+      const links = await db.select().from(inviteLinks).where(
+        eq(inviteLinks.advertiserId, advertiserId)
+      ).orderBy(desc(inviteLinks.createdAt));
+      
+      return links.map(link => ({
+        ...link,
+        url: `${process.env.BASE_URL || 'http://localhost:5000'}/auth/register-partner?token=${link.token}`
+      }));
+    } catch (error) {
+      console.error('Error getting invite links:', error);
+      throw error;
+    }
+  }
+
+  async createInviteLink(advertiserId: string, data: { name: string; description?: string; maxUsage?: number; expiryDays?: number }): Promise<any> {
+    try {
+      const token = `invite_${nanoid(16)}`;
+      const expiresAt = data.expiryDays 
+        ? new Date(Date.now() + data.expiryDays * 24 * 60 * 60 * 1000) 
+        : null;
+
+      const [newLink] = await db.insert(inviteLinks).values({
+        id: nanoid(),
+        name: data.name,
+        description: data.description || null,
+        token,
+        advertiserId,
+        maxUsage: data.maxUsage || null,
+        expiresAt,
+        isActive: true,
+        usageCount: 0
+      }).returning();
+
+      return {
+        ...newLink,
+        url: `${process.env.BASE_URL || 'http://localhost:5000'}/auth/register-partner?token=${token}`
+      };
+    } catch (error) {
+      console.error('Error creating invite link:', error);
+      throw error;
+    }
+  }
+
+  async toggleInviteLink(advertiserId: string, linkId: string): Promise<any> {
+    try {
+      // Получаем текущее состояние ссылки
+      const [currentLink] = await db.select().from(inviteLinks).where(
+        and(eq(inviteLinks.id, linkId), eq(inviteLinks.advertiserId, advertiserId))
+      );
+
+      if (!currentLink) {
+        throw new Error('Invite link not found');
+      }
+
+      // Переключаем состояние
+      const [updatedLink] = await db.update(inviteLinks)
+        .set({ 
+          isActive: !currentLink.isActive,
+          updatedAt: new Date()
+        })
+        .where(
+          and(eq(inviteLinks.id, linkId), eq(inviteLinks.advertiserId, advertiserId))
+        )
+        .returning();
+
+      return {
+        ...updatedLink,
+        url: `${process.env.BASE_URL || 'http://localhost:5000'}/auth/register-partner?token=${updatedLink.token}`
+      };
+    } catch (error) {
+      console.error('Error toggling invite link:', error);
+      throw error;
+    }
+  }
+
+  async deleteInviteLink(advertiserId: string, linkId: string): Promise<void> {
+    try {
+      await db.delete(inviteLinks).where(
+        and(eq(inviteLinks.id, linkId), eq(inviteLinks.advertiserId, advertiserId))
+      );
+    } catch (error) {
+      console.error('Error deleting invite link:', error);
+      throw error;
+    }
+  }
+
+  async incrementInviteLinkUsage(token: string): Promise<void> {
+    try {
+      await db.update(inviteLinks)
+        .set({ 
+          usageCount: sql`${inviteLinks.usageCount} + 1`,
+          updatedAt: new Date()
+        })
+        .where(eq(inviteLinks.token, token));
+    } catch (error) {
+      console.error('Error incrementing invite link usage:', error);
       throw error;
     }
   }

@@ -2073,6 +2073,21 @@ export const apiTokens = pgTable("api_tokens", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Invite Links table for partner recruitment
+export const inviteLinks = pgTable("invite_links", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  token: text("token").notNull().unique(),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  isActive: boolean("is_active").default(true),
+  usageCount: integer("usage_count").default(0),
+  maxUsage: integer("max_usage"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Creative Files Types
 export type CreativeFile = typeof creativeFiles.$inferSelect;
 export type InsertCreativeFile = typeof creativeFiles.$inferInsert;
@@ -2100,6 +2115,17 @@ export const insertApiTokenSchema = createInsertSchema(apiTokens).omit({
 
 export type ApiToken = typeof apiTokens.$inferSelect;
 export type InsertApiToken = z.infer<typeof insertApiTokenSchema>;
+
+// Invite Links Types
+export const insertInviteLinkSchema = createInsertSchema(inviteLinks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  usageCount: true,
+});
+
+export type InviteLink = typeof inviteLinks.$inferSelect;
+export type InsertInviteLink = z.infer<typeof insertInviteLinkSchema>;
 
 // Clicks Types
 export const insertClickSchema = createInsertSchema(clicks).omit({
