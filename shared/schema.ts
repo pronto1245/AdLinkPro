@@ -24,13 +24,13 @@ export const cryptoCurrencyEnum = pgEnum('crypto_currency', ['BTC', 'ETH', 'USDT
 export const walletStatusEnum = pgEnum('wallet_status', ['active', 'suspended', 'maintenance']);
 export const accessRequestStatusEnum = pgEnum('access_request_status', ['pending', 'approved', 'rejected', 'cancelled']);
 export const partnerApprovalStatusEnum = pgEnum('partner_approval_status', ['pending', 'approved', 'rejected', 'blocked']);
-export const domainStatusEnum = pgEnum('domain_status', ['pending', 'verified', 'error']);
+export const approvalStatusEnum = pgEnum('approval_status', ['pending', 'approved', 'rejected']);
 export const domainTypeEnum = pgEnum('domain_type', ['a_record', 'cname', 'txt_record']);
 export const ownerScopeEnum = pgEnum('owner_scope', ['owner', 'advertiser', 'partner']);
 export const postbackScopeTypeEnum = pgEnum('postback_scope_type', ['global', 'campaign', 'offer', 'flow']);
 export const postbackMethodEnum = pgEnum('postback_method', ['GET', 'POST']);
 export const postbackIdParamEnum = pgEnum('postback_id_param', ['subid', 'clickid']);
-export const deliveryStatusEnum = pgEnum('delivery_status_enum', ['pending', 'success', 'failed', 'retry']);
+export const deliveryStatusEnum = pgEnum('delivery_status', ['pending', 'success', 'failed', 'retry']);
 
 // Users table  
 export const users: any = pgTable("users", {
@@ -2032,7 +2032,7 @@ export const customDomains = pgTable("custom_domains", {
   domain: varchar("domain", { length: 255 }).notNull(),
   advertiserId: varchar("advertiser_id", { length: 255 }).notNull().references(() => users.id),
   type: domainTypeEnum("type").notNull(),
-  status: domainStatusEnum("status").notNull().default('pending'),
+  status: approvalStatusEnum("status").notNull().default('pending'),
   verificationValue: varchar("verification_value", { length: 255 }).notNull(),
   targetValue: varchar("target_value", { length: 255 }),
   errorMessage: text("error_message"),

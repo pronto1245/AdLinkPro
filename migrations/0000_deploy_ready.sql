@@ -1,3 +1,0 @@
--- Simple deployment migration 
--- Schema already exists in database, no changes needed
--- This file satisfies deployment requirements
