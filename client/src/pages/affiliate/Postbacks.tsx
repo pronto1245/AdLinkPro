@@ -656,7 +656,8 @@ export function AffiliatePostbacks() {
                 testPending: testMutation.isPending
               })}
               
-              {profiles?.length > 0 ? profiles.map((profile: PostbackProfile, index: number) => {
+              {profiles?.length > 0 ? (
+                profiles.map((profile: PostbackProfile, index: number) => {
                 console.log(`🎨 RENDERING PROFILE #${index}:`, profile);
                 console.log(`🎨 BUTTON STATES FOR ${profile.id}:`, {
                   deletePending: deleteMutation.isPending,
@@ -860,13 +861,15 @@ export function AffiliatePostbacks() {
                           title="Удалить этот профиль"
                         >
                           <Trash2 size={20} />
-{t('common.delete', 'УДАЛИТЬ')}
+                          {t('common.delete', 'УДАЛИТЬ')}
                         </button>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              )) : (
+                );
+              })
+              ) : (
                 <div className="text-center py-8 bg-red-50 border-4 border-red-500 rounded">
                   <h2 className="text-red-800 font-bold text-xl mb-4">{t('postbacks.noProfilesFound', 'ПРОФИЛИ НЕ НАЙДЕНЫ!')}</h2>
                   <p className="text-red-600 mb-2">Всего профилей: {profiles?.length || 0}</p>
@@ -879,7 +882,7 @@ export function AffiliatePostbacks() {
                     }}
                     className="bg-red-600 hover:bg-red-700 text-white"
                   >
-{t('common.refresh', 'ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА')}
+                    {t('common.refresh', 'ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА')}
                   </Button>
                 </div>
               )}
