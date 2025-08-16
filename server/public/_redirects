@@ -1,0 +1,5 @@
+# Netlify redirects for API proxy
+/api/*  https://adlinkpro-backend.koyeb.app/:splat  200
+
+# SPA fallback
+/*    /index.html   200
