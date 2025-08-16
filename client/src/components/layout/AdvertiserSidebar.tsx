@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'wouter';
-import { cn } from '../../lib/utils';
-import { useSidebar } from '../../contexts/sidebar-context';
+import { cn } from '@/lib/utils';
+import { useSidebar } from '@/contexts/sidebar-context';
 import { 
   BarChart3, 
   Settings, 

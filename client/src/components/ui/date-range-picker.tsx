@@ -4,14 +4,14 @@ import { addDays, format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 
-import { cn } from "../../lib/utils";
-import { Button } from "./button";
-import { Calendar } from "./calendar";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "./popover";
+} from "@/components/ui/popover";
 
 interface DatePickerWithRangeProps {
   className?: string;

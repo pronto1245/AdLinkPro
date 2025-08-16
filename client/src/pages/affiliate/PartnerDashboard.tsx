@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "../../hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "wouter";
-import { ContactManagerModal } from "../../components/partner/ContactManagerModal";
+import { ContactManagerModal } from "@/components/partner/ContactManagerModal";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Skeleton } from "../components/ui/skeleton";
-import { Badge } from "../components/ui/badge";
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import {
   TrendingUp,
   TrendingDown,

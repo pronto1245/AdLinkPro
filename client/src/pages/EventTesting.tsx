@@ -1,9 +1,9 @@
 import React from 'react';
-import { EventSender } from '../components/events/EventSender';
-import { QuickEventButtons } from '../components/events/QuickEventButtons';
-import { EventHistory } from '../components/events/EventHistory';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Separator } from '../components/ui/separator';
+import { EventSender } from '@/components/events/EventSender';
+import { QuickEventButtons } from '@/components/events/QuickEventButtons';
+import { EventHistory } from '@/components/events/EventHistory';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { Activity, TestTube, History } from 'lucide-react';
 
 export function EventTesting() {

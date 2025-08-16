@@ -383,20 +383,7 @@
     "basicTab": "Basic",
     "settingsTab": "Settings",
     "advancedSettings": "Advanced Settings",
-    "comingSoon": "Advanced configuration parameters will be added in future versions.",
-    "basicSettings": "Basic Settings",
-    "advancedConfigNote": "Advanced configuration parameters will be added in future versions",
-    "testPostback": "Test Postback",
-    "testing": "Testing...",
-    "edit": "Edit",
-    "updating": "Updating...",
-    "confirmDelete": "Delete Profile",
-    "save": "Save",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "test": "Test",
-    "conversionValue": "Conversion Value",
-    "conversionStatus": "Conversion Status"
+    "comingSoon": "Advanced configuration parameters will be added in future versions."
   },
   "auth": {
     "login": "Sign In",

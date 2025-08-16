@@ -1,19 +1,19 @@
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useSidebar } from "../../contexts/sidebar-context";
-import Sidebar from "../../components/layout/sidebar";
-import Header from "../../components/layout/header";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Badge } from "../components/ui/badge";
+import { useSidebar } from "@/contexts/sidebar-context";
+import Sidebar from "@/components/layout/sidebar";
+import Header from "@/components/layout/header";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { 
   Select, 
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
   SelectValue 
-} from "../components/ui/select";
+} from "@/components/ui/select";
 import { 
   Table, 
   TableBody, 
@@ -21,8 +21,8 @@ import {
   TableHead, 
   TableHeader, 
   TableRow 
-} from "../components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   MoreHorizontal, 
   Search, 
@@ -47,13 +47,13 @@ import {
   DropdownMenuContent, 
   DropdownMenuItem, 
   DropdownMenuTrigger 
-} from "../components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
-import { Label } from "../components/ui/label";
-import { Textarea } from "../components/ui/textarea";
-import { Checkbox } from "../components/ui/checkbox";
-import { apiRequest } from "../../lib/queryClient";
-import { useToast } from "../../hooks/use-toast";
+} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface CustomRole {
   id: string;
@@ -135,7 +135,7 @@ const availablePermissions: Permission[] = [
 export default function RolesManagement() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { collapsed } = useSidebar();
+  const { isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -188,7 +188,7 @@ export default function RolesManagement() {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div className={`flex-1 flex flex-col overflow-hidden ${collapsed ? 'lg:ml-16' : 'lg:ml-64'} transition-all duration-300`}>
+      <div className={`flex-1 flex flex-col overflow-hidden ${isCollapsed ? 'lg:ml-16' : 'lg:ml-64'} transition-all duration-300`}>
         <Header />
         
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">

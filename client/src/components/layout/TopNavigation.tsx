@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Bell, Settings, HelpCircle, LogOut, Mail, User, DollarSign } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,12 +8,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Badge } from './ui/badge';
-import { useAuth } from '../../contexts/auth-context';
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/auth-context';
 import { useTranslation } from 'react-i18next';
-import { ThemeToggle } from './ui/theme-toggle';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 

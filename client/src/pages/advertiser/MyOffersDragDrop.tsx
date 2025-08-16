@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '../components/ui/table';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   Upload, 
   Trash2, 
@@ -21,9 +21,9 @@ import {
   Plus
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '../../hooks/use-toast';
-import { apiRequest } from '../../lib/queryClient';
-import OfferEditModal from '../../components/modals/OfferEditModal';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
+import OfferEditModal from '@/components/modals/OfferEditModal';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -32,10 +32,10 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
-import SortableItem from '../components/ui/SortableItem';
-import { formatCountries } from '../../utils/countries';
-import { getCategoryBadgeProps } from '../../utils/categories';
-import { formatCR } from '../../utils/formatters';
+import SortableItem from '@/components/ui/SortableItem';
+import { formatCountries } from '@/utils/countries';
+import { getCategoryBadgeProps } from '@/utils/categories';
+import { formatCR } from '@/utils/formatters';
 
 interface Offer {
   id: string;

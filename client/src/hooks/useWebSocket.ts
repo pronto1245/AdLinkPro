@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useAuth } from '../contexts/auth-context';
-import { useNotifications } from '../../components/NotificationToast';
+import { useAuth } from '@/contexts/auth-context';
+import { useNotifications } from '@/components/NotificationToast';
 
 export interface WebSocketMessage {
   type: 'notification' | 'offer_access_request' | 'offer_access_response' | 'system' | 'auth_success' | 'ping' | 'pong';

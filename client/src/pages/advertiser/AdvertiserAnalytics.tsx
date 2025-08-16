@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { DatePickerWithRange } from '../components/ui/date-range-picker';
-import { Badge } from '../components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DatePickerWithRange } from '@/components/ui/date-range-picker';
+import { Badge } from '@/components/ui/badge';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -28,8 +28,8 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { ResponsiveGrid } from '../../components/layout/ResponsiveGrid';
-import { ResponsiveCard } from '../../components/layout/ResponsiveCard';
+import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
+import { ResponsiveCard } from '@/components/layout/ResponsiveCard';
 
 interface StatisticsSummary {
   totalClicks: number;

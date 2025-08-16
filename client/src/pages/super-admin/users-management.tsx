@@ -1,21 +1,21 @@
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useSidebar } from "../../contexts/sidebar-context";
+import { useSidebar } from "@/contexts/sidebar-context";
 import { format } from "date-fns";
 import { ru, enUS } from "date-fns/locale";
-import Sidebar from "../../components/layout/sidebar";
-import Header from "../../components/layout/header";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Badge } from "../components/ui/badge";
+import Sidebar from "@/components/layout/sidebar";
+import Header from "@/components/layout/header";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { 
   Select, 
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
   SelectValue 
-} from "../components/ui/select";
+} from "@/components/ui/select";
 import { 
   Table, 
   TableBody, 
@@ -23,8 +23,8 @@ import {
   TableHead, 
   TableHeader, 
   TableRow 
-} from "../components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   MoreHorizontal, 
   Search, 
@@ -49,12 +49,12 @@ import {
   DropdownMenuContent, 
   DropdownMenuItem, 
   DropdownMenuTrigger 
-} from "../components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
-import { Label } from "../components/ui/label";
-import { Textarea } from "../components/ui/textarea";
-import { apiRequest } from "../../lib/queryClient";
-import { useToast } from "../../hooks/use-toast";
+} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface User {
   id: string;
@@ -93,7 +93,7 @@ export default function UsersManagement() {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
   const { toast } = useToast();
-  const { collapsed: collapsed } = useSidebar();
+  const { collapsed: isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
   
   const [filters, setFilters] = useState<UserFilters>({
@@ -427,7 +427,7 @@ export default function UsersManagement() {
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
-        collapsed ? 'ml-0 lg:ml-16' : 'ml-0 lg:ml-64'
+        isCollapsed ? 'ml-0 lg:ml-16' : 'ml-0 lg:ml-64'
       }`}>
         <Header title="Управление пользователями" />
         <main className="flex-1 overflow-auto">

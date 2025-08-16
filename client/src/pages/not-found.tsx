@@ -1,8 +1,8 @@
-import { Card, CardContent } from "../components/ui/card";
-import { Button } from "../components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useAuth } from "../contexts/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function NotFound() {
   const [location] = useLocation();

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
-import { useToast } from "../hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { Loader2, Key, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function UpdateToken() {
