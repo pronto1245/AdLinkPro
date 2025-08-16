@@ -30,7 +30,7 @@ export const ownerScopeEnum = pgEnum('owner_scope', ['owner', 'advertiser', 'par
 export const postbackScopeTypeEnum = pgEnum('postback_scope_type', ['global', 'campaign', 'offer', 'flow']);
 export const postbackMethodEnum = pgEnum('postback_method', ['GET', 'POST']);
 export const postbackIdParamEnum = pgEnum('postback_id_param', ['subid', 'clickid']);
-export const deliveryStatusEnum = pgEnum('delivery_status', ['pending', 'success', 'failed', 'retrying']);
+export const deliveryStatusEnum = pgEnum('delivery_status_enum', ['pending', 'success', 'failed', 'retry']);
 
 // Users table  
 export const users: any = pgTable("users", {
