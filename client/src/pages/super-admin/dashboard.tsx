@@ -220,15 +220,15 @@ export default function Dashboard() {
           </Card>
 
           {/* Active Offers */}
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-0 shadow-sm">
+            <CardContent className="p-4">
               <div className="flex items-center">
-                <div className="p-2 bg-green-500 rounded-lg">
-                  <Target className="w-6 h-6 text-white" />
+                <div className="p-2 bg-green-500 rounded-lg shrink-0">
+                  <Target className="w-5 h-5 text-white" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.activeOffers')}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="ml-3 min-w-0 flex-1">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400 truncate">{t('dashboard.metrics.activeOffers')}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">
                     {metrics?.activeOffers?.toLocaleString() || '0'}
                   </p>
                   {metrics?.offersGrowth && (
@@ -249,15 +249,15 @@ export default function Dashboard() {
           </Card>
 
           {/* Today Clicks */}
-          <Card className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 border-0 shadow-sm">
+            <CardContent className="p-4">
               <div className="flex items-center">
-                <div className="p-2 bg-purple-500 rounded-lg">
-                  <MousePointer className="w-6 h-6 text-white" />
+                <div className="p-2 bg-purple-500 rounded-lg shrink-0">
+                  <MousePointer className="w-5 h-5 text-white" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.todayClicks')}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="ml-3 min-w-0 flex-1">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400 truncate">{t('dashboard.metrics.todayClicks')}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">
                     {metrics?.todayClicks?.toLocaleString() || '0'}
                   </p>
                   {metrics?.clicksGrowth && (
@@ -278,15 +278,15 @@ export default function Dashboard() {
           </Card>
 
           {/* Conversions */}
-          <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-0 shadow-sm">
+            <CardContent className="p-4">
               <div className="flex items-center">
-                <div className="p-2 bg-orange-500 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-white" />
+                <div className="p-2 bg-orange-500 rounded-lg shrink-0">
+                  <TrendingUp className="w-5 h-5 text-white" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.conversions')}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="ml-3 min-w-0 flex-1">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400 truncate">{t('dashboard.metrics.conversions')}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">
                     {metrics?.conversions?.toLocaleString() || '0'}
                   </p>
                   <div className="flex items-center mt-1">
@@ -299,15 +299,15 @@ export default function Dashboard() {
           </Card>
 
           {/* Platform Revenue */}
-          <Card className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border-0 shadow-sm">
+            <CardContent className="p-4">
               <div className="flex items-center">
-                <div className="p-2 bg-yellow-500 rounded-lg">
-                  <DollarSign className="w-6 h-6 text-white" />
+                <div className="p-2 bg-yellow-500 rounded-lg shrink-0">
+                  <DollarSign className="w-5 h-5 text-white" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.platformRevenue')}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="ml-3 min-w-0 flex-1">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400 truncate">{t('dashboard.metrics.platformRevenue')}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">
                     ${metrics?.platformRevenue?.toLocaleString() || '0'}
                   </p>
                   <div className="flex items-center mt-1">
@@ -320,15 +320,15 @@ export default function Dashboard() {
           </Card>
 
           {/* Fraud Rate */}
-          <Card className="bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border-0 shadow-sm">
+            <CardContent className="p-4">
               <div className="flex items-center">
-                <div className="p-2 bg-red-500 rounded-lg">
-                  <AlertTriangle className="w-6 h-6 text-white" />
+                <div className="p-2 bg-red-500 rounded-lg shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-white" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.fraudRate')}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="ml-3 min-w-0 flex-1">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400 truncate">{t('dashboard.metrics.fraudRate')}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">
                     {metrics?.fraudRate?.toFixed(1) || '0.0'}%
                   </p>
                   <div className="flex items-center mt-1">
