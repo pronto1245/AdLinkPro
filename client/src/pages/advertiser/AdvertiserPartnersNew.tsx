@@ -22,7 +22,8 @@ import {
   Calendar,
   TrendingUp,
   DollarSign,
-  Activity
+  Activity,
+  Send
 } from 'lucide-react';
 
 // Типы данных для партнеров с новой системой одобрения
@@ -367,6 +368,16 @@ export function AdvertiserPartnersNew() {
           <p className="text-gray-600 mt-1">
             Одобряйте новых партнеров и управляйте их доступом к офферам
           </p>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => window.location.href = '/advertiser/partner-invite-links'}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            data-testid="button-partner-invites"
+          >
+            <Send className="w-4 h-4 mr-2" />
+            Пригласить партнеров
+          </Button>
         </div>
       </div>
 

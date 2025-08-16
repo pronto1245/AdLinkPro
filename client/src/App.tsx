@@ -42,6 +42,7 @@ import AdvertiserOffers from '@/pages/advertiser/AdvertiserOffers';
 import AdvertiserOffersSimple from '@/pages/advertiser/AdvertiserOffers_SIMPLE';
 import AdvertiserPartners from '@/pages/advertiser/AdvertiserPartners';
 import AdvertiserPartnersNew from '@/pages/advertiser/AdvertiserPartnersNew';
+import PartnerInviteLinks from '@/pages/advertiser/PartnerInviteLinks';
 import AffiliateDashboard from "@/pages/affiliate/simple-dashboard";
 import AffiliateTeamManagement from "@/pages/affiliate/TeamManagement";
 import PostbackManagementAffiliate from "@/pages/affiliate/PostbackManagement";
@@ -407,6 +408,14 @@ function Router() {
         <ProtectedRoute allowedRoles={['advertiser']}>
           <RoleBasedLayout>
             <AdvertiserPartnersNew />
+          </RoleBasedLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/advertiser/partner-invite-links">
+        <ProtectedRoute allowedRoles={['advertiser']}>
+          <RoleBasedLayout>
+            <PartnerInviteLinks />
           </RoleBasedLayout>
         </ProtectedRoute>
       </Route>
