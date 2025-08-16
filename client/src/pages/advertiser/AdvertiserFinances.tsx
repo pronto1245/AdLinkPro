@@ -260,9 +260,9 @@ export default function AdvertiserFinances() {
               <CardContent>
                 {transactionsLoading ? (
                   <div className="text-center py-4">Загрузка...</div>
-                ) : transactions?.length > 0 ? (
+                ) : (transactions && transactions.length > 0) ? (
                   <div className="space-y-3">
-                    {transactions.slice(0, 5).map((transaction: Transaction) => (
+                    {(transactions || []).slice(0, 5).map((transaction: Transaction) => (
                       <div key={transaction.id} className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           {getTypeIcon(transaction.type)}

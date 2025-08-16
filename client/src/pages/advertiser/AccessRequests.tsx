@@ -73,13 +73,10 @@ export default function AccessRequests() {
       responseNote?: string;
       advertiserResponse?: string;
     }) => {
-      await apiRequest(`/api/offers/${data.offerId}/access-requests/${data.requestId}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          action: data.action,
-          responseNote: data.responseNote,
-          advertiserResponse: data.advertiserResponse
-        })
+      await apiRequest(`/api/offers/${data.offerId}/access-requests/${data.requestId}`, "PATCH", {
+        action: data.action,
+        responseNote: data.responseNote,
+        advertiserResponse: data.advertiserResponse
       });
     },
     onSuccess: (_, variables) => {

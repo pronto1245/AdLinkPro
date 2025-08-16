@@ -41,7 +41,7 @@ i18n
     
     // Better production support
     initImmediate: true,
-    compatibilityJSON: 'v3',
+    compatibilityJSON: 'v4',
   });
 
 export default i18n;

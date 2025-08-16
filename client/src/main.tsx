@@ -32,17 +32,11 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       retry: false, // Отключаем retry полностью
       staleTime: 5 * 60 * 1000, // 5 minutes
-      // Глобальный error handler для queries
-      onError: (error: any) => {
-        console.warn('Query error handled:', error.message);
-      },
+      // Глобальные error handlers удалены из TanStack Query v5
     },
     mutations: {
       retry: false,
-      // Глобальный error handler для mutations
-      onError: (error: any) => {
-        console.warn('Mutation error handled:', error.message);
-      },
+      // Глобальные error handlers удалены из TanStack Query v5
     },
   },
 });

@@ -38,12 +38,9 @@ export function RequestAccessModal({ isOpen, onClose, offer }: RequestAccessModa
 
   const requestAccessMutation = useMutation({
     mutationFn: async (data: { offerId: string; requestNote?: string; partnerMessage?: string }) => {
-      await apiRequest(`/api/offers/${data.offerId}/request-access`, {
-        method: "POST",
-        body: JSON.stringify({
-          requestNote: data.requestNote,
-          partnerMessage: data.partnerMessage
-        })
+      await apiRequest(`/api/offers/${data.offerId}/request-access`, "POST", {
+        requestNote: data.requestNote,
+        partnerMessage: data.partnerMessage
       });
     },
     onSuccess: () => {

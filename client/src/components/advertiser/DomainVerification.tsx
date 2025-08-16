@@ -71,11 +71,7 @@ export default function DomainVerification() {
   // Add new domain mutation
   const addDomainMutation = useMutation({
     mutationFn: async (domain: string) => {
-      return apiRequest('/api/advertiser/domains/verify', {
-        method: 'POST',
-        body: JSON.stringify({ domain }),
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return apiRequest('/api/advertiser/domains/verify', 'POST', { domain });
     },
     onSuccess: (data) => {
       toast({

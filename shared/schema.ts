@@ -2145,3 +2145,41 @@ export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 
 // DUPLICATE SCHEMA DEFINITIONS REMOVED - USING VERSIONS AT LINES 1824, 1830
+// Partner type with all necessary properties for AdvertiserPartners.tsx
+export interface Partner {
+  id: string;
+  username: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  company?: string;
+  phone?: string;
+  country?: string;
+  language?: string;
+  timezone?: string;
+  trafficSources?: string[];
+  verticals?: string[];
+  tier?: string;
+  commissionRate?: number;
+  permissions?: {
+    api: boolean;
+    statistics: boolean;
+    offers: boolean;
+    finances: boolean;
+  };
+  notes?: string;
+  tags?: string[];
+  referralCode?: string;
+  kycStatus?: string;
+  rating?: number;
+  statistics?: {
+    totalClicks: number;
+    totalLeads: number;
+    totalRevenue: number;
+  };
+  role: 'affiliate';
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+

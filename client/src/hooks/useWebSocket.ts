@@ -32,23 +32,24 @@ export function useWebSocket() {
       
       ws.current = new WebSocket(wsUrl);
 
-      ws.current.onopen = () => {
+      const websocket = ws.current;
+      
+      websocket.onopen = () => {
         // Убрано для чистой консоли продакшена
         setConnectionState('connected');
         reconnectAttempts.current = 0;
         
         // Безопасная отправка аутентификации с проверкой состояния
         const token = localStorage.getItem('auth_token');
-        if (token && ws.current && ws.current.readyState === WebSocket.OPEN) {
-          ws.current.send(JSON.stringify({
+        if (token && websocket && websocket.readyState === WebSocket.OPEN) {
+          websocket.send(JSON.stringify({
             type: 'auth',
             token
           }));
         }
       };
 
-      if (ws.current) {
-        ws.current.onmessage = (event) => {
+      websocket.onmessage = (event) => {
         try {
           const message: WebSocketMessage = JSON.parse(event.data);
           handleMessage(message);
@@ -57,7 +58,7 @@ export function useWebSocket() {
         }
       };
 
-        ws.current.onclose = () => {
+      websocket.onclose = () => {
         // Убрано для чистой консоли продакшена
         setConnectionState('disconnected');
         
@@ -71,11 +72,10 @@ export function useWebSocket() {
         }
       };
 
-        ws.current.onerror = (error) => {
-          // Тихо обрабатываем WebSocket ошибки без вывода в консоль
-          // console.error('WebSocket error:', error);
-        };
-      }
+      websocket.onerror = (error) => {
+        // Тихо обрабатываем WebSocket ошибки без вывода в консоль
+        // console.error('WebSocket error:', error);
+      };
 
     } catch (error) {
       // Тихо обрабатываем ошибки подключения WebSocket

@@ -150,7 +150,7 @@ const PartnerForm: React.FC<{
     mutationFn: (data: any) => {
       const url = partner ? `/api/advertiser/partners/${partner.id}` : '/api/advertiser/partners';
       const method = partner ? 'PUT' : 'POST';
-      return apiRequest(url, { method, body: data });
+      return apiRequest(url, method, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/partners'] });
@@ -552,10 +552,7 @@ export default function AdvertiserPartners() {
 
   // Мутации для действий с партнерами
   const statusMutation = useMutation({
-    mutationFn: ({ partnerId, status }: { partnerId: string; status: string }) => apiRequest(`/api/advertiser/partners/${partnerId}/status`, {
-      method: 'PATCH',
-      body: { status }
-    }),
+    mutationFn: ({ partnerId, status }: { partnerId: string; status: string }) => apiRequest(`/api/advertiser/partners/${partnerId}/status`, 'PATCH', { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/partners'] });
       toast({ title: 'Статус изменен', description: 'Статус партнера успешно обновлен' });
@@ -563,10 +560,7 @@ export default function AdvertiserPartners() {
   });
 
   const inviteMutation = useMutation({
-    mutationFn: (data: { email: string; message?: string }) => apiRequest('/api/advertiser/partners/invite', {
-      method: 'POST',
-      body: data
-    }),
+    mutationFn: (data: { email: string; message?: string }) => apiRequest('/api/advertiser/partners/invite', 'POST', data),
     onSuccess: () => {
       toast({ title: 'Приглашение отправлено', description: 'Приглашение успешно отправлено на email' });
       setShowInviteDialog(false);
@@ -574,10 +568,7 @@ export default function AdvertiserPartners() {
   });
 
   const bulkMutation = useMutation({
-    mutationFn: ({ action, partnerIds }: { action: string; partnerIds: string[] }) => apiRequest('/api/advertiser/partners/bulk', {
-      method: 'POST',
-      body: { action, partnerIds }
-    }),
+    mutationFn: ({ action, partnerIds }: { action: string; partnerIds: string[] }) => apiRequest('/api/advertiser/partners/bulk', 'POST', { action, partnerIds }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/partners'] });
       setSelectedPartners([]);
