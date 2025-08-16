@@ -497,6 +497,7 @@
   "postbacks": {
     "title": "Постбеки",
     "subtitle": "Настройка интеграции с трекерами",
+    "configuredPostbacks": "Настроенные постбеки",
     "profiles": "Профили постбеков",
     "createProfile": "Создать профиль",
     "editProfile": "Редактировать профиль",
