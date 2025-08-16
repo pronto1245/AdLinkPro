@@ -552,8 +552,18 @@ export default function Statistics() {
                     <TableRow key={item.id} className="bg-background dark:bg-card hover:bg-muted/50 dark:hover:bg-muted/50">
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium text-foreground">{new Date(item.timestamp || item.createdAt).toLocaleDateString()}</span>
-                          <span className="text-xs text-muted-foreground">{new Date(item.timestamp || item.createdAt).toLocaleTimeString()}</span>
+                          <span className="font-medium text-foreground">
+                            {(item.timestamp || item.createdAt) && !isNaN(new Date(item.timestamp || item.createdAt).getTime()) 
+                              ? new Date(item.timestamp || item.createdAt).toLocaleDateString()
+                              : t('statistics.dateNotAvailable', 'Дата неизвестна')
+                            }
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {(item.timestamp || item.createdAt) && !isNaN(new Date(item.timestamp || item.createdAt).getTime()) 
+                              ? new Date(item.timestamp || item.createdAt).toLocaleTimeString()
+                              : ''
+                            }
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{getOfferName(item.offerId)}</TableCell>
@@ -839,8 +849,18 @@ export default function Statistics() {
                     <TableRow key={item.id} className="bg-background dark:bg-card hover:bg-muted/50 dark:hover:bg-muted/50">
                       <TableCell className="text-xs">
                         <div className="flex flex-col">
-                          <span className="text-foreground">{new Date(item.timestamp || item.createdAt).toLocaleDateString()}</span>
-                          <span className="text-muted-foreground">{new Date(item.timestamp || item.createdAt).toLocaleTimeString()}</span>
+                          <span className="text-foreground">
+                            {(item.timestamp || item.createdAt) && !isNaN(new Date(item.timestamp || item.createdAt).getTime()) 
+                              ? new Date(item.timestamp || item.createdAt).toLocaleDateString()
+                              : t('statistics.dateNotAvailable', 'Дата неизвестна')
+                            }
+                          </span>
+                          <span className="text-muted-foreground">
+                            {(item.timestamp || item.createdAt) && !isNaN(new Date(item.timestamp || item.createdAt).getTime()) 
+                              ? new Date(item.timestamp || item.createdAt).toLocaleTimeString()
+                              : ''
+                            }
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell className="font-medium text-foreground">{getOfferName(item.offerId)}</TableCell>

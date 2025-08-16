@@ -385,7 +385,10 @@ export default function Finances() {
               {((transactionsData as any) || []).map((transaction: any) => (
                 <TableRow key={transaction.id}>
                   <TableCell className="font-medium">
-                    {new Date(transaction.createdAt).toLocaleDateString('ru-RU')}
+                    {transaction.createdAt && !isNaN(new Date(transaction.createdAt).getTime()) 
+                      ? new Date(transaction.createdAt).toLocaleDateString('ru-RU')
+                      : 'Дата неизвестна'
+                    }
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-3">
