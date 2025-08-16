@@ -188,21 +188,45 @@ export default function AccessRequestsManager() {
     }
   };
 
-  // Форматирование даты с проверкой валидности
-  const formatDate = (dateString: string | null | undefined) => {
-    console.log('formatDate called with:', dateString, typeof dateString);
-    
-    if (!dateString || dateString === 'null' || dateString === 'undefined') {
-      return t('accessRequests.dateNotAvailable', 'Дата неизвестна');
-    }
-    
+  // Безопасное форматирование даты с полной защитой от ошибок
+  const formatDate = (dateString: any) => {
+    // Радикальная защита - возвращаем безопасное значение для любых проблемных данных
     try {
+      console.log('formatDate called with:', dateString, typeof dateString);
+      
+      // Проверяем все возможные некорректные значения
+      if (
+        !dateString || 
+        dateString === 'null' || 
+        dateString === 'undefined' || 
+        dateString === '' ||
+        dateString === null ||
+        dateString === undefined ||
+        (typeof dateString === 'object' && dateString !== null)
+      ) {
+        return t('accessRequests.dateNotAvailable', 'Дата неизвестна');
+      }
+      
+      // Проверяем тип данных
+      if (typeof dateString !== 'string' && typeof dateString !== 'number') {
+        console.error('Invalid date type:', typeof dateString, dateString);
+        return t('accessRequests.dateNotAvailable', 'Дата неизвестна');
+      }
+      
+      // Пробуем создать дату
       const date = new Date(dateString);
       
-      // Проверка валидности даты
-      if (isNaN(date.getTime())) {
-        console.error('Invalid date:', dateString);
-        return t('accessRequests.dateInvalid', 'Неверная дата');
+      // Строгая проверка валидности даты
+      if (!date || isNaN(date.getTime()) || date.getTime() < 0) {
+        console.error('Invalid date value:', dateString);
+        return t('accessRequests.dateNotAvailable', 'Дата неизвестна');
+      }
+      
+      // Проверяем разумные границы дат (не раньше 2000 года, не позже 2100)
+      const year = date.getFullYear();
+      if (year < 2000 || year > 2100) {
+        console.error('Date out of reasonable range:', dateString, year);
+        return t('accessRequests.dateNotAvailable', 'Дата неизвестна');
       }
       
       const now = new Date();
@@ -211,22 +235,39 @@ export default function AccessRequestsManager() {
       
       const locale = i18n.language === 'ru' ? 'ru-RU' : 'en-US';
       
+      // Безопасное форматирование времени
+      const formatTime = (d: Date) => {
+        try {
+          return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+        } catch (err) {
+          return d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0');
+        }
+      };
+      
+      const formatFullDate = (d: Date) => {
+        try {
+          return d.toLocaleDateString(locale, { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        } catch (err) {
+          return d.toISOString().split('T')[0] + ' ' + formatTime(d);
+        }
+      };
+      
       if (diffDays === 0) {
-        return `${t('accessRequests.today', 'Сегодня')} ${date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`;
+        return `${t('accessRequests.today', 'Сегодня')} ${formatTime(date)}`;
       } else if (diffDays === 1) {
-        return `${t('accessRequests.yesterday', 'Вчера')} ${date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`;
+        return `${t('accessRequests.yesterday', 'Вчера')} ${formatTime(date)}`;
       } else {
-        return date.toLocaleDateString(locale, { 
-          day: '2-digit', 
-          month: '2-digit', 
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
+        return formatFullDate(date);
       }
     } catch (error) {
-      console.error('Error formatting date:', error, dateString);
-      return t('accessRequests.dateInvalid', 'Неверная дата');
+      console.error('Critical error formatting date:', error, dateString);
+      return t('accessRequests.dateNotAvailable', 'Дата неизвестна');
     }
   };
 
@@ -448,7 +489,10 @@ export default function AccessRequestsManager() {
                         <TableCell>
                           <div className="flex items-center gap-2 text-sm">
                             <Calendar className="w-4 h-4 text-muted-foreground" />
-                            {request.createdAt ? formatDate(request.createdAt) : t('accessRequests.dateNotAvailable', 'Дата неизвестна')}
+                            {(request.createdAt && request.createdAt !== 'null' && request.createdAt !== 'undefined') 
+                              ? formatDate(request.createdAt) 
+                              : t('accessRequests.dateNotAvailable', 'Дата неизвестна')
+                            }
                           </div>
                         </TableCell>
 
@@ -629,7 +673,12 @@ export default function AccessRequestsManager() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Дата запроса</label>
-                  <div className="mt-1 text-sm">{selectedRequest.createdAt ? formatDate(selectedRequest.createdAt) : t('accessRequests.dateNotAvailable', 'Дата неизвестна')}</div>
+                  <div className="mt-1 text-sm">
+                    {(selectedRequest.createdAt && selectedRequest.createdAt !== 'null' && selectedRequest.createdAt !== 'undefined') 
+                      ? formatDate(selectedRequest.createdAt) 
+                      : t('accessRequests.dateNotAvailable', 'Дата неизвестна')
+                    }
+                  </div>
                 </div>
               </div>
               

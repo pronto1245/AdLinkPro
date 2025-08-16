@@ -514,5 +514,32 @@
     "cancel": "Отмена",
     "delete": "Удалить",
     "test": "Тестировать"
+  },
+  "accessRequests": {
+    "title": "Запросы доступа",
+    "subtitle": "Управление запросами на доступ к офферам",
+    "newRequest": "Новый запрос",
+    "refresh": "Обновить",
+    "totalRequests": "Всего запросов",
+    "pending": "Ожидает",
+    "approved": "Одобрено", 
+    "rejected": "Отклонено",
+    "searchPlaceholder": "Поиск по офферу, рекламодателю...",
+    "filterStatus": "Фильтр по статусу",
+    "allStatuses": "Все статусы",
+    "offer": "Оффер",
+    "advertiser": "Рекламодатель",
+    "status": "Статус",
+    "requestDate": "Дата запроса",
+    "message": "Сообщение",
+    "actions": "Действия",
+    "noRequests": "Запросы не найдены",
+    "noMessage": "Без сообщения",
+    "getLink": "Получить ссылку",
+    "viewDetails": "Подробнее",
+    "dateNotAvailable": "Дата неизвестна",
+    "dateInvalid": "Неверная дата",
+    "today": "Сегодня",
+    "yesterday": "Вчера"
   }
 }
