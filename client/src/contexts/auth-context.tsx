@@ -17,6 +17,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (username: string, password: string) => Promise<void>;
+  register: (userData: any) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -123,6 +124,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const register = async (userData: any) => {
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Registration failed' }));
+        throw new Error(errorData.error || 'Registration failed');
+      }
+      
+      const data = await response.json();
+      
+      // CRITICAL FIX: Проверяем что токен не null перед сохранением
+      if (data.token && data.token !== 'null' && data.token !== null) {
+        setToken(data.token);
+        localStorage.setItem('auth_token', data.token);
+        
+        // CRITICAL: Принудительно очищаем все кеши React Query после регистрации
+        if ((window as any).queryClient) {
+          (window as any).queryClient.clear();
+        }
+      } else {
+        throw new Error('Invalid token received from server');
+      }
+      
+      setUser(data.user);
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -133,7 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

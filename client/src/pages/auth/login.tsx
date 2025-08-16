@@ -130,6 +130,32 @@ export default function Login() {
               >
                 {loading ? 'Loading...' : t('sign_in')}
               </Button>
+
+              <div className="mt-6 space-y-2">
+                <div className="text-center text-sm text-slate-600 dark:text-slate-400">
+                  Нет аккаунта?
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-sm" 
+                    onClick={() => window.location.href = '/auth/register-partner'}
+                    data-testid="register-partner-button"
+                  >
+                    Стать партнером
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-sm" 
+                    onClick={() => window.location.href = '/auth/register-advertiser'}
+                    data-testid="register-advertiser-button"
+                  >
+                    Стать рекламодателем
+                  </Button>
+                </div>
+              </div>
             </form>
           </CardContent>
         </Card>
