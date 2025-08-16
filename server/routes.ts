@@ -6387,40 +6387,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }
 
-      // Insert directly into database bypassing all validation
-      const [newOffer] = await db
-        .insert(offers)
-        .values({
-          name: req.body.name || "Unnamed Offer",
-          category: req.body.category || "other", 
-          description: description || null,
-          goals: goals || null,
-          logo: req.body.logo || null,
-          status: req.body.status || 'draft',
-          payout: "0.00",
-          payoutType: req.body.payoutType || 'cpa',
-          currency: req.body.currency || 'USD',
-          advertiserId: authUser.id,
-          landingPages: req.body.landingPages || null,
-          kpiConditions: kpiConditions || null,
-          trafficSources: req.body.trafficSources || req.body.allowedTrafficSources || null,
-          allowedApps: req.body.allowedApps || null,
-          dailyLimit: req.body.dailyLimit || null,
-          monthlyLimit: req.body.monthlyLimit || null,
-          antifraudEnabled: req.body.antifraudEnabled !== false,
-          autoApprovePartners: req.body.autoApprovePartners === true,
-        })
-        .returning();
+      // Create offer using storage interface for better error handling
+      const offerData = {
+        name: req.body.name || "Unnamed Offer",
+        category: req.body.category || "other", 
+        description: description || null,
+        goals: goals || null,
+        logo: req.body.logo || null,
+        status: (req.body.status || 'draft') as 'active' | 'draft' | 'paused',
+        payout: req.body.payout || "0.00",
+        payoutType: req.body.payoutType || 'cpa',
+        currency: req.body.currency || 'USD',
+        advertiserId: authUser.id,
+        landingPages: req.body.landingPages || null,
+        kpiConditions: kpiConditions || null,
+        trafficSources: req.body.trafficSources || req.body.allowedTrafficSources || null,
+        allowedApps: req.body.allowedApps || null,
+        dailyLimit: req.body.dailyLimit || null,
+        monthlyLimit: req.body.monthlyLimit || null,
+        antifraudEnabled: req.body.antifraudEnabled !== false,
+        autoApprovePartners: req.body.autoApprovePartners === true,
+      };
       
-      console.log("Created offer:", newOffer);
+      const newOffer = await storage.createOffer(offerData);
+      
+      console.log("Created offer successfully:", newOffer.id, newOffer.name);
       
       // Очищаем кеш офферов после создания
       queryCache.clear();
       
       res.status(201).json(newOffer);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Create offer error:", error);
-      res.status(500).json({ error: "Failed to create offer", details: error instanceof Error ? error.message : 'Unknown error' });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      res.status(500).json({ 
+        error: "Failed to create offer", 
+        details: errorMessage,
+        timestamp: new Date().toISOString()
+      });
     }
   });
 
