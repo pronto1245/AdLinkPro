@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'wouter';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function RegisterPartner() {
   const [formData, setFormData] = useState({
@@ -22,6 +23,8 @@ export default function RegisterPartner() {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [linkToken, setLinkToken] = useState<string | null>(null);
   const { register } = useAuth();
   const { i18n, t } = useTranslation();
   const [, setLocation] = useLocation();
@@ -29,6 +32,15 @@ export default function RegisterPartner() {
   
   const language = i18n.language || 'ru';
   const setLanguage = (lang: string) => i18n.changeLanguage(lang);
+
+  // Получаем токен из URL при загрузке компонента
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+      setLinkToken(token);
+    }
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -81,35 +93,39 @@ export default function RegisterPartner() {
     setLoading(true);
 
     try {
-      const userData = {
-        username: formData.email, // Use email as username
-        email: formData.email,
-        password: formData.password,
-        firstName: formData.firstName,
-        phone: formData.phone,
-        role: 'affiliate',
-        userType: 'affiliate',
-        settings: JSON.stringify({
+      // Отправляем данные с токеном регистрационной ссылки
+      const response = await fetch('/api/auth/register-partner', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.email,
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          phone: formData.phone,
           contactType: formData.contactType,
-          contact: formData.contact
-        })
-      };
-
-      await register(userData);
-      
-      toast({
-        title: "Регистрация успешна!",
-        description: "Добро пожаловать в систему партнерского маркетинга",
-        variant: "default",
+          contact: formData.contact,
+          role: 'affiliate',
+          registrationLinkToken: linkToken, // Передаем токен ссылки
+        }),
       });
-
-      // Redirect to partner dashboard
-      setLocation('/affiliate/dashboard');
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Registration failed' }));
+        throw new Error(errorData.error || 'Registration failed');
+      }
+      
+      // Показываем модальное окно с сообщением
+      setShowSuccessModal(true);
+      
     } catch (error: any) {
       console.error('Registration error:', error);
+      
       toast({
         title: "Ошибка регистрации",
-        description: error.message || "Произошла ошибка при регистрации",
+        description: error.message || "Произошла ошибка. Попробуйте снова.",
         variant: "destructive",
       });
     } finally {
@@ -122,6 +138,11 @@ export default function RegisterPartner() {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+  };
+
+  const handleModalClose = () => {
+    setShowSuccessModal(false);
+    setLocation('/auth/login');
   };
 
   return (
@@ -280,6 +301,30 @@ export default function RegisterPartner() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Модальное окно успешной регистрации */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-green-600">Регистрация прошла успешно!</DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-6">
+            <div className="mb-4">
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Для активации аккаунта менеджер свяжется с вами в течении 24 часов.
+            </p>
+            <Button onClick={handleModalClose} className="w-full">
+              Перейти к входу
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

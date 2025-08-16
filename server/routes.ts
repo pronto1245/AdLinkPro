@@ -2075,6 +2075,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoint for partner registration with advertiser link support
+  app.post("/api/auth/register-partner", async (req, res) => {
+    try {
+      console.log('=== PARTNER REGISTRATION WITH LINK TOKEN ===');
+      const { 
+        username, 
+        email, 
+        password, 
+        firstName, 
+        phone, 
+        contactType, 
+        contact, 
+        registrationLinkToken 
+      } = req.body;
+
+      // Validate required fields
+      if (!username || !email || !password || !firstName) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ error: 'User with this email already exists' });
+      }
+
+      const existingUsername = await storage.getUserByUsername(username);
+      if (existingUsername) {
+        return res.status(400).json({ error: 'Username already taken' });
+      }
+
+      let advertiserId = null;
+      let linkUrl = null;
+
+      // If registration link token provided, find the associated advertiser
+      if (registrationLinkToken) {
+        try {
+          const { advertiserRegistrationLinks } = await import('@shared/schema');
+          const registrationLinks = await db.select()
+            .from(advertiserRegistrationLinks)
+            .where(eq(advertiserRegistrationLinks.linkToken, registrationLinkToken))
+            .limit(1);
+          
+          if (registrationLinks.length > 0 && registrationLinks[0].isActive) {
+            advertiserId = registrationLinks[0].advertiserId;
+            linkUrl = registrationLinks[0].linkUrl;
+            
+            // Increment registration count
+            await db.update(advertiserRegistrationLinks)
+              .set({ 
+                totalRegistrations: sql`${advertiserRegistrationLinks.totalRegistrations} + 1`,
+                updatedAt: new Date()
+              })
+              .where(eq(advertiserRegistrationLinks.id, registrationLinks[0].id));
+          }
+        } catch (error) {
+          console.error('Error finding registration link:', error);
+        }
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create partner with pending approval status if registered via link
+      const approvalStatus = advertiserId ? 'pending' : 'approved';
+
+      const userData = {
+        username,
+        email,
+        password: hashedPassword,
+        firstName,
+        phone,
+        role: 'affiliate' as const,
+        userType: 'affiliate' as const,
+        approvalStatus: approvalStatus as any,
+        advertiserId,
+        registrationLink: linkUrl,
+        settings: JSON.stringify({
+          contactType,
+          contact
+        }),
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      // Save to database
+      const newUser = await storage.createUser(userData);
+
+      // Send email notification to partner (if SendGrid is configured)
+      if (process.env.SENDGRID_API_KEY) {
+        try {
+          const { sendEmail } = await import('../sendgrid.js');
+          await sendEmail(process.env.SENDGRID_API_KEY, {
+            to: email,
+            from: 'noreply@adlinkpro.com', // замените на ваш домен
+            subject: 'Регистрация в AdLinkPro - Ожидание активации',
+            html: `
+              <h2>Добро пожаловать в AdLinkPro!</h2>
+              <p>Здравствуйте, ${firstName}!</p>
+              <p>Ваша регистрация прошла успешно. Для активации аккаунта менеджер свяжется с вами в течении 24 часов.</p>
+              <p>Спасибо за выбор нашей платформы!</p>
+              <p>С уважением,<br>Команда AdLinkPro</p>
+            `
+          });
+          console.log('Registration email sent successfully');
+        } catch (emailError) {
+          console.error('Error sending registration email:', emailError);
+        }
+      }
+
+      res.status(201).json({ 
+        message: 'Partner registered successfully',
+        status: approvalStatus,
+        requiresApproval: approvalStatus === 'pending'
+      });
+
+    } catch (error) {
+      console.error('Partner registration error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Protected routes
   app.get("/api/auth/me", authenticateToken, async (req, res) => {
     try {
@@ -9261,125 +9384,378 @@ export async function registerRoutes(app: Express): Promise<Server> {
         topPerformersOnly
       } = req.query;
 
-      // Generate mock partners data
-      const generateMockPartners = () => {
-        const partners = [];
-        const statuses = ['active', 'inactive', 'pending', 'blocked'];
-        const riskLevels = ['low', 'medium', 'high'];
-        const countries = ['US', 'GB', 'DE', 'FR', 'CA', 'RU'];
-        
-        const mockOffers = [
-          { id: '1', name: 'Casino Welcome Bonus', defaultPayout: 150 },
-          { id: '2', name: 'Sports Betting CPA', defaultPayout: 200 },
-          { id: '3', name: 'Forex Trading Lead', defaultPayout: 75 }
-        ];
+      // Get real partners data from database
+      let partnersQuery = db
+        .select({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          partnerNumber: users.partnerNumber,
+          company: users.company,
+          country: users.country,
+          phone: users.phone,
+          isActive: users.isActive,
+          status: users.status,
+          approvalStatus: users.approvalStatus,
+          registrationLink: users.registrationLink,
+          createdAt: users.createdAt,
+          lastLoginAt: users.lastLoginAt,
+          approvedAt: users.approvedAt,
+          balance: users.balance
+        })
+        .from(users)
+        .where(and(
+          eq(users.role, 'affiliate'),
+          eq(users.advertiserId, user.id)
+        ));
 
-        for (let i = 1; i <= 20; i++) {
-          const clicks = Math.floor(Math.random() * 5000) + 500;
-          const uniqueClicks = Math.floor(clicks * 0.8);
-          const leads = Math.floor(clicks * (Math.random() * 0.1 + 0.005));
-          const revenue = leads * (Math.random() * 100 + 50);
-          const payout = leads * (Math.random() * 80 + 30);
-          const profit = revenue - payout;
-          const cr = clicks > 0 ? (leads / clicks) * 100 : 0;
-          const epc = clicks > 0 ? revenue / clicks : 0;
-          const roi = payout > 0 ? ((revenue - payout) / payout) * 100 : 0;
-          const isTopPerformer = Math.random() > 0.8;
-
-          // Generate payout settings for random offers
-          const payoutSettings: any = {};
-          const partnerOffers = mockOffers.slice(0, Math.floor(Math.random() * 3) + 1);
-          partnerOffers.forEach(offer => {
-            payoutSettings[offer.id] = {
-              offerId: offer.id,
-              offerName: offer.name,
-              defaultPayout: offer.defaultPayout,
-              customPayout: Math.random() > 0.5 ? offer.defaultPayout * (1 + (Math.random() * 0.4 - 0.2)) : offer.defaultPayout,
-              isActive: Math.random() > 0.1
-            };
-          });
-
-          partners.push({
-            id: `partner_${i}`,
-            partnerId: `P${String(i).padStart(5, '0')}`,
-            username: `partner${i}`,
-            email: `partner${i}@example.com`,
-            firstName: `Partner`,
-            lastName: `${i}`,
-            telegram: Math.random() > 0.5 ? `partner${i}` : null,
-            status: statuses[Math.floor(Math.random() * statuses.length)],
-            offersCount: partnerOffers.length,
-            clicks,
-            uniqueClicks,
-            leads,
-            conversions: leads,
-            revenue: parseFloat(revenue.toFixed(2)),
-            payout: parseFloat(payout.toFixed(2)),
-            profit: parseFloat(profit.toFixed(2)),
-            cr: parseFloat(cr.toFixed(2)),
-            epc: parseFloat(epc.toFixed(4)),
-            roi: parseFloat(roi.toFixed(2)),
-            fraudClicks: Math.floor(Math.random() * 20),
-            botClicks: Math.floor(Math.random() * 30),
-            fraudScore: Math.floor(Math.random() * 100),
-            lastActivity: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-            registrationDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
-            country: countries[Math.floor(Math.random() * countries.length)],
-            timezone: 'UTC',
-            isTopPerformer,
-            riskLevel: riskLevels[Math.floor(Math.random() * riskLevels.length)],
-            payoutSettings
-          });
-        }
-        return partners;
-      };
-
-      let partnersData = generateMockPartners();
-
-      // Apply filters
+      // Apply search filter
       if (search) {
-        partnersData = partnersData.filter(partner =>
-          partner.username.toLowerCase().includes(search.toString().toLowerCase()) ||
-          partner.email.toLowerCase().includes(search.toString().toLowerCase()) ||
-          partner.partnerId.includes(search.toString())
+        partnersQuery = partnersQuery.where(
+          or(
+            ilike(users.username, `%${search}%`),
+            ilike(users.email, `%${search}%`),
+            ilike(users.firstName, `%${search}%`),
+            ilike(users.lastName, `%${search}%`),
+            ilike(users.company, `%${search}%`)
+          )
         );
       }
 
+      // Apply status filter
       if (status) {
-        partnersData = partnersData.filter(partner => partner.status === status);
+        partnersQuery = partnersQuery.where(eq(users.approvalStatus, status));
       }
 
+      const partners = await partnersQuery.orderBy(desc(users.createdAt));
+
+      // Transform partners data with mock statistics (until we have real stats)
+      const partnersWithStats = partners.map((partner, index) => {
+        // Generate consistent mock statistics based on partner ID
+        const seed = partner.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const random = (multiplier: number) => ((seed * multiplier) % 100) / 100;
+        
+        const clicks = Math.floor(random(1) * 5000) + 100;
+        const uniqueClicks = Math.floor(clicks * (0.7 + random(2) * 0.3));
+        const leads = Math.floor(clicks * (random(3) * 0.08 + 0.01));
+        const revenue = leads * (random(4) * 100 + 50);
+        const payout = leads * (random(5) * 80 + 30);
+        const profit = revenue - payout;
+        const cr = clicks > 0 ? (leads / clicks) * 100 : 0;
+        const epc = clicks > 0 ? revenue / clicks : 0;
+        const roi = payout > 0 ? ((revenue - payout) / payout) * 100 : 0;
+
+        return {
+          id: partner.id,
+          username: partner.username,
+          email: partner.email,
+          firstName: partner.firstName,
+          lastName: partner.lastName,
+          displayName: `${partner.firstName || ''} ${partner.lastName || ''}`.trim() || partner.username,
+          partnerNumber: partner.partnerNumber || `P${String(index + 1).padStart(5, '0')}`,
+          company: partner.company || 'Individual',
+          country: partner.country || 'Unknown',
+          phone: partner.phone,
+          isActive: partner.isActive,
+          status: partner.status,
+          approvalStatus: partner.approvalStatus,
+          registrationLink: partner.registrationLink,
+          registeredAt: partner.createdAt,
+          lastActiveAt: partner.lastLoginAt,
+          approvedAt: partner.approvedAt,
+          balance: Number(partner.balance || 0).toFixed(2),
+          
+          // Mock statistics - to be replaced with real data later
+          stats: {
+            totalClicks: clicks,
+            uniqueClicks: uniqueClicks,
+            totalLeads: leads,
+            totalRevenue: revenue.toFixed(2),
+            totalPayout: payout.toFixed(2),
+            totalProfit: profit.toFixed(2),
+            conversionRate: cr.toFixed(2),
+            epc: epc.toFixed(2),
+            roi: roi.toFixed(2),
+            offersCount: Math.floor(random(6) * 5) + 1,
+            activeOffersCount: Math.floor(random(7) * 3) + 1,
+            riskLevel: ['low', 'medium', 'high'][Math.floor(random(8) * 3)],
+            lastActivityDays: Math.floor(random(9) * 30),
+            avgDailyClicks: Math.floor(clicks / 30),
+            avgDailyRevenue: (revenue / 30).toFixed(2)
+          },
+          
+          // Payout settings for offers (mock data)
+          payoutSettings: {
+            hasCustomPayouts: random(10) > 0.5,
+            customOffers: Math.floor(random(11) * 3)
+          }
+        };
+      });
+
+      // Apply additional filters
+      let filteredPartners = partnersWithStats;
+
       if (minRevenue) {
-        partnersData = partnersData.filter(partner => partner.revenue >= parseFloat(minRevenue.toString()));
+        filteredPartners = filteredPartners.filter(p => 
+          parseFloat(p.stats.totalRevenue) >= parseFloat(minRevenue as string)
+        );
       }
 
       if (minCr) {
-        partnersData = partnersData.filter(partner => partner.cr >= parseFloat(minCr.toString()));
-      }
-
-      if (minEpc) {
-        partnersData = partnersData.filter(partner => partner.epc >= parseFloat(minEpc.toString()));
-      }
-
-      if (riskLevel) {
-        partnersData = partnersData.filter(partner => partner.riskLevel === riskLevel);
-      }
-
-      if (topPerformersOnly === 'true') {
-        partnersData = partnersData.filter(partner => partner.isTopPerformer);
-      }
-
-      if (activityDays) {
-        const daysSince = parseInt(activityDays.toString()) * 24 * 60 * 60 * 1000;
-        const cutoffDate = new Date(Date.now() - daysSince);
-        partnersData = partnersData.filter(partner => 
-          new Date(partner.lastActivity) >= cutoffDate
+        filteredPartners = filteredPartners.filter(p => 
+          parseFloat(p.stats.conversionRate) >= parseFloat(minCr as string)
         );
       }
 
-      res.json(partnersData);
+      if (minEpc) {
+        filteredPartners = filteredPartners.filter(p => 
+          parseFloat(p.stats.epc) >= parseFloat(minEpc as string)
+        );
+      }
+
+      if (activityDays) {
+        filteredPartners = filteredPartners.filter(p => 
+          p.stats.lastActivityDays <= parseInt(activityDays as string)
+        );
+      }
+
+      if (riskLevel) {
+        filteredPartners = filteredPartners.filter(p => 
+          p.stats.riskLevel === riskLevel
+        );
+      }
+
+      if (topPerformersOnly === 'true') {
+        filteredPartners = filteredPartners.filter(p => 
+          parseFloat(p.stats.totalRevenue) > 1000 && 
+          parseFloat(p.stats.conversionRate) > 3.0
+        );
+      }
+
+      // Calculate summary statistics
+      const totalPartners = filteredPartners.length;
+      const activePartners = filteredPartners.filter(p => p.isActive).length;
+      const pendingPartners = filteredPartners.filter(p => p.approvalStatus === 'pending').length;
+      const approvedPartners = filteredPartners.filter(p => p.approvalStatus === 'approved').length;
+      const blockedPartners = filteredPartners.filter(p => p.approvalStatus === 'blocked').length;
+
+      const totalRevenue = filteredPartners.reduce((sum, p) => sum + parseFloat(p.stats.totalRevenue), 0);
+      const totalPayout = filteredPartners.reduce((sum, p) => sum + parseFloat(p.stats.totalPayout), 0);
+      const totalClicks = filteredPartners.reduce((sum, p) => sum + p.stats.totalClicks, 0);
+      const totalLeads = filteredPartners.reduce((sum, p) => sum + p.stats.totalLeads, 0);
+
+      res.json({
+        partners: filteredPartners,
+        summary: {
+          totalPartners,
+          activePartners,
+          pendingPartners,
+          approvedPartners,
+          blockedPartners,
+          totalRevenue: totalRevenue.toFixed(2),
+          totalPayout: totalPayout.toFixed(2),
+          totalProfit: (totalRevenue - totalPayout).toFixed(2),
+          totalClicks,
+          totalLeads,
+          avgConversionRate: totalClicks > 0 ? ((totalLeads / totalClicks) * 100).toFixed(2) : '0.00',
+          avgEpc: totalClicks > 0 ? (totalRevenue / totalClicks).toFixed(2) : '0.00'
+        }
+      });
+
     } catch (error) {
-      console.error("Get partners error:", error);
+      console.error('Get advertiser partners error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Legacy function removed - now using real database data
+
+  // Approve partner
+  app.post("/api/advertiser/partners/:partnerId/approve", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { partnerId } = req.params;
+      
+      // Get partner details before updating
+      const partnerQuery = await db
+        .select()
+        .from(users)
+        .where(and(
+          eq(users.id, partnerId),
+          eq(users.advertiserId, user.id),
+          eq(users.role, 'affiliate')
+        ))
+        .limit(1);
+      
+      if (partnerQuery.length === 0) {
+        return res.status(404).json({ error: "Партнер не найден" });
+      }
+      
+      const partner = partnerQuery[0];
+      
+      // Update partner approval status
+      await db
+        .update(users)
+        .set({
+          approvalStatus: 'approved',
+          approvedAt: new Date(),
+          isActive: true
+        })
+        .where(and(
+          eq(users.id, partnerId),
+          eq(users.advertiserId, user.id),
+          eq(users.role, 'affiliate')
+        ));
+
+      // Send approval email notification
+      if (process.env.SENDGRID_API_KEY && partner.email) {
+        try {
+          const { sendEmail } = await import('../sendgrid.js');
+          await sendEmail(process.env.SENDGRID_API_KEY, {
+            to: partner.email,
+            from: 'noreply@adlinkpro.com',
+            subject: 'AdLinkPro - Аккаунт активирован',
+            html: `
+              <h2>Добро пожаловать в AdLinkPro!</h2>
+              <p>Здравствуйте, ${partner.firstName || partner.username}!</p>
+              <p>Ваш аккаунт был успешно активирован и одобрен.</p>
+              <p>Теперь вы можете войти в систему и начать работу с офферами.</p>
+              <p><a href="https://adlinkpro.com/auth/login" style="background: #0066cc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Войти в аккаунт</a></p>
+              <p>С уважением,<br>Команда AdLinkPro</p>
+            `
+          });
+          console.log('Partner approval email sent successfully');
+        } catch (emailError) {
+          console.error('Error sending approval email:', emailError);
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Партнер успешно одобрен" 
+      });
+    } catch (error) {
+      console.error("Approve partner error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Reject partner
+  app.post("/api/advertiser/partners/:partnerId/reject", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { partnerId } = req.params;
+      const { reason } = req.body;
+      
+      // Get partner details before updating
+      const partnerQuery = await db
+        .select()
+        .from(users)
+        .where(and(
+          eq(users.id, partnerId),
+          eq(users.advertiserId, user.id),
+          eq(users.role, 'affiliate')
+        ))
+        .limit(1);
+      
+      if (partnerQuery.length === 0) {
+        return res.status(404).json({ error: "Партнер не найден" });
+      }
+      
+      const partner = partnerQuery[0];
+      
+      // Update partner approval status
+      await db
+        .update(users)
+        .set({
+          approvalStatus: 'rejected',
+          isActive: false
+        })
+        .where(and(
+          eq(users.id, partnerId),
+          eq(users.advertiserId, user.id),
+          eq(users.role, 'affiliate')
+        ));
+
+      // Send rejection email notification
+      if (process.env.SENDGRID_API_KEY && partner.email) {
+        try {
+          const { sendEmail } = await import('../sendgrid.js');
+          await sendEmail(process.env.SENDGRID_API_KEY, {
+            to: partner.email,
+            from: 'noreply@adlinkpro.com',
+            subject: 'AdLinkPro - Заявка отклонена',
+            html: `
+              <h2>Уведомление о статусе заявки</h2>
+              <p>Здравствуйте, ${partner.firstName || partner.username}!</p>
+              <p>К сожалению, ваша заявка на регистрацию была отклонена.</p>
+              ${reason ? `<p><strong>Причина:</strong> ${reason}</p>` : ''}
+              <p>Если у вас есть вопросы, обратитесь к нашей службе поддержки.</p>
+              <p>С уважением,<br>Команда AdLinkPro</p>
+            `
+          });
+          console.log('Partner rejection email sent successfully');
+        } catch (emailError) {
+          console.error('Error sending rejection email:', emailError);
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Партнер отклонен" 
+      });
+    } catch (error) {
+      console.error("Reject partner error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Block/unblock partner
+  app.post("/api/advertiser/partners/:partnerId/toggle-block", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const { partnerId } = req.params;
+      
+      // Get current partner status
+      const partnerQuery = await db
+        .select()
+        .from(users)
+        .where(and(
+          eq(users.id, partnerId),
+          eq(users.advertiserId, user.id),
+          eq(users.role, 'affiliate')
+        ))
+        .limit(1);
+      
+      if (partnerQuery.length === 0) {
+        return res.status(404).json({ error: "Партнер не найден" });
+      }
+      
+      const partner = partnerQuery[0];
+      const newActiveStatus = !partner.isActive;
+      
+      // Update partner active status
+      await db
+        .update(users)
+        .set({
+          isActive: newActiveStatus,
+          updatedAt: new Date()
+        })
+        .where(and(
+          eq(users.id, partnerId),
+          eq(users.advertiserId, user.id),
+          eq(users.role, 'affiliate')
+        ));
+
+      res.json({ 
+        success: true, 
+        message: newActiveStatus ? "Партнер разблокирован" : "Партнер заблокирован",
+        isActive: newActiveStatus
+      });
+    } catch (error) {
+      console.error("Toggle partner block error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -9492,6 +9868,205 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Notify partner error:", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Approve partner registration
+  app.post("/api/advertiser/partners/:partnerId/approve", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { partnerId } = req.params;
+
+      // Find partner and verify it belongs to this advertiser
+      const partner = await db.select()
+        .from(users)
+        .where(and(
+          eq(users.id, partnerId),
+          eq(users.advertiserId, authUser.id),
+          eq(users.approvalStatus, 'pending')
+        ))
+        .limit(1);
+
+      if (partner.length === 0) {
+        return res.status(404).json({ error: 'Partner not found or already processed' });
+      }
+
+      // Update partner status to approved
+      await db.update(users)
+        .set({ 
+          approvalStatus: 'approved',
+          isActive: true,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, partnerId));
+
+      // Send approval email to partner (if SendGrid is configured)
+      if (process.env.SENDGRID_API_KEY && partner[0].email) {
+        try {
+          const { sendEmail } = await import('../sendgrid.js');
+          await sendEmail(process.env.SENDGRID_API_KEY, {
+            to: partner[0].email,
+            from: 'noreply@adlinkpro.com',
+            subject: 'Аккаунт активирован - AdLinkPro',
+            html: `
+              <h2>Ваш аккаунт активирован!</h2>
+              <p>Здравствуйте, ${partner[0].firstName}!</p>
+              <p>Ваш аккаунт партнера в AdLinkPro успешно активирован. Теперь вы можете входить в систему и начинать работу с предложениями.</p>
+              <p><a href="${process.env.FRONTEND_URL || 'https://app.adlinkpro.com'}/auth/login">Войти в систему</a></p>
+              <p>С уважением,<br>Команда AdLinkPro</p>
+            `
+          });
+          console.log('Approval email sent successfully');
+        } catch (emailError) {
+          console.error('Error sending approval email:', emailError);
+        }
+      }
+
+      res.json({ 
+        message: 'Partner approved successfully',
+        partnerId: partnerId,
+        status: 'approved'
+      });
+
+    } catch (error) {
+      console.error('Partner approval error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Reject partner registration
+  app.post("/api/advertiser/partners/:partnerId/reject", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { partnerId } = req.params;
+      const { reason } = req.body;
+
+      // Find partner and verify it belongs to this advertiser
+      const partner = await db.select()
+        .from(users)
+        .where(and(
+          eq(users.id, partnerId),
+          eq(users.advertiserId, authUser.id),
+          eq(users.approvalStatus, 'pending')
+        ))
+        .limit(1);
+
+      if (partner.length === 0) {
+        return res.status(404).json({ error: 'Partner not found or already processed' });
+      }
+
+      // Update partner status to rejected
+      await db.update(users)
+        .set({ 
+          approvalStatus: 'rejected',
+          isActive: false,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, partnerId));
+
+      // Send rejection email to partner (if SendGrid is configured)
+      if (process.env.SENDGRID_API_KEY && partner[0].email) {
+        try {
+          const { sendEmail } = await import('../sendgrid.js');
+          await sendEmail(process.env.SENDGRID_API_KEY, {
+            to: partner[0].email,
+            from: 'noreply@adlinkpro.com',
+            subject: 'Статус заявки - AdLinkPro',
+            html: `
+              <h2>Статус вашей заявки</h2>
+              <p>Здравствуйте, ${partner[0].firstName}!</p>
+              <p>К сожалению, ваша заявка на регистрацию в AdLinkPro не была одобрена.</p>
+              ${reason ? `<p><strong>Причина:</strong> ${reason}</p>` : ''}
+              <p>Вы можете связаться с нашей поддержкой для получения дополнительной информации.</p>
+              <p>С уважением,<br>Команда AdLinkPro</p>
+            `
+          });
+          console.log('Rejection email sent successfully');
+        } catch (emailError) {
+          console.error('Error sending rejection email:', emailError);
+        }
+      }
+
+      res.json({ 
+        message: 'Partner rejected successfully',
+        partnerId: partnerId,
+        status: 'rejected'
+      });
+
+    } catch (error) {
+      console.error('Partner rejection error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Block/Unblock partner
+  app.post("/api/advertiser/partners/:partnerId/toggle-block", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { partnerId } = req.params;
+
+      // Find partner and verify it belongs to this advertiser
+      const partner = await db.select()
+        .from(users)
+        .where(and(
+          eq(users.id, partnerId),
+          eq(users.advertiserId, authUser.id)
+        ))
+        .limit(1);
+
+      if (partner.length === 0) {
+        return res.status(404).json({ error: 'Partner not found' });
+      }
+
+      const currentStatus = partner[0].approvalStatus;
+      const newStatus = currentStatus === 'blocked' ? 'approved' : 'blocked';
+      const isActive = newStatus === 'approved';
+
+      // Update partner status
+      await db.update(users)
+        .set({ 
+          approvalStatus: newStatus as any,
+          isActive: isActive,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, partnerId));
+
+      // Send notification email to partner (if SendGrid is configured)
+      if (process.env.SENDGRID_API_KEY && partner[0].email) {
+        try {
+          const { sendEmail } = await import('../sendgrid.js');
+          const subject = newStatus === 'blocked' ? 'Аккаунт заблокирован - AdLinkPro' : 'Аккаунт разблокирован - AdLinkPro';
+          const message = newStatus === 'blocked' ? 
+            'Ваш аккаунт партнера временно заблокирован. Обратитесь в поддержку для выяснения причин.' :
+            'Ваш аккаунт партнера разблокирован. Вы можете продолжить работу с предложениями.';
+          
+          await sendEmail(process.env.SENDGRID_API_KEY, {
+            to: partner[0].email,
+            from: 'noreply@adlinkpro.com',
+            subject: subject,
+            html: `
+              <h2>Статус аккаунта изменен</h2>
+              <p>Здравствуйте, ${partner[0].firstName}!</p>
+              <p>${message}</p>
+              <p>С уважением,<br>Команда AdLinkPro</p>
+            `
+          });
+          console.log(`Status change email sent successfully - new status: ${newStatus}`);
+        } catch (emailError) {
+          console.error('Error sending status change email:', emailError);
+        }
+      }
+
+      res.json({ 
+        message: `Partner ${newStatus === 'blocked' ? 'blocked' : 'unblocked'} successfully`,
+        partnerId: partnerId,
+        status: newStatus,
+        isActive: isActive
+      });
+
+    } catch (error) {
+      console.error('Partner block/unblock error:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 

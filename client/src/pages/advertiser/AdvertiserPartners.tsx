@@ -62,53 +62,55 @@ interface Partner {
   email: string;
   firstName: string;
   lastName: string;
+  displayName: string;
+  partnerNumber: string;
   company?: string;
   phone?: string;
   country: string;
-  language: string;
-  timezone: string;
-  status: 'active' | 'pending' | 'suspended' | 'blocked';
-  kycStatus: 'pending' | 'approved' | 'rejected';
-  balance: number;
-  holdAmount: number;
-  rating: number;
-  trafficSources: string[];
-  verticals: string[];
-  tier: 'bronze' | 'silver' | 'gold' | 'platinum';
-  registrationDate: string;
-  lastActivity: string;
-  statistics: {
+  isActive: boolean;
+  status: string;
+  approvalStatus: 'pending' | 'approved' | 'rejected' | 'blocked';
+  registrationLink?: string;
+  registeredAt: string;
+  lastActiveAt?: string;
+  approvedAt?: string;
+  balance: string;
+  stats: {
     totalClicks: number;
-    totalConversions: number;
-    totalRevenue: number;
-    averageCR: number;
-    averageEPC: number;
-    activeOffers: number;
-    completedOffers: number;
+    uniqueClicks: number;
+    totalLeads: number;
+    totalRevenue: string;
+    totalPayout: string;
+    totalProfit: string;
+    conversionRate: string;
+    epc: string;
+    roi: string;
+    offersCount: number;
+    activeOffersCount: number;
+    riskLevel: 'low' | 'medium' | 'high';
+    lastActivityDays: number;
+    avgDailyClicks: number;
+    avgDailyRevenue: string;
   };
-  permissions: {
-    api: boolean;
-    statistics: boolean;
-    offers: boolean;
-    finances: boolean;
+  payoutSettings: {
+    hasCustomPayouts: boolean;
+    customOffers: number;
   };
-  manager?: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  notes: string;
-  tags: string[];
-  referralCode: string;
-  commissionRate: number;
-  paymentMethod: string;
-  paymentDetails: any;
-  documentsVerified: boolean;
-  lastPayment?: {
-    amount: number;
-    date: string;
-    status: string;
-  };
+}
+
+interface PartnerSummary {
+  totalPartners: number;
+  activePartners: number;
+  pendingPartners: number;
+  approvedPartners: number;
+  blockedPartners: number;
+  totalRevenue: string;
+  totalPayout: string;
+  totalProfit: string;
+  totalClicks: number;
+  totalLeads: number;
+  avgConversionRate: string;
+  avgEpc: string;
 }
 
 // Компонент для создания/редактирования партнера

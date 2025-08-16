@@ -23,6 +23,7 @@ export const walletTypeEnum = pgEnum('wallet_type', ['platform', 'user']);
 export const cryptoCurrencyEnum = pgEnum('crypto_currency', ['BTC', 'ETH', 'USDT', 'USDC', 'TRX', 'LTC', 'BCH', 'XRP']);
 export const walletStatusEnum = pgEnum('wallet_status', ['active', 'suspended', 'maintenance']);
 export const accessRequestStatusEnum = pgEnum('access_request_status', ['pending', 'approved', 'rejected', 'cancelled']);
+export const partnerApprovalStatusEnum = pgEnum('partner_approval_status', ['pending', 'approved', 'rejected', 'blocked']);
 export const domainStatusEnum = pgEnum('domain_status', ['pending', 'verified', 'error']);
 export const domainTypeEnum = pgEnum('domain_type', ['a_record', 'cname', 'txt_record']);
 export const ownerScopeEnum = pgEnum('owner_scope', ['owner', 'advertiser', 'partner']);
@@ -72,10 +73,17 @@ export const users: any = pgTable("users", {
   deletedBy: varchar("deleted_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  // Partner approval system
+  approvalStatus: partnerApprovalStatusEnum("approval_status").default('approved'), // pending, approved, rejected, blocked
+  advertiserId: varchar("advertiser_id").references(() => users.id), // Which advertiser this partner is assigned to (only for role='affiliate')
+  registrationLink: text("registration_link"), // Unique registration link that was used for signup
+  approvedAt: timestamp("approved_at"),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  rejectedAt: timestamp("rejected_at"),
+  rejectedBy: varchar("rejected_by").references(() => users.id),
   // Hierarchy fields - who created/owns this user
   ownerId: varchar("owner_id"), // Who created this user (advertiser creates staff/affiliates)
-  // Advertiser specific fields  
-  advertiserId: varchar("advertiser_id"),
+  // Advertiser specific fields
   balance: decimal("balance", { precision: 15, scale: 2 }).default('0.00'),
   holdAmount: decimal("hold_amount", { precision: 15, scale: 2 }).default('0.00'),
   registrationApproved: boolean("registration_approved").default(false),
@@ -183,6 +191,18 @@ export const partnerOffers = pgTable("partner_offers", {
   isApproved: boolean("is_approved").default(false),
   customPayout: decimal("custom_payout", { precision: 10, scale: 2 }),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Advertiser registration links (each advertiser has unique partner registration links)
+export const advertiserRegistrationLinks = pgTable("advertiser_registration_links", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  linkToken: text("link_token").notNull().unique(), // Unique token for the registration link
+  linkUrl: text("link_url").notNull(), // Full registration URL
+  isActive: boolean("is_active").default(true),
+  totalRegistrations: integer("total_registrations").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Offer access requests (partner request access to specific offers)
@@ -1995,6 +2015,16 @@ export const insertOfferAccessRequestSchema = createInsertSchema(offerAccessRequ
 
 export type OfferAccessRequest = typeof offerAccessRequests.$inferSelect;
 export type InsertOfferAccessRequest = z.infer<typeof insertOfferAccessRequestSchema>;
+
+// Advertiser registration links schemas and types
+export const insertAdvertiserRegistrationLinkSchema = createInsertSchema(advertiserRegistrationLinks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type AdvertiserRegistrationLink = typeof advertiserRegistrationLinks.$inferSelect;
+export type InsertAdvertiserRegistrationLink = z.infer<typeof insertAdvertiserRegistrationLinkSchema>;
 
 // Custom Domains table for white-label tracking
 export const customDomains = pgTable("custom_domains", {
