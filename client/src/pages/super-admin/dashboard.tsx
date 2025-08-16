@@ -188,28 +188,28 @@ export default function Dashboard() {
           </div>
 
           {/* Real-time Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
           
           {/* Active Partners */}
-          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-0 shadow-sm">
+            <CardContent className="p-4">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-500 rounded-lg">
-                  <Users className="w-6 h-6 text-white" />
+                <div className="p-2 bg-blue-500 rounded-lg shrink-0">
+                  <Users className="w-5 h-5 text-white" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('dashboard.metrics.activePartners')}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="ml-3 min-w-0 flex-1">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400 truncate">{t('dashboard.metrics.activePartners')}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">
                     {metrics?.activePartners?.toLocaleString() || '0'}
                   </p>
                   {metrics?.partnersGrowth && (
-                    <div className="flex items-center mt-1">
+                    <div className="flex items-center mt-0.5">
                       {metrics.partnersGrowth > 0 ? (
-                        <ArrowUpRight className="w-4 h-4 text-green-500" />
+                        <ArrowUpRight className="w-3 h-3 text-green-500" />
                       ) : (
-                        <ArrowDownRight className="w-4 h-4 text-red-500" />
+                        <ArrowDownRight className="w-3 h-3 text-red-500" />
                       )}
-                      <span className={`text-sm ${metrics.partnersGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <span className={`text-xs ${metrics.partnersGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {metrics.partnersGrowth > 0 ? '+' : ''}{metrics.partnersGrowth.toFixed(1)}%
                       </span>
                     </div>
