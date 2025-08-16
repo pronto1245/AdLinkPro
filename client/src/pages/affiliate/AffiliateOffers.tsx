@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'wouter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -86,6 +87,7 @@ const OFFER_STATUSES = [
 ];
 
 export default function AffiliateOffers() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -392,33 +394,33 @@ export default function AffiliateOffers() {
                               <DropdownMenuItem asChild>
                                 <Link href={`/affiliate/offers/${offer.id}`} className="flex items-center w-full">
                                   <Eye className="h-4 w-4 mr-2 text-blue-600" />
-                                  Просмотр деталей
+                                  {t('offers.viewDetails')}
                                 </Link>
                               </DropdownMenuItem>
                               
                               {offer.partnerApprovalType === 'manual' && !offer.isApproved && !offer.hasAccessRequest && (
                                 <DropdownMenuItem onClick={() => handleRequestAccess(offer)}>
                                   <Send className="h-4 w-4 mr-2 text-orange-600" />
-                                  Запросить доступ
+                                  {t('offers.requestAccess')}
                                 </DropdownMenuItem>
                               )}
                               
                               {offer.partnerLink && (
                                 <DropdownMenuItem onClick={() => copyToClipboard(offer.partnerLink, 'Партнерская ссылка')}>
                                   <Copy className="h-4 w-4 mr-2 text-purple-600" />
-                                  Копировать ссылку
+                                  {t('offers.copyLink')}
                                 </DropdownMenuItem>
                               )}
 
                               <DropdownMenuItem onClick={() => copyToClipboard(offer.id, 'ID оффера')}>
                                 <Copy className="h-4 w-4 mr-2 text-gray-600" />
-                                Копировать ID
+                                {t('offers.copyId')}
                               </DropdownMenuItem>
 
                               <DropdownMenuItem asChild>
                                 <Link href={`/affiliate/offers/${offer.id}/analytics`} className="flex items-center w-full">
                                   <BarChart3 className="h-4 w-4 mr-2 text-indigo-600" />
-                                  Статистика
+                                  {t('offers.statistics')}
                                 </Link>
                               </DropdownMenuItem>
 
@@ -426,7 +428,7 @@ export default function AffiliateOffers() {
                                 <DropdownMenuItem asChild>
                                   <a href={offer.partnerLink} target="_blank" rel="noopener noreferrer" className="flex items-center w-full">
                                     <ExternalLink className="h-4 w-4 mr-2 text-green-600" />
-                                    Открыть лендинг
+                                    {t('offers.openLanding')}
                                   </a>
                                 </DropdownMenuItem>
                               )}
@@ -453,7 +455,11 @@ export default function AffiliateOffers() {
             offer={{
               id: selectedOffer.id,
               name: selectedOffer.name,
-              advertiser_name: selectedOffer.advertiser_name
+              advertiserId: selectedOffer.id,
+              advertiser_name: selectedOffer.advertiserName,
+              payout: selectedOffer.payout,
+              currency: selectedOffer.currency,
+              category: selectedOffer.category
             }}
           />
         )}

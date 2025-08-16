@@ -110,8 +110,8 @@ export default function PartnerOffers() {
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Скопировано",
-      description: `${label} скопирована в буфер обмена`,
+      title: t('common.copied'),
+      description: t('common.copiedDesc', { item: label }),
     });
   };
 

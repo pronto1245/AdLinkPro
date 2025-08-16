@@ -48,6 +48,10 @@
     "confirmDelete": "Вы уверены, что хотите удалить?",
     "copied": "Скопировано",
     "copiedToClipboard": "скопировано в буфер обмена",
+    "copiedDesc": "{item} скопировано в буфер обмена",
+    "getLink": "Получить ссылку",
+    "requestOffer": "Запросить оффер",
+    "connectPostback": "Подключить постбек",
     "accessGranted": "Доступ открыт",
     "available": "Доступен",
     "rejected": "Отклонено",
@@ -203,7 +207,12 @@
     "activeOffers": "Активные офферы",
     "status": "Статус",
     "active": "Активный",
-    "avgEPC": "Средний EPC"
+    "avgEPC": "Средний EPC",
+    "loadingError": "Не удалось загрузить данные дашборда",
+    "recentNotifications": "Последние уведомления",
+    "allNotifications": "Все уведомления",
+    "noNotifications": "Уведомлений нет",
+    "noNotificationsDesc": "Здесь будут отображаться важные уведомления о ваших запросах"
   },
   "sidebar": {
     "dashboard": "Дашборд",
@@ -248,7 +257,12 @@
     "settings": "Настройки",
     "landingPages": "Лендинги",
     "payouts": "Выплаты",
-    "partnerOffers": "Офферы партнера"
+    "partnerOffers": "Офферы партнера",
+    "viewDetails": "Просмотр деталей",
+    "requestAccess": "Запросить доступ",
+    "copyLink": "Копировать ссылку",
+    "copyId": "Копировать ID",
+    "openLanding": "Открыть лендинг"
   },
   "users": {
     "title": "Пользователи",
@@ -308,6 +322,8 @@
     "mobile": "Мобильные",
     "tablet": "Планшеты",
     "apply": "Применить",
+    "applyFilters": "Применить фильтры",
+    "resetFilters": "Сбросить фильтры",
     "reset": "Сбросить",
     "overview": "Обзор",
     "clicks": "Клики",

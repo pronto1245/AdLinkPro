@@ -709,7 +709,7 @@ export function AffiliatePostbacks() {
                           }}
                           data-testid={`switch-enabled-${profile.id}`}
                         />
-                        <span className="text-sm">Включен</span>
+                        <span className="text-sm">{t('common.enabled')}</span>
                       </div>
 
                       <div className="flex items-center space-x-2">
@@ -732,7 +732,7 @@ export function AffiliatePostbacks() {
                           data-testid={`button-test-${profile.id}`}
                         >
                           <Play className="h-3 w-3 mr-1" />
-                          {testMutation.isPending ? 'Тестирование...' : 'Тест'}
+                          {testMutation.isPending ? t('postbacks.testing') : t('postbacks.test')}
                         </Button>
                         
                         {/* ПОЛНОСТЬЮ НОВАЯ КНОПКА РЕДАКТИРОВАНИЯ */}
@@ -768,7 +768,7 @@ export function AffiliatePostbacks() {
                           title="Редактировать профиль"
                         >
                           <Settings size={16} />
-                          {updateMutation.isPending ? 'ИЗМЕНЕНИЕ...' : 'ИЗМЕНИТЬ'}
+                          {updateMutation.isPending ? t('postbacks.updating') : t('postbacks.edit')}
                         </div>
 
                         {/* ПРОСТЕЙШАЯ КНОПКА УДАЛЕНИЯ */}
@@ -781,7 +781,7 @@ export function AffiliatePostbacks() {
                             console.log('🚨 ID профиля:', profile.id);
                             console.log('🚨 Название профиля:', profile.name);
                             
-                            const userConfirmed = window.confirm(`Действительно удалить "${profile.name}"?`);
+                            const userConfirmed = window.confirm(`${t('postbacks.confirmDelete')} "${profile.name}"?`);
                             console.log('🚨 Подтверждение пользователя:', userConfirmed);
                             
                             if (!userConfirmed) {
@@ -858,7 +858,7 @@ export function AffiliatePostbacks() {
                             e.currentTarget.style.backgroundColor = '#ef4444';
                             e.currentTarget.style.transform = 'scale(1)';
                           }}
-                          title="Удалить этот профиль"
+                          title={t('postbacks.deleteProfile')}
                         >
                           <Trash2 size={20} />
                           {t('common.delete', 'УДАЛИТЬ')}
@@ -872,7 +872,7 @@ export function AffiliatePostbacks() {
               ) : (
                 <div className="text-center py-8 bg-red-50 border-4 border-red-500 rounded">
                   <h2 className="text-red-800 font-bold text-xl mb-4">{t('postbacks.noProfilesFound', 'ПРОФИЛИ НЕ НАЙДЕНЫ!')}</h2>
-                  <p className="text-red-600 mb-2">Всего профилей: {profiles?.length || 0}</p>
+                  <p className="text-red-600 mb-2">Всего профилей: {Array.isArray(profiles) ? profiles.length : 0}</p>
                   <p className="text-red-600 mb-2">Тип данных: {typeof profiles}</p>
                   <p className="text-red-600 mb-4">Это массив: {Array.isArray(profiles) ? 'Да' : 'Нет'}</p>
                   <Button 
@@ -890,7 +890,7 @@ export function AffiliatePostbacks() {
               <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
                 <h4 className="font-bold text-yellow-800 mb-2">{t('postbacks.debugInfo', 'ОТЛАДКА - ПОЛНАЯ ИНФОРМАЦИЯ')}</h4>
                 <div className="text-sm space-y-1">
-                  <p><strong>Количество профилей:</strong> {profiles?.length || 0}</p>
+                  <p><strong>Количество профилей:</strong> {Array.isArray(profiles) ? profiles.length : 0}</p>
                   <p><strong>isLoading:</strong> {isLoading ? 'true' : 'false'}</p>
                   <p><strong>deleteMutation.isPending:</strong> {deleteMutation.isPending ? 'true' : 'false'}</p>
                   <p><strong>updateMutation.isPending:</strong> {updateMutation.isPending ? 'true' : 'false'}</p>
@@ -966,7 +966,7 @@ export function AffiliatePostbacks() {
                         </TableCell>
                       </TableRow>
                     ))}
-                    {(!deliveries || deliveries.length === 0) && (
+                    {(!deliveries || !Array.isArray(deliveries) || deliveries.length === 0) && (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                           <Clock className="h-8 w-8 mx-auto mb-2" />

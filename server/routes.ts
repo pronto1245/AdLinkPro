@@ -1850,14 +1850,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.id || req.userId;
       const notificationId = req.params.id;
       
-      await db.execute(sql`
-        DELETE FROM user_notifications 
-        WHERE id = ${notificationId} AND user_id = ${userId}
-      `);
+      console.log('🗑️ Deleting notification:', { notificationId, userId });
       
+      await storage.deleteNotification(notificationId, userId);
+      
+      console.log('✅ Notification deleted successfully');
       res.json({ success: true });
     } catch (error) {
-      console.error('Delete notification error:', error);
+      console.error('❌ Delete notification error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });

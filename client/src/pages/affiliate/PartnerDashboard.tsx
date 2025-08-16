@@ -200,11 +200,11 @@ export default function PartnerDashboard() {
       <div className="flex items-center justify-center h-96">
         <div className="text-center space-y-4">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto" />
-          <h3 className="text-lg font-semibold">Ошибка загрузки данных</h3>
-          <p className="text-muted-foreground">Не удалось загрузить данные дашборда</p>
+          <h3 className="text-lg font-semibold">{t('common.error')}</h3>
+          <p className="text-muted-foreground">{t('dashboard.loadingError')}</p>
           <Button onClick={handleRefresh} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Повторить
+            {t('common.retry')}
           </Button>
         </div>
       </div>
@@ -310,35 +310,36 @@ export default function PartnerDashboard() {
       <Card className="border-l-4 border-l-cyan-500 bg-gradient-to-r from-cyan-50 to-white dark:from-cyan-950/20 dark:to-background">
         <CardHeader>
           <CardTitle className="text-cyan-700 dark:text-cyan-300">{t('dashboard.quickActions')}</CardTitle>
+          <p className="text-sm text-muted-foreground">{t('dashboard.quickActionsDesc')}</p>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-3">
             <Button 
               variant="outline" 
-              className="justify-start border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 shadow-md"
+              size="sm"
+              className="h-auto p-3 flex-col items-center gap-2 border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 shadow-md"
               onClick={handleFindOffers}
-              title={t('dashboard.goToOffers')}
             >
-              <Target className="h-4 w-4 mr-2 text-green-500" />
-              {t('dashboard.findNewOffers')}
+              <Target className="h-6 w-6 text-green-500" />
+              <span className="text-xs font-medium text-center leading-tight">{t('dashboard.findNewOffers')}</span>
             </Button>
             <Button 
               variant="outline" 
-              className="justify-start border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 shadow-md"
+              size="sm"
+              className="h-auto p-3 flex-col items-center gap-2 border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 shadow-md"
               onClick={handleCheckStatistics}
-              title={t('dashboard.viewDetailedStats')}
             >
-              <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
-              {t('dashboard.checkStatistics')}
+              <TrendingUp className="h-6 w-6 text-blue-500" />
+              <span className="text-xs font-medium text-center leading-tight">{t('dashboard.checkStatistics')}</span>
             </Button>
             <Button 
               variant="outline" 
-              className="justify-start border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 shadow-md"
+              size="sm"
+              className="h-auto p-3 flex-col items-center gap-2 border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 shadow-md"
               onClick={handleContactManager}
-              title={t('dashboard.contactManagerTitle')}
             >
-              <Users className="h-4 w-4 mr-2 text-purple-500" />
-              {t('dashboard.contactManager')}
+              <Users className="h-6 w-6 text-purple-500" />
+              <span className="text-xs font-medium text-center leading-tight">{t('dashboard.contactManager')}</span>
             </Button>
           </div>
         </CardContent>
@@ -347,16 +348,15 @@ export default function PartnerDashboard() {
       {/* Recent Notifications */}
       <Card className="border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-orange-700 dark:text-orange-300">Последние уведомления</CardTitle>
+          <CardTitle className="text-orange-700 dark:text-orange-300">{t('dashboard.recentNotifications')}</CardTitle>
           {Array.isArray(recentNotifications) && recentNotifications.length > 0 && (
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={() => navigate('/affiliate/notifications')}
               className="text-orange-600 hover:text-orange-700 hover:bg-orange-100 dark:hover:bg-orange-950/20"
-              title="Посмотреть все уведомления"
             >
-              Все уведомления
+              {t('dashboard.allNotifications')}
             </Button>
           )}
         </CardHeader>
@@ -375,7 +375,7 @@ export default function PartnerDashboard() {
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant="secondary">{notification.type}</Badge>
                           {!notification.is_read && (
-                            <Badge variant="destructive" className="text-xs px-1 py-0">новое</Badge>
+                            <Badge variant="destructive" className="text-xs px-1 py-0">{t('common.new')}</Badge>
                           )}
                         </div>
                       </div>
@@ -386,8 +386,8 @@ export default function PartnerDashboard() {
             ) : (
               <div className="text-center py-8">
                 <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Уведомлений нет</h3>
-                <p className="text-gray-600 dark:text-gray-400">Здесь будут отображаться важные уведомления о ваших запросах</p>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t('dashboard.noNotifications')}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{t('dashboard.noNotificationsDesc')}</p>
               </div>
             )}
           </div>
