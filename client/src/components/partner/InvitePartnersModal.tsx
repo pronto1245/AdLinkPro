@@ -62,15 +62,7 @@ export function InvitePartnersModal({ isOpen, onClose }: InvitePartnersModalProp
       maxUsage?: number;
       expiryDays?: number;
     }) => {
-      const response = await fetch('/api/invite-links', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error('Failed to create invite link');
-      return response.json();
+      return apiRequest('/api/invite-links', 'POST', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/invite-links'] });
@@ -95,12 +87,7 @@ export function InvitePartnersModal({ isOpen, onClose }: InvitePartnersModalProp
   // Переключение активности ссылки
   const toggleLinkMutation = useMutation({
     mutationFn: async (linkId: string) => {
-      const response = await fetch(`/api/invite-links/${linkId}/toggle`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!response.ok) throw new Error('Failed to toggle link');
-      return response.json();
+      return apiRequest(`/api/invite-links/${linkId}/toggle`, 'PATCH');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/invite-links'] });
@@ -114,12 +101,7 @@ export function InvitePartnersModal({ isOpen, onClose }: InvitePartnersModalProp
   // Удаление ссылки
   const deleteLinkMutation = useMutation({
     mutationFn: async (linkId: string) => {
-      const response = await fetch(`/api/invite-links/${linkId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!response.ok) throw new Error('Failed to delete link');
-      return response.json();
+      return apiRequest(`/api/invite-links/${linkId}`, 'DELETE');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/invite-links'] });
