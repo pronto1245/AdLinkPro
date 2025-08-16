@@ -33,7 +33,7 @@ export const postbackIdParamEnum = pgEnum('postback_id_param', ['subid', 'clicki
 export const deliveryStatusEnum = pgEnum('delivery_status', ['pending', 'success', 'failed', 'retrying']);
 
 // Users table  
-export const users = pgTable("users", {
+export const users: any = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
