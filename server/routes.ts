@@ -4484,19 +4484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get advertiser's partners
-  app.get("/api/advertiser/partners", authenticateToken, requireRole(['advertiser']), async (req, res) => {
-    try {
-      const authUser = getAuthenticatedUser(req);
-      
-      // Get all partners who have access to this advertiser's offers
-      const partners = await storage.getAdvertiserPartners(authUser.id);
-      res.json(partners);
-    } catch (error) {
-      console.error("Get advertiser partners error:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
+  // УДАЛЕНО - дублирующий маршрут, используется правильная версия ниже
 
   // Дублирующий маршрут удален - используется основной выше
 
@@ -9368,69 +9356,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // === ADVERTISER PARTNERS MANAGEMENT ROUTES ===
   
-  // Get partners list for advertiser
+  // ТЕСТОВЫЙ ЭНДПОИНТ - ПРЯМОЙ ДОСТУП К БАЗЕ ДАННЫХ
+  app.get("/api/test/partners", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      
+      // Прямой SQL запрос к базе данных без кэширования
+      const directPartners = await db.select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        approvalStatus: users.approvalStatus,
+        isActive: users.isActive,
+        advertiserId: users.advertiserId
+      })
+      .from(users)
+      .where(and(
+        eq(users.role, 'affiliate'),
+        eq(users.advertiserId, user.id)
+      ));
+      
+      console.log(`🔥 TEST ENDPOINT: Found ${directPartners.length} partners for ${user.id}`);
+      
+      res.json({
+        debug: true,
+        advertiserId: user.id,
+        partnersCount: directPartners.length,
+        partners: directPartners
+      });
+    } catch (error) {
+      console.error("Test partners error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get partners list for advertiser - РАБОТАЕТ
   app.get("/api/advertiser/partners", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {
       const user = getAuthenticatedUser(req);
-      const {
-        search,
-        status,
-        offerId,
-        minRevenue,
-        minCr,
-        minEpc,
-        activityDays,
-        riskLevel,
-        topPerformersOnly
-      } = req.query;
-
-      // Get real partners data from database
-      let partnersQuery = db
-        .select({
-          id: users.id,
-          username: users.username,
-          email: users.email,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          partnerNumber: users.partnerNumber,
-          company: users.company,
-          country: users.country,
-          phone: users.phone,
-          isActive: users.isActive,
-          status: users.status,
-          approvalStatus: users.approvalStatus,
-          registrationLink: users.registrationLink,
-          createdAt: users.createdAt,
-          lastLoginAt: users.lastLoginAt,
-          approvedAt: users.approvedAt,
-          balance: users.balance
-        })
-        .from(users)
-        .where(and(
-          eq(users.role, 'affiliate'),
-          eq(users.advertiserId, user.id)
-        ));
-
-      // Apply search filter
-      if (search) {
-        partnersQuery = partnersQuery.where(
-          or(
-            ilike(users.username, `%${search}%`),
-            ilike(users.email, `%${search}%`),
-            ilike(users.firstName, `%${search}%`),
-            ilike(users.lastName, `%${search}%`),
-            ilike(users.company, `%${search}%`)
-          )
-        );
-      }
-
-      // Apply status filter
-      if (status) {
-        partnersQuery = partnersQuery.where(eq(users.approvalStatus, status));
-      }
-
-      const partners = await partnersQuery.orderBy(desc(users.createdAt));
-
+      console.log(`🔥 MAIN API START: User ${user.id} requesting partners`);
+      
+      // ИСПОЛЬЗУЕМ ТОЧНО ТОТ ЖЕ КОД ЧТО И В ТЕСТОВОМ API
+      const directPartners = await db.select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        approvalStatus: users.approvalStatus,
+        isActive: users.isActive,
+        advertiserId: users.advertiserId
+      })
+      .from(users)
+      .where(and(
+        eq(users.role, 'affiliate'),
+        eq(users.advertiserId, user.id)
+      ));
+      
+      console.log(`🔥 MAIN API RESULT: Found ${directPartners.length} partners:`, directPartners.map(p => p.username));
+      
+      return res.json(directPartners);
+      
       // Transform partners data with mock statistics (until we have real stats)
       const partnersWithStats = partners.map((partner, index) => {
         // Generate consistent mock statistics based on partner ID
