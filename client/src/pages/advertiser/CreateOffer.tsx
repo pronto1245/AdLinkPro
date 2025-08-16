@@ -1588,7 +1588,7 @@ export default function CreateOffer() {
                 variant="outline"
                 onClick={() => {
                   setFormData(prev => ({ ...prev, status: 'draft' }));
-                  handleSubmit(new Event('submit') as any);
+                  setTimeout(() => createOfferMutation.mutate(formData), 0);
                 }}
                 disabled={createOfferMutation.isPending}
               >
@@ -1599,8 +1599,10 @@ export default function CreateOffer() {
               <Button 
                 type="button"
                 onClick={() => {
-                  setFormData(prev => ({ ...prev, status: 'active' }));
-                  handleSubmit(new Event('submit') as any);
+                  console.log('🎯 Creating offer with active status...');
+                  const updatedData = { ...formData, status: 'active' as const };
+                  console.log('📊 Form data:', updatedData);
+                  createOfferMutation.mutate(updatedData);
                 }}
                 disabled={createOfferMutation.isPending}
               >
