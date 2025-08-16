@@ -32,6 +32,9 @@ interface DashboardMetrics {
   cr: number;
   epc: number;
   roi: number;
+  partnersGrowth: number;
+  offersGrowth: number;
+  clicksGrowth: number;
 }
 
 interface ChartData {
@@ -58,7 +61,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { isCollapsed } = useSidebar();
+  const { collapsed } = useSidebar();
   const queryClient = useQueryClient();
   
   const [dateFilter, setDateFilter] = useState<string>('7d');
@@ -129,7 +132,7 @@ export default function Dashboard() {
       <Sidebar />
       <div 
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          isCollapsed ? 'ml-16' : 'ml-64'
+          collapsed ? 'ml-16' : 'ml-64'
         }`}
       >
         <Header title="Дашборд владельца" />
