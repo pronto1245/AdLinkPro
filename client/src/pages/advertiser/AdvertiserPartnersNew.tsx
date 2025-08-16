@@ -497,88 +497,102 @@ export function AdvertiserPartnersNew() {
                   </TableCell>
                   
                   <TableCell>
-                    <div className="flex items-center gap-1">
-                      {/* Кнопки одобрения/отклонения только для pending */}
-                      {partner.approvalStatus === 'pending' && (
-                        <>
+                    <div className="flex flex-col gap-2">
+                      {/* Основные действия */}
+                      <div className="flex items-center gap-1">
+                        {/* Кнопки одобрения/отклонения только для pending */}
+                        {partner.approvalStatus === 'pending' && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleApprove(partner.id)}
+                              disabled={approveMutation.isPending}
+                              className="text-green-600 border-green-200 hover:bg-green-50 text-xs px-2 py-1"
+                              data-testid={`button-approve-${partner.id}`}
+                            >
+                              <UserCheck className="w-3 h-3 mr-1" />
+                              Одобрить
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleReject(partner.id)}
+                              disabled={rejectMutation.isPending}
+                              className="text-red-600 border-red-200 hover:bg-red-50 text-xs px-2 py-1"
+                              data-testid={`button-reject-${partner.id}`}
+                            >
+                              <UserX className="w-3 h-3 mr-1" />
+                              Отклонить
+                            </Button>
+                          </>
+                        )}
+                        
+                        {/* Кнопка блокировки/разблокировки для одобренных и отклонённых */}
+                        {(partner.approvalStatus === 'approved' || partner.approvalStatus === 'rejected') && (
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            onClick={() => handleApprove(partner.id)}
-                            disabled={approveMutation.isPending}
-                            title="Одобрить партнера"
-                            className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                            data-testid={`button-approve-${partner.id}`}
+                            onClick={() => handleToggleBlock(partner.id)}
+                            disabled={toggleBlockMutation.isPending}
+                            className={partner.isActive 
+                              ? "text-orange-600 border-orange-200 hover:bg-orange-50 text-xs px-2 py-1"
+                              : "text-green-600 border-green-200 hover:bg-green-50 text-xs px-2 py-1"
+                            }
+                            data-testid={`button-toggle-block-${partner.id}`}
                           >
-                            <UserCheck className="w-4 h-4" />
+                            {partner.isActive ? (
+                              <>
+                                <Shield className="w-3 h-3 mr-1" />
+                                Заблокировать
+                              </>
+                            ) : (
+                              <>
+                                <UserCheck className="w-3 h-3 mr-1" />
+                                Разблокировать
+                              </>
+                            )}
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleReject(partner.id)}
-                            disabled={rejectMutation.isPending}
-                            title="Отклонить партнера"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            data-testid={`button-reject-${partner.id}`}
-                          >
-                            <UserX className="w-4 h-4" />
-                          </Button>
-                        </>
-                      )}
-                      
-                      {/* Кнопка блокировки/разблокировки для одобренных и отклонённых */}
-                      {(partner.approvalStatus === 'approved' || partner.approvalStatus === 'rejected') && (
+                        )}
+                      </div>
+
+                      {/* Вторичные действия */}
+                      <div className="flex items-center gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleToggleBlock(partner.id)}
-                          disabled={toggleBlockMutation.isPending}
-                          title={partner.isActive ? "Заблокировать партнера" : "Разблокировать партнера"}
-                          className={partner.isActive 
-                            ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                            : "text-green-600 hover:text-green-700 hover:bg-green-50"
-                          }
-                          data-testid={`button-toggle-block-${partner.id}`}
+                          onClick={() => setSelectedPartnerForStats(partner)}
+                          className="text-blue-600 hover:bg-blue-50 text-xs px-2 py-1"
+                          data-testid={`button-stats-${partner.id}`}
                         >
-                          {partner.isActive ? <Shield className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                          <TrendingUp className="w-3 h-3 mr-1" />
+                          Статистика
                         </Button>
-                      )}
-                      
-                      {/* Кнопка статистики - всегда видна */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedPartnerForStats(partner)}
-                        title="Статистика партнера"
-                        data-testid={`button-stats-${partner.id}`}
-                      >
-                        <TrendingUp className="w-4 h-4" />
-                      </Button>
-                      
-                      {/* Кнопка email - всегда видна */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.open(`mailto:${partner.email}`, '_blank')}
-                        title="Написать письмо"
-                        data-testid={`button-email-${partner.id}`}
-                      >
-                        <Mail className="w-4 h-4" />
-                      </Button>
-                      
-                      {/* Кнопка просмотра деталей - всегда видна */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          // TODO: Открыть детали партнера  
-                          console.log('Открыть детали партнёра:', partner.id);
-                        }}
-                        title="Просмотр деталей"
-                        data-testid={`button-view-${partner.id}`}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(`mailto:${partner.email}`, '_blank')}
+                          className="text-gray-600 hover:bg-gray-50 text-xs px-2 py-1"
+                          data-testid={`button-email-${partner.id}`}
+                        >
+                          <Mail className="w-3 h-3 mr-1" />
+                          Email
+                        </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            console.log('Открыть детали партнёра:', partner.id);
+                          }}
+                          className="text-gray-600 hover:bg-gray-50 text-xs px-2 py-1"
+                          data-testid={`button-view-${partner.id}`}
+                        >
+                          <Eye className="w-3 h-3 mr-1" />
+                          Детали
+                        </Button>
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>
