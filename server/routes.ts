@@ -2946,8 +2946,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Создаем трекинговые ссылки для каждого партнера с кастомным доменом
         for (const partner of activePartners) {
-          const trackingCode = `${offer.name.toLowerCase().replace(/[^a-z0-9]/g, '')}_${partner.partnerNumber}`;
+          let trackingCode = `${offer.name.toLowerCase().replace(/[^a-z0-9]/g, '')}_${partner.partnerNumber}`;
           const customDomain = 'arbiconnect.store';
+          
+          // Проверяем уникальность tracking_code и генерируем новый если нужно
+          const existingLink = await db
+            .select({ id: trackingLinks.id })
+            .from(trackingLinks)
+            .where(eq(trackingLinks.trackingCode, trackingCode))
+            .limit(1);
+          
+          if (existingLink.length > 0) {
+            // Генерируем уникальный код с timestamp
+            trackingCode = `${offer.name.toLowerCase().replace(/[^a-z0-9]/g, '')}_${partner.partnerNumber}_${Date.now()}`;
+            console.log(`🔄 Сгенерирован уникальный tracking_code: ${trackingCode}`);
+          }
           
           // Создаем трекинговую ссылку
           const trackingUrl = `https://${customDomain}/track/${trackingCode}`;
