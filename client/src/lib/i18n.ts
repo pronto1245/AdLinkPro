@@ -15,9 +15,7 @@ const resources = {
 };
 
 // Force Russian language in localStorage
-if (!localStorage.getItem('i18nextLng')) {
-  localStorage.setItem('i18nextLng', 'ru');
-}
+localStorage.setItem('i18nextLng', 'ru');
 
 i18n
   .use(LanguageDetector)
@@ -26,7 +24,7 @@ i18n
     resources,
     lng: 'ru', // Force Russian as default language
     fallbackLng: 'ru',
-    debug: false, // Disable debug to reduce console noise
+    debug: true, // Enable debug to see what's happening
 
     interpolation: {
       escapeValue: false,

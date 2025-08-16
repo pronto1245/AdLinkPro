@@ -2,7 +2,11 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import "./lib/i18n";
+import i18n from "./lib/i18n";
 import App from "./App";
+
+// Принудительно устанавливаем русский язык
+i18n.changeLanguage('ru');
 
 // ИСПРАВЛЕННЫЙ global error handler - предотвращает unhandled promise rejections
 window.addEventListener('unhandledrejection', (event) => {
