@@ -320,7 +320,7 @@ function Router() {
 
       
       <Route path="/advertiser/offers">
-        <ProtectedRoute allowedRoles={['advertiser']}>
+        <ProtectedRoute allowedRoles={['advertiser', 'super_admin']}>
           <RoleBasedLayout>
             <AdvertiserOffers />
           </RoleBasedLayout>

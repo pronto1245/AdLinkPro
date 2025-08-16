@@ -2861,10 +2861,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let offers;
       if (authUser.role === 'super_admin') {
         // Super admin видит все офферы
+        console.log('🔍 Super admin requesting all offers');
         offers = await storage.getAllOffers();
+        console.log('📊 Retrieved', offers.length, 'offers for super admin');
       } else {
         // Advertiser видит только свои офферы
+        console.log('🔍 Advertiser requesting filtered offers:', authUser.id);
         offers = await storage.getAdvertiserOffers(authUser.id, filters);
+        console.log('📊 Retrieved', offers.length, 'offers for advertiser');
       }
       
       res.json(offers);
