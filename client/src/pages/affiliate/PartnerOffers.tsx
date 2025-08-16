@@ -2,16 +2,16 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent } from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
-import { Badge } from "../../components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../components/ui/dropdown-menu";
+import { Card, CardContent } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../components/ui/dropdown-menu";
 import { MoreHorizontal, Target, BarChart3, MousePointer, Zap, Send, Clock, CheckCircle, Copy } from "lucide-react";
 import { useToast } from "../../hooks/use-toast";
 import { useAuth } from "../../contexts/auth-context";
 import { apiRequest } from "../../lib/queryClient";
-import { OfferLogo } from "../../components/ui/offer-logo";
+import { OfferLogo } from "../components/ui/offer-logo";
 import { getCountryFlag } from "../../utils/countries";
 
 

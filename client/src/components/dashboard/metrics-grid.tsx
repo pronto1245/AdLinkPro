@@ -1,4 +1,4 @@
-import { Card, CardContent } from '../../components/ui/card';
+import { Card, CardContent } from './ui/card';
 import { useTranslation } from 'react-i18next';
 
 interface Metric {

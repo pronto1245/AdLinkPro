@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format, subDays } from 'date-fns';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Badge } from '../../components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Checkbox } from '../../components/ui/checkbox';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Badge } from '../components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Checkbox } from '../components/ui/checkbox';
 import { useAuth } from '../../contexts/auth-context';
 import { useTranslation } from 'react-i18next';
 import { useSidebar } from '../../contexts/sidebar-context';
@@ -15,7 +15,7 @@ import { useToast } from '../../hooks/use-toast';
 import Sidebar from '../../components/layout/sidebar';
 import Header from '../../components/layout/header';
 import { Search, Download, Settings, Filter, RefreshCw, Eye, EyeOff, RotateCcw, Check, X, ChevronLeft, ChevronRight, GripVertical } from 'lucide-react';
-import OsLogo from '../../components/ui/os-logo';
+import OsLogo from '../components/ui/os-logo';
 
 // Comprehensive analytics data interface with 100+ fields
 interface AnalyticsData {

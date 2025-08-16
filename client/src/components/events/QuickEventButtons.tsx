@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '../../components/ui/button';
+import { Button } from './ui/button';
 import { useSendEvent } from '../../hooks/useSendEvent';
 import { UserPlus, ShoppingCart, Loader2 } from 'lucide-react';
 

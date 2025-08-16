@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/auth-context';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { useLocation } from 'wouter';
 import { useToast } from '../../hooks/use-toast';
 import { useTranslation } from 'react-i18next';

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '../../components/ui/table';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
+} from '../components/ui/table';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 import { 
   Upload, 
   Trash2, 
@@ -32,7 +32,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
-import SortableItem from '../../components/ui/SortableItem';
+import SortableItem from '../components/ui/SortableItem';
 import { formatCountries } from '../../utils/countries';
 import { getCategoryBadgeProps } from '../../utils/categories';
 import { formatCR } from '../../utils/formatters';

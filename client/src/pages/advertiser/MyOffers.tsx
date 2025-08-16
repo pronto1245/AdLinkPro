@@ -6,10 +6,10 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { ResponsiveGrid } from '../../components/layout/ResponsiveGrid';
 import { ResponsiveCard } from '../../components/layout/ResponsiveCard';
 
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 import { 
   Table, 
   TableHeader, 
@@ -17,14 +17,14 @@ import {
   TableHead, 
   TableBody, 
   TableCell 
-} from '../../components/ui/table';
+} from '../components/ui/table';
 import { 
   Select, 
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
   SelectValue 
-} from '../../components/ui/select';
+} from '../components/ui/select';
 import { 
   Dialog,
   DialogContent,
@@ -32,19 +32,19 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogDescription
-} from '../../components/ui/dialog';
+} from '../components/ui/dialog';
 import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
-} from '../../components/ui/dropdown-menu';
+} from '../components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
-} from '../../components/ui/tooltip';
+} from '../components/ui/tooltip';
 import { 
   Plus, 
   Search, 
