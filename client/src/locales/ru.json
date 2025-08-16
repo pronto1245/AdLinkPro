@@ -191,7 +191,16 @@
     "navigateToStatistics": "Переход к статистике", 
     "navigateToStatisticsDescription": "Открытие страницы аналитики",
     "dataUpdated": "Данные обновлены",
-    "dataUpdatedDescription": "Данные дашборда успешно обновлены"
+    "dataUpdatedDescription": "Данные дашборда успешно обновлены",
+    "totalClicks": "Всего кликов",
+    "conversions": "Конверсии",
+    "revenue": "Доходы",
+    "conversionRate": "Коэффициент конверсии",
+    "uniqueClicks": "Уникальные клики",
+    "activeOffers": "Активные офферы",
+    "status": "Статус",
+    "active": "Активный",
+    "avgEPC": "Средний EPC"
   },
   "sidebar": {
     "dashboard": "Дашборд",

@@ -430,7 +430,16 @@
     "navigateToStatistics": "Navigate to Statistics",
     "navigateToStatisticsDescription": "Opening analytics page",
     "dataUpdated": "Data Updated",
-    "dataUpdatedDescription": "Dashboard data successfully updated"
+    "dataUpdatedDescription": "Dashboard data successfully updated",
+    "totalClicks": "Total Clicks",
+    "conversions": "Conversions",
+    "revenue": "Revenue",
+    "conversionRate": "Conversion Rate",
+    "uniqueClicks": "Unique Clicks",
+    "activeOffers": "Active Offers",
+    "status": "Status",
+    "active": "Active",
+    "avgEPC": "Avg EPC"
   },
   "common": {
     "update": "Update", 
