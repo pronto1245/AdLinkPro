@@ -39,7 +39,7 @@ export function useWebSocket() {
         
         // Безопасная отправка аутентификации с проверкой состояния
         const token = localStorage.getItem('auth_token');
-        if (token && ws.current?.readyState === WebSocket.OPEN) {
+        if (token && ws.current && ws.current.readyState === WebSocket.OPEN) {
           ws.current.send(JSON.stringify({
             type: 'auth',
             token
@@ -47,7 +47,8 @@ export function useWebSocket() {
         }
       };
 
-      ws.current.onmessage = (event) => {
+      if (ws.current) {
+        ws.current.onmessage = (event) => {
         try {
           const message: WebSocketMessage = JSON.parse(event.data);
           handleMessage(message);
@@ -56,7 +57,7 @@ export function useWebSocket() {
         }
       };
 
-      ws.current.onclose = () => {
+        ws.current.onclose = () => {
         // Убрано для чистой консоли продакшена
         setConnectionState('disconnected');
         
@@ -70,10 +71,11 @@ export function useWebSocket() {
         }
       };
 
-      ws.current.onerror = (error) => {
-        // Тихо обрабатываем WebSocket ошибки без вывода в консоль
-        // console.error('WebSocket error:', error);
-      };
+        ws.current.onerror = (error) => {
+          // Тихо обрабатываем WebSocket ошибки без вывода в консоль
+          // console.error('WebSocket error:', error);
+        };
+      }
 
     } catch (error) {
       // Тихо обрабатываем ошибки подключения WebSocket

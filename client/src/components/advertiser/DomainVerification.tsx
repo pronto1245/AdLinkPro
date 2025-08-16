@@ -73,7 +73,8 @@ export default function DomainVerification() {
     mutationFn: async (domain: string) => {
       return apiRequest('/api/advertiser/domains/verify', {
         method: 'POST',
-        body: { domain }
+        body: JSON.stringify({ domain }),
+        headers: { 'Content-Type': 'application/json' }
       });
     },
     onSuccess: (data) => {
@@ -98,9 +99,7 @@ export default function DomainVerification() {
   // Check domain verification mutation
   const checkVerificationMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return apiRequest(`/api/advertiser/domains/${domainId}/check`, {
-        method: 'POST'
-      });
+      return apiRequest(`/api/advertiser/domains/${domainId}/check`);
     },
     onSuccess: (data, domainId) => {
       if (data.success) {
