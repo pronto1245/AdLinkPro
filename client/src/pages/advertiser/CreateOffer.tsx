@@ -408,12 +408,13 @@ export default function CreateOffer() {
       const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
       if (token && token !== 'null' && token.trim() !== '') {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.id;
+        console.log('🔑 JWT payload:', payload);
+        return payload.userId || payload.id; // Check both userId and id fields
       }
     } catch (e) {
       console.warn('Error parsing token:', e);
     }
-    return 'anonymous'; // Fallback for testing
+    return null; // Return null instead of anonymous for proper error handling
   };
   
   const [formData, setFormData] = useState<OfferFormData>(initialFormData);
@@ -569,6 +570,17 @@ export default function CreateOffer() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Валидация пользователя
+    const userId = getUserId();
+    if (!userId) {
+      toast({
+        title: 'Ошибка авторизации',
+        description: 'Не удалось определить пользователя. Войдите в систему заново.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     // Валидация основных полей
     if (!formData.name?.trim()) {
       toast({
