@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode } from "react";
-import { Toast } from "@/components/ui/toast";
+import { Toast } from "../../components/ui/toast";
 
 interface NotificationToastProps {
   message: string;

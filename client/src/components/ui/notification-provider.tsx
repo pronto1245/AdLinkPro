@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PushNotificationContainer } from './push-notification';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '../contexts/auth-context';
 
 interface NotificationContextType {
   notifications: any[];

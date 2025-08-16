@@ -2,25 +2,25 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Badge } from '../../components/ui/badge';
+import { Checkbox } from '../../components/ui/checkbox';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../../components/ui/alert-dialog';
+import { useToast } from '../../hooks/use-toast';
 import { Download, Edit, Flag, Plus, Trash2, Eye, Settings2, Users2, PenTool, Archive, Copy, Play, ArrowUp, ArrowDown, ExternalLink, GripVertical, Pause } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest } from '../../lib/queryClient';
 import { useLocation } from 'wouter';
 import { DndContext } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { parseCountries } from '@/utils/countries';
-import { getCategoryBadgeProps } from '@/utils/categories';
-import { formatCR } from '@/utils/formatters';
-import OfferEditModal from '@/components/modals/OfferEditModal';
-import GeoDisplay from '@/components/GeoDisplay';
+import { parseCountries } from '../utils/countries';
+import { getCategoryBadgeProps } from '../utils/categories';
+import { formatCR } from '../utils/formatters';
+import OfferEditModal from '../../components/modals/OfferEditModal';
+import GeoDisplay from '../../components/GeoDisplay';
 
 // Компонент для отображения изображения оффера
 const OfferImageDisplay = ({ offer }: { offer: any }) => {

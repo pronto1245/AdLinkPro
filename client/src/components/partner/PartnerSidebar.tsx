@@ -18,12 +18,12 @@ import {
   TrendingUp
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
+import { cn } from "../../lib/utils";
 import { useState } from "react";
-import { useAuth } from "@/contexts/auth-context";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useAuth } from "../contexts/auth-context";
+import { ThemeToggle } from "../../components/ui/theme-toggle";
 import { useQuery } from "@tanstack/react-query";
 
 interface SidebarItem {

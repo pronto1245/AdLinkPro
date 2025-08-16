@@ -1,27 +1,27 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "../../components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Badge } from '../../components/ui/badge';
+import { Switch } from '../../components/ui/switch';
+import { Separator } from '../../components/ui/separator';
 import { Plus, Minus, Upload, Image, Globe, DollarSign, Target, Settings, ArrowLeft, Save, Eye, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { ObjectUploader } from '@/components/ObjectUploader';
-import { CreativeUploader } from '@/components/CreativeUploader';
-import { getCountryFlag, getCountryName } from '@/utils/countries';
-// import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '../../hooks/use-toast';
+import { ObjectUploader } from '../../components/ObjectUploader';
+import { CreativeUploader } from '../../components/CreativeUploader';
+import { getCountryFlag, getCountryName } from '../utils/countries';
+// import { useAuth } from '../contexts/AuthContext';
 
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest } from '../../lib/queryClient';
 
 interface OfferFormData {
   // Основная информация

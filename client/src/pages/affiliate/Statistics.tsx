@@ -6,17 +6,17 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+} from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Badge } from "../../components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "../../components/ui/select";
 import {
   Table,
   TableBody,
@@ -24,21 +24,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "../../components/ui/table";
+import { Skeleton } from "../../components/ui/skeleton";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/components/ui/tabs";
+} from "../../components/ui/tabs";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "../../components/ui/dialog";
 import {
   BarChart3,
   Download,
@@ -59,8 +59,8 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
-import { formatCurrency, formatCR } from "@/utils/formatting";
-import { useToast } from "@/hooks/use-toast";
+import { formatCurrency, formatCR } from "../utils/formatting";
+import { useToast } from "../../hooks/use-toast";
 
 export default function Statistics() {
   const { t } = useTranslation();

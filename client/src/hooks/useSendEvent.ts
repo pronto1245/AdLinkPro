@@ -1,5 +1,5 @@
-import { fetchJSON } from '@/lib/fetchJSON';
-import { useToast } from '@/hooks/use-toast';
+import { fetchJSON } from '../../lib/fetchJSON';
+import { useToast } from '../../hooks/use-toast';
 
 export type SendEventPayload = {
   type: "reg" | "purchase";

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Settings, LogOut, Mail, User, Globe, DollarSign } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,12 +8,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/contexts/auth-context';
+} from '../../components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
+import { useAuth } from '../contexts/auth-context';
 import { useTranslation } from 'react-i18next';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { LanguageToggle } from '@/components/ui/language-toggle';
+import { ThemeToggle } from '../../components/ui/theme-toggle';
+import { LanguageToggle } from '../../components/ui/language-toggle';
 import { useQuery } from '@tanstack/react-query';
 
 export function PartnerTopNavigation() {

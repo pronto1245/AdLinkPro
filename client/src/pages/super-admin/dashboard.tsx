@@ -6,18 +6,18 @@ import {
   Eye, ArrowUpRight, ArrowDownRight, Activity, 
   UserPlus, FileText, Shield, Bell, RefreshCw
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Badge } from '../../components/ui/badge';
+import { Progress } from '../../components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '@/hooks/use-toast';
-import Sidebar from '@/components/layout/sidebar';
-import Header from '@/components/layout/header';
-import { useSidebar } from '@/contexts/sidebar-context';
+import { useToast } from '../../hooks/use-toast';
+import Sidebar from '../../components/layout/sidebar';
+import Header from '../../components/layout/header';
+import { useSidebar } from '../../contexts/sidebar-context';
 
 interface DashboardMetrics {
   activePartners: number;

@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams } from "wouter";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
+import { Input } from "../../components/ui/input";
+import { Separator } from "../../components/ui/separator";
 import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, Lock, FileText, Download, Link, Settings } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "../../hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { OfferLogo } from "@/components/ui/offer-logo";
-import { getCountryFlag, getCountryName } from '@/utils/countries';
+import { OfferLogo } from "../../components/ui/offer-logo";
+import { getCountryFlag, getCountryName } from '../utils/countries';
 
-import { transformLandingUrl } from "@/lib/queryClient";
+import { transformLandingUrl } from "../../lib/queryClient";
 
 interface OfferDetails {
   id: string;

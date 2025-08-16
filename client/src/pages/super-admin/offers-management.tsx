@@ -1,32 +1,33 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import * as React from 'react';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useDebounce } from '../../hooks/useDebounce';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 // Removed old language context import
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
-import Sidebar from '@/components/layout/sidebar';
-import { useSidebar } from '@/contexts/sidebar-context';
-import Header from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import Sidebar from '../../components/layout/sidebar';
+import { useSidebar } from '../../contexts/sidebar-context';
+import { useAuth } from '../../contexts/auth-context';
+import Header from '../../components/layout/header';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Textarea } from '../../components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Label } from '../../components/ui/label';
+import { Switch } from '../../components/ui/switch';
 import { Search, Filter, Eye, Edit, Ban, Archive, CheckCircle, XCircle, AlertTriangle, Download, Upload, Plus, Trash2, PlusCircle, Check, Play, Pause, Copy } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { apiRequest } from '../../lib/queryClient';
+import { useToast } from '../../hooks/use-toast';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Checkbox } from '../../components/ui/checkbox';
 
 const createOfferSchema = z.object({
   name: z.string().min(1, 'Название оффера обязательно'),
@@ -893,7 +894,7 @@ export default function OffersManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
-  const { isCollapsed } = useSidebar();
+  const { collapsed } = useSidebar();
   
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   
@@ -951,7 +952,7 @@ export default function OffersManagement() {
       const matchesGeneralSearch = !searchTerm || (
         offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (typeof offer.description === 'object' ? 
-          getMultilingualText(offer.description, language, '').toLowerCase().includes(searchTerm.toLowerCase()) :
+          (offer.description || '').toLowerCase().includes(searchTerm.toLowerCase()) :
           offer.description?.toLowerCase().includes(searchTerm.toLowerCase())
         ) ||
         offer.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -1156,9 +1157,7 @@ export default function OffersManagement() {
         id: offer.id,
         name: offer.name,
         category: offer.category,
-        description: typeof offer.description === 'object' ? 
-          getMultilingualText(offer.description, language, '') : 
-          offer.description,
+        description: offer.description || '',
         status: offer.status,
         payoutType: offer.payoutType,
         geoPricing: offer.geoPricing,
@@ -1587,7 +1586,7 @@ export default function OffersManagement() {
                             {offer.name}
                           </div>
                           <div className="text-sm text-muted-foreground truncate max-w-48">
-                            {getMultilingualText(offer.description, language, t('not_specified'))}
+                            {offer.description || t('not_specified')}
                           </div>
                         </div>
                       </div>

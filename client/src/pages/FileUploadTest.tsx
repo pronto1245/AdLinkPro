@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { ObjectUploader } from '@/components/ObjectUploader';
+import { ObjectUploader } from '../components/ObjectUploader';
 import type { UploadResult } from '@uppy/core';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { useToast } from '../hooks/use-toast';
 import { Upload, File, Check, X } from 'lucide-react';
 
 interface UploadedFile {

@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useSidebar } from "@/contexts/sidebar-context";
-import Sidebar from "@/components/layout/sidebar";
-import Header from "@/components/layout/header";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSidebar } from "../../contexts/sidebar-context";
+import Sidebar from "../../components/layout/sidebar";
+import Header from "../../components/layout/header";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { 
   Select, 
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
   SelectValue 
-} from "@/components/ui/select";
+} from "../../components/ui/select";
 import { 
   BarChart, 
   Bar, 

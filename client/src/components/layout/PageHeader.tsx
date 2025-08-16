@@ -1,6 +1,6 @@
 import React from 'react';
-import { useSidebar } from '@/contexts/sidebar-context';
-import { cn } from '@/lib/utils';
+import { useSidebar } from '../contexts/sidebar-context';
+import { cn } from '../../lib/utils';
 
 interface PageHeaderProps {
   title: string;

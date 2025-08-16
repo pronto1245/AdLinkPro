@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Badge } from '../../components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Switch } from '../../components/ui/switch';
 import { AlertCircle, CheckCircle2, Copy, RefreshCw, Trash2, Eye, EyeOff, User, Building2, Globe, Save, Key, Bell, Shield, Link } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
-import { useAuth } from '@/contexts/auth-context';
-import { useToast } from '@/hooks/use-toast';
-import DomainVerification from '@/components/advertiser/DomainVerification';
-import { CustomDomainManager } from '@/components/advertiser/CustomDomainManager';
+import { apiRequest } from '../../lib/queryClient';
+import { useAuth } from '../contexts/auth-context';
+import { useToast } from '../../hooks/use-toast';
+import DomainVerification from '../../components/advertiser/DomainVerification';
+import { CustomDomainManager } from '../../components/advertiser/CustomDomainManager';
 
 interface AdvertiserProfile {
   id: string;
@@ -862,19 +862,19 @@ export default function AdvertiserProfile() {
                   </div>
                 </div>
 
-                {profile?.telegramChatId && (
+                {(profile as any)?.telegramChatId && (
                   <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                     <div className="flex items-center space-x-2">
                       <div className="h-2 w-2 bg-green-500 rounded-full"></div>
                       <span className="text-green-700 dark:text-green-300 font-medium">
-                        Telegram подключён (Chat ID: {profile.telegramChatId})
+                        Telegram подключён (Chat ID: {(profile as any).telegramChatId})
                       </span>
                     </div>
                   </div>
                 )}
               </div>
 
-              {profile?.telegramChatId && (
+              {(profile as any)?.telegramChatId && (
                 <div className="border-t pt-6">
                   <h3 className="text-lg font-medium mb-4">Тестирование уведомлений</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

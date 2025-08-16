@@ -1,14 +1,14 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest } from "../../lib/queryClient";
 import { 
   Card, 
   CardContent, 
   CardHeader, 
   CardTitle 
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+} from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
 import { 
   Table, 
   TableBody, 
@@ -16,23 +16,23 @@ import {
   TableHead, 
   TableHeader, 
   TableRow 
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
+} from "../../components/ui/table";
+import { Input } from "../../components/ui/input";
 import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "../../components/ui/dropdown-menu";
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle 
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { OfferLogo } from "@/components/ui/offer-logo";
+} from "../../components/ui/dialog";
+import { Textarea } from "../../components/ui/textarea";
+import { useToast } from "../../hooks/use-toast";
+import { OfferLogo } from "../../components/ui/offer-logo";
 import { 
   Check, 
   X, 

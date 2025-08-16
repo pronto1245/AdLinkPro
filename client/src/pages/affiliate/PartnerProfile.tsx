@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Save, User, Mail, Phone, MapPin, Calendar, Globe, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/contexts/auth-context';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Skeleton } from '../../components/ui/skeleton';
+import { useAuth } from '../contexts/auth-context';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '../../hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest } from '../../lib/queryClient';
 
 interface PartnerProfileData {
   id: string;
@@ -86,7 +86,7 @@ export default function PartnerProfile() {
         country: profileData.country || '',
         timezone: profileData.timezone || 'UTC',
         currency: profileData.currency || 'USD',
-        telegram: profileData.telegram ? profileData.telegram.replace(/^@/, '') : '',
+        telegram: profileData.telegram ? profileData.telegram.replace(/^../, '') : '',
       });
     }
   }, [profileData]);
@@ -169,7 +169,7 @@ export default function PartnerProfile() {
     
     // Валидация и форматирование Telegram (если заполнен)
     if (formData.telegram.trim()) {
-      const telegramValue = formData.telegram.trim().replace(/^@/, '');
+      const telegramValue = formData.telegram.trim().replace(/^../, '');
       const telegramRegex = /^[a-zA-Z0-9_]+$/;
       
       if (!telegramRegex.test(telegramValue)) {
@@ -353,7 +353,7 @@ export default function PartnerProfile() {
                   id="telegram"
                   value={formData.telegram.startsWith('@') ? formData.telegram.slice(1) : formData.telegram}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/^@/, '');
+                    const value = e.target.value.replace(/^../, '');
                     handleInputChange('telegram', value);
                   }}
                   placeholder="username"
