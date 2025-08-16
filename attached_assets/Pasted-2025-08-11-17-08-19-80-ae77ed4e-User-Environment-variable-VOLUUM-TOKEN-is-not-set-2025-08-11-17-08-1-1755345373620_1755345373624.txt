@@ -1,0 +1,144 @@
+2025-08-11 17:08:19.80
+ae77ed4e
+User
+Environment variable VOLUUM_TOKEN is not set
+2025-08-11 17:08:19.80
+ae77ed4e
+User
+Environment variable GOOGLE_CLOUD_PROJECT_ID is not set
+2025-08-11 17:08:19.80
+ae77ed4e
+User
+Environment variable GOOGLE_CLOUD_STORAGE_BUCKET is not set
+2025-08-11 17:08:19.80
+ae77ed4e
+User
+Environment variable GOOGLE_APPLICATION_CREDENTIALS is not set
+2025-08-11 17:08:19.80
+ae77ed4e
+User
+Environment variable SENDGRID_API_KEY is not set
+2025-08-11 17:08:19.80
+ae77ed4e
+User
+❌ Configuration validation failed:
+2025-08-11 17:08:19.80
+ae77ed4e
+User
+- JWT_SECRET must be set in production
+2025-08-11 17:08:19.84
+ae77ed4e
+System
+command finished with error [npm run start]: exit status 1
+2025-08-11 17:08:29.84
+ae77ed4e
+User
+> rest-express@1.0.0 start
+2025-08-11 17:08:29.84
+ae77ed4e
+User
+> NODE_ENV=production node dist/index.js
+2025-08-11 17:08:31.33
+ae77ed4e
+User
+Environment variable KEITARO_TOKEN is not set
+2025-08-11 17:08:31.33
+ae77ed4e
+User
+Environment variable BINOM_TOKEN is not set
+2025-08-11 17:08:31.33
+ae77ed4e
+User
+Environment variable REDTRACK_TOKEN is not set
+2025-08-11 17:08:31.33
+ae77ed4e
+User
+Environment variable VOLUUM_TOKEN is not set
+2025-08-11 17:08:31.33
+ae77ed4e
+User
+Environment variable GOOGLE_CLOUD_PROJECT_ID is not set
+2025-08-11 17:08:31.33
+ae77ed4e
+User
+Environment variable GOOGLE_CLOUD_STORAGE_BUCKET is not set
+2025-08-11 17:08:31.33
+ae77ed4e
+User
+Environment variable GOOGLE_APPLICATION_CREDENTIALS is not set
+2025-08-11 17:08:31.33
+ae77ed4e
+User
+Environment variable SENDGRID_API_KEY is not set
+2025-08-11 17:08:31.33
+ae77ed4e
+User
+❌ Configuration validation failed:
+2025-08-11 17:08:31.33
+ae77ed4e
+User
+- JWT_SECRET must be set in production
+2025-08-11 17:08:31.36
+ae77ed4e
+System
+command finished with error [npm run start]: exit status 1
+2025-08-11 17:08:37.32
+ae77ed4e
+User
+> rest-express@1.0.0 start
+2025-08-11 17:08:37.32
+ae77ed4e
+User
+> NODE_ENV=production node dist/index.js
+2025-08-11 17:08:39.07
+ae77ed4e
+User
+Environment variable KEITARO_TOKEN is not set
+2025-08-11 17:08:39.07
+ae77ed4e
+User
+Environment variable BINOM_TOKEN is not set
+2025-08-11 17:08:39.07
+ae77ed4e
+User
+Environment variable REDTRACK_TOKEN is not set
+2025-08-11 17:08:39.07
+ae77ed4e
+User
+Environment variable VOLUUM_TOKEN is not set
+2025-08-11 17:08:39.07
+ae77ed4e
+User
+Environment variable GOOGLE_CLOUD_PROJECT_ID is not set
+2025-08-11 17:08:39.07
+ae77ed4e
+User
+Environment variable GOOGLE_CLOUD_STORAGE_BUCKET is not set
+2025-08-11 17:08:39.07
+ae77ed4e
+User
+Environment variable GOOGLE_APPLICATION_CREDENTIALS is not set
+2025-08-11 17:08:39.07
+ae77ed4e
+User
+Environment variable SENDGRID_API_KEY is not set
+2025-08-11 17:08:39.07
+ae77ed4e
+User
+❌ Configuration validation failed:
+2025-08-11 17:08:39.07
+ae77ed4e
+User
+- JWT_SECRET must be set in production
+2025-08-11 17:08:39.12
+ae77ed4e
+System
+command finished with error [npm run start]: exit status 1
+2025-08-11 17:08:42.33
+ae77ed4e
+System
+crash loop detected
+
+Wrap
+
+Colors
