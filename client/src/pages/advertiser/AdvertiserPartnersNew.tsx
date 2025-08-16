@@ -195,6 +195,7 @@ export function AdvertiserPartnersNew() {
   
   // Состояние модальных окон
   const [selectedPartnerForStats, setSelectedPartnerForStats] = useState<Partner | null>(null);
+  const [selectedPartnerForDetails, setSelectedPartnerForDetails] = useState<Partner | null>(null);
 
   // Загрузка партнеров - API теперь возвращает массив партнёров напрямую
   const { data: partnersArray, isLoading } = useQuery({
@@ -660,9 +661,7 @@ export function AdvertiserPartnersNew() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => {
-                            console.log('Открыть детали партнёра:', partner.id);
-                          }}
+                          onClick={() => setSelectedPartnerForDetails(partner)}
                           className="text-gray-600 hover:bg-gray-50 text-xs px-2 py-1"
                           data-testid={`button-view-${partner.id}`}
                         >
@@ -834,6 +833,240 @@ export function AdvertiserPartnersNew() {
               <Button
                 variant="outline"
                 onClick={() => setSelectedPartnerForStats(null)}
+              >
+                Закрыть
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно деталей партнёра */}
+      {selectedPartnerForDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Детали партнёра
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  Подробная информация об аккаунте и активности
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedPartnerForDetails(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <span className="sr-only">Закрыть</span>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </Button>
+            </div>
+            
+            {/* Основная информация */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Users className="w-5 h-5 text-blue-500" />
+                    Личная информация
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                        {selectedPartnerForDetails.firstName?.charAt(0) || ''}{selectedPartnerForDetails.lastName?.charAt(0) || ''}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-lg">{selectedPartnerForDetails.displayName}</p>
+                        <p className="text-gray-600">#{selectedPartnerForDetails.partnerNumber}</p>
+                        {isNewPartner(selectedPartnerForDetails.registeredAt) && <NewPartnerBadge />}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Email:</span>
+                        <span className="font-medium">{selectedPartnerForDetails.email}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Телефон:</span>
+                        <span className="font-medium">{selectedPartnerForDetails.phone || 'Не указан'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Компания:</span>
+                        <span className="font-medium">{selectedPartnerForDetails.company}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Страна:</span>
+                        <span className="font-medium flex items-center gap-1">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          {selectedPartnerForDetails.country}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Баланс:</span>
+                        <span className="font-medium text-green-600">${selectedPartnerForDetails.balance}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-green-500" />
+                    Статус и активность
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Статус одобрения:</span>
+                      {getApprovalStatusBadge(selectedPartnerForDetails.approvalStatus, selectedPartnerForDetails.isActive)}
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Уровень риска:</span>
+                      {getRiskBadge(selectedPartnerForDetails.stats.riskLevel)}
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Дата регистрации:</span>
+                      <span className="font-medium flex items-center gap-1">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        {new Date(selectedPartnerForDetails.registeredAt).toLocaleDateString('ru-RU')}
+                      </span>
+                    </div>
+                    
+                    {selectedPartnerForDetails.approvedAt && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Дата одобрения:</span>
+                        <span className="font-medium">
+                          {new Date(selectedPartnerForDetails.approvedAt).toLocaleDateString('ru-RU')}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {selectedPartnerForDetails.lastActiveAt && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Последняя активность:</span>
+                        <span className="font-medium">
+                          {new Date(selectedPartnerForDetails.lastActiveAt).toLocaleDateString('ru-RU')}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Дней с последней активности:</span>
+                      <span className="font-medium">{selectedPartnerForDetails.stats.lastActivityDays}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Краткая статистика */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-purple-500" />
+                  Краткая статистика
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <p className="text-2xl font-bold text-blue-600">{selectedPartnerForDetails.stats.totalClicks.toLocaleString()}</p>
+                    <p className="text-sm text-gray-600">Всего кликов</p>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded-lg">
+                    <p className="text-2xl font-bold text-green-600">{selectedPartnerForDetails.stats.totalLeads}</p>
+                    <p className="text-sm text-gray-600">Конверсий</p>
+                  </div>
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <p className="text-2xl font-bold text-purple-600">{selectedPartnerForDetails.stats.conversionRate}%</p>
+                    <p className="text-sm text-gray-600">CR</p>
+                  </div>
+                  <div className="text-center p-3 bg-orange-50 rounded-lg">
+                    <p className="text-2xl font-bold text-orange-600">${selectedPartnerForDetails.stats.epc}</p>
+                    <p className="text-sm text-gray-600">EPC</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Настройки и дополнительная информация */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-gray-500" />
+                  Настройки и дополнительно
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium mb-3">Настройки выплат</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Кастомные выплаты:</span>
+                        <span className="font-medium">
+                          {selectedPartnerForDetails.payoutSettings.hasCustomPayouts ? 'Да' : 'Нет'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Кастомных офферов:</span>
+                        <span className="font-medium">{selectedPartnerForDetails.payoutSettings.customOffers}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium mb-3">Активность</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Всего офферов:</span>
+                        <span className="font-medium">{selectedPartnerForDetails.stats.offersCount}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Активных офферов:</span>
+                        <span className="font-medium">{selectedPartnerForDetails.stats.activeOffersCount}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Средне кликов в день:</span>
+                        <span className="font-medium">{selectedPartnerForDetails.stats.avgDailyClicks}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Кнопки действий */}
+            <div className="flex justify-between gap-3 pt-6 border-t">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => window.open(`mailto:${selectedPartnerForDetails.email}`, '_blank')}
+                  className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Написать письмо
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedPartnerForDetails(null);
+                    setSelectedPartnerForStats(selectedPartnerForDetails);
+                  }}
+                  className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                >
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Полная статистика
+                </Button>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setSelectedPartnerForDetails(null)}
               >
                 Закрыть
               </Button>
