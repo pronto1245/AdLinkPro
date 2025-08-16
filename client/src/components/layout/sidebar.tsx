@@ -78,9 +78,10 @@ function Sidebar({ className }: SidebarProps) {
 
   const getRoleLabel = () => {
     switch (user.role) {
-      case 'super_admin': return 'Super Admin';
-      case 'advertiser': return 'Advertiser';
-      case 'affiliate': return 'Affiliate';
+      case 'super_admin': return 'Супер Админ';
+      case 'advertiser': return 'Рекламодатель';
+      case 'affiliate': return 'Партнер';
+      case 'staff': return 'Сотрудник';
       default: return user.role;
     }
   };
@@ -103,7 +104,7 @@ function Sidebar({ className }: SidebarProps) {
                 <Target className="text-white w-4 h-4" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-slate-900 dark:text-white">AffiliateHub</h1>
+                <h1 className="text-lg font-bold text-slate-900 dark:text-white">AdLinkPro</h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400">{getRoleLabel()}</p>
               </div>
             </div>

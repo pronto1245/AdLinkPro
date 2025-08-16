@@ -59,16 +59,16 @@ export default function AdvertiserSidebar({ isMobile = false, onClose }: Adverti
     description: t('sidebar.accessRequestsDesc')
   },
   {
-    title: 'Уведомления',
+    title: t('sidebar.notifications'),
     href: '/advertiser/notifications',
     icon: Bell,
-    description: 'Системные уведомления и оповещения'
+    description: t('sidebar.notificationsDesc')
   },
   {
-    title: 'Рефералы',
+    title: t('sidebar.referrals'),
     href: '/advertiser/referrals',
     icon: UserPlus,
-    description: 'Реферальная программа и статистика'
+    description: t('sidebar.referralsDesc')
   },
 
   {
