@@ -5306,7 +5306,7 @@ class MemStorage implements IStorage {
   async bulkDeleteUsers(): Promise<any> { return { deleted: 0 }; }
   async getAllOffers(): Promise<any[]> { return []; }
   async deleteUser(): Promise<void> {}
-  async getPartnerOffers(): Promise<any[]> { return []; }
+  // Removed duplicate getPartnerOffers - using the one with parameters
   async createPartnerOffer(): Promise<any> { return {}; }
   async updatePartnerOffer(): Promise<any> { return {}; }
   async getTrackingLinks(): Promise<any[]> { return []; }
@@ -5631,24 +5631,6 @@ class MemStorage implements IStorage {
   }
 
   // Custom Domains methods for MemStorage - pure in-memory implementation
-  private customDomains: any[] = [
-    {
-      id: '1',
-      domain: 'track.example.com',
-      type: 'cname',
-      status: 'verified',
-      verificationValue: 'affiliate-tracker.replit.app',
-      targetValue: 'affiliate-tracker.replit.app',
-      dnsInstructions: {
-        type: 'CNAME',
-        host: 'track',
-        value: 'affiliate-tracker.replit.app'
-      },
-      createdAt: new Date(),
-      verifiedAt: new Date(),
-      advertiserId: '2'
-    }
-  ];
 
   async getCustomDomains(userId: string): Promise<any[]> {
     // Pure in-memory - no database calls
@@ -5686,16 +5668,7 @@ class MemStorage implements IStorage {
     return newDomain;
   }
 
-  async verifyCustomDomain(userId: string, domainId: string): Promise<any> {
-    return { success: true };
-  }
-
-  async deleteCustomDomain(userId: string, domainId: string): Promise<void> {
-    const index = this.customDomains.findIndex(d => d.id === domainId && d.advertiserId === userId);
-    if (index > -1) {
-      this.customDomains.splice(index, 1);
-    }
-  }
+  // Дублированные методы удалены - использую версии из DatabaseStorage
 
   // Creative files management
   async getCreativeFilesByOfferId(offerId: string): Promise<any[]> {
