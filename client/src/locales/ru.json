@@ -262,5 +262,29 @@
     "description": "Управление партнерами",
     "invite": "Пригласить партнера",
     "access": "Доступ к офферам"
+  },
+  "accessRequests": {
+    "title": "Мои запросы доступа",
+    "subtitle": "Управление запросами на доступ к офферам рекламодателей",
+    "newRequest": "Новый запрос",
+    "refresh": "Обновить список",
+    "totalRequests": "Всего запросов",
+    "pending": "Ожидает",
+    "approved": "Одобрено", 
+    "rejected": "Отклонено",
+    "allStatuses": "Все статусы",
+    "searchPlaceholder": "Поиск по офферу, рекламодателю...",
+    "offer": "Оффер",
+    "advertiser": "Рекламодатель",
+    "status": "Статус",
+    "requestDate": "Дата запроса",
+    "message": "Сообщение",
+    "actions": "Действия",
+    "noMessage": "Без сообщения",
+    "noRequests": "Запросы не найдены",
+    "dateNotAvailable": "Дата неизвестна",
+    "dateInvalid": "Неверная дата",
+    "today": "Сегодня в",
+    "yesterday": "Вчера в"
   }
 }

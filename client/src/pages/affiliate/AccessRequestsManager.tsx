@@ -87,7 +87,7 @@ export default function AccessRequestsManager() {
   const [requestMessage, setRequestMessage] = useState("");
   
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
 
   // Загрузка запросов доступа партнера
@@ -188,25 +188,45 @@ export default function AccessRequestsManager() {
     }
   };
 
-  // Форматирование даты
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  // Форматирование даты с проверкой валидности
+  const formatDate = (dateString: string | null | undefined) => {
+    console.log('formatDate called with:', dateString, typeof dateString);
     
-    if (diffDays === 0) {
-      return `Сегодня в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
-    } else if (diffDays === 1) {
-      return `Вчера в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
-    } else {
-      return date.toLocaleDateString('ru-RU', { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+    if (!dateString || dateString === 'null' || dateString === 'undefined') {
+      return t('accessRequests.dateNotAvailable', 'Дата неизвестна');
+    }
+    
+    try {
+      const date = new Date(dateString);
+      
+      // Проверка валидности даты
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date:', dateString);
+        return t('accessRequests.dateInvalid', 'Неверная дата');
+      }
+      
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      const locale = i18n.language === 'ru' ? 'ru-RU' : 'en-US';
+      
+      if (diffDays === 0) {
+        return `${t('accessRequests.today', 'Сегодня')} ${date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`;
+      } else if (diffDays === 1) {
+        return `${t('accessRequests.yesterday', 'Вчера')} ${date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`;
+      } else {
+        return date.toLocaleDateString(locale, { 
+          day: '2-digit', 
+          month: '2-digit', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+    } catch (error) {
+      console.error('Error formatting date:', error, dateString);
+      return t('accessRequests.dateInvalid', 'Неверная дата');
     }
   };
 
@@ -428,7 +448,7 @@ export default function AccessRequestsManager() {
                         <TableCell>
                           <div className="flex items-center gap-2 text-sm">
                             <Calendar className="w-4 h-4 text-muted-foreground" />
-                            {formatDate(request.createdAt)}
+                            {request.createdAt ? formatDate(request.createdAt) : t('accessRequests.dateNotAvailable', 'Дата неизвестна')}
                           </div>
                         </TableCell>
 
@@ -609,7 +629,7 @@ export default function AccessRequestsManager() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Дата запроса</label>
-                  <div className="mt-1 text-sm">{formatDate(selectedRequest.createdAt)}</div>
+                  <div className="mt-1 text-sm">{selectedRequest.createdAt ? formatDate(selectedRequest.createdAt) : t('accessRequests.dateNotAvailable', 'Дата неизвестна')}</div>
                 </div>
               </div>
               

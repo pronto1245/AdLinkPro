@@ -196,9 +196,15 @@ export default function MyOffers() {
 
   // Сортируем офферы по дате создания (новые наверху) и обрабатываем geoPricing из landingPages
   const sortedOffers = [...offers].sort((a, b) => {
-    const dateA = new Date(a.createdAt || 0).getTime();
-    const dateB = new Date(b.createdAt || 0).getTime();
-    return dateB - dateA; // Сортировка в убывающем порядке (новые наверху)
+    // Безопасная сортировка по дате с проверкой валидности
+    const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    
+    // Проверка на NaN и возврат валидного числа
+    const timeA = isNaN(dateA) ? 0 : dateA;
+    const timeB = isNaN(dateB) ? 0 : dateB;
+    
+    return timeB - timeA; // Сортировка в убывающем порядке (новые наверху)
   });
 
   // Обрабатываем офферы для извлечения geoPricing из landingPages

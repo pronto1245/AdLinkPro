@@ -553,5 +553,29 @@
       "parametersFor": "SubID Parameters for",
       "fullList": "Complete list of all Sub1-Sub16 parameters with exact data preservation"
     }
+  },
+  "accessRequests": {
+    "title": "My Access Requests",
+    "subtitle": "Manage requests for access to advertiser offers",
+    "newRequest": "New Request",
+    "refresh": "Refresh List",
+    "totalRequests": "Total Requests",
+    "pending": "Pending",
+    "approved": "Approved", 
+    "rejected": "Rejected",
+    "allStatuses": "All Statuses",
+    "searchPlaceholder": "Search by offer, advertiser...",
+    "offer": "Offer",
+    "advertiser": "Advertiser",
+    "status": "Status",
+    "requestDate": "Request Date",
+    "message": "Message",
+    "actions": "Actions",
+    "noMessage": "No message",
+    "noRequests": "No requests found",
+    "dateNotAvailable": "Date unknown",
+    "dateInvalid": "Invalid date",
+    "today": "Today at",
+    "yesterday": "Yesterday at"
   }
 }
