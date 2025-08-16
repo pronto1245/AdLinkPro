@@ -1163,7 +1163,7 @@ export const trafficSources = pgTable("traffic_sources", {
 
 // Enhanced postback and conversion tables with proper indexing
 export const conversions = pgTable("conversions", {
-  id: serial("id").primaryKey(),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   advertiserId: bigint("advertiser_id", { mode: "number" }).notNull(),
   partnerId: bigint("partner_id", { mode: "number" }),
   campaignId: bigint("campaign_id", { mode: "number" }),
