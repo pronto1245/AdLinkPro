@@ -24,7 +24,9 @@ const getApiBaseUrl = (): string => {
   // Check if running in browser and on Replit domain
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    if (hostname.includes('replit.dev')) {
+    
+    // PRODUCTION FIX: Handle replit.app domains correctly
+    if (hostname.includes('replit.app') || hostname.includes('replit.dev')) {
       // Use same domain and protocol as frontend - Replit handles internal routing
       return `${window.location.protocol}//${hostname}`;
     }
@@ -42,7 +44,7 @@ const getApiBaseUrl = (): string => {
     return 'http://localhost:5000';
   }
   
-  // Production fallback - same domain
+  // Production fallback - same domain (this should work for most cases)
   return '';
 };
 
@@ -96,7 +98,7 @@ export async function apiRequest(
     tokenStart: token?.substring(0, 20) || 'none'
   });
   
-  // CRITICAL FIX: Improved token validation
+  // CRITICAL FIX: Improved token validation with production debugging
   if (token === 'null' || token === 'undefined' || !token || token.trim() === '' || token === 'null') {
     // Clear invalid tokens
     localStorage.removeItem('auth_token');
@@ -104,8 +106,19 @@ export async function apiRequest(
     token = null;
     console.log('❌ Invalid token detected and cleared');
     
-    // For authenticated requests, throw error immediately
-    if (url.includes('/api/') && !url.includes('/api/auth/login') && !url.includes('/api/health')) {
+    // PRODUCTION FIX: Don't block health checks and login
+    if (url.includes('/api/') && 
+        !url.includes('/api/auth/login') && 
+        !url.includes('/api/health') && 
+        !url.includes('/api/auth/register')) {
+      
+      console.error('🚨 Production Auth Error:', {
+        url,
+        hostname: window?.location?.hostname,
+        hasToken: !!token,
+        environment: import.meta.env.MODE
+      });
+      
       throw new Error('Authentication required - please log in again');
     }
   }
@@ -228,15 +241,7 @@ export const queryClient = new QueryClient({
       retry: false, // Отключаем retry для mutations
     },
   },
-  // Добавляем глобальный error boundary для QueryClient
-  logger: {
-    log: console.log,
-    warn: console.warn,
-    error: (message) => {
-      // Предотвращаем unhandled promise rejections от QueryClient
-      console.warn('QueryClient error handled:', message);
-    },
-  },
+  // Удаляем logger для устранения TypeScript ошибок в production
 });
 
 // Делаем queryClient доступным глобально для очистки кеша после логина
