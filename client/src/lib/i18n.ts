@@ -2,6 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
+// Import JSON files directly for production support
 import en from '../locales/en.json';
 import ru from '../locales/ru.json';
 
@@ -21,7 +22,7 @@ i18n
     resources,
     lng: 'ru', // Default Russian language
     fallbackLng: 'en',
-    debug: false,
+    debug: process.env.NODE_ENV === 'development',
 
     interpolation: {
       escapeValue: false,
@@ -32,6 +33,15 @@ i18n
       lookupLocalStorage: 'i18nextLng',
       caches: ['localStorage'],
     },
+
+    // Force synchronous loading for production
+    load: 'languageOnly',
+    preload: ['ru', 'en'],
+    saveMissing: false,
+    
+    // Better production support
+    initImmediate: true,
+    compatibilityJSON: 'v3',
   });
 
 export default i18n;
