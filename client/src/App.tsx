@@ -630,13 +630,6 @@ function Router() {
 }
 
 function App() {
-  // PRODUCTION FIX: Initialize production auth fix on app start
-  React.useEffect(() => {
-    import('./utils/productionAuthFix').then(({ initProductionAuthFix }) => {
-      initProductionAuthFix();
-    });
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
