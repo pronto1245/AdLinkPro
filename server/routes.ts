@@ -2845,7 +2845,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Advertiser offers management
-  app.get("/api/advertiser/offers", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+  app.get("/api/advertiser/offers", authenticateToken, requireRole(['advertiser', 'super_admin']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
       const filters = {
@@ -2858,7 +2858,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateTo: req.query.dateTo as string
       };
       
-      const offers = await storage.getAdvertiserOffers(authUser.id, filters);
+      let offers;
+      if (authUser.role === 'super_admin') {
+        // Super admin видит все офферы
+        offers = await storage.getAllOffers();
+      } else {
+        // Advertiser видит только свои офферы
+        offers = await storage.getAdvertiserOffers(authUser.id, filters);
+      }
+      
       res.json(offers);
     } catch (error) {
       console.error("Get advertiser offers error:", error);
