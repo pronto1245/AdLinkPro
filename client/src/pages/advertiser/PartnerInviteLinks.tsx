@@ -8,7 +8,7 @@ import { Switch } from '../../components/ui/switch';
 import { Badge } from '../../components/ui/badge';
 import { useToast } from '../../hooks/use-toast';
 import { Copy, Link, Users, Settings, Plus, Eye, Trash2, QrCode } from 'lucide-react';
-import { useAuth } from '../contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 
 interface InviteLink {
   id: string;

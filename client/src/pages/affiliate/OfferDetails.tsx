@@ -10,7 +10,7 @@ import { useToast } from "../../hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { OfferLogo } from "../../components/ui/offer-logo";
-import { getCountryFlag, getCountryName } from '../utils/countries';
+import { getCountryFlag, getCountryName } from '../../utils/countries';
 
 import { transformLandingUrl } from "../../lib/queryClient";
 

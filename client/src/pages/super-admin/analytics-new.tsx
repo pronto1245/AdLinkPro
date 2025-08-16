@@ -8,9 +8,9 @@ import { Badge } from '../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Checkbox } from '../../components/ui/checkbox';
-import { useAuth } from '../contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 import { useTranslation } from 'react-i18next';
-import { useSidebar } from '../contexts/sidebar-context';
+import { useSidebar } from '../../contexts/sidebar-context';
 import { useToast } from '../../hooks/use-toast';
 import Sidebar from '../../components/layout/sidebar';
 import Header from '../../components/layout/header';
@@ -326,7 +326,7 @@ export default function AnalyticsNew() {
   const { token } = useAuth();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { isCollapsed } = useSidebar();
+  const { collapsed } = useSidebar();
   const queryClient = useQueryClient();
 
   // Remove duplicate columns by key
@@ -800,7 +800,7 @@ export default function AnalyticsNew() {
   return (
     <div className="h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className={`h-full flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+      <div className={`h-full flex flex-col transition-all duration-300 ${collapsed ? 'ml-16' : 'ml-64'}`}>
         <Header title="Аналитика" />
         <main className="flex-1 overflow-auto p-4">
           <div className="space-y-4 max-w-full">

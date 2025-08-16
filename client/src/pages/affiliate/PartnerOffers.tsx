@@ -12,7 +12,7 @@ import { useToast } from "../../hooks/use-toast";
 import { useAuth } from "../../contexts/auth-context";
 import { apiRequest } from "../../lib/queryClient";
 import { OfferLogo } from "../../components/ui/offer-logo";
-import { getCountryFlag } from "../utils/countries";
+import { getCountryFlag } from "../../utils/countries";
 
 
 interface PartnerOffer {

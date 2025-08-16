@@ -59,7 +59,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
-import { formatCurrency, formatCR } from "../utils/formatting";
+import { formatCurrency, formatCR } from "../../utils/formatting";
 import { useToast } from "../../hooks/use-toast";
 
 export default function Statistics() {

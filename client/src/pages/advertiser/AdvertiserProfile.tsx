@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/ta
 import { Switch } from '../../components/ui/switch';
 import { AlertCircle, CheckCircle2, Copy, RefreshCw, Trash2, Eye, EyeOff, User, Building2, Globe, Save, Key, Bell, Shield, Link } from 'lucide-react';
 import { apiRequest } from '../../lib/queryClient';
-import { useAuth } from '../contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 import { useToast } from '../../hooks/use-toast';
 import DomainVerification from '../../components/advertiser/DomainVerification';
 import { CustomDomainManager } from '../../components/advertiser/CustomDomainManager';

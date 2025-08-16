@@ -33,9 +33,9 @@ import {
 } from '@dnd-kit/sortable';
 import { useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
 import SortableItem from '../../components/ui/SortableItem';
-import { formatCountries } from '../utils/countries';
-import { getCategoryBadgeProps } from '../utils/categories';
-import { formatCR } from '../utils/formatters';
+import { formatCountries } from '../../utils/countries';
+import { getCategoryBadgeProps } from '../../utils/categories';
+import { formatCR } from '../../utils/formatters';
 
 interface Offer {
   id: string;

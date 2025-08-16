@@ -93,7 +93,7 @@ export default function UsersManagement() {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
   const { toast } = useToast();
-  const { collapsed: isCollapsed } = useSidebar();
+  const { collapsed: collapsed } = useSidebar();
   const queryClient = useQueryClient();
   
   const [filters, setFilters] = useState<UserFilters>({
@@ -427,7 +427,7 @@ export default function UsersManagement() {
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
-        isCollapsed ? 'ml-0 lg:ml-16' : 'ml-0 lg:ml-64'
+        collapsed ? 'ml-0 lg:ml-16' : 'ml-0 lg:ml-64'
       }`}>
         <Header title="Управление пользователями" />
         <main className="flex-1 overflow-auto">

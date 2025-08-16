@@ -51,7 +51,7 @@ import {
   ArrowUpRight,
   ArrowDownLeft
 } from "lucide-react";
-import { formatCurrency } from "../utils/formatting";
+import { formatCurrency } from "../../utils/formatting";
 import { apiRequest } from "../../lib/queryClient";
 
 export default function Finances() {

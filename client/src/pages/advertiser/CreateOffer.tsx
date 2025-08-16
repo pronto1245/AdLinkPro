@@ -18,7 +18,7 @@ import { Plus, Minus, Upload, Image, Globe, DollarSign, Target, Settings, ArrowL
 import { useToast } from '../../hooks/use-toast';
 import { ObjectUploader } from '../../components/ObjectUploader';
 import { CreativeUploader } from '../../components/CreativeUploader';
-import { getCountryFlag, getCountryName } from '../utils/countries';
+import { getCountryFlag, getCountryName } from '../../utils/countries';
 // import { useAuth } from '../contexts/AuthContext';
 
 import { apiRequest } from '../../lib/queryClient';

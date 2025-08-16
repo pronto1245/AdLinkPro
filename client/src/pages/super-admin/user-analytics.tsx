@@ -45,7 +45,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 export default function UserAnalytics() {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
-  const { collapsed: isCollapsed } = useSidebar();
+  const { collapsed: collapsed } = useSidebar();
   const [period, setPeriod] = useState('30d');
   const [roleFilter, setRoleFilter] = useState('all');
   
@@ -127,7 +127,7 @@ export default function UserAnalytics() {
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
-        isCollapsed ? 'ml-0 lg:ml-16' : 'ml-0 lg:ml-64'
+        collapsed ? 'ml-0 lg:ml-16' : 'ml-0 lg:ml-64'
       }`}>
         <Header title="Аналитика пользователей" />
         <main className="flex-1 overflow-auto">

@@ -271,7 +271,7 @@ const availablePermissions: Permission[] = [
 export default function RolesManagement() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { isCollapsed } = useSidebar();
+  const { collapsed } = useSidebar();
   const queryClient = useQueryClient();
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -447,7 +447,7 @@ export default function RolesManagement() {
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
-        isCollapsed ? 'ml-0 lg:ml-16' : 'ml-0 lg:ml-64'
+        collapsed ? 'ml-0 lg:ml-16' : 'ml-0 lg:ml-64'
       }`}>
         <Header title={tr.rolesManagement} />
         <main className="flex-1 overflow-auto">

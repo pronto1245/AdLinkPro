@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useAuth } from '../contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 import { useTranslation } from 'react-i18next';
 import { queryClient } from '../../lib/queryClient';
 import Sidebar from '../../components/layout/sidebar';
@@ -18,7 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { insertUserSchema } from '@shared/schema';
 import { z } from 'zod';
 import { Plus, Search, Edit, Trash2, Shield, Users, DollarSign, Eye, Flag } from 'lucide-react';
-import { getCountryFlag, getCountryName } from '../utils/countries';
+import { getCountryFlag, getCountryName } from '../../utils/countries';
 import { useLocation } from 'wouter';
 
 export default function UsersManagement() {

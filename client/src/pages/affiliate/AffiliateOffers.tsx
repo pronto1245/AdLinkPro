@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger 
 } from '../../components/ui/dropdown-menu';
 import { RequestAccessModal } from '../../components/modals/RequestAccessModal';
-import { useAuth } from '../contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 import { useToast } from '../../hooks/use-toast';
 import { apiRequest } from '../../lib/queryClient';
 import { 

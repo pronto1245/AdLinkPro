@@ -20,7 +20,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '../contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 
 interface ReferralStats {
   referral_code: string;

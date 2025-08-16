@@ -67,7 +67,7 @@ interface PayoutRequest {
 export default function FinancesManagement() {
   const { toast } = useToast();
   const { token } = useAuth();
-  const { isCollapsed } = useSidebar();
+  const { collapsed } = useSidebar();
   const queryClient = useQueryClient();
   
   const [selectedTab, setSelectedTab] = useState<'dashboard' | 'transactions' | 'payouts' | 'deposits' | 'commission' | 'reports' | 'crypto'>('dashboard');
@@ -455,7 +455,7 @@ export default function FinancesManagement() {
       <Sidebar />
       <div 
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          isCollapsed ? 'ml-16' : 'ml-64'
+          collapsed ? 'ml-16' : 'ml-64'
         }`}
       >
         <Header title="Финансы" />

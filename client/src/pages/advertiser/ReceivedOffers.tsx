@@ -15,7 +15,7 @@ import {
 import { Badge } from '../../components/ui/badge';
 import { useToast } from '../../hooks/use-toast';
 import { apiRequest, queryClient } from '../../lib/queryClient';
-import { useAuth } from '../contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 
 import { 
   Plus, 

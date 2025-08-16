@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import * as React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useAuth } from '../contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 import { useTranslation } from 'react-i18next';
 import { getMultilingualText } from '../../lib/i18n';
 import { queryClient } from '../../lib/queryClient';

@@ -16,9 +16,9 @@ import { DndContext } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { parseCountries } from '../utils/countries';
-import { getCategoryBadgeProps } from '../utils/categories';
-import { formatCR } from '../utils/formatters';
+import { parseCountries } from '../../utils/countries';
+import { getCategoryBadgeProps } from '../../utils/categories';
+import { formatCR } from '../../utils/formatters';
 import OfferEditModal from '../../components/modals/OfferEditModal';
 import GeoDisplay from '../../components/GeoDisplay';
 

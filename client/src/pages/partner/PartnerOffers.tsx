@@ -42,9 +42,9 @@ import {
   Target,
   Info
 } from "lucide-react";
-import { formatCountries } from "../utils/countries";
-import { formatCR } from "../utils/formatting";
-import { getCategoryBadgeProps } from "../utils/categories";
+import { formatCountries } from "../../utils/countries";
+import { formatCR } from "../../utils/formatting";
+import { getCategoryBadgeProps } from "../../utils/categories";
 import { RequestAccessModal } from "../../components/modals/RequestAccessModal";
 import { useToast } from "../../hooks/use-toast";
 

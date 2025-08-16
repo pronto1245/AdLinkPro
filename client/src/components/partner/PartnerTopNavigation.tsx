@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '../../components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
-import { useAuth } from '../contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '../../components/ui/theme-toggle';
 import { LanguageToggle } from '../../components/ui/language-toggle';
