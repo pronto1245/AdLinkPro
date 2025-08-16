@@ -11,7 +11,7 @@ import {
 } from '../../components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
 import { Badge } from '../../components/ui/badge';
-import { useAuth } from '../contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '../../components/ui/theme-toggle';
 import { useQuery } from '@tanstack/react-query';

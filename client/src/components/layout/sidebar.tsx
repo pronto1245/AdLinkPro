@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { useAuth } from '../contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
@@ -19,7 +19,7 @@ import {
   ChevronRight,
   Send
 } from 'lucide-react';
-import { useSidebar } from '../contexts/sidebar-context';
+import { useSidebar } from '../../contexts/sidebar-context';
 import { ThemeToggle } from '../../components/ui/theme-toggle';
 
 interface MenuItem {

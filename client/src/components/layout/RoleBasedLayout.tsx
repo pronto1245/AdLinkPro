@@ -1,5 +1,5 @@
-import { useAuth } from '../contexts/auth-context';
-import { useSidebar } from '../contexts/sidebar-context';
+import { useAuth } from '../../contexts/auth-context';
+import { useSidebar } from '../../contexts/sidebar-context';
 import { cn } from '../../lib/utils';
 import AdvertiserSidebar from './AdvertiserSidebar';
 import AffiliateSidebar from './AffiliateSidebar';

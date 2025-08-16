@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../contexts/auth-context';
+import { useAuth } from '../../contexts/auth-context';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
