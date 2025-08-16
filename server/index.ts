@@ -41,7 +41,10 @@ app.use((req, res, next) => {
     return res.redirect(301, `https://${host}${req.url}`);
   }
   
-  console.log(`📡 Запрос: ${host}${req.url} | Custom: ${isCustomDomain} | HTTPS: ${isHttps}`);
+  // Логируем только важные запросы, не уведомления
+  if (!req.url.includes('/api/notifications')) {
+    console.log(`📡 Запрос: ${host}${req.url} | Custom: ${isCustomDomain} | HTTPS: ${isHttps}`);
+  }
   
   next();
 });

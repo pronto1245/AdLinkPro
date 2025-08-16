@@ -75,17 +75,24 @@ export const config = {
 
 // Строгая production валидация - только JWT_SECRET обязателен
 export function validateConfig(): void {
-  // В продакшене требуем только JWT_SECRET (если не установлен дефолт)
-  if (process.env.NODE_ENV === 'production') {
+  // Автоматическое определение production окружения для Replit Deployments
+  const isReplit = !!process.env.REPL_ID || !!process.env.REPLIT_DEPLOYMENT;
+  const actualNodeEnv = process.env.NODE_ENV || (isReplit ? 'production' : 'development');
+  
+  console.log(`[ENV] Environment: ${actualNodeEnv} (Replit: ${isReplit})`);
+  
+  // В продакшене или Replit требуем только JWT_SECRET (если не установлен дефолт)
+  if (actualNodeEnv === 'production' || isReplit) {
     const jwtFromEnv = process.env.JWT_SECRET;
     const hasCustomJWT = jwtFromEnv && jwtFromEnv.trim() && jwtFromEnv !== 'production-safe-jwt-secret-2024-arbiconnect-platform';
     
     console.log(`[ENV] Production JWT check: ${hasCustomJWT ? 'Custom JWT found' : 'Using fallback JWT'}`);
     
-    // Не валимся даже если нет JWT - используем дефолт
-    // if (!hasCustomJWT) {
-    //   console.warn('[ENV] Warning: No custom JWT_SECRET set, using fallback');
-    // }
+    // Устанавливаем NODE_ENV в production для Replit деплоя
+    if (isReplit && actualNodeEnv !== 'production') {
+      process.env.NODE_ENV = 'production';
+      console.log('[ENV] Set NODE_ENV=production for Replit deployment');
+    }
   }
   
   // Всё остальное — не критично, просто предупреждаем
