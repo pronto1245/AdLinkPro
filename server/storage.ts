@@ -45,7 +45,7 @@ export interface IStorage {
   getNextPartnerNumber(): Promise<string>;
   
   // In-memory postback storage
-  getCreatedPostbackProfiles(): any[];
+  getCreatedPostbackProfiles(userId?: string): Promise<any[]>;
   savePostbackProfile(profile: any): void;
   
   // Postback deliveries and profiles
@@ -3377,7 +3377,7 @@ export class DatabaseStorage implements IStorage {
         const result = await db.execute(sql`
           SELECT * FROM events 
           WHERE partner_id = ${filters.partnerId} AND offer_id = ${filters.offerId}
-          ORDER BY created_at DESC
+          ORDER BY ts DESC
         `);
         console.log('Events query result:', result.rows?.length, 'rows');
         return result.rows || [];
@@ -3386,7 +3386,7 @@ export class DatabaseStorage implements IStorage {
         const result = await db.execute(sql`
           SELECT * FROM events 
           WHERE partner_id = ${filters.partnerId}
-          ORDER BY created_at DESC
+          ORDER BY ts DESC
         `);
         console.log('Events query result:', result.rows?.length, 'rows');
         return result.rows || [];
@@ -3395,7 +3395,7 @@ export class DatabaseStorage implements IStorage {
         const result = await db.execute(sql`
           SELECT * FROM events 
           WHERE offer_id = ${filters.offerId}
-          ORDER BY created_at DESC
+          ORDER BY ts DESC
         `);
         console.log('Events query result:', result.rows?.length, 'rows');
         return result.rows || [];
@@ -3403,7 +3403,7 @@ export class DatabaseStorage implements IStorage {
         console.log('Querying all tracking events');
         const result = await db.execute(sql`
           SELECT * FROM events 
-          ORDER BY created_at DESC
+          ORDER BY ts DESC
         `);
         console.log('Events query result:', result.rows?.length, 'rows');
         return result.rows || [];
@@ -5197,10 +5197,7 @@ class MemStorage implements IStorage {
     return role ? filtered.filter(u => u.role === role) : filtered;
   }
 
-  // Add postback methods to MemStorage
-  async getPostbackTemplates(): Promise<any[]> {
-    return this.postbackTemplates;
-  }
+  // Дубликат getPostbackTemplates удален - используем DatabaseStorage версию
 
   async createPostbackTemplate(data: any): Promise<any> {
     const template = {
@@ -5630,45 +5627,7 @@ class MemStorage implements IStorage {
     // Mock implementation
   }
 
-  // Custom Domains methods for MemStorage - pure in-memory implementation
-
-  async getCustomDomains(userId: string): Promise<any[]> {
-    // Pure in-memory - no database calls
-    return this.customDomains.filter(domain => domain.advertiserId === userId);
-  }
-
-  async addCustomDomain(userId: string, domainData: any): Promise<any> {
-    // Pure in-memory - no database calls
-    const newDomain = {
-      id: Math.random().toString(36).substr(2, 9),
-      domain: domainData.domain,
-      type: domainData.type,
-      status: 'pending',
-      verificationValue: domainData.type === 'cname' 
-        ? 'affiliate-tracker.replit.app'
-        : '123.456.789.0',
-      targetValue: 'affiliate-tracker.replit.app',
-      dnsInstructions: domainData.type === 'cname' 
-        ? {
-            type: 'CNAME',
-            host: domainData.domain.split('.')[0], // track part from track.example.com
-            value: 'affiliate-tracker.replit.app'
-          }
-        : {
-            type: 'A',
-            host: '@',
-            value: '123.456.789.0'
-          },
-      createdAt: new Date(),
-      verifiedAt: null,
-      advertiserId: userId
-    };
-    
-    this.customDomains.push(newDomain);
-    return newDomain;
-  }
-
-  // Дублированные методы удалены - использую версии из DatabaseStorage
+  // Дубликат getCustomDomains удален - используем DatabaseStorage версию
 
   // Creative files management
   async getCreativeFilesByOfferId(offerId: string): Promise<any[]> {
@@ -6181,16 +6140,6 @@ class MemStorage implements IStorage {
   }
 
   // Partner access and affiliate methods
-  async getPartnerOffers(partnerId: string, filters?: any): Promise<any[]> {
-    // Mock implementation - return available offers for partners
-    return this.offers
-      .filter(offer => offer.status === 'active')
-      .map(offer => ({
-        ...offer,
-        isApproved: Math.random() > 0.5,
-        trackingLink: `https://track.example.com/click?offer=${offer.id}&partner=${partnerId}&subid={subid}`
-      }));
-  }
 
   async requestOfferAccess(partnerId: string, offerId: string, message?: string): Promise<any> {
     return {
