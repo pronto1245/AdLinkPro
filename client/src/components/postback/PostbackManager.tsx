@@ -15,6 +15,26 @@ import { useTranslation } from 'react-i18next';
 import { apiRequest } from '@/lib/queryClient';
 import TrackingUrlGenerator from './TrackingUrlGenerator';
 
+// Безопасная функция для форматирования дат
+const safeFormatDate = (dateString: string | undefined, defaultText = 'Дата неизвестна') => {
+  try {
+    if (!dateString || dateString === 'null' || dateString === 'undefined') {
+      return defaultText;
+    }
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date for formatting:', dateString);
+      return defaultText;
+    }
+    
+    return date.toLocaleString('ru-RU');
+  } catch (error) {
+    console.error('Error formatting date:', error, dateString);
+    return defaultText;
+  }
+};
+
 interface Postback {
   id: string;
   name: string;
@@ -687,10 +707,10 @@ export default function PostbackManager() {
                             )}
                           </td>
                           <td className="p-2 text-xs">
-                            {log.sentAt && new Date(log.sentAt).toLocaleString('ru-RU')}
+                            {log.sentAt ? safeFormatDate(log.sentAt) : ''}
                           </td>
                           <td className="p-2 text-xs">
-                            {new Date(log.createdAt).toLocaleString('ru-RU')}
+                            {safeFormatDate(log.createdAt)}
                           </td>
                         </tr>
                       ))}

@@ -6,6 +6,29 @@ import { Badge } from './badge';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
+// Безопасная функция для форматирования дат
+const safeFormatDistanceToNow = (dateString: string) => {
+  try {
+    if (!dateString || dateString === 'null' || dateString === 'undefined') {
+      return 'только что';
+    }
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date for formatting:', dateString);
+      return 'только что';
+    }
+    
+    return formatDistanceToNow(date, { 
+      addSuffix: true, 
+      locale: ru 
+    });
+  } catch (error) {
+    console.error('Error formatting date distance:', error, dateString);
+    return 'только что';
+  }
+};
+
 interface PushNotificationProps {
   id: string;
   type: string;
@@ -131,10 +154,7 @@ export function PushNotification({
 
               <div className="flex items-center justify-between mt-3">
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {formatDistanceToNow(new Date(createdAt), { 
-                    addSuffix: true, 
-                    locale: ru 
-                  })}
+                  {safeFormatDistanceToNow(createdAt)}
                 </span>
                 
                 <div className="flex gap-1">

@@ -12,6 +12,29 @@ import { apiRequest } from "@/lib/queryClient";
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
 
+// Безопасная функция для форматирования дат
+const safeFormatDistanceToNow = (dateString: string) => {
+  try {
+    if (!dateString || dateString === 'null' || dateString === 'undefined') {
+      return 'только что';
+    }
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date for formatting:', dateString);
+      return 'только что';
+    }
+    
+    return formatDistanceToNow(date, { 
+      addSuffix: true, 
+      locale: ru 
+    });
+  } catch (error) {
+    console.error('Error formatting date distance:', error, dateString);
+    return 'только что';
+  }
+};
+
 interface Notification {
   id: string;
   type: 'offer_request_approved' | 'offer_request_rejected' | 'offer_request_created' | 'general' | 'payment';
@@ -311,10 +334,7 @@ export default function PartnerNotifications() {
                           </div>
                         )}
                         <p className="text-xs text-gray-500 mt-2">
-                          {formatDistanceToNow(new Date(notification.created_at), { 
-                            addSuffix: true, 
-                            locale: ru 
-                          })}
+                          {safeFormatDistanceToNow(notification.created_at)}
                         </p>
                       </div>
                     </div>

@@ -346,7 +346,7 @@ export default function PostbacksNewPage() {
                 <div>
                   <p className="text-sm font-medium">Последняя доставка</p>
                   <p className="text-sm text-muted-foreground">
-                    {postback.last_delivery 
+                    {postback.last_delivery && postback.last_delivery !== 'null'
                       ? new Date(postback.last_delivery).toLocaleString('ru-RU')
                       : 'Не было'
                     }

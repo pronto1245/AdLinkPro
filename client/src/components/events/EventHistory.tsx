@@ -4,6 +4,26 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Clock, DollarSign, Shield, User } from 'lucide-react';
 
+// Безопасная функция для форматирования дат
+const safeFormatDate = (dateString: string, defaultText = 'Дата неизвестна') => {
+  try {
+    if (!dateString || dateString === 'null' || dateString === 'undefined') {
+      return defaultText;
+    }
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date for formatting:', dateString);
+      return defaultText;
+    }
+    
+    return date.toLocaleString('ru-RU');
+  } catch (error) {
+    console.error('Error formatting date:', error, dateString);
+    return defaultText;
+  }
+};
+
 interface EventHistoryItem {
   id: string;
   type: 'reg' | 'purchase';
@@ -141,7 +161,7 @@ export function EventHistory({ events = [], isLoading = false }: EventHistoryPro
                   )}
                   
                   <div className="text-xs text-muted-foreground">
-                    {new Date(event.createdAt).toLocaleString('ru-RU')}
+                    {safeFormatDate(event.createdAt)}
                   </div>
                 </div>
               ))}

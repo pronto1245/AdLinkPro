@@ -311,7 +311,7 @@ export default function PostbackManagement() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Успешных сегодня</p>
                     <p className="text-2xl font-bold">
-                      {logs.filter(l => l.status === 'sent' && 
+                      {logs.filter(l => l.status === 'sent' && l.createdAt &&
                         new Date(l.createdAt).toDateString() === new Date().toDateString()).length}
                     </p>
                   </div>
@@ -326,7 +326,7 @@ export default function PostbackManagement() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Ошибок сегодня</p>
                     <p className="text-2xl font-bold">
-                      {logs.filter(l => l.status === 'failed' && 
+                      {logs.filter(l => l.status === 'failed' && l.createdAt &&
                         new Date(l.createdAt).toDateString() === new Date().toDateString()).length}
                     </p>
                   </div>
@@ -409,7 +409,7 @@ export default function PostbackManagement() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {new Date(postback.createdAt).toLocaleDateString('ru-RU')}
+                            {postback.createdAt ? new Date(postback.createdAt).toLocaleDateString('ru-RU') : 'Неизвестно'}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
@@ -501,7 +501,7 @@ export default function PostbackManagement() {
                       {logs.slice(0, 50).map((log) => (
                         <TableRow key={log.id}>
                           <TableCell>
-                            {new Date(log.createdAt).toLocaleString('ru-RU')}
+                            {log.createdAt ? new Date(log.createdAt).toLocaleString('ru-RU') : 'Неизвестно'}
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline">{log.eventType}</Badge>

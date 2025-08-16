@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { apiRequest } from "@/lib/queryClient";
@@ -85,15 +85,45 @@ export default function AccessRequestsManager() {
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   const [newRequestOfferId, setNewRequestOfferId] = useState("");
   const [requestMessage, setRequestMessage] = useState("");
+  const [componentError, setComponentError] = useState<string | null>(null);
   
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
 
+  // Добавим React Error Boundary logic
+  useEffect(() => {
+    const handleError = (error: ErrorEvent) => {
+      if (error.message.includes('Invalid time value')) {
+        console.error('Date error caught:', error);
+        setComponentError('Ошибка обработки дат. Проверьте корректность данных.');
+      }
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      if (event.reason && event.reason.toString().includes('Invalid time value')) {
+        console.error('Promise rejection with date error:', event.reason);
+        setComponentError('Ошибка обработки дат в асинхронной операции.');
+      }
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   // Загрузка запросов доступа партнера
-  const { data: requests = [], isLoading, refetch } = useQuery({
+  const { data: requests = [], isLoading, refetch, error } = useQuery({
     queryKey: ["/api/partner/access-requests"],
     staleTime: 2 * 60 * 1000,
+    retry: 1,
+    onError: (error: any) => {
+      console.error('Failed to load access requests:', error);
+    }
   });
 
   // Загрузка доступных офферов для запроса доступа
@@ -127,18 +157,42 @@ export default function AccessRequestsManager() {
     },
   });
 
-  // Фильтрация и поиск запросов
+  // Фильтрация и поиск запросов с безопасной обработкой
   const filteredRequests = useMemo(() => {
-    return (requests as AccessRequest[]).filter((request: AccessRequest) => {
-      const matchesSearch = 
-        request.offer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.advertiser?.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.advertiser?.company?.toLowerCase().includes(searchTerm.toLowerCase());
+    try {
+      console.log('Filtering requests:', requests);
       
-      const matchesStatus = statusFilter === "all" || request.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
-    });
+      if (!Array.isArray(requests)) {
+        console.warn('Requests is not an array:', requests);
+        return [];
+      }
+
+      return (requests as AccessRequest[]).filter((request: AccessRequest) => {
+        try {
+          // Безопасная проверка request на валидность
+          if (!request || typeof request !== 'object') {
+            console.warn('Invalid request object:', request);
+            return false;
+          }
+
+          const matchesSearch = 
+            request.offer?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+            request.advertiser?.username?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+            request.advertiser?.company?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+            false;
+          
+          const matchesStatus = statusFilter === "all" || request.status === statusFilter;
+          
+          return matchesSearch && matchesStatus;
+        } catch (filterError) {
+          console.error('Error filtering individual request:', filterError, request);
+          return false;
+        }
+      });
+    } catch (error) {
+      console.error('Error in filteredRequests useMemo:', error);
+      return [];
+    }
   }, [requests, searchTerm, statusFilter]);
 
   // Обработчики
@@ -230,7 +284,16 @@ export default function AccessRequestsManager() {
       }
       
       const now = new Date();
-      const diffMs = now.getTime() - date.getTime();
+      const nowTime = now.getTime();
+      const dateTime = date.getTime();
+      
+      // Дополнительная проверка на валидность времени
+      if (isNaN(nowTime) || isNaN(dateTime)) {
+        console.error('Invalid time values:', nowTime, dateTime);
+        return t('accessRequests.dateNotAvailable', 'Дата неизвестна');
+      }
+      
+      const diffMs = nowTime - dateTime;
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
       
       const locale = i18n.language === 'ru' ? 'ru-RU' : 'en-US';
@@ -278,6 +341,30 @@ export default function AccessRequestsManager() {
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary"></div>
           <p>Загрузка запросов доступа...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (error || componentError) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-red-600">
+              <h3 className="text-lg font-semibold mb-2">Ошибка загрузки</h3>
+              <p className="mb-4">
+                {componentError || "Не удалось загрузить запросы доступа"}
+              </p>
+              <Button onClick={() => {
+                setComponentError(null);
+                refetch();
+              }} variant="outline">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Попробовать снова
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -489,10 +576,24 @@ export default function AccessRequestsManager() {
                         <TableCell>
                           <div className="flex items-center gap-2 text-sm">
                             <Calendar className="w-4 h-4 text-muted-foreground" />
-                            {(request.createdAt && request.createdAt !== 'null' && request.createdAt !== 'undefined') 
-                              ? formatDate(request.createdAt) 
-                              : t('accessRequests.dateNotAvailable', 'Дата неизвестна')
-                            }
+                            {(() => {
+                              try {
+                                console.log('Rendering date for request:', request.id, 'createdAt:', request.createdAt, 'type:', typeof request.createdAt);
+                                
+                                if (!request.createdAt || 
+                                    request.createdAt === 'null' || 
+                                    request.createdAt === 'undefined' ||
+                                    request.createdAt === null ||
+                                    request.createdAt === undefined) {
+                                  return t('accessRequests.dateNotAvailable', 'Дата неизвестна');
+                                }
+
+                                return formatDate(request.createdAt);
+                              } catch (error) {
+                                console.error('Error rendering date cell:', error, request);
+                                return t('accessRequests.dateNotAvailable', 'Дата неизвестна');
+                              }
+                            })()}
                           </div>
                         </TableCell>
 
@@ -674,10 +775,21 @@ export default function AccessRequestsManager() {
                 <div>
                   <label className="text-sm font-medium text-gray-700">Дата запроса</label>
                   <div className="mt-1 text-sm">
-                    {(selectedRequest.createdAt && selectedRequest.createdAt !== 'null' && selectedRequest.createdAt !== 'undefined') 
-                      ? formatDate(selectedRequest.createdAt) 
-                      : t('accessRequests.dateNotAvailable', 'Дата неизвестна')
-                    }
+                    {(() => {
+                      try {
+                        if (!selectedRequest.createdAt || 
+                            selectedRequest.createdAt === 'null' || 
+                            selectedRequest.createdAt === 'undefined' ||
+                            selectedRequest.createdAt === null ||
+                            selectedRequest.createdAt === undefined) {
+                          return t('accessRequests.dateNotAvailable', 'Дата неизвестна');
+                        }
+                        return formatDate(selectedRequest.createdAt);
+                      } catch (error) {
+                        console.error('Error formatting date in dialog:', error, selectedRequest);
+                        return t('accessRequests.dateNotAvailable', 'Дата неизвестна');
+                      }
+                    })()}
                   </div>
                 </div>
               </div>

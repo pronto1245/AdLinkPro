@@ -28,6 +28,29 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
+// Безопасная функция для форматирования дат
+const safeFormatDistanceToNow = (dateString: string) => {
+  try {
+    if (!dateString || dateString === 'null' || dateString === 'undefined') {
+      return 'неизвестно когда';
+    }
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date for formatting:', dateString);
+      return 'неизвестно когда';
+    }
+    
+    return formatDistanceToNow(date, { 
+      addSuffix: true, 
+      locale: ru 
+    });
+  } catch (error) {
+    console.error('Error formatting date distance:', error, dateString);
+    return 'неизвестно когда';
+  }
+};
+
 interface AccessRequest {
   id: string;
   partner_id: string;
@@ -200,10 +223,7 @@ export function AccessRequestsManager({ offerId, offerName }: AccessRequestsMana
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Calendar className="w-3 h-3" />
                     <span>
-                      Запрошено {formatDistanceToNow(new Date(request.requested_at), { 
-                        addSuffix: true, 
-                        locale: ru 
-                      })}
+                      Запрошено {safeFormatDistanceToNow(request.requested_at)}
                     </span>
                   </div>
                 </div>
@@ -262,10 +282,7 @@ export function AccessRequestsManager({ offerId, offerName }: AccessRequestsMana
                   <p className="text-sm mt-1">{request.response_note}</p>
                   {request.reviewed_at && (
                     <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">
-                      Обработано {formatDistanceToNow(new Date(request.reviewed_at), { 
-                        addSuffix: true, 
-                        locale: ru 
-                      })}
+                      Обработано {safeFormatDistanceToNow(request.reviewed_at)}
                     </p>
                   )}
                 </div>

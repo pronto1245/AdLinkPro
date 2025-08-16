@@ -28,6 +28,49 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
+// Безопасная функция для форматирования дат
+const safeFormatDistanceToNow = (dateString: string) => {
+  try {
+    if (!dateString || dateString === 'null' || dateString === 'undefined') {
+      return 'только что';
+    }
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date for formatting:', dateString);
+      return 'только что';
+    }
+    
+    return formatDistanceToNow(date, { 
+      addSuffix: true, 
+      locale: ru 
+    });
+  } catch (error) {
+    console.error('Error formatting date distance:', error, dateString);
+    return 'только что';
+  }
+};
+
+// Безопасная функция для форматирования полных дат
+const safeFormatDate = (dateString: string, defaultText = 'Дата неизвестна') => {
+  try {
+    if (!dateString || dateString === 'null' || dateString === 'undefined') {
+      return defaultText;
+    }
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date for formatting:', dateString);
+      return defaultText;
+    }
+    
+    return date.toLocaleString('ru');
+  } catch (error) {
+    console.error('Error formatting date:', error, dateString);
+    return defaultText;
+  }
+};
+
 interface AccessRequest {
   id: string;
   offer_id: string;
@@ -189,10 +232,7 @@ export default function AccessRequests() {
                             <div className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
                               <span>
-                                Отправлено {formatDistanceToNow(new Date(request.requested_at), { 
-                                  addSuffix: true, 
-                                  locale: ru 
-                                })}
+                                Отправлено {safeFormatDistanceToNow(request.requested_at)}
                               </span>
                             </div>
                           </div>
@@ -241,10 +281,7 @@ export default function AccessRequests() {
 
                       {request.reviewed_at && (
                         <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                          Обработано {formatDistanceToNow(new Date(request.reviewed_at), { 
-                            addSuffix: true, 
-                            locale: ru 
-                          })}
+                          Обработано {safeFormatDistanceToNow(request.reviewed_at)}
                         </div>
                       )}
                     </CardContent>
@@ -280,13 +317,13 @@ export default function AccessRequests() {
                 <div>
                   <h4 className="font-medium text-sm text-gray-600 dark:text-gray-400">Дата отправки</h4>
                   <p className="mt-1 text-sm">
-                    {new Date(selectedRequest.requested_at).toLocaleString('ru')}
+                    {safeFormatDate(selectedRequest.requested_at)}
                   </p>
                 </div>
                 <div>
                   <h4 className="font-medium text-sm text-gray-600 dark:text-gray-400">Истекает</h4>
                   <p className="mt-1 text-sm">
-                    {new Date(selectedRequest.expires_at).toLocaleString('ru')}
+                    {safeFormatDate(selectedRequest.expires_at)}
                   </p>
                 </div>
               </div>

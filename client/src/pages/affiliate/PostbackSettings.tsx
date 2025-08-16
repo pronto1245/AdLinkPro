@@ -256,7 +256,7 @@ export default function PostbackSettings() {
                         <span>События: {profile.events?.join(', ') || 'Все'}</span>
                         {profile.last_delivery && (
                           <span className="text-muted-foreground">
-                            Последняя отправка: {new Date(profile.last_delivery).toLocaleString('ru')}
+                            Последняя отправка: {profile.last_delivery && profile.last_delivery !== 'null' ? new Date(profile.last_delivery).toLocaleString('ru') : 'Не отправлялось'}
                           </span>
                         )}
                       </div>
@@ -300,7 +300,7 @@ export default function PostbackSettings() {
                         logs.map((log: PostbackLog) => (
                           <tr key={log.id} className="border-b">
                             <td className="p-2 text-sm">
-                              {new Date(log.sent_at).toLocaleString('ru')}
+                              {log.sent_at && log.sent_at !== 'null' ? new Date(log.sent_at).toLocaleString('ru') : 'Неизвестно'}
                             </td>
                             <td className="p-2 font-mono text-sm">{log.clickid}</td>
                             <td className="p-2">
