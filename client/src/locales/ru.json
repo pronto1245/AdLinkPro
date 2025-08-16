@@ -117,7 +117,15 @@
     "statistics": "Статистика",
     "finances": "Финансы",
     "team": "Команда",
-    "creatives": "Креативы"
+    "creatives": "Креативы",
+    "accessRequests": "Запросы доступа",
+    "referrals": "Рефералы",
+    "postbacks": "Постбеки",
+    "profile": "Профиль",
+    "settings": "Настройки",
+    "notifications": "Уведомления",
+    "logout": "Выход",
+    "help": "Помощь"
   },
   "login": "Войти",
   "username": "Имя пользователя", 
@@ -170,16 +178,20 @@
       "title": "Последние действия",
       "desc": "История активности системы"
     },
-    "quickActions": {
-      "title": "Быстрые действия",
-      "desc": "Основные операции системы",
-      "addOffer": "Добавить оффер",
-      "addUser": "Добавить пользователя",
-      "postback": "Постбеки",
-      "analytics": "Аналитика",
-      "fraud": "Антифрод",
-      "finances": "Финансы"
-    }
+    "quickActions": "Быстрые действия",
+    "quickActionsDesc": "Основные операции системы",
+    "findNewOffers": "Найти новые офферы",
+    "checkStatistics": "Проверить статистику", 
+    "contactManager": "Связаться с менеджером",
+    "configuredPostbacks": "Настроенные постбеки",
+    "integrationSetup": "Настройка интеграции с внешними трекерами",
+    "createPostbackProfile": "Создать профиль постбека",
+    "navigateToOffers": "Переход к офферам",
+    "navigateToOffersDescription": "Открытие страницы доступных офферов",
+    "navigateToStatistics": "Переход к статистике", 
+    "navigateToStatisticsDescription": "Открытие страницы аналитики",
+    "dataUpdated": "Данные обновлены",
+    "dataUpdatedDescription": "Данные дашборда успешно обновлены"
   },
   "sidebar": {
     "dashboard": "Дашборд",

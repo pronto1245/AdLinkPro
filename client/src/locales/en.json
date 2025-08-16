@@ -414,7 +414,23 @@
     "settings": "Settings",
     "notifications": "Notifications",
     "logout": "Logout",
-    "help": "Help"
+    "help": "Help",
+    "referrals": "Referrals"
+  },
+  "dashboard": {
+    "findNewOffers": "Find New Offers",
+    "checkStatistics": "Check Statistics", 
+    "contactManager": "Contact Manager",
+    "configuredPostbacks": "Configured Postbacks",
+    "integrationSetup": "Integration setup with external trackers",
+    "createPostbackProfile": "Create Postback Profile",
+    "quickActions": "Quick Actions",
+    "navigateToOffers": "Navigate to Offers",
+    "navigateToOffersDescription": "Opening available offers page",
+    "navigateToStatistics": "Navigate to Statistics",
+    "navigateToStatisticsDescription": "Opening analytics page",
+    "dataUpdated": "Data Updated",
+    "dataUpdatedDescription": "Dashboard data successfully updated"
   },
   "common": {
     "update": "Update", 
