@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLanguage } from "@/contexts/language-context";
+import { useTranslation } from "react-i18next";
 import { useSidebar } from "@/contexts/sidebar-context";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
@@ -43,8 +43,9 @@ import {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 export default function UserAnalytics() {
-  const { t, language } = useLanguage();
-  const { isCollapsed } = useSidebar();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
+  const { collapsed: isCollapsed } = useSidebar();
   const [period, setPeriod] = useState('30d');
   const [roleFilter, setRoleFilter] = useState('all');
   

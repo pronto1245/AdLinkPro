@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useLanguage } from "@/contexts/language-context";
+import { useTranslation } from "react-i18next";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { format } from "date-fns";
 import { ru, enUS } from "date-fns/locale";
@@ -90,9 +90,10 @@ interface UserFilters {
 }
 
 export default function UsersManagement() {
-  const { t, language } = useLanguage();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
   const { toast } = useToast();
-  const { isCollapsed } = useSidebar();
+  const { collapsed: isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
   
   const [filters, setFilters] = useState<UserFilters>({

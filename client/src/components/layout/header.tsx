@@ -1,4 +1,4 @@
-import { useLanguage } from '@/contexts/language-context';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,7 +13,9 @@ interface HeaderProps {
 }
 
 export default function Header({ title, subtitle, children }: HeaderProps) {
-  const { language, setLanguage, t } = useLanguage();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
+  const setLanguage = (lang: string) => i18n.changeLanguage(lang);
   const { user, logout } = useAuth();
 
   const getUserDisplayName = () => {

@@ -29,12 +29,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Input } from '../../components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 
+// Helper function for multilingual text
+const getMultilingualText = (obj: any, language: string, fallback: string = '') => {
+  if (!obj) return fallback;
+  if (typeof obj === 'string') return obj;
+  return obj[language] || obj['en'] || obj['ru'] || fallback;
+};
+
 export default function OfferDetails() {
   const [, setLocation] = useLocation();
   const params = useParams();
   const { t, i18n } = useTranslation();
   const language = i18n.language;
-  const { isCollapsed } = useSidebar();
+  const { collapsed: isCollapsed } = useSidebar();
   const [activeTab, setActiveTab] = useState('details');
   const [uploadedCreatives, setUploadedCreatives] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -1684,7 +1691,8 @@ export default function OfferDetails() {
 function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { language } = useLanguage();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language;
   
   // Schema для редактирования оффера (упрощенная версия)
   const editOfferSchema = z.object({
