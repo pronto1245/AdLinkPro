@@ -2112,26 +2112,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If registration link token provided, find the associated advertiser
       if (registrationLinkToken) {
         try {
-          const { advertiserRegistrationLinks } = await import('@shared/schema');
-          const registrationLinks = await db.select()
-            .from(advertiserRegistrationLinks)
-            .where(eq(advertiserRegistrationLinks.linkToken, registrationLinkToken))
-            .limit(1);
+          const inviteLink = await storage.getInviteLinkByToken(registrationLinkToken);
           
-          if (registrationLinks.length > 0 && registrationLinks[0].isActive) {
-            advertiserId = registrationLinks[0].advertiserId;
-            linkUrl = registrationLinks[0].linkUrl;
+          if (inviteLink && inviteLink.isActive) {
+            advertiserId = inviteLink.advertiserId;
             
-            // Increment registration count
-            await db.update(advertiserRegistrationLinks)
-              .set({ 
-                totalRegistrations: sql`${advertiserRegistrationLinks.totalRegistrations} + 1`,
-                updatedAt: new Date()
-              })
-              .where(eq(advertiserRegistrationLinks.id, registrationLinks[0].id));
+            // Increment usage count
+            await storage.incrementInviteLinkUsage(inviteLink.token);
+            console.log(`✅ Partner registered using invite link: ${inviteLink.name}`);
+          } else {
+            console.log(`❌ Invalid or inactive invite link token: ${registrationLinkToken}`);
           }
         } catch (error) {
-          console.error('Error finding registration link:', error);
+          console.error('Error finding invite link:', error);
         }
       }
 

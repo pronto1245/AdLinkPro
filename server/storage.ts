@@ -273,6 +273,7 @@ export interface IStorage {
   
   // Invite Links methods
   getInviteLinks(advertiserId: string): Promise<any[]>;
+  getInviteLinkByToken(token: string): Promise<any | null>;
   createInviteLink(advertiserId: string, data: { name: string; description?: string; maxUsage?: number; expiryDays?: number }): Promise<any>;
   toggleInviteLink(advertiserId: string, linkId: string): Promise<any>;
   deleteInviteLink(advertiserId: string, linkId: string): Promise<void>;
@@ -2921,6 +2922,19 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error getting invite links:', error);
       throw error;
+    }
+  }
+
+  async getInviteLinkByToken(token: string): Promise<any | null> {
+    try {
+      const [link] = await db.select().from(inviteLinks).where(
+        eq(inviteLinks.token, token)
+      ).limit(1);
+      
+      return link || null;
+    } catch (error) {
+      console.error('Error getting invite link by token:', error);
+      return null;
     }
   }
 
