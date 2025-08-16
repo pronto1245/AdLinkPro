@@ -5,9 +5,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./table";
-import { Button } from "./button";
-import { Input } from "./input";
+} from "./components/ui/table";
+import { Button } from "./components/ui/button";
+import { Input } from "./components/ui/input";
 import { useState } from "react";
 
 interface Column<T> {

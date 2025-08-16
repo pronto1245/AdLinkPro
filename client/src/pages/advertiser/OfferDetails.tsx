@@ -9,7 +9,7 @@ import { useToast } from "../../hooks/use-toast";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CreativeUploader } from "../../components/CreativeUploader";
-import { getCountryFlag, getCountryName } from '../../utils/countries';
+import { getCountryFlag, getCountryName } from '../../../utils/countries';
 
 interface OfferDetails {
   id: string;

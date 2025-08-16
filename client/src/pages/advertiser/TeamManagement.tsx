@@ -862,7 +862,7 @@ export default function TeamManagement() {
                     size="sm"
                     onClick={() => {
                       // Экспорт логов в CSV
-                      const csvData = activityLogs.map((log: any) => ({
+                      const csvData = activityLogs.map(log => ({
                         timestamp: new Date(log.timestamp).toLocaleString('ru-RU'),
                         username: log.username,
                         action: log.action,

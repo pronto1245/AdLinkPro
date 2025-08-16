@@ -1,12 +1,12 @@
 import { Languages } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Button } from "./button";
+import { Button } from "./components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./dropdown-menu";
+} from "./components/ui/dropdown-menu";
 
 export function LanguageToggle() {
   const { i18n, t } = useTranslation();

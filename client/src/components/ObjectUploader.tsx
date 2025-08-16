@@ -6,7 +6,7 @@ import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
 import AwsS3 from "@uppy/aws-s3";
 import type { UploadResult } from "@uppy/core";
-import { Button } from "./ui/button";
+import { Button } from "../../components/ui/button";
 
 interface ObjectUploaderProps {
   maxNumberOfFiles?: number;
