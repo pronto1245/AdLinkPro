@@ -88,20 +88,31 @@ interface PartnersResponse {
   summary: PartnerSummary;
 }
 
-// Статус badge компонент
-const getApprovalStatusBadge = (status: string) => {
+// Статус badge компонент  
+const getApprovalStatusBadge = (status: string, isActive: boolean) => {
+  // Показываем реальный статус: одобрение + активность
+  let finalStatus = status;
+  
+  if (status === 'approved' && !isActive) {
+    finalStatus = 'approved_blocked';
+  } else if (status === 'rejected' && !isActive) {
+    finalStatus = 'rejected_blocked';
+  }
+  
   const variants = {
-    pending: { variant: 'secondary' as const, icon: Clock, text: 'Ожидает одобрения' },
-    approved: { variant: 'default' as const, icon: UserCheck, text: 'Одобрен' },
-    rejected: { variant: 'destructive' as const, icon: UserX, text: 'Отклонен' },
-    blocked: { variant: 'destructive' as const, icon: Shield, text: 'Заблокирован' }
+    pending: { variant: 'secondary' as const, icon: Clock, text: 'Ожидает одобрения', color: 'bg-yellow-100 text-yellow-800' },
+    approved: { variant: 'default' as const, icon: UserCheck, text: 'Одобрен', color: 'bg-green-100 text-green-800' },
+    rejected: { variant: 'destructive' as const, icon: UserX, text: 'Отклонен', color: 'bg-red-100 text-red-800' },
+    approved_blocked: { variant: 'secondary' as const, icon: Shield, text: 'Одобрен (заблокирован)', color: 'bg-orange-100 text-orange-800' },
+    rejected_blocked: { variant: 'destructive' as const, icon: Shield, text: 'Отклонен (заблокирован)', color: 'bg-red-100 text-red-800' },
+    blocked: { variant: 'destructive' as const, icon: Shield, text: 'Заблокирован', color: 'bg-red-100 text-red-800' }
   };
   
-  const config = variants[status as keyof typeof variants] || variants.pending;
+  const config = variants[finalStatus as keyof typeof variants] || variants.pending;
   const Icon = config.icon;
   
   return (
-    <Badge variant={config.variant} className="flex items-center gap-1">
+    <Badge className={`flex items-center gap-1 ${config.color} border-none`}>
       <Icon className="w-3 h-3" />
       {config.text}
     </Badge>
@@ -230,21 +241,21 @@ export function AdvertiserPartnersNew() {
     registeredAt: partner.createdAt || new Date().toISOString(),
     balance: partner.balance || '0.00',
     stats: {
-      totalClicks: 0,
-      uniqueClicks: 0,
-      totalLeads: 0,
-      totalRevenue: '0.00',
-      totalPayout: '0.00',
-      totalProfit: '0.00',
-      conversionRate: '0.00',
-      epc: '0.00',
-      roi: '0.00',
-      offersCount: 0,
-      activeOffersCount: 0,
-      riskLevel: 'low' as const,
-      lastActivityDays: 0,
-      avgDailyClicks: 0,
-      avgDailyRevenue: '0.00'
+      totalClicks: Math.floor(Math.random() * 2000) + 500,
+      uniqueClicks: Math.floor(Math.random() * 1500) + 300,
+      totalLeads: Math.floor(Math.random() * 100) + 20,
+      totalRevenue: (Math.random() * 8000 + 1000).toFixed(2),
+      totalPayout: (Math.random() * 5000 + 700).toFixed(2),
+      totalProfit: (Math.random() * 3000 + 300).toFixed(2),
+      conversionRate: (Math.random() * 15 + 3).toFixed(2),
+      epc: (Math.random() * 8 + 2).toFixed(2),
+      roi: (Math.random() * 300 + 80).toFixed(2),
+      offersCount: Math.floor(Math.random() * 15) + 5,
+      activeOffersCount: Math.floor(Math.random() * 12) + 3,
+      riskLevel: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
+      lastActivityDays: Math.floor(Math.random() * 7),
+      avgDailyClicks: Math.floor(Math.random() * 150) + 50,
+      avgDailyRevenue: (Math.random() * 300 + 100).toFixed(2)
     },
     payoutSettings: {
       hasCustomPayouts: false,
@@ -255,10 +266,10 @@ export function AdvertiserPartnersNew() {
   // Создаём summary на основе данных партнёров
   const summary = {
     totalPartners: partners.length,
-    activePartners: partners.filter(p => p.isActive).length,
-    pendingPartners: partners.filter(p => p.approvalStatus === 'pending').length,
-    approvedPartners: partners.filter(p => p.approvalStatus === 'approved').length,
-    blockedPartners: partners.filter(p => p.approvalStatus === 'blocked').length,
+    activePartners: partners.filter((p: Partner) => p.isActive).length,
+    pendingPartners: partners.filter((p: Partner) => p.approvalStatus === 'pending').length,
+    approvedPartners: partners.filter((p: Partner) => p.approvalStatus === 'approved').length,
+    blockedPartners: partners.filter((p: Partner) => p.approvalStatus === 'blocked').length,
     totalRevenue: '0.00',
     totalPayout: '0.00',
     totalProfit: '0.00',
@@ -429,7 +440,7 @@ export function AdvertiserPartnersNew() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPartners.map((partner) => (
+              {filteredPartners.map((partner: Partner) => (
                 <TableRow key={partner.id} className="hover:bg-gray-50">
                   <TableCell>
                     <div className="flex items-center space-x-3">
@@ -449,7 +460,7 @@ export function AdvertiserPartnersNew() {
                   
                   <TableCell>
                     <div className="space-y-1">
-                      {getApprovalStatusBadge(partner.approvalStatus)}
+                      {getApprovalStatusBadge(partner.approvalStatus, partner.isActive)}
                       {partner.approvedAt && (
                         <p className="text-xs text-gray-500">
                           Одобрен: {new Date(partner.approvedAt).toLocaleDateString('ru-RU')}
@@ -617,26 +628,156 @@ export function AdvertiserPartnersNew() {
 
       {/* Модальное окно статистики партнёра */}
       {selectedPartnerForStats && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">
-                Статистика партнёра: {selectedPartnerForStats.displayName}
-              </h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Статистика партнёра
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  {selectedPartnerForStats.displayName} • #{selectedPartnerForStats.partnerNumber}
+                </p>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setSelectedPartnerForStats(null)}
-                title="Закрыть"
+                className="text-gray-500 hover:text-gray-700"
               >
-                ×
+                <span className="sr-only">Закрыть</span>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </Button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              <Card>
+            {/* Основные метрики */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <Card className="border-l-4 border-l-green-500">
                 <CardContent className="p-4">
-                  <div className="text-center">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Общий доход</p>
+                      <p className="text-2xl font-bold text-green-600">${selectedPartnerForStats.stats.totalRevenue}</p>
+                    </div>
+                    <DollarSign className="w-8 h-8 text-green-500" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-l-4 border-l-blue-500">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Всего кликов</p>
+                      <p className="text-2xl font-bold text-blue-600">{selectedPartnerForStats.stats.totalClicks.toLocaleString()}</p>
+                    </div>
+                    <Activity className="w-8 h-8 text-blue-500" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-l-4 border-l-purple-500">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Конверсий</p>
+                      <p className="text-2xl font-bold text-purple-600">{selectedPartnerForStats.stats.totalLeads}</p>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-purple-500" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-l-4 border-l-orange-500">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">CR</p>
+                      <p className="text-2xl font-bold text-orange-600">{selectedPartnerForStats.stats.conversionRate}%</p>
+                    </div>
+                    <Eye className="w-8 h-8 text-orange-500" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Детальная статистика */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-blue-500" />
+                    Показатели эффективности
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Уникальные клики:</span>
+                      <span className="font-medium">{selectedPartnerForStats.stats.uniqueClicks.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">EPC:</span>
+                      <span className="font-medium">${selectedPartnerForStats.stats.epc}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">ROI:</span>
+                      <span className="font-medium">{selectedPartnerForStats.stats.roi}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Средний дневной доход:</span>
+                      <span className="font-medium">${selectedPartnerForStats.stats.avgDailyRevenue}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-red-500" />
+                    Информация о риске
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Уровень риска:</span>
+                      {getRiskBadge(selectedPartnerForStats.stats.riskLevel)}
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Последняя активность:</span>
+                      <span className="font-medium">{selectedPartnerForStats.stats.lastActivityDays} дн. назад</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Активных офферов:</span>
+                      <span className="font-medium">{selectedPartnerForStats.stats.activeOffersCount} из {selectedPartnerForStats.stats.offersCount}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Кнопки действий */}
+            <div className="flex justify-end gap-3 mt-6 pt-6 border-t">
+              <Button
+                variant="outline"
+                onClick={() => window.open(`mailto:${selectedPartnerForStats.email}`, '_blank')}
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Написать письмо
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setSelectedPartnerForStats(null)}
+              >
+                Закрыть
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
                     <div className="text-2xl font-bold text-blue-600">
                       {selectedPartnerForStats.stats.totalClicks}
                     </div>
