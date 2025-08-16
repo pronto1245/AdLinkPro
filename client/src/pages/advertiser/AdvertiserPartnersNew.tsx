@@ -89,52 +89,100 @@ interface PartnersResponse {
 }
 
 // Статус badge компонент  
-const getApprovalStatusBadge = (status: string, isActive: boolean) => {
-  // Показываем реальный статус: одобрение + активность
-  let finalStatus = status;
+const getApprovalStatusBadge = (approvalStatus: string, isActive: boolean) => {
+  // Определяем финальный статус на основе статуса одобрения и активности
+  let finalStatus: string;
+  let statusText: string;
+  let colorClass: string;
+  let icon: React.ComponentType<any>;
   
-  if (status === 'approved' && !isActive) {
-    finalStatus = 'approved_blocked';
-  } else if (status === 'rejected' && !isActive) {
-    finalStatus = 'rejected_blocked';
+  if (approvalStatus === 'pending') {
+    finalStatus = 'pending';
+    statusText = 'Ожидает одобрения';
+    colorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200';
+    icon = Clock;
+  } else if (approvalStatus === 'approved') {
+    if (isActive) {
+      finalStatus = 'approved';
+      statusText = 'Одобрен';
+      colorClass = 'bg-green-50 text-green-700 border-green-200';
+      icon = UserCheck;
+    } else {
+      finalStatus = 'approved_blocked';
+      statusText = 'Заблокирован';
+      colorClass = 'bg-orange-50 text-orange-700 border-orange-200';
+      icon = Shield;
+    }
+  } else if (approvalStatus === 'rejected') {
+    finalStatus = 'rejected';
+    statusText = 'Отклонен';
+    colorClass = 'bg-red-50 text-red-700 border-red-200';
+    icon = UserX;
+  } else if (approvalStatus === 'blocked') {
+    finalStatus = 'blocked';
+    statusText = 'Заблокирован';
+    colorClass = 'bg-red-50 text-red-700 border-red-200';
+    icon = Shield;
+  } else {
+    // Fallback
+    finalStatus = 'pending';
+    statusText = 'Неизвестно';
+    colorClass = 'bg-gray-50 text-gray-700 border-gray-200';
+    icon = Clock;
   }
   
-  const variants = {
-    pending: { variant: 'secondary' as const, icon: Clock, text: 'Ожидает одобрения', color: 'bg-yellow-100 text-yellow-800' },
-    approved: { variant: 'default' as const, icon: UserCheck, text: 'Одобрен', color: 'bg-green-100 text-green-800' },
-    rejected: { variant: 'destructive' as const, icon: UserX, text: 'Отклонен', color: 'bg-red-100 text-red-800' },
-    approved_blocked: { variant: 'secondary' as const, icon: Shield, text: 'Одобрен (заблокирован)', color: 'bg-orange-100 text-orange-800' },
-    rejected_blocked: { variant: 'destructive' as const, icon: Shield, text: 'Отклонен (заблокирован)', color: 'bg-red-100 text-red-800' },
-    blocked: { variant: 'destructive' as const, icon: Shield, text: 'Заблокирован', color: 'bg-red-100 text-red-800' }
-  };
-  
-  const config = variants[finalStatus as keyof typeof variants] || variants.pending;
-  const Icon = config.icon;
+  const Icon = icon;
   
   return (
-    <Badge className={`flex items-center gap-1 ${config.color} border-none`}>
-      <Icon className="w-3 h-3" />
-      {config.text}
-    </Badge>
+    <div className="flex items-center gap-1.5">
+      <Badge className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border ${colorClass} shadow-sm`}>
+        <Icon className="w-3.5 h-3.5" />
+        {statusText}
+      </Badge>
+    </div>
   );
 };
 
 // Риск badge компонент
 const getRiskBadge = (risk: string) => {
   const variants = {
-    low: { variant: 'default' as const, text: 'Низкий' },
-    medium: { variant: 'secondary' as const, text: 'Средний' },
-    high: { variant: 'destructive' as const, text: 'Высокий' }
+    low: { 
+      text: 'Низкий риск', 
+      colorClass: 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+    },
+    medium: { 
+      text: 'Средний риск', 
+      colorClass: 'bg-yellow-50 text-yellow-700 border-yellow-200' 
+    },
+    high: { 
+      text: 'Высокий риск', 
+      colorClass: 'bg-red-50 text-red-700 border-red-200' 
+    }
   };
   
   const config = variants[risk as keyof typeof variants] || variants.low;
   
   return (
-    <Badge variant={config.variant}>
+    <Badge className={`px-2.5 py-1 text-xs font-medium rounded-lg border ${config.colorClass}`}>
       {config.text}
     </Badge>
   );
 };
+
+// Функция для определения новых партнеров (зарегистрированных за последние 7 дней)
+const isNewPartner = (registeredAt: string): boolean => {
+  const registrationDate = new Date(registeredAt);
+  const now = new Date();
+  const daysDiff = Math.floor((now.getTime() - registrationDate.getTime()) / (1000 * 60 * 60 * 24));
+  return daysDiff <= 7;
+};
+
+// Компонент индикатора нового партнера
+const NewPartnerBadge = () => (
+  <Badge className="bg-blue-50 text-blue-700 border-blue-200 px-2 py-0.5 text-xs font-medium rounded-full">
+    НОВЫЙ
+  </Badge>
+);
 
 export function AdvertiserPartnersNew() {
   const { toast } = useToast();
@@ -448,7 +496,10 @@ export function AdvertiserPartnersNew() {
                         {partner.firstName?.charAt(0) || ''}{partner.lastName?.charAt(0) || ''}
                       </div>
                       <div>
-                        <p className="font-medium">{partner.displayName}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{partner.displayName}</p>
+                          {isNewPartner(partner.registeredAt) && <NewPartnerBadge />}
+                        </div>
                         <p className="text-sm text-gray-500">#{partner.partnerNumber}</p>
                         <p className="text-sm text-gray-500">{partner.email}</p>
                         {partner.company && (
@@ -459,7 +510,7 @@ export function AdvertiserPartnersNew() {
                   </TableCell>
                   
                   <TableCell>
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       {getApprovalStatusBadge(partner.approvalStatus, partner.isActive)}
                       {partner.approvedAt && (
                         <p className="text-xs text-gray-500">
@@ -539,8 +590,8 @@ export function AdvertiserPartnersNew() {
                           </>
                         )}
                         
-                        {/* Кнопка блокировки/разблокировки для одобренных и отклонённых */}
-                        {(partner.approvalStatus === 'approved' || partner.approvalStatus === 'rejected') && (
+                        {/* Кнопка блокировки/разблокировки для одобренных партнеров */}
+                        {partner.approvalStatus === 'approved' && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -563,6 +614,21 @@ export function AdvertiserPartnersNew() {
                                 Разблокировать
                               </>
                             )}
+                          </Button>
+                        )}
+                        
+                        {/* Для отклоненных партнеров - только возможность одобрить */}
+                        {partner.approvalStatus === 'rejected' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleApprove(partner.id)}
+                            disabled={approveMutation.isPending}
+                            className="text-green-600 border-green-200 hover:bg-green-50 text-xs px-2 py-1"
+                            data-testid={`button-reapprove-${partner.id}`}
+                          >
+                            <UserCheck className="w-3 h-3 mr-1" />
+                            Одобрить
                           </Button>
                         )}
                       </div>
