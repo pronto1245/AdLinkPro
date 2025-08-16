@@ -106,26 +106,16 @@ const AdvertiserOffers = () => {
   const { data: offers = [], isLoading } = useQuery({
     queryKey: ['/api/advertiser/offers'],
     queryFn: () => apiRequest('/api/advertiser/offers'),
-    onSuccess: (data) => {
-      console.log('AdvertiserOffers - Received data:', { length: data?.length, data });
-    },
-    onError: (error) => {
-      console.error('AdvertiserOffers - API Error:', error);
-    }
   });
 
   // Обновляем локальное состояние при загрузке данных с сервера
   React.useEffect(() => {
-    console.log('AdvertiserOffers - useEffect triggered:', { offersLength: offers?.length, offers });
     if (offers && offers.length > 0) {
       // Сортируем по дате создания (новые сверху) при первой загрузке
       const sorted = [...offers].sort((a: any, b: any) => 
         new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
       );
-      console.log('AdvertiserOffers - Setting local offers:', { sortedLength: sorted.length });
       setLocalOffers(sorted);
-    } else {
-      console.log('AdvertiserOffers - No offers to display:', { offers });
     }
   }, [offers]);
 
@@ -304,15 +294,7 @@ const AdvertiserOffers = () => {
     );
   }
 
-  // Добавим отладку для пустых офферов
-  if (!isLoading && filtered.length === 0) {
-    console.log('AdvertiserOffers - No filtered offers:', { 
-      localOffersLength: localOffers.length, 
-      searchFilter: search, 
-      statusFilter: selectedStatus,
-      rawOffers: offers?.length || 0
-    });
-  }
+
 
   return (
     <div className="w-full space-y-4">
@@ -320,7 +302,7 @@ const AdvertiserOffers = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Мои офферы</h1>
           <p className="text-muted-foreground">
-            Управление офферами и отслеживание статистики ({filtered.length} из {localOffers.length})
+            Управление офферами и отслеживание статистики
           </p>
         </div>
         <Button 
