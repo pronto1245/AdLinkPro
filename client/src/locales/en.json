@@ -77,6 +77,9 @@
     "allRoles": "All Roles",
     "global": "Global",
     "advertiser": "Advertiser",
+    "affiliate": "Partner",
+    "staff": "Staff",
+    "superAdmin": "Super Admin",
     "scope": "Scope",
     "permissions": "Permissions",
     "globalRole": "Global",
@@ -259,6 +262,8 @@
       "bankTransfer": "Bank Transfer",
       "crypto": "Cryptocurrency"
     },
+    "balance": "Balance",
+    "pending": "Pending",
     "messages": {
       "withdrawalRequested": "Request submitted",
       "withdrawalRequestedDesc": "Withdrawal request created and will be processed within 24 hours.",
@@ -602,5 +607,15 @@
     "dateInvalid": "Invalid date",
     "today": "Today at",
     "yesterday": "Yesterday at"
+  },
+  "links": {
+    "title": "Links",
+    "trackingLinks": "Tracking Links",
+    "accessRestricted": "Access to links restricted",
+    "waitingApproval": "Tracking links will appear after your request is approved by the advertiser.",
+    "status": "Status",
+    "pendingApproval": "Awaiting approval",
+    "requestAccess": "Request access to offer needed",
+    "linkCopied": "Ready link with clickid copied to clipboard"
   }
 }

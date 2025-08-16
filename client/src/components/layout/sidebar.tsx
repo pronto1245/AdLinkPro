@@ -78,10 +78,10 @@ function Sidebar({ className }: SidebarProps) {
 
   const getRoleLabel = () => {
     switch (user.role) {
-      case 'super_admin': return 'Супер Админ';
-      case 'advertiser': return 'Рекламодатель';
-      case 'affiliate': return 'Партнер';
-      case 'staff': return 'Сотрудник';
+      case 'super_admin': return t('roles.superAdmin');
+      case 'advertiser': return t('roles.advertiser');
+      case 'affiliate': return t('roles.affiliate');
+      case 'staff': return t('roles.staff');
       default: return user.role;
     }
   };
@@ -170,7 +170,7 @@ function Sidebar({ className }: SidebarProps) {
             isCollapsed ? "justify-center" : "justify-between"
           )}>
             {!isCollapsed && (
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Тема</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('common.theme')}</span>
             )}
             <ThemeToggle />
           </div>

@@ -71,7 +71,10 @@
     "activeRoles": "Активные роли",
     "allRoles": "Все роли",
     "global": "Глобальные",
-    "advertiser": "Рекламодателей",
+    "advertiser": "Рекламодатель",
+    "affiliate": "Партнер",
+    "staff": "Сотрудник",
+    "superAdmin": "Супер Админ",
     "scope": "Область действия",
     "permissions": "Права доступа",
     "globalRole": "Глобальная",
@@ -463,6 +466,7 @@
     "title": "Финансы",
     "subtitle": "Управление финансами и выплатами",
     "balance": "Баланс",
+    "pending": "В ожидании",
     "currentBalance": "Текущий баланс",
     "pendingPayouts": "В ожидании",
     "totalRevenue": "Общий доход",
@@ -543,5 +547,15 @@
     "dateInvalid": "Неверная дата",
     "today": "Сегодня",
     "yesterday": "Вчера"
+  },
+  "links": {
+    "title": "Ссылки",
+    "trackingLinks": "Трекинговые ссылки",
+    "accessRestricted": "Доступ к ссылкам ограничен",
+    "waitingApproval": "Трекинговые ссылки появятся после одобрения вашего запроса рекламодателем.",
+    "status": "Статус",
+    "pendingApproval": "Ожидание одобрения",
+    "requestAccess": "Необходимо запросить доступ к офферу",
+    "linkCopied": "Готовая ссылка с clickid скопирована в буфер обмена"
   }
 }

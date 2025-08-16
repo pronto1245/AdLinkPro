@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +17,7 @@ interface LinkGeneratorProps {
 
 export function LinkGenerator({ offerId, offerName, isApproved = false, accessStatus }: LinkGeneratorProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // КРИТИЧНО: Показываем ссылки ТОЛЬКО если доступ одобрен
   if (!isApproved || accessStatus !== 'approved') {
@@ -25,7 +27,7 @@ export function LinkGenerator({ offerId, offerName, isApproved = false, accessSt
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <LinkIcon className="h-5 w-5" />
-              Трекинговые ссылки
+              {t('links.trackingLinks')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -36,19 +38,19 @@ export function LinkGenerator({ offerId, offerName, isApproved = false, accessSt
                 </div>
               </div>
               <h3 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">
-                Доступ к ссылкам ограничен
+                {t('links.accessRestricted')}
               </h3>
               <p className="text-yellow-700 dark:text-yellow-300 text-sm">
-                Трекинговые ссылки появятся после одобрения вашего запроса рекламодателем.
+                {t('links.waitingApproval')}
               </p>
               {accessStatus === 'pending' && (
                 <p className="text-yellow-600 dark:text-yellow-400 text-xs mt-2">
-                  Статус: Ожидание одобрения
+                  {t('links.status')}: {t('links.pendingApproval')}
                 </p>
               )}
               {accessStatus === 'available' && (
                 <p className="text-yellow-600 dark:text-yellow-400 text-xs mt-2">
-                  Необходимо запросить доступ к офферу
+                  {t('links.requestAccess')}
                 </p>
               )}
             </div>
@@ -64,8 +66,8 @@ export function LinkGenerator({ offerId, offerName, isApproved = false, accessSt
   const handleCopyLink = (url: string) => {
     navigator.clipboard.writeText(url);
     toast({
-      title: "Скопировано",
-      description: "Готовая ссылка с clickid скопирована в буфер обмена"
+      title: t('common.copied'),
+      description: t('links.linkCopied')
     });
   };
 
