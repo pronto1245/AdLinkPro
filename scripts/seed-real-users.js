@@ -69,4 +69,4 @@ main()
   })
   .finally(() => {
     prisma.$disconnect();
-  };
+  });
