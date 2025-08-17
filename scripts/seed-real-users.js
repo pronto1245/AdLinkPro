@@ -2,6 +2,7 @@
 // Запуск: node scripts/seed-real-users.js
 
 const { PrismaClient } = require('@prisma/client');
+const bcryptjs = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
@@ -9,16 +10,19 @@ async function main() {
   const users = [
     {
       email: '9791207@gmail.com',
+      username: 'owner',
       password: '77GeoDav=',
       role: 'super_admin',
     },
     {
-      email: '6484488@gmail.co',
+      email: '6484488@gmail.com', // Fixed typo: was .co, now .com
+      username: 'requester',
       password: '7787877As',
       role: 'advertiser',
     },
     {
       email: 'pablota096@gmail.com',
+      username: 'partner',
       password: '7787877As',
       role: 'affiliate',
     },
@@ -30,18 +34,31 @@ async function main() {
       where: { email: user.email },
     });
     if (exists) {
-      console.log(`Пользователь ${user.email} уже существует, пропускаем.`);
-      continue;
+      console.log(`Пользователь ${user.email} уже существует, обновляем данные.`);
+      // Обновляем существующего пользователя с новым хэшем пароля
+      const hashedPassword = await bcryptjs.hash(user.password, 10);
+      await prisma.user.update({
+        where: { email: user.email },
+        data: {
+          username: user.username,
+          password: hashedPassword,
+          role: user.role,
+        },
+      });
+      console.log(`Обновлен пользователь: ${user.email} (${user.role})`);
+    } else {
+      // Создание пользователя с хэшированным паролем
+      const hashedPassword = await bcryptjs.hash(user.password, 10);
+      await prisma.user.create({
+        data: {
+          email: user.email,
+          username: user.username,
+          password: hashedPassword, // Теперь используем хэш!
+          role: user.role,
+        },
+      });
+      console.log(`Создан пользователь: ${user.email} (${user.role})`);
     }
-    // Создание пользователя
-    await prisma.user.create({
-      data: {
-        email: user.email,
-        password: user.password, // В бою обязательно использовать хэш!
-        role: user.role,
-      },
-    });
-    console.log(`Создан пользователь: ${user.email} (${user.role})`);
   }
 }
 

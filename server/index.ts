@@ -38,9 +38,9 @@ if (process.env.ALLOW_SEED === '1') {
   app.post('/api/dev/seed-users', async (req,res) => {
     try {
       const users = [
-        { email: process.env.OWNER_EMAIL || '9791207@gmail.com', username: 'owner',   role: 'OWNER',      pass: process.env.OWNER_PASSWORD || 'owner123' },
-        { email: process.env.ADVERTISER_EMAIL || '12345@gmail.com', username: 'advertiser', role: 'ADVERTISER', pass: process.env.ADVERTISER_PASSWORD || 'adv123' },
-        { email: process.env.PARTNER_EMAIL || '4321@gmail.com', username: 'partner', role: 'PARTNER',    pass: process.env.PARTNER_PASSWORD || 'partner123' },
+        { email: process.env.OWNER_EMAIL || '9791207@gmail.com', username: 'owner',     role: 'super_admin', pass: process.env.OWNER_PASSWORD || '77GeoDav=' },
+        { email: process.env.ADVERTISER_EMAIL || '6484488@gmail.com', username: 'requester', role: 'advertiser', pass: process.env.ADVERTISER_PASSWORD || '7787877As' },
+        { email: process.env.PARTNER_EMAIL || 'pablota096@gmail.com', username: 'partner',   role: 'affiliate',   pass: process.env.PARTNER_PASSWORD || '7787877As' },
       ];
       for (const u of users) {
         const hash = await bcryptjs.hash(u.pass, 10);
@@ -98,9 +98,9 @@ app.use(rateLimit({ windowMs: 15*60*1000, max: 300 }));
 app.post("/api/auth/login", require("express").json(), (req, res) => {
   try {
     const users = [
-      { email: process.env.OWNER_EMAIL || "9791207@gmail.com",     password: process.env.OWNER_PASSWORD || "owner123",    role: "OWNER",      sub: "owner-1",    username: "owner" },
-      { email: process.env.ADVERTISER_EMAIL || "12345@gmail.com",  password: process.env.ADVERTISER_PASSWORD || "adv123", role: "ADVERTISER", sub: "adv-1",      username: "advertiser" },
-      { email: process.env.PARTNER_EMAIL || "4321@gmail.com",      password: process.env.PARTNER_PASSWORD || "partner123",role: "PARTNER",    sub: "partner-1",  username: "partner" },
+      { email: process.env.OWNER_EMAIL || "9791207@gmail.com",     password: process.env.OWNER_PASSWORD || "77GeoDav=",    role: "super_admin",      sub: "owner-1",    username: "owner" },
+      { email: process.env.ADVERTISER_EMAIL || "6484488@gmail.com",  password: process.env.ADVERTISER_PASSWORD || "7787877As", role: "advertiser", sub: "adv-1",      username: "requester" },
+      { email: process.env.PARTNER_EMAIL || "pablota096@gmail.com",      password: process.env.PARTNER_PASSWORD || "7787877As",role: "affiliate",    sub: "partner-1",  username: "partner" },
     ];
     const b = req.body || {};
     const ident = String((b.email || b.username || "")).toLowerCase();
