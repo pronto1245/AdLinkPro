@@ -8016,7 +8016,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .from(users)
           .where(and(eq(users.role, 'affiliate'), eq(users.isActive, true)));
       } catch (error) {
-        activePartnersResult = { count: 15 };
+        activePartnersResult = { count: 0 };
       }
 
       try {
@@ -8025,7 +8025,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .from(offers)
           .where(eq(offers.status, 'active'));
       } catch (error) {
-        activeOffersResult = { count: 8 };
+        activeOffersResult = { count: 0 };
       }
 
       try {
@@ -8046,7 +8046,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .select({ count: count(fraudAlerts.id) })
           .from(fraudAlerts);
       } catch (error) {
-        fraudResult = { count: 12 };
+        fraudResult = { count: 0 };
       }
 
       const firstResult = Array.isArray(clicksResult) ? clicksResult[0] : clicksResult;

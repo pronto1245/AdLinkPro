@@ -3,11 +3,13 @@ import express from "express";
 import { EventDto, AffiliateWebhookDto, PspWebhookDto } from "../../enhanced-postback-dto";
 import { normalize, mapExternalStatus, Status } from "../domain/status";
 import { enqueuePostbacks, ConversionRow } from "../queue/enqueue";
-import { eq, and } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
+import { db } from "../db";
+import { events } from "@shared/schema";
 
 export const router = express.Router();
 
-// Simulated database interface (in production, use real Drizzle client)
+// Database interface for conversions (using real database instead of mock)
 interface DatabaseConversion {
   id: string;
   advertiserId: string;
@@ -26,45 +28,72 @@ interface DatabaseConversion {
   updatedAt: Date;
 }
 
-// Mock database for development
-const mockDatabase: DatabaseConversion[] = [];
-
-// Helper function to find conversion
+// Helper function to find conversion in database
 async function findConversion(advertiserId: string, type: 'reg' | 'purchase', txid: string): Promise<DatabaseConversion | null> {
-  const conversion = mockDatabase.find(c => 
-    c.advertiserId === advertiserId && 
-    c.type === type && 
-    c.txid === txid
-  );
-  return conversion || null;
-}
-
-// Helper function to insert conversion
-async function insertConversion(data: Omit<DatabaseConversion, 'id' | 'createdAt' | 'updatedAt'>): Promise<DatabaseConversion> {
-  const conversion: DatabaseConversion = {
-    ...data,
-    id: `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  };
-  mockDatabase.push(conversion);
-  return conversion;
-}
-
-// Helper function to update conversion
-async function updateConversion(id: string, data: Partial<DatabaseConversion>): Promise<DatabaseConversion> {
-  const index = mockDatabase.findIndex(c => c.id === id);
-  if (index === -1) {
-    throw new Error('Conversion not found');
+  try {
+    const conversion = await db
+      .select()
+      .from(events)
+      .where(and(
+        eq(events.advertiserId, advertiserId),
+        eq(events.type, type),
+        eq(events.txid, txid)
+      ))
+      .limit(1);
+    
+    return conversion[0] as DatabaseConversion || null;
+  } catch (error) {
+    console.error('Error finding conversion:', error);
+    return null;
   }
-  
-  mockDatabase[index] = {
-    ...mockDatabase[index],
-    ...data,
-    updatedAt: new Date()
-  };
-  
-  return mockDatabase[index];
+}
+
+// Helper function to insert conversion into database
+async function insertConversion(data: Omit<DatabaseConversion, 'id' | 'createdAt' | 'updatedAt'>): Promise<DatabaseConversion> {
+  try {
+    const conversionData = {
+      ...data,
+      id: `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    await db.insert(events).values(conversionData);
+    return conversionData;
+  } catch (error) {
+    console.error('Error inserting conversion:', error);
+    throw error;
+  }
+}
+
+// Helper function to update conversion in database
+async function updateConversion(id: string, data: Partial<DatabaseConversion>): Promise<DatabaseConversion> {
+  try {
+    const updatedData = {
+      ...data,
+      updatedAt: new Date()
+    };
+    
+    await db
+      .update(events)
+      .set(updatedData)
+      .where(eq(events.id, id));
+    
+    const updated = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, id))
+      .limit(1);
+    
+    if (updated.length === 0) {
+      throw new Error('Conversion not found');
+    }
+    
+    return updated[0] as DatabaseConversion;
+  } catch (error) {
+    console.error('Error updating conversion:', error);
+    throw error;
+  }
 }
 
 // POST /api/v2/event (инициация от фронта/сервиса)
@@ -310,23 +339,31 @@ router.get("/conversions", async (req, res) => {
   try {
     const { limit = 10, offset = 0 } = req.query;
     
-    const conversions = mockDatabase
-      .slice(Number(offset), Number(offset) + Number(limit))
-      .map(c => ({
-        id: c.id,
-        advertiserId: c.advertiserId,
-        type: c.type,
-        txid: c.txid,
-        status: c.conversionStatus,
-        revenue: c.revenue,
-        currency: c.currency,
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt
-      }));
+    // Get conversions from real database instead of mock
+    const conversions = await db
+      .select({
+        id: events.id,
+        advertiserId: events.advertiserId,
+        type: events.type,
+        txid: events.txid,
+        status: events.conversionStatus,
+        revenue: events.revenue,
+        currency: events.currency,
+        createdAt: events.createdAt,
+        updatedAt: events.updatedAt
+      })
+      .from(events)
+      .limit(Number(limit))
+      .offset(Number(offset));
+    
+    // Get total count
+    const totalResult = await db
+      .select({ count: count() })
+      .from(events);
     
     res.json({
       conversions,
-      total: mockDatabase.length,
+      total: totalResult[0]?.count || 0,
       offset: Number(offset),
       limit: Number(limit)
     });

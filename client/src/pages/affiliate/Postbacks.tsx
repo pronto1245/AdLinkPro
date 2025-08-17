@@ -913,7 +913,8 @@ export function AffiliatePostbacks() {
                     </div>
                   </CardContent>
                 </Card>
-              )) : (
+                )
+              }) : (
                 <div className="text-center py-8 bg-red-50 border-4 border-red-500 rounded">
                   <h2 className="text-red-800 font-bold text-xl mb-4">{t('postbacks.noProfilesFound', 'ПРОФИЛИ НЕ НАЙДЕНЫ!')}</h2>
                   <p className="text-red-600 mb-2">Всего профилей: {profiles?.length || 0}</p>
