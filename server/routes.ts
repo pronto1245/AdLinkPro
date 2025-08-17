@@ -1889,7 +1889,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           role: user.role,
           firstName: user.firstName,
           lastName: user.lastName
-        } 
+        },
+        message: 'Регистрация прошла успешно. С вами свяжется наш менеджер для активации аккаунта в течение 24 часов.'
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
