@@ -70,33 +70,6 @@ export default function Login() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm">
-              <div className="font-medium text-blue-800 dark:text-blue-200 mb-2">Быстрый вход:</div>
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => { setUsername('superadmin'); setPassword('password123'); }}
-                  className="block w-full text-left p-2 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 rounded text-xs"
-                >
-                  <strong>👑 Супер-админ:</strong> superadmin / password123
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setUsername('advertiser1'); setPassword('password123'); }}
-                  className="block w-full text-left p-2 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 rounded text-xs"
-                >
-                  <strong>🏢 Рекламодатель:</strong> advertiser1 / password123
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setUsername('test_affiliate'); setPassword('password123'); }}
-                  className="block w-full text-left p-2 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 rounded text-xs"
-                >
-                  <strong>🤝 Партнер:</strong> test_affiliate / password123
-                </button>
-              </div>
-            </div>
-            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="username">{t('username')} / {t('email')}</Label>
@@ -129,6 +102,30 @@ export default function Login() {
                 {loading ? 'Loading...' : t('sign_in')}
               </Button>
             </form>
+
+            <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+              <div className="text-center text-sm text-slate-600 dark:text-slate-400 mb-4">
+                Нет аккаунта? Зарегистрируйтесь:
+              </div>
+              <div className="space-y-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setLocation('/register/partner')}
+                >
+                  🤝 Стать партнером
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setLocation('/register/advertiser')}
+                >
+                  🏢 Стать рекламодателем
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
