@@ -132,7 +132,7 @@ export default function AdvertiserSidebar({ isMobile = false, onClose }: Adverti
             </div>
             {!collapsed && (
               <div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">FraudGuard</h1>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">AffilixClick</h1>
                 <p className="text-sm text-blue-600 dark:text-blue-400">Кабинет рекламодателя</p>
               </div>
             )}
@@ -193,7 +193,7 @@ export default function AdvertiserSidebar({ isMobile = false, onClose }: Adverti
       {/* Footer */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-800">
         <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
-          © 2025 FraudGuard Platform
+          © 2025 AffilixClick Platform
         </div>
       </div>
     </div>

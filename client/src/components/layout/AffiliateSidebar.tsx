@@ -125,7 +125,7 @@ export default function AffiliateSidebar({ isMobile = false, onClose }: Affiliat
             </div>
             {!collapsed && (
               <div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">FraudGuard</h1>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">AffilixClick</h1>
                 <p className="text-sm text-green-600 dark:text-green-400">Кабинет партнёра</p>
               </div>
             )}
@@ -187,7 +187,7 @@ export default function AffiliateSidebar({ isMobile = false, onClose }: Affiliat
       {!collapsed && (
         <div className="p-4 border-t border-gray-200 dark:border-gray-800">
           <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            © 2025 FraudGuard Platform
+            © 2025 AffilixClick Platform
           </div>
         </div>
       )}
