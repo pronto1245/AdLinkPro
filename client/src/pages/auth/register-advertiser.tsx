@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function RegisterAdvertiser() {
   const [formData, setFormData] = useState({
@@ -32,7 +33,7 @@ export default function RegisterAdvertiser() {
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Ошибка",
-        description: "Пароли не совпадают",
+        description: t('auth.passwordsDoNotMatch'),
         variant: "destructive",
       });
       return;
@@ -41,7 +42,7 @@ export default function RegisterAdvertiser() {
     if (!formData.contactType) {
       toast({
         title: "Ошибка",
-        description: "Выберите тип контакта",
+        description: t('auth.selectContactTypeError'),
         variant: "destructive",
       });
       return;
@@ -50,7 +51,7 @@ export default function RegisterAdvertiser() {
     if (!formData.agreeTerms || !formData.agreePrivacy) {
       toast({
         title: "Ошибка",
-        description: "Необходимо согласиться с условиями использования и политикой конфиденциальности",
+        description: t('auth.agreeToTermsError'),
         variant: "destructive",
       });
       return;
@@ -63,8 +64,8 @@ export default function RegisterAdvertiser() {
       console.log('Advertiser registration data:', formData);
       
       toast({
-        title: "Регистрация успешна",
-        description: "Ваш аккаунт рекламодателя создан. Проверьте email для подтверждения.",
+        title: t('auth.registrationSuccess'),
+        description: t('auth.registrationSuccessDesc'),
         variant: "default",
       });
       
@@ -74,8 +75,8 @@ export default function RegisterAdvertiser() {
       }, 2000);
     } catch (error: any) {
       toast({
-        title: "Ошибка регистрации",
-        description: error.message || "Не удалось создать аккаунт",
+        title: t('auth.registrationError'),
+        description: error.message || t('auth.registrationErrorDesc'),
         variant: "destructive",
       });
     } finally {
@@ -104,7 +105,7 @@ export default function RegisterAdvertiser() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-center">🏢 Регистрация рекламодателя</CardTitle>
+            <CardTitle className="text-center">🏢 {t('auth.advertiserRegistration')}</CardTitle>
             <div className="flex justify-center">
               <select
                 value={language}
@@ -126,7 +127,7 @@ export default function RegisterAdvertiser() {
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
-                  placeholder="Введите ваше имя"
+                  placeholder={t('auth.enterName')}
                 />
               </div>
 
@@ -143,58 +144,58 @@ export default function RegisterAdvertiser() {
               </div>
 
               <div>
-                <Label htmlFor="company">Компания *</Label>
+                <Label htmlFor="company">{t('auth.company')} *</Label>
                 <Input
                   id="company"
                   type="text"
                   value={formData.company}
                   onChange={(e) => handleInputChange('company', e.target.value)}
                   required
-                  placeholder="Название вашей компании"
+                  placeholder={t('auth.enterCompany')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="password">Пароль *</Label>
+                <Label htmlFor="password">{t('auth.password')} *</Label>
                 <Input
                   id="password"
                   type="password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   required
-                  placeholder="Минимум 6 символов"
+                  placeholder={t('auth.minCharacters')}
                   minLength={6}
                 />
               </div>
 
               <div>
-                <Label htmlFor="confirmPassword">Подтвердите пароль *</Label>
+                <Label htmlFor="confirmPassword">{t('auth.confirmPassword')} *</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   required
-                  placeholder="Повторите пароль"
+                  placeholder={t('auth.repeatPassword')}
                   minLength={6}
                 />
               </div>
 
               <div>
-                <Label htmlFor="contactType">Тип контакта *</Label>
+                <Label htmlFor="contactType">{t('auth.contactType')} *</Label>
                 <Select value={formData.contactType} onValueChange={(value) => handleInputChange('contactType', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Выберите тип контакта" />
+                    <SelectValue placeholder={t('auth.selectContactType')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="telegram">Telegram</SelectItem>
-                    <SelectItem value="skype">Skype</SelectItem>
+                    <SelectItem value="telegram">{t('auth.telegram')}</SelectItem>
+                    <SelectItem value="skype">{t('auth.skype')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="contactDetails">Контактные данные *</Label>
+                <Label htmlFor="contactDetails">{t('auth.contactDetails')} *</Label>
                 <Input
                   id="contactDetails"
                   type="text"
@@ -222,7 +223,7 @@ export default function RegisterAdvertiser() {
                       className="text-blue-600 dark:text-blue-400 hover:underline"
                       onClick={() => {/* TODO: Open terms modal */}}
                     >
-                      условиями использования
+                      {t('auth.termsOfService')}
                     </button>
                   </Label>
                 </div>
@@ -243,7 +244,7 @@ export default function RegisterAdvertiser() {
                       className="text-blue-600 dark:text-blue-400 hover:underline"
                       onClick={() => {/* TODO: Open privacy policy modal */}}
                     >
-                      политикой конфиденциальности
+                      {t('auth.privacyPolicy')}
                     </button>
                   </Label>
                 </div>
@@ -254,13 +255,13 @@ export default function RegisterAdvertiser() {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? 'Создание аккаунта...' : 'Зарегистрироваться как рекламодатель'}
+                {loading ? t('auth.creatingAccount') : t('auth.registerAsAdvertiser')}
               </Button>
             </form>
 
             <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Уже есть аккаунт?{' '}
+                {t('auth.alreadyHaveAccount')}{' '}
                 <button
                   onClick={() => setLocation('/login')}
                   className="text-blue-600 dark:text-blue-400 hover:underline"
@@ -269,12 +270,12 @@ export default function RegisterAdvertiser() {
                 </button>
               </p>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-                Хотите стать партнером?{' '}
+                {t('auth.wantToBePartner')}{' '}
                 <button
                   onClick={() => setLocation('/register/partner')}
                   className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                  Зарегистрироваться как партнер
+                  {t('auth.registerAsPartner')}
                 </button>
               </p>
             </div>

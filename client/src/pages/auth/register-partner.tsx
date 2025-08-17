@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function RegisterPartner() {
   const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ export default function RegisterPartner() {
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Ошибка",
-        description: "Пароли не совпадают",
+        description: t('auth.passwordsDoNotMatch'),
         variant: "destructive",
       });
       return;
@@ -37,7 +38,7 @@ export default function RegisterPartner() {
     if (!formData.contactType) {
       toast({
         title: "Ошибка",
-        description: "Выберите тип контакта",
+        description: t('auth.selectContactTypeError'),
         variant: "destructive",
       });
       return;
@@ -50,8 +51,8 @@ export default function RegisterPartner() {
       console.log('Partner registration data:', formData);
       
       toast({
-        title: "Регистрация успешна",
-        description: "Ваш аккаунт партнера создан. Проверьте email для подтверждения.",
+        title: t('auth.registrationSuccess'),
+        description: t('auth.registrationSuccessDesc'),
         variant: "default",
       });
       
@@ -61,8 +62,8 @@ export default function RegisterPartner() {
       }, 2000);
     } catch (error: any) {
       toast({
-        title: "Ошибка регистрации",
-        description: error.message || "Не удалось создать аккаунт",
+        title: t('auth.registrationError'),
+        description: error.message || t('auth.registrationErrorDesc'),
         variant: "destructive",
       });
     } finally {
@@ -91,7 +92,7 @@ export default function RegisterPartner() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-center">🤝 Регистрация партнера</CardTitle>
+            <CardTitle className="text-center">🤝 {t('auth.partnerRegistration')}</CardTitle>
             <div className="flex justify-center">
               <select
                 value={language}
@@ -113,7 +114,7 @@ export default function RegisterPartner() {
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
-                  placeholder="Введите ваше имя"
+                  placeholder={t('auth.enterName')}
                 />
               </div>
 
@@ -130,46 +131,46 @@ export default function RegisterPartner() {
               </div>
 
               <div>
-                <Label htmlFor="password">Пароль *</Label>
+                <Label htmlFor="password">{t('auth.password')} *</Label>
                 <Input
                   id="password"
                   type="password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   required
-                  placeholder="Минимум 6 символов"
+                  placeholder={t('auth.minCharacters')}
                   minLength={6}
                 />
               </div>
 
               <div>
-                <Label htmlFor="confirmPassword">Подтвердите пароль *</Label>
+                <Label htmlFor="confirmPassword">{t('auth.confirmPassword')} *</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   required
-                  placeholder="Повторите пароль"
+                  placeholder={t('auth.repeatPassword')}
                   minLength={6}
                 />
               </div>
 
               <div>
-                <Label htmlFor="contactType">Тип контакта *</Label>
+                <Label htmlFor="contactType">{t('auth.contactType')} *</Label>
                 <Select value={formData.contactType} onValueChange={(value) => handleInputChange('contactType', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Выберите тип контакта" />
+                    <SelectValue placeholder={t('auth.selectContactType')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="telegram">Telegram</SelectItem>
-                    <SelectItem value="skype">Skype</SelectItem>
+                    <SelectItem value="telegram">{t('auth.telegram')}</SelectItem>
+                    <SelectItem value="skype">{t('auth.skype')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="contactDetails">Контактные данные *</Label>
+                <Label htmlFor="contactDetails">{t('auth.contactDetails')} *</Label>
                 <Input
                   id="contactDetails"
                   type="text"
@@ -185,13 +186,13 @@ export default function RegisterPartner() {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? 'Создание аккаунта...' : 'Зарегистрироваться как партнер'}
+                {loading ? t('auth.creatingAccount') : t('auth.registerAsPartner')}
               </Button>
             </form>
 
             <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Уже есть аккаунт?{' '}
+                {t('auth.alreadyHaveAccount')}{' '}
                 <button
                   onClick={() => setLocation('/login')}
                   className="text-blue-600 dark:text-blue-400 hover:underline"
@@ -200,12 +201,12 @@ export default function RegisterPartner() {
                 </button>
               </p>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-                Хотите стать рекламодателем?{' '}
+                {t('auth.wantToBeAdvertiser')}{' '}
                 <button
                   onClick={() => setLocation('/register/advertiser')}
                   className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                  Зарегистрироваться как рекламодатель
+                  {t('auth.registerAsAdvertiser')}
                 </button>
               </p>
             </div>
