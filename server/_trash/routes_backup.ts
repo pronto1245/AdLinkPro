@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { ObjectStorageService, objectStorageClient } from "./objectStorage";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { 
   insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, insertReceivedOfferSchema,

@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { Pool } from "pg";
 import rateLimit from "express-rate-limit";
 import compression from "compression";
