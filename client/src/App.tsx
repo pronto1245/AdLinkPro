@@ -79,6 +79,8 @@ import AccessRequests from "@/pages/partner/AccessRequests";
 import { useAuth } from "./contexts/auth-context";
 import * as React from 'react';
 import Login from "@/pages/auth/login";
+import RegisterPartner from "@/pages/auth/register-partner";
+import RegisterAdvertiser from "@/pages/auth/register-advertiser";
 import UpdateToken from "@/pages/UpdateToken";
 import AdvertiserPostbacks from '@/pages/advertiser/Postbacks';
 import AdvertiserPostbackSettings from '@/pages/advertiser/AdvertiserPostbackSettings';
@@ -132,6 +134,8 @@ function Router() {
     <Switch>
       <Route path="/login" component={Login} />
       <Route path="/login/:role" component={Login} />
+      <Route path="/register/partner" component={RegisterPartner} />
+      <Route path="/register/advertiser" component={RegisterAdvertiser} />
       
       {/* Super Admin Routes */}
       <Route path="/admin">
