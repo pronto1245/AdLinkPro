@@ -75,7 +75,7 @@ server/
 │   └── error-handling.ts           # Обработка ошибок
 ├── utils/                          # Серверные утилиты
 │   ├── jwt.ts                      # JWT токены
-│   ├── bcrypt.ts                   # Хеширование паролей
+│   ├── bcryptjs.ts                   # Хеширование паролей
 │   ├── email.ts                    # Отправка email
 │   └── validators.ts               # Валидация данных
 ├── services/                       # Бизнес логика

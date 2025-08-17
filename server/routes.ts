@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage.js";
 import { ObjectPermission } from "./objectAcl.js";
-import bcrypt from "bcrypt";
+import bcryptjsjs from "bcryptjsjs";
 import jwt from "jsonwebtoken";
 import { 
   insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, insertReceivedOfferSchema,
@@ -1724,7 +1724,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Support both plain text (for demo) and hashed passwords
       const plainTextMatch = user.password === password;
-      const hashMatch = await bcrypt.compare(password, user.password).catch(() => false);
+      const hashMatch = await bcryptjsjs.compare(password, user.password).catch(() => false);
       const isValidPassword = plainTextMatch || hashMatch;
       
       if (!isValidPassword) {
@@ -1804,7 +1804,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Hash password
-      const hashedPassword = await bcrypt.hash(userData.password as string, 10);
+      const hashedPassword = await bcryptjs.hash(userData.password as string, 10);
       
       // Генерируем уникальный реферальный код для нового пользователя
       const crypto = await import('crypto');
@@ -3109,7 +3109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Hash password
-      const hashedPassword = await bcrypt.hash(userData.password as string, 10);
+      const hashedPassword = await bcryptjs.hash(userData.password as string, 10);
       
       const user = await storage.createUser({
         ...userData,
@@ -3697,12 +3697,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Verify current password
       const user = await storage.getUser(authUser.id);
-      if (!user || !bcrypt.compareSync(currentPassword, user.passwordHash || '')) {
+      if (!user || !bcryptjsjs.compareSync(currentPassword, user.passwordHash || '')) {
         return res.status(400).json({ error: "Invalid current password" });
       }
       
       // Update password
-      const hashedPassword = bcrypt.hashSync(newPassword, 10);
+      const hashedPassword = bcryptjs.hashSync(newPassword, 10);
       await storage.updateUser(authUser.id, { passwordHash: hashedPassword });
       res.json({ success: true });
     } catch (error) {
@@ -4118,7 +4118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check current password
       const passwordValid = user.passwordHash ? 
-        bcrypt.compareSync(currentPassword, user.passwordHash) : 
+        bcryptjsjs.compareSync(currentPassword, user.passwordHash) : 
         user.password === currentPassword;
         
       if (!passwordValid) {
@@ -4126,7 +4126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update password
-      const hashedPassword = bcrypt.hashSync(newPassword, 10);
+      const hashedPassword = bcryptjs.hashSync(newPassword, 10);
       await storage.updateUser(authUser.id, { passwordHash: hashedPassword });
       
       console.log("Partner password changed successfully for user:", authUser.id);
@@ -5558,7 +5558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "User already exists" });
       }
 
-      const hashedPassword = await bcrypt.hash(userData.password as string, 10);
+      const hashedPassword = await bcryptjs.hash(userData.password as string, 10);
       const user = await storage.createUser({
         ...userData,
         password: hashedPassword,
@@ -5580,7 +5580,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Hash password if provided
       if (updateData.password) {
-        updateData.password = await bcrypt.hash(updateData.password, 10);
+        updateData.password = await bcryptjs.hash(updateData.password, 10);
       }
       
       const user = await storage.updateUser(id, updateData);
@@ -5600,7 +5600,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Hash password if provided
       if (updateData.password) {
-        updateData.password = await bcrypt.hash(updateData.password, 10);
+        updateData.password = await bcryptjs.hash(updateData.password, 10);
       }
       
       const user = await storage.updateUser(id, updateData);
@@ -9881,7 +9881,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       
       // Generate temporary password
       const tempPassword = Math.random().toString(36).slice(-8);
-      const hashedPassword = await bcrypt.hash(tempPassword, 10);
+      const hashedPassword = await bcryptjs.hash(tempPassword, 10);
       
       // Create team member
       const teamMember = await storage.createUser({
@@ -10107,13 +10107,13 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         return res.status(400).json({ error: 'User not found' });
       }
 
-      const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+      const isValidPassword = await bcryptjsjs.compare(currentPassword, user.password);
       if (!isValidPassword) {
         return res.status(400).json({ error: 'Current password is incorrect' });
       }
 
       // Hash new password
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const hashedPassword = await bcryptjs.hash(newPassword, 10);
       
       // Update password
       await storage.updateUser(authUser.id, { password: hashedPassword });
@@ -12411,7 +12411,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       console.log('Partner found:', { partner: partner.username, advertiserId: partner.advertiserId });
 
       // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcryptjs.hash(password, 10);
 
       // Create new user for team member
       const newUser = await db.insert(users).values({
