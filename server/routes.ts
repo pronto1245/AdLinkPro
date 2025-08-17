@@ -30,6 +30,8 @@ import { authenticateToken, getAuthenticatedUser, requireRole } from "./middlewa
 import { PostbackService } from "./services/postback";
 import conversionRoutes from "./routes/conversion";
 import analyticsRoutes from "./routes/analytics";
+import payoutRoutes from "./routes/payouts";
+import advertiserPayoutRoutes from "./routes/advertiser-payouts";
 import archiver from "archiver";
 import { CreativeService } from "./services/creativeService";
 import { TrackingLinkService } from "./services/trackingLinks";
@@ -12021,6 +12023,10 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   // Add enhanced analytics routes with live tracking data
   const enhancedAnalyticsRoutes = await import('./routes/analytics-enhanced');
   app.use('/api/live-analytics', authenticateToken, enhancedAnalyticsRoutes.default);
+  
+  // Add payout routes with authentication middleware
+  app.use(payoutRoutes);
+  app.use(advertiserPayoutRoutes);
   
   // ==================== TRACKING AND POSTBACK SYSTEM ====================
 

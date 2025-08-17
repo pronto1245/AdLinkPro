@@ -23,6 +23,9 @@ export const walletTypeEnum = pgEnum('wallet_type', ['platform', 'user']);
 export const cryptoCurrencyEnum = pgEnum('crypto_currency', ['BTC', 'ETH', 'USDT', 'USDC', 'TRX', 'LTC', 'BCH', 'XRP']);
 export const walletStatusEnum = pgEnum('wallet_status', ['active', 'suspended', 'maintenance']);
 export const accessRequestStatusEnum = pgEnum('access_request_status', ['pending', 'approved', 'rejected', 'cancelled']);
+export const payoutStatusEnum = pgEnum('payout_status', ['pending', 'approved', 'rejected', 'processing', 'completed', 'failed', 'cancelled']);
+export const paymentMethodEnum = pgEnum('payment_method', ['crypto', 'bank_transfer', 'paypal', 'stripe', 'manual']);
+export const gatewayTypeEnum = pgEnum('gateway_type', ['stripe', 'coinbase', 'binance', 'manual']);
 export const domainStatusEnum = pgEnum('domain_status', ['pending', 'verified', 'error']);
 export const domainTypeEnum = pgEnum('domain_type', ['a_record', 'cname', 'txt_record']);
 export const ownerScopeEnum = pgEnum('owner_scope', ['owner', 'advertiser', 'partner']);
@@ -860,28 +863,90 @@ export const financialSummaries = pgTable("financial_summaries", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Payout Requests - Detailed payout workflow
+// Payout Requests - Enhanced payout workflow with crypto and gateway support
 export const payoutRequests = pgTable("payout_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
   partnerId: varchar("partner_id").notNull().references(() => users.id),
-  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
-  currency: text("currency").default('USD'),
-  period: text("period").notNull(), // YYYY-MM format
+  amount: decimal("amount", { precision: 15, scale: 8 }).notNull(), // Increased precision for crypto
+  currency: text("currency").notNull().default('USD'), // USD, BTC, ETH, USDT, etc.
+  walletAddress: text("wallet_address"), // For crypto payments
+  walletNetwork: text("wallet_network"), // ETH, TRC20, BEP20, etc.
+  bankDetails: jsonb("bank_details"), // For bank transfers
+  paymentMethod: paymentMethodEnum("payment_method").notNull(),
+  period: text("period"), // YYYY-MM format for partner payouts
   comment: text("comment"),
-  paymentMethod: text("payment_method").notNull(),
-  paymentDetails: jsonb("payment_details"), // Bank account, crypto wallet, etc.
-  status: text("status").$type<'draft' | 'pending_approval' | 'approved' | 'processing' | 'completed' | 'failed' | 'cancelled'>().default('draft'),
+  partnerNote: text("partner_note"), // Partner can add notes with request
+  adminNotes: text("admin_notes"), // Internal admin notes
+  status: payoutStatusEnum("status").notNull().default('pending'),
   approvedBy: varchar("approved_by").references(() => users.id),
   approvedAt: timestamp("approved_at"),
   processedBy: varchar("processed_by").references(() => users.id),
   processedAt: timestamp("processed_at"),
+  rejectedBy: varchar("rejected_by").references(() => users.id),
+  rejectedAt: timestamp("rejected_at"),
+  rejectionReason: text("rejection_reason"),
   transactionId: varchar("transaction_id").references(() => financialTransactions.id),
+  invoiceId: varchar("invoice_id"), // Will reference invoices table
+  gatewayTransactionId: text("gateway_transaction_id"), // External gateway transaction ID
+  gatewayType: gatewayTypeEnum("gateway_type"),
   failureReason: text("failure_reason"),
   securityChecksPassed: boolean("security_checks_passed").default(false),
   fraudScore: integer("fraud_score").default(0),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
+  // Balance validation
+  partnerBalanceAtRequest: decimal("partner_balance_at_request", { precision: 15, scale: 8 }),
+  minimumPayout: decimal("minimum_payout", { precision: 15, scale: 8 }),
+  // Processing metadata
+  processedAmount: decimal("processed_amount", { precision: 15, scale: 8 }), // Actual amount sent (may differ due to fees)
+  gatewayFee: decimal("gateway_fee", { precision: 15, scale: 8 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Invoices - Auto-generated invoices for payouts
+export const invoices = pgTable("invoices", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  invoiceNumber: text("invoice_number").notNull().unique(), // AUTO-INV-2025-0001
+  payoutRequestId: varchar("payout_request_id").notNull().references(() => payoutRequests.id),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  partnerId: varchar("partner_id").notNull().references(() => users.id),
+  amount: decimal("amount", { precision: 15, scale: 8 }).notNull(),
+  currency: text("currency").notNull(),
+  vatRate: decimal("vat_rate", { precision: 5, scale: 2 }).default('0.00'), // VAT percentage
+  vatAmount: decimal("vat_amount", { precision: 15, scale: 8 }).default('0.00'),
+  totalAmount: decimal("total_amount", { precision: 15, scale: 8 }).notNull(),
+  description: text("description"),
+  invoiceDate: timestamp("invoice_date").defaultNow(),
+  dueDate: timestamp("due_date"), // Payment due date
+  status: text("status").$type<'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'>().default('draft'),
+  pdfPath: text("pdf_path"), // Path to generated PDF
+  emailSent: boolean("email_sent").default(false),
+  emailSentAt: timestamp("email_sent_at"),
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Payment Gateway Configurations - Per advertiser gateway settings
+export const paymentGatewayConfigs = pgTable("payment_gateway_configs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
+  gatewayType: gatewayTypeEnum("gateway_type").notNull(),
+  isActive: boolean("is_active").default(true),
+  isDefault: boolean("is_default").default(false),
+  apiKey: text("api_key"), // Encrypted
+  apiSecret: text("api_secret"), // Encrypted
+  webhookSecret: text("webhook_secret"), // Encrypted
+  supportedCurrencies: jsonb("supported_currencies"), // ['USD', 'EUR', 'BTC', 'ETH']
+  minimumAmount: decimal("minimum_amount", { precision: 15, scale: 8 }),
+  maximumAmount: decimal("maximum_amount", { precision: 15, scale: 8 }),
+  feePercentage: decimal("fee_percentage", { precision: 5, scale: 4 }), // 0.0250 = 2.5%
+  fixedFee: decimal("fixed_fee", { precision: 15, scale: 8 }),
+  processingTime: text("processing_time"), // "instant", "1-3 days", etc.
+  configuration: jsonb("configuration"), // Gateway-specific settings
+  lastUsed: timestamp("last_used"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -1753,6 +1818,31 @@ export const insertTransactionSchema = createInsertSchema(transactions).omit({
   processedAt: true,
 });
 
+// New payout request schemas
+export const insertPayoutRequestSchema = createInsertSchema(payoutRequests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  approvedAt: true,
+  processedAt: true,
+  rejectedAt: true,
+});
+
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  emailSentAt: true,
+  paidAt: true,
+});
+
+export const insertPaymentGatewayConfigSchema = createInsertSchema(paymentGatewayConfigs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastUsed: true,
+});
+
 export const insertPostbackSchema = createInsertSchema(postbacks).omit({
   id: true,
   createdAt: true,
@@ -1853,6 +1943,12 @@ export type InsertTrackingLink = z.infer<typeof insertTrackingLinkSchema>;
 export type TrackingLink = typeof trackingLinks.$inferSelect;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type Transaction = typeof transactions.$inferSelect;
+export type InsertPayoutRequest = z.infer<typeof insertPayoutRequestSchema>;
+export type PayoutRequest = typeof payoutRequests.$inferSelect;
+export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertPaymentGatewayConfig = z.infer<typeof insertPaymentGatewayConfigSchema>;
+export type PaymentGatewayConfig = typeof paymentGatewayConfigs.$inferSelect;
 export type InsertPostback = z.infer<typeof insertPostbackSchema>;
 export type Postback = typeof postbacks.$inferSelect;
 export type PostbackProfile = typeof postbackProfiles.$inferSelect;
