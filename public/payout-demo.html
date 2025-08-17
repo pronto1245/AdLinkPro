@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdLinkPro Payout System Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f8fafc;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #6b7280;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .demo-section h2 {
+            color: #2563eb;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 20px;
+        }
+        
+        .feature-card h3 {
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            color: #4b5563;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li::before {
+            content: "✅";
+            margin-right: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #10b981;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .api-endpoint {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .method {
+            color: #2563eb;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        .test-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .test-button:hover {
+            background: #1d4ed8;
+        }
+        
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .architecture-diagram {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .flow-step {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin: 5px;
+            font-weight: 500;
+        }
+        
+        .arrow {
+            font-size: 20px;
+            color: #6b7280;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AdLinkPro Payout System</h1>
+            <p>Complete partner payout request system with automatic invoice generation and payment gateway support</p>
+            <span class="status-badge">✅ Backend Complete</span>
+        </div>
+
+        <!-- System Architecture -->
+        <div class="demo-section">
+            <h2>📋 System Architecture</h2>
+            <div class="architecture-diagram">
+                <div class="flow-step">Partner Request</div>
+                <span class="arrow">→</span>
+                <div class="flow-step">Validation</div>
+                <span class="arrow">→</span>
+                <div class="flow-step">Invoice Generation</div>
+                <span class="arrow">→</span>
+                <div class="flow-step">Advertiser Review</div>
+                <span class="arrow">→</span>
+                <div class="flow-step">Payment Gateway</div>
+                <span class="arrow">→</span>
+                <div class="flow-step">Payout Complete</div>
+            </div>
+        </div>
+
+        <!-- Features Overview -->
+        <div class="demo-section">
+            <h2>🎯 Implemented Features</h2>
+            <div class="demo-grid">
+                <div class="feature-card">
+                    <h3>💰 Partner Features</h3>
+                    <ul class="feature-list">
+                        <li>Create payout requests</li>
+                        <li>Multi-currency support (USD, EUR, BTC, ETH, USDT, etc.)</li>
+                        <li>Multiple payment methods (crypto, bank, PayPal)</li>
+                        <li>Wallet address validation</li>
+                        <li>Balance verification</li>
+                        <li>Request history and status tracking</li>
+                        <li>Invoice download</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>👔 Advertiser Features</h3>
+                    <ul class="feature-list">
+                        <li>Payout request management</li>
+                        <li>Approve/reject/bulk actions</li>
+                        <li>Payment gateway configuration</li>
+                        <li>Detailed analytics dashboard</li>
+                        <li>Invoice management</li>
+                        <li>Status tracking</li>
+                        <li>Export functionality</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>⚡ System Features</h3>
+                    <ul class="feature-list">
+                        <li>Automatic invoice generation</li>
+                        <li>Email notifications</li>
+                        <li>Payment gateway integrations</li>
+                        <li>Security & encryption</li>
+                        <li>Comprehensive API</li>
+                        <li>Real-time status updates</li>
+                        <li>Audit trail</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Endpoints -->
+        <div class="demo-section">
+            <h2>🔌 API Endpoints</h2>
+            <div class="demo-grid">
+                <div class="feature-card">
+                    <h3>Partner Endpoints</h3>
+                    <div class="api-endpoint">
+                        <span class="method">POST</span> /api/affiliate/payout-requests
+                    </div>
+                    <div class="api-endpoint">
+                        <span class="method">GET</span> /api/affiliate/payout-requests
+                    </div>
+                    <div class="api-endpoint">
+                        <span class="method">GET</span> /api/affiliate/balance
+                    </div>
+                    <div class="api-endpoint">
+                        <span class="method">GET</span> /api/affiliate/invoice/:id
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Advertiser Endpoints</h3>
+                    <div class="api-endpoint">
+                        <span class="method">GET</span> /api/advertiser/payout-requests
+                    </div>
+                    <div class="api-endpoint">
+                        <span class="method">PATCH</span> /api/advertiser/payout-requests/:id
+                    </div>
+                    <div class="api-endpoint">
+                        <span class="method">POST</span> /api/advertiser/payout-requests/bulk
+                    </div>
+                    <div class="api-endpoint">
+                        <span class="method">GET/POST</span> /api/advertiser/gateway-configs
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Gateways -->
+        <div class="demo-section">
+            <h2>💳 Payment Gateway Support</h2>
+            <div class="demo-grid">
+                <div class="feature-card">
+                    <h3>Stripe Integration</h3>
+                    <p>For fiat currency payouts (USD, EUR) with bank transfers and card payments.</p>
+                    <ul class="feature-list">
+                        <li>2.5% processing fee</li>
+                        <li>1-3 business days processing</li>
+                        <li>Automatic fee calculation</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Coinbase Integration</h3>
+                    <p>For cryptocurrency payouts with professional-grade security.</p>
+                    <ul class="feature-list">
+                        <li>BTC, ETH, USDT, USDC support</li>
+                        <li>Network fee optimization</li>
+                        <li>Instant to 60 minute processing</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Binance Integration</h3>
+                    <p>Low-cost cryptocurrency payouts with extensive coin support.</p>
+                    <ul class="feature-list">
+                        <li>Low withdrawal fees</li>
+                        <li>Wide cryptocurrency selection</li>
+                        <li>Fast processing times</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Examples -->
+        <div class="demo-section">
+            <h2>🧪 Testing Examples</h2>
+            <div class="feature-card">
+                <h3>API Test Script</h3>
+                <p>Run the comprehensive test script to validate all endpoints:</p>
+                <div class="code-block">
+                    <pre>./test-payout-api.sh</pre>
+                </div>
+                
+                <h3>Manual API Testing</h3>
+                <p>Example payout request creation:</p>
+                <div class="code-block">
+                    <pre>{
+  "amount": 100.50,
+  "currency": "USD",
+  "paymentMethod": "crypto",
+  "walletAddress": "0x742d35Cc6435D9532C4fd5a0A9D3d7E6d3b5a8b6",
+  "walletNetwork": "ETH",
+  "partnerNote": "Monthly payout request"
+}</pre>
+                </div>
+                
+                <h3>Live Testing</h3>
+                <div>
+                    <button class="test-button" onclick="testAPI('balance')">Test Balance API</button>
+                    <button class="test-button" onclick="testAPI('create')">Test Create Payout</button>
+                    <button class="test-button" onclick="testAPI('list')">Test List Payouts</button>
+                    <button class="test-button" onclick="testAPI('validation')">Test Validation</button>
+                </div>
+                <div id="test-results" class="test-results" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Security Features -->
+        <div class="demo-section">
+            <h2>🔒 Security Features</h2>
+            <div class="demo-grid">
+                <div class="feature-card">
+                    <h3>Data Protection</h3>
+                    <ul class="feature-list">
+                        <li>JWT token authentication</li>
+                        <li>Role-based access control</li>
+                        <li>Sensitive data encryption</li>
+                        <li>Request validation & sanitization</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Financial Security</h3>
+                    <ul class="feature-list">
+                        <li>Balance verification</li>
+                        <li>Wallet address validation</li>
+                        <li>Fraud detection scoring</li>
+                        <li>Audit trail logging</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>System Security</h3>
+                    <ul class="feature-list">
+                        <li>Rate limiting</li>
+                        <li>IP restrictions</li>
+                        <li>Database isolation</li>
+                        <li>Error handling</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="demo-section">
+            <h2>📋 Implementation Status</h2>
+            <div class="feature-card">
+                <h3>✅ Completed</h3>
+                <ul class="feature-list">
+                    <li>Complete database schema with enhanced payout tables</li>
+                    <li>Partner payout request API endpoints</li>
+                    <li>Advertiser payout management API</li>
+                    <li>Payment gateway integration service</li>
+                    <li>Automatic invoice generation system</li>
+                    <li>Notification service (email, in-app, Telegram)</li>
+                    <li>Security & validation layer</li>
+                    <li>Comprehensive test suite</li>
+                </ul>
+                
+                <h3>🚧 In Progress</h3>
+                <ul class="feature-list">
+                    <li>Frontend React components (Partner & Advertiser dashboards)</li>
+                    <li>PDF invoice generation</li>
+                    <li>Real-time notifications</li>
+                </ul>
+                
+                <h3>📋 Next Steps</h3>
+                <ul class="feature-list">
+                    <li>Frontend route integration</li>
+                    <li>Webhook endpoints for payment gateways</li>
+                    <li>Advanced reporting & analytics</li>
+                    <li>Mobile app support</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testAPI(testType) {
+            const results = document.getElementById('test-results');
+            results.style.display = 'block';
+            results.innerHTML = `<p>🔄 Testing ${testType}...</p>`;
+            
+            try {
+                let response;
+                const token = localStorage.getItem('token') || 'demo-token';
+                
+                switch(testType) {
+                    case 'balance':
+                        response = await fetch('/api/affiliate/balance', {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        break;
+                        
+                    case 'create':
+                        response = await fetch('/api/affiliate/payout-requests', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                amount: 100,
+                                currency: 'USD',
+                                paymentMethod: 'crypto',
+                                walletAddress: '0x742d35Cc6435D9532C4fd5a0A9D3d7E6d3b5a8b6',
+                                partnerNote: 'Demo payout test'
+                            })
+                        });
+                        break;
+                        
+                    case 'list':
+                        response = await fetch('/api/affiliate/payout-requests', {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        break;
+                        
+                    case 'validation':
+                        response = await fetch('/api/affiliate/payout-requests', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                amount: -100,
+                                currency: 'BTC',
+                                paymentMethod: 'crypto',
+                                walletAddress: 'invalid-address'
+                            })
+                        });
+                        break;
+                }
+                
+                const data = await response.json();
+                results.innerHTML = `
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Response:</strong></p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                results.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

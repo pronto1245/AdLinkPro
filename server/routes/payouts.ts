@@ -16,6 +16,8 @@ import {
   type InsertPaymentGatewayConfig
 } from "@shared/schema";
 import { authenticateToken, requireRole } from "../middleware/auth";
+import { InvoiceService, type InvoiceData } from "../services/invoiceService";
+import { PayoutNotificationService } from "../services/payoutNotificationService";
 
 const router = express.Router();
 
@@ -181,10 +183,79 @@ router.post("/api/affiliate/payout-requests", authenticateToken, requireRole(['a
         .set({ invoiceId: invoiceId })
         .where(eq(payoutRequests.id, payoutRequestId));
 
+      // Generate invoice PDF/HTML
+      try {
+        const [advertiserData] = await db
+          .select({
+            username: users.username,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            company: users.company,
+          })
+          .from(users)
+          .where(eq(users.id, advertiserId))
+          .limit(1);
+
+        const [partnerData] = await db
+          .select({
+            username: users.username,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            company: users.company,
+          })
+          .from(users)
+          .where(eq(users.id, partnerId))
+          .limit(1);
+
+        if (advertiserData && partnerData) {
+          const invoiceData: InvoiceData = {
+            invoiceNumber: invoiceNumber,
+            advertiserId: advertiserId,
+            partnerId: partnerId,
+            amount: requestedAmount.toString(),
+            currency: data.currency,
+            totalAmount: requestedAmount.toString(),
+            description: `Payout request for ${data.currency} ${requestedAmount}`,
+            invoiceDate: new Date(),
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+            partnerInfo: {
+              username: partnerData.username,
+              email: partnerData.email,
+              firstName: partnerData.firstName || undefined,
+              lastName: partnerData.lastName || undefined,
+              company: partnerData.company || undefined,
+            },
+            advertiserInfo: {
+              username: advertiserData.username,
+              email: advertiserData.email,
+              firstName: advertiserData.firstName || undefined,
+              lastName: advertiserData.lastName || undefined,
+              company: advertiserData.company || undefined,
+            }
+          };
+
+          const invoiceUrl = await InvoiceService.generateInvoicePDF(invoiceData);
+          
+          // Update invoice with PDF path
+          await db
+            .update(invoices)
+            .set({ pdfPath: invoiceUrl })
+            .where(eq(invoices.id, invoiceId));
+        }
+      } catch (pdfError) {
+        console.error("Error generating invoice PDF:", pdfError);
+        // Continue without failing the payout request
+      }
+
     } catch (invoiceError) {
       console.error("Error creating invoice:", invoiceError);
       // Continue without failing the payout request
     }
+
+    // Notify advertiser about new payout request
+    await PayoutNotificationService.notifyAdvertiser(payoutRequestId);
 
     res.json({ 
       success: true, 
@@ -306,6 +377,47 @@ router.get("/api/affiliate/balance", authenticateToken, requireRole(['affiliate'
 
   } catch (error) {
     console.error("Error fetching balance:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Get invoice file (for downloading/viewing)
+router.get("/api/affiliate/invoice/:invoiceId", authenticateToken, requireRole(['affiliate']), async (req, res) => {
+  try {
+    const invoiceId = req.params.invoiceId;
+    const partnerId = req.user.id;
+
+    // Verify the invoice belongs to this partner
+    const invoice = await db
+      .select({
+        id: invoices.id,
+        invoiceNumber: invoices.invoiceNumber,
+        partnerId: invoices.partnerId,
+        pdfPath: invoices.pdfPath,
+      })
+      .from(invoices)
+      .where(and(
+        eq(invoices.id, invoiceId),
+        eq(invoices.partnerId, partnerId)
+      ))
+      .limit(1);
+
+    if (invoice.length === 0) {
+      return res.status(404).json({ error: "Invoice not found" });
+    }
+
+    const invoiceData = invoice[0];
+    
+    if (!invoiceData.pdfPath) {
+      return res.status(404).json({ error: "Invoice file not found" });
+    }
+
+    // Serve the invoice file
+    const filePath = `./public${invoiceData.pdfPath}`;
+    res.sendFile(filePath, { root: process.cwd() });
+
+  } catch (error) {
+    console.error("Error serving invoice:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });

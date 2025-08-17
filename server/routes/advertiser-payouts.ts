@@ -12,6 +12,7 @@ import {
   type InsertPaymentGatewayConfig
 } from "@shared/schema";
 import { authenticateToken, requireRole } from "../middleware/auth";
+import { PayoutNotificationService } from "../services/payoutNotificationService";
 
 const router = express.Router();
 
@@ -243,6 +244,9 @@ router.patch("/api/advertiser/payout-requests/:id", authenticateToken, requireRo
         .where(eq(invoices.payoutRequestId, requestId));
     }
 
+    // Send notification to partner
+    await PayoutNotificationService.notifyPartner(requestId, data.status, data.adminNotes);
+
     res.json({ success: true, message: `Payout request ${data.status}` });
 
   } catch (error) {
@@ -324,6 +328,11 @@ router.post("/api/advertiser/payout-requests/bulk", authenticateToken, requireRo
         .update(invoices)
         .set({ status: 'sent', updatedAt: new Date() })
         .where(inArray(invoices.payoutRequestId, data.requestIds));
+    }
+
+    // Send notifications to partners
+    for (const requestId of data.requestIds) {
+      await PayoutNotificationService.notifyPartner(requestId, status, data.adminNotes);
     }
 
     res.json({ 
