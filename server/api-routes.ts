@@ -226,23 +226,22 @@ apiRouter.post('/webhook/psp', async (req, res) => {
 async function triggerPostbacks(conversion: any) {
   try {
     // Get active postback profiles for this conversion
-    const profiles = [
-      {
-        id: 1,
-        name: 'Keitaro Integration',
-        endpointUrl: 'https://tracker.example.com/postback?subid={clickid}&status={status}&payout={revenue}',
-        method: 'GET' as const,
-        idParam: 'subid' as const,
-        paramsTemplate: {},
-        statusMap: {
-          reg: { initiated: 'lead', approved: 'lead' },
-          purchase: { initiated: 'sale', approved: 'sale' }
-        },
-        hmacEnabled: false,
-        timeoutMs: 4000,
-        backoffBaseSec: 2,
-      }
-    ];
+    // In production, this would query the database for relevant profiles
+    const profiles = await getActivePostbackProfiles({
+      advertiserId: conversion.advertiserId,
+      partnerId: conversion.partnerId,
+      offerId: conversion.details?.offerId,
+      campaignId: conversion.details?.campaignId,
+      flowId: conversion.details?.flowId,
+      conversionType: conversion.type
+    });
+    
+    if (profiles.length === 0) {
+      console.log('⚠️ No active postback profiles found for conversion');
+      return;
+    }
+    
+    console.log(`📋 Found ${profiles.length} active postback profiles for delivery`);
     
     for (const profile of profiles) {
       const job = {
@@ -256,27 +255,158 @@ async function triggerPostbacks(conversion: any) {
         currency: conversion.currency,
         status: conversion.conversionStatus,
         attempt: 1,
-        maxAttempts: 5,
+        maxAttempts: profile.retries || 5,
         profile
       };
       
       console.log('🚀 Scheduling postback delivery:', {
         profileId: profile.id,
+        profileName: profile.name,
+        ownerScope: profile.ownerScope,
+        scopeType: profile.scopeType,
         clickid: conversion.clickid,
         type: conversion.type
       });
       
-      // Simulate postback delivery
-      console.log('📤 Postback would be sent to:', profile.endpointUrl
-        .replace('{clickid}', conversion.clickid)
-        .replace('{status}', conversion.conversionStatus)
-        .replace('{revenue}', conversion.revenue)
-      );
+      // Simulate postback delivery with macro replacement
+      const processedUrl = processPostbackMacros(profile.endpointUrl, {
+        clickid: conversion.clickid,
+        status: conversion.conversionStatus,
+        revenue: conversion.revenue,
+        currency: conversion.currency,
+        txid: conversion.txid,
+        offer_id: conversion.details?.offerId || conversion.details?.geoData?.offer_id,
+        partner_id: conversion.partnerId?.toString() || 'unknown',
+        advertiser_id: conversion.advertiserId?.toString() || '1',
+        campaign_id: conversion.details?.campaignId,
+        flow_id: conversion.details?.flowId,
+        ...conversion.details?.subParams,
+        ...conversion.details?.geoData,
+        ...conversion.details?.utmData,
+        ...conversion.details?.userData
+      });
+      
+      console.log('📤 Postback would be sent to:', processedUrl);
+      
+      // In production, this would enqueue the job for the worker
+      // await postbackQueue.add('delivery', job);
     }
     
   } catch (error) {
     console.error('❌ Failed to trigger postbacks:', error);
   }
+}
+
+// Get active postback profiles for conversion
+async function getActivePostbackProfiles(criteria: {
+  advertiserId: number;
+  partnerId?: number;
+  offerId?: string;
+  campaignId?: string;
+  flowId?: string;
+  conversionType: string;
+}) {
+  // In production, this would query the database using the postbackProfiles table
+  // For now, return mock data that demonstrates multiple profiles per event
+  
+  const mockProfiles = [
+    // Advertiser profile - for the advertiser to receive all their conversions
+    {
+      id: 'adv_001',
+      name: 'Advertiser Main Tracker',
+      ownerScope: 'advertiser' as const,
+      ownerId: criteria.advertiserId.toString(),
+      scopeType: 'global' as const,
+      scopeId: null,
+      enabled: true,
+      priority: 100,
+      endpointUrl: 'https://advertiser-tracker.com/postback?clickid={clickid}&status={status}&revenue={revenue}&offer={offer_id}&partner={partner_id}',
+      method: 'GET' as const,
+      idParam: 'clickid' as const,
+      retries: 5,
+      timeoutMs: 5000
+    },
+    
+    // Partner profile - for the partner to receive their conversions  
+    {
+      id: 'partner_001',
+      name: 'Partner Keitaro Integration',
+      ownerScope: 'partner' as const,
+      ownerId: criteria.partnerId?.toString() || 'unknown',
+      scopeType: 'global' as const,
+      scopeId: null,
+      enabled: true,
+      priority: 90,
+      endpointUrl: 'https://partner-keitaro.com/click.php?subid={clickid}&status={status}&payout={revenue}&offer={offer_id}&sub1={sub1}&sub2={sub2}',
+      method: 'GET' as const,
+      idParam: 'subid' as const,
+      retries: 3,
+      timeoutMs: 4000
+    },
+    
+    // Owner/Global profile - for system-wide monitoring
+    {
+      id: 'owner_001', 
+      name: 'Owner System Monitor',
+      ownerScope: 'owner' as const,
+      ownerId: '1',
+      scopeType: 'global' as const,
+      scopeId: null,
+      enabled: true,
+      priority: 110,
+      endpointUrl: 'https://system-monitor.com/webhook?event=conversion&clickid={clickid}&type={status}&revenue={revenue}&advertiser={advertiser_id}&partner={partner_id}&offer={offer_id}',
+      method: 'POST' as const,
+      idParam: 'clickid' as const,
+      retries: 2,
+      timeoutMs: 3000
+    }
+  ];
+  
+  // Filter profiles based on criteria (in production, this would be SQL WHERE clauses)
+  const activeProfiles = mockProfiles.filter(profile => {
+    // Always include owner/global profiles
+    if (profile.ownerScope === 'owner' && profile.scopeType === 'global') {
+      return true;
+    }
+    
+    // Include advertiser profiles for this advertiser
+    if (profile.ownerScope === 'advertiser' && profile.ownerId === criteria.advertiserId.toString()) {
+      return true;
+    }
+    
+    // Include partner profiles for this partner
+    if (profile.ownerScope === 'partner' && criteria.partnerId && profile.ownerId === criteria.partnerId.toString()) {
+      return true;
+    }
+    
+    return false;
+  });
+  
+  console.log(`🔍 Filtered ${activeProfiles.length} active profiles from ${mockProfiles.length} total profiles`);
+  
+  return activeProfiles;
+}
+
+// Process postback URL with macro replacement
+function processPostbackMacros(url: string, macros: Record<string, any>): string {
+  let processedUrl = url;
+  
+  // Replace all macros in the URL
+  for (const [key, value] of Object.entries(macros)) {
+    if (value !== undefined && value !== null) {
+      const placeholder = `{${key}}`;
+      const replacement = encodeURIComponent(String(value));
+      processedUrl = processedUrl.replace(new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'), replacement);
+    }
+  }
+  
+  // Log any unreplaced macros for debugging
+  const unreplacedMacros = processedUrl.match(/{[^}]+}/g);
+  if (unreplacedMacros) {
+    console.log('⚠️ Unreplaced macros found:', unreplacedMacros);
+  }
+  
+  return processedUrl;
 }
 
 // Helper function to update conversion status with normalization
@@ -557,6 +687,10 @@ async function processUniversalWebhookEvent(normalizedEvent: any) {
       details: {
         originalEventType: normalizedEvent.originalEventType,
         source: normalizedEvent.source,
+        offerId: normalizedEvent.offerId,
+        partnerId: normalizedEvent.partnerId,
+        campaignId: normalizedEvent.campaignId,
+        flowId: normalizedEvent.flowId,
         subParams: normalizedEvent.subParams,
         userData: normalizedEvent.userData,
         geoData: normalizedEvent.geoData,
