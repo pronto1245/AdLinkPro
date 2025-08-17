@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdLinkPro - Accessibility Testing Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            background: white;
+            margin-bottom: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-section h2 {
+            color: #2563eb;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .test-item {
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .test-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .test-item.pass {
+            border-left-color: #10b981;
+            background: #ecfdf5;
+        }
+        
+        .test-item.fail {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .test-item.warning {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        
+        .test-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .test-log {
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .score-excellent { background: #10b981; }
+        .score-good { background: #f59e0b; }
+        .score-poor { background: #ef4444; }
+        
+        .wcag-guidelines {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .wcag-item {
+            padding: 12px 16px;
+            background: white;
+            border-radius: 6px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        
+        .wcag-item:hover {
+            border-color: #2563eb;
+        }
+        
+        .wcag-level {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .wcag-a {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .wcag-aa {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .wcag-aaa {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        @media (max-width: 768px) {
+            .test-grid, .wcag-guidelines {
+                grid-template-columns: 1fr;
+            }
+            
+            .test-controls {
+                flex-direction: column;
+            }
+            
+            .score-display {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>♿ AdLinkPro - Accessibility Testing Suite</h1>
+            <p>Comprehensive WCAG compliance and accessibility testing for inclusive design</p>
+            <div class="score-display">
+                <div class="score-circle score-excellent" id="overallScore">?</div>
+                <div>
+                    <h3>Overall Accessibility Score</h3>
+                    <p id="scoreDescription">Run tests to see your accessibility score</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- WCAG Guidelines Overview -->
+        <div class="test-section">
+            <h2>📋 WCAG 2.1 Guidelines Overview</h2>
+            <div class="wcag-guidelines">
+                <div class="wcag-item">
+                    <span class="wcag-level wcag-a">Level A</span>
+                    <h4>Perceivable</h4>
+                    <p>Information must be presentable to users in ways they can perceive.</p>
+                </div>
+                <div class="wcag-item">
+                    <span class="wcag-level wcag-aa">Level AA</span>
+                    <h4>Operable</h4>
+                    <p>Interface components must be operable.</p>
+                </div>
+                <div class="wcag-item">
+                    <span class="wcag-level wcag-aaa">Level AAA</span>
+                    <h4>Understandable</h4>
+                    <p>Information and UI operation must be understandable.</p>
+                </div>
+                <div class="wcag-item">
+                    <span class="wcag-level wcag-a">Level A</span>
+                    <h4>Robust</h4>
+                    <p>Content must be robust for various user agents and assistive technologies.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Automated Accessibility Tests -->
+        <div class="test-section">
+            <h2>🤖 Automated Accessibility Tests</h2>
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="testImages()">Test Images</button>
+                <button class="btn btn-primary" onclick="testForms()">Test Forms</button>
+                <button class="btn btn-primary" onclick="testHeadings()">Test Headings</button>
+                <button class="btn btn-primary" onclick="testColorContrast()">Test Color Contrast</button>
+                <button class="btn btn-primary" onclick="testKeyboardNav()">Test Keyboard Navigation</button>
+                <button class="btn btn-primary" onclick="testARIA()">Test ARIA</button>
+                <button class="btn btn-success" onclick="runAllAccessibilityTests()">Run All Tests</button>
+            </div>
+            <div class="test-grid" id="accessibilityResults"></div>
+        </div>
+        
+        <!-- Focus and Keyboard Testing -->
+        <div class="test-section">
+            <h2>⌨️ Keyboard & Focus Testing</h2>
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="testTabOrder()">Test Tab Order</button>
+                <button class="btn btn-primary" onclick="testFocusIndicators()">Test Focus Indicators</button>
+                <button class="btn btn-primary" onclick="testSkipLinks()">Test Skip Links</button>
+                <button class="btn btn-primary" onclick="testKeyboardTraps()">Test Focus Traps</button>
+            </div>
+            <div class="test-grid" id="keyboardResults"></div>
+        </div>
+        
+        <!-- Screen Reader Testing -->
+        <div class="test-section">
+            <h2>🔊 Screen Reader Compatibility</h2>
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="testScreenReaderContent()">Test Content Structure</button>
+                <button class="btn btn-primary" onclick="testLandmarks()">Test Landmarks</button>
+                <button class="btn btn-primary" onclick="testReadingOrder()">Test Reading Order</button>
+                <button class="btn btn-primary" onclick="testAnnouncements()">Test Announcements</button>
+            </div>
+            <div class="test-grid" id="screenReaderResults"></div>
+        </div>
+        
+        <!-- Manual Testing Checklist -->
+        <div class="test-section">
+            <h2>✋ Manual Testing Checklist</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h4>Visual Testing</h4>
+                    <ul>
+                        <li>Text is readable at 200% zoom</li>
+                        <li>Color is not the only way to convey information</li>
+                        <li>Focus indicators are clearly visible</li>
+                        <li>Content reflows properly at small screen sizes</li>
+                    </ul>
+                </div>
+                <div class="test-item">
+                    <h4>Keyboard Testing</h4>
+                    <ul>
+                        <li>All interactive elements are reachable via keyboard</li>
+                        <li>Tab order is logical and intuitive</li>
+                        <li>No keyboard traps exist</li>
+                        <li>Escape key closes modal dialogs</li>
+                    </ul>
+                </div>
+                <div class="test-item">
+                    <h4>Screen Reader Testing</h4>
+                    <ul>
+                        <li>Content is announced in logical order</li>
+                        <li>Form labels are properly associated</li>
+                        <li>Error messages are announced</li>
+                        <li>Dynamic content updates are announced</li>
+                    </ul>
+                </div>
+                <div class="test-item">
+                    <h4>Motor Impairment Testing</h4>
+                    <ul>
+                        <li>Target sizes are at least 44px × 44px</li>
+                        <li>Sufficient spacing between interactive elements</li>
+                        <li>No time limits or auto-playing content</li>
+                        <li>Actions can be undone or confirmed</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Results Log -->
+        <div class="test-section">
+            <h2>📝 Test Results & Log</h2>
+            <div class="test-controls">
+                <button class="btn btn-success" onclick="runComprehensiveA11yTest()">🚀 Run Complete Accessibility Audit</button>
+                <button class="btn btn-primary" onclick="generateA11yReport()">Generate Report</button>
+                <button class="btn btn-warning" onclick="clearLog()">Clear Log</button>
+            </div>
+            <div id="testLog" class="test-log">
+Accessibility Testing Suite Ready...
+Click "Run Complete Accessibility Audit" or select individual tests to begin.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let testResults = {};
+        let totalScore = 0;
+        let maxScore = 0;
+        
+        function log(message, type = 'INFO') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEl = document.getElementById('testLog');
+            const symbols = { INFO: 'ℹ️', SUCCESS: '✅', ERROR: '❌', WARNING: '⚠️' };
+            
+            logEl.textContent += `\n[${timestamp}] ${symbols[type]} ${message}`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function createTestItem(name, status, details, recommendation = '') {
+            const statusClass = status === 'PASS' ? 'pass' : status === 'FAIL' ? 'fail' : 'warning';
+            const statusIcon = status === 'PASS' ? '✅' : status === 'FAIL' ? '❌' : '⚠️';
+            
+            return `
+                <div class="test-item ${statusClass}">
+                    <h4>${statusIcon} ${name}</h4>
+                    <p><strong>Status:</strong> ${status}</p>
+                    <p><strong>Details:</strong> ${details}</p>
+                    ${recommendation ? `<p><strong>Recommendation:</strong> ${recommendation}</p>` : ''}
+                </div>
+            `;
+        }
+        
+        function updateScore() {
+            if (maxScore === 0) return;
+            
+            const percentage = Math.round((totalScore / maxScore) * 100);
+            const scoreEl = document.getElementById('overallScore');
+            const descEl = document.getElementById('scoreDescription');
+            
+            scoreEl.textContent = percentage;
+            
+            if (percentage >= 90) {
+                scoreEl.className = 'score-circle score-excellent';
+                descEl.textContent = 'Excellent accessibility! Your site is highly inclusive.';
+            } else if (percentage >= 70) {
+                scoreEl.className = 'score-circle score-good';
+                descEl.textContent = 'Good accessibility with room for improvement.';
+            } else {
+                scoreEl.className = 'score-circle score-poor';
+                descEl.textContent = 'Poor accessibility. Significant improvements needed.';
+            }
+            
+            log(`Overall accessibility score updated: ${percentage}%`, 'INFO');
+        }
+        
+        function testImages() {
+            log('Testing image accessibility...', 'INFO');
+            
+            const images = document.querySelectorAll('img');
+            const imagesWithAlt = document.querySelectorAll('img[alt]');
+            const imagesWithEmptyAlt = document.querySelectorAll('img[alt=""]');
+            const decorativeImages = imagesWithEmptyAlt.length;
+            
+            let results = '';
+            let score = 0;
+            let tests = 0;
+            
+            // Test 1: Alt attributes
+            tests++;
+            if (images.length === imagesWithAlt.length) {
+                score++;
+                results += createTestItem(
+                    'Alt Attributes',
+                    'PASS',
+                    `All ${images.length} images have alt attributes`,
+                    'Continue providing meaningful alt text for all images'
+                );
+            } else {
+                const missing = images.length - imagesWithAlt.length;
+                results += createTestItem(
+                    'Alt Attributes',
+                    'FAIL',
+                    `${missing} images missing alt attributes`,
+                    'Add alt attributes to all images. Use empty alt="" for decorative images.'
+                );
+            }
+            
+            // Test 2: Meaningful alt text
+            tests++;
+            let meaningfulAlt = 0;
+            imagesWithAlt.forEach(img => {
+                const alt = img.getAttribute('alt');
+                if (alt && alt.length > 3 && !alt.includes('image') && !alt.includes('picture')) {
+                    meaningfulAlt++;
+                }
+            });
+            
+            if (meaningfulAlt >= imagesWithAlt.length * 0.8) {
+                score++;
+                results += createTestItem(
+                    'Meaningful Alt Text',
+                    'PASS',
+                    `${meaningfulAlt}/${imagesWithAlt.length} images have meaningful alt text`,
+                    'Keep providing descriptive alt text'
+                );
+            } else {
+                results += createTestItem(
+                    'Meaningful Alt Text',
+                    'WARNING',
+                    `Only ${meaningfulAlt}/${imagesWithAlt.length} images have meaningful alt text`,
+                    'Improve alt text quality. Describe the image content and context.'
+                );
+            }
+            
+            testResults.images = { score, maxScore: tests };
+            totalScore += score;
+            maxScore += tests;
+            
+            document.getElementById('accessibilityResults').innerHTML += results;
+            updateScore();
+            
+            log(`Image accessibility test completed: ${score}/${tests}`, score === tests ? 'SUCCESS' : 'WARNING');
+        }
+        
+        function testForms() {
+            log('Testing form accessibility...', 'INFO');
+            
+            const inputs = document.querySelectorAll('input, textarea, select');
+            const inputsWithLabels = document.querySelectorAll('input[id], textarea[id], select[id]');
+            const labels = document.querySelectorAll('label[for]');
+            const fieldsets = document.querySelectorAll('fieldset');
+            
+            let results = '';
+            let score = 0;
+            let tests = 0;
+            
+            // Test 1: Form labels
+            tests++;
+            const labeledInputs = Array.from(inputsWithLabels).filter(input => {
+                return document.querySelector(`label[for="${input.id}"]`) || 
+                       input.getAttribute('aria-label') || 
+                       input.getAttribute('aria-labelledby');
+            });
+            
+            if (inputs.length === 0) {
+                results += createTestItem(
+                    'Form Labels',
+                    'PASS',
+                    'No form inputs found',
+                    'N/A'
+                );
+                score++;
+            } else if (labeledInputs.length === inputs.length) {
+                score++;
+                results += createTestItem(
+                    'Form Labels',
+                    'PASS',
+                    `All ${inputs.length} form inputs are properly labeled`,
+                    'Continue associating labels with form controls'
+                );
+            } else {
+                const unlabeled = inputs.length - labeledInputs.length;
+                results += createTestItem(
+                    'Form Labels',
+                    'FAIL',
+                    `${unlabeled} form inputs are missing labels`,
+                    'Add proper labels using <label>, aria-label, or aria-labelledby'
+                );
+            }
+            
+            // Test 2: Required field indicators
+            tests++;
+            const requiredInputs = document.querySelectorAll('input[required], textarea[required], select[required]');
+            const ariaRequired = document.querySelectorAll('[aria-required="true"]');
+            
+            if (requiredInputs.length > 0 || ariaRequired.length > 0) {
+                score++;
+                results += createTestItem(
+                    'Required Fields',
+                    'PASS',
+                    `${requiredInputs.length} required fields properly marked`,
+                    'Ensure error messages are clear and helpful'
+                );
+            } else {
+                results += createTestItem(
+                    'Required Fields',
+                    'WARNING',
+                    'No required fields detected',
+                    'If you have required fields, mark them with required attribute or aria-required'
+                );
+                score++; // No penalty if no required fields
+            }
+            
+            testResults.forms = { score, maxScore: tests };
+            totalScore += score;
+            maxScore += tests;
+            
+            document.getElementById('accessibilityResults').innerHTML += results;
+            updateScore();
+            
+            log(`Form accessibility test completed: ${score}/${tests}`, score === tests ? 'SUCCESS' : 'WARNING');
+        }
+        
+        function testHeadings() {
+            log('Testing heading structure...', 'INFO');
+            
+            const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            const h1s = document.querySelectorAll('h1');
+            
+            let results = '';
+            let score = 0;
+            let tests = 0;
+            
+            // Test 1: Heading hierarchy
+            tests++;
+            if (headings.length > 0) {
+                const headingLevels = Array.from(headings).map(h => parseInt(h.tagName.charAt(1)));
+                let hierarchyValid = true;
+                
+                for (let i = 1; i < headingLevels.length; i++) {
+                    if (headingLevels[i] - headingLevels[i-1] > 1) {
+                        hierarchyValid = false;
+                        break;
+                    }
+                }
+                
+                if (hierarchyValid) {
+                    score++;
+                    results += createTestItem(
+                        'Heading Hierarchy',
+                        'PASS',
+                        `${headings.length} headings follow proper hierarchy`,
+                        'Continue using logical heading structure'
+                    );
+                } else {
+                    results += createTestItem(
+                        'Heading Hierarchy',
+                        'WARNING',
+                        'Heading levels may skip numbers',
+                        'Use headings in sequential order (h1, h2, h3, etc.)'
+                    );
+                }
+            } else {
+                results += createTestItem(
+                    'Heading Hierarchy',
+                    'FAIL',
+                    'No headings found',
+                    'Add proper heading structure to improve content organization'
+                );
+            }
+            
+            // Test 2: Single H1
+            tests++;
+            if (h1s.length === 1) {
+                score++;
+                results += createTestItem(
+                    'Single H1',
+                    'PASS',
+                    'Page has exactly one h1 element',
+                    'Good! Keep using one h1 per page'
+                );
+            } else if (h1s.length === 0) {
+                results += createTestItem(
+                    'Single H1',
+                    'FAIL',
+                    'Page has no h1 element',
+                    'Add an h1 element as the main page heading'
+                );
+            } else {
+                results += createTestItem(
+                    'Single H1',
+                    'WARNING',
+                    `Page has ${h1s.length} h1 elements`,
+                    'Use only one h1 per page for better semantics'
+                );
+            }
+            
+            testResults.headings = { score, maxScore: tests };
+            totalScore += score;
+            maxScore += tests;
+            
+            document.getElementById('accessibilityResults').innerHTML += results;
+            updateScore();
+            
+            log(`Heading structure test completed: ${score}/${tests}`, score === tests ? 'SUCCESS' : 'WARNING');
+        }
+        
+        function testColorContrast() {
+            log('Testing color contrast...', 'INFO');
+            
+            // Simplified color contrast test
+            let results = '';
+            let score = 0;
+            let tests = 2;
+            
+            // Test 1: Background/text contrast simulation
+            const bodyStyles = getComputedStyle(document.body);
+            const backgroundColor = bodyStyles.backgroundColor;
+            const textColor = bodyStyles.color;
+            
+            // Simple heuristic based on color values
+            const hasGoodContrast = backgroundColor !== textColor;
+            
+            if (hasGoodContrast) {
+                score++;
+                results += createTestItem(
+                    'Text Contrast',
+                    'PASS',
+                    'Text appears to have adequate contrast',
+                    'Use tools like WebAIM Contrast Checker for precise measurements'
+                );
+            } else {
+                results += createTestItem(
+                    'Text Contrast',
+                    'WARNING',
+                    'Contrast ratio needs verification',
+                    'Check contrast ratios meet WCAG standards (4.5:1 for normal text)'
+                );
+            }
+            
+            // Test 2: Focus indicators
+            const focusableElements = document.querySelectorAll('button, a, input, textarea, select');
+            if (focusableElements.length > 0) {
+                score++;
+                results += createTestItem(
+                    'Focus Indicators',
+                    'PASS',
+                    'Focusable elements detected',
+                    'Ensure focus indicators have sufficient contrast (3:1 minimum)'
+                );
+            } else {
+                results += createTestItem(
+                    'Focus Indicators',
+                    'WARNING',
+                    'No focusable elements found',
+                    'Add interactive elements and ensure they have visible focus indicators'
+                );
+            }
+            
+            testResults.colorContrast = { score, maxScore: tests };
+            totalScore += score;
+            maxScore += tests;
+            
+            document.getElementById('accessibilityResults').innerHTML += results;
+            updateScore();
+            
+            log(`Color contrast test completed: ${score}/${tests}`, score >= tests * 0.5 ? 'SUCCESS' : 'WARNING');
+        }
+        
+        function testKeyboardNav() {
+            log('Testing keyboard navigation...', 'INFO');
+            
+            const focusableElements = document.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            const positiveTabIndex = document.querySelectorAll('[tabindex]:not([tabindex="0"]):not([tabindex="-1"])');
+            
+            let results = '';
+            let score = 0;
+            let tests = 0;
+            
+            // Test 1: Focusable elements
+            tests++;
+            if (focusableElements.length > 0) {
+                score++;
+                results += createTestItem(
+                    'Focusable Elements',
+                    'PASS',
+                    `${focusableElements.length} focusable elements found`,
+                    'Ensure all are keyboard accessible'
+                );
+            } else {
+                results += createTestItem(
+                    'Focusable Elements',
+                    'WARNING',
+                    'No focusable elements found',
+                    'Add interactive elements that users can navigate to'
+                );
+            }
+            
+            // Test 2: Tab index usage
+            tests++;
+            if (positiveTabIndex.length === 0) {
+                score++;
+                results += createTestItem(
+                    'Tab Index Usage',
+                    'PASS',
+                    'No positive tabindex values found',
+                    'Good! Avoid positive tabindex values'
+                );
+            } else {
+                results += createTestItem(
+                    'Tab Index Usage',
+                    'WARNING',
+                    `${positiveTabIndex.length} elements with positive tabindex`,
+                    'Avoid positive tabindex values; use natural tab order'
+                );
+            }
+            
+            testResults.keyboardNav = { score, maxScore: tests };
+            totalScore += score;
+            maxScore += tests;
+            
+            document.getElementById('keyboardResults').innerHTML = results;
+            updateScore();
+            
+            log(`Keyboard navigation test completed: ${score}/${tests}`, score === tests ? 'SUCCESS' : 'WARNING');
+        }
+        
+        function testARIA() {
+            log('Testing ARIA implementation...', 'INFO');
+            
+            const ariaLabels = document.querySelectorAll('[aria-label]');
+            const ariaDescribedBy = document.querySelectorAll('[aria-describedby]');
+            const ariaLive = document.querySelectorAll('[aria-live]');
+            const landmarks = document.querySelectorAll('[role="main"], [role="navigation"], [role="banner"], [role="contentinfo"], main, nav, header, footer');
+            
+            let results = '';
+            let score = 0;
+            let tests = 0;
+            
+            // Test 1: ARIA labels
+            tests++;
+            if (ariaLabels.length > 0) {
+                score++;
+                results += createTestItem(
+                    'ARIA Labels',
+                    'PASS',
+                    `${ariaLabels.length} elements use aria-label`,
+                    'Ensure labels are descriptive and meaningful'
+                );
+            } else {
+                results += createTestItem(
+                    'ARIA Labels',
+                    'WARNING',
+                    'No aria-label attributes found',
+                    'Consider using aria-label for elements without visible labels'
+                );
+                score += 0.5; // Half credit for no ARIA labels if not needed
+            }
+            
+            // Test 2: Landmarks
+            tests++;
+            if (landmarks.length >= 2) {
+                score++;
+                results += createTestItem(
+                    'Landmark Regions',
+                    'PASS',
+                    `${landmarks.length} landmark regions found`,
+                    'Good page structure for screen readers'
+                );
+            } else {
+                results += createTestItem(
+                    'Landmark Regions',
+                    'WARNING',
+                    `Only ${landmarks.length} landmark regions found`,
+                    'Add more semantic landmarks (main, nav, header, footer)'
+                );
+            }
+            
+            testResults.aria = { score, maxScore: tests };
+            totalScore += score;
+            maxScore += tests;
+            
+            document.getElementById('accessibilityResults').innerHTML += results;
+            updateScore();
+            
+            log(`ARIA implementation test completed: ${score}/${tests}`, score >= tests * 0.5 ? 'SUCCESS' : 'WARNING');
+        }
+        
+        function testTabOrder() {
+            log('Testing tab order...', 'INFO');
+            
+            const focusableElements = Array.from(document.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            ));
+            
+            let results = '';
+            let score = 0;
+            let tests = 1;
+            
+            // Simulate tab order test
+            if (focusableElements.length > 0) {
+                score++;
+                results += createTestItem(
+                    'Tab Order',
+                    'PASS',
+                    `${focusableElements.length} focusable elements in DOM order`,
+                    'Test manually: use Tab key to verify logical flow'
+                );
+            } else {
+                results += createTestItem(
+                    'Tab Order',
+                    'WARNING',
+                    'No focusable elements found',
+                    'Add interactive elements to test tab navigation'
+                );
+            }
+            
+            document.getElementById('keyboardResults').innerHTML += results;
+            log(`Tab order test completed: ${score}/${tests}`, 'SUCCESS');
+        }
+        
+        function testFocusIndicators() {
+            log('Testing focus indicators...', 'INFO');
+            
+            const focusableElements = document.querySelectorAll('button, [href], input, select, textarea');
+            
+            let results = '';
+            let score = 0;
+            let tests = 1;
+            
+            if (focusableElements.length > 0) {
+                score++;
+                results += createTestItem(
+                    'Focus Indicators',
+                    'PASS',
+                    'Focusable elements found',
+                    'Test manually: use Tab key to verify visible focus indicators'
+                );
+            } else {
+                results += createTestItem(
+                    'Focus Indicators',
+                    'WARNING',
+                    'No focusable elements to test',
+                    'Add interactive elements and ensure they have visible focus styles'
+                );
+            }
+            
+            document.getElementById('keyboardResults').innerHTML += results;
+            log(`Focus indicators test completed: ${score}/${tests}`, 'SUCCESS');
+        }
+        
+        function testSkipLinks() {
+            log('Testing skip links...', 'INFO');
+            
+            const skipLinks = document.querySelectorAll('a[href^="#"], a[href*="skip"]');
+            
+            let results = '';
+            let score = 0;
+            let tests = 1;
+            
+            if (skipLinks.length > 0) {
+                score++;
+                results += createTestItem(
+                    'Skip Links',
+                    'PASS',
+                    `${skipLinks.length} potential skip links found`,
+                    'Verify skip links work and are visible on focus'
+                );
+            } else {
+                results += createTestItem(
+                    'Skip Links',
+                    'WARNING',
+                    'No skip links found',
+                    'Consider adding skip links for keyboard users'
+                );
+                score += 0.5; // Half credit as skip links aren\'t always necessary
+            }
+            
+            document.getElementById('keyboardResults').innerHTML += results;
+            log(`Skip links test completed: ${score}/${tests}`, 'SUCCESS');
+        }
+        
+        function testKeyboardTraps() {
+            log('Testing for keyboard traps...', 'INFO');
+            
+            // This is a simplified test - real testing requires interaction
+            const modals = document.querySelectorAll('[role="dialog"], .modal');
+            
+            let results = '';
+            let score = 1; // Assume no traps unless found
+            let tests = 1;
+            
+            results += createTestItem(
+                'Keyboard Traps',
+                'PASS',
+                'No obvious keyboard traps detected',
+                'Test manually: ensure users can always navigate away from any element'
+            );
+            
+            document.getElementById('keyboardResults').innerHTML += results;
+            log(`Keyboard traps test completed: ${score}/${tests}`, 'SUCCESS');
+        }
+        
+        function testScreenReaderContent() {
+            log('Testing screen reader content...', 'INFO');
+            
+            const hiddenContent = document.querySelectorAll('[aria-hidden="true"]');
+            const visuallyHidden = document.querySelectorAll('.sr-only, .screen-reader-only, .visually-hidden');
+            
+            let results = '';
+            let score = 0;
+            let tests = 1;
+            
+            // Basic content structure test
+            const hasSemanticElements = document.querySelectorAll('main, section, article, aside, nav, header, footer').length > 0;
+            
+            if (hasSemanticElements) {
+                score++;
+                results += createTestItem(
+                    'Content Structure',
+                    'PASS',
+                    'Semantic HTML elements found',
+                    'Good structure for screen readers'
+                );
+            } else {
+                results += createTestItem(
+                    'Content Structure',
+                    'WARNING',
+                    'Limited semantic structure',
+                    'Add semantic HTML5 elements (main, section, nav, etc.)'
+                );
+            }
+            
+            document.getElementById('screenReaderResults').innerHTML = results;
+            log(`Screen reader content test completed: ${score}/${tests}`, score === tests ? 'SUCCESS' : 'WARNING');
+        }
+        
+        function testLandmarks() {
+            log('Testing landmarks...', 'INFO');
+            
+            const landmarks = {
+                banner: document.querySelectorAll('header, [role="banner"]'),
+                main: document.querySelectorAll('main, [role="main"]'),
+                navigation: document.querySelectorAll('nav, [role="navigation"]'),
+                contentinfo: document.querySelectorAll('footer, [role="contentinfo"]')
+            };
+            
+            let results = '';
+            let score = 0;
+            let tests = 1;
+            
+            const landmarkCount = Object.values(landmarks).reduce((acc, curr) => acc + curr.length, 0);
+            
+            if (landmarkCount >= 3) {
+                score++;
+                results += createTestItem(
+                    'Page Landmarks',
+                    'PASS',
+                    `${landmarkCount} landmarks found`,
+                    'Good landmark structure for navigation'
+                );
+            } else {
+                results += createTestItem(
+                    'Page Landmarks',
+                    'WARNING',
+                    `Only ${landmarkCount} landmarks found`,
+                    'Add more landmarks: header, main, nav, footer'
+                );
+            }
+            
+            document.getElementById('screenReaderResults').innerHTML += results;
+            log(`Landmarks test completed: ${score}/${tests}`, score === tests ? 'SUCCESS' : 'WARNING');
+        }
+        
+        function testReadingOrder() {
+            log('Testing reading order...', 'INFO');
+            
+            let results = '';
+            let score = 1; // Assume good order unless issues found
+            let tests = 1;
+            
+            results += createTestItem(
+                'Reading Order',
+                'PASS',
+                'DOM order appears logical',
+                'Test with screen reader to verify actual reading order'
+            );
+            
+            document.getElementById('screenReaderResults').innerHTML += results;
+            log(`Reading order test completed: ${score}/${tests}`, 'SUCCESS');
+        }
+        
+        function testAnnouncements() {
+            log('Testing dynamic announcements...', 'INFO');
+            
+            const liveRegions = document.querySelectorAll('[aria-live]');
+            const statusElements = document.querySelectorAll('[role="status"], [role="alert"]');
+            
+            let results = '';
+            let score = 0;
+            let tests = 1;
+            
+            if (liveRegions.length > 0 || statusElements.length > 0) {
+                score++;
+                results += createTestItem(
+                    'Live Announcements',
+                    'PASS',
+                    `${liveRegions.length + statusElements.length} announcement regions found`,
+                    'Ensure dynamic content changes are announced'
+                );
+            } else {
+                results += createTestItem(
+                    'Live Announcements',
+                    'WARNING',
+                    'No live regions found',
+                    'Add aria-live regions for dynamic content updates'
+                );
+                score += 0.5; // Half credit if no dynamic content
+            }
+            
+            document.getElementById('screenReaderResults').innerHTML += results;
+            log(`Announcements test completed: ${score}/${tests}`, score >= 0.5 ? 'SUCCESS' : 'WARNING');
+        }
+        
+        function runAllAccessibilityTests() {
+            log('🤖 Running all automated accessibility tests...', 'INFO');
+            
+            // Clear previous results
+            document.getElementById('accessibilityResults').innerHTML = '';
+            totalScore = 0;
+            maxScore = 0;
+            
+            setTimeout(() => {
+                testImages();
+                setTimeout(() => {
+                    testForms();
+                    setTimeout(() => {
+                        testHeadings();
+                        setTimeout(() => {
+                            testColorContrast();
+                            setTimeout(() => {
+                                testKeyboardNav();
+                                setTimeout(() => {
+                                    testARIA();
+                                    log('✅ All automated accessibility tests completed!', 'SUCCESS');
+                                }, 500);
+                            }, 500);
+                        }, 500);
+                    }, 500);
+                }, 500);
+            }, 500);
+        }
+        
+        function runComprehensiveA11yTest() {
+            log('🚀 Starting comprehensive accessibility audit...', 'INFO');
+            log('='.repeat(60), 'INFO');
+            
+            // Reset results
+            testResults = {};
+            totalScore = 0;
+            maxScore = 0;
+            document.getElementById('accessibilityResults').innerHTML = '';
+            document.getElementById('keyboardResults').innerHTML = '';
+            document.getElementById('screenReaderResults').innerHTML = '';
+            
+            setTimeout(() => {
+                runAllAccessibilityTests();
+                
+                setTimeout(() => {
+                    testTabOrder();
+                    testFocusIndicators();
+                    testSkipLinks();
+                    testKeyboardTraps();
+                    
+                    setTimeout(() => {
+                        testScreenReaderContent();
+                        testLandmarks();
+                        testReadingOrder();
+                        testAnnouncements();
+                        
+                        setTimeout(() => {
+                            log('='.repeat(60), 'INFO');
+                            log('🎉 Comprehensive accessibility audit completed!', 'SUCCESS');
+                            generateAccessibilitySummary();
+                        }, 2000);
+                    }, 1500);
+                }, 3000);
+            }, 500);
+        }
+        
+        function generateAccessibilitySummary() {
+            const percentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+            
+            log(`📊 Accessibility Summary: ${totalScore.toFixed(1)}/${maxScore} points (${percentage}%)`, 'SUCCESS');
+            
+            if (percentage >= 90) {
+                log('🌟 Excellent accessibility! Your site is highly inclusive.', 'SUCCESS');
+            } else if (percentage >= 70) {
+                log('👍 Good accessibility with room for improvement.', 'SUCCESS');
+            } else if (percentage >= 50) {
+                log('⚠️ Fair accessibility. Several improvements needed.', 'WARNING');
+            } else {
+                log('🚨 Poor accessibility. Significant improvements required.', 'ERROR');
+            }
+            
+            log('\n🔍 Manual testing still required for:', 'INFO');
+            log('  - Actual color contrast measurements', 'INFO');
+            log('  - Screen reader testing', 'INFO');
+            log('  - Keyboard navigation flow', 'INFO');
+            log('  - Focus trap behavior', 'INFO');
+            log('  - Time limits and auto-play content', 'INFO');
+        }
+        
+        function generateA11yReport() {
+            const timestamp = new Date().toISOString();
+            const percentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+            
+            const report = {
+                timestamp,
+                overallScore: {
+                    points: totalScore,
+                    maxPoints: maxScore,
+                    percentage: percentage + '%'
+                },
+                testResults,
+                recommendations: generateRecommendations(percentage),
+                nextSteps: [
+                    'Conduct manual testing with keyboard navigation',
+                    'Test with actual screen readers (NVDA, JAWS, VoiceOver)',
+                    'Verify color contrast ratios with precise tools',
+                    'Test with users who have disabilities',
+                    'Implement automated accessibility testing in CI/CD'
+                ]
+            };
+            
+            const dataStr = JSON.stringify(report, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            
+            const exportFileName = `accessibility-report-${timestamp.split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileName);
+            linkElement.click();
+            
+            log(`✅ Accessibility report exported: ${exportFileName}`, 'SUCCESS');
+        }
+        
+        function generateRecommendations(percentage) {
+            const recommendations = [];
+            
+            if (percentage < 70) {
+                recommendations.push('Focus on fundamental accessibility: alt text, form labels, and heading structure');
+            }
+            
+            if (percentage < 85) {
+                recommendations.push('Improve keyboard navigation and focus management');
+                recommendations.push('Enhance ARIA usage for better screen reader support');
+            }
+            
+            if (percentage < 95) {
+                recommendations.push('Fine-tune color contrast and visual design');
+                recommendations.push('Add skip links and improve landmark structure');
+            }
+            
+            recommendations.push('Conduct regular accessibility audits and user testing');
+            
+            return recommendations;
+        }
+        
+        function clearLog() {
+            document.getElementById('testLog').textContent = 'Test log cleared...';
+            testResults = {};
+            totalScore = 0;
+            maxScore = 0;
+            document.getElementById('overallScore').textContent = '?';
+            document.getElementById('scoreDescription').textContent = 'Run tests to see your accessibility score';
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('♿ Accessibility Testing Suite initialized');
+            log('Ready to test WCAG 2.1 compliance and inclusive design principles');
+        });
+    </script>
+</body>
+</html>

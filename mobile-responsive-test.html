@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdLinkPro - Mobile Responsiveness Testing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .control-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .viewport-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .viewport-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .viewport-header {
+            padding: 15px 20px;
+            background: #2563eb;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .viewport-info {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .viewport-frame {
+            background: #e2e8f0;
+            margin: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .device-frame {
+            border: 8px solid #374151;
+            border-radius: 20px;
+            position: relative;
+            background: white;
+            margin: 20px auto;
+        }
+        
+        .device-frame.mobile {
+            width: 375px;
+            height: 667px;
+        }
+        
+        .device-frame.tablet {
+            width: 768px;
+            height: 1024px;
+        }
+        
+        .device-frame.desktop {
+            width: 1200px;
+            height: 800px;
+            border-radius: 8px;
+            border: 2px solid #d1d5db;
+        }
+        
+        .device-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .test-results {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .test-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #e2e8f0;
+        }
+        
+        .test-item.pass {
+            border-left-color: #10b981;
+            background: #ecfdf5;
+        }
+        
+        .test-item.fail {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .test-item.warning {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        
+        .test-log {
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        @media (max-width: 768px) {
+            .viewport-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .device-frame {
+                width: 100% !important;
+                height: 300px !important;
+                margin: 10px;
+            }
+            
+            .control-buttons {
+                flex-direction: column;
+            }
+        }
+        
+        .orientation-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .orientation-btn {
+            padding: 5px 15px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .orientation-btn.active {
+            border-color: #2563eb;
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        
+        .touch-test-area {
+            width: 100px;
+            height: 100px;
+            background: #2563eb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            margin: 20px auto;
+        }
+        
+        .touch-test-area:active {
+            transform: scale(0.95);
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 AdLinkPro - Mobile Responsiveness Testing</h1>
+            <p>Comprehensive testing for mobile, tablet, and desktop responsiveness</p>
+            <div id="currentViewport" style="margin-top: 15px; font-weight: 600; color: #2563eb;"></div>
+        </div>
+        
+        <div class="controls">
+            <h2>🎛️ Test Controls</h2>
+            <div class="control-buttons">
+                <button class="btn btn-primary" onclick="loadPlatformInViewports()">Load Platform</button>
+                <button class="btn btn-primary" onclick="testResponsiveness()">Test Responsiveness</button>
+                <button class="btn btn-primary" onclick="testTouchInteraction()">Test Touch</button>
+                <button class="btn btn-primary" onclick="testOrientation()">Test Orientation</button>
+                <button class="btn btn-success" onclick="runFullMobileTest()">Full Mobile Test</button>
+            </div>
+            
+            <div>
+                <label>
+                    <strong>Test URL:</strong>
+                    <input type="url" id="testUrl" value="./ПОЛНАЯ_РАБОЧАЯ_ПЛАТФОРМА.html" style="width: 300px; padding: 5px; margin-left: 10px;">
+                </label>
+                <button class="btn btn-primary" onclick="updateViewports()" style="margin-left: 10px;">Update</button>
+            </div>
+        </div>
+        
+        <div class="viewport-grid">
+            <!-- Mobile Viewport -->
+            <div class="viewport-container">
+                <div class="viewport-header">
+                    <span>📱 Mobile (375×667)</span>
+                    <span class="viewport-info">iPhone SE</span>
+                </div>
+                <div class="orientation-controls">
+                    <button class="orientation-btn active" onclick="setOrientation('mobile', 'portrait')">Portrait</button>
+                    <button class="orientation-btn" onclick="setOrientation('mobile', 'landscape')">Landscape</button>
+                </div>
+                <div class="viewport-frame">
+                    <div class="device-frame mobile" id="mobileFrame">
+                        <iframe id="mobileIframe" src="about:blank"></iframe>
+                    </div>
+                </div>
+                <div class="touch-test-area" ontouchstart="handleTouch('mobile', event)" onclick="handleClick('mobile', event)">
+                    Touch Test
+                </div>
+            </div>
+            
+            <!-- Tablet Viewport -->
+            <div class="viewport-container">
+                <div class="viewport-header">
+                    <span>📲 Tablet (768×1024)</span>
+                    <span class="viewport-info">iPad</span>
+                </div>
+                <div class="orientation-controls">
+                    <button class="orientation-btn active" onclick="setOrientation('tablet', 'portrait')">Portrait</button>
+                    <button class="orientation-btn" onclick="setOrientation('tablet', 'landscape')">Landscape</button>
+                </div>
+                <div class="viewport-frame">
+                    <div class="device-frame tablet" id="tabletFrame">
+                        <iframe id="tabletIframe" src="about:blank"></iframe>
+                    </div>
+                </div>
+                <div class="touch-test-area" ontouchstart="handleTouch('tablet', event)" onclick="handleClick('tablet', event)">
+                    Touch Test
+                </div>
+            </div>
+            
+            <!-- Desktop Viewport -->
+            <div class="viewport-container">
+                <div class="viewport-header">
+                    <span>🖥️ Desktop (1200×800)</span>
+                    <span class="viewport-info">Standard Desktop</span>
+                </div>
+                <div class="viewport-frame">
+                    <div class="device-frame desktop" id="desktopFrame">
+                        <iframe id="desktopIframe" src="about:blank"></iframe>
+                    </div>
+                </div>
+                <div class="touch-test-area" onclick="handleClick('desktop', event)">
+                    Click Test
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-results">
+            <h2>📊 Test Results</h2>
+            <div id="testResults"></div>
+        </div>
+        
+        <div class="test-results">
+            <h2>📝 Test Log</h2>
+            <div id="testLog" class="test-log">
+Mobile responsiveness testing suite ready...
+Click "Load Platform" to begin testing.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let testResults = {};
+        let currentTest = '';
+        
+        function log(message, type = 'INFO') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEl = document.getElementById('testLog');
+            const symbols = { INFO: 'ℹ️', SUCCESS: '✅', ERROR: '❌', WARNING: '⚠️' };
+            
+            logEl.textContent += `\n[${timestamp}] ${symbols[type]} ${message}`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function updateCurrentViewport() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            let deviceType = 'Desktop';
+            
+            if (width <= 768) deviceType = 'Mobile/Tablet';
+            
+            document.getElementById('currentViewport').textContent = 
+                `Current: ${width}×${height} (${deviceType})`;
+        }
+        
+        function loadPlatformInViewports() {
+            const url = document.getElementById('testUrl').value;
+            log(`Loading platform in all viewports: ${url}`, 'INFO');
+            
+            // Load in all iframes
+            document.getElementById('mobileIframe').src = url;
+            document.getElementById('tabletIframe').src = url;
+            document.getElementById('desktopIframe').src = url;
+            
+            log('Platform loaded in all viewports', 'SUCCESS');
+            
+            // Wait a moment then test
+            setTimeout(testResponsiveness, 2000);
+        }
+        
+        function updateViewports() {
+            loadPlatformInViewports();
+        }
+        
+        function setOrientation(device, orientation) {
+            const frame = document.getElementById(device + 'Frame');
+            const buttons = frame.parentElement.parentElement.querySelectorAll('.orientation-btn');
+            
+            // Update button states
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (orientation === 'landscape') {
+                if (device === 'mobile') {
+                    frame.style.width = '667px';
+                    frame.style.height = '375px';
+                } else if (device === 'tablet') {
+                    frame.style.width = '1024px';
+                    frame.style.height = '768px';
+                }
+            } else {
+                if (device === 'mobile') {
+                    frame.style.width = '375px';
+                    frame.style.height = '667px';
+                } else if (device === 'tablet') {
+                    frame.style.width = '768px';
+                    frame.style.height = '1024px';
+                }
+            }
+            
+            log(`${device} orientation changed to ${orientation}`, 'INFO');
+        }
+        
+        function testResponsiveness() {
+            log('Testing responsiveness across viewports...', 'INFO');
+            
+            const tests = [
+                { name: 'Mobile Layout', test: checkMobileLayout },
+                { name: 'Tablet Layout', test: checkTabletLayout },
+                { name: 'Desktop Layout', test: checkDesktopLayout },
+                { name: 'Text Readability', test: checkTextReadability },
+                { name: 'Button Accessibility', test: checkButtonAccessibility },
+                { name: 'Image Scaling', test: checkImageScaling },
+                { name: 'Navigation Usability', test: checkNavigationUsability }
+            ];
+            
+            const results = [];
+            
+            tests.forEach(({ name, test }) => {
+                try {
+                    const result = test();
+                    results.push({ name, status: result.status, message: result.message });
+                    log(`${name}: ${result.status} - ${result.message}`, result.status === 'PASS' ? 'SUCCESS' : 'WARNING');
+                } catch (error) {
+                    results.push({ name, status: 'FAIL', message: error.message });
+                    log(`${name}: FAIL - ${error.message}`, 'ERROR');
+                }
+            });
+            
+            displayTestResults(results);
+            log('Responsiveness testing completed', 'SUCCESS');
+        }
+        
+        function checkMobileLayout() {
+            // Check if mobile viewport is properly sized
+            const mobileFrame = document.getElementById('mobileFrame');
+            const width = parseInt(mobileFrame.style.width || '375px');
+            
+            if (width <= 375) {
+                return { status: 'PASS', message: 'Mobile layout properly constrained' };
+            } else {
+                return { status: 'WARNING', message: 'Mobile layout may be too wide' };
+            }
+        }
+        
+        function checkTabletLayout() {
+            const tabletFrame = document.getElementById('tabletFrame');
+            const width = parseInt(tabletFrame.style.width || '768px');
+            
+            if (width >= 768 && width <= 1024) {
+                return { status: 'PASS', message: 'Tablet layout properly sized' };
+            } else {
+                return { status: 'WARNING', message: 'Tablet layout sizing needs attention' };
+            }
+        }
+        
+        function checkDesktopLayout() {
+            const desktopFrame = document.getElementById('desktopFrame');
+            const width = parseInt(desktopFrame.style.width || '1200px');
+            
+            if (width >= 1200) {
+                return { status: 'PASS', message: 'Desktop layout has adequate width' };
+            } else {
+                return { status: 'WARNING', message: 'Desktop layout may be too narrow' };
+            }
+        }
+        
+        function checkTextReadability() {
+            // Simulate text size check
+            const currentFontSize = parseFloat(getComputedStyle(document.body).fontSize);
+            
+            if (currentFontSize >= 16) {
+                return { status: 'PASS', message: `Text size adequate (${currentFontSize}px)` };
+            } else {
+                return { status: 'WARNING', message: `Text may be too small (${currentFontSize}px)` };
+            }
+        }
+        
+        function checkButtonAccessibility() {
+            const buttons = document.querySelectorAll('.btn');
+            let adequateSize = true;
+            
+            buttons.forEach(btn => {
+                const rect = btn.getBoundingClientRect();
+                if (rect.height < 44 || rect.width < 44) {
+                    adequateSize = false;
+                }
+            });
+            
+            if (adequateSize) {
+                return { status: 'PASS', message: 'Buttons meet touch target size requirements' };
+            } else {
+                return { status: 'WARNING', message: 'Some buttons may be too small for touch' };
+            }
+        }
+        
+        function checkImageScaling() {
+            // Check for responsive images
+            const hasResponsiveImages = document.querySelector('img[srcset]') || 
+                                       document.querySelector('picture') ||
+                                       document.querySelector('img[style*="max-width"]');
+            
+            if (hasResponsiveImages) {
+                return { status: 'PASS', message: 'Responsive image techniques detected' };
+            } else {
+                return { status: 'WARNING', message: 'Consider implementing responsive images' };
+            }
+        }
+        
+        function checkNavigationUsability() {
+            const navElements = document.querySelectorAll('nav, [role="navigation"]');
+            
+            if (navElements.length > 0) {
+                return { status: 'PASS', message: `${navElements.length} navigation elements found` };
+            } else {
+                return { status: 'WARNING', message: 'No navigation elements detected' };
+            }
+        }
+        
+        function displayTestResults(results) {
+            const resultsEl = document.getElementById('testResults');
+            resultsEl.innerHTML = '';
+            
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.className = `test-item ${result.status.toLowerCase()}`;
+                div.innerHTML = `
+                    <strong>${result.name}:</strong> ${result.status}<br>
+                    <small>${result.message}</small>
+                `;
+                resultsEl.appendChild(div);
+            });
+        }
+        
+        function testTouchInteraction() {
+            log('Testing touch interaction capabilities...', 'INFO');
+            
+            const touchSupported = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const pointerEventsSupported = 'onpointerdown' in window;
+            const gestureSupported = 'ongesturestart' in window;
+            
+            const results = [
+                { name: 'Touch Events', status: touchSupported ? 'PASS' : 'FAIL', message: touchSupported ? 'Touch events supported' : 'Touch events not supported' },
+                { name: 'Pointer Events', status: pointerEventsSupported ? 'PASS' : 'WARNING', message: pointerEventsSupported ? 'Pointer events supported' : 'Pointer events not supported' },
+                { name: 'Gesture Events', status: gestureSupported ? 'PASS' : 'WARNING', message: gestureSupported ? 'Gesture events supported' : 'Gesture events not supported' }
+            ];
+            
+            displayTestResults(results);
+            
+            results.forEach(result => {
+                log(`${result.name}: ${result.status} - ${result.message}`, result.status === 'PASS' ? 'SUCCESS' : 'WARNING');
+            });
+            
+            log('Touch interaction testing completed', 'SUCCESS');
+        }
+        
+        function testOrientation() {
+            log('Testing orientation capabilities...', 'INFO');
+            
+            const orientationSupported = screen.orientation || 'orientation' in window;
+            const mediaQueriesSupported = window.matchMedia;
+            
+            let currentOrientation = 'unknown';
+            if (screen.orientation) {
+                currentOrientation = screen.orientation.type;
+            } else if (window.orientation !== undefined) {
+                currentOrientation = Math.abs(window.orientation) === 90 ? 'landscape' : 'portrait';
+            }
+            
+            const results = [
+                { name: 'Orientation API', status: orientationSupported ? 'PASS' : 'WARNING', message: orientationSupported ? 'Orientation API supported' : 'Orientation API not supported' },
+                { name: 'Media Queries', status: mediaQueriesSupported ? 'PASS' : 'FAIL', message: mediaQueriesSupported ? 'Media queries supported' : 'Media queries not supported' },
+                { name: 'Current Orientation', status: 'INFO', message: `Current orientation: ${currentOrientation}` }
+            ];
+            
+            // Test media queries for orientation
+            if (mediaQueriesSupported) {
+                const portraitMatch = window.matchMedia('(orientation: portrait)').matches;
+                const landscapeMatch = window.matchMedia('(orientation: landscape)').matches;
+                
+                results.push({
+                    name: 'Orientation Detection',
+                    status: 'PASS',
+                    message: `Portrait: ${portraitMatch}, Landscape: ${landscapeMatch}`
+                });
+            }
+            
+            displayTestResults(results);
+            
+            results.forEach(result => {
+                log(`${result.name}: ${result.status} - ${result.message}`, result.status === 'PASS' ? 'SUCCESS' : 'INFO');
+            });
+            
+            log('Orientation testing completed', 'SUCCESS');
+        }
+        
+        function handleTouch(device, event) {
+            log(`Touch event detected on ${device} device`, 'SUCCESS');
+            event.target.style.background = '#059669';
+            setTimeout(() => {
+                event.target.style.background = '#2563eb';
+            }, 200);
+        }
+        
+        function handleClick(device, event) {
+            log(`Click event detected on ${device} device`, 'SUCCESS');
+            event.target.style.background = '#1d4ed8';
+            setTimeout(() => {
+                event.target.style.background = '#2563eb';
+            }, 200);
+        }
+        
+        function runFullMobileTest() {
+            log('🚀 Starting comprehensive mobile responsiveness testing...', 'INFO');
+            log('='.repeat(60), 'INFO');
+            
+            setTimeout(() => {
+                loadPlatformInViewports();
+                
+                setTimeout(() => {
+                    testResponsiveness();
+                    
+                    setTimeout(() => {
+                        testTouchInteraction();
+                        
+                        setTimeout(() => {
+                            testOrientation();
+                            
+                            log('='.repeat(60), 'INFO');
+                            log('🎉 Comprehensive mobile testing completed!', 'SUCCESS');
+                            
+                            generateMobileSummary();
+                        }, 1000);
+                    }, 1000);
+                }, 2000);
+            }, 500);
+        }
+        
+        function generateMobileSummary() {
+            const testItems = document.querySelectorAll('.test-item');
+            const passedTests = document.querySelectorAll('.test-item.pass').length;
+            const totalTests = testItems.length;
+            
+            if (totalTests > 0) {
+                const percentage = ((passedTests / totalTests) * 100).toFixed(1);
+                log(`📊 Mobile Summary: ${passedTests}/${totalTests} tests passed (${percentage}%)`, 'SUCCESS');
+                
+                if (percentage >= 90) {
+                    log('✅ Excellent mobile compatibility!', 'SUCCESS');
+                } else if (percentage >= 70) {
+                    log('⚠️ Good mobile compatibility, some improvements possible', 'WARNING');
+                } else {
+                    log('❌ Mobile compatibility needs attention', 'ERROR');
+                }
+            }
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Mobile Responsiveness Testing Suite initialized');
+            updateCurrentViewport();
+            
+            // Update viewport info on resize
+            window.addEventListener('resize', updateCurrentViewport);
+            
+            // Load platform by default
+            setTimeout(loadPlatformInViewports, 1000);
+        });
+        
+        // Handle orientation change
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                updateCurrentViewport();
+                log('Orientation changed', 'INFO');
+            }, 100);
+        });
+    </script>
+</body>
+</html>

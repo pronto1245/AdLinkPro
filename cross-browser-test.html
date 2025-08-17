@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdLinkPro - Cross-Browser Testing Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            background: white;
+            margin-bottom: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-section h2 {
+            color: #2563eb;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
+        .browser-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .browser-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .browser-card:hover {
+            border-color: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .browser-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .feature-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border-left: 4px solid #e2e8f0;
+        }
+        
+        .feature-supported {
+            border-left-color: #10b981;
+        }
+        
+        .feature-unsupported {
+            border-left-color: #ef4444;
+        }
+        
+        .feature-partial {
+            border-left-color: #f59e0b;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-supported {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-unsupported {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .test-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .test-log {
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        @media (max-width: 768px) {
+            .browser-grid, .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .test-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 AdLinkPro - Cross-Browser Testing Suite</h1>
+            <p>Comprehensive testing for browser compatibility and modern web features</p>
+            <div id="browserInfo" style="margin-top: 15px; font-weight: 600; color: #2563eb;"></div>
+        </div>
+        
+        <!-- Browser Detection -->
+        <div class="test-section">
+            <h2>🔍 Browser Detection & Information</h2>
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="detectBrowser()">Detect Browser</button>
+                <button class="btn btn-primary" onclick="getSystemInfo()">System Information</button>
+            </div>
+            <div class="browser-grid">
+                <div class="browser-card">
+                    <div class="browser-icon">🌐</div>
+                    <h3>Current Browser</h3>
+                    <div id="currentBrowser">Click "Detect Browser"</div>
+                </div>
+                <div class="browser-card">
+                    <div class="browser-icon">💻</div>
+                    <h3>System Information</h3>
+                    <div id="systemInfo">Click "System Information"</div>
+                </div>
+                <div class="browser-card">
+                    <div class="browser-icon">📱</div>
+                    <h3>Device Type</h3>
+                    <div id="deviceInfo">Detecting...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feature Support Testing -->
+        <div class="test-section">
+            <h2>🧪 HTML5 & Modern Web Features</h2>
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="testHTML5Features()">Test HTML5</button>
+                <button class="btn btn-primary" onclick="testCSSFeatures()">Test CSS</button>
+                <button class="btn btn-primary" onclick="testJSFeatures()">Test JavaScript</button>
+                <button class="btn btn-success" onclick="testAllFeatures()">Test All Features</button>
+            </div>
+            <div class="feature-grid" id="featureResults"></div>
+        </div>
+        
+        <!-- API Support Testing -->
+        <div class="test-section">
+            <h2>🔌 Web APIs & Advanced Features</h2>
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="testStorageAPIs()">Storage APIs</button>
+                <button class="btn btn-primary" onclick="testMediaAPIs()">Media APIs</button>
+                <button class="btn btn-primary" onclick="testNetworkAPIs()">Network APIs</button>
+                <button class="btn btn-primary" onclick="testDeviceAPIs()">Device APIs</button>
+            </div>
+            <div class="feature-grid" id="apiResults"></div>
+        </div>
+        
+        <!-- Performance Testing -->
+        <div class="test-section">
+            <h2>⚡ Performance & Optimization</h2>
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="testPerformance()">Test Performance</button>
+                <button class="btn btn-primary" onclick="testMemoryUsage()">Memory Usage</button>
+                <button class="btn btn-primary" onclick="testNetworkSpeed()">Network Speed</button>
+            </div>
+            <div class="feature-grid" id="performanceResults"></div>
+        </div>
+        
+        <!-- Test Log -->
+        <div class="test-section">
+            <h2>📝 Test Results Log</h2>
+            <div class="test-controls">
+                <button class="btn btn-success" onclick="runComprehensiveTest()">🚀 Run All Tests</button>
+                <button class="btn btn-primary" onclick="exportResults()">Export Results</button>
+                <button class="btn btn-primary" onclick="clearLog()">Clear Log</button>
+            </div>
+            <div id="testLog" class="test-log">
+Cross-Browser Testing Suite Ready...
+Click "Run All Tests" or select individual tests to begin.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global state
+        let testResults = {};
+        let browserInfo = {};
+        
+        function log(message, type = 'INFO') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEl = document.getElementById('testLog');
+            const symbols = { INFO: 'ℹ️', SUCCESS: '✅', ERROR: '❌', WARNING: '⚠️' };
+            
+            logEl.textContent += `\n[${timestamp}] ${symbols[type]} ${message}`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function createFeatureItem(name, supported, note = '') {
+            const status = supported === true ? 'supported' : 
+                          supported === false ? 'unsupported' : 'partial';
+            
+            const statusText = supported === true ? 'Supported' : 
+                              supported === false ? 'Not Supported' : 'Partial';
+            
+            return `
+                <div class="feature-item feature-${status}">
+                    <span>${name} ${note ? `<small>(${note})</small>` : ''}</span>
+                    <span class="status-badge status-${status}">${statusText}</span>
+                </div>
+            `;
+        }
+        
+        // Browser Detection
+        function detectBrowser() {
+            const ua = navigator.userAgent;
+            let browser = 'Unknown';
+            let version = 'Unknown';
+            let engine = 'Unknown';
+            
+            // Detect browser
+            if (ua.includes('Chrome') && !ua.includes('Edg')) {
+                browser = 'Google Chrome';
+                version = ua.match(/Chrome\/([0-9.]+)/)?.[1] || 'Unknown';
+                engine = 'Blink';
+            } else if (ua.includes('Firefox')) {
+                browser = 'Mozilla Firefox';
+                version = ua.match(/Firefox\/([0-9.]+)/)?.[1] || 'Unknown';
+                engine = 'Gecko';
+            } else if (ua.includes('Safari') && !ua.includes('Chrome')) {
+                browser = 'Safari';
+                version = ua.match(/Version\/([0-9.]+)/)?.[1] || 'Unknown';
+                engine = 'WebKit';
+            } else if (ua.includes('Edg')) {
+                browser = 'Microsoft Edge';
+                version = ua.match(/Edg\/([0-9.]+)/)?.[1] || 'Unknown';
+                engine = 'Blink';
+            } else if (ua.includes('Opera') || ua.includes('OPR')) {
+                browser = 'Opera';
+                version = ua.match(/(?:Opera|OPR)\/([0-9.]+)/)?.[1] || 'Unknown';
+                engine = 'Blink';
+            }
+            
+            browserInfo = { browser, version, engine, userAgent: ua };
+            
+            document.getElementById('currentBrowser').innerHTML = `
+                <strong>${browser}</strong><br>
+                Version: ${version}<br>
+                Engine: ${engine}
+            `;
+            
+            document.getElementById('browserInfo').textContent = `${browser} ${version}`;
+            
+            log(`Browser detected: ${browser} ${version} (${engine})`, 'SUCCESS');
+            
+            // Auto-detect device type
+            detectDeviceType();
+        }
+        
+        function detectDeviceType() {
+            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isTablet = /iPad|Android(?=.*Tablet)|Surface/i.test(navigator.userAgent);
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            
+            let deviceType = 'Desktop';
+            if (isTablet) deviceType = 'Tablet';
+            else if (isMobile) deviceType = 'Mobile';
+            
+            document.getElementById('deviceInfo').innerHTML = `
+                <strong>${deviceType}</strong><br>
+                Touch: ${isTouchDevice ? 'Yes' : 'No'}<br>
+                Screen: ${window.screen.width}x${window.screen.height}
+            `;
+            
+            log(`Device type: ${deviceType} (Touch: ${isTouchDevice})`, 'SUCCESS');
+        }
+        
+        function getSystemInfo() {
+            const info = {
+                platform: navigator.platform,
+                language: navigator.language,
+                languages: navigator.languages?.join(', ') || 'N/A',
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine,
+                doNotTrack: navigator.doNotTrack || 'Not set',
+                hardwareConcurrency: navigator.hardwareConcurrency || 'N/A'
+            };
+            
+            document.getElementById('systemInfo').innerHTML = `
+                <strong>Platform:</strong> ${info.platform}<br>
+                <strong>Language:</strong> ${info.language}<br>
+                <strong>CPU Cores:</strong> ${info.hardwareConcurrency}<br>
+                <strong>Online:</strong> ${info.onLine ? 'Yes' : 'No'}
+            `;
+            
+            log(`System info: ${info.platform}, ${info.language}, ${info.hardwareConcurrency} cores`, 'SUCCESS');
+        }
+        
+        // HTML5 Feature Testing
+        function testHTML5Features() {
+            log('Testing HTML5 features...');
+            
+            const features = {
+                'Canvas': !!document.createElement('canvas').getContext,
+                'SVG': !!(document.createElementNS && document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect),
+                'Video': !!document.createElement('video').canPlayType,
+                'Audio': !!document.createElement('audio').canPlayType,
+                'WebGL': !!(document.createElement('canvas').getContext('webgl') || document.createElement('canvas').getContext('experimental-webgl')),
+                'Local Storage': !!window.localStorage,
+                'Session Storage': !!window.sessionStorage,
+                'IndexedDB': !!window.indexedDB,
+                'Web Workers': !!window.Worker,
+                'Application Cache': !!window.applicationCache,
+                'Drag & Drop': 'draggable' in document.createElement('span'),
+                'File API': !!(window.File && window.FileReader && window.FileList && window.Blob),
+                'Geolocation': !!navigator.geolocation,
+                'History API': !!(window.history && history.pushState)
+            };
+            
+            let html = '';
+            Object.entries(features).forEach(([name, supported]) => {
+                html += createFeatureItem(name, supported);
+            });
+            
+            document.getElementById('featureResults').innerHTML = html;
+            
+            const supported = Object.values(features).filter(Boolean).length;
+            log(`HTML5 features: ${supported}/${Object.keys(features).length} supported`, 'SUCCESS');
+        }
+        
+        // CSS Feature Testing
+        function testCSSFeatures() {
+            log('Testing CSS features...');
+            
+            const testCSS = (property, value) => {
+                try {
+                    return CSS.supports(property, value);
+                } catch (e) {
+                    return false;
+                }
+            };
+            
+            const features = {
+                'Flexbox': testCSS('display', 'flex'),
+                'CSS Grid': testCSS('display', 'grid'),
+                'CSS Variables': testCSS('--test', 'value'),
+                'Transforms': testCSS('transform', 'translateX(10px)'),
+                'Transitions': testCSS('transition', 'all 0.3s'),
+                'Animations': testCSS('animation', 'test 1s'),
+                'Filter Effects': testCSS('filter', 'blur(5px)'),
+                'Clip Path': testCSS('clip-path', 'circle(50%)'),
+                'Backdrop Filter': testCSS('backdrop-filter', 'blur(5px)'),
+                'Scroll Snap': testCSS('scroll-snap-type', 'x mandatory'),
+                'Container Queries': testCSS('@container', '(min-width: 300px)'),
+                'Cascade Layers': testCSS('@layer', 'base')
+            };
+            
+            let html = '';
+            Object.entries(features).forEach(([name, supported]) => {
+                html += createFeatureItem(name, supported);
+            });
+            
+            document.getElementById('featureResults').innerHTML += html;
+            
+            const supported = Object.values(features).filter(Boolean).length;
+            log(`CSS features: ${supported}/${Object.keys(features).length} supported`, 'SUCCESS');
+        }
+        
+        // JavaScript Feature Testing
+        function testJSFeatures() {
+            log('Testing JavaScript features...');
+            
+            const features = {
+                'ES6 Classes': typeof class {} === 'function',
+                'Arrow Functions': (() => true)(),
+                'Template Literals': `test` === 'test',
+                'Destructuring': (() => { try { const [a] = [1]; return true; } catch { return false; } })(),
+                'Promises': !!window.Promise,
+                'Async/Await': (async () => true).constructor.name === 'AsyncFunction',
+                'Modules (import)': 'noModule' in HTMLScriptElement.prototype,
+                'Map & Set': !!(window.Map && window.Set),
+                'Symbols': typeof Symbol !== 'undefined',
+                'Proxy': typeof Proxy !== 'undefined',
+                'WeakMap & WeakSet': !!(window.WeakMap && window.WeakSet),
+                'Generators': function*(){}.constructor.name === 'GeneratorFunction',
+                'BigInt': typeof BigInt !== 'undefined',
+                'Optional Chaining': (() => { try { eval('({})?.test'); return true; } catch { return false; } })()
+            };
+            
+            let html = '';
+            Object.entries(features).forEach(([name, supported]) => {
+                html += createFeatureItem(name, supported);
+            });
+            
+            document.getElementById('featureResults').innerHTML += html;
+            
+            const supported = Object.values(features).filter(Boolean).length;
+            log(`JavaScript features: ${supported}/${Object.keys(features).length} supported`, 'SUCCESS');
+        }
+        
+        // Storage API Testing
+        function testStorageAPIs() {
+            log('Testing Storage APIs...');
+            
+            const features = {
+                'localStorage': !!window.localStorage,
+                'sessionStorage': !!window.sessionStorage,
+                'IndexedDB': !!window.indexedDB,
+                'WebSQL': !!window.openDatabase,
+                'Cache API': !!window.caches,
+                'Origin Private File System API': !!navigator.storage?.getDirectory,
+                'Persistent Storage': !!navigator.storage?.persist,
+                'Storage Quota': !!navigator.storage?.estimate
+            };
+            
+            let html = '';
+            Object.entries(features).forEach(([name, supported]) => {
+                html += createFeatureItem(name, supported);
+            });
+            
+            document.getElementById('apiResults').innerHTML = html;
+            log(`Storage APIs tested`, 'SUCCESS');
+        }
+        
+        // Media API Testing
+        function testMediaAPIs() {
+            log('Testing Media APIs...');
+            
+            const features = {
+                'getUserMedia': !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+                'Screen Capture': !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia),
+                'Web Audio API': !!(window.AudioContext || window.webkitAudioContext),
+                'WebRTC': !!(window.RTCPeerConnection || window.webkitRTCPeerConnection),
+                'Picture-in-Picture': !!document.pictureInPictureEnabled,
+                'Media Source Extensions': !!window.MediaSource,
+                'Encrypted Media Extensions': !!window.navigator.requestMediaKeySystemAccess,
+                'Web Speech API': !!(window.SpeechRecognition || window.webkitSpeechRecognition)
+            };
+            
+            let html = '';
+            Object.entries(features).forEach(([name, supported]) => {
+                html += createFeatureItem(name, supported);
+            });
+            
+            document.getElementById('apiResults').innerHTML += html;
+            log(`Media APIs tested`, 'SUCCESS');
+        }
+        
+        // Network API Testing
+        function testNetworkAPIs() {
+            log('Testing Network APIs...');
+            
+            const features = {
+                'Fetch API': !!window.fetch,
+                'WebSocket': !!window.WebSocket,
+                'Server-Sent Events': !!window.EventSource,
+                'XMLHttpRequest Level 2': !!(window.XMLHttpRequest && 'upload' in new XMLHttpRequest()),
+                'Beacon API': !!navigator.sendBeacon,
+                'Background Sync': !!(navigator.serviceWorker && 'sync' in window.ServiceWorkerRegistration.prototype),
+                'Network Information': !!navigator.connection,
+                'Payment Request': !!window.PaymentRequest
+            };
+            
+            let html = '';
+            Object.entries(features).forEach(([name, supported]) => {
+                html += createFeatureItem(name, supported);
+            });
+            
+            document.getElementById('apiResults').innerHTML += html;
+            log(`Network APIs tested`, 'SUCCESS');
+        }
+        
+        // Device API Testing
+        function testDeviceAPIs() {
+            log('Testing Device APIs...');
+            
+            const features = {
+                'Geolocation': !!navigator.geolocation,
+                'Device Orientation': !!window.DeviceOrientationEvent,
+                'Device Motion': !!window.DeviceMotionEvent,
+                'Vibration': !!navigator.vibrate,
+                'Battery Status': !!(navigator.getBattery || navigator.battery),
+                'Ambient Light': !!window.AmbientLightSensor,
+                'Web Bluetooth': !!navigator.bluetooth,
+                'Web USB': !!navigator.usb,
+                'Generic Sensor API': !!(window.Sensor || window.Accelerometer),
+                'WebXR': !!(navigator.xr)
+            };
+            
+            let html = '';
+            Object.entries(features).forEach(([name, supported]) => {
+                html += createFeatureItem(name, supported);
+            });
+            
+            document.getElementById('apiResults').innerHTML += html;
+            log(`Device APIs tested`, 'SUCCESS');
+        }
+        
+        // Performance Testing
+        function testPerformance() {
+            log('Testing Performance APIs...');
+            
+            const features = {
+                'Performance API': !!window.performance,
+                'Performance Observer': !!window.PerformanceObserver,
+                'Navigation Timing': !!(window.performance && window.performance.navigation),
+                'Resource Timing': !!(window.performance && window.performance.getEntriesByType),
+                'User Timing': !!(window.performance && window.performance.mark),
+                'High Resolution Time': !!(window.performance && window.performance.now),
+                'Memory Info': !!(window.performance && window.performance.memory),
+                'Long Tasks API': !!(window.PerformanceLongTaskTiming)
+            };
+            
+            let html = '';
+            Object.entries(features).forEach(([name, supported]) => {
+                html += createFeatureItem(name, supported);
+            });
+            
+            document.getElementById('performanceResults').innerHTML = html;
+            
+            // Show performance metrics
+            if (window.performance) {
+                const loadTime = window.performance.timing.loadEventEnd - window.performance.timing.navigationStart;
+                log(`Page load time: ${loadTime}ms`, 'INFO');
+                
+                if (window.performance.memory) {
+                    const memory = window.performance.memory;
+                    log(`Memory usage: ${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`, 'INFO');
+                }
+            }
+            
+            log(`Performance APIs tested`, 'SUCCESS');
+        }
+        
+        function testMemoryUsage() {
+            if (window.performance && window.performance.memory) {
+                const memory = window.performance.memory;
+                const used = (memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
+                const total = (memory.totalJSHeapSize / 1024 / 1024).toFixed(2);
+                const limit = (memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2);
+                
+                log(`Memory - Used: ${used}MB, Total: ${total}MB, Limit: ${limit}MB`, 'INFO');
+            } else {
+                log('Memory API not available in this browser', 'WARNING');
+            }
+        }
+        
+        function testNetworkSpeed() {
+            if (navigator.connection) {
+                const connection = navigator.connection;
+                log(`Network - Type: ${connection.effectiveType || 'unknown'}, Downlink: ${connection.downlink || 'unknown'}Mbps`, 'INFO');
+            } else {
+                log('Network Information API not available', 'WARNING');
+            }
+        }
+        
+        // Test All Features
+        function testAllFeatures() {
+            log('Running comprehensive feature tests...', 'INFO');
+            testHTML5Features();
+            testCSSFeatures();
+            testJSFeatures();
+            log('All feature tests completed', 'SUCCESS');
+        }
+        
+        // Comprehensive Test Runner
+        function runComprehensiveTest() {
+            log('🚀 Starting comprehensive cross-browser testing...', 'INFO');
+            log('='.repeat(60), 'INFO');
+            
+            // Clear previous results
+            document.getElementById('featureResults').innerHTML = '';
+            document.getElementById('apiResults').innerHTML = '';
+            document.getElementById('performanceResults').innerHTML = '';
+            
+            setTimeout(() => {
+                detectBrowser();
+                getSystemInfo();
+                testAllFeatures();
+                testStorageAPIs();
+                testMediaAPIs();
+                testNetworkAPIs();
+                testDeviceAPIs();
+                testPerformance();
+                testMemoryUsage();
+                testNetworkSpeed();
+                
+                log('='.repeat(60), 'INFO');
+                log('🎉 Comprehensive testing completed!', 'SUCCESS');
+                
+                generateSummaryReport();
+            }, 100);
+        }
+        
+        function generateSummaryReport() {
+            // Count supported features
+            const featureElements = document.querySelectorAll('.feature-supported').length;
+            const totalElements = document.querySelectorAll('.feature-item').length;
+            const supportPercentage = totalElements > 0 ? ((featureElements / totalElements) * 100).toFixed(1) : 0;
+            
+            log(`📊 Summary: ${featureElements}/${totalElements} features supported (${supportPercentage}%)`, 'SUCCESS');
+            
+            // Browser recommendation
+            if (supportPercentage >= 90) {
+                log('✅ Excellent browser compatibility!', 'SUCCESS');
+            } else if (supportPercentage >= 70) {
+                log('⚠️ Good compatibility, some modern features missing', 'WARNING');
+            } else {
+                log('❌ Limited compatibility, consider browser update', 'ERROR');
+            }
+        }
+        
+        // Export Results
+        function exportResults() {
+            const timestamp = new Date().toISOString();
+            const featureElements = document.querySelectorAll('.feature-item').length;
+            const supportedElements = document.querySelectorAll('.feature-supported').length;
+            
+            const results = {
+                timestamp,
+                browserInfo,
+                summary: {
+                    totalFeatures: featureElements,
+                    supportedFeatures: supportedElements,
+                    supportPercentage: featureElements > 0 ? ((supportedElements / featureElements) * 100).toFixed(1) : 0
+                },
+                testResults: testResults,
+                viewport: {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                }
+            };
+            
+            const dataStr = JSON.stringify(results, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            
+            const exportFileName = `cross-browser-test-${timestamp.split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileName);
+            linkElement.click();
+            
+            log(`✅ Results exported to: ${exportFileName}`, 'SUCCESS');
+        }
+        
+        function clearLog() {
+            document.getElementById('testLog').textContent = 'Test log cleared...';
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Cross-Browser Testing Suite initialized');
+            detectBrowser();
+            detectDeviceType();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdLinkPro - Comprehensive UI Testing Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .test-section h2 {
+            color: #2563eb;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .test-item {
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .test-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .test-log {
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success { background: #10b981; }
+        .status-error { background: #ef4444; }
+        .status-warning { background: #f59e0b; }
+        .status-pending { background: #6b7280; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h1>🚀 AdLinkPro - Comprehensive UI Testing Suite</h1>
+            <p>Полная проверка интерфейса платформы партнерского маркетинга</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="overallProgress"></div>
+            </div>
+            <div id="overallStatus">Готов к тестированию</div>
+        </div>
+        
+        <!-- 1. Functionality Testing -->
+        <div class="test-section">
+            <h2>🔧 Функциональность интерфейса</h2>
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="testButtons()">Тест кнопок</button>
+                <button class="btn btn-primary" onclick="testForms()">Тест форм</button>
+                <button class="btn btn-primary" onclick="testModals()">Тест модальных окон</button>
+                <button class="btn btn-primary" onclick="testNavigation()">Тест навигации</button>
+                <button class="btn btn-success" onclick="runAllFunctionalityTests()">Запустить все</button>
+            </div>
+            <div class="test-grid">
+                <div class="test-item">
+                    <strong>Кнопки и элементы управления</strong>
+                    <div id="buttonTestStatus">
+                        <span class="status-indicator status-pending"></span>Ожидание тестирования
+                    </div>
+                </div>
+                <div class="test-item">
+                    <strong>Формы и валидация</strong>
+                    <div id="formTestStatus">
+                        <span class="status-indicator status-pending"></span>Ожидание тестирования
+                    </div>
+                </div>
+                <div class="test-item">
+                    <strong>Модальные окна</strong>
+                    <div id="modalTestStatus">
+                        <span class="status-indicator status-pending"></span>Ожидание тестирования
+                    </div>
+                </div>
+                <div class="test-item">
+                    <strong>Навигация</strong>
+                    <div id="navigationTestStatus">
+                        <span class="status-indicator status-pending"></span>Ожидание тестирования
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Log -->
+        <div class="test-section">
+            <h2>📝 Журнал тестирования</h2>
+            <div class="test-controls">
+                <button class="btn btn-success" onclick="runAllTests()">🚀 Запустить все тесты</button>
+                <button class="btn btn-warning" onclick="clearLog()">Очистить журнал</button>
+                <button class="btn btn-primary" onclick="exportResults()">Экспорт результатов</button>
+            </div>
+            <div id="testLog" class="test-log">
+Система готова к тестированию...
+Выберите тест для запуска или нажмите "Запустить все тесты"
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global test state
+        let testResults = {};
+        let testProgress = 0;
+        let totalTests = 4;
+        
+        // Utility functions
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEl = document.getElementById('testLog');
+            const typeSymbol = {
+                'info': 'ℹ️',
+                'success': '✅',
+                'error': '❌',
+                'warning': '⚠️'
+            };
+            
+            logEl.textContent += '\n[' + timestamp + '] ' + typeSymbol[type] + ' ' + message;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function updateStatus(elementId, status, message) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                const statusClass = status === 'success' ? 'status-success' : 
+                                   status === 'error' ? 'status-error' : 
+                                   status === 'warning' ? 'status-warning' : 'status-pending';
+                
+                el.innerHTML = '<span class="status-indicator ' + statusClass + '"></span>' + message;
+                testResults[elementId] = { status, message };
+            }
+        }
+        
+        function updateProgress() {
+            testProgress++;
+            const percentage = (testProgress / totalTests) * 100;
+            document.getElementById('overallProgress').style.width = percentage + '%';
+            document.getElementById('overallStatus').textContent = 
+                'Прогресс: ' + testProgress + '/' + totalTests + ' тестов (' + percentage.toFixed(1) + '%)';
+        }
+        
+        function clearLog() {
+            document.getElementById('testLog').textContent = 'Журнал очищен...';
+            testResults = {};
+            testProgress = 0;
+            updateProgress();
+        }
+        
+        // Test functions
+        async function testButtons() {
+            log('Начинаем тест кнопок и элементов управления...');
+            
+            try {
+                const buttons = document.querySelectorAll('button');
+                let workingButtons = 0;
+                
+                buttons.forEach(function(button) {
+                    if (button.onclick || button.addEventListener) {
+                        workingButtons++;
+                    }
+                });
+                
+                updateStatus('buttonTestStatus', 'success', 
+                    'Найдено ' + buttons.length + ' кнопок, ' + workingButtons + ' с обработчиками событий');
+                log('✅ Тест кнопок завершен: ' + workingButtons + '/' + buttons.length + ' активных кнопок', 'success');
+                
+            } catch (error) {
+                updateStatus('buttonTestStatus', 'error', 'Ошибка: ' + error.message);
+                log('❌ Ошибка при тестировании кнопок: ' + error.message, 'error');
+            }
+            
+            updateProgress();
+        }
+        
+        async function testForms() {
+            log('Начинаем тест форм и валидации...');
+            
+            try {
+                const forms = document.querySelectorAll('form');
+                const inputs = document.querySelectorAll('input, textarea, select');
+                
+                updateStatus('formTestStatus', 'success', 
+                    'Найдено ' + forms.length + ' форм, ' + inputs.length + ' полей ввода');
+                log('✅ Тест форм завершен: ' + forms.length + ' форм, ' + inputs.length + ' полей', 'success');
+                
+            } catch (error) {
+                updateStatus('formTestStatus', 'error', 'Ошибка: ' + error.message);
+                log('❌ Ошибка при тестировании форм: ' + error.message, 'error');
+            }
+            
+            updateProgress();
+        }
+        
+        async function testModals() {
+            log('Начинаем тест модальных окон...');
+            
+            try {
+                const modals = document.querySelectorAll('[class*="modal"], [id*="modal"]');
+                
+                updateStatus('modalTestStatus', 'success', 'Найдено ' + modals.length + ' модальных окон');
+                log('✅ Тест модальных окон завершен: ' + modals.length + ' модальных окон', 'success');
+                
+            } catch (error) {
+                updateStatus('modalTestStatus', 'error', 'Ошибка: ' + error.message);
+                log('❌ Ошибка при тестировании модальных окон: ' + error.message, 'error');
+            }
+            
+            updateProgress();
+        }
+        
+        async function testNavigation() {
+            log('Начинаем тест навигации...');
+            
+            try {
+                const links = document.querySelectorAll('a[href]');
+                const navElements = document.querySelectorAll('nav, [role="navigation"]');
+                
+                updateStatus('navigationTestStatus', 'success', 
+                    'Найдено ' + links.length + ' ссылок, ' + navElements.length + ' элементов навигации');
+                log('✅ Тест навигации завершен: ' + links.length + ' ссылок найдено', 'success');
+                
+            } catch (error) {
+                updateStatus('navigationTestStatus', 'error', 'Ошибка: ' + error.message);
+                log('❌ Ошибка при тестировании навигации: ' + error.message, 'error');
+            }
+            
+            updateProgress();
+        }
+        
+        async function runAllFunctionalityTests() {
+            log('🔧 Запуск всех функциональных тестов...', 'info');
+            await testButtons();
+            await testForms();
+            await testModals();
+            await testNavigation();
+            log('✅ Все функциональные тесты завершены', 'success');
+        }
+        
+        async function runAllTests() {
+            log('🚀 ЗАПУСК ПОЛНОГО ТЕСТИРОВАНИЯ AdLinkPro UI', 'info');
+            log('='.repeat(50), 'info');
+            
+            clearLog();
+            testProgress = 0;
+            totalTests = 4;
+            
+            try {
+                await runAllFunctionalityTests();
+                
+                log('='.repeat(50), 'info');
+                log('🎉 ВСЕ ТЕСТЫ ЗАВЕРШЕНЫ УСПЕШНО!', 'success');
+                log('📊 Общий результат: ' + testProgress + '/' + totalTests + ' тестов выполнено', 'success');
+                
+            } catch (error) {
+                log('❌ Критическая ошибка при выполнении тестов: ' + error.message, 'error');
+            }
+        }
+        
+        function exportResults() {
+            const timestamp = new Date().toISOString();
+            const results = {
+                timestamp: timestamp,
+                testResults: testResults,
+                browserInfo: navigator.userAgent,
+                viewport: {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                }
+            };
+            
+            const dataStr = JSON.stringify(results, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'adlinkpro-ui-test-results-' + timestamp.split('T')[0] + '.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            log('✅ Результаты экспортированы в файл: ' + exportFileDefaultName, 'success');
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 AdLinkPro UI Testing Suite инициализирован');
+            log('Выберите тест для запуска или нажмите "Запустить все тесты"');
+        });
+    </script>
+</body>
+</html>

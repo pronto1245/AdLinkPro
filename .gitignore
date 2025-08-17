@@ -14,3 +14,9 @@ Thumbs.db
 
 # Local Netlify folder
 .netlify
+
+# UI Testing Results
+ui-test-report.json
+accessibility-report-*.json
+cross-browser-test-*.json
+adlinkpro-ui-test-results-*.json
