@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { TooltipButton } from '@/components/ui/tooltip-button';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface Postback {
   id: string;
@@ -423,16 +425,16 @@ export default function PostbackManagement() {
                                 <Copy className="h-4 w-4" />
                               </Button>
                               
-                              <Button
+                              <TooltipButton
                                 variant="outline"
                                 size="sm"
                                 onClick={() => testPostbackMutation.mutate(postback.id)}
                                 disabled={testPostbackMutation.isPending}
-                                title="Тестировать"
+                                tooltip={testPostbackMutation.isPending ? "Выполняется тестирование постбека..." : "Отправить тестовый постбек"}
                                 data-testid={`button-test-${postback.id}`}
                               >
                                 <TestTube className="h-4 w-4" />
-                              </Button>
+                              </TooltipButton>
                               
                               <Button
                                 variant="outline"
@@ -855,13 +857,14 @@ function PostbackForm({
         >
           Отмена
         </Button>
-        <Button
+        <TooltipButton
           type="submit"
           disabled={isLoading}
+          tooltip={isLoading ? "Сохранение настроек постбека..." : undefined}
           data-testid="button-save-postback"
         >
           {isLoading ? 'Сохранение...' : 'Сохранить'}
-        </Button>
+        </TooltipButton>
       </div>
     </form>
   );

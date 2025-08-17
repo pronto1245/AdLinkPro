@@ -34,6 +34,8 @@ import {
   Filter,
   Download
 } from 'lucide-react';
+import { TooltipButton } from '@/components/ui/tooltip-button';
+import { EmptyState } from '@/components/ui/empty-state';
 
 // Типы данных
 interface TeamMember {
@@ -546,6 +548,7 @@ export default function TeamManagement() {
           <TabsTrigger value="members" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white">👥 Сотрудники</TabsTrigger>
           <TabsTrigger value="roles" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">🔑 Роли и права</TabsTrigger>
           <TabsTrigger value="activity" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white">📋 Логи действий</TabsTrigger>
+          <TabsTrigger value="help" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white">❓ Помощь</TabsTrigger>
         </TabsList>
 
         {/* Вкладка: Сотрудники */}
@@ -972,6 +975,62 @@ export default function TeamManagement() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* HELP TAB */}
+        <TabsContent value="help" className="space-y-4">
+          <EmptyState 
+            type="help"
+            title="Справка по управлению командой"
+            description="Настройка прав доступа, ролей и управление сотрудниками вашей рекламной команды"
+            helpContent={{
+              faqs: [
+                {
+                  question: "Как добавить нового сотрудника?",
+                  answer: "Нажмите кнопку 'Добавить сотрудника', заполните информацию и выберите роль. Можно создать локального пользователя или отправить приглашение по email."
+                },
+                {
+                  question: "Какие роли доступны?",
+                  answer: "Менеджер - полный доступ к офферам и финансам, Аналитик - только просмотр статистики, Финансист - управление выплатами, Поддержка - работа с партнерами."
+                },
+                {
+                  question: "Как настроить ограничения доступа?",
+                  answer: "В карточке сотрудника можно настроить IP-ограничения, временные рамки работы, ограничить доступ к конкретным офферам и странам."
+                },
+                {
+                  question: "Что показывают логи действий?",
+                  answer: "Все действия сотрудников: вход в систему, изменения офферов, выплаты, изменение настроек. Помогает отслеживать активность и безопасность."
+                },
+                {
+                  question: "Как отключить сотрудника?",
+                  answer: "Измените статус на 'Неактивен' или 'Заблокирован'. Неактивный сотрудник не может войти, заблокированный - полностью отключен от системы."
+                }
+              ],
+              contacts: {
+                email: "team@adlinkpro.com",
+                telegram: "@adlinkpro_team",
+                phone: "+7 (800) 123-45-67"
+              },
+              documentation: [
+                {
+                  title: "Настройка ролей",
+                  url: "#"
+                },
+                {
+                  title: "Безопасность команды",
+                  url: "#"
+                },
+                {
+                  title: "Аудит действий",
+                  url: "#"
+                },
+                {
+                  title: "Управление доступом",
+                  url: "#"
+                }
+              ]
+            }}
+          />
+        </TabsContent>
       </Tabs>
 
       {/* Диалог добавления/редактирования сотрудника */}
@@ -1284,7 +1343,7 @@ export default function TeamManagement() {
               >
                 Отмена
               </Button>
-              <Button
+              <TooltipButton
                 onClick={() => {
                   if (editingMember) {
                     updateMemberMutation.mutate({ id: editingMember.id, data: memberForm });
@@ -1295,6 +1354,12 @@ export default function TeamManagement() {
                   }
                 }}
                 disabled={createMemberMutation.isPending || updateMemberMutation.isPending || inviteMemberMutation.isPending}
+                tooltip={
+                  createMemberMutation.isPending ? "Создание сотрудника..." :
+                  updateMemberMutation.isPending ? "Сохранение изменений..." :
+                  inviteMemberMutation.isPending ? "Отправка приглашения..." :
+                  undefined
+                }
                 data-testid="button-save-member"
               >
                 {(createMemberMutation.isPending || updateMemberMutation.isPending || inviteMemberMutation.isPending) && (
@@ -1304,7 +1369,7 @@ export default function TeamManagement() {
                   ? 'Сохранить' 
                   : (memberForm.username ? 'Добавить' : 'Пригласить')
                 }
-              </Button>
+              </TooltipButton>
             </div>
           </div>
         </DialogContent>
