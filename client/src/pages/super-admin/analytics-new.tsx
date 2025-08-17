@@ -16,6 +16,8 @@ import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
 import { Search, Download, Settings, Filter, RefreshCw, Eye, EyeOff, RotateCcw, Check, X, ChevronLeft, ChevronRight, GripVertical } from 'lucide-react';
 import OsLogo from '@/components/ui/os-logo';
+import { TooltipButton } from '@/components/ui/tooltip-button';
+import { EmptyState } from '@/components/ui/empty-state';
 
 // Comprehensive analytics data interface with 100+ fields
 interface AnalyticsData {
@@ -822,10 +824,16 @@ export default function AnalyticsNew() {
                     <Download className="w-4 h-4 mr-1" />
                     Экспорт
                   </Button>
-                  <Button onClick={handleRefresh} variant="outline" size="sm" disabled={isLoading}>
+                  <TooltipButton 
+                    onClick={handleRefresh} 
+                    variant="outline" 
+                    size="sm" 
+                    disabled={isLoading}
+                    tooltip={isLoading ? "Обновление данных аналитики..." : "Обновить данные"}
+                  >
                     <RefreshCw className={`w-4 h-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
                     Обновить
-                  </Button>
+                  </TooltipButton>
                 </div>
               </div>
             </div>
@@ -955,15 +963,16 @@ export default function AnalyticsNew() {
                   </CardTitle>
                   {totalPages > 1 && (
                     <div className="flex items-center gap-2">
-                      <Button
+                      <TooltipButton
                         variant="outline"
                         size="sm"
                         onClick={() => goToPage(currentPage - 1)}
                         disabled={currentPage === 1}
+                        tooltip={currentPage === 1 ? "Вы уже на первой странице" : "Предыдущая страница"}
                         className="p-1 h-8 w-8"
                       >
                         <ChevronLeft className="h-4 w-4" />
-                      </Button>
+                      </TooltipButton>
                       
                       <div className="flex items-center gap-1">
                         {getPageNumbers().map((page, index) => (
@@ -980,15 +989,16 @@ export default function AnalyticsNew() {
                         ))}
                       </div>
                       
-                      <Button
+                      <TooltipButton
                         variant="outline"
                         size="sm"
                         onClick={() => goToPage(currentPage + 1)}
                         disabled={currentPage === totalPages}
+                        tooltip={currentPage === totalPages ? "Вы уже на последней странице" : "Следующая страница"}
                         className="p-1 h-8 w-8"
                       >
                         <ChevronRight className="h-4 w-4" />
-                      </Button>
+                      </TooltipButton>
                       
                       <span className="text-sm text-muted-foreground ml-2">
                         Стр. {currentPage} из {totalPages}

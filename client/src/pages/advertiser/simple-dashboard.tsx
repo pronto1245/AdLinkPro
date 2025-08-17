@@ -38,6 +38,8 @@ import {
   Calendar,
   Filter
 } from "lucide-react";
+import { TooltipButton } from '@/components/ui/tooltip-button';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
@@ -272,7 +274,7 @@ export default function AdvertiserDashboard() {
 
         {/* Графики и аналитика */}
         <Tabs defaultValue="traffic" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="traffic" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Трафик
@@ -292,6 +294,10 @@ export default function AdvertiserDashboard() {
             <TabsTrigger value="fraud" className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
               Фрод
+            </TabsTrigger>
+            <TabsTrigger value="help" className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              Помощь
             </TabsTrigger>
           </TabsList>
 
@@ -400,6 +406,62 @@ export default function AdvertiserDashboard() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* HELP TAB */}
+          <TabsContent value="help">
+            <EmptyState 
+              type="help"
+              title="Справка по дашборду"
+              description="Понимание метрик, графиков и управление эффективностью рекламных кампаний"
+              helpContent={{
+                faqs: [
+                  {
+                    question: "Как читать график трафика?",
+                    answer: "График показывает клики (синяя линия) и уникальных посетителей (зеленая линия) по времени. Анализируйте тренды для оптимизации расписания показа рекламы."
+                  },
+                  {
+                    question: "Что означают конверсии?",
+                    answer: "Конверсии - это целевые действия пользователей (покупки, регистрации, подписки). График показывает количество и доход от конверсий."
+                  },
+                  {
+                    question: "Как контролировать расходы?",
+                    answer: "Во вкладке 'Расходы' отслеживайте затраты по дням. Сравнивайте с доходом для расчета ROI и корректировки бюджетов."
+                  },
+                  {
+                    question: "Зачем нужны постбеки?",
+                    answer: "Постбеки автоматически передают данные о конверсиях в ваш трекер для точного отслеживания эффективности источников трафика."
+                  },
+                  {
+                    question: "Как работает антифрод?",
+                    answer: "Система автоматически блокирует подозрительный трафик: боты, накрутки, дублированные клики. График показывает заблокированный и подозрительный трафик."
+                  }
+                ],
+                contacts: {
+                  email: "analytics@adlinkpro.com",
+                  telegram: "@adlinkpro_analytics",
+                  phone: "+7 (800) 123-45-67"
+                },
+                documentation: [
+                  {
+                    title: "Руководство по аналитике",
+                    url: "#"
+                  },
+                  {
+                    title: "Настройка трекинга",
+                    url: "#"
+                  },
+                  {
+                    title: "Антифрод система",
+                    url: "#"
+                  },
+                  {
+                    title: "ROI и метрики",
+                    url: "#"
+                  }
+                ]
+              }}
+            />
           </TabsContent>
         </Tabs>
 
