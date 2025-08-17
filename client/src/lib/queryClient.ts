@@ -33,13 +33,18 @@ export async function apiRequest(
     throw new Error(`Invalid method in apiRequest: ${typeof method}. Expected string, got ${typeof method}`);
   }
 
-  // CRITICAL FIX: Only use auth_token, clear old token format
+  // Standardize on auth_token key and clean up old formats
   if (localStorage.getItem('token')) {
+    const oldToken = localStorage.getItem('token');
+    if (oldToken && oldToken !== 'null' && oldToken !== 'undefined' && oldToken.trim() !== '') {
+      localStorage.setItem('auth_token', oldToken);
+    }
     localStorage.removeItem('token');
   }
+  
   let token = localStorage.getItem('auth_token');
   
-  // FIX: Check that token is not null string and not empty
+  // Validate token format
   if (token === 'null' || token === 'undefined' || !token || token.trim() === '') {
     console.log('🚨 Invalid token detected, clearing:', token);
     localStorage.removeItem('auth_token');
@@ -82,14 +87,19 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    // CRITICAL FIX: Only use auth_token, clear old token format
+    // Standardize on auth_token key and clean up old formats
     if (localStorage.getItem('token')) {
+      const oldToken = localStorage.getItem('token');
+      if (oldToken && oldToken !== 'null' && oldToken !== 'undefined' && oldToken.trim() !== '') {
+        localStorage.setItem('auth_token', oldToken);
+      }
       localStorage.removeItem('token');
     }
+    
     const token = localStorage.getItem('auth_token');
     const headers: Record<string, string> = {};
     
-    // FIX: Check that token is not null string and not empty
+    // Validate token format
     if (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') {
       headers.Authorization = `Bearer ${token}`;
     }

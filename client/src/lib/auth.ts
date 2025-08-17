@@ -69,21 +69,35 @@ export class AuthService {
       throw new Error('No authentication token found');
     }
 
-    const response = await fetch('/api/auth/me', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        this.removeToken();
-        throw new Error('Authentication expired');
-      }
-      throw new Error('Failed to fetch user data');
+    // Validate token format before making request
+    if (token === 'null' || token === 'undefined' || token.trim() === '') {
+      this.removeToken();
+      throw new Error('Invalid token format');
     }
 
-    return response.json();
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          this.removeToken();
+          throw new Error('Authentication expired');
+        }
+        throw new Error(`Failed to fetch user data: ${response.status}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      // If network error or other issues, clean up invalid token
+      if (error instanceof Error && error.message.includes('Authentication expired')) {
+        this.removeToken();
+      }
+      throw error;
+    }
   }
 
   static logout(): void {

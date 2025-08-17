@@ -14,19 +14,24 @@ const AuthCtx = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser]   = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(localStorage.getItem('auth_token'));
 
   const doLogin = useCallback(async (username: string, password: string) => {
     const data = await apiLogin(username, password);
     setUser(data.user);
     setToken(data.token);
-    localStorage.setItem('token', data.token);
+    
+    // Clear any old token formats and set the standard token
+    localStorage.removeItem('token');
+    localStorage.setItem('auth_token', data.token);
   }, []);
 
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
+    // Clear both token formats to ensure clean logout
     localStorage.removeItem('token');
+    localStorage.removeItem('auth_token');
   }, []);
 
   const value = useMemo<AuthContextValue>(

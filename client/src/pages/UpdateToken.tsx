@@ -12,8 +12,18 @@ export default function UpdateToken() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    // Check for token in both formats for backward compatibility, prefer auth_token
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
     setCurrentToken(token);
+    
+    // If we found an old format token, migrate it
+    if (!localStorage.getItem('auth_token') && localStorage.getItem('token')) {
+      const oldToken = localStorage.getItem('token');
+      if (oldToken) {
+        localStorage.setItem('auth_token', oldToken);
+        localStorage.removeItem('token');
+      }
+    }
   }, []);
 
   const updateToken = async () => {
@@ -25,17 +35,30 @@ export default function UpdateToken() {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error:', errorText);
-        throw new Error(`Ошибка API: ${response.status}`);
+        
+        // Provide more specific error messages
+        if (response.status === 401) {
+          throw new Error('Необходима повторная авторизация');
+        } else if (response.status === 403) {
+          throw new Error('Нет доступа к обновлению токена');
+        } else if (response.status >= 500) {
+          throw new Error('Ошибка сервера. Попробуйте позже');
+        } else {
+          throw new Error(`Ошибка API: ${response.status}`);
+        }
       }
       
       const data = await response.json();
       console.log('Received token data:', data);
       
-      // Очищаем старый токен
-      localStorage.removeItem('token');
+      // Validate that we received a valid token
+      if (!data.token || data.token === 'null' || data.token === 'undefined' || data.token.trim() === '') {
+        throw new Error('Получен некорректный токен от сервера');
+      }
       
-      // Устанавливаем новый токен
-      localStorage.setItem('token', data.token);
+      // Clear any old token formats and set the standard token
+      localStorage.removeItem('token');
+      localStorage.setItem('auth_token', data.token);
       
       setCurrentToken(data.token);
       setIsSuccess(true);
@@ -46,12 +69,17 @@ export default function UpdateToken() {
         duration: 2000
       });
       
-      // Принудительная очистка кеша
+      // Clear cache for fresh data with new token
       if ('caches' in window) {
         const cacheNames = await caches.keys();
         await Promise.all(
           cacheNames.map(name => caches.delete(name))
         );
+      }
+      
+      // Clear React Query cache as well
+      if ((window as any).queryClient) {
+        (window as any).queryClient.clear();
       }
       
       setTimeout(() => {
@@ -60,11 +88,13 @@ export default function UpdateToken() {
       
     } catch (error) {
       console.error('Update token error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      
       toast({
-        title: "Ошибка",
-        description: "Не удалось обновить токен",
+        title: "Ошибка обновления токена",
+        description: errorMessage,
         variant: "destructive",
-        duration: 3000
+        duration: 5000
       });
     } finally {
       setIsUpdating(false);
@@ -91,15 +121,24 @@ export default function UpdateToken() {
             <div className="p-3 bg-gray-100 rounded-md font-mono text-xs break-all">
               {currentToken ? (
                 <>
-                  <Badge variant="outline" className="mb-2">
-                    {currentToken.length > 20 ? 'Найден' : 'Короткий'}
+                  <Badge 
+                    variant="outline" 
+                    className={`mb-2 ${currentToken.length > 20 ? 'border-green-500 text-green-700' : 'border-yellow-500 text-yellow-700'}`}
+                  >
+                    {currentToken.length > 20 ? 'Токен найден' : 'Короткий токен'}
                   </Badge>
-                  <div>{currentToken.substring(0, 50)}...</div>
+                  <div>{currentToken.substring(0, 50)}{currentToken.length > 50 ? '...' : ''}</div>
+                  {currentToken.length > 20 && (
+                    <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" />
+                      Формат токена корректен
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="text-red-600 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4" />
-                  Токен не найден
+                  Токен не найден или недействителен
                 </div>
               )}
             </div>
