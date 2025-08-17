@@ -12792,10 +12792,14 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   // Import and add new enhanced routes
   const webhookRoutes = await import('./routes/webhooks');
   const bulkOperationsRoutes = await import('./routes/bulk-operations');
+  const fraudRulesRoutes = await import('./routes/fraud-rules');
+  const mlFraudRoutes = await import('./routes/ml-fraud');
   
   // Add enhanced routes with authentication
   app.use('/api/webhooks', authenticateToken, webhookRoutes.default);
   app.use('/api/bulk', authenticateToken, requireRole(['admin', 'super_admin']), bulkOperationsRoutes.default);
+  app.use('/api/fraud/rules', authenticateToken, requireRole(['admin', 'super_admin', 'advertiser']), fraudRulesRoutes.default);
+  app.use('/api/ml', authenticateToken, requireRole(['admin', 'super_admin', 'advertiser']), mlFraudRoutes.default);
   
   console.log('=== ENHANCED ANTIFRAUD ROUTES ADDED ===');
 
