@@ -77,5 +77,5 @@
 ✅ **Статус**: Готово к production деплою  
 🗄️ **База данных**: PostgreSQL (Neon)  
 📁 **Хранилище**: Google Cloud Storage  
-🔐 **Авторизация**: JWT + bcrypt  
+🔐 **Авторизация**: JWT + bcryptjs  
 🚀 **Деплой**: Netlify, Railway, Vercel

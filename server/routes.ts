@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage.js";
 import { ObjectPermission } from "./objectAcl.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { 
   insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, insertReceivedOfferSchema,
@@ -3697,12 +3697,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Verify current password
       const user = await storage.getUser(authUser.id);
-      if (!user || !bcrypt.compareSync(currentPassword, user.passwordHash || '')) {
+      if (!user || !(await bcrypt.compare(currentPassword, user.passwordHash || ''))) {
         return res.status(400).json({ error: "Invalid current password" });
       }
       
       // Update password
-      const hashedPassword = bcrypt.hashSync(newPassword, 10);
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
       await storage.updateUser(authUser.id, { passwordHash: hashedPassword });
       res.json({ success: true });
     } catch (error) {
@@ -4118,7 +4118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check current password
       const passwordValid = user.passwordHash ? 
-        bcrypt.compareSync(currentPassword, user.passwordHash) : 
+        await bcrypt.compare(currentPassword, user.passwordHash) : 
         user.password === currentPassword;
         
       if (!passwordValid) {
@@ -4126,7 +4126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update password
-      const hashedPassword = bcrypt.hashSync(newPassword, 10);
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
       await storage.updateUser(authUser.id, { passwordHash: hashedPassword });
       
       console.log("Partner password changed successfully for user:", authUser.id);
