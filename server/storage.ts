@@ -4482,50 +4482,13 @@ export class DatabaseStorage implements IStorage {
         partners = [];
       }
 
-      // Add realistic statistics for each partner or return mock partners if none found
+      // Return empty array instead of mock partners if none found
       if (partners.length === 0) {
-        return [
-          {
-            id: '1',
-            name: 'Активный Партнер 1',
-            username: 'partner1',
-            email: 'partner1@example.com',
-            status: 'active',
-            traffic: 1250,
-            leads: 42,
-            cr: '3.36',
-            revenue: '1840.50',
-            epc: '1.47',
-            fraudRate: '2.1',
-            connectedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-          },
-          {
-            id: '2',
-            name: 'Активный Партнер 2',
-            username: 'partner2',
-            email: 'partner2@example.com',
-            status: 'active',
-            traffic: 890,
-            leads: 28,
-            cr: '3.15',
-            revenue: '1260.00',
-            epc: '1.42',
-            fraudRate: '1.8',
-            connectedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-          }
-        ];
+        return [];
       }
 
-      return partners.map(partner => ({
-        ...partner,
-        name: `${partner.firstName || 'Партнер'} ${partner.lastName || partner.username}`,
-        traffic: Math.floor(Math.random() * 1000) + 100,
-        leads: Math.floor(Math.random() * 50) + 5,
-        cr: (Math.random() * 10 + 1).toFixed(2),
-        revenue: (Math.random() * 500 + 50).toFixed(2),
-        epc: (Math.random() * 5 + 1).toFixed(2),
-        fraudRate: (Math.random() * 5).toFixed(2)
-      }));
+      // Return partners with real data from database, not random data
+      return partners;
     } catch (error) {
       console.error('Error getting offer partners:', error);
       throw error;
@@ -5665,63 +5628,36 @@ class MemStorage implements IStorage {
     // Mock dashboard data for advertiser
     return {
       metrics: {
-        offersCount: 15,
-        activeOffers: 12,
-        pendingOffers: 2,
-        rejectedOffers: 1,
-        totalBudget: 50000,
-        totalSpent: 23450,
-        revenue: 34750,
-        postbacksSent: 1245,
-        postbacksReceived: 1198,
-        partnersCount: 28,
-        avgCR: 3.45,
-        epc: 2.78,
-        postbackErrors: 12,
-        fraudActivity: 3
+        offersCount: 0,
+        activeOffers: 0,
+        pendingOffers: 0,
+        rejectedOffers: 0,
+        totalBudget: 0,
+        totalSpent: 0,
+        revenue: 0,
+        postbacksSent: 0,
+        postbacksReceived: 0,
+        partnersCount: 0,
+        avgCR: 0,
+        epc: 0,
+        postbackErrors: 0,
+        fraudActivity: 0
       },
       chartData: {
-        traffic: [
-          { date: '2025-08-01', clicks: 1250, impressions: 15430 },
-          { date: '2025-08-02', clicks: 1180, impressions: 14560 },
-          { date: '2025-08-03', clicks: 1340, impressions: 16230 }
-        ],
-        conversions: [
-          { date: '2025-08-01', conversions: 42, revenue: 1260 },
-          { date: '2025-08-02', conversions: 38, revenue: 1140 },
-          { date: '2025-08-03', conversions: 45, revenue: 1350 }
-        ],
-        spending: [
-          { date: '2025-08-01', spent: 890, budget: 1000 },
-          { date: '2025-08-02', spent: 780, budget: 1000 },
-          { date: '2025-08-03', spent: 920, budget: 1000 }
-        ],
-        postbacks: [
-          { date: '2025-08-01', sent: 42, received: 40, errors: 2 },
-          { date: '2025-08-02', sent: 38, received: 37, errors: 1 },
-          { date: '2025-08-03', sent: 45, received: 44, errors: 1 }
-        ],
-        fraud: [
-          { date: '2025-08-01', blocked: 5, suspicious: 12 },
-          { date: '2025-08-02', blocked: 3, suspicious: 8 },
-          { date: '2025-08-03', blocked: 4, suspicious: 10 }
-        ]
+        traffic: [],
+        conversions: [],
+        spending: [],
+        postbacks: [],
+        fraud: []
       },
-      topOffers: [
-        { id: '1', name: 'Premium Casino', revenue: 12450, cr: 4.2, epc: 3.1 },
-        { id: '2', name: 'Sports Betting', revenue: 8930, cr: 3.8, epc: 2.7 },
-        { id: '3', name: 'Dating Premium', revenue: 6780, cr: 2.9, epc: 2.1 }
-      ],
+      topOffers: [],
       offerStatusDistribution: {
-        pending: 2,
-        active: 12,
+        pending: 0,
+        active: 0,
         hidden: 0,
-        archived: 1
+        archived: 0
       },
-      notifications: [
-        { id: '1', type: 'success', message: 'Новый партнер подключен к офферу Casino Premium', time: '2 минуты назад' },
-        { id: '2', type: 'warning', message: 'Снижение CR на оффере Sports Betting', time: '15 минут назад' }
-      ]
+      notifications: []
     };
   }
 
