@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 import { Pool } from "pg";
 import rateLimit from "express-rate-limit";
 import compression from "compression";
@@ -43,7 +43,7 @@ if (process.env.ALLOW_SEED === '1') {
         { email: process.env.PARTNER_EMAIL || '4321@gmail.com', username: 'partner', role: 'PARTNER',    pass: process.env.PARTNER_PASSWORD || 'partner123' },
       ];
       for (const u of users) {
-        const hash = await bcrypt.hash(u.pass, 10);
+        const hash = await bcryptjs.hash(u.pass, 10);
         await pool.query(
           `INSERT INTO users (email, username, role, password_hash)
              VALUES ($1,$2,$3,$4)
@@ -70,7 +70,7 @@ app.post('/api/auth/login', async (req,res,next) => {
     if (!r.rows.length) return res.status(401).json({ error:'invalid credentials' });
 
     const u = r.rows[0];
-    const ok = await bcrypt.compare(password, u.password_hash);
+    const ok = await bcryptjs.compare(password, u.password_hash);
     if (!ok) return res.status(401).json({ error:'invalid credentials' });
 
     const token = jwt.sign({ sub: String(u.id), role: u.role, email: u.email, username: u.username }, process.env.JWT_SECRET, { expiresIn: '7d' });

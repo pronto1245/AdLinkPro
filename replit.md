@@ -34,7 +34,7 @@ This platform is an affiliate marketing solution designed to optimize offer mana
 - **Runtime**: Node.js with Express.js.
 - **Language**: TypeScript with ES modules.
 - **Database ORM**: Drizzle ORM for PostgreSQL.
-- **Authentication**: JWT-based with bcrypt for password hashing.
+- **Authentication**: JWT-based with bcryptjs for password hashing.
 - **File Storage**: Google Cloud Storage integration.
 - **Core Functionality**: User, offer, and financial management, fraud detection, and a ticket system. Includes server-side performance optimizations like compression, helmet security, and rate limiting.
 
@@ -85,7 +85,7 @@ This platform is an affiliate marketing solution designed to optimize offer mana
 
 ## Authentication & Security
 - **JWT**: JSON Web Tokens for authentication.
-- **bcrypt**: Password hashing.
+- **bcryptjs**: Password hashing.
 
 ## Runtime Dependencies
 - **Express.js**: Web application framework for Node.js.
