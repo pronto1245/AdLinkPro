@@ -143,6 +143,85 @@ export const bulkConversionSchema = z.object({
 
 export type BulkConversionDTO = z.infer<typeof bulkConversionSchema>;
 
+// Universal webhook DTO for incoming webhooks from external services
+export const universalWebhookDto = z.object({
+  // Event identification
+  event_type: z.enum(['registration', 'deposit', 'approve', 'hold', 'reject', 'lead', 'sale', 'rebill', 'refund', 'chargeback', 'custom']),
+  
+  // Core tracking data
+  clickid: z.string().min(1).max(255),
+  txid: z.string().min(1).max(255).optional(),
+  
+  // Financial data
+  amount: z.number().optional(),
+  revenue: z.number().optional(), 
+  payout: z.number().optional(),
+  currency: z.string().length(3).optional().default('USD'),
+  
+  // Identification parameters
+  offer_id: z.string().optional(),
+  partner_id: z.string().optional(),
+  campaign_id: z.string().optional(),
+  flow_id: z.string().optional(),
+  
+  // Sub parameters (supports up to 16)
+  sub1: z.string().optional(),
+  sub2: z.string().optional(),
+  sub3: z.string().optional(),
+  sub4: z.string().optional(),
+  sub5: z.string().optional(),
+  sub6: z.string().optional(),
+  sub7: z.string().optional(),
+  sub8: z.string().optional(),
+  sub9: z.string().optional(),
+  sub10: z.string().optional(),
+  sub11: z.string().optional(),
+  sub12: z.string().optional(),
+  sub13: z.string().optional(),
+  sub14: z.string().optional(),
+  sub15: z.string().optional(),
+  sub16: z.string().optional(),
+  
+  // User data
+  user_id: z.string().optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  
+  // Geo and device data
+  country: z.string().length(2).optional(),
+  geo: z.string().optional(),
+  device: z.string().optional(),
+  device_type: z.enum(['desktop', 'mobile', 'tablet']).optional(),
+  os: z.string().optional(),
+  browser: z.string().optional(),
+  ip: z.string().ip().optional(),
+  user_agent: z.string().optional(),
+  
+  // UTM parameters
+  utm_source: z.string().optional(),
+  utm_medium: z.string().optional(),
+  utm_campaign: z.string().optional(),
+  utm_term: z.string().optional(),
+  utm_content: z.string().optional(),
+  
+  // Timestamp
+  timestamp: z.string().datetime().optional(),
+  
+  // Custom parameters (key-value pairs)
+  custom: z.record(z.any()).optional(),
+  
+  // Raw data from external system
+  raw: z.record(z.any()).optional(),
+  
+  // Security signature for verification
+  signature: z.string().optional(),
+  
+  // Source identification
+  source: z.string().optional().default('external'),
+});
+
+export type UniversalWebhookDto = z.infer<typeof universalWebhookDto>;
+
 // Response DTOs
 export const conversionResponseSchema = z.object({
   success: z.boolean(),

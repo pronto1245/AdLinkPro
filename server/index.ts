@@ -13,6 +13,7 @@ import cors from 'cors';
 import path from 'node:path';
 import fs from 'node:fs';
 import authRouter from './routes/auth';
+import { apiRouter } from './api-routes';
 
 const app = express();
 
@@ -191,6 +192,9 @@ if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
   app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(publicDir, 'index.html')));
 }
+
+// Mount API routes for enhanced postback system
+app.use('/api', apiRouter);
 
 app.listen(PORT, () => console.log(`API listening on :${PORT}`));
 // @ts-nocheck
