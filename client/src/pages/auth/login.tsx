@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
+import { getRoleBasedRedirect } from '@/lib/auth';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -22,16 +23,72 @@ export default function Login() {
     setLoading(true);
 
     try {
+      console.log('🔐 Login form submitted for user:', username);
+      
       await login(username, password);
       
-      // Small delay to ensure user data is set before redirect
-      setTimeout(() => {
+      // Get the user's role to determine redirect path
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Decode token to get role for redirect
+        try {
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = decodeURIComponent(
+            atob(base64)
+              .split('')
+              .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+              .join('')
+          );
+          const payload = JSON.parse(jsonPayload);
+          const redirectPath = getRoleBasedRedirect(payload.role);
+          
+          console.log('✅ Login successful, redirecting to:', redirectPath);
+          
+          toast({
+            title: "Login Successful",
+            description: `Welcome back! Redirecting to ${payload.role} dashboard...`,
+            variant: "default",
+          });
+          
+          // Small delay to ensure auth state is fully updated
+          setTimeout(() => {
+            setLocation(redirectPath);
+          }, 100);
+        } catch (decodeError) {
+          console.error('Failed to decode token for redirect:', decodeError);
+          // Fallback to default redirect
+          setLocation('/');
+        }
+      } else {
+        // Fallback if no token found
         setLocation('/');
-      }, 100);
+      }
     } catch (error: any) {
+      console.error('❌ Login failed:', error);
+      
+      let errorMessage = "Invalid credentials";
+      
+      // Handle different types of errors
+      if (error.message) {
+        if (error.message.includes('HTTP 401')) {
+          errorMessage = "Invalid username or password";
+        } else if (error.message.includes('HTTP 429')) {
+          errorMessage = "Too many login attempts. Please try again later.";
+        } else if (error.message.includes('HTTP 500')) {
+          errorMessage = "Server error. Please try again later.";
+        } else if (error.message.includes('No token received')) {
+          errorMessage = "Authentication failed. Please try again.";
+        } else if (error.message.includes('expired token')) {
+          errorMessage = "Session expired. Please try again.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid credentials",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
