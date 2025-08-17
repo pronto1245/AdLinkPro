@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест регистрации - AdLinkPro</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .success-message {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 AdLinkPro</h1>
+        <p>Тест регистрации партнёра и рекламодателя</p>
+    </div>
+
+    <div class="form-container">
+        <h2>Регистрация</h2>
+        
+        <form id="registrationForm">
+            <div class="form-group">
+                <label for="role">Тип аккаунта:</label>
+                <select id="role" name="role" required>
+                    <option value="affiliate">Партнёр</option>
+                    <option value="advertiser">Рекламодатель</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="firstName">Имя:</label>
+                <input type="text" id="firstName" name="firstName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">Фамилия:</label>
+                <input type="text" id="lastName" name="lastName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Имя пользователя:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="company">Компания (необязательно):</label>
+                <input type="text" id="company" name="company">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" required minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Подтвердите пароль:</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6">
+            </div>
+
+            <button type="submit" id="submitBtn">Зарегистрироваться</button>
+        </form>
+
+        <div id="successMessage" class="success-message">
+            <h3>✅ Регистрация завершена!</h3>
+            <p id="successText"></p>
+        </div>
+
+        <div id="errorMessage" class="error-message">
+            <h3>❌ Ошибка регистрации</h3>
+            <p id="errorText"></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const successDiv = document.getElementById('successMessage');
+            const errorDiv = document.getElementById('errorMessage');
+            const successText = document.getElementById('successText');
+            const errorText = document.getElementById('errorText');
+            
+            // Hide previous messages
+            successDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+            
+            // Get form data
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Validate passwords
+            if (data.password !== data.confirmPassword) {
+                errorText.textContent = 'Пароли не совпадают';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (data.password.length < 6) {
+                errorText.textContent = 'Пароль должен содержать минимум 6 символов';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Регистрация...';
+            
+            try {
+                // Simulate API call - replace with actual endpoint when database is available
+                console.log('Registration data:', data);
+                
+                // For demo purposes, simulate successful registration
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Show success message
+                const role = data.role === 'affiliate' ? 'партнёра' : 'рекламодателя';
+                successText.innerHTML = `
+                    <strong>Регистрация ${role} прошла успешно!</strong><br>
+                    С вами свяжется наш менеджер для активации аккаунта в течение 24 часов.<br><br>
+                    Email подтверждения отправлен на: <strong>${data.email}</strong>
+                `;
+                successDiv.style.display = 'block';
+                
+                // Reset form
+                e.target.reset();
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                errorText.textContent = 'Произошла ошибка при регистрации. Попробуйте снова.';
+                errorDiv.style.display = 'block';
+            } finally {
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Зарегистрироваться';
+            }
+        });
+    </script>
+</body>
+</html>
