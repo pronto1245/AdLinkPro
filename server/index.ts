@@ -14,6 +14,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import authRouter from './routes/auth';
 
+import enhancedAuthRouter from './enhanced-auth.routes';
+
 const app = express();
 
 // == PG & Users table ==
@@ -151,7 +153,8 @@ app.options('*', corsMw);
 // --- Health ---
 app.get('/health', (_req, res) => res.status(200).json({ ok: true }));
 
-// --- API: логин
+// --- API: auth routes (enhanced) ---
+app.use('/api/enhanced-auth', enhancedAuthRouter);
 app.use('/api', authRouter);
 
 // --- простая проверка токена для стабов ---

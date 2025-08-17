@@ -34,6 +34,9 @@ export interface AuthResponse {
 
 export class AuthService {
   private static TOKEN_KEY = 'auth_token';
+  private static REFRESH_TOKEN_KEY = 'refresh_token';
+  private static TOKEN_EXPIRES_KEY = 'token_expires_at';
+  private static refreshPromise: Promise<string | null> | null = null;
 
   static getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
@@ -45,14 +48,55 @@ export class AuthService {
 
   static removeToken(): void {
     localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    localStorage.removeItem(this.TOKEN_EXPIRES_KEY);
+  }
+
+  static getRefreshToken(): string | null {
+    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+  }
+
+  static setRefreshToken(token: string): void {
+    localStorage.setItem(this.REFRESH_TOKEN_KEY, token);
+  }
+
+  static setTokenExpiration(expiresIn: number): void {
+    const expiresAt = Date.now() + (expiresIn * 1000);
+    localStorage.setItem(this.TOKEN_EXPIRES_KEY, expiresAt.toString());
+  }
+
+  static getTokenExpiration(): number | null {
+    const expiresAt = localStorage.getItem(this.TOKEN_EXPIRES_KEY);
+    return expiresAt ? parseInt(expiresAt, 10) : null;
+  }
+
+  static isTokenExpiringSoon(bufferMinutes: number = 2): boolean {
+    const expiresAt = this.getTokenExpiration();
+    if (!expiresAt) return true;
+    
+    const bufferMs = bufferMinutes * 60 * 1000;
+    return Date.now() + bufferMs >= expiresAt;
   }
 
   static async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await apiRequest('/api/auth/login', 'POST', credentials);
+    const response = await apiRequest('/api/enhanced-auth/login', 'POST', credentials);
     const data = await response.json();
     
-    this.setToken(data.token);
-    return data;
+    if (data.success) {
+      this.setToken(data.accessToken);
+      this.setRefreshToken(data.refreshToken);
+      this.setTokenExpiration(data.expiresIn);
+      
+      // Set up automatic token refresh
+      this.scheduleTokenRefresh(data.expiresIn);
+      
+      return {
+        token: data.accessToken,
+        user: data.user
+      };
+    } else {
+      throw new Error(data.message || data.error || 'Login failed');
+    }
   }
 
   static async register(data: RegisterData): Promise<AuthResponse> {
@@ -64,30 +108,59 @@ export class AuthService {
   }
 
   static async getCurrentUser(): Promise<User> {
-    const token = this.getToken();
+    const token = await this.getValidToken();
     if (!token) {
       throw new Error('No authentication token found');
     }
 
-    const response = await fetch('/api/auth/me', {
+    const response = await fetch('/api/enhanced-auth/me', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
     });
 
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      
       if (response.status === 401) {
         this.removeToken();
-        throw new Error('Authentication expired');
+        
+        if (errorData.code === 'ACCESS_TOKEN_EXPIRED') {
+          // Try to refresh token
+          const newToken = await this.refreshToken();
+          if (newToken) {
+            // Retry with new token
+            return this.getCurrentUser();
+          }
+        }
+        
+        throw new Error(errorData.message || 'Authentication expired');
       }
-      throw new Error('Failed to fetch user data');
+      throw new Error(errorData.message || 'Failed to fetch user data');
     }
 
-    return response.json();
+    const data = await response.json();
+    return data.user;
   }
 
-  static logout(): void {
-    this.removeToken();
+  static async logout(): Promise<void> {
+    const refreshToken = this.getRefreshToken();
+    
+    try {
+      if (refreshToken) {
+        await fetch('/api/enhanced-auth/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ refreshToken }),
+        });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      this.removeToken();
+    }
   }
 
   static isAuthenticated(): boolean {
@@ -95,13 +168,99 @@ export class AuthService {
   }
 
   static async refreshToken(): Promise<string | null> {
-    try {
-      const user = await this.getCurrentUser();
-      return this.getToken();
-    } catch (error) {
+    // Prevent multiple simultaneous refresh attempts
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
       this.removeToken();
       return null;
     }
+
+    try {
+      this.refreshPromise = this.performTokenRefresh(refreshToken);
+      const newToken = await this.refreshPromise;
+      return newToken;
+    } finally {
+      this.refreshPromise = null;
+    }
+  }
+
+  private static async performTokenRefresh(refreshToken: string): Promise<string | null> {
+    try {
+      const response = await fetch('/api/enhanced-auth/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Token refresh failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        this.setToken(data.accessToken);
+        this.setRefreshToken(data.refreshToken);
+        this.setTokenExpiration(data.expiresIn);
+        
+        // Schedule next refresh
+        this.scheduleTokenRefresh(data.expiresIn);
+        
+        return data.accessToken;
+      } else {
+        throw new Error(data.message || data.error || 'Token refresh failed');
+      }
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      this.removeToken();
+      
+      // Notify user about session expiration
+      this.notifySessionExpired();
+      return null;
+    }
+  }
+
+  private static scheduleTokenRefresh(expiresIn: number): void {
+    // Schedule refresh 2 minutes before expiration
+    const refreshDelay = Math.max((expiresIn - 120) * 1000, 0);
+    
+    setTimeout(() => {
+      if (this.isAuthenticated()) {
+        this.refreshToken();
+      }
+    }, refreshDelay);
+  }
+
+  private static notifySessionExpired(): void {
+    // This would integrate with your notification system
+    // For now, we'll just dispatch a custom event
+    window.dispatchEvent(new CustomEvent('auth:sessionExpired', {
+      detail: {
+        message: 'Your session has expired. Please log in again.',
+        action: 'redirect-to-login'
+      }
+    }));
+  }
+
+  static async getValidToken(): Promise<string | null> {
+    const currentToken = this.getToken();
+    
+    if (!currentToken) {
+      return null;
+    }
+
+    // Check if token is expiring soon and refresh if needed
+    if (this.isTokenExpiringSoon()) {
+      return this.refreshToken();
+    }
+
+    return currentToken;
   }
 
   static getAuthHeaders(): Record<string, string> {
@@ -114,6 +273,66 @@ export class AuthService {
       'Authorization': `Bearer ${token}`,
     };
   }
+
+  // Enhanced API request helper with automatic token refresh
+  static async makeAuthenticatedRequest(
+    url: string, 
+    method: string = 'GET', 
+    body?: any
+  ): Promise<Response> {
+    const token = await this.getValidToken();
+    if (!token) {
+      throw new Error('No valid authentication token available');
+    }
+
+    const headers: Record<string, string> = {
+      'Authorization': `Bearer ${token}`,
+    };
+
+    if (body && typeof body === 'object') {
+      headers['Content-Type'] = 'application/json';
+      body = JSON.stringify(body);
+    }
+
+    const response = await fetch(url, {
+      method,
+      headers,
+      body,
+    });
+
+    // If token expired, try to refresh and retry
+    if (response.status === 401) {
+      const newToken = await this.refreshToken();
+      if (newToken) {
+        headers['Authorization'] = `Bearer ${newToken}`;
+        return fetch(url, {
+          method,
+          headers,
+          body,
+        });
+      }
+    }
+
+    return response;
+  }
+
+  // Initialize auth service - call this on app startup
+  static initialize(): void {
+    // Check if we have tokens and set up refresh scheduling
+    const token = this.getToken();
+    const expiresAt = this.getTokenExpiration();
+    
+    if (token && expiresAt) {
+      const expiresIn = Math.max((expiresAt - Date.now()) / 1000, 0);
+      if (expiresIn > 0) {
+        this.scheduleTokenRefresh(expiresIn);
+      } else {
+        // Token already expired, try to refresh
+        this.refreshToken();
+      }
+    }
+  }
+}
 }
 
 // Helper function to check if user has required role
