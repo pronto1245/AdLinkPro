@@ -907,7 +907,7 @@ export function AffiliatePostbacks() {
                           title="Удалить этот профиль"
                         >
                           <Trash2 size={20} />
-{t('common.delete', 'УДАЛИТЬ')}
+                          {t('common.delete', 'УДАЛИТЬ')}
                         </button>
                       </div>
                     </div>
@@ -926,7 +926,7 @@ export function AffiliatePostbacks() {
                     }}
                     className="bg-red-600 hover:bg-red-700 text-white"
                   >
-{t('common.refresh', 'ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА')}
+                    {t('common.refresh', 'ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА')}
                   </Button>
                 </div>
               )}
