@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { EventSender } from '@/components/events/EventSender';
 import { QuickEventButtons } from '@/components/events/QuickEventButtons';
 import { EventHistory } from '@/components/events/EventHistory';
@@ -7,11 +8,12 @@ import { Separator } from '@/components/ui/separator';
 import { Activity, TestTube, History } from 'lucide-react';
 
 export function EventTesting() {
+  const { t } = useTranslation();
   return (
     <div className="container mx-auto py-8 space-y-8">
       <div className="flex items-center gap-2">
         <TestTube className="h-6 w-6" />
-        <h1 className="text-3xl font-bold">Тестирование событий</h1>
+        <h1 className="text-3xl font-bold">{t('eventTesting.title')}</h1>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -29,10 +31,10 @@ export function EventTesting() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5" />
-                Быстрые действия
+                {t('eventTesting.quickActions')}
               </CardTitle>
               <CardDescription>
-                Отправка событий одной кнопкой для тестирования
+                {t('eventTesting.quickActionsDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -627,6 +627,31 @@
     "name": "Название",
     "description": "Описание"
   },
+  "eventTesting": {
+    "title": "Тестирование событий",
+    "quickActions": "Быстрые действия",
+    "quickActionsDesc": "Отправка событий одной кнопкой для тестирования",
+    "instructions": "Инструкции",
+    "eventTypes": "Типы событий",
+    "eventTypesDesc": {
+      "reg": "reg — регистрация пользователя",
+      "purchase": "purchase — покупка/депозит"
+    },
+    "antifraudLevels": "Антифрод уровни",
+    "antifraudLevelsDesc": {
+      "ok": "ok — чистый трафик, проходит везде",
+      "soft": "soft — подозрительный, некоторые источники могут блокировать",
+      "hard": "hard — высокий риск, большинство источников заблокируют"
+    },
+    "statusProgression": "Прогрессия статусов",
+    "statusProgressionDesc": "initiated → pending → approved или initiated → declined",
+    "testingTips": "Советы по тестированию",
+    "testingTipsDesc": {
+      "uniqueIds": "Используйте уникальные click_id и tx_id для каждого теста",
+      "checkLogs": "Проверяйте логи доставки после отправки событий",
+      "webhook": "Webhook апрув меняет статус с initiated на approved"
+    }
+  },
   "statistics": {
     "title": "Статистика партнёра",
     "subtitle": "Детальная аналитика по кликам и конверсиям с реальными данными",

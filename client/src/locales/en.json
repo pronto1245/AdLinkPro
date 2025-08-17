@@ -385,6 +385,31 @@
     "name": "Name",
     "description": "Description"
   },
+  "eventTesting": {
+    "title": "Event Testing",
+    "quickActions": "Quick Actions",
+    "quickActionsDesc": "Send events with one button for testing",
+    "instructions": "Instructions",
+    "eventTypes": "Event Types",
+    "eventTypesDesc": {
+      "reg": "reg — user registration",
+      "purchase": "purchase — purchase/deposit"
+    },
+    "antifraudLevels": "Anti-fraud Levels",
+    "antifraudLevelsDesc": {
+      "ok": "ok — clean traffic, passes everywhere",
+      "soft": "soft — suspicious, some sources may block",
+      "hard": "hard — high risk, most sources will block"
+    },
+    "statusProgression": "Status Progression",
+    "statusProgressionDesc": "initiated → pending → approved or initiated → declined",
+    "testingTips": "Testing Tips",
+    "testingTipsDesc": {
+      "uniqueIds": "Use unique click_id and tx_id for each test",
+      "checkLogs": "Check delivery logs after sending events",
+      "webhook": "Webhook approval changes status from initiated to approved"
+    }
+  },
   "statistics": {
     "title": "Partner Statistics",
     "subtitle": "Detailed analytics of clicks and conversions with real data",
