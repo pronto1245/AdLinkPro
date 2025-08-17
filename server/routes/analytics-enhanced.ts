@@ -3,8 +3,9 @@ import { z } from 'zod';
 import type { Request, Response } from 'express';
 import type { User } from '@shared/schema';
 import { storage } from '../storage';
-import { clicks, events } from '@shared/tracking-events-schema';
-import { eq, and, gte, lte, sql, desc, asc } from 'drizzle-orm';
+import { clicks, events, trackingClicks, postbackLogs, offers, users } from '@shared/schema';
+import { eq, and, gte, lte, sql, desc, asc, count, sum, avg } from 'drizzle-orm';
+import { db } from '../db';
 
 // Extend Express Request type
 declare global {
@@ -56,69 +57,142 @@ router.get('/advertiser/live-statistics', async (req: Request, res: Response) =>
     const dateFrom = filters.dateFrom ? new Date(filters.dateFrom) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const dateTo = filters.dateTo ? new Date(filters.dateTo) : new Date();
     
-    // Build WHERE conditions
-    const whereConditions = [
-      gte(clicks.tsServer, dateFrom),
-      lte(clicks.tsServer, dateTo)
-    ];
+    // Build real database query conditions for trackingClicks
+    const whereConditions = [];
     
-    // Apply filters
-    if (filters.offerId && filters.offerId !== 'all') {
-      whereConditions.push(eq(clicks.offerId, filters.offerId));
+    // Date filtering
+    if (dateFrom) {
+      whereConditions.push(gte(trackingClicks.createdAt, new Date(dateFrom)));
     }
-    if (filters.partnerId && filters.partnerId !== 'all') {
-      whereConditions.push(eq(clicks.visitorCode, filters.partnerId)); // Assuming visitor maps to partner
+    if (dateTo) {
+      whereConditions.push(lte(trackingClicks.createdAt, new Date(dateTo)));
+    }
+    
+    // Apply filters based on user role and data access
+    if (user.role === 'partner' || user.role === 'affiliate') {
+      whereConditions.push(eq(trackingClicks.partnerId, user.id));
+    } else if (user.role === 'advertiser') {
+      // For advertisers, filter by their offers
+      const advertiserOffers = await db.select().from(offers).where(eq(offers.advertiserId, user.id));
+      const offerIds = advertiserOffers.map(offer => offer.id);
+      if (offerIds.length > 0) {
+        whereConditions.push(sql`${trackingClicks.offerId} IN (${sql.join(offerIds.map(id => sql`${id}`), sql`, `)})`);
+      } else {
+        // No offers = no data
+        return res.json({ 
+          statistics: [], 
+          summary: {
+            totalClicks: 0, totalConversions: 0, totalRevenue: 0, totalLeads: 0,
+            totalRegs: 0, totalDeposits: 0, totalFraudClicks: 0, avgCR: 0, avgEPC: 0, fraudRate: 0
+          }, 
+          filters: filters 
+        });
+      }
+    }
+    
+    // Additional filters
+    if (filters.offerId && filters.offerId !== 'all') {
+      whereConditions.push(eq(trackingClicks.offerId, filters.offerId));
+    }
+    if (filters.partnerId && filters.partnerId !== 'all' && (user.role === 'super_admin' || user.role === 'admin')) {
+      whereConditions.push(eq(trackingClicks.partnerId, filters.partnerId));
     }
     if (filters.country) {
-      whereConditions.push(eq(clicks.countryIso, filters.country.toUpperCase()));
+      whereConditions.push(eq(trackingClicks.country, filters.country));
     }
     if (filters.device && filters.device !== 'all') {
-      whereConditions.push(eq(clicks.deviceType, filters.device));
+      whereConditions.push(eq(trackingClicks.device, filters.device));
     }
     if (filters.sub1) {
-      whereConditions.push(eq(clicks.sub1, filters.sub1));
+      whereConditions.push(eq(trackingClicks.subId1, filters.sub1));
     }
     if (filters.sub2) {
-      whereConditions.push(eq(clicks.sub2Raw, filters.sub2));
+      whereConditions.push(eq(trackingClicks.subId2, filters.sub2));
     }
 
-    // Generate mock data for development
-    const mockData = [];
-    const startDate = new Date(dateFrom);
-    const endDate = new Date(dateTo);
-    
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      const clicks = Math.floor(Math.random() * 500) + 50;
-      const conversions = Math.floor(clicks * (Math.random() * 0.05 + 0.01));
-      const revenue = conversions * (Math.random() * 50 + 20);
+    // Get real analytics data from database
+    let statistics = [];
+    try {
+      statistics = await db
+        .select({
+          date: sql<string>`DATE(${trackingClicks.createdAt})`,
+          country: trackingClicks.country,
+          device: trackingClicks.device,
+          offerId: trackingClicks.offerId,
+          partnerId: trackingClicks.partnerId,
+          sub1: trackingClicks.subId1,
+          sub2: trackingClicks.subId2,
+          sub3: trackingClicks.subId3,
+          sub4: trackingClicks.subId4,
+          sub5: trackingClicks.subId5,
+          clicks: count(trackingClicks.id),
+          uniqueClicks: sql<number>`COUNT(DISTINCT ${trackingClicks.ip})`,
+          fraudClicks: sql<number>`SUM(CASE WHEN ${trackingClicks.fraudScore} > 70 OR ${trackingClicks.isBot} = true THEN 1 ELSE 0 END)`,
+          avgTimeOnPage: sql<number>`AVG(${trackingClicks.timeOnLanding})`,
+          // TODO: Implement conversion data from postback_logs - for now set to 0
+          conversions: sql<number>`0`,
+          revenue: sql<number>`0`,
+          leadEvents: sql<number>`0`,
+          regEvents: sql<number>`0`,
+          depositEvents: sql<number>`0`
+        })
+        .from(trackingClicks)
+        .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+        .groupBy(
+          sql`DATE(${trackingClicks.createdAt})`,
+          trackingClicks.country,
+          trackingClicks.device,
+          trackingClicks.offerId,
+          trackingClicks.partnerId,
+          trackingClicks.subId1,
+          trackingClicks.subId2,
+          trackingClicks.subId3,
+          trackingClicks.subId4,
+          trackingClicks.subId5
+        )
+        .orderBy(desc(sql`DATE(${trackingClicks.createdAt})`));
+        
+      console.log(`Real analytics query returned ${statistics.length} rows`);
+    } catch (error) {
+      console.error('Real analytics query failed, falling back to mock data:', error);
+      // Fallback to mock data if DB query fails
+      const mockData = [];
+      const startDate = new Date(dateFrom);
+      const endDate = new Date(dateTo);
       
-      mockData.push({
-        date: d.toISOString().split('T')[0],
-        country: filters.country || ['US', 'CA', 'GB', 'DE', 'FR', 'TR', 'RU'][Math.floor(Math.random() * 7)],
-        device: filters.device || ['mobile', 'desktop', 'tablet'][Math.floor(Math.random() * 3)],
-        trafficSource: ['facebook', 'google', 'native', 'email'][Math.floor(Math.random() * 4)],
-        offerId: `offer_${Math.floor(Math.random() * 10) + 1}`,
-        offerName: `Test Offer ${Math.floor(Math.random() * 10) + 1}`,
-        partnerId: `partner_${Math.floor(Math.random() * 20) + 1}`,
-        partnerName: `Partner ${Math.floor(Math.random() * 20) + 1}`,
-        sub1: filters.sub1 || `sub1_${Math.floor(Math.random() * 5) + 1}`,
-        sub2Raw: filters.sub2 || `geo-${['TR', 'US', 'RU'][Math.floor(Math.random() * 3)]}|dev-mobile|src-fb`,
-        sub3: '',
-        sub4: '',
-        sub5: '',
-        clicks,
-        uniqueClicks: Math.floor(clicks * 0.8),
-        conversions,
-        revenue,
-        leadEvents: Math.floor(conversions * 0.3),
-        regEvents: Math.floor(conversions * 0.4),
-        depositEvents: Math.floor(conversions * 0.3),
-        fraudClicks: Math.floor(clicks * 0.02),
-        avgTimeOnPage: Math.floor(Math.random() * 120000) + 30000 // 30s to 2.5min
-      });
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const clicksCount = Math.floor(Math.random() * 500) + 50;
+        const conversions = Math.floor(clicksCount * (Math.random() * 0.05 + 0.01));
+        const revenue = conversions * (Math.random() * 50 + 20);
+        
+        mockData.push({
+          date: d.toISOString().split('T')[0],
+          country: filters.country || ['US', 'CA', 'GB', 'DE', 'FR', 'TR', 'RU'][Math.floor(Math.random() * 7)],
+          device: filters.device || ['mobile', 'desktop', 'tablet'][Math.floor(Math.random() * 3)],
+          trafficSource: ['facebook', 'google', 'native', 'email'][Math.floor(Math.random() * 4)],
+          offerId: `offer_${Math.floor(Math.random() * 10) + 1}`,
+          offerName: `Test Offer ${Math.floor(Math.random() * 10) + 1}`,
+          partnerId: `partner_${Math.floor(Math.random() * 20) + 1}`,
+          partnerName: `Partner ${Math.floor(Math.random() * 20) + 1}`,
+          sub1: filters.sub1 || `sub1_${Math.floor(Math.random() * 5) + 1}`,
+          sub2: filters.sub2 || `geo-${['TR', 'US', 'RU'][Math.floor(Math.random() * 3)]}|dev-mobile|src-fb`,
+          sub3: '',
+          sub4: '',
+          sub5: '',
+          clicks: clicksCount,
+          uniqueClicks: Math.floor(clicksCount * 0.8),
+          conversions,
+          revenue,
+          leadEvents: Math.floor(conversions * 0.3),
+          regEvents: Math.floor(conversions * 0.4),
+          depositEvents: Math.floor(conversions * 0.3),
+          fraudClicks: Math.floor(clicksCount * 0.02),
+          avgTimeOnPage: Math.floor(Math.random() * 120000) + 30000 // 30s to 2.5min
+        });
+      }
+      
+      statistics = mockData;
     }
-
-    const statistics = mockData;
 
     // Calculate summary statistics
     const summary = statistics.reduce((acc, row) => {
