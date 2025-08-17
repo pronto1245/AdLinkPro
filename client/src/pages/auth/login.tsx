@@ -70,32 +70,6 @@ export default function Login() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm">
-              <div className="font-medium text-blue-800 dark:text-blue-200 mb-2">Быстрый вход:</div>
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => { setUsername('superadmin'); setPassword('password123'); }}
-                  className="block w-full text-left p-2 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 rounded text-xs"
-                >
-                  <strong>👑 Супер-админ:</strong> superadmin / password123
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setUsername('advertiser1'); setPassword('password123'); }}
-                  className="block w-full text-left p-2 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 rounded text-xs"
-                >
-                  <strong>🏢 Рекламодатель:</strong> advertiser1 / password123
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setUsername('test_affiliate'); setPassword('password123'); }}
-                  className="block w-full text-left p-2 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/30 rounded text-xs"
-                >
-                  <strong>🤝 Партнер:</strong> test_affiliate / password123
-                </button>
-              </div>
-            </div>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -129,6 +103,30 @@ export default function Login() {
                 {loading ? 'Loading...' : t('sign_in')}
               </Button>
             </form>
+            
+            <div className="mt-6 space-y-3">
+              <div className="text-sm text-center text-slate-600 dark:text-slate-400">
+                Еще нет аккаунта?
+              </div>
+              <div className="grid grid-cols-1 gap-3">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setLocation('/register/partner')}
+                  data-testid="button-become-partner"
+                >
+                  🤝 Стать партнёром
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setLocation('/register/advertiser')}
+                  data-testid="button-become-advertiser"
+                >
+                  🏢 Стать рекламодателем
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
