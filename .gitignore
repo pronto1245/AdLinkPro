@@ -14,3 +14,21 @@ Thumbs.db
 
 # Local Netlify folder
 .netlify
+
+# Test and demo artifacts (production ready)
+.*token*
+.*hash
+.*_pid
+test-*.html
+demo-*.html  
+demo-*.zip
+test-*.zip
+*-demo-*.zip
+COPY_*.txt
+auth_response.json
+partner_login.json
+dns-monitor.log
+*.tar
+*.tar.gz
+AFFILIATE_PRO_*
+ГОТОВ*

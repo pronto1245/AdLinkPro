@@ -4796,162 +4796,23 @@ export class DatabaseStorage implements IStorage {
   // End of DatabaseStorage class
 }
 
-// Basic in-memory storage implementation for demo
+// Basic in-memory storage implementation - now uses empty data for production
 class MemStorage implements IStorage {
   private users: User[] = [
-    {
-      id: '1',
-      username: 'superadmin',
-      email: 'admin@example.com', 
-      password: 'password123',
-      role: 'super_admin',
-      firstName: 'Super',
-      lastName: 'Admin',
-      isActive: true,
-      status: 'active',
-      userType: 'admin',
-      language: 'en',
-      timezone: 'UTC',
-      currency: 'USD',
-      kycStatus: 'pending',
-      balance: '0.00',
-      holdAmount: '0.00',
-      registrationApproved: false,
-      documentsVerified: false,
-      isBlocked: false,
-      isDeleted: false,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: '2',
-      username: 'advertiser1',
-      email: 'advertiser1@example.com', 
-      password: 'password123',
-      role: 'advertiser',
-      firstName: 'Тест',
-      lastName: 'Рекламодатель',
-      company: 'Тестовая Компания',
-      phone: '+79999999999',
-      isActive: true,
-      status: 'active',
-      userType: 'advertiser',
-      language: 'ru',
-      timezone: 'UTC',
-      currency: 'USD',
-      kycStatus: 'approved',
-      balance: '0.00',
-      holdAmount: '0.00',
-      registrationApproved: true,
-      documentsVerified: true,
-      isBlocked: false,
-      isDeleted: false,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: '3',
-      username: 'test_affiliate',
-      email: 'affiliate@test.com',
-      password: 'password123',
-      role: 'affiliate',
-      firstName: 'Тест',
-      lastName: 'Партнер',
-      company: 'Партнерская Компания',
-      phone: '+79888888888',
-      isActive: true,
-      status: 'active',
-      userType: 'partner',
-      language: 'ru',
-      timezone: 'UTC',
-      currency: 'USD',
-      kycStatus: 'approved',
-      balance: '0.00',
-      holdAmount: '0.00',
-      registrationApproved: true,
-      documentsVerified: true,
-      isBlocked: false,
-      isDeleted: false,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
+    // PRODUCTION READY - No demo users. All users should be created through proper registration flow.
+    // Use DatabaseStorage for persistent user data in production.
   ];
   private offers: Offer[] = [
-    // ОЧИЩЕНО - все офферы теперь создаются через API и сохраняются в базу данных
+    // PRODUCTION READY - All offers are created through API and stored in database
   ];
   private statistics: any[] = [];
   private postbacks: any[] = [];
   private fraudReports: any[] = [];
   private customDomains: any[] = [];
-  // Постбеки в памяти
-  private postbackTemplates: any[] = [
-    {
-      id: 'tpl_001',
-      name: 'Основной трекер',
-      url: 'https://tracker.com/postback?click_id={clickid}&status={status}&payout={payout}',
-      events: ['sale', 'lead'],
-      level: 'global',
-      timeout: 30,
-      retryAttempts: 3,
-      isActive: true,
-      createdAt: '2025-08-04T10:00:00Z',
-      updatedAt: '2025-08-04T10:00:00Z'
-    },
-    {
-      id: 'tpl_002', 
-      name: 'Кейтаро интеграция',
-      url: 'https://keitaro.tracker.com/api/v1/postback?subid={subid}&status={status}&sum={payout}&offer={offer_id}',
-      events: ['sale', 'lead', 'registration'],
-      level: 'partner',
-      partnerId: 'user_003',
-      timeout: 60,
-      retryAttempts: 5,
-      isActive: true,
-      createdAt: '2025-08-04T11:30:00Z',
-      updatedAt: '2025-08-04T11:30:00Z'
-    }
-  ];
-  private postbackLogs: any[] = [
-    {
-      id: 'log_001',
-      postbackId: 'tpl_001',
-      postbackName: 'Основной трекер',
-      conversionId: 'conv_001',
-      offerId: 'offer_001',
-      offerName: 'Gambling Offer Premium',
-      partnerId: 'user_003',
-      partnerName: 'Partner Alpha',
-      url: 'https://tracker.com/postback?click_id=abc123&status=sale&payout=50.00',
-      method: 'GET',
-      headers: {
-        'User-Agent': 'AffiliateTracker/1.0',
-        'Content-Type': 'application/json'
-      },
-      payload: {},
-      responseCode: 200,
-      responseBody: '{"status":"ok","message":"Conversion recorded"}',
-      responseTime: 247,
-      status: 'success',
-      errorMessage: null,
-      attempt: 1,
-      maxAttempts: 3,
-      nextRetryAt: null,
-      completedAt: '2025-08-04T12:15:30Z',
-      createdAt: '2025-08-04T12:15:28Z'
-    }
-  ];
-  private globalPostbacks: any[] = [
-    {
-      id: 'global_001',
-      name: 'Глобальный постбек трекера',
-      url: 'https://tracker.com/global/postback?event={event}&value={value}',
-      events: ['all'],
-      isActive: true,
-      priority: 1,
-      createdAt: '2025-08-04T10:00:00Z',
-      updatedAt: '2025-08-04T10:00:00Z'
-    }
-  ];
+  // Production ready - postback templates should be created through admin interface
+  private postbackTemplates: any[] = [];
+  private postbackLogs: any[] = [];
+  private globalPostbacks: any[] = [];
 
   async getUser(id: string): Promise<User | undefined> {
     return this.users.find(u => u.id === id);
@@ -5431,25 +5292,8 @@ class MemStorage implements IStorage {
     // Mock implementation
   }
 
-  // Custom Domains methods for MemStorage - pure in-memory implementation
-  private customDomains: any[] = [
-    {
-      id: '1',
-      domain: 'track.example.com',
-      type: 'cname',
-      status: 'verified',
-      verificationValue: 'affiliate-tracker.replit.app',
-      targetValue: 'affiliate-tracker.replit.app',
-      dnsInstructions: {
-        type: 'CNAME',
-        host: 'track',
-        value: 'affiliate-tracker.replit.app'
-      },
-      createdAt: new Date(),
-      verifiedAt: new Date(),
-      advertiserId: '2'
-    }
-  ];
+  // Custom Domains methods for MemStorage - production ready
+  private customDomains: any[] = [];
 
   async getCustomDomains(userId: string): Promise<any[]> {
     // Pure in-memory - no database calls

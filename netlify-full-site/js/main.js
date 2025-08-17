@@ -118,11 +118,11 @@ function showProfile() {
         <div class="profile-form">
             <div class="form-group">
                 <label>Имя пользователя:</label>
-                <input type="text" value="advertiser1" readonly>
+                <input type="text" value="" placeholder="Введите имя пользователя">
             </div>
             <div class="form-group">
                 <label>Email:</label>
-                <input type="email" value="advertiser@example.com">
+                <input type="email" value="" placeholder="Введите email">
             </div>
             <div class="form-group">
                 <label>Роль:</label>

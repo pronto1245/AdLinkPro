@@ -9,7 +9,7 @@ export function registerDevRoutes(app: Express) {
       const secret = process.env.JWT_SECRET;
       if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });
       const token = (jwt as any).sign(
-        { sub: 'dev-admin', role: 'ADMIN', email: process.env.SEED_EMAIL || 'admin@example.com', username: process.env.SEED_USERNAME || 'admin' },
+        { sub: 'dev-admin', role: 'ADMIN', email: process.env.SEED_EMAIL || process.env.ADMIN_EMAIL || 'admin@localhost', username: process.env.SEED_USERNAME || process.env.ADMIN_USERNAME || 'admin' },
         secret as any, { expiresIn: '7d' }
       );
       return res.json({ token });

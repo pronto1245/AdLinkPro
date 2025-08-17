@@ -1,17 +1,17 @@
 // Test antifraud integration in postback system
-const baseUrl = 'http://localhost:5000';
+const baseUrl = process.env.API_BASE_URL || 'http://localhost:5000';
 
 // Test data for antifraud scenarios
 const testCases = [
   {
     name: 'Hard Antifraud - Should Block All Profiles',
     data: {
-      conversionId: 'conv_hard_af_demo_001',
+      conversionId: 'conv_hard_af_001',
       advertiserId: '1',
       partnerId: 'test',
       clickid: 'hard_block_test_123',
       type: 'purchase',
-      txid: 'tx_hard_demo_001',
+      txid: 'tx_hard_001',
       status: 'approved',
       revenue: '199.99',
       currency: 'USD',
@@ -22,12 +22,12 @@ const testCases = [
   {
     name: 'Soft Antifraud - Backup Should Block Approved',
     data: {
-      conversionId: 'conv_soft_af_demo_001',
+      conversionId: 'conv_soft_af_001',
       advertiserId: '1',
       partnerId: 'test',
       clickid: 'soft_block_test_123',
       type: 'purchase',
-      txid: 'tx_soft_demo_001',
+      txid: 'tx_soft_001',
       status: 'approved',
       revenue: '149.99',
       currency: 'EUR',
@@ -38,12 +38,12 @@ const testCases = [
   {
     name: 'Clean Conversion - Should Pass All',
     data: {
-      conversionId: 'conv_clean_demo_001',
+      conversionId: 'conv_clean_001',
       advertiserId: '1',
       partnerId: 'test',
       clickid: 'clean_test_123',
       type: 'purchase',
-      txid: 'tx_clean_demo_001',
+      txid: 'tx_clean_001',
       status: 'approved',
       revenue: '99.99',
       currency: 'USD',
@@ -54,12 +54,12 @@ const testCases = [
   {
     name: 'Soft Pending - Should Pass All Including Backup',
     data: {
-      conversionId: 'conv_soft_pending_demo_001',
+      conversionId: 'conv_soft_pending_001',
       advertiserId: '1',
       partnerId: 'test',
       clickid: 'soft_pending_test_123',
       type: 'purchase',
-      txid: 'tx_soft_pending_demo_001',
+      txid: 'tx_soft_pending_001',
       status: 'pending',
       revenue: '75.50',
       currency: 'USD',
