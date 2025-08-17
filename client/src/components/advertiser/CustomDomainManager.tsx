@@ -82,6 +82,11 @@ export function CustomDomainManager() {
   const [selectedDomain, setSelectedDomain] = useState<CustomDomain | null>(null);
   const [showInstructions, setShowInstructions] = useState(false);
   const [verificationProgress, setVerificationProgress] = useState<Map<string, VerificationProgress>>(new Map());
+  const [domainValidation, setDomainValidation] = useState<{
+    isValidating: boolean;
+    isValid: boolean | null;
+    message: string;
+  }>({ isValidating: false, isValid: null, message: '' });
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -98,6 +103,68 @@ export function CustomDomainManager() {
       return newMap;
     });
   };
+
+  // Automatic DNS validation function
+  const validateDomainDNS = async (domain: string) => {
+    if (!domain || domain.length < 3) {
+      setDomainValidation({ isValidating: false, isValid: null, message: '' });
+      return;
+    }
+
+    // Basic domain format validation
+    const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$/;
+    if (!domainRegex.test(domain)) {
+      setDomainValidation({ 
+        isValidating: false, 
+        isValid: false, 
+        message: 'Invalid domain format. Please enter a valid domain name.' 
+      });
+      return;
+    }
+
+    setDomainValidation({ isValidating: true, isValid: null, message: 'Checking DNS configuration...' });
+
+    try {
+      // Call API to validate DNS settings
+      const response = await apiRequest('/api/advertiser/domains/validate', {
+        method: 'POST',
+        body: { domain, type: domainType }
+      });
+
+      if (response.valid) {
+        setDomainValidation({
+          isValidating: false,
+          isValid: true,
+          message: response.configured 
+            ? '✅ DNS is properly configured and ready to use'
+            : '✅ Domain is valid. You can proceed with adding it.'
+        });
+      } else {
+        setDomainValidation({
+          isValidating: false,
+          isValid: false,
+          message: response.message || 'DNS validation failed. Please check your domain configuration.'
+        });
+      }
+    } catch (error: any) {
+      setDomainValidation({
+        isValidating: false,
+        isValid: false,
+        message: error?.message || 'Unable to validate domain. Please try again.'
+      });
+    }
+  };
+
+  // Debounced domain validation
+  React.useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (newDomain.trim()) {
+        validateDomainDNS(newDomain.trim().toLowerCase());
+      }
+    }, 1000); // Wait 1 second after user stops typing
+
+    return () => clearTimeout(timeoutId);
+  }, [newDomain, domainType]);
 
   // Получаем список доменов
   const { data: domains = [], isLoading } = useQuery({
@@ -371,14 +438,43 @@ export function CustomDomainManager() {
           {/* Форма добавления домена */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <div className="md:col-span-2">
-              <Label htmlFor="domain">Доменное имя</Label>
-              <Input
-                id="domain"
-                placeholder="track.example.com"
-                value={newDomain}
-                onChange={(e) => setNewDomain(e.target.value)}
-                data-testid="input-new-domain"
-              />
+              <Label htmlFor="domain">Domain Name</Label>
+              <div className="relative">
+                <Input
+                  id="domain"
+                  placeholder="track.example.com"
+                  value={newDomain}
+                  onChange={(e) => setNewDomain(e.target.value)}
+                  data-testid="input-new-domain"
+                  className={`pr-10 ${
+                    domainValidation.isValid === true 
+                      ? 'border-green-500 focus:border-green-500' 
+                      : domainValidation.isValid === false 
+                      ? 'border-red-500 focus:border-red-500' 
+                      : ''
+                  }`}
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {domainValidation.isValidating ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                  ) : domainValidation.isValid === true ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : domainValidation.isValid === false ? (
+                    <XCircle className="h-4 w-4 text-red-500" />
+                  ) : null}
+                </div>
+              </div>
+              {domainValidation.message && (
+                <p className={`text-sm mt-1 ${
+                  domainValidation.isValid === true 
+                    ? 'text-green-600 dark:text-green-400' 
+                    : domainValidation.isValid === false 
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}>
+                  {domainValidation.message}
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="domain-type">Тип записи</Label>
@@ -396,19 +492,29 @@ export function CustomDomainManager() {
             <div className="flex items-end">
               <Button 
                 onClick={handleAddDomain}
-                disabled={addDomainMutation.isPending}
+                disabled={
+                  addDomainMutation.isPending || 
+                  domainValidation.isValidating || 
+                  domainValidation.isValid === false ||
+                  !newDomain.trim()
+                }
                 data-testid="button-add-domain"
                 className="w-full"
               >
                 {addDomainMutation.isPending ? (
                   <>
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Добавляем...
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Adding Domain...
+                  </>
+                ) : domainValidation.isValidating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Validating...
                   </>
                 ) : (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
-                    Добавить
+                    Add Domain
                   </>
                 )}
               </Button>
