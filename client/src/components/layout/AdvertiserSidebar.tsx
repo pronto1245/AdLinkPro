@@ -127,12 +127,10 @@ export default function AdvertiserSidebar({ isMobile = false, onClose }: Adverti
       <div className="border-b border-gray-200 dark:border-gray-800 p-4">
         <div className="flex items-center justify-between">
           <div className={cn("flex items-center space-x-3", collapsed && "justify-center")}>
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
+            <img src="/logo-affilixclick.svg" alt="AffilixClick" className="w-10 h-10" />
             {!collapsed && (
               <div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">FraudGuard</h1>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">AffilixClick</h1>
                 <p className="text-sm text-blue-600 dark:text-blue-400">Кабинет рекламодателя</p>
               </div>
             )}
@@ -193,7 +191,7 @@ export default function AdvertiserSidebar({ isMobile = false, onClose }: Adverti
       {/* Footer */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-800">
         <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
-          © 2025 FraudGuard Platform
+          © 2025 AffilixClick Platform
         </div>
       </div>
     </div>
