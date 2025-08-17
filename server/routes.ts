@@ -119,6 +119,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/postbacks', postbackRoutes.default);
   console.log('=== POSTBACK AND TRACKING ROUTES ADDED ===');
 
+  // Import and register new audit recommendation routes
+  try {
+    const businessReportsRoutes = await import('./routes/business-reports');
+    const biIntegrationRoutes = await import('./routes/bi-integration');
+    const trackerManagementRoutes = await import('./routes/tracker-management');
+    
+    app.use('/api', businessReportsRoutes.default);
+    app.use('/api', biIntegrationRoutes.default);
+    app.use('/api', trackerManagementRoutes.default);
+    console.log('=== AUDIT RECOMMENDATION ROUTES ADDED ===');
+  } catch (error) {
+    console.error('❌ Failed to load audit recommendation routes:', error);
+  }
+
   // FIXED: Team API routes added first without middleware for testing
   console.log('=== ADDING TEAM ROUTES WITHOUT MIDDLEWARE ===');
   
