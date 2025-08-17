@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Flow Test - AdLinkPro</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .info {
+            color: #17a2b8;
+        }
+        #results {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 AdLinkPro Authentication Flow Test</h1>
+        <p>This page tests the improved authentication flow with token handling, state management, and role-based redirects.</p>
+
+        <div class="test-section">
+            <h3>1. JWT Token Utilities Test</h3>
+            <p>Testing JWT encoding/decoding and token validation utilities.</p>
+            <button onclick="testJWTUtilities()">Test JWT Functions</button>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Login API Test</h3>
+            <p>Test the login API endpoint with different credentials.</p>
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" id="username" value="superadmin" placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" id="password" value="password123" placeholder="Enter password">
+            </div>
+            <button onclick="testLogin()">Test Login</button>
+            <button onclick="testLoginWithDifferentRoles()">Test All Roles</button>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Auth State Management Test</h3>
+            <p>Test localStorage and authentication state persistence.</p>
+            <button onclick="testTokenStorage()">Test Token Storage</button>
+            <button onclick="testAuthStatePersistence()">Test State Persistence</button>
+            <button onclick="clearAuthState()">Clear Auth State</button>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Role-Based Redirect Test</h3>
+            <p>Test role-based redirect logic for different user types.</p>
+            <button onclick="testRoleRedirects()">Test Role Redirects</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let testResults = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const formattedMessage = `[${timestamp}] ${message}`;
+            testResults.push(formattedMessage);
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.textContent = testResults.join('\n');
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+            
+            console.log(formattedMessage);
+        }
+
+        function clearResults() {
+            testResults = [];
+            document.getElementById('results').textContent = '';
+        }
+
+        // JWT Utility Functions (copied from our implementation)
+        function decodeJWT(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                if (!base64Url) return null;
+                
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                    atob(base64)
+                        .split('')
+                        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                        .join('')
+                );
+                
+                return JSON.parse(jsonPayload);
+            } catch (error) {
+                console.error('Failed to decode JWT:', error);
+                return null;
+            }
+        }
+
+        function isTokenExpired(token) {
+            const payload = decodeJWT(token);
+            if (!payload) return true;
+            
+            const currentTime = Math.floor(Date.now() / 1000);
+            return payload.exp < currentTime;
+        }
+
+        function getRoleBasedRedirect(role) {
+            switch (role) {
+                case 'super_admin':
+                    return '/admin';
+                case 'affiliate':
+                    return '/affiliate';
+                case 'advertiser':
+                    return '/advertiser';
+                default:
+                    return '/dashboard';
+            }
+        }
+
+        // Test Functions
+        async function testJWTUtilities() {
+            log('🧪 Testing JWT Utilities...', 'info');
+            
+            // Mock JWT token (this won't validate on server, just for client-side testing)
+            const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InRlc3QtaWQiLCJ1c2VybmFtZSI6InN1cGVyYWRtaW4iLCJyb2xlIjoic3VwZXJfYWRtaW4iLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6OTk5OTk5OTk5OX0.test";
+            
+            try {
+                // Test decoding
+                const payload = decodeJWT(mockToken);
+                log(`✅ JWT Decoded: ${JSON.stringify(payload, null, 2)}`, 'success');
+                
+                // Test expiration
+                const expired = isTokenExpired(mockToken);
+                log(`✅ Token Expired: ${expired}`, 'success');
+                
+                // Test redirect mapping
+                const redirects = ['super_admin', 'affiliate', 'advertiser', 'unknown'].map(role => 
+                    `${role}: ${getRoleBasedRedirect(role)}`
+                );
+                log(`✅ Role Redirects:\n${redirects.join('\n')}`, 'success');
+                
+            } catch (error) {
+                log(`❌ JWT Utilities Test Failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            log(`🔐 Testing login with: ${username}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+                
+                const data = await response.json();
+                log(`✅ Login Successful!`, 'success');
+                log(`Token: ${data.token ? data.token.substring(0, 50) + '...' : 'No token'}`, 'info');
+                log(`User: ${JSON.stringify(data.user, null, 2)}`, 'info');
+                
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    log(`✅ Token saved to localStorage`, 'success');
+                    
+                    // Test role-based redirect
+                    if (data.user && data.user.role) {
+                        const redirectPath = getRoleBasedRedirect(data.user.role);
+                        log(`✅ Role-based redirect would go to: ${redirectPath}`, 'success');
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ Login Failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLoginWithDifferentRoles() {
+            const testUsers = [
+                { username: 'superadmin', password: 'password123', expectedRole: 'super_admin' },
+                { username: 'advertiser1', password: 'password123', expectedRole: 'advertiser' },
+                { username: 'test_affiliate', password: 'password123', expectedRole: 'affiliate' }
+            ];
+            
+            log('🧪 Testing login with different user roles...', 'info');
+            
+            for (const testUser of testUsers) {
+                try {
+                    const response = await fetch(`${API_BASE}/api/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            username: testUser.username, 
+                            password: testUser.password 
+                        }),
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const actualRole = data.user ? data.user.role : 'unknown';
+                        const redirectPath = getRoleBasedRedirect(actualRole);
+                        
+                        log(`✅ ${testUser.username}: ${actualRole} -> ${redirectPath}`, 'success');
+                    } else {
+                        log(`❌ ${testUser.username}: Login failed (${response.status})`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ ${testUser.username}: ${error.message}`, 'error');
+                }
+                
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+        }
+
+        function testTokenStorage() {
+            log('🧪 Testing token storage...', 'info');
+            
+            const testToken = 'test-token-' + Date.now();
+            
+            // Test setting token
+            localStorage.setItem('token', testToken);
+            log(`✅ Token set: ${testToken}`, 'success');
+            
+            // Test getting token
+            const retrieved = localStorage.getItem('token');
+            if (retrieved === testToken) {
+                log(`✅ Token retrieved correctly: ${retrieved}`, 'success');
+            } else {
+                log(`❌ Token mismatch! Expected: ${testToken}, Got: ${retrieved}`, 'error');
+            }
+            
+            // Test clearing token
+            localStorage.removeItem('token');
+            const cleared = localStorage.getItem('token');
+            if (cleared === null) {
+                log(`✅ Token cleared successfully`, 'success');
+            } else {
+                log(`❌ Token not cleared! Still has: ${cleared}`, 'error');
+            }
+        }
+
+        function testAuthStatePersistence() {
+            log('🧪 Testing auth state persistence...', 'info');
+            
+            // Simulate setting auth state
+            const mockUser = {
+                id: 'test-id',
+                username: 'testuser',
+                role: 'super_admin',
+                email: 'test@example.com'
+            };
+            
+            const mockToken = 'test-jwt-token-' + Date.now();
+            
+            // Store auth data
+            localStorage.setItem('token', mockToken);
+            localStorage.setItem('user', JSON.stringify(mockUser));
+            
+            log(`✅ Auth state stored - User: ${mockUser.username}, Role: ${mockUser.role}`, 'success');
+            
+            // Simulate page refresh by retrieving data
+            const storedToken = localStorage.getItem('token');
+            const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (storedToken && storedUser) {
+                log(`✅ Auth state persisted after "refresh"`, 'success');
+                log(`   Token: ${storedToken}`, 'info');
+                log(`   User: ${JSON.stringify(storedUser)}`, 'info');
+            } else {
+                log(`❌ Auth state not persisted properly`, 'error');
+            }
+        }
+
+        function testRoleRedirects() {
+            log('🧪 Testing role-based redirect logic...', 'info');
+            
+            const roles = ['super_admin', 'advertiser', 'affiliate', 'unknown_role', ''];
+            
+            roles.forEach(role => {
+                const redirect = getRoleBasedRedirect(role);
+                log(`✅ ${role || '(empty)'} -> ${redirect}`, 'success');
+            });
+        }
+
+        function clearAuthState() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            log('🧹 Auth state cleared from localStorage', 'info');
+        }
+
+        // Initialize
+        log('🚀 Authentication Test Page Loaded', 'info');
+        log('Ready to test authentication flow improvements', 'info');
+    </script>
+</body>
+</html>
