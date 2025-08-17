@@ -148,22 +148,14 @@ export function AdvertiserDashboard() {
       totalRevenue,
       avgCR,
       epc,
-      activeOffers: 5, // Заглушка
-      partnersCount: 12 // Заглушка
+      activeOffers: liveStats?.totalOffersCount || 0,
+      partnersCount: liveStats?.totalPartnersCount || 0
     };
   }, [liveStats]);
 
-  const topOffers = [
-    { id: 1, name: 'Casino Royal', cr: 15.2, status: 'active', revenue: 12500 },
-    { id: 2, name: 'Betting Pro', cr: 12.8, status: 'active', revenue: 9800 },
-    { id: 3, name: 'Sports King', cr: 11.5, status: 'paused', revenue: 7600 },
-  ];
+  const topOffers: any[] = [];
 
-  const notifications = [
-    { id: 1, title: 'Новый партнёр', message: 'Partner_123 подключился к офферу Casino Royal', time: '5 мин назад' },
-    { id: 2, title: 'Подозрительная активность', message: 'Обнаружен фрод в оффере Betting Pro', time: '15 мин назад' },
-    { id: 3, title: 'Цель достигнута', message: 'Оффер Sports King достиг 1000 конверсий', time: '1 час назад' },
-  ];
+  const notifications: any[] = [];
 
   if (metricsLoading) {
     return (
@@ -249,9 +241,6 @@ export function AdvertiserDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Все офферы</SelectItem>
-                  <SelectItem value="offer_1">Casino Royal</SelectItem>
-                  <SelectItem value="offer_2">Betting Pro</SelectItem>
-                  <SelectItem value="offer_3">Sports King</SelectItem>
                 </SelectContent>
               </Select>
             </div>

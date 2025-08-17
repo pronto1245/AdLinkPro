@@ -141,16 +141,16 @@ export default function SuperAdminOfferDetailsRoleAware() {
       company: "1Win Entertainment Ltd"
     },
     adminStats: {
-      totalPartners: 245,
-      activePartners: 89,
-      pendingRequests: 12,
-      approvedRequests: 156,
-      rejectedRequests: 23,
-      totalClicks: 15420,
-      conversions: 892,
-      revenue: 133800,
-      fraudAlerts: 3,
-      riskScore: 2.1
+      totalPartners: 0,
+      activePartners: 0,
+      pendingRequests: 0,
+      approvedRequests: 0,
+      rejectedRequests: 0,
+      totalClicks: 0,
+      conversions: 0,
+      revenue: 0,
+      fraudAlerts: 0,
+      riskScore: 0
     }
   };
 

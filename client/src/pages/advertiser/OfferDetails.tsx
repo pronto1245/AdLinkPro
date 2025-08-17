@@ -137,12 +137,12 @@ export default function AdvertiserOfferDetails() {
       company: "1Win Entertainment Ltd"
     },
     stats: {
-      totalPartners: 245,
-      activePartners: 89,
-      pendingRequests: 12,
-      totalClicks: 15420,
-      conversions: 892,
-      revenue: 133800
+      totalPartners: 0,
+      activePartners: 0,
+      pendingRequests: 0,
+      totalClicks: 0,
+      conversions: 0,
+      revenue: 0
     }
   };
 

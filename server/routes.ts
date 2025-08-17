@@ -3858,120 +3858,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('Getting advertiser dashboard for', authUser.id);
       
-      // Mock comprehensive dashboard data following frontend interface
-      const dashboardData = {
-        metrics: {
-          // Основные метрики офферов
-          offersCount: 12,
-          totalOffers: 12,
-          activeOffers: 8,
-          pendingOffers: 2,
-          rejectedOffers: 2,
-          
-          // Финансовые метрики
-          totalBudget: 50000,
-          totalSpent: 15750,
-          revenue: 8900,
-          advertiserRevenue: 8900,
-          
-          // Партнёры и активность
-          partnersCount: 24,
-          avgCR: 3.2,
-          epc: 2.15,
-          
-          // Постбеки
-          postbacksSent: 1245,
-          postbacksReceived: 1187,
-          postbackErrors: 58,
-          
-          // Фрод активность
-          fraudActivity: 12,
-          fraudRate: 2.1,
-          
-          // Изменения по сравнению с предыдущим периодом
-          offersChange: 8.5,
-          budgetChange: -3.2,
-          revenueChange: 12.3,
-          partnersChange: 15.7,
-          crChange: -0.8,
-          epcChange: 4.2,
-          postbacksChange: 6.1,
-          fraudChange: -18.5
-        },
-        chartData: {
-          traffic: [
-            { date: "2025-07-30", clicks: 1200, uniques: 890 },
-            { date: "2025-07-31", clicks: 1450, uniques: 1020 },
-            { date: "2025-08-01", clicks: 1650, uniques: 1180 },
-            { date: "2025-08-02", clicks: 1340, uniques: 950 },
-            { date: "2025-08-03", clicks: 1580, uniques: 1150 },
-            { date: "2025-08-04", clicks: 1720, uniques: 1250 },
-            { date: "2025-08-05", clicks: 1890, uniques: 1380 }
-          ],
-          conversions: [
-            { date: "2025-07-30", leads: 45, registrations: 32, deposits: 18 },
-            { date: "2025-07-31", leads: 52, registrations: 38, deposits: 22 },
-            { date: "2025-08-01", leads: 61, registrations: 44, deposits: 26 },
-            { date: "2025-08-02", leads: 48, registrations: 35, deposits: 20 },
-            { date: "2025-08-03", leads: 58, registrations: 42, deposits: 24 },
-            { date: "2025-08-04", leads: 67, registrations: 48, deposits: 28 },
-            { date: "2025-08-05", leads: 73, registrations: 52, deposits: 31 }
-          ],
-          spending: [
-            { date: "2025-07-30", spent: 2100, payouts: 1580 },
-            { date: "2025-07-31", spent: 2350, payouts: 1720 },
-            { date: "2025-08-01", spent: 2650, payouts: 1950 },
-            { date: "2025-08-02", spent: 2200, payouts: 1650 },
-            { date: "2025-08-03", spent: 2450, payouts: 1800 },
-            { date: "2025-08-04", spent: 2750, payouts: 2050 },
-            { date: "2025-08-05", spent: 2950, payouts: 2200 }
-          ],
-          postbacks: [
-            { date: "2025-07-30", sent: 180, received: 172, errors: 8 },
-            { date: "2025-07-31", sent: 205, received: 195, errors: 10 },
-            { date: "2025-08-01", sent: 235, received: 224, errors: 11 },
-            { date: "2025-08-02", sent: 195, received: 186, errors: 9 },
-            { date: "2025-08-03", sent: 220, received: 210, errors: 10 },
-            { date: "2025-08-04", sent: 245, received: 233, errors: 12 },
-            { date: "2025-08-05", sent: 265, received: 252, errors: 13 }
-          ],
-          fraud: [
-            { date: "2025-07-30", blocked: 15, suspicious: 12 },
-            { date: "2025-07-31", blocked: 18, suspicious: 15 },
-            { date: "2025-08-01", blocked: 22, suspicious: 19 },
-            { date: "2025-08-02", blocked: 16, suspicious: 13 },
-            { date: "2025-08-03", blocked: 20, suspicious: 17 },
-            { date: "2025-08-04", blocked: 25, suspicious: 21 },
-            { date: "2025-08-05", blocked: 28, suspicious: 24 }
-          ]
-        },
-        topOffers: [
-          { id: "1", name: "4RaBet India", status: "active", clicks: 5420, cr: 4.2, conversions: 228, spent: 3250, postbacks: 215, fraudRate: 2.1 },
-          { id: "2", name: "Melbet Casino", status: "active", clicks: 3890, cr: 3.8, conversions: 148, spent: 2150, postbacks: 142, fraudRate: 1.8 },
-          { id: "3", name: "1xBet Sports", status: "pending", clicks: 2650, cr: 2.9, conversions: 77, spent: 1450, postbacks: 73, fraudRate: 3.2 },
-          { id: "4", name: "Pin-Up Gaming", status: "active", clicks: 4120, cr: 3.5, conversions: 144, spent: 2890, postbacks: 138, fraudRate: 2.7 },
-          { id: "5", name: "Mostbet Live", status: "active", clicks: 3340, cr: 4.1, conversions: 137, spent: 2250, postbacks: 131, fraudRate: 1.9 }
-        ],
-        notifications: [
-          { id: "1", type: "partner_request", title: "Новая заявка партнёра", message: "Партнёр WebTraffic подал заявку на оффер 4RaBet", createdAt: "2025-08-05T10:30:00Z", isRead: false, priority: "high" },
-          { id: "2", type: "postback_error", title: "Ошибка постбека", message: "Постбек для конверсии #12453 не доставлен", createdAt: "2025-08-05T09:15:00Z", isRead: false, priority: "medium" },
-          { id: "3", type: "fraud_alert", title: "Фрод-активность", message: "Обнаружена подозрительная активность в оффере Melbet", createdAt: "2025-08-05T08:45:00Z", isRead: true, priority: "high" },
-          { id: "4", type: "offer_pending", title: "Оффер на модерации", message: "Оффер 1xBet Sports ожидает модерации", createdAt: "2025-08-04T16:20:00Z", isRead: true, priority: "low" },
-          { id: "5", type: "partner_request", title: "Партнёр одобрен", message: "Партнёр ClickMaster одобрен для работы", createdAt: "2025-08-04T14:10:00Z", isRead: true, priority: "low" }
-        ],
-        offerStatus: {
-          pending: 2,
-          active: 8,
-          hidden: 1,
-          archived: 1
-        },
-        offerStatusDistribution: [
-          { name: 'Активные', value: 8, color: '#10B981' },
-          { name: 'На модерации', value: 2, color: '#F59E0B' },
-          { name: 'Скрытые', value: 1, color: '#6B7280' },
-          { name: 'Архивные', value: 1, color: '#EF4444' }
-        ]
-      };
+      // Use the storage method instead of mock data
+      const dashboardData = await storage.getAdvertiserDashboard(authUser.id, {
+        dateFrom: dateFrom ? new Date(dateFrom as string) : undefined,
+        dateTo: dateTo ? new Date(dateTo as string) : undefined
+      });
       
       res.json(dashboardData);
     } catch (error) {
@@ -7244,14 +7135,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           dateRange: { startDate, endDate }
         });
       } catch (dbError) {
-        // Fallback to mock data if database queries fail
-        // Кешируем fallback данные на короткое время
+        // Return zero values instead of demo data if database queries fail
         const fallbackData = {
-          platformBalance: 125000,
-          advertiserRevenue: 85000,
-          partnerPayouts: 32000,
-          platformCommission: 53000,
-          revenueGrowth: 12.5,
+          platformBalance: 0,
+          advertiserRevenue: 0,
+          partnerPayouts: 0,
+          platformCommission: 0,
+          revenueGrowth: 0,
           period,
           dateRange: { startDate, endDate }
         };
@@ -9020,8 +8910,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For now, return a simple export response
       if (format === 'csv') {
         const csvContent = `Date,Offer,Partner,Clicks,Leads,CR%,Revenue,Payout,Profit,ROI%
-2024-01-15,Casino Offer,Partner1,1250,47,3.76,$2350.00,$1410.00,$940.00,66.67%
-2024-01-14,Sports Betting,Partner2,890,23,2.58,$1840.00,$1150.00,$690.00,60.00%`;
+`;
 
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', 'attachment; filename="analytics.csv"');
@@ -10569,9 +10458,9 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           }
         ],
         statistics: {
-          totalChecks: 15420,
-          blockedEvents: 234,
-          fraudRate: 1.52,
+          totalChecks: 0,
+          blockedEvents: 0,
+          fraudRate: 0,
           topFraudTypes: [
             { type: 'bot_detected', count: 89 },
             { type: 'vpn_usage', count: 67 },
@@ -11724,12 +11613,12 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           totalSpent: 85420,
           totalRevenue: 124800,
           partnersCount,
-          avgCR: 3.2,
-          epc: 2.45,
-          postbacksSent: 1247,
-          postbacksReceived: 1198,
-          postbackErrors: 49,
-          fraudActivity: 12
+          avgCR: 0,
+          epc: 0,
+          postbacksSent: 0,
+          postbacksReceived: 0,
+          postbackErrors: 0,
+          fraudActivity: 0
         },
         chartData: {
           traffic: [
@@ -11961,50 +11850,22 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           totalPartners: partners.length,
           totalOffers: allOffers.length,
           activeOffers: allOffers.filter(o => o.status === 'active').length,
-          totalRevenue: 284750,
-          totalClicks: 47850,
-          avgCR: 2.8,
-          fraudDetected: 145
+          totalRevenue: 0,
+          totalClicks: 0,
+          avgCR: 0,
+          fraudDetected: 0
         },
         chartData: {
-          userGrowth: [
-            { date: '2025-08-01', advertisers: 45, partners: 180 },
-            { date: '2025-08-02', advertisers: 46, partners: 185 },
-            { date: '2025-08-03', advertisers: 48, partners: 188 },
-            { date: '2025-08-04', advertisers: 49, partners: 192 },
-            { date: '2025-08-05', advertisers: 52, partners: 198 },
-            { date: '2025-08-06', advertisers: 53, partners: 205 }
-          ],
-          revenue: [
-            { date: '2025-08-01', total: 42500, advertisers: 28000, platform: 14500 },
-            { date: '2025-08-02', total: 48200, advertisers: 31800, platform: 16400 },
-            { date: '2025-08-03', total: 39800, advertisers: 26200, platform: 13600 },
-            { date: '2025-08-04', total: 54600, advertisers: 36000, platform: 18600 },
-            { date: '2025-08-05', total: 61200, advertisers: 40400, platform: 20800 },
-            { date: '2025-08-06', total: 56400, advertisers: 37200, platform: 19200 }
-          ]
+          userGrowth: [],
+          revenue: []
         },
-        topAdvertisers: advertisers.slice(0, 5).map((adv, i) => ({
-          id: adv.id,
-          name: adv.firstName + ' ' + adv.lastName,
-          company: adv.company || 'N/A',
-          offers: Math.floor(Math.random() * 20) + 5,
-          revenue: 15000 + i * 8000,
-          partners: Math.floor(Math.random() * 50) + 10
-        })),
-        topPartners: partners.slice(0, 5).map((partner, i) => ({
-          id: partner.id,
-          name: partner.firstName + ' ' + partner.lastName,
-          partnerNumber: partner.partnerNumber,
-          revenue: 8000 + i * 3000,
-          conversions: 45 + i * 15,
-          cr: 2.1 + i * 0.4
-        })),
+        topAdvertisers: [],
+        topPartners: [],
         systemHealth: {
-          uptime: '99.98%',
-          responseTime: 145,
-          errorRate: 0.02,
-          fraudBlocked: 89
+          uptime: '100%',
+          responseTime: 0,
+          errorRate: 0,
+          fraudBlocked: 0
         }
       };
       
