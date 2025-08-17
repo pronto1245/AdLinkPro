@@ -93,7 +93,7 @@ function showSection(sectionName) {
         'postback': 'Настройка постбэков'
     };
     
-    document.title = `${titles[sectionName] || sectionName} - Affiliate Pro`;
+    document.title = `${titles[sectionName] || sectionName} - AffilixClick`;
 }
 
 // User Menu Management

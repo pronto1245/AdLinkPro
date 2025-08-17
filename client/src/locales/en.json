@@ -1,4 +1,9 @@
 {
+  "site": {
+    "name": "AffilixClick",
+    "title": "AffilixClick - Affiliate Marketing Platform",
+    "description": "Professional affiliate marketing platform for managing partner programs and offers"
+  },
   "common": {
     "loading": "Loading...",
     "save": "Save",

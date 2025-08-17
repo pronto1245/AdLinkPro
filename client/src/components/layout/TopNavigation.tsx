@@ -94,9 +94,10 @@ export function TopNavigation() {
   return (
     <header className="border-b bg-background">
       <div className="flex h-16 items-center justify-between px-6">
-        {/* Left side - Logo or breadcrumbs can go here */}
-        <div className="flex items-center">
-          {/* Space for logo or title */}
+        {/* Left side - Logo and brand */}
+        <div className="flex items-center space-x-3">
+          <img src="/logo-affilixclick.svg" alt="AffilixClick" className="h-8 w-auto" />
+          <span className="text-lg font-semibold text-foreground">AffilixClick</span>
         </div>
 
         {/* Right side - User menu items */}
