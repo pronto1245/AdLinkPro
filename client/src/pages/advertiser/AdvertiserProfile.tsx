@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { AlertCircle, CheckCircle2, Copy, RefreshCw, Trash2, Eye, EyeOff, User, Building2, Globe, Save, Key, Bell, Shield, Link } from 'lucide-react';
+import { TooltipButton } from '@/components/ui/tooltip-button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
@@ -528,13 +530,14 @@ export default function AdvertiserProfile() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="account" data-testid="tab-account">Аккаунт</TabsTrigger>
           <TabsTrigger value="api" data-testid="tab-api">API-доступ</TabsTrigger>
           <TabsTrigger value="telegram" data-testid="tab-telegram">Telegram</TabsTrigger>
           <TabsTrigger value="domain" data-testid="tab-domain">Домен</TabsTrigger>
           <TabsTrigger value="notifications" data-testid="tab-notifications">Уведомления</TabsTrigger>
           <TabsTrigger value="security" data-testid="tab-security">Безопасность</TabsTrigger>
+          <TabsTrigger value="help" data-testid="tab-help">Помощь</TabsTrigger>
         </TabsList>
 
         {/* ACCOUNT TAB */}
@@ -545,10 +548,15 @@ export default function AdvertiserProfile() {
               {isEditing ? (
                 <>
                   <Button variant="outline" onClick={() => setIsEditing(false)} data-testid="button-cancel-edit">Отмена</Button>
-                  <Button onClick={handleProfileSave} disabled={updateProfileMutation.isPending} data-testid="button-save-profile">
+                  <TooltipButton 
+                    onClick={handleProfileSave} 
+                    disabled={updateProfileMutation.isPending} 
+                    data-testid="button-save-profile"
+                    tooltip={updateProfileMutation.isPending ? "Сохранение изменений в профиле..." : undefined}
+                  >
                     <Save className="h-4 w-4 mr-2" />
                     Сохранить
-                  </Button>
+                  </TooltipButton>
                 </>
               ) : (
                 <Button onClick={() => setIsEditing(true)} data-testid="button-edit-profile">Редактировать</Button>
@@ -687,9 +695,16 @@ export default function AdvertiserProfile() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground" data-testid="empty-tokens">
-                    У вас пока нет API токенов
-                  </div>
+                  <EmptyState 
+                    type="no-data"
+                    title="Нет API токенов"
+                    description="Создайте API токен для интеграции с внешними системами и автоматизации процессов"
+                    action={{
+                      label: "Создать первый токен",
+                      onClick: handleTokenGenerate
+                    }}
+                    data-testid="empty-tokens"
+                  />
                 )}
               </div>
             </CardContent>
@@ -853,9 +868,14 @@ export default function AdvertiserProfile() {
                       placeholder="Например: 123456789"
                       data-testid="input-telegram-chat-id"
                     />
-                    <Button onClick={handleLinkTelegram} disabled={linkTelegramMutation.isPending} data-testid="button-link-telegram">
+                    <TooltipButton 
+                      onClick={handleLinkTelegram} 
+                      disabled={linkTelegramMutation.isPending} 
+                      data-testid="button-link-telegram"
+                      tooltip={linkTelegramMutation.isPending ? "Привязка Telegram-аккаунта..." : !telegramChatId ? "Введите Chat ID для привязки" : undefined}
+                    >
                       {linkTelegramMutation.isPending ? 'Привязка...' : 'Привязать'}
-                    </Button>
+                    </TooltipButton>
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">
                     Получите ваш Chat ID, написав команду /start боту <code className="bg-muted px-1 py-0.5 rounded">@integracia7980_bot</code>
@@ -1128,19 +1148,76 @@ export default function AdvertiserProfile() {
                   Статус: <strong>{formData?.twoFactorEnabled ? 'Включена' : 'Отключена'}</strong>
                 </p>
               </div>
-              <Button 
+              <TooltipButton 
                 variant="outline" 
                 onClick={handle2FAToggle}
                 disabled={toggle2FAMutation.isPending}
                 data-testid="button-toggle-2fa"
+                tooltip={toggle2FAMutation.isPending ? "Изменение настроек двухфакторной аутентификации..." : undefined}
               >
                 {toggle2FAMutation.isPending 
                   ? 'Обработка...' 
                   : (formData?.twoFactorEnabled ? 'Отключить 2FA' : 'Включить 2FA')
                 }
-              </Button>
+              </TooltipButton>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* HELP TAB */}
+        <TabsContent value="help" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Справка и поддержка</h2>
+          </div>
+
+          <EmptyState 
+            type="help"
+            title="Помощь по настройке профиля"
+            description="Здесь вы найдете ответы на часто задаваемые вопросы и можете связаться с поддержкой"
+            helpContent={{
+              faqs: [
+                {
+                  question: "Как создать API токен?",
+                  answer: "Перейдите на вкладку 'API-доступ' и нажмите кнопку 'Создать новый токен'. Укажите название токена и он будет создан автоматически."
+                },
+                {
+                  question: "Как привязать Telegram для уведомлений?",
+                  answer: "На вкладке 'Telegram' введите ваш Chat ID, который можно получить, написав команду /start боту @integracia7980_bot"
+                },
+                {
+                  question: "Что такое двухфакторная аутентификация?",
+                  answer: "2FA - это дополнительный уровень безопасности, который требует ввода кода с телефона при входе в аккаунт."
+                },
+                {
+                  question: "Как настроить кастомный домен?",
+                  answer: "На вкладке 'Домен' добавьте ваш домен и следуйте инструкциям по настройке DNS записей для подтверждения."
+                }
+              ],
+              contacts: {
+                email: "support@adlinkpro.com",
+                telegram: "@adlinkpro_support",
+                phone: "+7 (800) 123-45-67"
+              },
+              documentation: [
+                {
+                  title: "Руководство пользователя",
+                  url: "#"
+                },
+                {
+                  title: "API документация",
+                  url: "#"
+                },
+                {
+                  title: "Настройка постбеков",
+                  url: "#"
+                },
+                {
+                  title: "Безопасность аккаунта",
+                  url: "#"
+                }
+              ]
+            }}
+          />
         </TabsContent>
       </Tabs>
     </div>

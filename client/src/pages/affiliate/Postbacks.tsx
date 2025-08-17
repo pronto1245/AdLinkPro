@@ -29,6 +29,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { TooltipButton } from '@/components/ui/tooltip-button';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface PostbackProfile {
   id: string;
@@ -617,7 +619,7 @@ export function AffiliatePostbacks() {
           >
 {t('common.cancel', 'Отмена')}
           </Button>
-          <Button
+          <TooltipButton
             onClick={() => {
               console.log('Saving form data:', localFormData);
               
@@ -631,10 +633,11 @@ export function AffiliatePostbacks() {
               onSave(sanitizedData);
             }}
             disabled={!localFormData.name || !localFormData.endpoint_url}
+            tooltip={!localFormData.name ? "Введите название профиля" : !localFormData.endpoint_url ? "Введите URL эндпоинта" : undefined}
             data-testid="button-save"
           >
 {t('common.save', 'Сохранить')}
-          </Button>
+          </TooltipButton>
         </div>
       </div>
     );
@@ -682,6 +685,7 @@ export function AffiliatePostbacks() {
         <TabsList>
           <TabsTrigger value="profiles">{t('postbacks.profiles', 'Профили')}</TabsTrigger>
           <TabsTrigger value="logs">{t('postbacks.deliveryLogs', 'Логи доставок')}</TabsTrigger>
+          <TabsTrigger value="help">{t('postbacks.help', 'Помощь')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profiles" className="space-y-4">
@@ -759,7 +763,7 @@ export function AffiliatePostbacks() {
                       </div>
 
                       <div className="flex items-center space-x-2">
-                        <Button
+                        <TooltipButton
                           variant="outline"
                           size="sm"
                           onClick={() => {
@@ -773,13 +777,12 @@ export function AffiliatePostbacks() {
                             setIsTestModalOpen(true);
                           }}
                           disabled={testMutation.isPending}
-                          title="Протестировать постбек"
-                          className={testMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}
+                          tooltip={testMutation.isPending ? "Выполняется тестирование постбека..." : "Протестировать постбек"}
                           data-testid={`button-test-${profile.id}`}
                         >
                           <Play className="h-3 w-3 mr-1" />
                           {testMutation.isPending ? 'Тестирование...' : 'Тест'}
-                        </Button>
+                        </TooltipButton>
                         
                         {/* ПОЛНОСТЬЮ НОВАЯ КНОПКА РЕДАКТИРОВАНИЯ */}
                         <div
@@ -914,21 +917,15 @@ export function AffiliatePostbacks() {
                   </CardContent>
                 </Card>
               )) : (
-                <div className="text-center py-8 bg-red-50 border-4 border-red-500 rounded">
-                  <h2 className="text-red-800 font-bold text-xl mb-4">{t('postbacks.noProfilesFound', 'ПРОФИЛИ НЕ НАЙДЕНЫ!')}</h2>
-                  <p className="text-red-600 mb-2">Всего профилей: {profiles?.length || 0}</p>
-                  <p className="text-red-600 mb-2">Тип данных: {typeof profiles}</p>
-                  <p className="text-red-600 mb-4">Это массив: {Array.isArray(profiles) ? 'Да' : 'Нет'}</p>
-                  <Button 
-                    onClick={() => {
-                      console.log('🔄 FORCE REFETCH clicked');
-                      refetch();
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-{t('common.refresh', 'ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА')}
-                  </Button>
-                </div>
+                <EmptyState 
+                  type="no-data"
+                  title="Нет профилей постбеков"
+                  description="Создайте первый профиль для начала работы с постбеками и автоматической передачи данных о конверсиях в ваш трекер"
+                  action={{
+                    label: "Создать профиль",
+                    onClick: () => setIsCreateModalOpen(true)
+                  }}
+                />
               )}
 
               <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
@@ -1023,6 +1020,62 @@ export function AffiliatePostbacks() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* HELP TAB */}
+        <TabsContent value="help" className="space-y-4">
+          <EmptyState 
+            type="help"
+            title="Справка по постбекам"
+            description="Настройка постбеков для интеграции с трекерами и автоматической передачи данных о конверсиях"
+            helpContent={{
+              faqs: [
+                {
+                  question: "Что такое постбек?",
+                  answer: "Постбек (Postback) - это автоматическое уведомление, которое отправляется на ваш трекер при регистрации конверсии. Он содержит информацию о клике, конверсии и доходе."
+                },
+                {
+                  question: "Как создать профиль постбека?",
+                  answer: "Нажмите кнопку 'Создать профиль', выберите тип трекера (Keitaro или Custom), укажите URL эндпоинта и настройте параметры передачи данных."
+                },
+                {
+                  question: "Как протестировать постбек?",
+                  answer: "В каждом профиле есть кнопка 'Тест'. Она отправит тестовые данные на ваш эндпоинт для проверки корректности настроек."
+                },
+                {
+                  question: "Почему постбек не работает?",
+                  answer: "Проверьте: 1) Правильность URL эндпоинта, 2) Доступность сервера трекера, 3) Корректность параметров аутентификации, 4) Логи доставок для диагностики ошибок."
+                },
+                {
+                  question: "Что означают статусы в логах?",
+                  answer: "Успех (200) - постбек доставлен, Ошибка 4xx - проблема с запросом или аутентификацией, Ошибка 5xx - проблема на стороне трекера, Таймаут - сервер не ответил вовремя."
+                }
+              ],
+              contacts: {
+                email: "postbacks@adlinkpro.com",
+                telegram: "@adlinkpro_postbacks",
+                phone: "+7 (800) 123-45-67"
+              },
+              documentation: [
+                {
+                  title: "Настройка Keitaro",
+                  url: "#"
+                },
+                {
+                  title: "Custom постбеки",
+                  url: "#"
+                },
+                {
+                  title: "Troubleshooting",
+                  url: "#"
+                },
+                {
+                  title: "API документация",
+                  url: "#"
+                }
+              ]
+            }}
+          />
         </TabsContent>
       </Tabs>
 
@@ -1122,7 +1175,7 @@ export function AffiliatePostbacks() {
               <Button variant="outline" onClick={() => setIsTestModalOpen(false)}>
                 {t('common.cancel', 'Отмена')}
               </Button>
-              <Button 
+              <TooltipButton 
                 onClick={() => {
                   if (selectedProfile) {
                     testMutation.mutate({
@@ -1132,6 +1185,7 @@ export function AffiliatePostbacks() {
                   }
                 }}
                 disabled={testMutation.isPending || !testData.clickid}
+                tooltip={testMutation.isPending ? "Отправка тестового постбека..." : !testData.clickid ? "Введите Click ID для тестирования" : undefined}
               >
                 {testMutation.isPending ? (
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -1139,7 +1193,7 @@ export function AffiliatePostbacks() {
                   <Send className="h-4 w-4 mr-2" />
                 )}
                 {t('postbacks.sendTest', 'Отправить тест')}
-              </Button>
+              </TooltipButton>
             </div>
           </div>
         </DialogContent>
