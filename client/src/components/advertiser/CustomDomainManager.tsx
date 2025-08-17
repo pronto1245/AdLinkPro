@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
@@ -21,7 +22,11 @@ import {
   Copy, 
   Info,
   Shield,
-  Zap
+  Zap,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  AlertTriangle
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -42,6 +47,11 @@ interface CustomDomain {
   isActive?: boolean;
   lastChecked?: string | null;
   errorMessage?: string | null;
+  errorDetails?: {
+    type: 'TIMEOUT' | 'DNS_SERVER_UNAVAILABLE' | 'RECORD_NOT_FOUND' | 'INVALID_DOMAIN' | 'NETWORK_ERROR';
+    code: string;
+    message: string;
+  };
   createdAt: string;
   verifiedAt?: string | null;
   advertiserId?: string;
@@ -50,6 +60,13 @@ interface CustomDomain {
     host: string;
     value: string;
   };
+}
+
+interface VerificationProgress {
+  domainId: string;
+  stage: 'dns_check' | 'ssl_request' | 'complete';
+  progress: number;
+  message: string;
 }
 
 interface DNSInstructions {
@@ -64,9 +81,23 @@ export function CustomDomainManager() {
   const [domainType, setDomainType] = useState<'cname' | 'a_record' | 'txt_record'>('cname');
   const [selectedDomain, setSelectedDomain] = useState<CustomDomain | null>(null);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [verificationProgress, setVerificationProgress] = useState<Map<string, VerificationProgress>>(new Map());
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Progress tracking for operations
+  const updateProgress = (domainId: string, stage: VerificationProgress['stage'], progress: number, message: string) => {
+    setVerificationProgress(prev => new Map(prev.set(domainId, { domainId, stage, progress, message })));
+  };
+
+  const clearProgress = (domainId: string) => {
+    setVerificationProgress(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(domainId);
+      return newMap;
+    });
+  };
 
   // Получаем список доменов
   const { data: domains = [], isLoading } = useQuery({
@@ -97,21 +128,69 @@ export function CustomDomainManager() {
     }
   });
 
-  // Верификация домена
+  // Верификация домена с отслеживанием прогресса
   const verifyDomainMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, 'POST');
+      // Start progress tracking
+      updateProgress(domainId, 'dns_check', 0, 'Starting DNS verification...');
+      
+      // Simulate progress updates
+      const progressInterval = setInterval(() => {
+        const currentProgress = verificationProgress.get(domainId);
+        if (currentProgress && currentProgress.progress < 80) {
+          updateProgress(domainId, 'dns_check', currentProgress.progress + 20, 'Checking DNS records...');
+        }
+      }, 1000);
+      
+      try {
+        const result = await apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, 'POST');
+        clearInterval(progressInterval);
+        updateProgress(domainId, 'complete', 100, result.success ? 'Verification complete!' : 'Verification failed');
+        
+        // Clear progress after delay
+        setTimeout(() => clearProgress(domainId), 3000);
+        
+        return result;
+      } catch (error) {
+        clearInterval(progressInterval);
+        clearProgress(domainId);
+        throw error;
+      }
     },
     onSuccess: (data: any, domainId: string) => {
       if (data.success) {
         toast({
-          title: "Домен верифицирован",
-          description: "Ваш кастомный домен успешно верифицирован и активирован!"
+          title: "✅ Domain Verified Successfully",
+          description: "Your custom domain has been successfully verified and is now active!"
         });
       } else {
+        // Enhanced error message display
+        let errorMessage = "Please check your DNS settings and try again";
+        if (data.errorDetails) {
+          switch (data.errorDetails.type) {
+            case 'TIMEOUT':
+              errorMessage = "DNS query timed out. Your DNS server may be slow or unresponsive.";
+              break;
+            case 'RECORD_NOT_FOUND':
+              errorMessage = "DNS record not found. Please ensure the record has been added and has propagated.";
+              break;
+            case 'DNS_SERVER_UNAVAILABLE':
+              errorMessage = "DNS server is unavailable. Please try again later.";
+              break;
+            case 'NETWORK_ERROR':
+              errorMessage = "Network connection issue. Please check your internet connection.";
+              break;
+            case 'INVALID_DOMAIN':
+              errorMessage = "Invalid domain format. Please check the domain name.";
+              break;
+            default:
+              errorMessage = data.errorDetails.message || errorMessage;
+          }
+        }
+        
         toast({
-          title: "Верификация не пройдена",
-          description: data.error || "Проверьте DNS настройки и повторите попытку",
+          title: "❌ Verification Failed",
+          description: errorMessage,
           variant: "destructive"
         });
       }
@@ -119,29 +198,50 @@ export function CustomDomainManager() {
     },
     onError: () => {
       toast({
-        title: "Ошибка верификации",
-        description: "Произошла ошибка при проверке домена",
+        title: "❌ Verification Error",
+        description: "An error occurred while verifying the domain",
         variant: "destructive"
       });
     }
   });
 
-  // Выдача SSL сертификата
+  // Выдача SSL сертификата с отслеживанием прогресса
   const issueSSLMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return apiRequest(`/api/advertiser/profile/domains/${domainId}/ssl`, 'POST');
+      // Start SSL progress tracking
+      updateProgress(domainId, 'ssl_request', 0, 'Requesting SSL certificate...');
+      
+      const progressInterval = setInterval(() => {
+        const currentProgress = verificationProgress.get(domainId);
+        if (currentProgress && currentProgress.progress < 90) {
+          updateProgress(domainId, 'ssl_request', currentProgress.progress + 15, 'Processing SSL certificate...');
+        }
+      }, 2000);
+      
+      try {
+        const result = await apiRequest(`/api/advertiser/profile/domains/${domainId}/ssl`, 'POST');
+        clearInterval(progressInterval);
+        updateProgress(domainId, 'complete', 100, 'SSL certificate processing complete');
+        
+        setTimeout(() => clearProgress(domainId), 3000);
+        return result;
+      } catch (error) {
+        clearInterval(progressInterval);
+        clearProgress(domainId);
+        throw error;
+      }
     },
     onSuccess: (data: any) => {
       toast({
-        title: "SSL сертификат выдается",
-        description: data.message || "SSL сертификат выдается. Проверьте статус через несколько минут."
+        title: "🔒 SSL Certificate Processing",
+        description: data.message || "SSL certificate is being issued. Check the status in a few minutes."
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка выдачи SSL",
-        description: error?.error || "Не удалось запустить выдачу SSL сертификата",
+        title: "❌ SSL Certificate Error",
+        description: error?.error || "Failed to request SSL certificate",
         variant: "destructive"
       });
     }
@@ -368,24 +468,95 @@ export function CustomDomainManager() {
                       </div>
                     </div>
 
+                    {/* Progress indicator */}
+                    {verificationProgress.has(domain.id) && (
+                      <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                          <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                            {verificationProgress.get(domain.id)?.message}
+                          </span>
+                        </div>
+                        <Progress 
+                          value={verificationProgress.get(domain.id)?.progress || 0} 
+                          className="w-full h-2"
+                        />
+                      </div>
+                    )}
+
+                    {/* Enhanced error display */}
+                    {domain.errorMessage && (
+                      <Alert className="mb-4 border-red-200 bg-red-50 dark:bg-red-950">
+                        <AlertTriangle className="h-4 w-4 text-red-600" />
+                        <AlertDescription className="text-red-800 dark:text-red-200">
+                          <div className="space-y-2">
+                            <p className="font-medium">Domain Verification Failed</p>
+                            <p className="text-sm">{domain.errorMessage}</p>
+                            {domain.errorDetails && (
+                              <div className="text-xs space-y-1">
+                                <p><strong>Error Type:</strong> {domain.errorDetails.type.replace(/_/g, ' ')}</p>
+                                <p><strong>Error Code:</strong> {domain.errorDetails.code}</p>
+                                {domain.errorDetails.type === 'TIMEOUT' && (
+                                  <p className="text-blue-700 dark:text-blue-300">
+                                    💡 <strong>Suggestion:</strong> DNS servers may be slow. Try again in a few minutes.
+                                  </p>
+                                )}
+                                {domain.errorDetails.type === 'RECORD_NOT_FOUND' && (
+                                  <p className="text-blue-700 dark:text-blue-300">
+                                    💡 <strong>Suggestion:</strong> Verify the DNS record has been added correctly and allow up to 24 hours for propagation.
+                                  </p>
+                                )}
+                                {domain.errorDetails.type === 'DNS_SERVER_UNAVAILABLE' && (
+                                  <p className="text-blue-700 dark:text-blue-300">
+                                    💡 <strong>Suggestion:</strong> DNS server is temporarily unavailable. Please try again later.
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    {/* SSL error display */}
+                    {domain.sslErrorMessage && domain.sslStatus === 'failed' && (
+                      <Alert className="mb-4 border-orange-200 bg-orange-50 dark:bg-orange-950">
+                        <Shield className="h-4 w-4 text-orange-600" />
+                        <AlertDescription className="text-orange-800 dark:text-orange-200">
+                          <div className="space-y-2">
+                            <p className="font-medium">SSL Certificate Issue</p>
+                            <p className="text-sm">{domain.sslErrorMessage}</p>
+                            <p className="text-xs text-orange-700 dark:text-orange-300">
+                              💡 <strong>Suggestion:</strong> Ensure your domain is verified before requesting SSL. Some SSL providers may take longer to issue certificates.
+                            </p>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
                     {/* Кнопки действий */}
                     <div className="flex items-center gap-2 mb-4">
                       {domain.status !== 'verified' && (
                         <Button
                           size="sm"
                           onClick={() => verifyDomainMutation.mutate(domain.id)}
-                          disabled={verifyDomainMutation.isPending}
+                          disabled={verifyDomainMutation.isPending || verificationProgress.has(domain.id)}
                           data-testid={`button-verify-${domain.id}`}
                         >
-                          {verifyDomainMutation.isPending ? (
+                          {verifyDomainMutation.isPending && verifyDomainMutation.variables === domain.id ? (
                             <>
-                              <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                              Проверяем...
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              Verifying...
+                            </>
+                          ) : verificationProgress.has(domain.id) ? (
+                            <>
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              In Progress...
                             </>
                           ) : (
                             <>
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Проверить домен
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Verify Domain
                             </>
                           )}
                         </Button>
@@ -395,19 +566,24 @@ export function CustomDomainManager() {
                         <Button
                           size="sm"
                           onClick={() => issueSSLMutation.mutate(domain.id)}
-                          disabled={issueSSLMutation.isPending}
+                          disabled={issueSSLMutation.isPending || verificationProgress.has(domain.id)}
                           data-testid={`button-ssl-${domain.id}`}
                           className="bg-green-600 hover:bg-green-700 text-white"
                         >
-                          {issueSSLMutation.isPending ? (
+                          {issueSSLMutation.isPending && issueSSLMutation.variables === domain.id ? (
                             <>
-                              <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                              Выдаем SSL...
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              Requesting SSL...
+                            </>
+                          ) : verificationProgress.has(domain.id) && verificationProgress.get(domain.id)?.stage === 'ssl_request' ? (
+                            <>
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              Processing...
                             </>
                           ) : (
                             <>
                               <Shield className="h-3 w-3 mr-1" />
-                              Выдать SSL
+                              Get SSL Certificate
                             </>
                           )}
                         </Button>

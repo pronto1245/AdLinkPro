@@ -1,34 +1,77 @@
 import { randomBytes } from 'crypto';
 import { db } from '../db.js';
 import { customDomains, offers, trackingLinks, type CustomDomain, type InsertCustomDomain } from '@shared/schema';
-import { eq, and, desc } from 'drizzle-orm';
-import dns from 'dns';
-import { promisify } from 'util';
+import { eq, and, desc, inArray } from 'drizzle-orm';
+import { config } from '../config/environment.js';
+import { enhancedDNS, type DNSError } from './enhancedDNS.js';
+import { SSLProviderService } from './sslProvider.js';
 
-const resolveTxt = promisify(dns.resolveTxt);
-const resolveCname = promisify(dns.resolveCname);
-const resolve4 = promisify(dns.resolve4);
-
+/**
+ * Custom Domain Service
+ * 
+ * Manages custom domains for advertisers with features:
+ * - Multiple domains per advertiser (configurable limit)
+ * - DNS verification with detailed error handling
+ * - SSL certificate management with multiple providers
+ * - Batch operations for performance
+ * - DNS caching for optimized repeated queries
+ * 
+ * @example
+ * // Create a new custom domain
+ * const domain = await CustomDomainService.createCustomDomain({
+ *   advertiserId: 'user-123',
+ *   domain: 'tracking.example.com',
+ *   type: 'cname'
+ * });
+ * 
+ * // Verify domain DNS configuration
+ * const verification = await CustomDomainService.verifyDomain(domain.id);
+ * if (verification.success) {
+ *   console.log('Domain verified successfully');
+ * } else {
+ *   console.error('Verification failed:', verification.error);
+ * }
+ */
 export class CustomDomainService {
-  // Генерируем значение для верификации
+  /**
+   * Generate cryptographically secure verification value for domain ownership
+   * @returns {string} Random verification token in format 'platform-verify=<hex>'
+   */
   static generateVerificationValue(): string {
     return `platform-verify=${randomBytes(16).toString('hex')}`;
   }
 
-  // Создаем кастомный домен
+  /**
+   * Create a new custom domain for an advertiser
+   * 
+   * @param {Object} data - Domain creation parameters
+   * @param {string} data.advertiserId - The advertiser's unique identifier
+   * @param {string} data.domain - The domain name to add
+   * @param {'a_record' | 'cname'} [data.type='cname'] - DNS record type for verification
+   * @returns {Promise<CustomDomain>} The created domain object
+   * @throws {Error} When domain limit is exceeded or validation fails
+   * 
+   * @example
+   * const domain = await CustomDomainService.createCustomDomain({
+   *   advertiserId: 'user-123',
+   *   domain: 'track.mysite.com',
+   *   type: 'cname'
+   * });
+   */
   static async createCustomDomain(data: {
     advertiserId: string;
     domain: string;
     type?: 'a_record' | 'cname';
   }): Promise<CustomDomain> {
-    // Проверяем лимит доменов для рекламодателя (максимум 1 домен)
+    // Check domain limit for advertiser (configurable via environment)
     const existingDomains = await db
       .select()
       .from(customDomains)
       .where(eq(customDomains.advertiserId, data.advertiserId));
 
-    if (existingDomains.length >= 1) {
-      throw new Error('Domain limit exceeded. Each advertiser can add only 1 custom domain.');
+    const maxDomains = config.MAX_DOMAINS_PER_ADVERTISER;
+    if (existingDomains.length >= maxDomains) {
+      throw new Error(`Domain limit exceeded. Each advertiser can add up to ${maxDomains} custom domains.`);
     }
 
     const verificationValue = this.generateVerificationValue();
@@ -53,7 +96,16 @@ export class CustomDomainService {
     return customDomain;
   }
 
-  // Получаем домены рекламодателя
+  /**
+   * Get all domains for a specific advertiser
+   * 
+   * @param {string} advertiserId - The advertiser's unique identifier
+   * @returns {Promise<CustomDomain[]>} Array of domains ordered by creation date (newest first)
+   * 
+   * @example
+   * const domains = await CustomDomainService.getAdvertiserDomains('user-123');
+   * console.log(`Advertiser has ${domains.length} domains`);
+   */
   static async getAdvertiserDomains(advertiserId: string): Promise<CustomDomain[]> {
     return await db
       .select()
@@ -62,13 +114,28 @@ export class CustomDomainService {
       .orderBy(desc(customDomains.createdAt));
   }
 
-  // Верифицируем домен через DNS
+  /**
+   * Verify domain ownership through DNS records
+   * 
+   * @param {string} domainId - The domain's unique identifier
+   * @returns {Promise<Object>} Verification result with success status and detailed error info
+   * 
+   * @example
+   * const result = await CustomDomainService.verifyDomain('domain-123');
+   * if (result.success) {
+   *   console.log('Domain verified successfully');
+   * } else {
+   *   console.error('Verification failed:', result.error);
+   *   // result.error contains detailed information about the failure
+   * }
+   */
   static async verifyDomain(domainId: string): Promise<{
     success: boolean;
     status: 'verified' | 'error';
     error?: string;
+    errorDetails?: DNSError;
   }> {
-    console.log(`🔍 Начинаем верификацию домена ID: ${domainId}`);
+    console.log(`🔍 Starting domain verification for ID: ${domainId}`);
     
     const [domain] = await db
       .select()
@@ -79,10 +146,10 @@ export class CustomDomainService {
       throw new Error('Domain not found');
     }
 
-    console.log(`📋 Домен найден: ${domain.domain} (${domain.type})`);
+    console.log(`📋 Domain found: ${domain.domain} (${domain.type})`);
 
     try {
-      // Обновляем статус на "верифицируем"
+      // Update status to "verifying"
       await db
         .update(customDomains)
         .set({ 
@@ -92,38 +159,46 @@ export class CustomDomainService {
         })
         .where(eq(customDomains.id, domainId));
 
-      console.log(`⏳ Статус обновлен на pending для ${domain.domain}`);
+      console.log(`⏳ Status updated to pending for ${domain.domain}`);
 
-      // Реальная DNS проверка домена
-      const dns = await import('dns').then(m => m.promises);
+      // Perform DNS verification using enhanced DNS service
+      let verificationResult;
       let isVerified = false;
       let errorMessage = '';
+      let errorDetails: DNSError | undefined;
 
-      try {
-        if (domain.type === 'cname') {
-          // Проверяем CNAME запись
-          const cnameRecords = await dns.resolveCname(domain.domain);
-          const expectedCname = `${domain.domain}.arbiconnect.app`;
-          isVerified = cnameRecords.some(record => record.includes('arbiconnect.app'));
-          console.log(`🔍 CNAME проверка для ${domain.domain}: ${isVerified ? 'SUCCESS' : 'FAILED'}`);
-        } else if (domain.type === 'a_record') {
-          // Проверяем A запись
-          const aRecords = await dns.resolve4(domain.domain);
+      if (domain.type === 'cname') {
+        // Check CNAME record
+        verificationResult = await enhancedDNS.resolveCname(domain.domain);
+        if (verificationResult.success && verificationResult.records) {
+          isVerified = verificationResult.records.some(record => 
+            record.includes('arbiconnect.app') || record.includes('affiliate-tracker.replit.app')
+          );
+          console.log(`🔍 CNAME verification for ${domain.domain}: ${isVerified ? 'SUCCESS' : 'FAILED'}`);
+          if (verificationResult.fromCache) {
+            console.log(`📦 Used cached DNS result`);
+          }
+        } else {
+          errorDetails = verificationResult.error;
+          errorMessage = verificationResult.error?.message || 'CNAME record verification failed';
+        }
+      } else if (domain.type === 'a_record') {
+        // Check A record
+        verificationResult = await enhancedDNS.resolveA(domain.domain);
+        if (verificationResult.success && verificationResult.records) {
           const expectedIp = process.env.SERVER_IP || '0.0.0.0';
-          isVerified = aRecords.includes(expectedIp);
-          console.log(`🔍 A-record проверка для ${domain.domain}: ${isVerified ? 'SUCCESS' : 'FAILED'}`);
+          isVerified = verificationResult.records.includes(expectedIp);
+          console.log(`🔍 A-record verification for ${domain.domain}: ${isVerified ? 'SUCCESS' : 'FAILED'}`);
+          if (verificationResult.fromCache) {
+            console.log(`📦 Used cached DNS result`);
+          }
+        } else {
+          errorDetails = verificationResult.error;
+          errorMessage = verificationResult.error?.message || 'A record verification failed';
         }
-        
-        if (!isVerified) {
-          errorMessage = `DNS запись не найдена или неверная для ${domain.type}`;
-        }
-      } catch (error: any) {
-        console.error(`❌ DNS ошибка для ${domain.domain}:`, error.message);
-        isVerified = false;
-        errorMessage = error.message;
       }
 
-      // Обновляем статус домена
+      // Update domain status based on verification result
       const newStatus: 'verified' | 'error' = isVerified ? 'verified' : 'error';
       
       await db
@@ -136,17 +211,18 @@ export class CustomDomainService {
         })
         .where(eq(customDomains.id, domainId));
 
-      console.log(`🎯 Финальный статус: ${newStatus} для ${domain.domain}`);
+      console.log(`🎯 Final status: ${newStatus} for ${domain.domain}`);
 
       return {
         success: isVerified,
         status: newStatus,
-        error: errorMessage || undefined
+        error: errorMessage || undefined,
+        errorDetails
       };
     } catch (error: any) {
-      console.error(`❌ Ошибка верификации ${domain.domain}:`, error.message);
+      console.error(`❌ Verification error for ${domain.domain}:`, error.message);
       
-      // Обновляем статус на ошибку
+      // Update status to error
       await db
         .update(customDomains)
         .set({ 
@@ -165,12 +241,21 @@ export class CustomDomainService {
     }
   }
 
-  // Автоматическая выдача SSL сертификата
+  /**
+   * Request SSL certificate for a verified domain using configured provider
+   * 
+   * @param {string} domain - Domain name for SSL certificate
+   * @param {string} domainId - Database ID of the domain record
+   * @returns {Promise<void>}
+   * 
+   * @example
+   * await CustomDomainService.requestSSLCertificate('track.example.com', 'domain-123');
+   */
   static async requestSSLCertificate(domain: string, domainId: string): Promise<void> {
     try {
-      console.log(`🔒 Запуск процесса выдачи SSL для ${domain}`);
+      console.log(`🔒 Starting SSL certificate request for ${domain} using ${config.SSL_PROVIDER}`);
       
-      // Обновляем статус на "выдается"
+      // Update status to "pending"
       await db
         .update(customDomains)
         .set({
@@ -180,32 +265,59 @@ export class CustomDomainService {
         })
         .where(eq(customDomains.id, domainId));
 
-      // Реальная интеграция с Let's Encrypt с обработкой таймаутов
-      const { LetsEncryptService } = await import('./letsencrypt.js');
-      
-      // Запускаем процесс с агрессивным таймаутом
-      const sslPromise = LetsEncryptService.issueCertificate(domain, domainId);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('SSL process timeout after 90 seconds')), 90000)
-      );
+      // Initialize SSL provider service
+      const sslService = new SSLProviderService();
       
       try {
-        await Promise.race([sslPromise, timeoutPromise]);
-        console.log(`✅ SSL процесс завершен успешно для ${domain}`);
-      } catch (error) {
-        console.error(`❌ SSL процесс прерван для ${domain}:`, error.message);
-        throw error;
+        // Request SSL certificate with timeout protection
+        const certificatePromise = sslService.issueCertificate(domain, domainId);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('SSL certificate request timeout after 120 seconds')), 120000)
+        );
+        
+        const certificate = await Promise.race([certificatePromise, timeoutPromise]) as any;
+        
+        // Update domain with SSL certificate details
+        await db
+          .update(customDomains)
+          .set({
+            sslStatus: 'issued',
+            sslCertificate: certificate.certificate,
+            sslPrivateKey: certificate.privateKey,
+            sslValidUntil: certificate.validUntil,
+            sslIssuer: certificate.issuer,
+            sslErrorMessage: null,
+            updatedAt: new Date()
+          })
+          .where(eq(customDomains.id, domainId));
+
+        console.log(`✅ SSL certificate successfully issued for ${domain} by ${certificate.issuer}`);
+        
+      } catch (sslError) {
+        console.error(`❌ SSL certificate issuance failed for ${domain}:`, sslError.message);
+        
+        // Update status to failed with detailed error message
+        await db
+          .update(customDomains)
+          .set({
+            sslStatus: 'failed',
+            sslErrorMessage: this.formatSSLError(sslError.message, config.SSL_PROVIDER),
+            updatedAt: new Date()
+          })
+          .where(eq(customDomains.id, domainId));
+          
+        throw sslError;
       }
       
     } catch (error: any) {
-      console.error(`SSL issuance failed for ${domain}:`, error);
+      console.error(`SSL certificate request failed for ${domain}:`, error);
       
-      // Обновляем статус на ошибку
+      // Fallback error handling
       await db
         .update(customDomains)
         .set({
           sslStatus: 'failed',
-          sslErrorMessage: error?.message || 'SSL error',
+          sslErrorMessage: error?.message || 'SSL certificate request failed',
           updatedAt: new Date()
         })
         .where(eq(customDomains.id, domainId));
@@ -307,9 +419,23 @@ export class CustomDomainService {
     return domain?.domain || null;
   }
 
-  // Обновляем трекинговые ссылки на использование кастомного домена
+  /**
+   * Update tracking links to use custom domain with optimized batch operations
+   * 
+   * Instead of individual updates, this method uses efficient batch operations
+   * to update all tracking links for an advertiser's offers at once.
+   * 
+   * @param {string} advertiserId - The advertiser's unique identifier
+   * @param {string} domain - The custom domain to set for tracking links
+   * @returns {Promise<void>}
+   * 
+   * @example
+   * await CustomDomainService.updateTrackingLinksWithDomain('user-123', 'track.example.com');
+   */
   static async updateTrackingLinksWithDomain(advertiserId: string, domain: string): Promise<void> {
-    // Получаем все офферы рекламодателя
+    console.log(`🔄 Starting batch update of tracking links for advertiser ${advertiserId} to domain ${domain}`);
+    
+    // Get all offers for the advertiser
     const advertiserOffers = await db
       .select({ id: offers.id })
       .from(offers)
@@ -317,18 +443,24 @@ export class CustomDomainService {
 
     const offerIds = advertiserOffers.map(o => o.id);
 
-    if (offerIds.length === 0) return;
-
-    // Обновляем URL в трекинговых ссылках
-    for (const offerId of offerIds) {
-      await db
-        .update(trackingLinks)
-        .set({ 
-          customDomain: domain,
-          updatedAt: new Date()
-        })
-        .where(eq(trackingLinks.offerId, offerId));
+    if (offerIds.length === 0) {
+      console.log('ℹ️ No offers found for advertiser, skipping update');
+      return;
     }
+
+    console.log(`📊 Found ${offerIds.length} offers to update tracking links for`);
+
+    // Use batch update with inArray for better performance
+    // This replaces the individual loop with a single query
+    const updateResult = await db
+      .update(trackingLinks)
+      .set({ 
+        customDomain: domain,
+        updatedAt: new Date()
+      })
+      .where(inArray(trackingLinks.offerId, offerIds));
+
+    console.log(`✅ Batch update completed for ${offerIds.length} offers`);
   }
 
   static async checkSSL(domain: string): Promise<{
@@ -394,5 +526,99 @@ export class CustomDomainService {
         instructions: `Добавьте TXT запись в DNS настройках вашего домена:\n\nИмя: ${domain.domain}\nЗначение: ${domain.verificationValue}\n\nПосле добавления записи нажмите "Проверить домен".`
       };
     }
+  }
+
+  /**
+   * Format SSL error message for better user understanding
+   * 
+   * @private
+   * @param {string} errorMessage - Raw error message
+   * @param {string} provider - SSL provider name
+   * @returns {string} Formatted user-friendly error message
+   */
+  private static formatSSLError(errorMessage: string, provider: string): string {
+    const providerName = provider.charAt(0).toUpperCase() + provider.slice(1).replace('-', ' ');
+    
+    if (errorMessage.includes('timeout')) {
+      return `${providerName} SSL request timed out. This may be due to high server load. Please try again in a few minutes.`;
+    }
+    
+    if (errorMessage.includes('validation')) {
+      return `${providerName} domain validation failed. Ensure your domain is properly configured and accessible.`;
+    }
+    
+    if (errorMessage.includes('rate limit')) {
+      return `${providerName} rate limit exceeded. Please wait before requesting another certificate.`;
+    }
+    
+    if (errorMessage.includes('not configured')) {
+      return `${providerName} is not properly configured. Please check your environment variables and provider settings.`;
+    }
+    
+    return `${providerName} SSL error: ${errorMessage}`;
+  }
+
+  /**
+   * Get comprehensive domain statistics for advertiser
+   * 
+   * @param {string} advertiserId - The advertiser's unique identifier
+   * @returns {Promise<Object>} Domain statistics including counts and status breakdown
+   * 
+   * @example
+   * const stats = await CustomDomainService.getDomainStats('user-123');
+   * console.log(`Total domains: ${stats.total}, Verified: ${stats.verified}`);
+   */
+  static async getDomainStats(advertiserId: string): Promise<{
+    total: number;
+    verified: number;
+    pending: number;
+    failed: number;
+    withSSL: number;
+    sslPending: number;
+    sslFailed: number;
+    remainingSlots: number;
+  }> {
+    const domains = await this.getAdvertiserDomains(advertiserId);
+    
+    const stats = {
+      total: domains.length,
+      verified: domains.filter(d => d.status === 'verified').length,
+      pending: domains.filter(d => d.status === 'pending').length,
+      failed: domains.filter(d => d.status === 'error' || d.status === 'failed').length,
+      withSSL: domains.filter(d => d.sslStatus === 'issued').length,
+      sslPending: domains.filter(d => d.sslStatus === 'pending').length,
+      sslFailed: domains.filter(d => d.sslStatus === 'failed').length,
+      remainingSlots: Math.max(0, config.MAX_DOMAINS_PER_ADVERTISER - domains.length)
+    };
+    
+    return stats;
+  }
+
+  /**
+   * Clear DNS cache for a specific domain
+   * Useful for forcing re-verification after DNS changes
+   * 
+   * @param {string} domain - Domain name to clear cache for
+   * @param {string} [recordType] - Specific record type to clear (optional)
+   * 
+   * @example
+   * // Clear all DNS cache for domain
+   * CustomDomainService.clearDNSCache('example.com');
+   * 
+   * // Clear specific record type
+   * CustomDomainService.clearDNSCache('example.com', 'CNAME');
+   */
+  static clearDNSCache(domain: string, recordType?: string): void {
+    enhancedDNS.clearCache(domain, recordType);
+    console.log(`🗑️ Cleared DNS cache for ${domain}${recordType ? ` (${recordType})` : ''}`);
+  }
+
+  /**
+   * Get DNS cache statistics
+   * 
+   * @returns {Object} Cache statistics including size and performance metrics
+   */
+  static getDNSCacheStats() {
+    return enhancedDNS.getCacheStats();
   }
 }

@@ -59,6 +59,14 @@ export const config = {
   
   // Безопасность
   BCRYPT_ROUNDS: getEnvNumber('BCRYPT_ROUNDS', 12),
+  
+  // Custom Domain Settings
+  MAX_DOMAINS_PER_ADVERTISER: getEnvNumber('MAX_DOMAINS_PER_ADVERTISER', 5),
+  DNS_CACHE_TTL_SECONDS: getEnvNumber('DNS_CACHE_TTL_SECONDS', 300), // 5 minutes
+  DNS_TIMEOUT_MS: getEnvNumber('DNS_TIMEOUT_MS', 5000), // 5 seconds
+  SSL_PROVIDER: getEnvVar('SSL_PROVIDER', 'letsencrypt'), // letsencrypt, cloudflare, aws-acm
+  CLOUDFLARE_API_TOKEN: getEnvVar('CLOUDFLARE_API_TOKEN'),
+  AWS_ACM_REGION: getEnvVar('AWS_ACM_REGION', 'us-east-1'),
   LOGIN_ATTEMPT_LIMIT: getEnvNumber('LOGIN_ATTEMPT_LIMIT', 5),
   LOGIN_LOCKOUT_TIME: getEnvNumber('LOGIN_LOCKOUT_TIME', 900000), // 15 минут
   
