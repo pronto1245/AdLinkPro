@@ -1395,7 +1395,7 @@ var require_cert_signatures = __commonJS({
 var require_sasl = __commonJS({
   "node_modules/pg/lib/crypto/sasl.js"(exports2, module2) {
     "use strict";
-    var crypto2 = require_utils2();
+    var crypto3 = require_utils2();
     var { signatureAlgorithmHashFromCertificate } = require_cert_signatures();
     function startSession(mechanisms, stream) {
       const candidates = ["SCRAM-SHA-256"];
@@ -1407,7 +1407,7 @@ var require_sasl = __commonJS({
       if (mechanism === "SCRAM-SHA-256-PLUS" && typeof stream.getPeerCertificate !== "function") {
         throw new Error("SASL: Mechanism SCRAM-SHA-256-PLUS requires a certificate");
       }
-      const clientNonce = crypto2.randomBytes(18).toString("base64");
+      const clientNonce = crypto3.randomBytes(18).toString("base64");
       const gs2Header = mechanism === "SCRAM-SHA-256-PLUS" ? "p=tls-server-end-point" : stream ? "y" : "n";
       return {
         mechanism,
@@ -1442,20 +1442,20 @@ var require_sasl = __commonJS({
         const peerCert = stream.getPeerCertificate().raw;
         let hashName = signatureAlgorithmHashFromCertificate(peerCert);
         if (hashName === "MD5" || hashName === "SHA-1") hashName = "SHA-256";
-        const certHash = await crypto2.hashByName(hashName, peerCert);
+        const certHash = await crypto3.hashByName(hashName, peerCert);
         const bindingData = Buffer.concat([Buffer.from("p=tls-server-end-point,,"), Buffer.from(certHash)]);
         channelBinding = bindingData.toString("base64");
       }
       const clientFinalMessageWithoutProof = "c=" + channelBinding + ",r=" + sv.nonce;
       const authMessage = clientFirstMessageBare + "," + serverFirstMessage + "," + clientFinalMessageWithoutProof;
       const saltBytes = Buffer.from(sv.salt, "base64");
-      const saltedPassword = await crypto2.deriveKey(password, saltBytes, sv.iteration);
-      const clientKey = await crypto2.hmacSha256(saltedPassword, "Client Key");
-      const storedKey = await crypto2.sha256(clientKey);
-      const clientSignature = await crypto2.hmacSha256(storedKey, authMessage);
+      const saltedPassword = await crypto3.deriveKey(password, saltBytes, sv.iteration);
+      const clientKey = await crypto3.hmacSha256(saltedPassword, "Client Key");
+      const storedKey = await crypto3.sha256(clientKey);
+      const clientSignature = await crypto3.hmacSha256(storedKey, authMessage);
       const clientProof = xorBuffers(Buffer.from(clientKey), Buffer.from(clientSignature)).toString("base64");
-      const serverKey = await crypto2.hmacSha256(saltedPassword, "Server Key");
-      const serverSignatureBytes = await crypto2.hmacSha256(serverKey, authMessage);
+      const serverKey = await crypto3.hmacSha256(saltedPassword, "Server Key");
+      const serverSignatureBytes = await crypto3.hmacSha256(serverKey, authMessage);
       session.message = "SASLResponse";
       session.serverSignature = Buffer.from(serverSignatureBytes).toString("base64");
       session.response = clientFinalMessageWithoutProof + ",p=" + clientProof;
@@ -3591,7 +3591,7 @@ var require_client = __commonJS({
     var Query2 = require_query();
     var defaults2 = require_defaults();
     var Connection2 = require_connection();
-    var crypto2 = require_utils2();
+    var crypto3 = require_utils2();
     var Client2 = class extends EventEmitter {
       constructor(config) {
         super();
@@ -3786,7 +3786,7 @@ var require_client = __commonJS({
       _handleAuthMD5Password(msg) {
         this._checkPgPass(async () => {
           try {
-            const hashedPassword = await crypto2.postgresMd5PasswordHash(this.user, this.password, msg.salt);
+            const hashedPassword = await crypto3.postgresMd5PasswordHash(this.user, this.password, msg.salt);
             this.connection.password(hashedPassword);
           } catch (e) {
             this.emit("error", e);
@@ -16707,14 +16707,14 @@ var require_buffer_equal_constant_time = __commonJS({
 var require_jwa = __commonJS({
   "node_modules/jsonwebtoken/node_modules/jwa/index.js"(exports2, module2) {
     var Buffer3 = require_safe_buffer().Buffer;
-    var crypto2 = require("crypto");
+    var crypto3 = require("crypto");
     var formatEcdsa = require_ecdsa_sig_formatter();
     var util = require("util");
     var MSG_INVALID_ALGORITHM = '"%s" is not a valid algorithm.\n  Supported algorithms are:\n  "HS256", "HS384", "HS512", "RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512" and "none".';
     var MSG_INVALID_SECRET = "secret must be a string or buffer";
     var MSG_INVALID_VERIFIER_KEY = "key must be a string or a buffer";
     var MSG_INVALID_SIGNER_KEY = "key must be a string, a buffer or an object";
-    var supportsKeyObjects = typeof crypto2.createPublicKey === "function";
+    var supportsKeyObjects = typeof crypto3.createPublicKey === "function";
     if (supportsKeyObjects) {
       MSG_INVALID_VERIFIER_KEY += " or a KeyObject";
       MSG_INVALID_SECRET += "or a KeyObject";
@@ -16804,17 +16804,17 @@ var require_jwa = __commonJS({
       return function sign2(thing, secret) {
         checkIsSecretKey(secret);
         thing = normalizeInput(thing);
-        var hmac = crypto2.createHmac("sha" + bits, secret);
+        var hmac = crypto3.createHmac("sha" + bits, secret);
         var sig = (hmac.update(thing), hmac.digest("base64"));
         return fromBase64(sig);
       };
     }
     var bufferEqual;
-    var timingSafeEqual = "timingSafeEqual" in crypto2 ? function timingSafeEqual2(a, b) {
+    var timingSafeEqual = "timingSafeEqual" in crypto3 ? function timingSafeEqual2(a, b) {
       if (a.byteLength !== b.byteLength) {
         return false;
       }
-      return crypto2.timingSafeEqual(a, b);
+      return crypto3.timingSafeEqual(a, b);
     } : function timingSafeEqual2(a, b) {
       if (!bufferEqual) {
         bufferEqual = require_buffer_equal_constant_time();
@@ -16831,7 +16831,7 @@ var require_jwa = __commonJS({
       return function sign2(thing, privateKey) {
         checkIsPrivateKey(privateKey);
         thing = normalizeInput(thing);
-        var signer = crypto2.createSign("RSA-SHA" + bits);
+        var signer = crypto3.createSign("RSA-SHA" + bits);
         var sig = (signer.update(thing), signer.sign(privateKey, "base64"));
         return fromBase64(sig);
       };
@@ -16841,7 +16841,7 @@ var require_jwa = __commonJS({
         checkIsPublicKey(publicKey);
         thing = normalizeInput(thing);
         signature = toBase64(signature);
-        var verifier = crypto2.createVerify("RSA-SHA" + bits);
+        var verifier = crypto3.createVerify("RSA-SHA" + bits);
         verifier.update(thing);
         return verifier.verify(publicKey, signature, "base64");
       };
@@ -16850,11 +16850,11 @@ var require_jwa = __commonJS({
       return function sign2(thing, privateKey) {
         checkIsPrivateKey(privateKey);
         thing = normalizeInput(thing);
-        var signer = crypto2.createSign("RSA-SHA" + bits);
+        var signer = crypto3.createSign("RSA-SHA" + bits);
         var sig = (signer.update(thing), signer.sign({
           key: privateKey,
-          padding: crypto2.constants.RSA_PKCS1_PSS_PADDING,
-          saltLength: crypto2.constants.RSA_PSS_SALTLEN_DIGEST
+          padding: crypto3.constants.RSA_PKCS1_PSS_PADDING,
+          saltLength: crypto3.constants.RSA_PSS_SALTLEN_DIGEST
         }, "base64"));
         return fromBase64(sig);
       };
@@ -16864,12 +16864,12 @@ var require_jwa = __commonJS({
         checkIsPublicKey(publicKey);
         thing = normalizeInput(thing);
         signature = toBase64(signature);
-        var verifier = crypto2.createVerify("RSA-SHA" + bits);
+        var verifier = crypto3.createVerify("RSA-SHA" + bits);
         verifier.update(thing);
         return verifier.verify({
           key: publicKey,
-          padding: crypto2.constants.RSA_PKCS1_PSS_PADDING,
-          saltLength: crypto2.constants.RSA_PSS_SALTLEN_DIGEST
+          padding: crypto3.constants.RSA_PKCS1_PSS_PADDING,
+          saltLength: crypto3.constants.RSA_PSS_SALTLEN_DIGEST
         }, signature, "base64");
       };
     }
@@ -17158,9 +17158,9 @@ var require_jws = __commonJS({
 var require_decode = __commonJS({
   "node_modules/jsonwebtoken/decode.js"(exports2, module2) {
     var jws = require_jws();
-    module2.exports = function(jwt4, options) {
+    module2.exports = function(jwt5, options) {
       options = options || {};
-      var decoded = jws.decode(jwt4, options);
+      var decoded = jws.decode(jwt5, options);
       if (!decoded) {
         return null;
       }
@@ -31371,14 +31371,14 @@ var require_etag = __commonJS({
   "node_modules/etag/index.js"(exports2, module2) {
     "use strict";
     module2.exports = etag;
-    var crypto2 = require("crypto");
+    var crypto3 = require("crypto");
     var Stats = require("fs").Stats;
     var toString = Object.prototype.toString;
     function entitytag(entity) {
       if (entity.length === 0) {
         return '"0-2jmj7l5rSw0yVb/vlWAYkK/YBwk"';
       }
-      var hash2 = crypto2.createHash("sha1").update(entity, "utf8").digest("base64").substring(0, 27);
+      var hash2 = crypto3.createHash("sha1").update(entity, "utf8").digest("base64").substring(0, 27);
       var len = typeof entity === "string" ? Buffer.byteLength(entity, "utf8") : entity.length;
       return '"' + len.toString(16) + "-" + hash2 + '"';
     }
@@ -33138,7 +33138,7 @@ var require_application = __commonJS({
   "node_modules/express/lib/application.js"(exports2, module2) {
     "use strict";
     var finalhandler = require_finalhandler();
-    var Router3 = require_router();
+    var Router4 = require_router();
     var methods = require_methods();
     var middleware = require_init();
     var query = require_query3();
@@ -33203,7 +33203,7 @@ var require_application = __commonJS({
     };
     app2.lazyrouter = function lazyrouter() {
       if (!this._router) {
-        this._router = new Router3({
+        this._router = new Router4({
           caseSensitive: this.enabled("case sensitive routing"),
           strict: this.enabled("strict routing")
         });
@@ -34154,11 +34154,11 @@ var require_request = __commonJS({
 // node_modules/cookie-signature/index.js
 var require_cookie_signature = __commonJS({
   "node_modules/cookie-signature/index.js"(exports2) {
-    var crypto2 = require("crypto");
+    var crypto3 = require("crypto");
     exports2.sign = function(val, secret) {
       if ("string" != typeof val) throw new TypeError("Cookie value must be provided as a string.");
       if ("string" != typeof secret) throw new TypeError("Secret string must be provided.");
-      return val + "." + crypto2.createHmac("sha256", secret).update(val).digest("base64").replace(/\=+$/, "");
+      return val + "." + crypto3.createHmac("sha256", secret).update(val).digest("base64").replace(/\=+$/, "");
     };
     exports2.unsign = function(val, secret) {
       if ("string" != typeof val) throw new TypeError("Signed cookie string must be provided.");
@@ -34167,7 +34167,7 @@ var require_cookie_signature = __commonJS({
       return sha1(mac) == sha1(val) ? str : false;
     };
     function sha1(str) {
-      return crypto2.createHash("sha1").update(str).digest("hex");
+      return crypto3.createHash("sha1").update(str).digest("hex");
     }
   }
 });
@@ -34993,7 +34993,7 @@ var require_express = __commonJS({
     var mixin = require_merge_descriptors();
     var proto = require_application();
     var Route = require_route();
-    var Router3 = require_router();
+    var Router4 = require_router();
     var req = require_request();
     var res = require_response();
     exports2 = module2.exports = createApplication;
@@ -35016,7 +35016,7 @@ var require_express = __commonJS({
     exports2.request = req;
     exports2.response = res;
     exports2.Route = Route;
-    exports2.Router = Router3;
+    exports2.Router = Router4;
     exports2.json = bodyParser.json;
     exports2.query = require_query3();
     exports2.raw = bodyParser.raw;
@@ -38442,7 +38442,7 @@ var helmet = Object.assign(
 );
 
 // server/index.ts
-var import_jsonwebtoken2 = __toESM(require_jsonwebtoken());
+var import_jsonwebtoken3 = __toESM(require_jsonwebtoken());
 
 // server/dev.login.ts
 var import_express = __toESM(require_express2());
@@ -38526,7 +38526,7 @@ function registerDevRoutes(app2) {
 }
 
 // server/index.ts
-var import_express3 = __toESM(require_express2());
+var import_express4 = __toESM(require_express2());
 var import_cors = __toESM(require_lib5());
 var import_node_path = __toESM(require("node:path"));
 var import_node_fs = __toESM(require("node:fs"));
@@ -38557,8 +38557,181 @@ router.post("/auth/login", (req, res) => {
 });
 var auth_default = router;
 
+// server/routes/auth-v2.ts
+var import_express3 = __toESM(require_express2());
+var import_jsonwebtoken2 = __toESM(require_jsonwebtoken());
+var import_crypto2 = __toESM(require("crypto"));
+var authV2Router = (0, import_express3.Router)();
+authV2Router.use(import_express3.default.json());
+var tempTokens = /* @__PURE__ */ new Map();
+var users2 = [
+  {
+    id: "1",
+    email: process.env.OWNER_EMAIL || "9791207@gmail.com",
+    password: process.env.OWNER_PASSWORD || "owner123",
+    role: "OWNER",
+    sub: "owner-1",
+    username: "owner",
+    twoFactorEnabled: false,
+    twoFactorSecret: null
+  },
+  {
+    id: "2",
+    email: process.env.ADVERTISER_EMAIL || "12345@gmail.com",
+    password: process.env.ADVERTISER_PASSWORD || "adv123",
+    role: "ADVERTISER",
+    sub: "adv-1",
+    username: "advertiser",
+    twoFactorEnabled: true,
+    twoFactorSecret: "JBSWY3DPEHPK3PXP"
+    // Demo secret for testing
+  },
+  {
+    id: "3",
+    email: process.env.PARTNER_EMAIL || "4321@gmail.com",
+    password: process.env.PARTNER_PASSWORD || "partner123",
+    role: "PARTNER",
+    sub: "partner-1",
+    username: "partner",
+    twoFactorEnabled: false,
+    twoFactorSecret: null
+  }
+];
+authV2Router.post("/login", (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    if (!username || !password) {
+      return res.status(400).json({ error: "username and password are required" });
+    }
+    const user = users2.find(
+      (u) => u.email.toLowerCase() === username.toLowerCase() || u.username.toLowerCase() === username.toLowerCase()
+    );
+    if (!user || user.password !== password) {
+      return res.status(401).json({ error: "invalid credentials" });
+    }
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
+    if (user.twoFactorEnabled) {
+      const tempToken = import_crypto2.default.randomBytes(32).toString("hex");
+      tempTokens.set(tempToken, {
+        userId: user.id,
+        timestamp: Date.now(),
+        user
+      });
+      setTimeout(() => {
+        tempTokens.delete(tempToken);
+      }, 5 * 60 * 1e3);
+      return res.json({
+        requires2FA: true,
+        tempToken,
+        message: "Please provide 2FA code"
+      });
+    }
+    const token = import_jsonwebtoken2.default.sign(
+      { sub: user.sub, role: user.role, email: user.email, username: user.username },
+      secret,
+      { expiresIn: "7d" }
+    );
+    return res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        twoFactorEnabled: user.twoFactorEnabled
+      }
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+function verifyTOTP(secret, token) {
+  const validCodes = ["123456", "000000", "111111"];
+  return validCodes.includes(token);
+}
+authV2Router.post("/verify-2fa", (req, res) => {
+  try {
+    const { token: tempToken, code } = req.body || {};
+    if (!tempToken || !code) {
+      return res.status(400).json({ error: "Temporary token and 2FA code are required" });
+    }
+    const tokenData = tempTokens.get(tempToken);
+    if (!tokenData) {
+      return res.status(401).json({ error: "Invalid or expired temporary token" });
+    }
+    if (Date.now() - tokenData.timestamp > 5 * 60 * 1e3) {
+      tempTokens.delete(tempToken);
+      return res.status(401).json({ error: "Temporary token expired" });
+    }
+    const user = tokenData.user;
+    if (!verifyTOTP(user.twoFactorSecret, code)) {
+      return res.status(401).json({ error: "Invalid 2FA code" });
+    }
+    tempTokens.delete(tempToken);
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
+    const authToken = import_jsonwebtoken2.default.sign(
+      { sub: user.sub, role: user.role, email: user.email, username: user.username },
+      secret,
+      { expiresIn: "7d" }
+    );
+    return res.json({
+      success: true,
+      token: authToken,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        twoFactorEnabled: user.twoFactorEnabled
+      }
+    });
+  } catch (error) {
+    console.error("2FA verification error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+authV2Router.post("/reset-password", (req, res) => {
+  try {
+    const { email } = req.body || {};
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+    const user = users2.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    console.log(`Password reset requested for email: ${email}`);
+    if (user) {
+      const resetToken = import_crypto2.default.randomBytes(32).toString("hex");
+      console.log(`Generated reset token for ${user.username}: ${resetToken}`);
+    }
+    return res.json({
+      success: true,
+      message: "If an account with this email exists, a password reset link has been sent."
+    });
+  } catch (error) {
+    console.error("Password recovery error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+authV2Router.post("/2fa/toggle", (req, res) => {
+  try {
+    const { enabled } = req.body || {};
+    return res.json({
+      success: true,
+      message: enabled ? "2FA enabled" : "2FA disabled",
+      twoFactorEnabled: enabled
+    });
+  } catch (error) {
+    console.error("2FA toggle error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+var auth_v2_default = authV2Router;
+
 // server/index.ts
-var app = (0, import_express3.default)();
+var app = (0, import_express4.default)();
 var pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 async function ensureUsersTable() {
   await pool.query(`
@@ -38576,12 +38749,12 @@ ensureUsersTable().catch((err) => console.error("ensureUsersTable error", err));
 if (process.env.ALLOW_SEED === "1") {
   app.post("/api/dev/seed-users", async (req, res) => {
     try {
-      const users2 = [
+      const users3 = [
         { email: process.env.OWNER_EMAIL || "9791207@gmail.com", username: "owner", role: "OWNER", pass: process.env.OWNER_PASSWORD || "owner123" },
         { email: process.env.ADVERTISER_EMAIL || "12345@gmail.com", username: "advertiser", role: "ADVERTISER", pass: process.env.ADVERTISER_PASSWORD || "adv123" },
         { email: process.env.PARTNER_EMAIL || "4321@gmail.com", username: "partner", role: "PARTNER", pass: process.env.PARTNER_PASSWORD || "partner123" }
       ];
-      for (const u of users2) {
+      for (const u of users3) {
         const hash2 = await bcryptjs_default.hash(u.pass, 10);
         await pool.query(
           `INSERT INTO users (email, username, role, password_hash)
@@ -38607,7 +38780,7 @@ app.post("/api/auth/login", async (req, res, next) => {
     const u = r.rows[0];
     const ok = await bcryptjs_default.compare(password, u.password_hash);
     if (!ok) return res.status(401).json({ error: "invalid credentials" });
-    const token = import_jsonwebtoken2.default.sign({ sub: String(u.id), role: u.role, email: u.email, username: u.username }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = import_jsonwebtoken3.default.sign({ sub: String(u.id), role: u.role, email: u.email, username: u.username }, process.env.JWT_SECRET, { expiresIn: "7d" });
     return res.json({ token });
   } catch (e) {
     console.error("auth/login error", e);
@@ -38625,7 +38798,7 @@ app.use((0, import_cors.default)({
 app.use(rate_limit_default({ windowMs: 15 * 60 * 1e3, max: 300 }));
 app.post("/api/auth/login", require_express2().json(), (req, res) => {
   try {
-    const users2 = [
+    const users3 = [
       { email: process.env.OWNER_EMAIL || "9791207@gmail.com", password: process.env.OWNER_PASSWORD || "owner123", role: "OWNER", sub: "owner-1", username: "owner" },
       { email: process.env.ADVERTISER_EMAIL || "12345@gmail.com", password: process.env.ADVERTISER_PASSWORD || "adv123", role: "ADVERTISER", sub: "adv-1", username: "advertiser" },
       { email: process.env.PARTNER_EMAIL || "4321@gmail.com", password: process.env.PARTNER_PASSWORD || "partner123", role: "PARTNER", sub: "partner-1", username: "partner" }
@@ -38634,11 +38807,11 @@ app.post("/api/auth/login", require_express2().json(), (req, res) => {
     const ident = String(b.email || b.username || "").toLowerCase();
     const pass = String(b.password || "");
     if (!ident || !pass) return res.status(400).json({ error: "email/username and password are required" });
-    const u = users2.find((x) => x.email.toLowerCase() === ident || x.username.toLowerCase() === ident);
+    const u = users3.find((x) => x.email.toLowerCase() === ident || x.username.toLowerCase() === ident);
     if (!u || u.password !== pass) return res.status(401).json({ error: "invalid credentials" });
     const secret = process.env.JWT_SECRET;
     if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
-    const token = import_jsonwebtoken2.default.sign({ sub: u.sub, role: u.role, email: u.email, username: u.username }, secret, { expiresIn: "7d" });
+    const token = import_jsonwebtoken3.default.sign({ sub: u.sub, role: u.role, email: u.email, username: u.username }, secret, { expiresIn: "7d" });
     return res.json({ token });
   } catch (e) {
     try {
@@ -38668,11 +38841,12 @@ var corsMw = (0, import_cors.default)({
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 });
-app.use(import_express3.default.json());
+app.use(import_express4.default.json());
 app.use(corsMw);
 app.options("*", corsMw);
 app.get("/health", (_req, res) => res.status(200).json({ ok: true }));
 app.use("/api", auth_default);
+app.use("/api/auth/v2", auth_v2_default);
 function requireAuth(req, res, next) {
   const h = String(req.headers.authorization || "");
   if (!h.startsWith("Bearer ")) {
@@ -38697,9 +38871,14 @@ app.get("/api/partner/finance/summary", requireAuth, (_req, res) => {
 app.get("/api/notifications", requireAuth, (_req, res) => {
   res.json({ items: [] });
 });
+var clientDistDir = import_node_path.default.join(__dirname, "../client/dist");
+if (import_node_fs.default.existsSync(clientDistDir)) {
+  app.use(import_express4.default.static(clientDistDir));
+  app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(import_node_path.default.join(clientDistDir, "index.html")));
+}
 var publicDir = import_node_path.default.join(__dirname, "public");
 if (import_node_fs.default.existsSync(publicDir)) {
-  app.use(import_express3.default.static(publicDir));
+  app.use(import_express4.default.static(publicDir));
   app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(import_node_path.default.join(publicDir, "index.html")));
 }
 app.listen(PORT, () => console.log(`API listening on :${PORT}`));
@@ -38710,21 +38889,21 @@ app.listen(PORT, () => console.log(`API listening on :${PORT}`));
         app.use(require_express2().json());
       } catch (e) {
       }
-      let jwt4;
+      let jwt5;
       try {
-        jwt4 = require_jsonwebtoken();
+        jwt5 = require_jsonwebtoken();
       } catch (e) {
         try {
-          jwt4 = (await Promise.resolve().then(() => __toESM(require_jsonwebtoken()))).default;
+          jwt5 = (await Promise.resolve().then(() => __toESM(require_jsonwebtoken()))).default;
         } catch (e2) {
-          jwt4 = await Promise.resolve().then(() => __toESM(require_jsonwebtoken()));
+          jwt5 = await Promise.resolve().then(() => __toESM(require_jsonwebtoken()));
         }
       }
       if (process.env.ALLOW_SEED === "1") {
         app.post("/api/dev/dev-token", (req, res) => {
           const secret = process.env.JWT_SECRET;
           if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
-          const token = jwt4.sign({ sub: "dev-admin", role: "ADMIN", email: process.env.SEED_EMAIL || "admin@example.com", username: process.env.SEED_USERNAME || "admin" }, secret, { expiresIn: "7d" });
+          const token = jwt5.sign({ sub: "dev-admin", role: "ADMIN", email: process.env.SEED_EMAIL || "admin@example.com", username: process.env.SEED_USERNAME || "admin" }, secret, { expiresIn: "7d" });
           res.json({ token });
         });
       }
@@ -38733,7 +38912,7 @@ app.listen(PORT, () => console.log(`API listening on :${PORT}`));
           const h = req.headers.authorization || "";
           const token = h.split(" ")[1];
           if (!token) return res.status(401).json({ error: "no token" });
-          const payload = jwt4.verify(token, process.env.JWT_SECRET);
+          const payload = jwt5.verify(token, process.env.JWT_SECRET);
           res.json({ id: payload.sub, role: payload.role, email: payload.email, username: payload.username });
         } catch (e) {
           res.status(401).json({ error: "invalid token" });

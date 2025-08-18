@@ -81,7 +81,7 @@ import * as React from 'react';
 import Login from "@/pages/auth/login";
 import LoginV2 from "@/pages/auth/login-v2";
 import RegisterPartner from "@/pages/auth/register-partner";
-import RegisterAdvertiser from "@/pages/auth/register-advertiser";
+
 import UpdateToken from "@/pages/UpdateToken";
 import AdvertiserPostbacks from '@/pages/advertiser/Postbacks';
 import AdvertiserPostbackSettings from '@/pages/advertiser/AdvertiserPostbackSettings';
@@ -137,7 +137,7 @@ function Router() {
       <Route path="/login-v2" component={LoginV2} />
       <Route path="/login/:role" component={LoginV2} />
       <Route path="/register/partner" component={RegisterPartner} />
-      <Route path="/register/advertiser" component={RegisterAdvertiser} />
+      <Route path="/register/advertiser" component={RegisterPartner} />
       
       {/* Super Admin Routes */}
       <Route path="/admin">
