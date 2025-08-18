@@ -61,7 +61,6 @@
     "@uppy/react": "^4.5.2",
     "acme-client": "^5.4.0",
     "archiver": "^7.0.1",
-    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "bullmq": "^5.56.9",
     "class-variance-authority": "^0.7.1",
@@ -132,14 +131,14 @@
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.21",
-    "drizzle-kit": "^0.30.4",
+    "drizzle-kit": "^0.18.1",
     "esbuild": "^0.25.9",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3",
-    "vite": "^5.4.19"
+    "vite": "^7.1.2"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
