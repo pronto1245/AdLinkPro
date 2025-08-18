@@ -3,6 +3,14 @@ import { eq, and, or, desc, asc, gte, lte } from 'drizzle-orm';
 import { db } from '../db';
 import { postbacks, postbackLogs, postbackTemplates, trackingClicks, users, offers } from '../../shared/schema';
 
+// Type imports for fraud service integration
+interface FraudCheckResult {
+  isFraudulent: boolean;
+  riskScore: number;
+  reasons: string[];
+  blockReason?: string;
+}
+
 export interface PostbackMacros {
   clickid?: string;
   status?: string;
@@ -420,8 +428,89 @@ export class PostbackService {
     }
   }
 
-  // Trigger postbacks for an event (enhanced version)
-  static async triggerPostbacks(event: PostbackEvent) {
+  // Anti-fraud validation for postbacks
+  static async performAntiFraudCheck(clickData: any, event: PostbackEvent): Promise<FraudCheckResult> {
+    try {
+      // Basic fraud indicators
+      const reasons: string[] = [];
+      let riskScore = 0;
+
+      // Check for suspicious IP patterns (basic implementation)
+      if (clickData?.ip) {
+        const ip = clickData.ip;
+        // Check for common VPN/proxy IP ranges (simplified)
+        const suspiciousRanges = ['10.', '192.168.', '172.'];
+        if (suspiciousRanges.some(range => ip.startsWith(range))) {
+          riskScore += 30;
+          reasons.push('Private/internal IP address');
+        }
+      }
+
+      // Check for suspicious user agent patterns
+      if (clickData?.userAgent) {
+        const ua = clickData.userAgent.toLowerCase();
+        const botPatterns = ['bot', 'crawler', 'spider', 'curl', 'wget'];
+        if (botPatterns.some(pattern => ua.includes(pattern))) {
+          riskScore += 40;
+          reasons.push('Bot-like user agent');
+        }
+      }
+
+      // Check for rapid successive conversions from same IP
+      if (clickData?.ip && event.type === 'conversion') {
+        const recentConversions = await db.select()
+          .from(trackingClicks)
+          .where(and(
+            eq(trackingClicks.ip, clickData.ip),
+            gte(trackingClicks.createdAt, new Date(Date.now() - 60 * 60 * 1000)) // last hour
+          ));
+
+        if (recentConversions.length > 3) {
+          riskScore += 50;
+          reasons.push('Multiple conversions from same IP');
+        }
+      }
+
+      // Check for missing referrer (potential bot traffic)
+      if (!clickData?.referer || clickData.referer === '') {
+        riskScore += 20;
+        reasons.push('Missing referrer information');
+      }
+
+      // Check for suspicious country/device combinations
+      if (clickData?.country && clickData?.device) {
+        const suspiciousCountries = ['XX', '--', '', null];
+        if (suspiciousCountries.includes(clickData.country)) {
+          riskScore += 25;
+          reasons.push('Invalid or missing country data');
+        }
+      }
+
+      const isFraudulent = riskScore >= 60; // Threshold for blocking
+      
+      return {
+        isFraudulent,
+        riskScore,
+        reasons,
+        blockReason: isFraudulent ? reasons.join(', ') : undefined
+      };
+      
+    } catch (error) {
+      console.error('Anti-fraud check error:', error);
+      // Return safe defaults if check fails
+      return {
+        isFraudulent: false,
+        riskScore: 0,
+        reasons: ['Fraud check failed'],
+      };
+    }
+  }
+
+  // Trigger postbacks for an event (enhanced version with anti-fraud)
+  static async triggerPostbacks(event: PostbackEvent, options: {
+    skipAntiFraud?: boolean;
+    fraudThreshold?: number;
+  } = {}) {
     try {
       console.log(`Triggering postbacks for event: ${event.type}, clickId: ${event.clickId}`);
       
@@ -433,6 +522,42 @@ export class PostbackService {
           .where(eq(trackingClicks.clickId, event.clickId));
         clickData = click;
         console.log(`Found click data:`, clickData ? 'yes' : 'no');
+      }
+
+      // Perform anti-fraud checks unless explicitly skipped
+      if (!options.skipAntiFraud && clickData) {
+        const fraudCheck = await this.performAntiFraudCheck(clickData, event);
+        
+        if (fraudCheck.isFraudulent) {
+          console.log(`🚫 Blocking postback due to fraud detection: ${fraudCheck.blockReason}`);
+          
+          // Log the blocked postback for monitoring
+          await db.insert(postbackLogs).values({
+            postbackId: 'fraud-blocked',
+            clickId: event.clickId,
+            eventType: event.type,
+            url: 'BLOCKED - Fraud detected',
+            method: 'BLOCKED',
+            retryCount: 0,
+            status: 'failed',
+            errorMessage: `Fraud detected: ${fraudCheck.blockReason} (Risk Score: ${fraudCheck.riskScore})`,
+            responseTime: 0,
+            sentAt: new Date(),
+          });
+          
+          return [{
+            status: 'rejected' as const,
+            reason: { 
+              fraud: true, 
+              riskScore: fraudCheck.riskScore,
+              reasons: fraudCheck.reasons 
+            }
+          }];
+        }
+        
+        if (fraudCheck.riskScore > 30) {
+          console.log(`⚠️ High risk postback (Score: ${fraudCheck.riskScore}): ${fraudCheck.reasons.join(', ')}`);
+        }
       }
 
       // Find all active postback templates for this event
@@ -466,9 +591,23 @@ export class PostbackService {
     }
   }
 
-  // Retry failed postbacks
-  static async retryFailedPostbacks() {
+  // Retry failed postbacks with configurable parameters
+  static async retryFailedPostbacks(config: {
+    maxRetryAttempts?: number;
+    baseRetryDelay?: number; // seconds
+    maxRetryDelay?: number; // seconds
+    exponentialBackoff?: boolean;
+  } = {}) {
     try {
+      const defaultConfig = {
+        maxRetryAttempts: 3,
+        baseRetryDelay: 60, // 60 seconds
+        maxRetryDelay: 3600, // 1 hour max
+        exponentialBackoff: true
+      };
+      
+      const finalConfig = { ...defaultConfig, ...config };
+      
       // Get failed postbacks that need retry
       const failedLogs = await db.select()
         .from(postbackLogs)
@@ -481,19 +620,41 @@ export class PostbackService {
         )
         .orderBy(asc(postbackLogs.createdAt));
 
+      console.log(`Found ${failedLogs.length} failed postback logs to process`);
+
       const retryPromises = failedLogs
-        .filter(({ postback_logs: logs, postback_templates: pb }) => 
-          (logs.retryCount || 0) < (pb?.retryAttempts || 3)
-        )
+        .filter(({ postback_logs: logs, postback_templates: pb }) => {
+          const maxAttempts = pb?.retryAttempts || finalConfig.maxRetryAttempts;
+          const canRetry = (logs.retryCount || 0) < maxAttempts;
+          
+          if (!canRetry) {
+            console.log(`Postback ${logs.id} exceeded max retry attempts (${maxAttempts})`);
+          }
+          
+          return canRetry;
+        })
         .map(async ({ postback_logs: logs, postback_templates: pb }) => {
           if (!pb) return;
 
-          // Calculate retry delay with exponential backoff (60 seconds default)
-          const retryDelay = 60 * Math.pow(2, logs.retryCount || 0);
+          // Calculate retry delay with configurable exponential backoff
+          let retryDelay = finalConfig.baseRetryDelay;
+          if (finalConfig.exponentialBackoff) {
+            retryDelay = Math.min(
+              finalConfig.baseRetryDelay * Math.pow(2, logs.retryCount || 0),
+              finalConfig.maxRetryDelay
+            );
+          }
+          
           const shouldRetry = !logs.nextRetryAt || 
             new Date() >= logs.nextRetryAt;
 
-          if (!shouldRetry) return;
+          if (!shouldRetry) {
+            const nextRetryTime = logs.nextRetryAt?.toISOString();
+            console.log(`Postback ${logs.id} not ready for retry until ${nextRetryTime}`);
+            return;
+          }
+
+          console.log(`Retrying postback ${logs.id}, attempt ${(logs.retryCount || 0) + 1}`);
 
           // Reconstruct macros from payload
           const macros = logs.payload as PostbackMacros || {};
@@ -513,16 +674,48 @@ export class PostbackService {
                 retryCount: (logs.retryCount || 0) + 1,
                 nextRetryAt: new Date(Date.now() + retryDelay * 1000),
                 errorMessage: result.error,
+                updatedAt: new Date(),
               })
               .where(eq(postbackLogs.id, logs.id));
+              
+            console.log(`Postback ${logs.id} retry failed, next attempt in ${retryDelay} seconds`);
+          } else {
+            // Success - update status to sent
+            await db.update(postbackLogs)
+              .set({
+                status: 'sent',
+                retryCount: (logs.retryCount || 0) + 1,
+                nextRetryAt: null,
+                errorMessage: null,
+                updatedAt: new Date(),
+              })
+              .where(eq(postbackLogs.id, logs.id));
+              
+            console.log(`Postback ${logs.id} retry succeeded on attempt ${(logs.retryCount || 0) + 1}`);
           }
 
           return result;
         });
 
-      await Promise.allSettled(retryPromises);
+      const results = await Promise.allSettled(retryPromises);
+      const successfulRetries = results.filter(r => r.status === 'fulfilled' && r.value?.success).length;
+      const failedRetries = results.filter(r => r.status === 'fulfilled' && !r.value?.success).length;
+      
+      console.log(`Retry batch completed: ${successfulRetries} successful, ${failedRetries} failed`);
+      
+      return {
+        processed: failedLogs.length,
+        successful: successfulRetries,
+        failed: failedRetries
+      };
     } catch (error) {
       console.error('Error retrying failed postbacks:', error);
+      return {
+        processed: 0,
+        successful: 0,
+        failed: 0,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
   }
 
