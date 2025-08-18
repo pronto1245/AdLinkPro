@@ -16,6 +16,7 @@ import authRouter from './routes/auth';
 import authV2Router from './routes/auth-v2';
 
 const app = express();
+app.use(express.json());
 
 // == PG & Users table ==
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
@@ -85,6 +86,22 @@ app.post('/api/auth/login', async (req,res,next) => {
 /* __HEALTH_ALIAS_BEGIN__ */
 app.get('/api/health', (req,res) => res.json({ ok:true }));
 /* __HEALTH_ALIAS_END__ */
+app.get("/api/dev/dev-token", (req, res) => {
+  try {
+    if (process.env.ALLOW_SEED !== "1") return res.status(403).json({ error: "disabled" });
+    const roleIn = String(req.query.role || "").toLowerCase();
+    const role = roleIn === "advertiser" ? "ADVERTISER" : roleIn === "partner" ? "PARTNER" : roleIn === "owner" ? "OWNER" : "PARTNER";
+    const email = String(req.query.email || "").toLowerCase() || "demo@affilix.click";
+    const username = email.split("@")[0] || "demo";
+    const sub = username + "-" + role.toLowerCase();
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
+    const token = jwt.sign({ sub, role, email, username }, secret, { expiresIn: "7d" });
+    return res.json({ token });
+  } catch (e) {
+    return res.status(500).json({ error: "failed" });
+  }
+});
 /* __HARDENING_BEGIN__ */
 app.set('trust proxy', (process.env.TRUST_PROXY === '1') ? 1 : 0);
 app.use(helmet({ crossOriginResourcePolicy: false }));
@@ -122,6 +139,44 @@ app.post("/api/auth/login", require("express").json(), (req, res) => {
   }
 });
 /* __AUTH_LOGIN_OVERRIDE_END__ */
+// Simple registration endpoint
+app.post("/api/auth/register", require("express").json(), async (req, res) => {
+  try {
+    const b = req.body || {};
+    const roleIn = String(b.role || "").toLowerCase();
+    const role = roleIn === "advertiser" ? "ADVERTISER" : roleIn === "partner" ? "PARTNER" : null;
+    const email = String(b.email || "").toLowerCase().trim();
+    const password = String(b.password || "");
+    const passwordConfirm = String(b.passwordConfirm || "");
+    const name = String(b.name || "").trim();
+    const company = String(b.company || "").trim();
+    const acceptTerms = !!b.acceptTerms;
+    const acceptPrivacy = !!b.acceptPrivacy;
+
+    if (!role) return res.status(400).json({ error: "invalid role" });
+    if (!email || !password || !passwordConfirm || !name) return res.status(400).json({ error: "missing required fields" });
+    if (password !== passwordConfirm) return res.status(400).json({ error: "passwords do not match" });
+    if (role === "ADVERTISER") {
+      if (!company) return res.status(400).json({ error: "company is required" });
+      if (!acceptTerms || !acceptPrivacy) return res.status(400).json({ error: "agreements required" });
+    }
+
+    const hash = await bcryptjs.hash(password, 10);
+    const username = email.split("@")[0];
+    await pool.query(
+      "INSERT INTO users (email, username, role, password_hash) VALUES ($1,$2,$3,$4) ON CONFLICT (email) DO NOTHING",
+      [email, username, role, hash]
+    );
+
+    return res.json({
+      ok: true,
+      message: "Ваша регистрация прошла успешно, с вами свяжется менеджер для активации аккаунта в течение 24 часов."
+    });
+  } catch (e) {
+    console.error("register error", e);
+    return res.status(500).json({ error: "register failed" });
+  }
+});
 // mount dev login BEFORE other routers
 app.use("/api/dev", devLoginRouter);
 app.use("/api/auth", devLoginRouter); // alias: /api/auth/login
