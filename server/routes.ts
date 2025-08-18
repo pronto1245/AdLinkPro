@@ -8771,6 +8771,139 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced fraud detection endpoints
+  app.get("/api/admin/fraud-stats/enhanced-realtime", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { EnhancedFraudService } = await import('./services/enhancedFraudService');
+      const stats = await EnhancedFraudService.getRealTimeFraudStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error getting enhanced real-time fraud stats:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // IP Whitelist management endpoints
+  app.get("/api/admin/whitelist", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { IPWhitelistService } = await import('./services/ipWhitelistService');
+      const { search, active, page, limit } = req.query;
+      const filters = {
+        search: search as string,
+        active: active !== undefined ? active === 'true' : undefined,
+        page: page ? parseInt(page as string) : undefined,
+        limit: limit ? parseInt(limit as string) : undefined
+      };
+      
+      const result = await IPWhitelistService.getWhitelist(filters);
+      res.json(result);
+    } catch (error) {
+      console.error('Error getting whitelist:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post("/api/admin/whitelist", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { IPWhitelistService } = await import('./services/ipWhitelistService');
+      const { ip, cidr, description, expiresAt } = req.body;
+      
+      if (!ip || !description) {
+        return res.status(400).json({ error: 'Missing required fields: ip, description' });
+      }
+      
+      const entry = await IPWhitelistService.addToWhitelist({
+        ip,
+        cidr,
+        description,
+        addedBy: req.user!.id,
+        expiresAt: expiresAt ? new Date(expiresAt) : undefined,
+        isActive: true
+      });
+      
+      res.json(entry);
+    } catch (error) {
+      console.error('Error adding to whitelist:', error);
+      res.status(500).json({ error: 'Failed to add IP to whitelist' });
+    }
+  });
+
+  app.put("/api/admin/whitelist/:id", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { IPWhitelistService } = await import('./services/ipWhitelistService');
+      const { id } = req.params;
+      const updates = req.body;
+      
+      const updated = await IPWhitelistService.updateWhitelistEntry(id, updates);
+      if (!updated) {
+        return res.status(404).json({ error: 'Whitelist entry not found' });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating whitelist entry:', error);
+      res.status(500).json({ error: 'Failed to update whitelist entry' });
+    }
+  });
+
+  app.delete("/api/admin/whitelist/:ip", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { IPWhitelistService } = await import('./services/ipWhitelistService');
+      const { ip } = req.params;
+      await IPWhitelistService.removeFromWhitelist(ip);
+      res.json({ success: true, message: `Removed ${ip} from whitelist` });
+    } catch (error) {
+      console.error('Error removing from whitelist:', error);
+      res.status(500).json({ error: 'Failed to remove IP from whitelist' });
+    }
+  });
+
+  app.get("/api/admin/whitelist/check/:ip", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { IPWhitelistService } = await import('./services/ipWhitelistService');
+      const { ip } = req.params;
+      const isWhitelisted = await IPWhitelistService.isWhitelisted(ip);
+      res.json({ ip, isWhitelisted });
+    } catch (error) {
+      console.error('Error checking whitelist:', error);
+      res.status(500).json({ error: 'Failed to check whitelist status' });
+    }
+  });
+
+  app.post("/api/admin/whitelist/bulk", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { IPWhitelistService } = await import('./services/ipWhitelistService');
+      const { entries } = req.body;
+      
+      if (!Array.isArray(entries)) {
+        return res.status(400).json({ error: 'Entries must be an array' });
+      }
+      
+      // Add addedBy to each entry
+      const entriesWithUser = entries.map(entry => ({
+        ...entry,
+        addedBy: req.user!.id
+      }));
+      
+      const results = await IPWhitelistService.bulkAddToWhitelist(entriesWithUser);
+      res.json({ success: true, added: results.length, entries: results });
+    } catch (error) {
+      console.error('Error bulk adding to whitelist:', error);
+      res.status(500).json({ error: 'Failed to bulk add to whitelist' });
+    }
+  });
+
+  app.post("/api/admin/whitelist/auto-trust", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { IPWhitelistService } = await import('./services/ipWhitelistService');
+      await IPWhitelistService.autoWhitelistTrustedSources();
+      res.json({ success: true, message: 'Auto-whitelisted trusted sources' });
+    } catch (error) {
+      console.error('Error auto-whitelisting:', error);
+      res.status(500).json({ error: 'Failed to auto-whitelist trusted sources' });
+    }
+  });
+
   // Object Storage endpoints
   app.post("/api/objects/upload", authenticateToken, async (req, res) => {
     try {
