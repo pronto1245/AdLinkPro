@@ -38501,6 +38501,17 @@ function registerDevRoutes(app2) {
   } catch {
   }
   if (process.env.ALLOW_SEED === "1") {
+    app2.get("/api/dev/dev-token", (req, res) => {
+      const roleIn = String(req.query.role || "").toLowerCase();
+      const role = roleIn === "advertiser" ? "ADVERTISER" : roleIn === "owner" ? "OWNER" : "PARTNER";
+      const email = String(req.query.email || "demo@affilix.click").toLowerCase();
+      const username = email.split("@")[0] || "demo";
+      const sub = username + "-" + role.toLowerCase();
+      const secret = process.env.JWT_SECRET;
+      if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
+      const token = jwt2.sign({ sub, role, email, username }, secret, { expiresIn: "7d" });
+      return res.json({ token });
+    });
     app2.post("/api/dev/dev-token", (req, res) => {
       const secret = process.env.JWT_SECRET;
       if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
@@ -38732,6 +38743,7 @@ var auth_v2_default = authV2Router;
 
 // server/index.ts
 var app = (0, import_express4.default)();
+app.use(import_express4.default.json());
 var pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 async function ensureUsersTable() {
   await pool.query(`
@@ -38770,7 +38782,7 @@ if (process.env.ALLOW_SEED === "1") {
     }
   });
 }
-app.post("/api/auth/login", async (req, res, next) => {
+app.post("/api/auth/login-db", async (req, res, next) => {
   try {
     const { email, username, password } = req.body || {};
     if (!password || !email && !username) return res.status(400).json({ error: "email/username and password are required" });
@@ -38796,6 +38808,20 @@ app.use((0, import_cors.default)({
   credentials: true
 }));
 app.use(rate_limit_default({ windowMs: 15 * 60 * 1e3, max: 300 }));
+app.get("/api/me", (req, res) => {
+  try {
+    const h = String(req.headers["authorization"] || "");
+    const raw = h.startsWith("Bearer ") ? h.slice(7) : h;
+    if (!raw) return res.status(401).json({ error: "no token" });
+    const p = import_jsonwebtoken3.default.verify(raw, process.env.JWT_SECRET);
+    const role = String(p.role || "").toLowerCase();
+    const map = { partner: "partner", advertiser: "advertiser", owner: "owner", super_admin: "super_admin", "super admin": "super_admin" };
+    const norm = map[role] || role;
+    res.json({ id: p.sub || p.id || null, username: p.username || null, email: p.email || null, role: norm });
+  } catch (e) {
+    res.status(401).json({ error: "invalid token" });
+  }
+});
 app.post("/api/auth/login", require_express2().json(), (req, res) => {
   try {
     const users3 = [
@@ -38821,8 +38847,33 @@ app.post("/api/auth/login", require_express2().json(), (req, res) => {
     return res.status(500).json({ error: "internal error" });
   }
 });
-app.use("/api/dev", devLoginRouter);
-app.use("/api/auth", devLoginRouter);
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const roleIn = String(b.role || "").toLowerCase();
+    const role = roleIn === "advertiser" ? "ADVERTISER" : roleIn === "partner" ? "PARTNER" : roleIn === "owner" ? "OWNER" : "PARTNER";
+    const email = String(b.email || "").toLowerCase().trim();
+    const password = String(b.password || "");
+    const passwordConfirm = String(b.passwordConfirm || "");
+    const name = String(b.name || "").trim();
+    const company = String(b.company || "").trim();
+    const acceptTerms = !!b.acceptTerms;
+    const acceptPrivacy = !!b.acceptPrivacy;
+    if (!email || !password || !passwordConfirm || !name) return res.status(400).json({ error: "missing required fields" });
+    if (password !== passwordConfirm) return res.status(400).json({ error: "passwords do not match" });
+    if (role === "ADVERTISER") {
+      if (!company) return res.status(400).json({ error: "company is required" });
+      if (!acceptTerms || !acceptPrivacy) return res.status(400).json({ error: "agreements required" });
+    }
+    return res.json({
+      ok: true,
+      message: "\u0412\u0430\u0448\u0430 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044F \u043F\u0440\u043E\u0448\u043B\u0430 \u0443\u0441\u043F\u0435\u0448\u043D\u043E, \u0441 \u0432\u0430\u043C\u0438 \u0441\u0432\u044F\u0436\u0435\u0442\u0441\u044F \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440 \u0434\u043B\u044F \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u0438 \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u0430 \u0432 \u0442\u0435\u0447\u0435\u043D\u0438\u0435 24 \u0447\u0430\u0441\u043E\u0432."
+    });
+  } catch (e) {
+    console.error("register error", e);
+    return res.status(500).json({ error: "register failed" });
+  }
+});
 app.use("/api/dev", devLoginRouter);
 app.use("/api/auth", auth_default);
 registerDevRoutes(app);
@@ -38882,51 +38933,6 @@ if (import_node_fs.default.existsSync(publicDir)) {
   app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(import_node_path.default.join(publicDir, "index.html")));
 }
 app.listen(PORT, () => console.log(`API listening on :${PORT}`));
-(() => {
-  const setup = async () => {
-    try {
-      try {
-        app.use(require_express2().json());
-      } catch (e) {
-      }
-      let jwt5;
-      try {
-        jwt5 = require_jsonwebtoken();
-      } catch (e) {
-        try {
-          jwt5 = (await Promise.resolve().then(() => __toESM(require_jsonwebtoken()))).default;
-        } catch (e2) {
-          jwt5 = await Promise.resolve().then(() => __toESM(require_jsonwebtoken()));
-        }
-      }
-      if (process.env.ALLOW_SEED === "1") {
-        app.post("/api/dev/dev-token", (req, res) => {
-          const secret = process.env.JWT_SECRET;
-          if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
-          const token = jwt5.sign({ sub: "dev-admin", role: "ADMIN", email: process.env.SEED_EMAIL || "admin@example.com", username: process.env.SEED_USERNAME || "admin" }, secret, { expiresIn: "7d" });
-          res.json({ token });
-        });
-      }
-      app.get("/api/me", (req, res) => {
-        try {
-          const h = req.headers.authorization || "";
-          const token = h.split(" ")[1];
-          if (!token) return res.status(401).json({ error: "no token" });
-          const payload = jwt5.verify(token, process.env.JWT_SECRET);
-          res.json({ id: payload.sub, role: payload.role, email: payload.email, username: payload.username });
-        } catch (e) {
-          res.status(401).json({ error: "invalid token" });
-        }
-      });
-    } catch (e) {
-      try {
-        console.error("dev-auth inline error", e && e.message ? e.message : e);
-      } catch (_) {
-      }
-    }
-  };
-  setup();
-})();
 /*! Bundled license information:
 
 negotiator/index.js:
