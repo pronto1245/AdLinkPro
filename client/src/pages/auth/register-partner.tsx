@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { Button } from '@/components/ui/button';
@@ -6,19 +6,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
 export default function RegisterPartner() {
+  // Determine registration type from URL path
+  const [location] = useLocation();
+  const isAdvertiser = location.includes('/register/advertiser');
+  const registrationType = isAdvertiser ? 'advertiser' : 'affiliate';
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    username: '',
     password: '',
     confirmPassword: '',
     phone: '',
     contactType: '',
-    contact: ''
+    contact: '',
+    company: '', // For advertisers
+    agreeTerms: false,
+    agreePrivacy: false,
+    agreeMarketing: false
   });
   const [loading, setLoading] = useState(false);
   const { t, language, setLanguage } = useLanguage();
@@ -46,24 +57,43 @@ export default function RegisterPartner() {
       return;
     }
 
+    // For advertisers, check agreement checkboxes
+    if (isAdvertiser && (!formData.agreeTerms || !formData.agreePrivacy)) {
+      toast({
+        title: "Ошибка",
+        description: "Необходимо согласиться с условиями использования и политикой конфиденциальности",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await apiRequest('/api/auth/register/partner', {
-        method: 'POST',
-        body: {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          phone: formData.phone,
-          contactType: formData.contactType,
-          contact: formData.contact
-        }
-      });
+      // Prepare user data based on registration type
+      const userData = {
+        username: formData.username || formData.email, // Use email as username if not provided
+        email: formData.email,
+        password: formData.password,
+        role: registrationType,
+        firstName: formData.name.split(' ')[0] || formData.name,
+        lastName: formData.name.split(' ')[1] || '',
+        phone: formData.phone,
+        contactType: formData.contactType,
+        contact: formData.contact,
+        ...(isAdvertiser && {
+          company: formData.company,
+          agreeTerms: formData.agreeTerms,
+          agreePrivacy: formData.agreePrivacy,
+          agreeMarketing: formData.agreeMarketing
+        })
+      };
+
+      await apiRequest('/api/auth/register', 'POST', userData);
 
       toast({
         title: "Регистрация успешна",
-        description: "Ваш аккаунт партнёра создан. Проверьте email для подтверждения.",
+        description: `Ваш аккаунт ${isAdvertiser ? 'рекламодателя' : 'партнёра'} создан. Проверьте email для подтверждения.`,
       });
 
       setTimeout(() => {
@@ -80,7 +110,7 @@ export default function RegisterPartner() {
     }
   };
 
-  const updateFormData = (field: string, value: string) => {
+  const updateFormData = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -101,7 +131,9 @@ export default function RegisterPartner() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-center">🤝 Регистрация партнёра</CardTitle>
+            <CardTitle className="text-center">
+              {isAdvertiser ? '🏢 Регистрация рекламодателя' : '🤝 Регистрация партнёра'}
+            </CardTitle>
             <div className="flex justify-center">
               <select
                 value={language}
@@ -141,6 +173,33 @@ export default function RegisterPartner() {
                   data-testid="input-email"
                 />
               </div>
+
+              <div>
+                <Label htmlFor="username">Логин</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={formData.username}
+                  onChange={(e) => updateFormData('username', e.target.value)}
+                  placeholder="Оставьте пустым для использования email"
+                  data-testid="input-username"
+                />
+              </div>
+
+              {isAdvertiser && (
+                <div>
+                  <Label htmlFor="company">Компания *</Label>
+                  <Input
+                    id="company"
+                    type="text"
+                    value={formData.company}
+                    onChange={(e) => updateFormData('company', e.target.value)}
+                    placeholder="Название вашей компании"
+                    required
+                    data-testid="input-company"
+                  />
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="password">Пароль *</Label>
@@ -214,6 +273,46 @@ export default function RegisterPartner() {
                   data-testid="input-contact"
                 />
               </div>
+
+              {isAdvertiser && (
+                <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="agreeTerms"
+                      checked={formData.agreeTerms}
+                      onCheckedChange={(checked) => updateFormData('agreeTerms', checked as boolean)}
+                      data-testid="checkbox-agree-terms"
+                    />
+                    <Label htmlFor="agreeTerms" className="text-sm">
+                      Я согласен с <a href="#" className="text-blue-600 hover:underline">условиями использования</a> *
+                    </Label>
+                  </div>
+
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="agreePrivacy"
+                      checked={formData.agreePrivacy}
+                      onCheckedChange={(checked) => updateFormData('agreePrivacy', checked as boolean)}
+                      data-testid="checkbox-agree-privacy"
+                    />
+                    <Label htmlFor="agreePrivacy" className="text-sm">
+                      Я согласен с <a href="#" className="text-blue-600 hover:underline">политикой конфиденциальности</a> *
+                    </Label>
+                  </div>
+
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="agreeMarketing"
+                      checked={formData.agreeMarketing}
+                      onCheckedChange={(checked) => updateFormData('agreeMarketing', checked as boolean)}
+                      data-testid="checkbox-agree-marketing"
+                    />
+                    <Label htmlFor="agreeMarketing" className="text-sm">
+                      Я согласен получать маркетинговые материалы
+                    </Label>
+                  </div>
+                </div>
+              )}
 
               <Button
                 type="submit"
