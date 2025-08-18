@@ -120,6 +120,37 @@ router.get('/click', async (req, res) => {
     // Record click in database
     const click = await storage.createTrackingClick(clickData);
 
+    // Enhanced fraud detection - automatic trigger
+    try {
+      const { EnhancedFraudService } = await import('../services/enhancedFraudService');
+      const { IPWhitelistService } = await import('../services/ipWhitelistService');
+      
+      // Check if IP is whitelisted first
+      const isWhitelisted = await IPWhitelistService.isWhitelisted(ip);
+      
+      if (!isWhitelisted) {
+        // Trigger automatic fraud detection
+        const fraudClickData = {
+          ip,
+          userAgent,
+          country: clickData.countryIso,
+          device: clickData.deviceType,
+          browser: clickData.browserName || 'Unknown',
+          referer: clickData.referrer,
+          clickId: clickid
+        };
+        
+        // Non-blocking fraud analysis
+        EnhancedFraudService.triggerAutoFraudDetection(fraudClickData).catch(error => {
+          console.error('Fraud detection failed:', error);
+        });
+      } else {
+        console.log(`✅ IP ${ip} is whitelisted, skipping fraud detection`);
+      }
+    } catch (error) {
+      console.error('Fraud detection integration failed:', error);
+    }
+
     // Record 'open' event automatically  
     await storage.createEvent({
       clickid,

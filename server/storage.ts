@@ -1636,13 +1636,34 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAdminAnalytics(): Promise<any> {
-    // Implement admin analytics logic
-    return {
-      totalUsers: 0,
-      totalOffers: 0,
-      totalRevenue: 0,
-      pendingKyc: 0
-    };
+    try {
+      // Get basic counts from database
+      const [totalUsersCount] = await db.select({ count: count() }).from(users);
+      const [totalOffersCount] = await db.select({ count: count() }).from(offers);
+      const [totalRevenueSum] = await db.select({ sum: sum(statistics.revenue) }).from(statistics);
+      const [pendingKycCount] = await db.select({ count: count() }).from(users).where(eq(users.kycStatus, 'pending'));
+
+      return {
+        totalUsers: totalUsersCount.count || 0,
+        totalOffers: totalOffersCount.count || 0,
+        totalRevenue: totalRevenueSum.sum || 0,
+        pendingKyc: pendingKycCount.count || 0
+      };
+    } catch (error) {
+      console.error('Error getting admin analytics:', error);
+      return {
+        totalUsers: 0,
+        totalOffers: 0,
+        totalRevenue: 0,
+        pendingKyc: 0
+      };
+    }
+  }
+
+  async getAdminAnalytics(filters: any = {}): Promise<any[]> {
+    // Import and use the AnalyticsService
+    const { AnalyticsService } = await import('./services/analyticsService');
+    return AnalyticsService.getAnalyticsData(filters);
   }
 
   async getKycDocuments(): Promise<any[]> {
