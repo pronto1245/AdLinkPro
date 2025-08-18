@@ -133,9 +133,9 @@ function Router() {
   
   return (
     <Switch>
-      <Route path="/login" component={Login} />
+      <Route path="/login" component={LoginV2} />
       <Route path="/login-v2" component={LoginV2} />
-      <Route path="/login/:role" component={Login} />
+      <Route path="/login/:role" component={LoginV2} />
       <Route path="/register/partner" component={RegisterPartner} />
       <Route path="/register/advertiser" component={RegisterAdvertiser} />
       
