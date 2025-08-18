@@ -38847,6 +38847,33 @@ app.post("/api/auth/login", require_express2().json(), (req, res) => {
     return res.status(500).json({ error: "internal error" });
   }
 });
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const roleIn = String(b.role || "").toLowerCase();
+    const role = roleIn === "advertiser" ? "ADVERTISER" : roleIn === "partner" ? "PARTNER" : roleIn === "owner" ? "OWNER" : "PARTNER";
+    const email = String(b.email || "").toLowerCase().trim();
+    const password = String(b.password || "");
+    const passwordConfirm = String(b.passwordConfirm || "");
+    const name = String(b.name || "").trim();
+    const company = String(b.company || "").trim();
+    const acceptTerms = !!b.acceptTerms;
+    const acceptPrivacy = !!b.acceptPrivacy;
+    if (!email || !password || !passwordConfirm || !name) return res.status(400).json({ error: "missing required fields" });
+    if (password !== passwordConfirm) return res.status(400).json({ error: "passwords do not match" });
+    if (role === "ADVERTISER") {
+      if (!company) return res.status(400).json({ error: "company is required" });
+      if (!acceptTerms || !acceptPrivacy) return res.status(400).json({ error: "agreements required" });
+    }
+    return res.json({
+      ok: true,
+      message: "\u0412\u0430\u0448\u0430 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044F \u043F\u0440\u043E\u0448\u043B\u0430 \u0443\u0441\u043F\u0435\u0448\u043D\u043E, \u0441 \u0432\u0430\u043C\u0438 \u0441\u0432\u044F\u0436\u0435\u0442\u0441\u044F \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440 \u0434\u043B\u044F \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u0438 \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u0430 \u0432 \u0442\u0435\u0447\u0435\u043D\u0438\u0435 24 \u0447\u0430\u0441\u043E\u0432."
+    });
+  } catch (e) {
+    console.error("register error", e);
+    return res.status(500).json({ error: "register failed" });
+  }
+});
 app.use("/api/dev", devLoginRouter);
 app.use("/api/auth", auth_default);
 registerDevRoutes(app);
