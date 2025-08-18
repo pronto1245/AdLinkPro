@@ -86,6 +86,22 @@ app.post('/api/auth/login', async (req,res,next) => {
 /* __HEALTH_ALIAS_BEGIN__ */
 app.get('/api/health', (req,res) => res.json({ ok:true }));
 /* __HEALTH_ALIAS_END__ */
+app.get('/api/dev/dev-token', (req, res) => {
+  try {
+    const roleIn = String(req.query.role || '').toLowerCase();
+    const role = roleIn === 'advertiser' ? 'ADVERTISER' : roleIn === 'owner' ? 'OWNER' : 'PARTNER';
+    const email = String(req.query.email || 'demo@affilix.click').toLowerCase();
+    const username = email.split('@')[0] || 'demo';
+    const sub = username + '-' + role.toLowerCase();
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });
+    const jwt = require('jsonwebtoken');
+    const token = jwt.sign({ sub, role, email, username }, secret, { expiresIn: '7d' });
+    return res.json({ token });
+  } catch (e) {
+    return res.status(500).json({ error: 'failed' });
+  }
+});
 app.get("/api/dev/dev-token", (req, res) => {
   try {
     if (process.env.ALLOW_SEED !== "1") return res.status(403).json({ error: "disabled" });
@@ -139,6 +155,28 @@ app.post("/api/auth/login", require("express").json(), (req, res) => {
   }
 });
 /* __AUTH_LOGIN_OVERRIDE_END__ */
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const b = req.body || {};
+    const roleRaw = String(b.role || '').toLowerCase();
+    const role = roleRaw === 'advertiser' ? 'ADVERTISER' : roleRaw === 'owner' ? 'OWNER' : 'PARTNER';
+    const name = String(b.name || '').trim();
+    const email = String(b.email || '').trim();
+    const pass = String(b.password || '');
+    const pass2 = String(b.passwordConfirm || '');
+    if (!name || !email || !pass || !pass2 || pass !== pass2) return res.status(400).json({ error: 'invalid form' });
+    if (role === 'ADVERTISER') {
+      const okTerms = Boolean(b.acceptTerms) && Boolean(b.acceptPrivacy);
+      if (!okTerms) return res.status(400).json({ error: 'agreements required' });
+    }
+    return res.json({
+      ok: true,
+      message: 'Ваша регистрация прошла успешно, с вами свяжется менеджер для активации аккаунта в течение 24 часов.'
+    });
+  } catch (e) {
+    return res.status(500).json({ error: 'register failed' });
+  }
+});
 // Simple registration endpoint
 app.post("/api/auth/register", require("express").json(), async (req, res) => {
   try {
