@@ -15,7 +15,9 @@ export function getRoleHome(role: any) {
 // Token management functions
 export function saveToken(token: string): void {
   try {
+    // Save to both keys for backward compatibility
     localStorage.setItem('auth:token', token);
+    localStorage.setItem('token', token);
   } catch (error) {
     console.warn('Failed to save token to localStorage:', error);
   }
@@ -23,7 +25,8 @@ export function saveToken(token: string): void {
 
 export function getToken(): string | null {
   try {
-    return localStorage.getItem('auth:token');
+    // Check both keys for backward compatibility
+    return localStorage.getItem('auth:token') || localStorage.getItem('token');
   } catch (error) {
     console.warn('Failed to get token from localStorage:', error);
     return null;
@@ -32,7 +35,9 @@ export function getToken(): string | null {
 
 export function removeToken(): void {
   try {
+    // Remove from both keys for backward compatibility
     localStorage.removeItem('auth:token');
+    localStorage.removeItem('token');
   } catch (error) {
     console.warn('Failed to remove token from localStorage:', error);
   }
