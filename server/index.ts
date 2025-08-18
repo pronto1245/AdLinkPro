@@ -128,6 +128,20 @@ app.use(cors({
 }));
 app.use(rateLimit({ windowMs: 15*60*1000, max: 300 }));
 /* __HARDENING_END__ */
+app.get('/api/me', (req,res) => {
+  try {
+    const h = String(req.headers['authorization'] || '');
+    const raw = h.startsWith('Bearer ') ? h.slice(7) : h;
+    if (!raw) return res.status(401).json({ error: 'no token' });
+    const p = jwt.verify(raw, process.env.JWT_SECRET);
+    const role = String(p.role || '').toLowerCase();
+    const map = { partner:'partner', advertiser:'advertiser', owner:'owner', super_admin:'super_admin', 'super admin':'super_admin' };
+    const norm = map[role] || role;
+    res.json({ id: p.sub || p.id || null, username: p.username || null, email: p.email || null, role: norm });
+  } catch(e) {
+    res.status(401).json({ error:'invalid token' });
+  }
+});
 /* __AUTH_LOGIN_OVERRIDE_BEGIN__ */
 app.post("/api/auth/login", require("express").json(), (req, res) => {
   try {
