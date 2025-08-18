@@ -1,3 +1,6 @@
+import ForgotPassword from "@/pages/auth/ForgotPassword";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import Unauthorized from "@/pages/Unauthorized";
 import React from 'react';
 import { Switch, Route, Redirect } from "wouter";
 import { useTranslation } from 'react-i18next';
@@ -44,8 +47,9 @@ function Router() {
       <ProtectedRoute path="/dash/owner" roles={['owner']} component={Owner} />
       <ProtectedRoute path="/dash/super-admin" roles={['super_admin']} component={SuperAdmin} />
 
+      <Route path="/forgot" component={ForgotPassword} />
       <Route component={() => <Redirect to="/login" />} />
-      <Route path="/unauthorized" component={require("@/pages/Unauthorized").default} />
+      <Route path="/unauthorized" component={Unauthorized} />
     </Switch>
   );
 }

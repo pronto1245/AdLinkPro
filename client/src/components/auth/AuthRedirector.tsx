@@ -9,7 +9,11 @@ export default function AuthRedirector({
   fallback: string;
   homeByRole: Record<string, string>;
 }) {
-  const { user } = useAuth();
+  let user: any = null;
+  try { user = (useAuth() as any)?.user ?? null; } catch {}
+  if (!user && typeof window !== 'undefined') {
+    try { user = JSON.parse(localStorage.getItem('auth:user') || 'null'); } catch {}
+  }
   if (user?.role && homeByRole[user.role]) return <Redirect to={homeByRole[user.role]} />;
   return <Redirect to={fallback} />;
 }
