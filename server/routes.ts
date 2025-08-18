@@ -908,6 +908,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   console.log('=== ADVERTISER POSTBACK ROUTES ADDED SUCCESSFULLY ===');
 
+  // Enhanced Postback System Routes
+  console.log('=== ADDING ENHANCED POSTBACK ROUTES ===');
+  
+  // Enhanced postback delivery endpoint
+  app.post("/api/admin/postbacks/deliver", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { EnhancedPostbackService } = await import('./services/enhancedPostbackService');
+      const { postbackId, eventType, macros, clickId } = req.body;
+      
+      if (!postbackId || !eventType || !macros) {
+        return res.status(400).json({ error: 'Missing required fields: postbackId, eventType, macros' });
+      }
+      
+      const result = await EnhancedPostbackService.deliverPostbackWithRetry(
+        postbackId, 
+        eventType, 
+        macros, 
+        clickId
+      );
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error in enhanced postback delivery:', error);
+      res.status(500).json({ error: 'Enhanced postback delivery failed' });
+    }
+  });
+
+  // Enhanced postback statistics endpoint
+  app.get("/api/admin/postbacks/stats", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { EnhancedPostbackService } = await import('./services/enhancedPostbackService');
+      const { timeframe = 'daily' } = req.query;
+      const stats = await EnhancedPostbackService.getPostbackStats(timeframe as 'hourly' | 'daily' | 'weekly');
+      res.json(stats);
+    } catch (error) {
+      console.error('Error getting enhanced postback stats:', error);
+      res.status(500).json({ error: 'Failed to get postback statistics' });
+    }
+  });
+
+  // Bulk retry failed postbacks
+  app.post("/api/admin/postbacks/retry-failed", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { EnhancedPostbackService } = await import('./services/enhancedPostbackService');
+      const { hours = 24 } = req.body;
+      const result = await EnhancedPostbackService.bulkRetryFailedPostbacks(hours);
+      res.json(result);
+    } catch (error) {
+      console.error('Error in bulk postback retry:', error);
+      res.status(500).json({ error: 'Bulk retry failed' });
+    }
+  });
+
+  // Validate postback endpoint
+  app.post("/api/admin/postbacks/validate", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { EnhancedPostbackService } = await import('./services/enhancedPostbackService');
+      const { url, timeout = 5000 } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ error: 'URL is required' });
+      }
+      
+      const result = await EnhancedPostbackService.validatePostbackEndpoint(url, timeout);
+      res.json(result);
+    } catch (error) {
+      console.error('Error validating postback endpoint:', error);
+      res.status(500).json({ error: 'Endpoint validation failed' });
+    }
+  });
+
+  // Test postback configuration
+  app.post("/api/admin/postbacks/test", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { url, method = 'GET', macros = {}, hmacSecret } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ error: 'URL is required' });
+      }
+      
+      // Create test macros
+      const testMacros = {
+        clickid: 'test_click_123',
+        status: 'test',
+        offer_id: 'test_offer',
+        partner_id: 'test_partner',
+        revenue: '10.00',
+        currency: 'USD',
+        ...macros
+      };
+      
+      const startTime = Date.now();
+      
+      // Build URL with macros (simplified)
+      let testUrl = url;
+      Object.entries(testMacros).forEach(([key, value]) => {
+        testUrl = testUrl.replace(`{${key}}`, encodeURIComponent(String(value)));
+        testUrl = testUrl.replace(`[${key}]`, encodeURIComponent(String(value)));
+      });
+      
+      // Test the postback
+      const headers: Record<string, string> = {
+        'User-Agent': 'Postback-Test/1.0',
+        'Content-Type': 'application/json',
+      };
+      
+      if (hmacSecret) {
+        // Add HMAC for testing
+        const crypto = await import('crypto');
+        const signature = crypto.createHmac('sha256', hmacSecret)
+          .update(JSON.stringify(testMacros))
+          .digest('hex');
+        headers['X-Signature'] = signature;
+      }
+      
+      const response = await fetch(testUrl, {
+        method: method as string,
+        headers,
+        body: method === 'POST' ? JSON.stringify(testMacros) : undefined,
+        signal: AbortSignal.timeout(10000) // 10 second timeout
+      });
+      
+      const responseText = await response.text().catch(() => '');
+      const duration = Date.now() - startTime;
+      
+      res.json({
+        success: response.ok,
+        statusCode: response.status,
+        statusText: response.statusText,
+        responseBody: responseText.substring(0, 1000),
+        duration: `${duration}ms`,
+        testUrl,
+        testMacros
+      });
+      
+    } catch (error) {
+      console.error('Error testing postback:', error);
+      res.status(500).json({ 
+        success: false,
+        error: error instanceof Error ? error.message : 'Test failed',
+        duration: '0ms'
+      });
+    }
+  });
+
+  console.log('=== ENHANCED POSTBACK ROUTES ADDED SUCCESSFULLY ===');
+
   // АНТИФРОД API ЭНДПОИНТЫ
   console.log('=== ADDING ANTIFRAUD ROUTES ===');
   
