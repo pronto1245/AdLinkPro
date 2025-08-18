@@ -31,19 +31,10 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { labelKey: 'sidebar.dashboard', href: '/admin', icon: LayoutDashboard, roles: ['super_admin'] },
-  { labelKey: 'sidebar.users', href: '/admin/users', icon: Users, roles: ['super_admin'], badge: 3 },
-  { labelKey: 'sidebar.userAnalytics', href: '/admin/user-analytics', icon: BarChart3, roles: ['super_admin'] },
-  { labelKey: 'sidebar.roles', href: '/admin/roles', icon: Shield, roles: ['super_admin'] },
-  { labelKey: 'sidebar.offers', href: '/admin/OffersManagement', icon: Target, roles: ['super_admin', 'advertiser'] },
-  { labelKey: 'sidebar.finances', href: '/admin/finances', icon: DollarSign, roles: ['super_admin', 'advertiser'] },
-  { labelKey: 'sidebar.antifraud', href: '/admin/fraud', icon: Shield, roles: ['super_admin'] },
-  { labelKey: 'sidebar.postbacks', href: '/super-admin/postbacks', icon: Webhook, roles: ['super_admin', 'advertiser', 'affiliate'] },
-  { labelKey: 'sidebar.blacklist', href: '/admin/blacklist', icon: Ban, roles: ['super_admin'] },
-  { labelKey: 'sidebar.auditLogs', href: '/admin/audit-logs', icon: History, roles: ['super_admin'] },
-  { labelKey: 'sidebar.systemSettings', href: '/admin/system-settings', icon: Settings, roles: ['super_admin'] },
-  { labelKey: 'sidebar.analytics', href: '/super-admin/analytics', icon: BarChart3, roles: ['super_admin', 'advertiser', 'affiliate'] },
-  { labelKey: 'sidebar.support', href: '/admin/support', icon: HeadphonesIcon, roles: ['super_admin', 'advertiser', 'affiliate'] },
+  { labelKey: 'sidebar.dashboard', href: '/dash/super-admin', icon: LayoutDashboard, roles: ['super_admin'] },
+  { labelKey: 'sidebar.users', href: '/dash/super-admin/users', icon: Users, roles: ['super_admin'], badge: 3 },
+  { labelKey: 'sidebar.offers', href: '/dash/super-admin/offers', icon: Target, roles: ['super_admin', 'advertiser'] },
+  { labelKey: 'sidebar.analytics', href: '/dash/super-admin/analytics', icon: BarChart3, roles: ['super_admin', 'advertiser', 'affiliate'] },
 ];
 
 interface SidebarProps {

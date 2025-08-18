@@ -5,6 +5,19 @@ export function registerDevRoutes(app: Express) {
   try { app.use(require('express').json()); } catch {}
 
   if (process.env.ALLOW_SEED === '1') {
+    // Handle both GET and POST for dev-token
+    app.get('/api/dev/dev-token', (req: Request, res: Response) => {
+      const roleIn = String(req.query.role || '').toLowerCase();
+      const role = roleIn === 'advertiser' ? 'ADVERTISER' : roleIn === 'owner' ? 'OWNER' : 'PARTNER';
+      const email = String(req.query.email || 'demo@affilix.click').toLowerCase();
+      const username = email.split('@')[0] || 'demo';
+      const sub = username + '-' + role.toLowerCase();
+      const secret = process.env.JWT_SECRET;
+      if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });
+      const token = (jwt as any).sign({ sub, role, email, username }, secret as any, { expiresIn: '7d' });
+      return res.json({ token });
+    });
+
     app.post('/api/dev/dev-token', (req: Request, res: Response) => {
       const secret = process.env.JWT_SECRET;
       if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });

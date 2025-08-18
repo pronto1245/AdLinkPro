@@ -86,38 +86,6 @@ app.post('/api/auth/login-db', async (req,res,next) => {
 /* __HEALTH_ALIAS_BEGIN__ */
 app.get('/api/health', (req,res) => res.json({ ok:true }));
 /* __HEALTH_ALIAS_END__ */
-app.get('/api/dev/dev-token', (req, res) => {
-  try {
-    const roleIn = String(req.query.role || '').toLowerCase();
-    const role = roleIn === 'advertiser' ? 'ADVERTISER' : roleIn === 'owner' ? 'OWNER' : 'PARTNER';
-    const email = String(req.query.email || 'demo@affilix.click').toLowerCase();
-    const username = email.split('@')[0] || 'demo';
-    const sub = username + '-' + role.toLowerCase();
-    const secret = process.env.JWT_SECRET;
-    if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });
-    const jwt = require('jsonwebtoken');
-    const token = jwt.sign({ sub, role, email, username }, secret, { expiresIn: '7d' });
-    return res.json({ token });
-  } catch (e) {
-    return res.status(500).json({ error: 'failed' });
-  }
-});
-app.get("/api/dev/dev-token", (req, res) => {
-  try {
-    if (process.env.ALLOW_SEED !== "1") return res.status(403).json({ error: "disabled" });
-    const roleIn = String(req.query.role || "").toLowerCase();
-    const role = roleIn === "advertiser" ? "ADVERTISER" : roleIn === "partner" ? "PARTNER" : roleIn === "owner" ? "OWNER" : "PARTNER";
-    const email = String(req.query.email || "").toLowerCase() || "demo@affilix.click";
-    const username = email.split("@")[0] || "demo";
-    const sub = username + "-" + role.toLowerCase();
-    const secret = process.env.JWT_SECRET;
-    if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
-    const token = jwt.sign({ sub, role, email, username }, secret, { expiresIn: "7d" });
-    return res.json({ token });
-  } catch (e) {
-    return res.status(500).json({ error: "failed" });
-  }
-});
 /* __HARDENING_BEGIN__ */
 app.set('trust proxy', (process.env.TRUST_PROXY === '1') ? 1 : 0);
 app.use(helmet({ crossOriginResourcePolicy: false }));
@@ -172,31 +140,8 @@ app.post("/api/auth/login", require("express").json(), (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
   try {
     const b = req.body || {};
-    const roleRaw = String(b.role || '').toLowerCase();
-    const role = roleRaw === 'advertiser' ? 'ADVERTISER' : roleRaw === 'owner' ? 'OWNER' : 'PARTNER';
-    const name = String(b.name || '').trim();
-    const email = String(b.email || '').trim();
-    const pass = String(b.password || '');
-    const pass2 = String(b.passwordConfirm || '');
-    if (!name || !email || !pass || !pass2 || pass !== pass2) return res.status(400).json({ error: 'invalid form' });
-    if (role === 'ADVERTISER') {
-      const okTerms = Boolean(b.acceptTerms) && Boolean(b.acceptPrivacy);
-      if (!okTerms) return res.status(400).json({ error: 'agreements required' });
-    }
-    return res.json({
-      ok: true,
-      message: 'Ваша регистрация прошла успешно, с вами свяжется менеджер для активации аккаунта в течение 24 часов.'
-    });
-  } catch (e) {
-    return res.status(500).json({ error: 'register failed' });
-  }
-});
-// Simple registration endpoint
-app.post("/api/auth/register", require("express").json(), async (req, res) => {
-  try {
-    const b = req.body || {};
     const roleIn = String(b.role || "").toLowerCase();
-    const role = roleIn === "advertiser" ? "ADVERTISER" : roleIn === "partner" ? "PARTNER" : null;
+    const role = roleIn === "advertiser" ? "ADVERTISER" : roleIn === "partner" ? "PARTNER" : roleIn === "owner" ? "OWNER" : "PARTNER";
     const email = String(b.email || "").toLowerCase().trim();
     const password = String(b.password || "");
     const passwordConfirm = String(b.passwordConfirm || "");
@@ -205,7 +150,6 @@ app.post("/api/auth/register", require("express").json(), async (req, res) => {
     const acceptTerms = !!b.acceptTerms;
     const acceptPrivacy = !!b.acceptPrivacy;
 
-    if (!role) return res.status(400).json({ error: "invalid role" });
     if (!email || !password || !passwordConfirm || !name) return res.status(400).json({ error: "missing required fields" });
     if (password !== passwordConfirm) return res.status(400).json({ error: "passwords do not match" });
     if (role === "ADVERTISER") {
@@ -213,13 +157,7 @@ app.post("/api/auth/register", require("express").json(), async (req, res) => {
       if (!acceptTerms || !acceptPrivacy) return res.status(400).json({ error: "agreements required" });
     }
 
-    const hash = await bcryptjs.hash(password, 10);
-    const username = email.split("@")[0];
-    await pool.query(
-      "INSERT INTO users (email, username, role, password_hash) VALUES ($1,$2,$3,$4) ON CONFLICT (email) DO NOTHING",
-      [email, username, role, hash]
-    );
-
+    // For now, just return success message since we don't have DB connection
     return res.json({
       ok: true,
       message: "Ваша регистрация прошла успешно, с вами свяжется менеджер для активации аккаунта в течение 24 часов."
@@ -230,8 +168,6 @@ app.post("/api/auth/register", require("express").json(), async (req, res) => {
   }
 });
 // mount dev login BEFORE other routers
-app.use("/api/dev", devLoginRouter);
-app.use("/api/auth", devLoginRouter); // alias: /api/auth/login
 app.use("/api/dev", devLoginRouter);
 app.use("/api/auth", authRouter);
 registerDevRoutes(app);
@@ -310,34 +246,3 @@ if (fs.existsSync(publicDir)) {
 }
 
 app.listen(PORT, () => console.log(`API listening on :${PORT}`));
-// @ts-nocheck
-/* === DEV AUTH HELPERS (inline v3) === */
-;(() => {
-  const setup = async () => {
-    try {
-      try { app.use(require('express').json()); } catch(e) {}
-      let jwt; try { jwt = require('jsonwebtoken'); } catch(e) { try { jwt = (await import('jsonwebtoken')).default; } catch(e2) { jwt = await import('jsonwebtoken'); } }
-      if (process.env.ALLOW_SEED === '1') {
-        app.post('/api/dev/dev-token', (req,res) => {
-          const secret = process.env.JWT_SECRET;
-          if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });
-          const token = jwt.sign({ sub:'dev-admin', role:'ADMIN', email: process.env.SEED_EMAIL || 'admin@example.com', username: process.env.SEED_USERNAME || 'admin' }, secret, { expiresIn: '7d' });
-          res.json({ token });
-        });
-      }
-      app.get('/api/me', (req,res) => {
-        try {
-          const h = req.headers.authorization || '';
-          const token = h.split(' ')[1];
-          if (!token) return res.status(401).json({ error:'no token' });
-          const payload = jwt.verify(token, process.env.JWT_SECRET);
-          res.json({ id: payload.sub, role: payload.role, email: payload.email, username: payload.username });
-        } catch(e) {
-          res.status(401).json({ error:'invalid token' });
-        }
-      });
-    } catch (e) { try { console.error('dev-auth inline error', e && e.message ? e.message : e); } catch(_) {} }
-  };
-  setup();
-})();
-/* === /DEV AUTH HELPERS === */

@@ -42,4 +42,8 @@ export async function currentUser(){
 export async function requestOtp(_a:{email:string}){ return { ok:true } }
 export async function verifyOtp(_a:{email:string; otp:string}){ return { ok:true } }
 
+export function getRoleHome(role: string): string {
+  return HOME_BY_ROLE[role] || '/login';
+}
+
 export default { login, register, logout, currentUser, saveToken, getToken, HOME: HOME_BY_ROLE, getRoleHome, requestOtp, verifyOtp };
