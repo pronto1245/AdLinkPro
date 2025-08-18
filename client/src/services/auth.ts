@@ -12,6 +12,10 @@ export const HOME_BY_ROLE: Record<string, string> = {
   super_admin: '/dashboard/super-admin',
 };
 async function json(url: string, body: any){
+export function getRoleHome(role: any) {
+  const key = String(role || '').toLowerCase();
+  return HOME_BY_ROLE[key] || '/dashboard/partner';
+}
   const r = await fetch(url, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(body) });
   let data: any = null; try{ data = await r.json() }catch{}
   return { ok: r.ok, status: r.status, data };
