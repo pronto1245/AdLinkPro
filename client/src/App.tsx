@@ -79,6 +79,7 @@ import AccessRequests from "@/pages/partner/AccessRequests";
 import { useAuth } from "./contexts/auth-context";
 import * as React from 'react';
 import Login from "@/pages/auth/login";
+import LoginV2 from "@/pages/auth/login-v2";
 import RegisterPartner from "@/pages/auth/register-partner";
 import RegisterAdvertiser from "@/pages/auth/register-advertiser";
 import UpdateToken from "@/pages/UpdateToken";
@@ -133,6 +134,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/login-v2" component={LoginV2} />
       <Route path="/login/:role" component={Login} />
       <Route path="/register/partner" component={RegisterPartner} />
       <Route path="/register/advertiser" component={RegisterAdvertiser} />

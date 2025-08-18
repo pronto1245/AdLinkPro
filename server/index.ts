@@ -13,6 +13,7 @@ import cors from 'cors';
 import path from 'node:path';
 import fs from 'node:fs';
 import authRouter from './routes/auth';
+import authV2Router from './routes/auth-v2';
 
 const app = express();
 
@@ -153,6 +154,8 @@ app.get('/health', (_req, res) => res.status(200).json({ ok: true }));
 
 // --- API: логин
 app.use('/api', authRouter);
+// --- API: новая версия аутентификации с 2FA
+app.use('/api/auth/v2', authV2Router);
 
 // --- простая проверка токена для стабов ---
 function requireAuth(req: any, res: any, next: any) {
@@ -184,6 +187,13 @@ app.get('/api/partner/finance/summary', requireAuth, (_req, res) => {
 app.get('/api/notifications', requireAuth, (_req, res) => {
   res.json({ items: [] });
 });
+
+// --- статика SPA из client/dist ---
+const clientDistDir = path.join(__dirname, '../client/dist');
+if (fs.existsSync(clientDistDir)) {
+  app.use(express.static(clientDistDir));
+  app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(clientDistDir, 'index.html')));
+}
 
 // --- статика SPA если вдруг положишь фронт внутрь образа ---
 const publicDir = path.join(__dirname, 'public');

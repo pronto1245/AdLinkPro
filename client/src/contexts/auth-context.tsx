@@ -6,7 +6,7 @@ type User = LoginResponse['user'];
 type AuthContextValue = {
   user: User | null;
   token: string | null;
-  login: (u: string, p: string) => Promise<void>;
+  login: (u: string, p: string) => Promise<LoginResponse>;
   logout: () => void;
 };
 
@@ -16,11 +16,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser]   = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
-  const doLogin = useCallback(async (username: string, password: string) => {
-    const data = await apiLogin(username, password);
-    setUser(data.user);
-    setToken(data.token);
-    localStorage.setItem('token', data.token);
+  const doLogin = useCallback(async (username: string, password: string): Promise<LoginResponse> => {
+    const response = await apiLogin(username, password);
+    
+    // If 2FA is required, return the response without setting user/token
+    if (response.requires2FA) {
+      return response;
+    }
+    
+    // If login is successful, set user and token
+    if (response.success && response.token && response.user) {
+      setUser(response.user);
+      setToken(response.token);
+      localStorage.setItem('token', response.token);
+    }
+    
+    return response;
   }, []);
 
   const logout = useCallback(() => {
