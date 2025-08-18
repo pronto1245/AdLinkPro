@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, useEffect, type ReactNode } from 'react';
 import { login as apiLogin, type LoginResponse } from '@/lib/api';
+import { getToken, saveToken, removeToken } from '@/services/auth';
 
 type User = LoginResponse['user'];
 
@@ -14,7 +15,15 @@ const AuthCtx = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser]   = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(null);
+
+  // Initialize token from localStorage on mount using auth service
+  useEffect(() => {
+    const storedToken = getToken();
+    if (storedToken) {
+      setToken(storedToken);
+    }
+  }, []);
 
   const doLogin = useCallback(async (username: string, password: string): Promise<LoginResponse> => {
     const response = await apiLogin(username, password);
@@ -28,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (response.success && response.token && response.user) {
       setUser(response.user);
       setToken(response.token);
-      localStorage.setItem('token', response.token);
+      saveToken(response.token);
     }
     
     return response;
@@ -37,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('token');
+    removeToken();
   }, []);
 
   const value = useMemo<AuthContextValue>(

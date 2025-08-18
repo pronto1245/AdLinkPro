@@ -12,6 +12,27 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Password validation (minimum 6 characters)
 const MIN_PASSWORD_LENGTH = 6;
 
+// Function to get role-based redirect URL
+function getRoleBasedRedirect(): string {
+  try {
+    const token = getToken();
+    if (!token) return "/login";
+    
+    const payload = JSON.parse(atob((token.split('.')[1] || '').replace(/-/g,'+').replace(/_/g,'/')));
+    const role = String(payload.role || '').toLowerCase().trim();
+    
+    switch (role) {
+      case 'owner': return '/dashboard/owner';
+      case 'advertiser': return '/dashboard/advertiser';
+      case 'partner': return '/dashboard/partner';
+      case 'super_admin': return '/dashboard/super-admin';
+      default: return '/dashboard/partner'; // Default fallback
+    }
+  } catch {
+    return '/dashboard/partner'; // Safe fallback
+  }
+}
+
 const LoginPage = () => {
   const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
@@ -22,10 +43,16 @@ const LoginPage = () => {
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (getToken()) setLocation("/");
+    const token = getToken();
+    if (token) {
+      // Redirect to appropriate dashboard based on user role
+      // This avoids the circular redirect with "/"
+      const redirectUrl = getRoleBasedRedirect();
+      setLocation(redirectUrl);
+    }
     // Setup global error handling to suppress unnecessary console errors
     setupGlobalErrorHandling();
-  }, [setLocation]);
+  }, []); // Remove setLocation from dependencies as it's stable
 
   // Form validation functions
   const validateEmail = (email: string): string | null => {
