@@ -53,7 +53,7 @@ function Router() {
       <ProtectedRoute path="/dash/partner" roles={['partner']} component={PartnerDash} />
       <ProtectedRoute path="/dash/advertiser" roles={['advertiser']} component={AdvertiserDash} />
       <ProtectedRoute path="/dash/owner" roles={['owner']} component={OwnerDash} />
-      <ProtectedRoute path="/dash/super-admin" roles={['super_admin']} component={SuperAdmin} />
+      <ProtectedRoute path="/dash/super-admin" roles={['super_admin']} component={SuperAdminDash} />
 
       <Route path="/forgot" component={ForgotPassword} />
       <Route component={() => <Redirect to="/login" />} />
