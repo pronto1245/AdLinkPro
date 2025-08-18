@@ -83,7 +83,7 @@ interface StatisticsData {
   clickIds?: string[];  // Для случаев группировки
 }
 
-export function AdvertiserAnalytics() {
+function AdvertiserAnalytics() {
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
     from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
     to: new Date()
@@ -1186,3 +1186,5 @@ export function AdvertiserAnalytics() {
     </div>
   );
 }
+
+export default AdvertiserAnalytics;
