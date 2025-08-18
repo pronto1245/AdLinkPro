@@ -1,41 +1,44 @@
-import { login as loginLib, register as registerLib, logout as logoutLib, getCurrentUser, HOME as HOME_BY_ROLE, User } from '@/lib/auth';
+export type User = { id?: string; role?: 'partner'|'advertiser'|'owner'|'super_admin' };
+const API = (import.meta as any).env?.VITE_API_URL || '';
 
-export const login = loginLib;
-export const register = registerLib;
-export const signIn = loginLib;
-export const signUp = registerLib;
-export const logout = logoutLib;
-export const currentUser = getCurrentUser;
-export const HOME = HOME_BY_ROLE;
+export function saveToken(t: string){ try{ localStorage.setItem('token', t) }catch{} }
+export function getToken(){ try{ return localStorage.getItem('token') }catch{ return null } }
+export function logout(){ try{ localStorage.removeItem('token') }catch{} }
 
-export function getRoleHome(role: User['role']): string {
-  return HOME_BY_ROLE[role] || '/';
-}
-
-export function saveToken(token: string) {
-  try { localStorage.setItem('auth:token', token); } catch {}
-  return token;
-}
-
-export function getToken(): string | null {
-  try { return localStorage.getItem('auth:token'); } catch { return null; }
-}
-
-// совместимость
-export async function requestOtp(_args: { email: string }) { return { ok: true }; }
-export async function verifyOtp(_args: { email: string; otp: string }) { return { ok: true }; }
-
-export default {
-  login,
-  register,
-  signIn,
-  signUp,
-  logout,
-  currentUser,
-  HOME: HOME_BY_ROLE,
-  getRoleHome,
-  saveToken,
-  getToken,
-  requestOtp,
-  verifyOtp,
+export const HOME_BY_ROLE: Record<string, string> = {
+  partner: '/dash/partner',
+  advertiser: '/dash/advertiser',
+  owner: '/dash/owner',
+  super_admin: '/dash/super-admin'
 };
+export function getRoleHome(role: User['role']){ return (role && HOME_BY_ROLE[role]) || '/'; }
+
+async function json(url: string, body: any){
+  const r = await fetch(url, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+  let data: any = null; try{ data = await r.json() }catch{}
+  return { ok: r.ok, status: r.status, data };
+}
+
+export async function login(args: { email: string; password: string }){
+  const res = await json(`${API}/api/auth/login`, args);
+  const token = res?.data?.token || res?.data?.jwt || res?.data?.accessToken;
+  const user  = res?.data?.user || null;
+  if (!token && res.ok) { return { token: null, user, ok: true } }
+  return { token, user, ok: res.ok, status: res.status };
+}
+
+export async function register(args: any){
+  const res = await json(`${API}/api/auth/register`, args);
+  return res?.data || { ok: res.ok, status: res.status };
+}
+
+export async function currentUser(){
+  const t = getToken(); if (!t) return null;
+  const r = await fetch(`${API}/api/me`, { headers: { Authorization: `Bearer ${t}` } });
+  try{ return await r.json() }catch{ return null }
+}
+
+export async function requestOtp(_a:{email:string}){ return { ok:true } }
+export async function verifyOtp(_a:{email:string; otp:string}){ return { ok:true } }
+
+export default { login, register, logout, currentUser, saveToken, getToken, HOME: HOME_BY_ROLE, getRoleHome, requestOtp, verifyOtp };
