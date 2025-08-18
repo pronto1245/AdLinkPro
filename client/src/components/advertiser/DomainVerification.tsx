@@ -71,10 +71,7 @@ export default function DomainVerification() {
   // Add new domain mutation
   const addDomainMutation = useMutation({
     mutationFn: async (domain: string) => {
-      return apiRequest('/api/advertiser/domains/verify', {
-        method: 'POST',
-        body: { domain }
-      });
+      return apiRequest('/api/advertiser/domains/verify', 'POST', { domain });
     },
     onSuccess: (data) => {
       toast({
@@ -98,9 +95,7 @@ export default function DomainVerification() {
   // Check domain verification mutation
   const checkVerificationMutation = useMutation({
     mutationFn: async (domainId: string) => {
-      return apiRequest(`/api/advertiser/domains/${domainId}/check`, {
-        method: 'POST'
-      });
+      return apiRequest(`/api/advertiser/domains/${domainId}/check`, 'POST');
     },
     onSuccess: (data, domainId) => {
       if (data.success) {

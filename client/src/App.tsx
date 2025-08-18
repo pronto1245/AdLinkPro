@@ -78,7 +78,7 @@ function Router() {
 
         <Route path="/register/partner" component={RegisterPartner} />
         <Route path="/register/advertiser" component={RegisterAdvertiser} />
-        <Route path="/register" component={RegisterUnified} />
+        <Route path="/register" component={() => <RegisterUnified />} />
 
         <ProtectedRoute path="/dashboard/advertiser" roles={['advertiser']} component={withLayout(AdvertiserDash)} />
         <ProtectedRoute path="/dashboard/advertiser/offers" roles={['advertiser']} component={withLayout(AdvertiserOffers)} />

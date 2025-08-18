@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 interface LanguageContextType {
   language: 'en' | 'ru';
   setLanguage: (lang: 'en' | 'ru') => void;
-  t: (key: string) => string;
+  t: (key: string, fallback?: string) => string;
 }
 
 const translations = {
@@ -20,8 +20,8 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<'en' | 'ru'>('ru');
 
-  const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations['en']] || key;
+  const t = (key: string, fallback?: string): string => {
+    return translations[language][key as keyof typeof translations['en']] || fallback || key;
   };
 
   return (
