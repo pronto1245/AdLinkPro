@@ -62,7 +62,7 @@ if (process.env.ALLOW_SEED === '1') {
 }
 
 // Обновленный боевой /api/auth/login: ищем в БД по email ИЛИ username
-app.post('/api/auth/login', async (req,res,next) => {
+app.post('/api/auth/login-db', async (req,res,next) => {
   try {
     const { email, username, password } = req.body || {};
     if (!password || (!email && !username)) return res.status(400).json({ error:'email/username and password are required' });
