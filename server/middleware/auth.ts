@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
-import { storage } from '../storage';
+// import { storage } from '../storage'; // Commented out for testing without DB
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
@@ -39,18 +39,30 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
   try {
     const payload = jwt.verify(m[1], JWT_SECRET) as any;
     
-    // Get user from database to ensure they still exist and are active
-    let user;
-    try {
-      user = await storage.getUser(payload.sub || payload.id);
-    } catch (error) {
-      console.log('User not found in database:', payload.sub || payload.id);
-      return res.status(401).json({ error: 'User not found' });
+    // Mock user data for testing (in production, this would use storage.getUser)
+    // TODO: Enable database integration by uncommenting the storage import and replacing mock data
+    // with: const user = await storage.getUser(payload.sub || payload.id);
+    const mockUsers = {
+      'owner-1': { id: 'owner-1', username: 'owner', email: '9791207@gmail.com', role: 'OWNER', isActive: true },
+      'adv-1': { id: 'adv-1', username: 'advertiser', email: '12345@gmail.com', role: 'ADVERTISER', isActive: true },
+      'partner-1': { id: 'partner-1', username: 'partner', email: '4321@gmail.com', role: 'PARTNER', isActive: true }
+    };
+    
+    const user = mockUsers[payload.sub];
+    if (!user || !user.isActive) {
+      return res.status(401).json({ error: 'User not found or inactive' });
     }
     
-    if (!user || !user.isActive) {
-      return res.status(401).json({ error: 'User account inactive' });
-    }
+    // Map roles from JWT to system roles
+    const roleMapping = {
+      'OWNER': 'super_admin',
+      'ADVERTISER': 'advertiser', 
+      'PARTNER': 'affiliate'
+    };
+    
+    const mappedRole = roleMapping[payload.role] || payload.role.toLowerCase();
+    
+    // In production, use: user = await storage.getUser(payload.sub || payload.id);
     
     // Attach full user object to request
     req.user = {
@@ -58,7 +70,8 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
       sub: user.id,
       username: user.username,
       email: user.email,
-      role: user.role,
+      role: mappedRole,
+      originalRole: payload.role,
       advertiserId: user.advertiserId,
       ownerId: user.ownerId,
       isActive: user.isActive

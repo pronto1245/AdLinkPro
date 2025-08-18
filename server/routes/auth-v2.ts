@@ -2,6 +2,7 @@ import express, { Router } from "express";
 import jwt from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
+import { loginRateLimiter, recordFailedLogin, auditLog } from "../middleware/security";
 
 export const authV2Router = Router();
 authV2Router.use(express.json());
@@ -44,10 +45,11 @@ const users = [
 ];
 
 // Enhanced login endpoint with 2FA support
-authV2Router.post("/login", (req, res) => {
+authV2Router.post("/login", loginRateLimiter, (req, res) => {
   try {
     const { username, password } = req.body || {};
     if (!username || !password) {
+      auditLog(req, 'LOGIN_ATTEMPT', undefined, false, { reason: 'Missing credentials' });
       return res.status(400).json({ error: "username and password are required" });
     }
 
@@ -57,8 +59,12 @@ authV2Router.post("/login", (req, res) => {
     );
     
     if (!user || user.password !== password) {
+      recordFailedLogin(req);
+      auditLog(req, 'LOGIN_ATTEMPT', undefined, false, { username, reason: 'Invalid credentials' });
       return res.status(401).json({ error: "invalid credentials" });
     }
+
+    auditLog(req, 'LOGIN_ATTEMPT', undefined, true, { username: user.username, role: user.role });
 
     const secret = process.env.JWT_SECRET;
     if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
@@ -77,6 +83,8 @@ authV2Router.post("/login", (req, res) => {
       setTimeout(() => {
         tempTokens.delete(tempToken);
       }, 5 * 60 * 1000);
+
+      auditLog(req, '2FA_REQUIRED', undefined, true, { username: user.username, tempToken: tempToken.substring(0, 8) + '...' });
 
       return res.json({
         requires2FA: true,
@@ -123,17 +131,20 @@ authV2Router.post("/verify-2fa", (req, res) => {
     const { token: tempToken, code } = req.body || {};
     
     if (!tempToken || !code) {
+      auditLog(req, '2FA_VERIFY_ATTEMPT', undefined, false, { reason: 'Missing token or code' });
       return res.status(400).json({ error: "Temporary token and 2FA code are required" });
     }
 
     const tokenData = tempTokens.get(tempToken);
     if (!tokenData) {
+      auditLog(req, '2FA_VERIFY_ATTEMPT', undefined, false, { reason: 'Invalid temp token' });
       return res.status(401).json({ error: "Invalid or expired temporary token" });
     }
 
     // Check if temp token is expired (5 minutes)
     if (Date.now() - tokenData.timestamp > 5 * 60 * 1000) {
       tempTokens.delete(tempToken);
+      auditLog(req, '2FA_VERIFY_ATTEMPT', undefined, false, { reason: 'Temp token expired' });
       return res.status(401).json({ error: "Temporary token expired" });
     }
 
@@ -141,6 +152,7 @@ authV2Router.post("/verify-2fa", (req, res) => {
     
     // Verify 2FA code
     if (!verifyTOTP(user.twoFactorSecret, code)) {
+      auditLog(req, '2FA_VERIFY_ATTEMPT', undefined, false, { username: user.username, reason: 'Invalid 2FA code' });
       return res.status(401).json({ error: "Invalid 2FA code" });
     }
 
@@ -156,6 +168,8 @@ authV2Router.post("/verify-2fa", (req, res) => {
       secret,
       { expiresIn: "7d" }
     );
+
+    auditLog(req, '2FA_VERIFY_SUCCESS', undefined, true, { username: user.username, role: user.role });
 
     return res.json({
       success: true,
@@ -224,6 +238,36 @@ authV2Router.post("/2fa/toggle", (req, res) => {
 
   } catch (error) {
     console.error("2FA toggle error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Logout endpoint
+authV2Router.post("/logout", (req, res) => {
+  try {
+    // In a full implementation, you might invalidate the token on the server side
+    // For JWT tokens, logout is typically handled client-side by removing the token
+    // Here we can log the logout event for audit purposes
+    
+    const auth = req.headers.authorization || '';
+    const m = auth.match(/^Bearer (.+)$/);
+    
+    if (m) {
+      try {
+        const payload = jwt.verify(m[1], process.env.JWT_SECRET || 'dev-secret') as any;
+        console.log(`User ${payload.username} (${payload.role}) logged out`);
+      } catch (error) {
+        console.log('Invalid token in logout request');
+      }
+    }
+    
+    return res.json({
+      success: true,
+      message: "Logged out successfully"
+    });
+
+  } catch (error) {
+    console.error("Logout error:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 });

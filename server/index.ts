@@ -157,14 +157,10 @@ app.use('/api', authRouter);
 // --- API: новая версия аутентификации с 2FA
 app.use('/api/auth/v2', authV2Router);
 
-// --- простая проверка токена для стабов ---
-function requireAuth(req: any, res: any, next: any) {
-  const h = String(req.headers.authorization || '');
-  if (!h.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-  next();
-}
+import { requireAuth, requireRole, authenticateToken } from './middleware/auth';
+
+// Import routes modules
+import { registerRoutes } from './routes';
 
 // --- СТАБЫ, чтобы фронт не падал ---
 app.get('/api/partner/offers', requireAuth, (_req, res) => {
@@ -186,6 +182,40 @@ app.get('/api/partner/finance/summary', requireAuth, (_req, res) => {
 
 app.get('/api/notifications', requireAuth, (_req, res) => {
   res.json({ items: [] });
+});
+
+// --- ROLE-BASED TEST ENDPOINTS ---
+app.get('/api/test/admin-only', authenticateToken, requireRole(['super_admin']), (req, res) => {
+  res.json({ 
+    message: 'Admin endpoint accessed successfully',
+    user: req.user.username,
+    role: req.user.role
+  });
+});
+
+app.get('/api/test/advertiser-only', authenticateToken, requireRole(['advertiser']), (req, res) => {
+  res.json({ 
+    message: 'Advertiser endpoint accessed successfully',
+    user: req.user.username,
+    role: req.user.role
+  });
+});
+
+app.get('/api/test/affiliate-only', authenticateToken, requireRole(['affiliate']), (req, res) => {
+  res.json({ 
+    message: 'Affiliate endpoint accessed successfully',
+    user: req.user.username,
+    role: req.user.role
+  });
+});
+
+app.get('/api/test/multi-role', authenticateToken, requireRole(['advertiser', 'affiliate']), (req, res) => {
+  res.json({ 
+    message: 'Multi-role endpoint accessed successfully',
+    user: req.user.username,
+    role: req.user.role,
+    allowedRoles: ['advertiser', 'affiliate']
+  });
 });
 
 // --- статика SPA из client/dist ---
