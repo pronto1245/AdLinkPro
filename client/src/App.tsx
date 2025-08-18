@@ -66,9 +66,7 @@ function Router() {
         {/* Алиасы старых URL */}
       <Route path="/debug" component={() => <div style={{padding:24,color:"#fff"}}>DEBUG OK</div>} />
         <Route path="/dashboard/partner" component={() => <Redirect to="/dash" />} />
-        <Route path="/dashboard/advertiser" component={() => <Redirect to="/dashboard/advertiser" />} />
-        <Route path="/dashboard/owner" component={() => <Redirect to="/dashboard/owner" />} />
-        <Route path="/dashboard/super-admin" component={() => <Redirect to="/dashboard/super-admin" />} />
+        {/* Fix: Remove self-redirecting routes that cause infinite loops */}
         <Route path="/" component={() => <Redirect to="/login" />} />
 
         <Route path="/login/partner" component={LoginPartner} />
