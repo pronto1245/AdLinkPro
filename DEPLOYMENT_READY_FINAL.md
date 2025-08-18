@@ -10,7 +10,7 @@
 ### 2. Доступ владельца (КРИТИЧНО)
 - ✅ admin / admin123 - работает и получает JWT токен
 - ✅ superadmin / admin123 - работает и получает JWT токен
-- ✅ Правильные bcrypt хэши в PostgreSQL базе
+- ✅ Правильные bcryptjs хэши в PostgreSQL базе
 
 ### 3. Логи переводов (УЛУЧШЕНИЕ)
 - ✅ Добавлены недостающие переводы для dashboard, sidebar, navigation

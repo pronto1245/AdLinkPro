@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage.js";
 import { ObjectPermission } from "./objectAcl.js";
-import bcryptjsjs from "bcryptjsjs";
+import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { 
   insertUserSchema, insertOfferSchema, insertTicketSchema, insertPostbackSchema, insertReceivedOfferSchema,
@@ -1724,7 +1724,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Support both plain text (for demo) and hashed passwords
       const plainTextMatch = user.password === password;
-      const hashMatch = await bcryptjsjs.compare(password, user.password).catch(() => false);
+      const hashMatch = await bcryptjs.compare(password, user.password).catch(() => false);
       const isValidPassword = plainTextMatch || hashMatch;
       
       if (!isValidPassword) {
@@ -3697,7 +3697,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Verify current password
       const user = await storage.getUser(authUser.id);
-      if (!user || !bcryptjsjs.compareSync(currentPassword, user.passwordHash || '')) {
+      if (!user || !bcryptjs.compareSync(currentPassword, user.passwordHash || '')) {
         return res.status(400).json({ error: "Invalid current password" });
       }
       
@@ -4118,7 +4118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check current password
       const passwordValid = user.passwordHash ? 
-        bcryptjsjs.compareSync(currentPassword, user.passwordHash) : 
+        bcryptjs.compareSync(currentPassword, user.passwordHash) : 
         user.password === currentPassword;
         
       if (!passwordValid) {
@@ -10107,7 +10107,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         return res.status(400).json({ error: 'User not found' });
       }
 
-      const isValidPassword = await bcryptjsjs.compare(currentPassword, user.password);
+      const isValidPassword = await bcryptjs.compare(currentPassword, user.password);
       if (!isValidPassword) {
         return res.status(400).json({ error: 'Current password is incorrect' });
       }

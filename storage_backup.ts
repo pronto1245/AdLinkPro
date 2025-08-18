@@ -15,6 +15,7 @@ import {
 import { db } from "./db";
 import { eq, desc, and, gte, lt, lte, count, sum, sql, isNotNull, like, ilike, or, inArray, ne } from "drizzle-orm";
 import { randomUUID } from "crypto";
+import bcryptjs from "bcryptjs";
 
 export interface IStorage {
   // User management
@@ -1124,7 +1125,6 @@ export class DatabaseStorage implements IStorage {
 
   async resetUserPassword(id: string): Promise<string> {
     const newPassword = randomUUID().substring(0, 8);
-    const bcryptjs = require('bcryptjs');
     const hashedPassword = await bcryptjs.hash(newPassword, 10);
     
     await db

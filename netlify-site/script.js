@@ -169,7 +169,7 @@ function showTech() {
                     </div>
                     <div class="tech-item">
                         <h4>Backend</h4>
-                        <p>Node.js, Express, Drizzle ORM, PostgreSQL, JWT, bcrypt, WebSocket</p>
+                        <p>Node.js, Express, Drizzle ORM, PostgreSQL, JWT, bcryptjs, WebSocket</p>
                     </div>
                     <div class="tech-item">
                         <h4>Инфраструктура</h4>

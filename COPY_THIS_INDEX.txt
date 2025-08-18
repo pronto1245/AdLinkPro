@@ -132,7 +132,7 @@
                         <ul>
                             <li>Node.js + Express</li>
                             <li>Drizzle ORM + PostgreSQL</li>
-                            <li>JWT + bcrypt авторизация</li>
+                            <li>JWT + bcryptjs авторизация</li>
                             <li>WebSocket для real-time</li>
                         </ul>
                     </div>
