@@ -39,6 +39,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { DisabledButtonTooltip } from '@/components/ui/disabled-button-tooltip';
+import { HelpButton } from '@/components/ui/help-center';
 import {
   Tooltip,
   TooltipContent,
@@ -427,6 +429,7 @@ export default function MyOffers() {
           </div>
           
           <div className="flex gap-3">
+            <HelpButton variant="outline" />
             <Button variant="outline" onClick={() => refetch()}>
               <TrendingUp className="h-4 w-4 mr-2" />
               Обновить

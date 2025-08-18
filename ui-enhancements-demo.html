@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdLinkPro UI/UX Enhancements Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.453.0/lucide.min.css">
+    <style>
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-trigger {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .tab-trigger:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .tab-trigger[data-state="active"] {
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tooltip {
+            position: relative;
+        }
+        
+        .tooltip-content {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 50;
+            margin-bottom: 5px;
+        }
+        
+        .tooltip-content::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+        }
+        
+        .tooltip:hover .tooltip-content {
+            opacity: 1;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 2px 8px;
+            background-color: #3b82f6;
+            color: white;
+            margin-left: 4px;
+        }
+        
+        .help-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .help-content.open {
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">UI/UX Enhancement Demo</h1>
+                    <p class="text-gray-600 mt-2">Демонстрация улучшений интерфейса AdLinkPro</p>
+                </div>
+                <button class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" onclick="toggleHelp()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Помощь
+                </button>
+            </div>
+        </div>
+
+        <!-- Help Center Demo -->
+        <div id="helpCenter" class="bg-white rounded-lg shadow-sm p-6 mb-8 help-content">
+            <div class="flex items-center gap-2 mb-6">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h2 class="text-2xl font-bold text-gray-900">Центр помощи</h2>
+            </div>
+            
+            <div class="mb-6">
+                <div class="relative">
+                    <svg class="absolute left-3 top-3 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" placeholder="Поиск по часто задаваемым вопросам..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center gap-2 mb-3">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="font-semibold">FAQ</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Часто задаваемые вопросы</p>
+                    <div class="space-y-2">
+                        <div class="bg-white p-3 rounded border cursor-pointer hover:bg-blue-50">
+                            <p class="font-medium text-sm">Как создать новый оффер?</p>
+                        </div>
+                        <div class="bg-white p-3 rounded border cursor-pointer hover:bg-blue-50">
+                            <p class="font-medium text-sm">Почему кнопка недоступна?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center gap-2 mb-3">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        <h3 class="font-semibold">Уроки</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Пошаговые видео-руководства</p>
+                    <div class="space-y-2">
+                        <div class="bg-white p-3 rounded border cursor-pointer hover:bg-green-50">
+                            <p class="font-medium text-sm">Начало работы</p>
+                            <span class="text-xs text-gray-500">10 мин</span>
+                        </div>
+                        <div class="bg-white p-3 rounded border cursor-pointer hover:bg-green-50">
+                            <p class="font-medium text-sm">Продвинутый таргетинг</p>
+                            <span class="text-xs text-gray-500">15 мин</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center gap-2 mb-3">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        <h3 class="font-semibold">Руководства</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">Техническая документация</p>
+                    <div class="space-y-2">
+                        <div class="bg-white p-3 rounded border cursor-pointer hover:bg-purple-50">
+                            <p class="font-medium text-sm">API документация</p>
+                        </div>
+                        <div class="bg-white p-3 rounded border cursor-pointer hover:bg-purple-50">
+                            <p class="font-medium text-sm">Интеграция постбеков</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Tabs Demo -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="text-xl font-bold mb-6">Улучшенные Интерактивные Вкладки</h2>
+            
+            <div class="mb-4">
+                <div class="flex bg-gray-100 p-1 rounded-md">
+                    <button class="tab-trigger flex items-center gap-2 px-4 py-2 rounded-sm text-sm font-medium" data-state="active" onclick="switchTab('overview', this)">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Обзор
+                        <span class="badge">143</span>
+                    </button>
+                    <button class="tab-trigger flex items-center gap-2 px-4 py-2 rounded-sm text-sm font-medium" onclick="switchTab('geography', this)">
+                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        География
+                        <span class="badge">25</span>
+                    </button>
+                    <button class="tab-trigger flex items-center gap-2 px-4 py-2 rounded-sm text-sm font-medium" onclick="switchTab('devices', this)">
+                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        Устройства
+                        <span class="badge">8</span>
+                    </button>
+                    <button class="tab-trigger flex items-center gap-2 px-4 py-2 rounded-sm text-sm font-medium" onclick="showLoading(this)">
+                        <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Источники
+                        <span class="loading-spinner" style="display: none;">
+                            <svg class="w-3 h-3 animate-spin ml-1" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="tab-content" class="animate-fade-in">
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Обзор статистики</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-4 rounded border">
+                            <div class="text-2xl font-bold text-blue-600">12,543</div>
+                            <div class="text-sm text-gray-600">Клики</div>
+                        </div>
+                        <div class="bg-white p-4 rounded border">
+                            <div class="text-2xl font-bold text-green-600">1,247</div>
+                            <div class="text-sm text-gray-600">Конверсии</div>
+                        </div>
+                        <div class="bg-white p-4 rounded border">
+                            <div class="text-2xl font-bold text-purple-600">$2,847</div>
+                            <div class="text-sm text-gray-600">Доход</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disabled Button Tooltips Demo -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="text-xl font-bold mb-6">Контекстные Подсказки для Недоступных Кнопок</h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-center gap-4">
+                    <div class="tooltip">
+                        <button class="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed" disabled>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            Сохранить оффер
+                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </button>
+                        <div class="tooltip-content">
+                            <div class="flex items-start gap-2">
+                                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <div>Заполните название оффера</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tooltip">
+                        <button class="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed" disabled>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                            Редактировать
+                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </button>
+                        <div class="tooltip-content">
+                            <div class="flex items-start gap-2">
+                                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                                <div>Недостаточно прав доступа</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tooltip">
+                        <button class="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed" disabled>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            Удалить
+                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </button>
+                        <div class="tooltip-content">
+                            <div class="flex items-start gap-2">
+                                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>Подождите завершения операции</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-sm text-gray-600">
+                    <strong>Наведите курсор на кнопки</strong> чтобы увидеть причину их недоступности
+                </p>
+            </div>
+        </div>
+
+        <!-- Contextual Help Demo -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="text-xl font-bold mb-6">Контекстная Помощь в Формах</h2>
+            
+            <div class="space-y-6">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        Название оффера *
+                        <div class="tooltip">
+                            <button type="button" class="inline-flex items-center justify-center rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-gray-400 hover:text-gray-600 p-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </button>
+                            <div class="tooltip-content">
+                                Краткое и понятное название, которое будет отображаться в списке офферов
+                            </div>
+                        </div>
+                    </div>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Введите название оффера">
+                </div>
+
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        Категория *
+                        <div class="tooltip">
+                            <button type="button" class="inline-flex items-center justify-center rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-gray-400 hover:text-gray-600 p-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </button>
+                            <div class="tooltip-content">
+                                Выберите категорию, которая лучше всего описывает ваш оффер. Это поможет партнерам найти его
+                            </div>
+                        </div>
+                    </div>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Выберите категорию</option>
+                        <option value="finance">Финансы</option>
+                        <option value="health">Здоровье</option>
+                        <option value="games">Игры</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        Целевая ссылка *
+                        <div class="tooltip">
+                            <button type="button" class="inline-flex items-center justify-center rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-gray-400 hover:text-gray-600 p-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                            </button>
+                            <div class="tooltip-content">
+                                URL на который будут перенаправляться пользователи при переходе по оферу
+                            </div>
+                        </div>
+                    </div>
+                    <input type="url" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://example.com/landing">
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h2 class="text-lg font-semibold text-blue-900 mb-4">✨ Реализованные Улучшения</h2>
+            <div class="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                    <h3 class="font-semibold text-blue-800 mb-2">🎯 Интерактивные Вкладки</h3>
+                    <ul class="space-y-1 text-blue-700">
+                        <li>• Плавные анимации переходов</li>
+                        <li>• Счетчики элементов в бейджах</li>
+                        <li>• Индикаторы загрузки</li>
+                        <li>• Улучшенная навигация</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-blue-800 mb-2">💡 Подсказки для Кнопок</h3>
+                    <ul class="space-y-1 text-blue-700">
+                        <li>• Контекстные объяснения</li>
+                        <li>• Причины недоступности</li>
+                        <li>• Различные типы иконок</li>
+                        <li>• Улучшенный UX</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-blue-800 mb-2">📚 Система Помощи</h3>
+                    <ul class="space-y-1 text-blue-700">
+                        <li>• Центр помощи с поиском</li>
+                        <li>• FAQ, уроки, руководства</li>
+                        <li>• Интегрированная справка</li>
+                        <li>• Контекстные подсказки</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-blue-800 mb-2">🔧 Техническая Реализация</h3>
+                    <ul class="space-y-1 text-blue-700">
+                        <li>• Новые React компоненты</li>
+                        <li>• Анимации Framer Motion</li>
+                        <li>• Radix UI интеграция</li>
+                        <li>• TypeScript типизация</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleHelp() {
+            const helpCenter = document.getElementById('helpCenter');
+            helpCenter.classList.toggle('open');
+        }
+
+        function switchTab(tabName, element) {
+            // Remove active state from all tabs
+            document.querySelectorAll('.tab-trigger').forEach(tab => {
+                tab.removeAttribute('data-state');
+            });
+            
+            // Add active state to clicked tab
+            element.setAttribute('data-state', 'active');
+            
+            // Update content based on tab
+            const content = document.getElementById('tab-content');
+            const contentMap = {
+                'overview': `
+                    <div class="bg-gray-50 p-6 rounded-lg animate-fade-in">
+                        <h3 class="text-lg font-semibold mb-4">Обзор статистики</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-white p-4 rounded border">
+                                <div class="text-2xl font-bold text-blue-600">12,543</div>
+                                <div class="text-sm text-gray-600">Клики</div>
+                            </div>
+                            <div class="bg-white p-4 rounded border">
+                                <div class="text-2xl font-bold text-green-600">1,247</div>
+                                <div class="text-sm text-gray-600">Конверсии</div>
+                            </div>
+                            <div class="bg-white p-4 rounded border">
+                                <div class="text-2xl font-bold text-purple-600">$2,847</div>
+                                <div class="text-sm text-gray-600">Доход</div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                'geography': `
+                    <div class="bg-gray-50 p-6 rounded-lg animate-fade-in">
+                        <h3 class="text-lg font-semibold mb-4">География трафика</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-white p-3 rounded border">
+                                <span>🇺🇸 США</span>
+                                <span class="font-semibold">8,234 кликов</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-white p-3 rounded border">
+                                <span>🇷🇺 Россия</span>
+                                <span class="font-semibold">2,145 кликов</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-white p-3 rounded border">
+                                <span>🇩🇪 Германия</span>
+                                <span class="font-semibold">1,876 кликов</span>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                'devices': `
+                    <div class="bg-gray-50 p-6 rounded-lg animate-fade-in">
+                        <h3 class="text-lg font-semibold mb-4">Устройства пользователей</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded border">
+                                <div class="text-xl font-bold text-purple-600">Mobile</div>
+                                <div class="text-sm text-gray-600">68% трафика</div>
+                            </div>
+                            <div class="bg-white p-4 rounded border">
+                                <div class="text-xl font-bold text-blue-600">Desktop</div>
+                                <div class="text-sm text-gray-600">32% трафика</div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            };
+            
+            content.innerHTML = contentMap[tabName] || content.innerHTML;
+        }
+
+        function showLoading(element) {
+            const spinner = element.querySelector('.loading-spinner');
+            const badge = element.querySelector('.badge');
+            
+            if (spinner.style.display === 'none') {
+                spinner.style.display = 'inline-block';
+                if (badge) badge.style.display = 'none';
+                
+                setTimeout(() => {
+                    spinner.style.display = 'none';
+                    if (badge) {
+                        badge.style.display = 'inline-flex';
+                        badge.textContent = '156';
+                    }
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+</html>

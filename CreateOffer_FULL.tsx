@@ -10,7 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  EnhancedTabs as Tabs, 
+  EnhancedTabsContent as TabsContent, 
+  EnhancedTabsList as TabsList, 
+  EnhancedTabsTrigger as TabsTrigger 
+} from '@/components/ui/enhanced-tabs';
+import { DisabledButtonTooltip } from '@/components/ui/disabled-button-tooltip';
+import { ContextualHelp, InlineHelp } from '@/components/ui/contextual-help';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
@@ -602,41 +609,80 @@ export default function CreateOffer() {
             >
               Отмена
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={createOfferMutation.isPending}
-              data-testid="button-save-offer"
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {createOfferMutation.isPending ? 'Сохранение...' : 'Сохранить оффер'}
-            </Button>
+            {createOfferMutation.isPending ? (
+              <Button
+                disabled
+                data-testid="button-save-offer"
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Сохранение...
+              </Button>
+            ) : (
+              <DisabledButtonTooltip
+                onClick={handleSubmit}
+                disabled={!formData.name || !formData.targetUrl || createOfferMutation.isPending}
+                data-testid="button-save-offer"
+                className="bg-blue-600 hover:bg-blue-700"
+                tooltipContent={
+                  !formData.name ? "Заполните название оффера" :
+                  !formData.targetUrl ? "Укажите целевую ссылку" :
+                  "Проверьте обязательные поля формы"
+                }
+                tooltipIcon="alert"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Сохранить оффер
+              </DisabledButtonTooltip>
+            )}
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="basic" className="flex items-center gap-2">
+              <TabsTrigger 
+                value="basic" 
+                className="flex items-center gap-2"
+                showBadge={false}
+              >
                 <Image className="h-4 w-4" />
                 Основная информация
               </TabsTrigger>
-              <TabsTrigger value="links" className="flex items-center gap-2">
+              <TabsTrigger 
+                value="links" 
+                className="flex items-center gap-2"
+                showBadge={true}
+                badgeCount={formData.landingPages.length}
+              >
                 <Globe className="h-4 w-4" />
                 Ссылки
               </TabsTrigger>
-              <TabsTrigger value="targeting" className="flex items-center gap-2">
+              <TabsTrigger 
+                value="targeting" 
+                className="flex items-center gap-2"
+                showBadge={true}
+                badgeCount={formData.geoTargeting.length}
+              >
                 <Target className="h-4 w-4" />
                 Таргетинг
               </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2">
+              <TabsTrigger 
+                value="settings" 
+                className="flex items-center gap-2"
+                showBadge={false}
+              >
                 <Settings className="h-4 w-4" />
                 Настройки
               </TabsTrigger>
             </TabsList>
 
             {/* Вкладка: Основная информация */}
-            <TabsContent value="basic" className="space-y-6">
+            <TabsContent 
+              value="basic" 
+              className="space-y-6"
+              animationDirection="horizontal"
+            >
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -646,8 +692,11 @@ export default function CreateOffer() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Название оффера *</Label>
+                    <InlineHelp
+                      label="Название оффера *"
+                      content="Краткое и понятное название, которое будет отображаться в списке офферов"
+                      helpPosition="after"
+                    >
                       <Input
                         id="name"
                         value={formData.name}
@@ -656,10 +705,13 @@ export default function CreateOffer() {
                         required
                         data-testid="input-offer-name"
                       />
-                    </div>
+                    </InlineHelp>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="category">Категория *</Label>
+                    <InlineHelp
+                      label="Категория *"
+                      content="Выберите категорию, которая лучше всего описывает ваш оффер. Это поможет партнерам найти его"
+                      helpPosition="after"
+                    >
                       <Select
                         value={formData.category}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
@@ -675,7 +727,7 @@ export default function CreateOffer() {
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
+                    </InlineHelp>
                   </div>
 
                   <div className="space-y-2">

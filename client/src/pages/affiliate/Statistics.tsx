@@ -27,11 +27,12 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+  EnhancedTabs as Tabs,
+  EnhancedTabsContent as TabsContent,
+  EnhancedTabsList as TabsList,
+  EnhancedTabsTrigger as TabsTrigger,
+} from "@/components/ui/enhanced-tabs";
+import { HelpButton } from "@/components/ui/help-center";
 import {
   Dialog,
   DialogContent,
@@ -497,36 +498,88 @@ export default function Statistics() {
         </Card>
       </div>
 
+      {/* Header with Help Button */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t('statistics.title')}</h1>
+          <p className="text-muted-foreground">
+            {t('statistics.description')}
+          </p>
+        </div>
+        <HelpButton />
+      </div>
+
       {/* Tabs for different views */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
+          <TabsTrigger 
+            value="overview" 
+            className="flex items-center gap-2"
+            showBadge={true}
+            badgeCount={analyticsData?.overview?.length || 0}
+            isLoading={isLoading && activeTab === 'overview'}
+          >
             <BarChart3 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-{t('statistics.tabs.overview')}
+            {t('statistics.tabs.overview')}
           </TabsTrigger>
-          <TabsTrigger value="geography" className="flex items-center gap-2">
+          <TabsTrigger 
+            value="geography" 
+            className="flex items-center gap-2"
+            showBadge={true}
+            badgeCount={analyticsData?.geography?.length || 0}
+            isLoading={isLoading && activeTab === 'geography'}
+          >
             <Globe className="h-4 w-4 text-green-600" />
-{t('statistics.tabs.geography')}
+            {t('statistics.tabs.geography')}
           </TabsTrigger>
-          <TabsTrigger value="devices" className="flex items-center gap-2">
+          <TabsTrigger 
+            value="devices" 
+            className="flex items-center gap-2"
+            showBadge={true}
+            badgeCount={analyticsData?.devices?.length || 0}
+            isLoading={isLoading && activeTab === 'devices'}
+          >
             <Monitor className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-{t('statistics.tabs.devices')}
+            {t('statistics.tabs.devices')}
           </TabsTrigger>
-          <TabsTrigger value="sources" className="flex items-center gap-2">
+          <TabsTrigger 
+            value="sources" 
+            className="flex items-center gap-2"
+            showBadge={true}
+            badgeCount={analyticsData?.sources?.length || 0}
+            isLoading={isLoading && activeTab === 'sources'}
+          >
             <Search className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-{t('statistics.tabs.sources')}
+            {t('statistics.tabs.sources')}
           </TabsTrigger>
-          <TabsTrigger value="subid" className="flex items-center gap-2">
+          <TabsTrigger 
+            value="subid" 
+            className="flex items-center gap-2"
+            showBadge={true}
+            badgeCount={analyticsData?.subid?.length || 0}
+            isLoading={isLoading && activeTab === 'subid'}
+          >
             <Target className="h-4 w-4 text-teal-600 dark:text-teal-400" />
             SubID
           </TabsTrigger>
-          <TabsTrigger value="details" className="flex items-center gap-2">
+          <TabsTrigger 
+            value="details" 
+            className="flex items-center gap-2"
+            showBadge={true}
+            badgeCount={analyticsData?.details?.length || 0}
+            isLoading={isLoading && activeTab === 'details'}
+          >
             <Eye className="h-4 w-4 text-indigo-600" />
-{t('statistics.tabs.details')}
+            {t('statistics.tabs.details')}
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
+        <TabsContent 
+          value="overview" 
+          className="space-y-4"
+          isLoading={isLoading && activeTab === 'overview'}
+          animationDirection="horizontal"
+        >
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -607,7 +660,12 @@ export default function Statistics() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="geography" className="space-y-4">
+        <TabsContent 
+          value="geography" 
+          className="space-y-4"
+          isLoading={isLoading && activeTab === 'geography'}
+          animationDirection="horizontal"
+        >
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -653,7 +711,12 @@ export default function Statistics() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="devices" className="space-y-4">
+        <TabsContent 
+          value="devices" 
+          className="space-y-4"
+          isLoading={isLoading && activeTab === 'devices'}
+          animationDirection="horizontal"
+        >
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -704,7 +767,12 @@ export default function Statistics() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="sources" className="space-y-4">
+        <TabsContent 
+          value="sources" 
+          className="space-y-4"
+          isLoading={isLoading && activeTab === 'sources'}
+          animationDirection="horizontal"
+        >
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -750,7 +818,12 @@ export default function Statistics() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="subid" className="space-y-4">
+        <TabsContent 
+          value="subid" 
+          className="space-y-4"
+          isLoading={isLoading && activeTab === 'subid'}
+          animationDirection="horizontal"
+        >
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -808,7 +881,12 @@ export default function Statistics() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="details" className="space-y-4">
+        <TabsContent 
+          value="details" 
+          className="space-y-4"
+          isLoading={isLoading && activeTab === 'details'}
+          animationDirection="horizontal"
+        >
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
