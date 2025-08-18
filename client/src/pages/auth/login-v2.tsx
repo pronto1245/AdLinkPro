@@ -211,6 +211,7 @@ export default function LoginV2() {
                   <Button
                     type="submit"
                     disabled={twoFactorLoading || twoFactorCode.length !== 6}
+                    onClick={handle2FASubmit}
                     data-testid="button-verify-2fa"
                   >
                     {twoFactorLoading ? 'Проверка...' : 'Подтвердить'}
@@ -339,6 +340,7 @@ export default function LoginV2() {
                           type="submit"
                           disabled={recoveryLoading}
                           className="flex-1"
+                          onClick={handlePasswordRecovery}
                           data-testid="button-send-recovery"
                         >
                           {recoveryLoading ? 'Отправка...' : 'Отправить'}
@@ -353,6 +355,7 @@ export default function LoginV2() {
                 type="submit"
                 className="w-full"
                 disabled={loading}
+                onClick={handleSubmit}
                 data-testid="button-sign-in"
               >
                 {loading ? 'Вход...' : 'Войти'}
