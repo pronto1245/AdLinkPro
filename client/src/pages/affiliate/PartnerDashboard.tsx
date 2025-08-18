@@ -325,6 +325,15 @@ export default function PartnerDashboard() {
             </Button>
             <Button 
               variant="outline" 
+              className="justify-start border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 shadow-md"
+              onClick={() => window.location.href = '/dash/offers'}
+              title={t('dashboard.browseOffersTitle')}
+            >
+              <Target className="h-4 w-4 mr-2 text-green-500" />
+              {t('dashboard.browseOffers')}
+            </Button>
+            <Button 
+              variant="outline" 
               className="justify-start border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 shadow-md"
               onClick={handleCheckStatistics}
               title={t('dashboard.viewDetailedStats')}
@@ -340,6 +349,15 @@ export default function PartnerDashboard() {
             >
               <Users className="h-4 w-4 mr-2 text-purple-500" />
               {t('dashboard.contactManager')}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="justify-start border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20 shadow-md"
+              onClick={() => window.location.href = '/dash/finances'}
+              title={t('dashboard.viewFinances')}
+            >
+              <DollarSign className="h-4 w-4 mr-2 text-orange-500" />
+              {t('dashboard.finances')}
             </Button>
           </div>
         </CardContent>

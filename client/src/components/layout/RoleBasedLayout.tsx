@@ -58,6 +58,11 @@ export default function RoleBasedLayout({ children }: { children: React.ReactNod
             {link('/dashboard/super-admin/offers', 'Офферы')}
             {link('/dashboard/super-admin/analytics', 'Аналитика')}
           </>}
+          {role === 'staff' && <>
+            {link('/dashboard/staff', 'Дашборд')}
+            {link('/dashboard/staff/tickets', 'Заявки')}
+            {link('/dashboard/staff/support', 'Поддержка')}
+          </>}
         </div>
       </header>
 
