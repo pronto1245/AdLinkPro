@@ -3,10 +3,10 @@ export type LoginArgs = { email: string; password: string; otp?: string; role?: 
 export type RegisterArgs = { email: string; password: string; name?: string; role?: User['role'] };
 
 const HOME_BY_ROLE: Record<User['role'], string> = {
-  partner: '/dash/partner',
-  advertiser: '/dash/advertiser',
-  owner: '/dash/owner',
-  super_admin: '/dash/super-admin',
+  partner: '/dashboard/partner',
+  advertiser: '/dashboard/advertiser',
+  owner: '/dashboard/owner',
+  super_admin: '/dashboard/super-admin',
 };
 
 function persist(user: User, token?: string) {

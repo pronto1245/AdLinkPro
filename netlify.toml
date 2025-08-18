@@ -9,6 +9,21 @@ status = 200
 force = true
 
 [[redirects]]
+from = "/dash/*"
+to = "/dashboard/:splat"
+status = 301
+
+[[redirects]]
+from = "/dashbord/*"
+to = "/dashboard/:splat"
+status = 301
+
+[[redirects]]
+from = "/dashbard/*"
+to = "/dashboard/:splat"
+status = 301
+
+[[redirects]]
 from = "/*"
 to = "/index.html"
 status = 200

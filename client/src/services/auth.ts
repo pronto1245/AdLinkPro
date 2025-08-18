@@ -6,10 +6,10 @@ export function getToken(){ try{ return localStorage.getItem('token') }catch{ re
 export function logout(){ try{ localStorage.removeItem('token') }catch{} }
 
 export const HOME_BY_ROLE: Record<string, string> = {
-  partner: '/dash/partner',
-  advertiser: '/dash/advertiser',
-  owner: '/dash/owner',
-  super_admin: '/dash/super-admin',
+  partner: '/dashboard/partner',
+  advertiser: '/dashboard/advertiser',
+  owner: '/dashboard/owner',
+  super_admin: '/dashboard/super-admin',
 };
 async function json(url: string, body: any){
   const r = await fetch(url, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(body) });

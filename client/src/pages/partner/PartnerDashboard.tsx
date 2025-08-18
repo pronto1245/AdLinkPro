@@ -46,32 +46,32 @@ export default function PartnerDashboard() {
         }}
       >
         <Tile
-          href="/dash/partner/offers"
+          href="/dashboard/partner/offers"
           title="Офферы"
           descr="Каталог офферов и заявок на доступ"
         />
         <Tile
-          href="/dash/partner/statistics"
+          href="/dashboard/partner/statistics"
           title="Статистика"
           descr="Клики, конверсии, CR, выплаты"
         />
         <Tile
-          href="/dash/partner/finances"
+          href="/dashboard/partner/finances"
           title="Финансы"
           descr="Баланс, выплаты и история"
         />
         <Tile
-          href="/dash/partner/postbacks"
+          href="/dashboard/partner/postbacks"
           title="Постбеки"
           descr="Настройка постбек-URL и тесты"
         />
         <Tile
-          href="/dash/partner/notifications"
+          href="/dashboard/partner/notifications"
           title="Уведомления"
           descr="Системные сообщения и события"
         />
         <Tile
-          href="/dash/partner/profile"
+          href="/dashboard/partner/profile"
           title="Профиль"
           descr="Данные аккаунта и контакты"
         />

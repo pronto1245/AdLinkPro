@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
-import MetricsGrid from '@/components/dash/metrics-grid';
-import RevenueChart from '@/components/dash/revenue-chart';
+import MetricsGrid from '@/components/dashboard/metrics-grid';
+import RevenueChart from '@/components/dashboard/revenue-chart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,9 +15,9 @@ export default function AdvertiserDashboard() {
   const { token, user } = useAuth();
 
   const { data: metrics, isLoading: metricsLoading } = useQuery({
-    queryKey: ['/api/dash/metrics'],
+    queryKey: ['/api/dashboard/metrics'],
     queryFn: async () => {
-      const response = await fetch('/api/dash/metrics', {
+      const response = await fetch('/api/dashboard/metrics', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch metrics');

@@ -34,29 +34,29 @@ export default function RoleBasedLayout({ children }: { children: React.ReactNod
         <div style={{marginLeft:'auto', display:'flex', gap:8}}>
           {!role && link('/login', 'Войти')}
           {role === 'partner' && <>
-            {link('/dash/partner', 'Дашборд')}
-            {link('/dash/partner/offers', 'Офферы')}
-            {link('/dash/partner/statistics', 'Статистика')}
-            {link('/dash/partner/finances', 'Финансы')}
-            {link('/dash/partner/profile', 'Профиль')}
+            {link('/dashboard/partner', 'Дашборд')}
+            {link('/dashboard/partner/offers', 'Офферы')}
+            {link('/dashboard/partner/statistics', 'Статистика')}
+            {link('/dashboard/partner/finances', 'Финансы')}
+            {link('/dashboard/partner/profile', 'Профиль')}
           </>}
           {role === 'advertiser' && <>
-            {link('/dash/advertiser', 'Дашборд')}
-            {link('/dash/advertiser/offers', 'Офферы')}
-            {link('/dash/advertiser/reports', 'Отчёты')}
-            {link('/dash/advertiser/partners', 'Партнёры')}
-            {link('/dash/advertiser/profile', 'Профиль')}
+            {link('/dashboard/advertiser', 'Дашборд')}
+            {link('/dashboard/advertiser/offers', 'Офферы')}
+            {link('/dashboard/advertiser/reports', 'Отчёты')}
+            {link('/dashboard/advertiser/partners', 'Партнёры')}
+            {link('/dashboard/advertiser/profile', 'Профиль')}
           </>}
           {role === 'owner' && <>
-            {link('/dash/owner', 'Дашборд')}
-            {link('/dash/owner/users', 'Пользователи')}
-            {link('/dash/owner/settings', 'Настройки')}
+            {link('/dashboard/owner', 'Дашборд')}
+            {link('/dashboard/owner/users', 'Пользователи')}
+            {link('/dashboard/owner/settings', 'Настройки')}
           </>}
           {role === 'super_admin' && <>
-            {link('/dash/super-admin', 'Дашборд')}
-            {link('/dash/super-admin/users', 'Пользователи')}
-            {link('/dash/super-admin/offers', 'Офферы')}
-            {link('/dash/super-admin/analytics', 'Аналитика')}
+            {link('/dashboard/super-admin', 'Дашборд')}
+            {link('/dashboard/super-admin/users', 'Пользователи')}
+            {link('/dashboard/super-admin/offers', 'Офферы')}
+            {link('/dashboard/super-admin/analytics', 'Аналитика')}
           </>}
         </div>
       </header>
