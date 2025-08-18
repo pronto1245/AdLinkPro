@@ -1,0 +1,56 @@
+import React from 'react';
+import { Switch, Route, Redirect } from "wouter";
+import { useTranslation } from 'react-i18next';
+
+import Login from '@/pages/auth/login';
+import RegisterUnified from '@/pages/auth/RegisterUnified';
+import { LoginPartner, LoginAdvertiser, RegisterPartner, RegisterAdvertiser } from "@/pages/LoginVariants";
+
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import AuthRedirector from '@/components/auth/AuthRedirector';
+
+import Partner from '@/pages/dash/Partner';
+import Advertiser from '@/pages/dash/Advertiser';
+import Owner from '@/pages/dash/Owner';
+import SuperAdmin from '@/pages/dash/SuperAdmin';
+
+const HOME_BY_ROLE: Record<string, string> = {
+  partner: '/dash/partner',
+  advertiser: '/dash/advertiser',
+  owner: '/dash/owner',
+  super_admin: '/dash/super-admin',
+};
+
+function Router() {
+  const { i18n } = useTranslation();
+  React.useEffect(() => {
+    if (i18n.language !== 'ru') i18n.changeLanguage('ru');
+  }, [i18n]);
+
+  return (
+    <Switch>
+      <Route path="/" component={() => <AuthRedirector fallback="/login" homeByRole={HOME_BY_ROLE} />} />
+
+      <Route path="/login/partner" component={LoginPartner} />
+      <Route path="/login/advertiser" component={LoginAdvertiser} />
+      <Route path="/login" component={Login} />
+
+      <Route path="/register/partner" component={RegisterPartner} />
+      <Route path="/register/advertiser" component={RegisterAdvertiser} />
+      <Route path="/register" component={RegisterUnified} />
+
+      <ProtectedRoute path="/dash/partner" roles={['partner']} component={Partner} />
+      <ProtectedRoute path="/dash/advertiser" roles={['advertiser']} component={Advertiser} />
+      <ProtectedRoute path="/dash/owner" roles={['owner']} component={Owner} />
+      <ProtectedRoute path="/dash/super-admin" roles={['super_admin']} component={SuperAdmin} />
+
+      <Route component={() => <Redirect to="/login" />} />
+    </Switch>
+  );
+}
+
+function App() {
+  return <Router />;
+}
+
+export default App;
