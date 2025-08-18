@@ -45,6 +45,9 @@ const SuperAdminUsers  = lazy(() => import('@/pages/super-admin/users-management
 const SuperAdminOffers = lazy(() => import('@/pages/super-admin/offers'));
 const SuperAdminAnalyt = lazy(() => import('@/pages/super-admin/analytics'));
 
+// Staff
+const StaffDash = lazy(() => import('@/pages/staff/StaffDashboard'));
+
 // Helpers
 const withLayout = (C: React.ComponentType<any>) => function Wrapped() {
   return (
@@ -104,6 +107,8 @@ function Router() {
         <ProtectedRoute path="/dashboard/super-admin/users" roles={['super_admin']} component={withLayout(SuperAdminUsers)} />
         <ProtectedRoute path="/dashboard/super-admin/offers" roles={['super_admin']} component={withLayout(SuperAdminOffers)} />
         <ProtectedRoute path="/dashboard/super-admin/analytics" roles={['super_admin']} component={withLayout(SuperAdminAnalyt)} />
+
+        <ProtectedRoute path="/dashboard/staff" roles={['staff']} component={withLayout(StaffDash)} />
 
         <Route path="/unauthorized" component={Unauthorized} />
         <Route component={() => <Redirect to="/login" />} />

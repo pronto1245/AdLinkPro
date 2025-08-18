@@ -142,18 +142,36 @@ export default function AdvertiserDashboard() {
                     Manage Offers
                   </Button>
                 </Link>
-                <Button className="w-full justify-start" variant="outline" data-testid="button-view-partners">
-                  <i className="fas fa-users mr-2"></i>
-                  View Partners
-                </Button>
-                <Button className="w-full justify-start" variant="outline" data-testid="button-analytics">
-                  <i className="fas fa-chart-bar mr-2"></i>
-                  View Analytics
-                </Button>
-                <Button className="w-full justify-start" variant="outline" data-testid="button-postbacks">
-                  <i className="fas fa-link mr-2"></i>
-                  Configure Postbacks
-                </Button>
+                <Link href="/dashboard/advertiser/partners">
+                  <Button className="w-full justify-start" variant="outline" data-testid="button-view-partners">
+                    <i className="fas fa-users mr-2"></i>
+                    View Partners
+                  </Button>
+                </Link>
+                <Link href="/dashboard/advertiser/analytics">
+                  <Button className="w-full justify-start" variant="outline" data-testid="button-analytics">
+                    <i className="fas fa-chart-bar mr-2"></i>
+                    View Analytics
+                  </Button>
+                </Link>
+                <Link href="/dashboard/advertiser/postbacks">
+                  <Button className="w-full justify-start" variant="outline" data-testid="button-postbacks">
+                    <i className="fas fa-link mr-2"></i>
+                    Configure Postbacks
+                  </Button>
+                </Link>
+                <Link href="/dashboard/advertiser/finances">
+                  <Button className="w-full justify-start" variant="outline" data-testid="button-finances">
+                    <i className="fas fa-credit-card mr-2"></i>
+                    Finances
+                  </Button>
+                </Link>
+                <Link href="/dashboard/advertiser/team">
+                  <Button className="w-full justify-start" variant="outline" data-testid="button-team-management">
+                    <i className="fas fa-user-friends mr-2"></i>
+                    Team Management
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
