@@ -1,35 +1,57 @@
-import ForgotPassword from "@/pages/auth/ForgotPassword";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import Unauthorized from "@/pages/Unauthorized";
-import React from 'react';
-import { Switch, Route, Redirect } from "wouter";
-import PartnerDash from "@/pages/partner/PartnerDashboard";
-import AdvertiserDash from "@/pages/advertiser/AdvertiserDashboard";
-import OwnerDash from "@/pages/owner/OwnerDashboard";
-import SuperAdminDash from "@/pages/super-admin/dashboard";
-import PartnerDash from "@/pages/partner/PartnerDashboard";
-import AdvertiserDash from "@/pages/advertiser/AdvertiserDashboard";
-import OwnerDash from "@/pages/owner/OwnerDashboard";
-import SuperAdminDash from "@/pages/super-admin/dashboard";
+import SuperAdmin from "@/pages/super-admin/SuperAdminDashboard";
+import React, { Suspense, lazy } from 'react';
+import { Switch, Route, Redirect } from 'wouter';
 import { useTranslation } from 'react-i18next';
 
 import Login from '@/pages/auth/login';
 import RegisterUnified from '@/pages/auth/RegisterUnified';
-import { LoginPartner, LoginAdvertiser, RegisterPartner, RegisterAdvertiser } from "@/pages/LoginVariants";
+import { LoginPartner, LoginAdvertiser, RegisterPartner, RegisterAdvertiser } from '@/pages/LoginVariants';
 
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import AuthRedirector from '@/components/auth/AuthRedirector';
+import Unauthorized from '@/pages/Unauthorized';
 
-import Partner from '@/pages/dash/Partner';
-import Advertiser from '@/pages/dash/Advertiser';
-import Owner from '@/pages/dash/Owner';
-import SuperAdmin from '@/pages/dash/SuperAdmin';
+import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
 
-const HOME_BY_ROLE: Record<string, string> = {
-  partner: '/dash/partner',
-  advertiser: '/dash/advertiser',
-  owner: '/dash/owner',
-  super_admin: '/dash/super-admin',
+// Advertiser
+const AdvertiserDash      = lazy(() => import('@/pages/advertiser/AdvertiserDashboard'));
+const AdvertiserOffers    = lazy(() => import('@/pages/advertiser/AdvertiserOffers'));
+const AdvertiserReports   = lazy(() => import('@/pages/advertiser/Reports'));
+const AdvertiserPartners  = lazy(() => import('@/pages/advertiser/AdvertiserPartners'));
+const AdvertiserProfile   = lazy(() => import('@/pages/advertiser/AdvertiserProfile'));
+const AdvertiserNotifs    = lazy(() => import('@/pages/advertiser/AdvertiserNotifications'));
+const AdvertiserTeam      = lazy(() => import('@/pages/advertiser/TeamManagement'));
+const AdvertiserPostbacks = lazy(() => import('@/pages/advertiser/Postbacks'));
+const AdvertiserAnalytics = lazy(() => import('@/pages/advertiser/AdvertiserAnalytics'));
+const AdvertiserFinances  = lazy(() => import('@/pages/advertiser/AdvertiserFinances'));
+
+// Partner (Affiliate)
+const PartnerDash   = lazy(() => import('@/pages/partner/PartnerDashboard'));
+const PartnerOffers = lazy(() => import('@/pages/partner/Offers'));
+const PartnerStats  = lazy(() => import('@/pages/affiliate/Statistics'));
+const PartnerFin    = lazy(() => import('@/pages/affiliate/Finances'));
+const PartnerPosts  = lazy(() => import('@/pages/affiliate/Postbacks'));
+const PartnerProf   = lazy(() => import('@/pages/partner/PartnerProfile'));
+const PartnerNotifs = lazy(() => import('@/pages/affiliate/PartnerNotifications'));
+
+// Owner
+const OwnerDash     = lazy(() => import('@/pages/owner/OwnerDashboard'));
+const OwnerUsers    = lazy(() => import('@/pages/owner/Users'));
+const OwnerSettings = lazy(() => import('@/pages/owner/Settings'));
+
+// Super Admin
+const SuperAdminDash   = lazy(() => import('@/pages/super-admin/dashboard'));
+const SuperAdminUsers  = lazy(() => import('@/pages/super-admin/users-management'));
+const SuperAdminOffers = lazy(() => import('@/pages/super-admin/offers'));
+const SuperAdminAnalyt = lazy(() => import('@/pages/super-admin/analytics'));
+
+// Helpers
+const withLayout = (C: React.ComponentType<any>) => function Wrapped() {
+  return (
+    <RoleBasedLayout>
+      <C />
+    </RoleBasedLayout>
+  );
 };
 
 function Router() {
@@ -39,31 +61,63 @@ function Router() {
   }, [i18n]);
 
   return (
-    <Switch>
-      <Route path="/" component={() => <AuthRedirector fallback="/login" homeByRole={HOME_BY_ROLE} />} />
+    <Suspense fallback={<div style={{padding:24}}>Загрузка…</div>}>
+      <Switch>
+        {/* Алиасы старых URL */}
+      <Route path="/debug" component={() => <div style={{padding:24,color:"#fff"}}>DEBUG OK</div>} />
+        <Route path="/dashboard/partner" component={() => <Redirect to="/dash/partner" />} />
+        <Route path="/dashboard/advertiser" component={() => <Redirect to="/dash/advertiser" />} />
+        <Route path="/dashboard/owner" component={() => <Redirect to="/dash/owner" />} />
+        <Route path="/dashboard/super-admin" component={() => <Redirect to="/dash/super-admin" />} />
+        <Route path="/dashbord/partner" component={() => <Redirect to="/dash/partner" />} />
+        <Route path="/dashbord/advertiser" component={() => <Redirect to="/dash/advertiser" />} />
+        <Route path="/dashbord/owner" component={() => <Redirect to="/dash/owner" />} />
+        <Route path="/dashbord/super-admin" component={() => <Redirect to="/dash/super-admin" />} />
+        <Route path="/" component={() => <Redirect to="/login" />} />
 
-      <Route path="/login/partner" component={LoginPartner} />
-      <Route path="/login/advertiser" component={LoginAdvertiser} />
-      <Route path="/login" component={Login} />
+        <Route path="/login/partner" component={LoginPartner} />
+        <Route path="/login/advertiser" component={LoginAdvertiser} />
+        <Route path="/login" component={Login} />
 
-      <Route path="/register/partner" component={RegisterPartner} />
-      <Route path="/register/advertiser" component={RegisterAdvertiser} />
-      <Route path="/register" component={RegisterUnified} />
+        <Route path="/register/partner" component={RegisterPartner} />
+        <Route path="/register/advertiser" component={RegisterAdvertiser} />
+        <Route path="/register" component={RegisterUnified} />
 
-      <ProtectedRoute path="/dash/partner" roles={['partner']} component={PartnerDash} />
-      <ProtectedRoute path="/dash/advertiser" roles={['advertiser']} component={AdvertiserDash} />
-      <ProtectedRoute path="/dash/owner" roles={['owner']} component={OwnerDash} />
-      <ProtectedRoute path="/dash/super-admin" roles={['super_admin']} component={SuperAdmin} />
+        <ProtectedRoute path="/dash/advertiser" roles={['advertiser']} component={withLayout(AdvertiserDash)} />
+        <ProtectedRoute path="/dash/advertiser/offers" roles={['advertiser']} component={withLayout(AdvertiserOffers)} />
+        <ProtectedRoute path="/dash/advertiser/reports" roles={['advertiser']} component={withLayout(AdvertiserReports)} />
+        <ProtectedRoute path="/dash/advertiser/partners" roles={['advertiser']} component={withLayout(AdvertiserPartners)} />
+        <ProtectedRoute path="/dash/advertiser/profile" roles={['advertiser']} component={withLayout(AdvertiserProfile)} />
+        <ProtectedRoute path="/dash/advertiser/notifications" roles={['advertiser']} component={withLayout(AdvertiserNotifs)} />
+        <ProtectedRoute path="/dash/advertiser/team" roles={['advertiser']} component={withLayout(AdvertiserTeam)} />
+        <ProtectedRoute path="/dash/advertiser/postbacks" roles={['advertiser']} component={withLayout(AdvertiserPostbacks)} />
+        <ProtectedRoute path="/dash/advertiser/analytics" roles={['advertiser']} component={withLayout(AdvertiserAnalytics)} />
+        <ProtectedRoute path="/dash/advertiser/finances" roles={['advertiser']} component={withLayout(AdvertiserFinances)} />
 
-      <Route path="/forgot" component={ForgotPassword} />
-      <Route component={() => <Redirect to="/login" />} />
-      <Route path="/unauthorized" component={Unauthorized} />
-    </Switch>
+        <ProtectedRoute path="/dash/partner" roles={['partner']} component={PartnerDash} />
+        <ProtectedRoute path="/dash/partner/offers" roles={['partner']} component={withLayout(PartnerOffers)} />
+        <ProtectedRoute path="/dash/partner/statistics" roles={['partner']} component={withLayout(PartnerStats)} />
+        <ProtectedRoute path="/dash/partner/finances" roles={['partner']} component={withLayout(PartnerFin)} />
+        <ProtectedRoute path="/dash/partner/postbacks" roles={['partner']} component={withLayout(PartnerPosts)} />
+        <ProtectedRoute path="/dash/partner/profile" roles={['partner']} component={withLayout(PartnerProf)} />
+        <ProtectedRoute path="/dash/partner/notifications" roles={['partner']} component={withLayout(PartnerNotifs)} />
+
+        <ProtectedRoute path="/dash/owner" roles={['owner']} component={withLayout(OwnerDash)} />
+        <ProtectedRoute path="/dash/owner/users" roles={['owner']} component={withLayout(OwnerUsers)} />
+        <ProtectedRoute path="/dash/owner/settings" roles={['owner']} component={withLayout(OwnerSettings)} />
+
+        <ProtectedRoute path="/dash/super-admin" roles={['super_admin']} component={withLayout(SuperAdminDash)} />
+        <ProtectedRoute path="/dash/super-admin/users" roles={['super_admin']} component={withLayout(SuperAdminUsers)} />
+        <ProtectedRoute path="/dash/super-admin/offers" roles={['super_admin']} component={withLayout(SuperAdminOffers)} />
+        <ProtectedRoute path="/dash/super-admin/analytics" roles={['super_admin']} component={withLayout(SuperAdminAnalyt)} />
+
+        <Route path="/unauthorized" component={Unauthorized} />
+        <Route component={() => <Redirect to="/login" />} />
+      </Switch>
+    </Suspense>
   );
 }
 
-function App() {
+export default function App() {
   return <Router />;
 }
-
-export default App;

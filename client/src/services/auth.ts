@@ -19,12 +19,11 @@ async function json(url: string, body: any){
   return { ok: r.ok, status: r.status, data };
 }
 
-export async function login(args: { email: string; password: string }){
+export async function login(args: { email?: string; username?: string; password: string }){
   const res = await json(`${API}/api/auth/login`, args);
   const token = res?.data?.token || res?.data?.jwt || res?.data?.accessToken;
   const user  = res?.data?.user || null;
-  if (!token && res.ok) { return { token: null, user, ok: true } }
-  return { token, user, ok: res.ok, status: res.status };
+  return { token: token || null, user, ok: res.ok, status: res.status };
 }
 
 export async function register(args: any){

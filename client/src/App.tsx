@@ -1,3 +1,4 @@
+import SuperAdmin from "@/pages/super-admin/SuperAdminDashboard";
 import React, { Suspense, lazy } from 'react';
 import { Switch, Route, Redirect } from 'wouter';
 import { useTranslation } from 'react-i18next';
@@ -63,6 +64,7 @@ function Router() {
     <Suspense fallback={<div style={{padding:24}}>Загрузка…</div>}>
       <Switch>
         {/* Алиасы старых URL */}
+      <Route path="/debug" component={() => <div style={{padding:24,color:"#fff"}}>DEBUG OK</div>} />
         <Route path="/dashboard/partner" component={() => <Redirect to="/dash/partner" />} />
         <Route path="/dashboard/advertiser" component={() => <Redirect to="/dash/advertiser" />} />
         <Route path="/dashboard/owner" component={() => <Redirect to="/dash/owner" />} />
@@ -92,7 +94,7 @@ function Router() {
         <ProtectedRoute path="/dash/advertiser/analytics" roles={['advertiser']} component={withLayout(AdvertiserAnalytics)} />
         <ProtectedRoute path="/dash/advertiser/finances" roles={['advertiser']} component={withLayout(AdvertiserFinances)} />
 
-        <ProtectedRoute path="/dash/partner" roles={['partner']} component={withLayout(PartnerDash)} />
+        <ProtectedRoute path="/dash/partner" roles={['partner']} component={PartnerDash} />
         <ProtectedRoute path="/dash/partner/offers" roles={['partner']} component={withLayout(PartnerOffers)} />
         <ProtectedRoute path="/dash/partner/statistics" roles={['partner']} component={withLayout(PartnerStats)} />
         <ProtectedRoute path="/dash/partner/finances" roles={['partner']} component={withLayout(PartnerFin)} />

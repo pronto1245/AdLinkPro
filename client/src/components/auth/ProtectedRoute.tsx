@@ -1,6 +1,16 @@
 import React from 'react';
 import { Redirect, useRoute } from 'wouter';
-import { useAuth } from '@/contexts/auth-context';
+
+function getRoleFromToken(): string | null {
+  try {
+    const raw = localStorage.getItem('token');
+    if (!raw) return null;
+    const payload = JSON.parse(atob((raw.split('.')[1] || '').replace(/-/g,'+').replace(/_/g,'/')));
+    const map: Record<string,string> = { partner:'partner', PARTNER:'partner', advertiser:'advertiser', ADVERTISER:'advertiser', owner:'owner', OWNER:'owner', super_admin:'super_admin', 'super admin':'super_admin', SUPER_ADMIN:'super_admin' };
+    const role = String(payload.role || '').trim();
+    return map[role] || role.toLowerCase() || null;
+  } catch { return null; }
+}
 
 type Props = {
   path: string;
@@ -11,18 +21,16 @@ type Props = {
 
 export default function ProtectedRoute({ path, roles, component: C, children }: Props) {
   const [match] = useRoute(path);
-  let user: any = null;
-  try {
-    // @ts-ignore
-    const ctx = useAuth();
-    // @ts-ignore
-    user = ctx?.user ?? null;
-  } catch {}
-  if (!user && typeof window !== 'undefined') {
-    try { user = JSON.parse(localStorage.getItem('auth:user') || 'null'); } catch {}
-  }
   if (!match) return null;
-  if (!user) return <Redirect to={`/login?next=${encodeURIComponent(path)}`} />;
-  if (roles && !roles.includes(user.role)) return <Redirect to="/unauthorized" />;
+
+  const role = getRoleFromToken();
+  if (!role) {
+    return <Redirect to={`/login?next=${encodeURIComponent(path)}`} />;
+  }
+
+  if (roles && !roles.includes(role)) {
+    return <Redirect to="/unauthorized" />;
+  }
+
   return C ? <C /> : <>{children}</>;
 }
