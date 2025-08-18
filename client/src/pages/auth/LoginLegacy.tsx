@@ -12,7 +12,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Password validation (minimum 6 characters)
 const MIN_PASSWORD_LENGTH = 6;
 
-const LoginPage = () => {
+export default function Login() {
   const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -147,7 +147,7 @@ const LoginPage = () => {
 
   return (
     <div style={{ maxWidth: 420, margin: "64px auto", fontFamily: "system-ui" }}>
-      <h1 style={{ marginBottom: 16 }}>Login</h1>
+      <h1 style={{ marginBottom: 16 }}>Sign in</h1>
       <form onSubmit={onSubmit}>
         <label>Email</label>
         <input 
@@ -200,7 +200,7 @@ const LoginPage = () => {
             cursor: (loading || emailError || passwordError) ? "not-allowed" : "pointer"
           }}
         >
-          {loading ? "Logging in..." : "Login"}
+          {loading ? "Signing in..." : "Sign in"}
         </button>
         
         {err && (
@@ -211,6 +211,4 @@ const LoginPage = () => {
       </form>
     </div>
   );
-};
-
-export default LoginPage;
+}

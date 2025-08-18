@@ -3,6 +3,8 @@ client/node_modules/
 server/node_modules/
 client/dist/
 server/dist/
+dist/
+build/
 uploads/
 .env
 .env.*
@@ -11,7 +13,14 @@ google.key.json
 Thumbs.db
 .vscode/
 .idea/
+*.log
 
 # Local Netlify folder
 .netlify
 AdLinkPro/
+
+# Test files and temporary files
+*.tmp
+*.temp
+/tmp/
+test-output/
