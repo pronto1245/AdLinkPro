@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import bcryptjs from "bcryptjs";
 import { Pool } from "pg";
 import rateLimit from "express-rate-limit";

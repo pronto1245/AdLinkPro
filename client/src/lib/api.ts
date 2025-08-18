@@ -72,3 +72,23 @@ export async function loginV2(username: string, password: string): Promise<Login
   
   return data;
 }
+
+export async function verify2FA(tempToken: string, code: string): Promise<LoginResponse> {
+  const data: any = await api('/api/auth/v2/verify-2fa', {
+    method: 'POST',
+    skipAuth: true,
+    body: JSON.stringify({ token: tempToken, code }),
+  });
+  
+  const token = data?.token ?? data?.data?.token;
+  if (token) {
+    localStorage.setItem('token', token);
+    return {
+      success: true,
+      token,
+      user: data?.user ?? data?.data?.user
+    };
+  }
+  
+  return data;
+}
