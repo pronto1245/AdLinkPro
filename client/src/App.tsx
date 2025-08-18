@@ -65,11 +65,7 @@ function Router() {
       <Switch>
         {/* Алиасы старых URL */}
       <Route path="/debug" component={() => <div style={{padding:24,color:"#fff"}}>DEBUG OK</div>} />
-        <Route path="/dashboard/partner" component={() => <Redirect to="/dashboard/partner" />} />
-        <Route path="/dashboard/advertiser" component={() => <Redirect to="/dashboard/advertiser" />} />
-        <Route path="/dashboard/owner" component={() => <Redirect to="/dashboard/owner" />} />
-        <Route path="/dashboard/super-admin" component={() => <Redirect to="/dashboard/super-admin" />} />
-        <Route path="/dashboard/partner" component={() => <Redirect to="/dashboard/partner" />} />
+        <Route path="/dashboard/partner" component={() => <Redirect to="/dash" />} />
         <Route path="/dashboard/advertiser" component={() => <Redirect to="/dashboard/advertiser" />} />
         <Route path="/dashboard/owner" component={() => <Redirect to="/dashboard/owner" />} />
         <Route path="/dashboard/super-admin" component={() => <Redirect to="/dashboard/super-admin" />} />
@@ -94,13 +90,13 @@ function Router() {
         <ProtectedRoute path="/dashboard/advertiser/analytics" roles={['advertiser']} component={withLayout(AdvertiserAnalytics)} />
         <ProtectedRoute path="/dashboard/advertiser/finances" roles={['advertiser']} component={withLayout(AdvertiserFinances)} />
 
-        <ProtectedRoute path="/dashboard/partner" roles={['partner']} component={PartnerDash} />
-        <ProtectedRoute path="/dashboard/partner/offers" roles={['partner']} component={withLayout(PartnerOffers)} />
-        <ProtectedRoute path="/dashboard/partner/statistics" roles={['partner']} component={withLayout(PartnerStats)} />
-        <ProtectedRoute path="/dashboard/partner/finances" roles={['partner']} component={withLayout(PartnerFin)} />
-        <ProtectedRoute path="/dashboard/partner/postbacks" roles={['partner']} component={withLayout(PartnerPosts)} />
-        <ProtectedRoute path="/dashboard/partner/profile" roles={['partner']} component={withLayout(PartnerProf)} />
-        <ProtectedRoute path="/dashboard/partner/notifications" roles={['partner']} component={withLayout(PartnerNotifs)} />
+        <ProtectedRoute path="/dash" roles={['partner']} component={PartnerDash} />
+        <ProtectedRoute path="/dash/offers" roles={['partner']} component={withLayout(PartnerOffers)} />
+        <ProtectedRoute path="/dash/statistics" roles={['partner']} component={withLayout(PartnerStats)} />
+        <ProtectedRoute path="/dash/finances" roles={['partner']} component={withLayout(PartnerFin)} />
+        <ProtectedRoute path="/dash/postbacks" roles={['partner']} component={withLayout(PartnerPosts)} />
+        <ProtectedRoute path="/dash/profile" roles={['partner']} component={withLayout(PartnerProf)} />
+        <ProtectedRoute path="/dash/notifications" roles={['partner']} component={withLayout(PartnerNotifs)} />
 
         <ProtectedRoute path="/dashboard/owner" roles={['owner']} component={withLayout(OwnerDash)} />
         <ProtectedRoute path="/dashboard/owner/users" roles={['owner']} component={withLayout(OwnerUsers)} />

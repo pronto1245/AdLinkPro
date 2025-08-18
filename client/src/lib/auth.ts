@@ -3,7 +3,7 @@ export type LoginArgs = { email: string; password: string; otp?: string; role?: 
 export type RegisterArgs = { email: string; password: string; name?: string; role?: User['role'] };
 
 const HOME_BY_ROLE: Record<User['role'], string> = {
-  partner: '/dashboard/partner',
+  partner: '/dash',
   advertiser: '/dashboard/advertiser',
   owner: '/dashboard/owner',
   super_admin: '/dashboard/super-admin',

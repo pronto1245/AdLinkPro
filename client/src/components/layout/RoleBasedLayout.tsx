@@ -34,11 +34,11 @@ export default function RoleBasedLayout({ children }: { children: React.ReactNod
         <div style={{marginLeft:'auto', display:'flex', gap:8}}>
           {!role && link('/login', 'Войти')}
           {role === 'partner' && <>
-            {link('/dashboard/partner', 'Дашборд')}
-            {link('/dashboard/partner/offers', 'Офферы')}
-            {link('/dashboard/partner/statistics', 'Статистика')}
-            {link('/dashboard/partner/finances', 'Финансы')}
-            {link('/dashboard/partner/profile', 'Профиль')}
+            {link('/dash', 'Дашборд')}
+            {link('/dash/offers', 'Офферы')}
+            {link('/dash/statistics', 'Статистика')}
+            {link('/dash/finances', 'Финансы')}
+            {link('/dash/profile', 'Профиль')}
           </>}
           {role === 'advertiser' && <>
             {link('/dashboard/advertiser', 'Дашборд')}
