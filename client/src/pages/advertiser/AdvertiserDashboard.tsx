@@ -422,7 +422,7 @@ export default function AdvertiserDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
         <Link to="/advertiser/offers">
           <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" data-testid="button-quick-offers">
             <BarChart3 className="h-5 w-5" />
@@ -445,9 +445,16 @@ export default function AdvertiserDashboard() {
         </Link>
 
         <Link to="/advertiser/analytics">
-          <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700" data-testid="button-quick-conversions">
+          <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700" data-testid="button-quick-analytics">
             <Target className="h-5 w-5" />
             <span className="text-sm font-medium">Аналитика</span>
+          </Button>
+        </Link>
+
+        <Link to="/dashboard/advertiser/anti-fraud">
+          <Button variant="outline" className="w-full h-16 flex flex-col gap-1 bg-red-50 hover:bg-red-100 border-red-200 text-red-700" data-testid="button-quick-anti-fraud">
+            <Shield className="h-5 w-5" />
+            <span className="text-sm font-medium">Антифрод</span>
           </Button>
         </Link>
       </div>
