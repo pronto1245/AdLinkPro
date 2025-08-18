@@ -9,7 +9,7 @@ import type { User } from '@/lib/auth';
 const ROLE_REDIRECTS: Record<string, string> = {
   'OWNER': '/dashboard/owner',
   'ADVERTISER': '/dashboard/advertiser', 
-  'PARTNER': '/dashboard/partner',
+  'PARTNER': '/dash',
   'SUPER_ADMIN': '/dashboard/super-admin'
 };
 
