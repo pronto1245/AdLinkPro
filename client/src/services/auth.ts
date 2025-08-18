@@ -9,10 +9,8 @@ export const HOME_BY_ROLE: Record<string, string> = {
   partner: '/dash/partner',
   advertiser: '/dash/advertiser',
   owner: '/dash/owner',
-  super_admin: '/dash/super-admin'
+  super_admin: '/dash/super-admin',
 };
-export function getRoleHome(role: User['role']){ return (role && HOME_BY_ROLE[role]) || '/'; }
-
 async function json(url: string, body: any){
   const r = await fetch(url, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(body) });
   let data: any = null; try{ data = await r.json() }catch{}

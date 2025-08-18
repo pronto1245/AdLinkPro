@@ -65,14 +65,14 @@ function Router() {
       <Switch>
         {/* Алиасы старых URL */}
       <Route path="/debug" component={() => <div style={{padding:24,color:"#fff"}}>DEBUG OK</div>} />
-        <Route path="/dashboard/partner" component={() => <Redirect to="/dash/partner" />} />
-        <Route path="/dashboard/advertiser" component={() => <Redirect to="/dash/advertiser" />} />
-        <Route path="/dashboard/owner" component={() => <Redirect to="/dash/owner" />} />
-        <Route path="/dashboard/super-admin" component={() => <Redirect to="/dash/super-admin" />} />
-        <Route path="/dashbord/partner" component={() => <Redirect to="/dash/partner" />} />
-        <Route path="/dashbord/advertiser" component={() => <Redirect to="/dash/advertiser" />} />
-        <Route path="/dashbord/owner" component={() => <Redirect to="/dash/owner" />} />
-        <Route path="/dashbord/super-admin" component={() => <Redirect to="/dash/super-admin" />} />
+        <Route path="/dash/partner" component={() => <Redirect to="/dash/partner" />} />
+        <Route path="/dash/advertiser" component={() => <Redirect to="/dash/advertiser" />} />
+        <Route path="/dash/owner" component={() => <Redirect to="/dash/owner" />} />
+        <Route path="/dash/super-admin" component={() => <Redirect to="/dash/super-admin" />} />
+        <Route path="/dash/partner" component={() => <Redirect to="/dash/partner" />} />
+        <Route path="/dash/advertiser" component={() => <Redirect to="/dash/advertiser" />} />
+        <Route path="/dash/owner" component={() => <Redirect to="/dash/owner" />} />
+        <Route path="/dash/super-admin" component={() => <Redirect to="/dash/super-admin" />} />
         <Route path="/" component={() => <Redirect to="/login" />} />
 
         <Route path="/login/partner" component={LoginPartner} />
