@@ -27,6 +27,7 @@ import {
   Target,
   Zap
 } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -915,42 +916,38 @@ export function AffiliatePostbacks() {
                 </Card>
                 );
               }) : (
-                <div className="text-center py-8 bg-red-50 border-4 border-red-500 rounded">
-                  <h2 className="text-red-800 font-bold text-xl mb-4">{t('postbacks.noProfilesFound', 'ПРОФИЛИ НЕ НАЙДЕНЫ!')}</h2>
-                  <p className="text-red-600 mb-2">Всего профилей: {profiles?.length || 0}</p>
-                  <p className="text-red-600 mb-2">Тип данных: {typeof profiles}</p>
-                  <p className="text-red-600 mb-4">Это массив: {Array.isArray(profiles) ? 'Да' : 'Нет'}</p>
-                  <Button 
-                    onClick={() => {
-                      console.log('🔄 FORCE REFETCH clicked');
-                      refetch();
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    {t('common.refresh', 'ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА')}
-                  </Button>
-                </div>
+                <EmptyState
+                  title={t('postbacks.noProfilesFound', 'Профили не найдены')}
+                  description={t('postbacks.noProfilesDescription', 'Создайте первый профиль для начала работы с постбеками')}
+                  action={{
+                    label: t('postbacks.createFirstProfile', 'Создать профиль'),
+                    onClick: () => setIsCreateModalOpen(true),
+                    icon: <Plus className="h-4 w-4" />
+                  }}
+                  details={{
+                    totalItems: profiles?.length || 0,
+                    dataType: typeof profiles,
+                    isArray: Array.isArray(profiles),
+                    additionalInfo: profiles === null ? 'null данные' : profiles === undefined ? 'undefined данные' : 'данные загружены'
+                  }}
+                  onRefresh={() => {
+                    console.log('🔄 EmptyState: Forced refresh triggered', {
+                      timestamp: new Date().toISOString(),
+                      profilesLength: profiles?.length,
+                      profilesType: typeof profiles,
+                      isArray: Array.isArray(profiles),
+                      isLoading,
+                      mutationStates: {
+                        createPending: createMutation.isPending,
+                        updatePending: updateMutation.isPending,
+                        deletePending: deleteMutation.isPending,
+                        testPending: testMutation.isPending
+                      }
+                    });
+                    refetch();
+                  }}
+                />
               )}
-
-              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
-                <h4 className="font-bold text-yellow-800 mb-2">{t('postbacks.debugInfo', 'ОТЛАДКА - ПОЛНАЯ ИНФОРМАЦИЯ')}</h4>
-                <div className="text-sm space-y-1">
-                  <p><strong>Количество профилей:</strong> {profiles?.length || 0}</p>
-                  <p><strong>isLoading:</strong> {isLoading ? 'true' : 'false'}</p>
-                  <p><strong>deleteMutation.isPending:</strong> {deleteMutation.isPending ? 'true' : 'false'}</p>
-                  <p><strong>updateMutation.isPending:</strong> {updateMutation.isPending ? 'true' : 'false'}</p>
-                  <p><strong>createMutation.isPending:</strong> {createMutation.isPending ? 'true' : 'false'}</p>
-                  {profiles?.map((profile: PostbackProfile, index: number) => (
-                    <div key={profile.id} className="p-2 bg-white border rounded mt-2">
-                      <p><strong>Профиль #{index + 1}:</strong></p>
-                      <p>ID: {profile.id}</p>
-                      <p>Название: {profile.name}</p>
-                      <p>Включен: {profile.enabled ? 'Да' : 'Нет'}</p>
-                      <p>Тип: {profile.tracker_type}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
         </TabsContent>
