@@ -1,7 +1,7 @@
 const HOME_BY_ROLE: Record<string, string> = {
   admin: '/dashboard/admin',
   user: '/dashboard/user',
-  partner: '/dashboard/partner',
+  partner: '/dash',
   owner: '/dashboard/owner',
   advertiser: '/dashboard/advertiser',
   super_admin: '/dashboard/super-admin',
@@ -9,7 +9,7 @@ const HOME_BY_ROLE: Record<string, string> = {
 
 export function getRoleHome(role: any) {
   const key = String(role || '').toLowerCase();
-  return HOME_BY_ROLE[key] || '/dashboard/partner';
+  return HOME_BY_ROLE[key] || '/dash';
 }
 
 // Token management functions

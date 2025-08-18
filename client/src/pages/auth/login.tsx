@@ -129,7 +129,7 @@ const LoginPage = () => {
         // Route based on role
         if (role === "OWNER") setLocation("/owner");
         else if (role === "ADVERTISER") setLocation("/advertiser");
-        else if (role === "PARTNER") setLocation("/partner");
+        else if (role === "PARTNER") setLocation("/dash");
         else setLocation("/");
         
       } catch (profileError) {
