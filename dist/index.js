@@ -39279,7 +39279,7 @@ app.post("/api/auth/login", require_express2().json(), (req, res) => {
       { email: process.env.OWNER_EMAIL || "9791207@gmail.com", password: process.env.OWNER_PASSWORD || "owner123", role: "OWNER", sub: "owner-1", username: "owner" },
       { email: process.env.ADVERTISER_EMAIL || "12345@gmail.com", password: process.env.ADVERTISER_PASSWORD || "adv123", role: "ADVERTISER", sub: "adv-1", username: "advertiser" },
       { email: process.env.PARTNER_EMAIL || "4321@gmail.com", password: process.env.PARTNER_PASSWORD || "partner123", role: "PARTNER", sub: "partner-1", username: "partner" },
-      { email: process.env.SUPER_ADMIN_EMAIL || "9791207@gmail.com", password: process.env.SUPER_ADMIN_PASSWORD || "77GeoDav=", role: "SUPER_ADMIN", sub: "super-admin-1", username: "super_admin" },
+      { email: process.env.SUPER_ADMIN_EMAIL || "superadmin@gmail.com", password: process.env.SUPER_ADMIN_PASSWORD || "77GeoDav=", role: "SUPER_ADMIN", sub: "super-admin-1", username: "super_admin" },
       { email: process.env.AFFILIATE_EMAIL || "pablota096@gmail.com", password: process.env.AFFILIATE_PASSWORD || "7787877As", role: "AFFILIATE", sub: "affiliate-1", username: "affiliate" }
     ];
     const b = req.body || {};
