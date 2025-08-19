@@ -198,7 +198,7 @@ router.get('/advertiser/live-statistics', async (req: Request, res: Response) =>
     summary.avgEPC = summary.totalClicks > 0 ? summary.totalRevenue / summary.totalClicks : 0;
     summary.fraudRate = summary.totalClicks > 0 ? (summary.totalFraudClicks / summary.totalClicks) * 100 : 0;
 
-    // Format statistics data
+    // Format statistics data with enhanced postback metrics
     const formattedStatistics = statistics.map(row => ({
       id: `${row.date}-${row.offerId}-${row.partnerId}`,
       date: row.date,
@@ -225,7 +225,13 @@ router.get('/advertiser/live-statistics', async (req: Request, res: Response) =>
       epc: row.clicks > 0 ? Math.round((row.revenue / row.clicks) * 100) / 100 : 0,
       fraudClicks: row.fraudClicks,
       fraudRate: row.clicks > 0 ? Math.round((row.fraudClicks / row.clicks) * 10000) / 100 : 0,
-      avgTimeOnPage: Math.round(row.avgTimeOnPage / 1000) // Convert to seconds
+      avgTimeOnPage: Math.round(row.avgTimeOnPage / 1000), // Convert to seconds
+      
+      // Enhanced postback delivery metrics
+      postbacksSent: summary.postbacksSent || 0,
+      postbacksFailed: summary.postbacksFailed || 0, 
+      postbackDeliveryRate: Math.round((summary.postbacksDeliveryRate || 0) * 100) / 100,
+      avgPostbackResponseTime: Math.round(summary.avgResponseTime || 0)
     }));
 
     res.json({
@@ -769,6 +775,147 @@ router.get('/postback/delivery-analytics', async (req: Request, res: Response) =
       return res.status(400).json({ error: 'Invalid filters', details: error.errors });
     }
     res.status(500).json({ error: 'Failed to fetch postback delivery analytics' });
+  }
+});
+
+// Dashboard monitoring endpoint with postback health metrics
+router.get('/dashboard/monitoring', async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Get time range filters
+    const timeRange = (req.query.timeRange as string) || '24h';
+    let hoursBack = 24;
+    switch (timeRange) {
+      case '1h': hoursBack = 1; break;
+      case '6h': hoursBack = 6; break;
+      case '24h': hoursBack = 24; break;
+      case '7d': hoursBack = 168; break;
+      case '30d': hoursBack = 720; break;
+    }
+
+    const since = new Date(Date.now() - hoursBack * 60 * 60 * 1000);
+
+    // Get postback health metrics
+    const postbackHealth = await db.select({
+      total: count(),
+      successful: sql<number>`COUNT(CASE WHEN ${postbackLogs.status} = 'sent' THEN 1 END)`,
+      failed: sql<number>`COUNT(CASE WHEN ${postbackLogs.status} = 'failed' THEN 1 END)`,
+      avgResponseTime: avg(postbackLogs.responseTime)
+    })
+    .from(postbackLogs)
+    .where(and(
+      gte(postbackLogs.createdAt, since),
+      user.role === 'advertiser' ? 
+        sql`${postbackLogs.postbackId} IN (SELECT id FROM ${postbackTemplates} WHERE advertiser_id = ${user.id})` : 
+        sql`1=1`
+    ));
+
+    // Get event type breakdown
+    const eventBreakdown = await db.select({
+      eventType: postbackLogs.eventType,
+      count: count(),
+      successful: sql<number>`COUNT(CASE WHEN ${postbackLogs.status} = 'sent' THEN 1 END)`
+    })
+    .from(postbackLogs)
+    .where(and(
+      gte(postbackLogs.createdAt, since),
+      user.role === 'advertiser' ? 
+        sql`${postbackLogs.postbackId} IN (SELECT id FROM ${postbackTemplates} WHERE advertiser_id = ${user.id})` : 
+        sql`1=1`
+    ))
+    .groupBy(postbackLogs.eventType)
+    .orderBy(desc(count()));
+
+    // Get recent failures for alerts
+    const recentFailures = await db.select({
+      postbackName: postbackTemplates.name,
+      errorMessage: postbackLogs.errorMessage,
+      count: count(),
+      lastFailure: sql<Date>`MAX(${postbackLogs.createdAt})`
+    })
+    .from(postbackLogs)
+    .innerJoin(postbackTemplates, eq(postbackLogs.postbackId, postbackTemplates.id))
+    .where(and(
+      eq(postbackLogs.status, 'failed'),
+      gte(postbackLogs.createdAt, since),
+      user.role === 'advertiser' ? eq(postbackTemplates.advertiserId, user.id) : sql`1=1`
+    ))
+    .groupBy(postbackTemplates.name, postbackLogs.errorMessage)
+    .orderBy(desc(count()))
+    .limit(10);
+
+    // Calculate metrics
+    const total = Number(postbackHealth[0]?.total || 0);
+    const successful = Number(postbackHealth[0]?.successful || 0);
+    const failed = Number(postbackHealth[0]?.failed || 0);
+    const successRate = total > 0 ? (successful / total) * 100 : 100;
+    const avgResponseTime = Number(postbackHealth[0]?.avgResponseTime || 0);
+
+    // Determine health status
+    const healthStatus = successRate >= 95 ? 'healthy' : 
+                        successRate >= 85 ? 'warning' : 'critical';
+
+    // Generate alerts
+    const alerts = [];
+    if (successRate < 85) {
+      alerts.push({
+        type: 'error',
+        message: `Low postback success rate: ${successRate.toFixed(1)}%`,
+        severity: 'high'
+      });
+    }
+    if (avgResponseTime > 5000) {
+      alerts.push({
+        type: 'warning', 
+        message: `High response time: ${Math.round(avgResponseTime)}ms`,
+        severity: 'medium'
+      });
+    }
+    if (failed > 10) {
+      alerts.push({
+        type: 'warning',
+        message: `${failed} postback failures in last ${timeRange}`,
+        severity: 'medium'
+      });
+    }
+
+    res.json({
+      status: healthStatus,
+      timeRange,
+      metrics: {
+        totalPostbacks: total,
+        successful,
+        failed,
+        successRate: Math.round(successRate * 100) / 100,
+        failureRate: Math.round((100 - successRate) * 100) / 100,
+        avgResponseTime: Math.round(avgResponseTime)
+      },
+      eventBreakdown: eventBreakdown.map(event => ({
+        eventType: event.eventType,
+        total: Number(event.count),
+        successful: Number(event.successful),
+        successRate: Number(event.count) > 0 ? 
+          Math.round((Number(event.successful) / Number(event.count)) * 10000) / 100 : 100
+      })),
+      recentFailures: recentFailures.map(failure => ({
+        postbackName: failure.postbackName,
+        error: failure.errorMessage,
+        count: Number(failure.count),
+        lastOccurrence: failure.lastFailure
+      })),
+      alerts
+    });
+
+  } catch (error) {
+    console.error('Dashboard monitoring error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch monitoring data',
+      status: 'unknown'
+    });
   }
 });
 

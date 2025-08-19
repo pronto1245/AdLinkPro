@@ -249,6 +249,17 @@ if (fs.existsSync(clientDistDir)) {
   app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(clientDistDir, 'index.html')));
 }
 
+// Start postback monitoring service
+async function startMonitoringServices() {
+  try {
+    const { postbackMonitoring } = await import('./services/postbackMonitoring');
+    postbackMonitoring.startMonitoring(15); // Check every 15 minutes
+    console.log('🔍 Postback monitoring service started');
+  } catch (error) {
+    console.error('❌ Failed to start monitoring services:', error);
+  }
+}
+
 // --- статика SPA если вдруг положишь фронт внутрь образа ---
 const publicDir = path.join(__dirname, 'public');
 if (fs.existsSync(publicDir)) {
@@ -256,4 +267,7 @@ if (fs.existsSync(publicDir)) {
   app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(publicDir, 'index.html')));
 }
 
-app.listen(PORT, () => console.log(`API listening on :${PORT}`));
+app.listen(PORT, () => {
+  console.log(`API listening on :${PORT}`);
+  startMonitoringServices(); // Start monitoring after server starts
+});
