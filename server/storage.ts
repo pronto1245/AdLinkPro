@@ -88,6 +88,7 @@ export interface IStorage {
   createOffer(offer: InsertOffer): Promise<Offer>;
   updateOffer(id: string, data: Partial<InsertOffer>): Promise<Offer>;
   deleteOffer(id: string): Promise<void>;
+  exportOffers(filters: any, format: string): Promise<string>;
   
   // Received offers management
   getReceivedOffers(advertiserId: string): Promise<ReceivedOffer[]>;
@@ -804,6 +805,81 @@ export class DatabaseStorage implements IStorage {
       await db.delete(offers).where(eq(offers.id, id));
     } catch (error) {
       console.error('Error deleting offer:', error);
+      throw error;
+    }
+  }
+
+  async exportOffers(filters: any = {}, format: string = 'csv'): Promise<string> {
+    try {
+      // Get all offers with advertiser names
+      let offers = await this.getAllOffers();
+      
+      // Apply filters
+      if (filters.search) {
+        const searchTerm = filters.search.toLowerCase();
+        offers = offers.filter(offer => 
+          offer.name.toLowerCase().includes(searchTerm) ||
+          (offer.description && offer.description.toLowerCase().includes(searchTerm))
+        );
+      }
+      
+      if (filters.status) {
+        offers = offers.filter(offer => offer.status === filters.status);
+      }
+      
+      if (filters.category) {
+        offers = offers.filter(offer => offer.category === filters.category);
+      }
+      
+      if (filters.advertiserId) {
+        offers = offers.filter(offer => offer.advertiserId === filters.advertiserId);
+      }
+
+      if (format === 'csv') {
+        const csvHeaders = [
+          'ID', 'Name', 'Category', 'Description', 'Status', 'Payout Type', 
+          'Payout Amount', 'Currency', 'Advertiser Name', 'Countries', 'Created At'
+        ];
+        
+        const csvRows = offers.map(offer => [
+          offer.id,
+          `"${offer.name || ''}"`,
+          `"${offer.category || ''}"`,
+          `"${typeof offer.description === 'string' ? offer.description.replace(/"/g, '""') : ''}"`,
+          offer.status || '',
+          offer.payoutType || '',
+          offer.payout || 0,
+          offer.currency || 'USD',
+          `"${offer.advertiserName || ''}"`,
+          `"${Array.isArray(offer.countries) ? offer.countries.join(', ') : ''}"`,
+          offer.createdAt ? new Date(offer.createdAt).toISOString().split('T')[0] : ''
+        ]);
+
+        return [csvHeaders.join(','), ...csvRows.map(row => row.join(','))].join('\n');
+      } else if (format === 'json') {
+        const exportData = offers.map(offer => ({
+          id: offer.id,
+          name: offer.name,
+          category: offer.category,
+          description: offer.description,
+          status: offer.status,
+          payoutType: offer.payoutType,
+          payout: offer.payout,
+          currency: offer.currency,
+          advertiserName: offer.advertiserName,
+          countries: offer.countries,
+          landingPages: offer.landingPages,
+          trafficSources: offer.trafficSources,
+          createdAt: offer.createdAt,
+          updatedAt: offer.updatedAt
+        }));
+        
+        return JSON.stringify(exportData, null, 2);
+      } else {
+        throw new Error('Unsupported export format. Use csv or json.');
+      }
+    } catch (error) {
+      console.error('Export offers error:', error);
       throw error;
     }
   }
@@ -5909,6 +5985,31 @@ class MemStorage implements IStorage {
     this.offerAccessRequests = this.offerAccessRequests.filter(request => request.offerId !== id);
     
     console.log(`✅ Оффер ${id} полностью удален из системы`);
+  }
+
+  async exportOffers(filters: any = {}, format: string = 'csv'): Promise<string> {
+    // Mock implementation for test environment
+    let offers = [...this.offers];
+    
+    // Apply basic filters
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      offers = offers.filter(offer => 
+        offer.name.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    if (format === 'csv') {
+      const headers = 'ID,Name,Status,Payout,Currency';
+      const rows = offers.map(offer => 
+        `${offer.id},"${offer.name}",${offer.status},${offer.payout},${offer.currency}`
+      );
+      return [headers, ...rows].join('\n');
+    } else if (format === 'json') {
+      return JSON.stringify(offers, null, 2);
+    }
+    
+    return '';
   }
 
   async getOfferById(id: string): Promise<Offer | undefined> {
