@@ -24,7 +24,7 @@ function persist(user: User, token?: string) {
 export async function login(args: LoginArgs): Promise<{user: User, token?: string}> {
   try {
     // Use centralized API function instead of direct fetch
-    const data = await api('/api/auth/login', { 
+    const data: any = await api('/api/auth/login', { 
       method: 'POST', 
       skipAuth: true,
       body: JSON.stringify(args) 
@@ -33,7 +33,7 @@ export async function login(args: LoginArgs): Promise<{user: User, token?: strin
     // Handle role mapping from server format to client format
     let clientRole: User['role'] = 'partner'; // default
     
-    if (data.user && data.user.role) {
+    if (data && data.user && data.user.role) {
       const roleMap: Record<string, User['role']> = {
         'OWNER': 'owner',
         'ADVERTISER': 'advertiser',
@@ -46,11 +46,11 @@ export async function login(args: LoginArgs): Promise<{user: User, token?: strin
     }
     
     const user: User = { 
-      email: data.user?.email || args.email, 
+      email: data?.user?.email || args.email, 
       role: clientRole,
-      name: data.user?.username
+      name: data?.user?.username
     };
-    const token: string | undefined = data.token;
+    const token: string | undefined = data?.token;
     persist(user, token);
     return { user, token };
   } catch {
@@ -64,12 +64,12 @@ export async function login(args: LoginArgs): Promise<{user: User, token?: strin
 export async function register(args: RegisterArgs): Promise<{user: User}> {
   try {
     // Use centralized API function instead of direct fetch
-    const data = await api('/api/register', { 
+    const data: any = await api('/api/register', { 
       method: 'POST', 
       skipAuth: true,
       body: JSON.stringify(args) 
     });
-    const user: User = data.user ?? { email: args.email, role: (data.role ?? args.role ?? 'partner'), name: args.name };
+    const user: User = data?.user ?? { email: args.email, role: (data?.role ?? args.role ?? 'partner'), name: args.name };
     return { user };
   } catch {
     // fallback mock
