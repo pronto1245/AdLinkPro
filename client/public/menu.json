@@ -1,31 +1,31 @@
 {
   "advertiser": [
-    {"label": "Dashboard", "path": "/dashboard/advertiser"},
-    {"label": "Offers",    "path": "/offers"},
-    {"label": "Reports",   "path": "/reports"}
+    { "label": "Dashboard", "path": "/dashboard/advertiser" },
+    { "label": "Offers",    "path": "/offers" },
+    { "label": "Reports",   "path": "/reports" }
   ],
   "partner": [
-    {"label": "Dashboard", "path": "/dashboard/partner"},
-    {"label": "Offers",    "path": "/partner/offers"},
-    {"label": "Profile",   "path": "/partner/profile"}
+    { "label": "Dashboard", "path": "/dashboard/partner" },
+    { "label": "Offers",    "path": "/partner/offers" },
+    { "label": "Profile",   "path": "/partner/profile" }
   ],
   "affiliate": [
-    {"label": "Statistics", "path": "/statistics"},
-    {"label": "Finances",   "path": "/finances"},
-    {"label": "Postbacks",  "path": "/postbacks"}
+    { "label": "Statistics", "path": "/statistics" },
+    { "label": "Finances",   "path": "/finances" },
+    { "label": "Postbacks",  "path": "/postbacks" }
   ],
   "owner": [
-    {"label": "Dashboard", "path": "/dashboard/owner"},
-    {"label": "Users",     "path": "/owner/users"},
-    {"label": "Settings",  "path": "/owner/settings"}
+    { "label": "Dashboard", "path": "/dashboard/owner" },
+    { "label": "Users",     "path": "/owner/users" },
+    { "label": "Settings",  "path": "/owner/settings" }
   ],
   "super_admin": [
-    {"label": "Dashboard",        "path": "/dashboard/super-admin"},
-    {"label": "Users management", "path": "/super-admin/users-management"},
-    {"label": "Offers",           "path": "/super-admin/offers"},
-    {"label": "Analytics",        "path": "/super-admin/analytics"}
+    { "label": "Dashboard",        "path": "/dashboard/super-admin" },
+    { "label": "Users management", "path": "/super-admin/users-management" },
+    { "label": "Offers",           "path": "/super-admin/offers" },
+    { "label": "Analytics",        "path": "/super-admin/analytics" }
   ],
   "staff": [
-    {"label": "Dashboard", "path": "/dashboard/staff"}
+    { "label": "Dashboard", "path": "/dashboard/staff" }
   ]
 }
