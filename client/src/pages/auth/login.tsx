@@ -1,3 +1,4 @@
+import { urlJoin } from "@/services/urlJoin";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { saveToken, getToken } from "@/services/auth";
@@ -111,7 +112,7 @@ const LoginPage = () => {
 
       // Get user profile with safe fetch
       try {
-        const meRes = await safeFetch(`${API_BASE}/api/me`, {
+        const meRes = await safeFetch(urlJoin(API_BASE, "/api/me"), {
           headers: { Authorization: `Bearer ${token}` },
         });
         
