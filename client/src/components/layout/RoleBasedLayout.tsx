@@ -11,14 +11,25 @@ export default function RoleBasedLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     const updateScreenSize = () => {
-      setIsLargeScreen(window.innerWidth >= 1024);
+      const newIsLargeScreen = window.innerWidth >= 1024;
+      setIsLargeScreen(newIsLargeScreen);
+      
+      // Close mobile menu when switching to large screen
+      if (newIsLargeScreen && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
     };
 
     updateScreenSize();
     window.addEventListener('resize', updateScreenSize);
     
     return () => window.removeEventListener('resize', updateScreenSize);
-  }, []);
+  }, [mobileMenuOpen]);
+
+  // Close mobile menu when clicking outside or on navigation
+  const handleCloseMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
@@ -31,13 +42,13 @@ export default function RoleBasedLayout({ children }: { children: React.ReactNod
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div 
-            className="fixed inset-0 bg-black/50" 
-            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/50 transition-opacity" 
+            onClick={handleCloseMobileMenu}
           />
           <div className="relative">
             <UniversalSidebar 
               isMobile={true} 
-              onClose={() => setMobileMenuOpen(false)} 
+              onClose={handleCloseMobileMenu} 
             />
           </div>
         </div>

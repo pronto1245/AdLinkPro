@@ -135,9 +135,17 @@ export async function refreshTokenIfNeeded(): Promise<boolean> {
     }
   }
 
+  // If no token at all, don't attempt refresh
+  if (!token) {
+    return false;
+  }
+
   try {
     const response = await api<{ token: string }>('/api/auth/refresh', {
-      method: 'POST'
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
 
     if (response.token) {
@@ -149,6 +157,9 @@ export async function refreshTokenIfNeeded(): Promise<boolean> {
     return false;
   } catch (error) {
     console.warn('Token refresh failed:', error);
+    // Clear invalid tokens
+    localStorage.removeItem('token');
+    localStorage.removeItem('auth:token');
     return false;
   }
 }

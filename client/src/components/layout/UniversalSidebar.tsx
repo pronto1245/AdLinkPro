@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { useSidebar } from '@/contexts/sidebar-context';
 import { useAuth } from '@/contexts/auth-context';
 import { useState, useEffect } from 'react';
-import { validateToken, refreshTokenIfNeeded, setupTokenRefresh } from '@/lib/menu';
+import { validateToken, refreshTokenIfNeeded, setupTokenRefresh, getMenuData } from '@/lib/menu';
 import { getDashboardHref, createLogoutHandler, getUserInitials } from '@/lib/navigation-utils';
 import { 
   BarChart3, 
@@ -247,6 +247,34 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
   const { user, token, logout } = useAuth();
   const [isTokenValid, setIsTokenValid] = useState(true);
   const [tokenExpiresAt, setTokenExpiresAt] = useState<number | null>(null);
+  const [dynamicMenuItems, setDynamicMenuItems] = useState<MenuItem[]>([]);
+
+  // Load dynamic menu data on component mount
+  useEffect(() => {
+    const loadMenuData = async () => {
+      try {
+        const menuData = await getMenuData();
+        // Convert API menu items to component MenuItem format if needed
+        const convertedItems = menuData.items?.map(item => ({
+          title: item.title,
+          href: item.href,
+          icon: Home, // Default icon, could be enhanced to map icon strings to components
+          description: item.description,
+          roles: item.roles,
+          requiresToken: item.requiresToken
+        })) || [];
+        
+        if (convertedItems.length > 0) {
+          setDynamicMenuItems(convertedItems);
+        }
+      } catch (error) {
+        console.warn('Could not load dynamic menu data, using static fallback:', error);
+        // If API fails, we'll use the static menuItems defined above
+      }
+    };
+
+    loadMenuData();
+  }, [user?.role]);
 
   // Enhanced token validation with automatic refresh
   useEffect(() => {
@@ -282,8 +310,11 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
     };
   }, [token]);
 
+  // Use dynamic menu items if available, otherwise fallback to static ones
+  const currentMenuItems = dynamicMenuItems.length > 0 ? dynamicMenuItems : menuItems;
+
   // Filter menu items based on user role and token requirements
-  const filteredMenuItems = menuItems.filter(item => {
+  const filteredMenuItems = currentMenuItems.filter(item => {
     // If item has role restrictions, check if user's role is included
     if (item.roles && !item.roles.includes(user?.role || '')) {
       return false;
@@ -417,7 +448,7 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
         {filteredMenuItems.slice(1).map((item) => {
           const Icon = item.icon;
           const isActive = location === item.href || 
-            (item.href !== '/dashboard' && location.startsWith(item.href));
+            (item.href !== '/dashboard' && item.href !== '/' && location.startsWith(item.href));
 
           return (
             <Link key={item.href} href={item.href}>

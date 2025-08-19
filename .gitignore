@@ -15,6 +15,10 @@ Thumbs.db
 .idea/
 *.log
 
+# Test files
+client/src/test-*.js
+client/src/test-*.ts
+
 # Local Netlify folder
 .netlify
 AdLinkPro/
