@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { saveToken, getToken } from "@/services/auth";
 import { safeFetch, safeJsonParse, getErrorMessage, setupGlobalErrorHandling } from "@/utils/errorHandler";
 import { throttledNavigate } from "@/utils/navigationThrottle";
+import { routeByRole, extractRoleFromToken } from "@/utils/routeByRole";
 import './auth-ui.css';
 
 const API_BASE = import.meta.env.VITE_API_URL;
@@ -26,21 +27,10 @@ const LoginPage = () => {
   useEffect(() => {
     const token = getToken();
     if (token) {
-      // Extract role from token and redirect to appropriate dashboard
-      try {
-        const payload = JSON.parse(atob((token.split('.')[1] || '').replace(/-/g,'+').replace(/_/g,'/')));
-        const role = String(payload.role || '').toUpperCase();
-        
-        // Redirect based on role to avoid infinite loops - use throttled navigation
-        if (role === "OWNER") throttledNavigate(setLocation, "/dashboard/owner");
-        else if (role === "ADVERTISER") throttledNavigate(setLocation, "/dashboard/advertiser");
-        else if (role === "PARTNER") throttledNavigate(setLocation, "/dash");
-        else if (role === "SUPER_ADMIN") throttledNavigate(setLocation, "/dashboard/super-admin");
-        else throttledNavigate(setLocation, "/dash"); // fallback to partner dashboard
-      } catch {
-        // If token is invalid, remove it and stay on login page
-        localStorage.removeItem('auth:token');
-      }
+      // Extract role from token and redirect to appropriate dashboard using centralized utility
+      const role = extractRoleFromToken(token);
+      const dashboardRoute = routeByRole(role);
+      throttledNavigate(setLocation, dashboardRoute);
     }
     // Setup global error handling to suppress unnecessary console errors
     setupGlobalErrorHandling();
@@ -136,47 +126,26 @@ const LoginPage = () => {
         });
         
         if (!meRes.ok) {
-          // If profile fetch fails, extract role from token and redirect appropriately
+          // If profile fetch fails, extract role from token and redirect using centralized utility
           console.warn("Could not fetch user profile:", meRes.status);
-          try {
-            const payload = JSON.parse(atob((data.token.split('.')[1] || '').replace(/-/g,'+').replace(/_/g,'/')));
-            const role = String(payload.role || '').toUpperCase();
-            
-            if (role === "OWNER") throttledNavigate(setLocation, "/dashboard/owner");
-            else if (role === "ADVERTISER") throttledNavigate(setLocation, "/dashboard/advertiser");
-            else if (role === "PARTNER") throttledNavigate(setLocation, "/dash");
-            else if (role === "SUPER_ADMIN") throttledNavigate(setLocation, "/dashboard/super-admin");
-            else throttledNavigate(setLocation, "/dash");
-          } catch {
-            throttledNavigate(setLocation, "/dash"); // fallback
-          }
+          const role = extractRoleFromToken(data.token);
+          const dashboardRoute = routeByRole(role);
+          throttledNavigate(setLocation, dashboardRoute);
           return;
         }
         
         const me = safeJsonParse(await meRes.text(), {});
-        const role = String(me.role || "").toUpperCase();
+        const role = String(me.role || "");
         
-        // Route based on role - use proper dashboard paths and throttled navigation
-        if (role === "OWNER") throttledNavigate(setLocation, "/dashboard/owner");
-        else if (role === "ADVERTISER") throttledNavigate(setLocation, "/dashboard/advertiser");
-        else if (role === "PARTNER") throttledNavigate(setLocation, "/dash");
-        else if (role === "SUPER_ADMIN") throttledNavigate(setLocation, "/dashboard/super-admin");
-        else throttledNavigate(setLocation, "/dash"); // fallback to partner dashboard
+        // Route based on role using centralized utility - use throttled navigation
+        const dashboardRoute = routeByRole(role);
+        throttledNavigate(setLocation, dashboardRoute);
         
       } catch (profileError) {
-        // Error already suppressed by our utilities, just provide fallback
-        try {
-          const payload = JSON.parse(atob((data.token.split('.')[1] || '').replace(/-/g,'+').replace(/_/g,'/')));
-          const role = String(payload.role || '').toUpperCase();
-          
-          if (role === "OWNER") throttledNavigate(setLocation, "/dashboard/owner");
-          else if (role === "ADVERTISER") throttledNavigate(setLocation, "/dashboard/advertiser");
-          else if (role === "PARTNER") throttledNavigate(setLocation, "/dash");
-          else if (role === "SUPER_ADMIN") throttledNavigate(setLocation, "/dashboard/super-admin");
-          else throttledNavigate(setLocation, "/dash");
-        } catch {
-          throttledNavigate(setLocation, "/dash"); // fallback
-        }
+        // Error already suppressed by our utilities, just provide fallback using centralized utility
+        const role = extractRoleFromToken(data.token);
+        const dashboardRoute = routeByRole(role);
+        throttledNavigate(setLocation, dashboardRoute);
       }
       
     } catch (e: any) {

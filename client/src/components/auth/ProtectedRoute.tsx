@@ -1,16 +1,30 @@
 import React from 'react';
 import { Redirect, useRoute } from 'wouter';
+import { extractRoleFromToken } from '@/utils/routeByRole';
 
 function getRoleFromToken(): string | null {
-  try {
-    // Check both token keys for backward compatibility
-    const raw = localStorage.getItem('auth:token') || localStorage.getItem('token');
-    if (!raw) return null;
-    const payload = JSON.parse(atob((raw.split('.')[1] || '').replace(/-/g,'+').replace(/_/g,'/')));
-    const map: Record<string,string> = { partner:'partner', PARTNER:'partner', advertiser:'advertiser', ADVERTISER:'advertiser', owner:'owner', OWNER:'owner', super_admin:'super_admin', 'super admin':'super_admin', SUPER_ADMIN:'super_admin' };
-    const role = String(payload.role || '').trim();
-    return map[role] || role.toLowerCase() || null;
-  } catch { return null; }
+  // Check both token keys for backward compatibility  
+  const raw = localStorage.getItem('auth:token') || localStorage.getItem('token');
+  const role = extractRoleFromToken(raw);
+  if (!role) return null;
+  
+  // Role mapping for backward compatibility
+  const map: Record<string,string> = { 
+    partner:'partner', 
+    PARTNER:'partner', 
+    affiliate:'affiliate',
+    AFFILIATE:'affiliate',
+    advertiser:'advertiser', 
+    ADVERTISER:'advertiser', 
+    owner:'owner', 
+    OWNER:'owner', 
+    super_admin:'super_admin', 
+    'super admin':'super_admin', 
+    SUPER_ADMIN:'super_admin',
+    staff:'staff',
+    STAFF:'staff'
+  };
+  return map[role.trim()] || role.toLowerCase() || null;
 }
 
 type Props = {
