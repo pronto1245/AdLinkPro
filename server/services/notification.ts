@@ -1,7 +1,7 @@
 import { sendEmail } from './email';
 
 export interface NotificationEvent {
-  type: 'user_registration' | 'user_blocked' | 'new_device_login' | 'fraud_detected' | 'payment_received' | 'new_referral' | 'referral_earning';
+  type: 'user_registration' | 'user_blocked' | 'new_device_login' | 'fraud_detected' | 'payment_received' | 'new_referral' | 'referral_earning' | 'postback_failed' | 'postback_success_rate_low' | 'postback_high_error_rate';
   userId: string;
   data: any;
   timestamp: Date;
@@ -154,6 +154,72 @@ export class NotificationService {
             <p>Приглашайте больше партнеров для увеличения дохода!</p>
           `,
           text: `Реферальная комиссия: $${data.commissionAmount} от ${data.referredUser}`
+        };
+
+      case 'postback_failed':
+        return {
+          to: process.env.ADMIN_EMAIL || 'admin@platform.com',
+          from: process.env.FROM_EMAIL || 'noreply@platform.com',
+          subject: '🚨 Postback Failed Alert',
+          html: `
+            <h2>Postback Delivery Failed</h2>
+            <p>A postback failed to deliver. Details:</p>
+            <ul>
+              <li>Template ID: ${data.templateId}</li>
+              <li>Click ID: ${data.clickId}</li>
+              <li>Partner: ${data.partnerName || data.partnerId}</li>
+              <li>URL: ${data.url}</li>
+              <li>Error: ${data.error}</li>
+              <li>Retry Attempt: ${data.retryAttempt}/${data.maxRetries}</li>
+              <li>Time: ${new Date(data.timestamp).toLocaleString('ru-RU')}</li>
+            </ul>
+            <p>Please check the postback configuration and partner tracker availability.</p>
+          `,
+          text: `Postback failed: ${data.error}. Template: ${data.templateId}, Click: ${data.clickId}`
+        };
+
+      case 'postback_success_rate_low':
+        return {
+          to: process.env.ADMIN_EMAIL || 'admin@platform.com',
+          from: process.env.FROM_EMAIL || 'noreply@platform.com',
+          subject: '⚠️ Postback Success Rate Low Alert',
+          html: `
+            <h2>Low Postback Success Rate Detected</h2>
+            <p>The postback success rate has dropped below the threshold:</p>
+            <ul>
+              <li>Current Success Rate: ${data.successRate}%</li>
+              <li>Threshold: ${data.threshold}%</li>
+              <li>Time Period: Last ${data.periodHours} hours</li>
+              <li>Total Postbacks: ${data.totalPostbacks}</li>
+              <li>Failed Postbacks: ${data.failedPostbacks}</li>
+              <li>Most Common Error: ${data.mostCommonError}</li>
+            </ul>
+            <p>Investigate tracker connectivity and postback configurations.</p>
+            <a href="${process.env.BASE_URL}/admin/postbacks/analytics">View Analytics Dashboard</a>
+          `,
+          text: `Postback success rate low: ${data.successRate}% (threshold: ${data.threshold}%)`
+        };
+
+      case 'postback_high_error_rate':
+        return {
+          to: process.env.ADMIN_EMAIL || 'admin@platform.com',
+          from: process.env.FROM_EMAIL || 'noreply@platform.com',
+          subject: '🚨 High Postback Error Rate Alert',
+          html: `
+            <h2>High Postback Error Rate Alert</h2>
+            <p>Excessive postback errors detected:</p>
+            <ul>
+              <li>Error Rate: ${data.errorRate}%</li>
+              <li>Error Count: ${data.errorCount}</li>
+              <li>Time Period: Last ${data.periodMinutes} minutes</li>
+              <li>Primary Error Type: ${data.primaryErrorType}</li>
+              <li>Affected Partners: ${data.affectedPartners}</li>
+              <li>Affected Templates: ${data.affectedTemplates}</li>
+            </ul>
+            <p>Immediate attention required. Check server connectivity and partner tracker status.</p>
+            <a href="${process.env.BASE_URL}/admin/postbacks/logs">View Error Logs</a>
+          `,
+          text: `High postback error rate: ${data.errorRate}%. ${data.errorCount} errors in ${data.periodMinutes} minutes.`
         };
 
       default:

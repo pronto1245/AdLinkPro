@@ -1705,6 +1705,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // =================== POSTBACK MONITORING API ===================
+  
+  // Postback monitoring dashboard endpoint
+  app.get('/api/postback/monitoring', authenticateToken, requireRole(['super_admin', 'advertiser']), async (req, res) => {
+    try {
+      const { postbackMonitor } = await import('./services/postbackMonitoring');
+      const status = postbackMonitor.getMonitoringStatus();
+      
+      res.json({
+        success: true,
+        data: {
+          isHealthy: status.isHealthy,
+          metrics: {
+            ...status.metrics,
+            errorRate: status.metrics.totalPostbacks > 0 
+              ? Math.round((status.metrics.failedPostbacks / status.metrics.totalPostbacks) * 100 * 100) / 100
+              : 0
+          },
+          thresholds: status.thresholds,
+          lastAlerts: status.lastAlerts,
+          timestamp: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Postback monitoring error:', error);
+      res.status(500).json({ error: 'Failed to get monitoring data' });
+    }
+  });
+
+  // Update monitoring thresholds endpoint
+  app.put('/api/postback/monitoring/thresholds', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { postbackMonitor } = await import('./services/postbackMonitoring');
+      const { successRateThreshold, errorRateThreshold, responseTimeThreshold, periodHours } = req.body;
+      
+      postbackMonitor.updateThresholds({
+        successRateThreshold,
+        errorRateThreshold, 
+        responseTimeThreshold,
+        periodHours
+      });
+      
+      res.json({ 
+        success: true,
+        message: 'Monitoring thresholds updated',
+        thresholds: postbackMonitor.getMonitoringStatus().thresholds
+      });
+    } catch (error) {
+      console.error('Update thresholds error:', error);
+      res.status(500).json({ error: 'Failed to update thresholds' });
+    }
+  });
+
+  // Reset monitoring metrics endpoint (admin only)
+  app.post('/api/postback/monitoring/reset', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { postbackMonitor } = await import('./services/postbackMonitoring');
+      postbackMonitor.resetMetrics();
+      
+      res.json({ 
+        success: true,
+        message: 'Monitoring metrics reset',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Reset monitoring error:', error);
+      res.status(500).json({ error: 'Failed to reset monitoring data' });
+    }
+  });
+
   // =================== AUTH API ===================
 
   // Auth routes
@@ -1774,6 +1844,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Token verification endpoint
+  app.get("/api/auth/verify-token", async (req, res) => {
+    try {
+      const { verifyTokenFromFile, getTokenInfoFromFile } = await import('./middleware/auth');
+      
+      const isValid = verifyTokenFromFile();
+      const tokenInfo = getTokenInfoFromFile();
+      
+      if (isValid && tokenInfo) {
+        res.json({ 
+          valid: true, 
+          user: {
+            id: tokenInfo.id || tokenInfo.sub,
+            username: tokenInfo.username,
+            role: tokenInfo.role,
+            email: tokenInfo.email,
+            exp: tokenInfo.exp,
+            iat: tokenInfo.iat
+          }
+        });
+      } else {
+        res.status(401).json({ valid: false, error: 'Invalid or expired token' });
+      }
+    } catch (error) {
+      console.error("Token verification error:", error);
+      res.status(500).json({ valid: false, error: "Token verification failed" });
+    }
+  });
+
   app.post("/api/auth/register", async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
@@ -1816,6 +1915,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         referredBy, // Добавляем ID пригласившего
         referralCode: userData.role === 'affiliate' ? referralCode : undefined, // Добавляем реферальный код только для affiliate
       });
+
+      // Trigger postbacks for user registration event
+      try {
+        const userClickId = req.body.clickId || PostbackService.generateClickId();
+        await PostbackService.triggerPostbacks({
+          type: 'registration',
+          clickId: userClickId,
+          data: {
+            partner_id: user.id,
+            username: user.username,
+            email: user.email,
+            country: user.country,
+            role: user.role,
+            referralCode: ref as string || undefined
+          },
+          partnerId: user.role === 'affiliate' ? user.id : undefined,
+          advertiserId: user.ownerId
+        });
+        console.log('✅ Registration postbacks triggered for user:', user.username);
+      } catch (postbackError) {
+        console.error('❌ Failed to trigger registration postbacks:', postbackError);
+      }
       
       // Отправляем уведомление рефереру о новом пользователе
       if (referredBy && ref) {
@@ -3115,6 +3236,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...userData,
         password: hashedPassword,
       });
+
+      // Trigger postbacks for user creation event (admin-created user)
+      try {
+        const userClickId = PostbackService.generateClickId();
+        await PostbackService.triggerPostbacks({
+          type: 'registration',
+          clickId: userClickId,
+          data: {
+            partner_id: user.id,
+            username: user.username,
+            email: user.email,
+            country: user.country,
+            role: user.role,
+            created_by: authUser.role,
+            owner_id: user.ownerId
+          },
+          partnerId: user.role === 'affiliate' ? user.id : undefined,
+          advertiserId: user.ownerId
+        });
+        console.log('✅ Admin-created user postbacks triggered for:', user.username);
+      } catch (postbackError) {
+        console.error('❌ Failed to trigger admin-created user postbacks:', postbackError);
+      }
 
       const { password, ...userWithoutPassword } = user;
       res.status(201).json(userWithoutPassword);
@@ -5563,6 +5707,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...userData,
         password: hashedPassword,
       });
+
+      // Trigger postbacks for user registration event
+      try {
+        const userClickId = PostbackService.generateClickId();
+        await PostbackService.triggerPostbacks({
+          type: 'registration',
+          clickId: userClickId,
+          data: {
+            partner_id: user.id,
+            username: user.username,
+            email: user.email,
+            country: user.country,
+            role: user.role
+          },
+          partnerId: user.role === 'affiliate' ? user.id : undefined
+        });
+        console.log('✅ Registration postbacks triggered for user:', user.username);
+      } catch (postbackError) {
+        console.error('❌ Failed to trigger registration postbacks:', postbackError);
+      }
       
       const { password, ...userWithoutPassword } = user;
       res.status(201).json(userWithoutPassword);
@@ -10035,6 +10199,29 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           teamRole: role
         })
       });
+
+      // Trigger postbacks for team member creation
+      try {
+        const userClickId = PostbackService.generateClickId();
+        await PostbackService.triggerPostbacks({
+          type: 'registration',
+          clickId: userClickId,
+          data: {
+            partner_id: teamMember.id,
+            username: teamMember.username,
+            email: teamMember.email,
+            role: teamMember.role,
+            team_role: role,
+            created_by: authUser.username,
+            owner_id: authUser.id
+          },
+          partnerId: teamMember.id,
+          advertiserId: authUser.id
+        });
+        console.log('✅ Team member postbacks triggered for:', teamMember.username);
+      } catch (postbackError) {
+        console.error('❌ Failed to trigger team member postbacks:', postbackError);
+      }
       
       res.status(201).json({
         ...teamMember,

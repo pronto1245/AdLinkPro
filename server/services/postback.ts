@@ -2,6 +2,7 @@ import { createHmac, randomBytes } from 'crypto';
 import { eq, and, or, desc, asc, gte, lte } from 'drizzle-orm';
 import { db } from '../db';
 import { postbacks, postbackLogs, postbackTemplates, trackingClicks, users, offers } from '../../shared/schema';
+import { postbackMonitor } from './postbackMonitoring';
 
 // Type imports for fraud service integration
 interface FraudCheckResult {
@@ -241,6 +242,13 @@ export class PostbackService {
         sentAt: new Date(),
       });
 
+      // Record monitoring metrics for successful postback
+      postbackMonitor.recordPostbackAttempt(
+        response.ok,
+        responseTime,
+        response.ok ? undefined : `HTTP ${response.status}`
+      );
+
       return {
         success: response.ok,
         response: {
@@ -263,6 +271,24 @@ export class PostbackService {
         retryCount: 0,
         status: 'failed',
         errorMessage: error.message,
+      });
+
+      // Record monitoring metrics for failed postback
+      postbackMonitor.recordPostbackAttempt(
+        false,
+        0,
+        error.name || 'Error'
+      );
+
+      // Trigger failure alert for monitoring
+      postbackMonitor.recordPostbackFailure({
+        templateId: postbackId,
+        clickId: clickId || 'unknown',
+        partnerId: 'unknown', // TODO: Extract from context
+        url: macros.clickid ? `Click ${macros.clickid}` : 'Unknown URL',
+        error: error.message,
+        retryAttempt: 1,
+        maxRetries: 3
       });
 
       return {
