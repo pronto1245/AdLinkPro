@@ -506,6 +506,78 @@
                 flex-direction: column;
             }
         }
+
+        /* Modal styles enhancements */
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .modal-footer .btn {
+            min-width: 80px;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .close-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        /* Button functionality fixes */
+        .btn, button, [onclick] {
+            cursor: pointer !important;
+            pointer-events: auto !important;
+        }
+
+        .btn:disabled, button:disabled {
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+            opacity: 0.6;
+        }
+
+        /* Ensure dropdown shows correctly */
+        .user-dropdown.show {
+            display: block !important;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-row {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1339,18 +1411,145 @@
 
         // Дополнительные функции
         function showProfile() {
-            showNotification('Открытие профиля пользователя');
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Профиль пользователя</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Имя пользователя:</label>
+                            <input type="text" value="Администратор" readonly class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" value="admin@adlinkpro.com" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Роль:</label>
+                            <input type="text" value="Супер-администратор" readonly class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Дата регистрации:</label>
+                            <input type="text" value="${new Date().toLocaleDateString('ru-RU')}" readonly class="form-input">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Отмена</button>
+                        <button class="btn btn-primary" onclick="saveProfile(); this.closest('.modal').remove();">Сохранить</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Close modal on backdrop click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function saveProfile() {
+            showNotification('Профиль успешно сохранен');
         }
 
         function logout() {
-            if (confirm('Вы уверены, что хотите выйти?')) {
-                showNotification('Выход из системы');
-                // Здесь можно добавить логику выхода
+            if (confirm('Вы уверены, что хотите выйти из системы?')) {
+                showNotification('Выход из системы...');
+                // Simulate logout process
+                setTimeout(() => {
+                    // Clear any stored data
+                    sessionStorage.clear();
+                    localStorage.removeItem('user_session');
+                    
+                    // Redirect to login or reload page
+                    showNotification('Вы успешно вышли из системы');
+                    // In a real app, this would redirect to login page
+                    // window.location.href = '/login';
+                }, 1000);
             }
         }
 
         function showAddPartnerModal() {
-            showNotification('Функция добавления партнера будет реализована');
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Добавить партнера</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Имя партнера:</label>
+                            <input type="text" placeholder="Введите имя" class="form-input" id="partnerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" placeholder="partner@example.com" class="form-input" id="partnerEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Телефон:</label>
+                            <input type="tel" placeholder="+7 (999) 123-45-67" class="form-input" id="partnerPhone">
+                        </div>
+                        <div class="form-group">
+                            <label>Источник трафика:</label>
+                            <select class="form-select" id="partnerSource">
+                                <option value="">Выберите источник</option>
+                                <option value="social">Социальные сети</option>
+                                <option value="search">Поисковые системы</option>
+                                <option value="direct">Прямой трафик</option>
+                                <option value="email">Email рассылка</option>
+                                <option value="other">Другое</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Отмена</button>
+                        <button class="btn btn-primary" onclick="createPartner(); this.closest('.modal').remove();">Создать</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Close modal on backdrop click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function createPartner() {
+            const name = document.getElementById('partnerName').value;
+            const email = document.getElementById('partnerEmail').value;
+            const phone = document.getElementById('partnerPhone').value;
+            const source = document.getElementById('partnerSource').value;
+            
+            if (!name || !email) {
+                showNotification('Пожалуйста, заполните обязательные поля');
+                return;
+            }
+            
+            // Simulate partner creation
+            const newPartner = {
+                id: partners.length + 1,
+                name,
+                email,
+                phone,
+                source,
+                status: 'pending',
+                revenue: 0,
+                joined: new Date().toISOString()
+            };
+            
+            partners.push(newPartner);
+            renderPartners();
+            showNotification(`Партнер ${name} успешно добавлен`);
         }
 
         // Закрытие модальных окон по клику вне них
