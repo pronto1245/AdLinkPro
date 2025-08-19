@@ -120,16 +120,16 @@ router.get('/click', async (req, res) => {
     // Record click in database
     const click = await storage.createTrackingClick(clickData);
 
-    // Enhanced fraud detection - automatic trigger
+    // Enhanced fraud detection - production-safe automatic trigger
     try {
-      const { EnhancedFraudService } = await import('../services/enhancedFraudService');
+      const { ProductionFraudService } = await import('../services/productionFraudService');
       const { IPWhitelistService } = await import('../services/ipWhitelistService');
       
       // Check if IP is whitelisted first
       const isWhitelisted = await IPWhitelistService.isWhitelisted(ip);
       
       if (!isWhitelisted) {
-        // Trigger automatic fraud detection
+        // Trigger production fraud detection with safety checks
         const fraudClickData = {
           ip,
           userAgent,
@@ -140,9 +140,9 @@ router.get('/click', async (req, res) => {
           clickId: clickid
         };
         
-        // Non-blocking fraud analysis
-        EnhancedFraudService.triggerAutoFraudDetection(fraudClickData).catch(error => {
-          console.error('Fraud detection failed:', error);
+        // Non-blocking production-safe fraud analysis
+        ProductionFraudService.triggerProductionFraudDetection(fraudClickData).catch(error => {
+          console.error('Production fraud detection failed:', error);
         });
       } else {
         console.log(`✅ IP ${ip} is whitelisted, skipping fraud detection`);
