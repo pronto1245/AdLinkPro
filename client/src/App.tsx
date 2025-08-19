@@ -49,6 +49,9 @@ const SuperAdminAnalyt = lazy(() => import('@/pages/super-admin/analytics'));
 // Staff
 const StaffDash = lazy(() => import('@/pages/staff/StaffDashboard'));
 
+// Demo
+const SidebarDemo = lazy(() => import('@/pages/SidebarDemo'));
+
 // Helpers
 const withLayout = (C: React.ComponentType<any>) => function Wrapped() {
   return (
@@ -127,6 +130,9 @@ function Router() {
 
         {/* Staff Dashboard Routes */}
         <ProtectedRoute path="/dashboard/staff" roles={['staff']} component={withLayout(StaffDash)} />
+
+        {/* Demo Route - Available to all authenticated users */}
+        <ProtectedRoute path="/sidebar-demo" roles={['partner', 'affiliate', 'advertiser', 'owner', 'super_admin', 'staff']} component={withLayout(SidebarDemo)} />
 
         {/* Legacy route compatibility - redirect old /dash routes to new /dashboard/affiliate */}
         <Route path="/dash" component={() => <Redirect to="/dashboard/affiliate" />} />
