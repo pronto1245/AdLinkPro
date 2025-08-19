@@ -16,92 +16,36 @@ import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
 import { Search, Download, Settings, Filter, RefreshCw, Eye, EyeOff, RotateCcw, Check, X, ChevronLeft, ChevronRight, GripVertical } from 'lucide-react';
 import OsLogo from '@/components/ui/os-logo';
+// Import shared schema types
+import type { TrackingClick } from '@shared/schema';
 
-// Comprehensive analytics data interface with 100+ fields
-interface AnalyticsData {
-  // Core tracking
-  id: string;
-  timestamp: string;
-  date: string;
-  time: string;
-  
-  // Campaign data
+// Extended analytics data interface that includes all tracking fields plus analytics-specific fields
+interface AnalyticsData extends Partial<TrackingClick> {
+  // Additional analytics fields not in TrackingClick
   campaign: string;
   campaignId: string;
   campaignGroupId: string;
   campaignGroup: string;
   
-  // SubIDs (1-30)
-  subid: string;
-  subId1?: string;
-  subId2?: string;
-  subId3?: string;
-  subId4?: string;
-  subId5?: string;
-  subId6?: string;
-  subId7?: string;
-  subId8?: string;
-  subId9?: string;
-  subId10?: string;
-  subId11?: string;
-  subId12?: string;
-  subId13?: string;
-  subId14?: string;
-  subId15?: string;
-  subId16?: string;
-  subId17?: string;
-  subId18?: string;
-  subId19?: string;
-  subId20?: string;
-  subId21?: string;
-  subId22?: string;
-  subId23?: string;
-  subId24?: string;
-  subId25?: string;
-  subId26?: string;
-  subId27?: string;
-  subId28?: string;
-  subId29?: string;
-  subId30?: string;
-  
-  // Geographic data
-  ip: string;
+  // Geographic display data
+  countryFlag: string;
   ipMasked12: string;
   ipMasked123: string;
-  country: string;
-  countryFlag: string;
-  region: string;
-  city: string;
-  language: string;
   
-  // Device & Browser
-  os: string;
+  // Device & Browser display data
   osLogo: string;
-  osVersion: string;
-  browser: string;
   browserLogo: string;
-  browserVersion: string;
-  device: string;
   deviceType: string;
   deviceModel: string;
-  userAgent: string;
   
-  // Network
-  connectionType: string;
+  // Network display
   operator: string;
   provider: string;
   usingProxy: boolean;
   
-  // Offers & Landing
+  // Offers & Landing display
   offer: string;
-  offerId: string;
-  offerGroupId: string;
   offerGroup: string;
-  landing: string;
-  landingId: string;
-  landingGroupId: string;
-  landingGroup: string;
-  
   // Traffic & Sources
   partnerNetwork: string;
   networkId: string;
@@ -112,8 +56,7 @@ interface AnalyticsData {
   site: string;
   direction: string;
   
-  // Tracking IDs
-  clickId: string;
+  // Tracking IDs  
   visitorCode: string;
   externalId: string;
   creativeId: string;
@@ -126,8 +69,7 @@ interface AnalyticsData {
   searchEngine?: string;
   keyword?: string;
   
-  // Conversion data
-  isBot: boolean;
+  // Conversion data (analytics specific)
   uniqueForCampaign: boolean;
   uniqueForStream: boolean;
   uniqueGlobally: boolean;
@@ -158,7 +100,6 @@ interface AnalyticsData {
   day: number;
   hour: number;
   dayAndHour: string;
-  timeOnLanding: number;
   timeLeftLanding: string;
   
   // Previous campaign data
@@ -369,7 +310,7 @@ export default function AnalyticsNew() {
 
   // Fetch analytics data
   const { data: analyticsResponse, isLoading } = useQuery<{data: AnalyticsData[], total: number, totalPages: number}>({
-    queryKey: ['/api/admin/analytics', { 
+    queryKey: ['/api/analytics-enhanced/data', { 
       search: searchTerm,
       dateFrom,
       dateTo,
@@ -386,34 +327,37 @@ export default function AnalyticsNew() {
       if (quickFilter && quickFilter !== 'all') params.append('quickFilter', quickFilter);
       params.append('page', currentPage.toString());
       params.append('limit', pageSize.toString());
+      params.append('offset', ((currentPage - 1) * pageSize).toString());
       
       if (sortConfig) {
         params.append('sortBy', sortConfig.key);
         params.append('sortOrder', sortConfig.direction);
       }
 
-      const response = await fetch(`/api/admin/analytics?${params}`, {
+      const response = await fetch(`/api/analytics-enhanced/data?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch analytics data');
       const result = await response.json();
       
-      // Handle both array response (current) and paginated response (future)
-      if (Array.isArray(result)) {
-        const total = result.length;
+      // Handle the new response format from analytics-enhanced
+      if (result.success && result.data) {
+        const total = result.total || result.data.length;
         const totalPages = Math.ceil(total / pageSize);
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedData = result.slice(startIndex, endIndex);
         
         return {
-          data: paginatedData,
+          data: result.data,
           total: total,
           totalPages: totalPages
         };
       }
       
-      return result;
+      // Fallback for other response formats
+      return {
+        data: Array.isArray(result) ? result : [],
+        total: Array.isArray(result) ? result.length : 0,
+        totalPages: 1
+      };
     }
   });
 
@@ -708,60 +652,93 @@ export default function AnalyticsNew() {
     return rangeWithDots;
   };
 
-  // Export data to CSV
-  const handleExport = () => {
+  // Export data to CSV using API
+  const handleExport = async () => {
     try {
-      const visibleData = analyticsData.map(row => {
-        const exportRow: any = {};
-        visibleColumns.forEach(column => {
-          const value = row[column.key];
-          // Handle special cases for export
-          if (column.key === 'countryFlag' || column.key === 'country') {
-            exportRow[column.label] = value; // Keep country code for CSV
-          } else if (column.type === 'boolean') {
-            exportRow[column.label] = value ? 'Да' : 'Нет';
-          } else if (column.type === 'currency') {
-            exportRow[column.label] = `$${Number(value || 0).toFixed(2)}`;
-          } else if (column.type === 'percentage') {
-            exportRow[column.label] = `${Number(value || 0).toFixed(1)}%`;
-          } else {
-            exportRow[column.label] = value || '-';
-          }
-        });
-        return exportRow;
-      });
-
-      // Create CSV content
-      const headers = visibleColumns.map(col => col.label);
-      const csvContent = [
-        headers.join(','),
-        ...visibleData.map(row => 
-          headers.map(header => {
-            const value = row[header];
-            // Escape quotes and commas
-            return typeof value === 'string' && (value.includes(',') || value.includes('"')) 
-              ? `"${value.replace(/"/g, '""')}"` 
-              : value;
-          }).join(',')
-        )
-      ].join('\n');
-
-      // Download file
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `analytics-${new Date().toISOString().slice(0, 10)}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
       toast({
-        title: 'Экспорт завершен',
-        description: `Данные экспортированы в CSV файл (${visibleData.length} записей)`,
+        title: "Экспорт данных",
+        description: "Начинается экспорт данных аналитики...",
       });
+
+      const exportFilters = {
+        search: searchTerm,
+        dateFrom,
+        dateTo,
+        quickFilter: quickFilter !== 'all' ? quickFilter : undefined,
+        limit: 10000 // Higher limit for export
+      };
+
+      const response = await fetch('/api/analytics-enhanced/export', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(exportFilters)
+      });
+
+      if (!response.ok) throw new Error('Failed to export analytics data');
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: "Экспорт завершен",
+          description: result.message,
+        });
+        
+        // For now, still do CSV export client-side
+        // In future, this could download from server or provide download link
+        const visibleData = analyticsData.map(row => {
+          const exportRow: any = {};
+          visibleColumns.forEach(column => {
+            const value = row[column.key];
+            // Handle special cases for export
+            if (column.key === 'countryFlag' || column.key === 'country') {
+              exportRow[column.label] = value; // Keep country code for CSV
+            } else if (column.type === 'boolean') {
+              exportRow[column.label] = value ? 'Да' : 'Нет';
+            } else if (column.type === 'currency') {
+              exportRow[column.label] = `$${Number(value || 0).toFixed(2)}`;
+            } else if (column.type === 'percentage') {
+              exportRow[column.label] = `${Number(value || 0).toFixed(1)}%`;
+            } else {
+              exportRow[column.label] = value || '-';
+            }
+          });
+          return exportRow;
+        });
+
+        // Create CSV content
+        const headers = visibleColumns.map(col => col.label);
+        const csvContent = [
+          headers.join(','),
+          ...visibleData.map(row => 
+            headers.map(header => {
+              const value = row[header];
+              // Escape quotes and commas
+              return typeof value === 'string' && (value.includes(',') || value.includes('"')) 
+                ? `"${value.replace(/"/g, '""')}"` 
+                : value;
+            }).join(',')
+          )
+        ].join('\n');
+
+        // Download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', result.filename || `analytics-${new Date().toISOString().slice(0, 10)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        throw new Error(result.message || 'Export failed');
+      }
     } catch (error) {
+      console.error('Export error:', error);
       toast({
         title: 'Ошибка экспорта',
         description: 'Не удалось экспортировать данные',
@@ -772,7 +749,7 @@ export default function AnalyticsNew() {
 
   // Refresh data
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/analytics-enhanced/data'] });
     toast({
       title: 'Данные обновлены',
       description: 'Аналитические данные успешно обновлены',
