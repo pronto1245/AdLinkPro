@@ -155,7 +155,7 @@ export function WebSocketManager() {
 
   const connect = useCallback(() => {
     // In production, WebSocket should be disabled unless VITE_WS_URL is set
-    const WS_URL = import.meta?.env?.VITE_WS_URL as string | undefined;
+    const WS_URL = import.meta.env?.VITE_WS_URL as string | undefined;
     if (!WS_URL) {
       console.debug('WebSocket disabled: VITE_WS_URL not configured');
       return;
