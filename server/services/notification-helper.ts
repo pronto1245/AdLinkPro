@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { userNotifications } from '@shared/schema';
+import { userNotifications } from '../../shared/schema';
 import { randomUUID } from 'crypto';
 
 // Типы уведомлений для различных событий платформы

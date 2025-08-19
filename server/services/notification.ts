@@ -175,12 +175,12 @@ export async function notifyNewReferral(referrer: any, referredUser: any): Promi
     console.log('🔗 Sending new referral notification to:', referrer.username);
     
     const { db } = await import('../db');
-    const { notifications } = await import('@shared/schema');
+    const { userNotifications } = await import('@shared/schema');
     
     // Сохраняем уведомление в базу данных
-    await db.insert(notifications).values({
+    await db.insert(userNotifications).values({
       userId: referrer.id,
-      type: 'info',
+      type: 'referral_joined',
       title: '🎉 Новый реферал!',
       message: `Пользователь ${referredUser.username} зарегистрировался по вашей ссылке. Комиссия: 5%`,
       data: {
@@ -188,9 +188,9 @@ export async function notifyNewReferral(referrer: any, referredUser: any): Promi
         referredEmail: referredUser.email,
         commissionRate: '5'
       },
-      isRead: false,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      channel: 'system',
+      status: 'sent',
+      isRead: false
     });
     
     console.log('✅ Referral notification saved to database');
@@ -219,12 +219,12 @@ export async function notifyReferralEarning(referrer: any, earningData: any): Pr
     console.log('💰 Sending referral earning notification to:', referrer.username);
     
     const { db } = await import('../db');
-    const { notifications } = await import('@shared/schema');
+    const { userNotifications } = await import('@shared/schema');
     
     // Сохраняем уведомление в базу данных
-    await db.insert(notifications).values({
+    await db.insert(userNotifications).values({
       userId: referrer.id,
-      type: 'success',
+      type: 'referral_commission',
       title: '💰 Реферальная комиссия!',
       message: `Вы получили $${earningData.commissionAmount} комиссии от ${earningData.referredUser}`,
       data: {
@@ -232,9 +232,9 @@ export async function notifyReferralEarning(referrer: any, earningData: any): Pr
         referredUser: earningData.referredUser,
         originalAmount: earningData.originalAmount
       },
-      isRead: false,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      channel: 'system',
+      status: 'sent',
+      isRead: false
     });
     
     console.log('✅ Earning notification saved to database');
@@ -263,8 +263,8 @@ export const notificationService = NotificationService.getInstance();
 
 // Import dependencies for additional notification functions
 import { db } from '../db';
-import { userNotifications } from '@shared/schema';
-import type { User } from '@shared/schema';
+import { userNotifications } from '../../shared/schema';
+import type { User } from '../../shared/schema';
 
 // Уведомление рекламодателю о новом запросе доступа к офферу
 export async function notifyOfferAccessRequest(
@@ -291,8 +291,8 @@ export async function notifyOfferAccessRequest(
     });
 
     // Отправляем WebSocket уведомление
-    if (global.sendWebSocketNotification) {
-      global.sendWebSocketNotification(advertiser.id, {
+    if ((globalThis as any).sendWebSocketNotification) {
+      (globalThis as any).sendWebSocketNotification(advertiser.id, {
         type: 'offer_access_request',
         data: {
           partnerUsername: partner.username,
@@ -334,8 +334,8 @@ export async function notifyOfferAccessApproved(
     });
 
     // Отправляем WebSocket уведомление
-    if (global.sendWebSocketNotification) {
-      global.sendWebSocketNotification(partner.id, {
+    if ((globalThis as any).sendWebSocketNotification) {
+      (globalThis as any).sendWebSocketNotification(partner.id, {
         type: 'offer_access_response',
         data: {
           status: 'approved',
@@ -378,8 +378,8 @@ export async function notifyOfferAccessRejected(
     });
 
     // Отправляем WebSocket уведомление
-    if (global.sendWebSocketNotification) {
-      global.sendWebSocketNotification(partner.id, {
+    if ((globalThis as any).sendWebSocketNotification) {
+      (globalThis as any).sendWebSocketNotification(partner.id, {
         type: 'offer_access_response',
         data: {
           status: 'rejected',
