@@ -34,3 +34,9 @@ test-output/
 dist/
 client/dist/
 website-design/
+
+# large local archives
+adlinkpro-audit.zip
+adlinkpro-audit-split.z01
+adlinkpro-audit-split.z02
+adlinkpro-audit-split.zip
