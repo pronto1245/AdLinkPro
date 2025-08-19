@@ -15,6 +15,9 @@ Thumbs.db
 .idea/
 *.log
 
+# Temp files and demos
+sidebar-integration-demo.html
+
 # Test files
 client/src/test-*.js
 client/src/test-*.ts

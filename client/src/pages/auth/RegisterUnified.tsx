@@ -4,7 +4,10 @@ import { register as apiRegister } from '@/lib/auth';
 import './auth-ui.css';
 
 type Role = 'partner' | 'advertiser';
-type Props = { role?: Role };
+type Props = { 
+  role?: Role;
+  params?: any; // Added for Route compatibility
+};
 
 const CONTACT_PLACEHOLDER: Record<'telegram'|'whatsapp'|'phone'|'site', string> = {
   telegram: '@username',
@@ -13,7 +16,7 @@ const CONTACT_PLACEHOLDER: Record<'telegram'|'whatsapp'|'phone'|'site', string> 
   site: 'https://your-site.com',
 };
 
-export default function RegisterUnified({ role }: Props) {
+export default function RegisterUnified({ role, ...props }: Props) {
   const [, setLocation] = useLocation();
 
   const [name, setName] = React.useState('');
