@@ -41,6 +41,12 @@ export function createTestApp() {
     }
   });
 
+  // User passwords store for dynamic updates
+  let userPasswords: any = {
+    'test-partner@example.com': 'partner123',
+    'partner': 'partner123'
+  };
+
   // Main auth login endpoint (from server/index.ts)
   app.post("/api/auth/login", (req, res) => {
     try {
@@ -61,7 +67,7 @@ export function createTestApp() {
         },
         { 
           email: process.env.PARTNER_EMAIL || "test-partner@example.com", 
-          password: process.env.PARTNER_PASSWORD || "partner123", 
+          password: userPasswords['test-partner@example.com'] || process.env.PARTNER_PASSWORD || "partner123", 
           role: "PARTNER", 
           sub: "partner-1", 
           username: "partner" 
@@ -222,6 +228,163 @@ export function createTestApp() {
 
     // For testing, return 401 for any code (since we can't verify real TOTP)
     return res.status(401).json({ error: "Invalid 2FA code" });
+  });
+
+  // Simple auth middleware
+  const authenticateToken = (req: any, res: any, next: any) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && authHeader.split(' ')[1];
+
+      if (!token) {
+        return res.sendStatus(401);
+      }
+
+      jwt.verify(token, process.env.JWT_SECRET!, (err: any, user: any) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+      });
+    } catch (error) {
+      return res.sendStatus(401);
+    }
+  };
+
+  // Role checking middleware
+  const requireRole = (roles: string[]) => {
+    return (req: any, res: any, next: any) => {
+      const userRole = req.user?.role?.toLowerCase();
+      const allowedRoles = roles.map(role => role.toLowerCase());
+      
+      if (!allowedRoles.includes('affiliate') && !allowedRoles.includes('partner')) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      if (userRole !== 'partner' && userRole !== 'affiliate') {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      next();
+    };
+  };
+
+  // Mock user data store
+  let mockUsers: any = {
+    'partner-1': {
+      id: 'partner-1',
+      email: 'test-partner@example.com',
+      role: 'AFFILIATE',
+      username: 'partner',
+      firstName: 'Test',
+      lastName: 'Partner',
+      company: '',
+      country: '',
+      timezone: 'UTC',
+      currency: 'USD',
+      telegram: '',
+      phone: '',
+      passwordHash: '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPJSfncq6' // 'partner123'
+    }
+  };
+
+  // Partner profile endpoints
+  app.get('/api/partner/profile', authenticateToken, requireRole(['affiliate']), (req: any, res) => {
+    try {
+      const userId = req.user.sub || req.user.id;
+      const user = mockUsers[userId];
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Return profile without sensitive data
+      const { passwordHash, ...profileData } = user;
+      res.json(profileData);
+    } catch (error) {
+      console.error('Get partner profile error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.patch('/api/partner/profile', authenticateToken, requireRole(['affiliate']), (req: any, res) => {
+    try {
+      const userId = req.user.sub || req.user.id;
+      const user = mockUsers[userId];
+      const updateData = req.body;
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Validation
+      if (updateData.firstName && updateData.firstName.trim().length === 0) {
+        return res.status(400).json({ error: 'First name cannot be whitespace only' });
+      }
+      if (updateData.lastName && updateData.lastName.trim().length === 0) {
+        return res.status(400).json({ error: 'Last name cannot be whitespace only' });
+      }
+      
+      // Validate Telegram if provided
+      if (updateData.telegram !== undefined) {
+        const trimmed = updateData.telegram.trim();
+        if (trimmed) {
+          const telegramValue = trimmed.replace(/^@+/, '');
+          const telegramRegex = /^[a-zA-Z0-9_]+$/;
+          if (!telegramRegex.test(telegramValue)) {
+            return res.status(400).json({ 
+              error: 'Invalid Telegram username format. Only letters, digits, and underscores allowed' 
+            });
+          }
+          updateData.telegram = '@' + telegramValue;
+        } else {
+          updateData.telegram = '';
+        }
+      }
+
+      // Update user data
+      mockUsers[userId] = { ...user, ...updateData };
+      const { passwordHash, ...profileData } = mockUsers[userId];
+      
+      res.json(profileData);
+    } catch (error) {
+      console.error('Update partner profile error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/api/partner/profile/change-password', authenticateToken, requireRole(['affiliate']), (req: any, res) => {
+    try {
+      const userId = req.user.sub || req.user.id;
+      const user = mockUsers[userId];
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: 'Current password and new password are required' });
+      }
+      
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+      }
+      
+      // Check current password (simplified check - in real app use bcrypt)
+      if (currentPassword !== userPasswords['test-partner@example.com'] && currentPassword !== userPasswords['partner']) {
+        return res.status(400).json({ error: 'Invalid current password' });
+      }
+      
+      // Update password in both user store and login credentials
+      mockUsers[userId].passwordHash = 'hashed_' + newPassword;
+      userPasswords['test-partner@example.com'] = newPassword;
+      userPasswords['partner'] = newPassword;
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Change password error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   return app;
