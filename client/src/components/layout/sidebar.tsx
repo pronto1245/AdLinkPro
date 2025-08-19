@@ -39,7 +39,7 @@ const menuItems: MenuItem[] = [
   { labelKey: 'sidebar.offers', href: '/dashboard/advertiser/offers', icon: Target, roles: ['advertiser'] },
   { labelKey: 'sidebar.analytics', href: '/dashboard/super-admin/analytics', icon: BarChart3, roles: ['super_admin'] },
   { labelKey: 'sidebar.analytics', href: '/dashboard/advertiser/analytics', icon: BarChart3, roles: ['advertiser'] },
-  { labelKey: 'sidebar.analytics', href: '/dash/statistics', icon: BarChart3, roles: ['affiliate', 'partner'] },
+  { labelKey: 'sidebar.analytics', href: '/dashboard/affiliate/statistics', icon: BarChart3, roles: ['affiliate', 'partner'] },
   { labelKey: 'sidebar.support', href: '/dashboard/staff', icon: HeadphonesIcon, roles: ['staff'] },
 ];
 

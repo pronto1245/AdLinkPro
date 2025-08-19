@@ -102,7 +102,7 @@ function Router() {
         <ProtectedRoute path="/dashboard/advertiser/documents" roles={['advertiser']} component={withLayout(AdvertiserOffers)} />
 
         {/* Affiliate Dashboard Routes - Standardized to /dashboard/affiliate */}
-        <ProtectedRoute path="/dashboard/affiliate" roles={['partner', 'affiliate']} component={AffiliateDash} />
+        <ProtectedRoute path="/dashboard/affiliate" roles={['partner', 'affiliate']} component={withLayout(AffiliateDash)} />
         <ProtectedRoute path="/dashboard/affiliate/offers" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
         <ProtectedRoute path="/dashboard/affiliate/statistics" roles={['partner', 'affiliate']} component={withLayout(AffiliateStats)} />
         <ProtectedRoute path="/dashboard/affiliate/finances" roles={['partner', 'affiliate']} component={withLayout(AffiliateFin)} />
