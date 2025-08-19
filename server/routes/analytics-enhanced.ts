@@ -140,4 +140,6 @@ router.post('/export', requireAuth, async (req: Request, res: Response) => {
       details: error.message 
     });
   }
+});
+
 export default router;
