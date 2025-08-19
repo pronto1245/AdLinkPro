@@ -16,7 +16,9 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "audit:integration": "node scripts/integration-audit.mjs",
-    "audit:verbose": "VERBOSE=1 node scripts/integration-audit.mjs"
+    "audit:verbose": "VERBOSE=1 node scripts/integration-audit.mjs",
+    "validate:integration": "node scripts/integration-validation.mjs",
+    "validate:verbose": "VERBOSE=1 node scripts/integration-validation.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

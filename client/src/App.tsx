@@ -13,6 +13,7 @@ import AuthRedirector from '@/components/auth/AuthRedirector';
 import Unauthorized from '@/pages/Unauthorized';
 
 import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
+import WebSocketManager from '@/components/WebSocketManager';
 
 // Advertiser
 const AdvertiserDash      = lazy(() => import('@/pages/advertiser/AdvertiserDashboard'));
@@ -173,5 +174,10 @@ function Router() {
 }
 
 export default function App() {
-  return <Router />;
+  return (
+    <>
+      <WebSocketManager />
+      <Router />
+    </>
+  );
 }
