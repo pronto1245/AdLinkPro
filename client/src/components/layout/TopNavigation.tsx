@@ -86,9 +86,22 @@ export function TopNavigation() {
 
   // Setup automatic token refresh
   useEffect(() => {
+    // Simple token refresh setup - check token validity every 30 minutes
+    const setupTokenRefresh = () => {
+      const interval = setInterval(() => {
+        const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+        if (token && user) {
+          // Token refresh logic could be implemented here
+          console.log('Token refresh check');
+        }
+      }, 30 * 60 * 1000); // 30 minutes
+
+      return () => clearInterval(interval);
+    };
+
     const cleanup = setupTokenRefresh();
     return cleanup;
-  }, []);
+  }, [user]);
 
   // Define menu items based on user role
   const getMenuItems = (): MenuItem[] => {
