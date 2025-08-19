@@ -4,6 +4,7 @@ import { Switch, Route, Redirect } from 'wouter';
 import { useTranslation } from 'react-i18next';
 
 import Login from '@/pages/auth/login';
+import Logout from '@/pages/auth/logout';
 import RegisterUnified from '@/pages/auth/RegisterUnified';
 import { LoginPartner, LoginAdvertiser, RegisterPartner, RegisterAdvertiser } from '@/pages/LoginVariants';
 
@@ -79,6 +80,7 @@ function Router() {
         <Route path="/login/partner" component={LoginPartner} />
         <Route path="/login/advertiser" component={LoginAdvertiser} />
         <Route path="/login" component={Login} />
+        <Route path="/logout" component={Logout} />
 
         <Route path="/register/partner" component={RegisterPartner} />
         <Route path="/register/advertiser" component={RegisterAdvertiser} />
@@ -117,6 +119,15 @@ function Router() {
         <ProtectedRoute path="/dashboard/affiliate/security" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
         <ProtectedRoute path="/dashboard/affiliate/documents" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
 
+        {/* Partner Dashboard Routes - Dedicated partner routes */}
+        <ProtectedRoute path="/dashboard/partner" roles={['partner']} component={withLayout(AffiliateDash)} />
+        <ProtectedRoute path="/dashboard/partner/offers" roles={['partner']} component={withLayout(AffiliateOffers)} />
+        <ProtectedRoute path="/dashboard/partner/statistics" roles={['partner']} component={withLayout(AffiliateStats)} />
+        <ProtectedRoute path="/dashboard/partner/finances" roles={['partner']} component={withLayout(AffiliateFin)} />
+        <ProtectedRoute path="/dashboard/partner/postbacks" roles={['partner']} component={withLayout(AffiliatePosts)} />
+        <ProtectedRoute path="/dashboard/partner/profile" roles={['partner']} component={withLayout(AffiliateProf)} />
+        <ProtectedRoute path="/dashboard/partner/notifications" roles={['partner']} component={withLayout(AffiliateNotifs)} />
+
         {/* Owner Dashboard Routes */}
         <ProtectedRoute path="/dashboard/owner" roles={['owner']} component={withLayout(OwnerDash)} />
         <ProtectedRoute path="/dashboard/owner/users" roles={['owner']} component={withLayout(OwnerUsers)} />
@@ -133,10 +144,6 @@ function Router() {
 
         {/* Demo Route - Available to all authenticated users */}
         <ProtectedRoute path="/sidebar-demo" roles={['partner', 'affiliate', 'advertiser', 'owner', 'super_admin', 'staff']} component={withLayout(SidebarDemo)} />
-
-        {/* Legacy route compatibility - redirect old /dash routes to new /dashboard/affiliate */}
-        <Route path="/dash" component={() => <Redirect to="/dashboard/affiliate" />} />
-        <Route path="/dash/*" component={() => <Redirect to="/dashboard/affiliate" />} />
 
         {/* Error and fallback routes */}
         <Route path="/unauthorized" component={Unauthorized} />

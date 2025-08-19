@@ -32,14 +32,37 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
+  // Dashboard items for all roles
   { labelKey: 'sidebar.dashboard', href: '', icon: LayoutDashboard, roles: ['super_admin', 'owner', 'advertiser', 'partner', 'affiliate', 'staff'] },
+  
+  // Super Admin specific items
   { labelKey: 'sidebar.users', href: '/dashboard/super-admin/users', icon: Users, roles: ['super_admin'], badge: 3 },
-  { labelKey: 'sidebar.users', href: '/dashboard/owner/users', icon: Users, roles: ['owner'] },
   { labelKey: 'sidebar.offers', href: '/dashboard/super-admin/offers', icon: Target, roles: ['super_admin'] },
-  { labelKey: 'sidebar.offers', href: '/dashboard/advertiser/offers', icon: Target, roles: ['advertiser'] },
   { labelKey: 'sidebar.analytics', href: '/dashboard/super-admin/analytics', icon: BarChart3, roles: ['super_admin'] },
+  
+  // Owner specific items
+  { labelKey: 'sidebar.users', href: '/dashboard/owner/users', icon: Users, roles: ['owner'] },
+  { labelKey: 'sidebar.settings', href: '/dashboard/owner/settings', icon: Settings, roles: ['owner'] },
+  
+  // Advertiser specific items
+  { labelKey: 'sidebar.offers', href: '/dashboard/advertiser/offers', icon: Target, roles: ['advertiser'] },
   { labelKey: 'sidebar.analytics', href: '/dashboard/advertiser/analytics', icon: BarChart3, roles: ['advertiser'] },
-  { labelKey: 'sidebar.analytics', href: '/dash/statistics', icon: BarChart3, roles: ['affiliate', 'partner'] },
+  { labelKey: 'sidebar.partners', href: '/dashboard/advertiser/partners', icon: Users, roles: ['advertiser'] },
+  { labelKey: 'sidebar.finances', href: '/dashboard/advertiser/finances', icon: DollarSign, roles: ['advertiser'] },
+  
+  // Partner specific items
+  { labelKey: 'sidebar.offers', href: '/dashboard/partner/offers', icon: Target, roles: ['partner'] },
+  { labelKey: 'sidebar.analytics', href: '/dashboard/partner/statistics', icon: BarChart3, roles: ['partner'] },
+  { labelKey: 'sidebar.finances', href: '/dashboard/partner/finances', icon: DollarSign, roles: ['partner'] },
+  { labelKey: 'sidebar.profile', href: '/dashboard/partner/profile', icon: Settings, roles: ['partner'] },
+  
+  // Affiliate specific items  
+  { labelKey: 'sidebar.offers', href: '/dashboard/affiliate/offers', icon: Target, roles: ['affiliate'] },
+  { labelKey: 'sidebar.analytics', href: '/dashboard/affiliate/statistics', icon: BarChart3, roles: ['affiliate'] },
+  { labelKey: 'sidebar.finances', href: '/dashboard/affiliate/finances', icon: DollarSign, roles: ['affiliate'] },
+  { labelKey: 'sidebar.profile', href: '/dashboard/affiliate/profile', icon: Settings, roles: ['affiliate'] },
+  
+  // Staff specific items
   { labelKey: 'sidebar.support', href: '/dashboard/staff', icon: HeadphonesIcon, roles: ['staff'] },
 ];
 

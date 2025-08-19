@@ -1,3 +1,5 @@
+import { urlJoin, fixApiUrl } from '../utils/urlJoin';
+
 const API_BASE = import.meta.env.DEV ? (import.meta.env.VITE_API_URL || '') : '';
 
 export async function api<T>(path: string, init?: RequestInit & { skipAuth?: boolean }): Promise<T> {
@@ -9,7 +11,10 @@ export async function api<T>(path: string, init?: RequestInit & { skipAuth?: boo
     if (token) headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers, credentials: 'include' });
+  // Use urlJoin to properly construct the URL and then fix any duplication issues
+  const url = fixApiUrl(urlJoin(API_BASE, path));
+  
+  const res = await fetch(url, { ...init, headers, credentials: 'include' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
   const ct = res.headers.get('content-type') || '';
