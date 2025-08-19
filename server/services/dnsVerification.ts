@@ -47,7 +47,7 @@ export class DNSVerificationService {
       return { 
         success: false, 
         method: 'dns', 
-        error: `DNS lookup failed: ${error.message}` 
+        error: `DNS lookup failed: ${error instanceof Error ? error.message : String(error)}` 
       };
     }
   }
@@ -100,7 +100,7 @@ export class DNSVerificationService {
       return {
         success: false,
         method: 'file',
-        error: `File verification failed: ${error.message}`
+        error: `File verification failed: ${error instanceof Error ? error.message : String(error)}`
       };
     }
   }

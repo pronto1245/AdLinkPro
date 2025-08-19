@@ -5453,24 +5453,7 @@ class MemStorage implements IStorage {
   }
 
   // Custom Domains methods for MemStorage - pure in-memory implementation
-  private customDomains: any[] = [
-    {
-      id: '1',
-      domain: 'track.example.com',
-      type: 'cname',
-      status: 'verified',
-      verificationValue: 'affiliate-tracker.replit.app',
-      targetValue: 'affiliate-tracker.replit.app',
-      dnsInstructions: {
-        type: 'CNAME',
-        host: 'track',
-        value: 'affiliate-tracker.replit.app'
-      },
-      createdAt: new Date(),
-      verifiedAt: new Date(),
-      advertiserId: '2'
-    }
-  ];
+  // Uses the existing customDomains property declared at class level
 
   async getCustomDomains(userId: string): Promise<any[]> {
     // Pure in-memory - no database calls
