@@ -188,7 +188,7 @@ const ReferralStats = () => {
               <CardTitle>Приглашенные пользователи</CardTitle>
             </CardHeader>
             <CardContent>
-              {stats?.referrals.referred_users?.length > 0 ? (
+              {stats?.referrals?.referred_users && stats.referrals.referred_users.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -200,7 +200,7 @@ const ReferralStats = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {stats.referrals.referred_users.map((user) => (
+                    {stats?.referrals?.referred_users?.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell className="font-medium">{user.username}</TableCell>
                         <TableCell>{user.email}</TableCell>

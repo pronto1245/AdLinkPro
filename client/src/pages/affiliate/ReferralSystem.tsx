@@ -78,7 +78,7 @@ const ReferralSystem: React.FC = () => {
   });
 
   // Получаем общую статистику рефералов с историей комиссий
-  const { data: generalStats } = useQuery({
+  const { data: generalStats } = useQuery<any>({
     queryKey: ['/api/referrals/stats'],
     enabled: !!user && user.role === 'affiliate'
   });
@@ -231,7 +231,7 @@ const ReferralSystem: React.FC = () => {
                 >
                   {copied ? <CheckCircle className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
                 </Button>
-                {typeof navigator !== 'undefined' && navigator.share && (
+                {navigator?.share && (
                   <Button
                     onClick={shareReferralLink}
                     variant="outline"
@@ -360,10 +360,10 @@ const ReferralSystem: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-green-600">
-                      ${generalStats.earnings?.total_earned || '0.00'}
+                      ${generalStats?.earnings?.total_earned || '0.00'}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      От {generalStats.earnings?.total_transactions || 0} транзакций
+                      От {generalStats?.earnings?.total_transactions || 0} транзакций
                     </p>
                   </CardContent>
                 </Card>
@@ -375,7 +375,7 @@ const ReferralSystem: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-yellow-600">
-                      ${generalStats.earnings?.pending_amount || '0.00'}
+                      ${generalStats?.earnings?.pending_amount || '0.00'}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Ожидает выплаты
@@ -390,10 +390,10 @@ const ReferralSystem: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-purple-600">
-                      {generalStats.referrals?.total_referred || 0}
+                      {generalStats?.referrals?.total_referred || 0}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Активных: {generalStats.referrals?.active_referrals || 0}
+                      Активных: {generalStats?.referrals?.active_referrals || 0}
                     </p>
                   </CardContent>
                 </Card>
@@ -405,7 +405,7 @@ const ReferralSystem: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-orange-600">
-                      ${generalStats.earnings?.total_transactions > 0 ? (parseFloat(generalStats.earnings.total_earned) / generalStats.earnings.total_transactions).toFixed(2) : '0.00'}
+                      ${generalStats?.earnings?.total_transactions && generalStats?.earnings?.total_earned ? (parseFloat(generalStats.earnings.total_earned) / generalStats.earnings.total_transactions).toFixed(2) : '0.00'}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       За транзакцию
@@ -434,7 +434,7 @@ const ReferralSystem: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {generalStats.referrals?.referred_users?.map((user: any) => (
+                      {generalStats?.referrals?.referred_users?.map((user: any) => (
                         <TableRow key={user.id}>
                           <TableCell className="font-medium">{user.username}</TableCell>
                           <TableCell>{user.email}</TableCell>
@@ -453,7 +453,7 @@ const ReferralSystem: React.FC = () => {
                           </TableCell>
                         </TableRow>
                       ))}
-                      {(!generalStats.referrals?.referred_users || generalStats.referrals.referred_users.length === 0) && (
+                      {(!generalStats?.referrals?.referred_users || generalStats.referrals.referred_users.length === 0) && (
                         <TableRow>
                           <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                             Пока нет приглашенных пользователей
@@ -484,7 +484,7 @@ const ReferralSystem: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {generalStats.commission_history?.map((commission: any) => (
+                      {generalStats?.commission_history?.map((commission: any) => (
                         <TableRow key={commission.id}>
                           <TableCell className="font-medium">
                             {commission.referredUser?.username || 'Неизвестно'}
@@ -502,7 +502,7 @@ const ReferralSystem: React.FC = () => {
                           </TableCell>
                         </TableRow>
                       ))}
-                      {(!generalStats.commission_history || generalStats.commission_history.length === 0) && (
+                      {(!generalStats?.commission_history || generalStats.commission_history.length === 0) && (
                         <TableRow>
                           <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                             Пока нет комиссионных выплат
