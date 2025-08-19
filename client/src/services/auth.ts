@@ -5,6 +5,7 @@ const HOME_BY_ROLE: Record<string, string> = {
   owner: '/dashboard/owner',
   advertiser: '/dashboard/advertiser',
   super_admin: '/dashboard/super-admin',
+  affiliate: '/dashboard/affiliate',
 };
 
 export function getRoleHome(role: any) {
