@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { saveToken, getToken } from "@/services/auth";
 import { safeFetch, safeJsonParse, getErrorMessage, setupGlobalErrorHandling } from "@/utils/errorHandler";
 import { throttledNavigate } from "@/utils/navigationThrottle";
+import './auth-ui.css';
 
 const API_BASE = import.meta.env.VITE_API_URL;
 const LOGIN_PATH = import.meta.env.VITE_LOGIN_PATH || "/api/auth/login";
@@ -187,69 +188,81 @@ const LoginPage = () => {
   }
 
   return (
-    <div style={{ maxWidth: 420, margin: "64px auto", fontFamily: "system-ui" }}>
-      <h1 style={{ marginBottom: 16 }}>Login</h1>
-      <form onSubmit={onSubmit}>
-        <label>Email</label>
-        <input 
-          type="email" 
-          value={email} 
-          onChange={handleEmailChange}
-          placeholder="you@example.com"
-          style={{ 
-            display: "block", 
-            width: "100%", 
-            marginBottom: emailError ? 4 : 12, 
-            padding: 8,
-            borderColor: emailError ? "red" : undefined
-          }} 
-          required
-        />
-        {emailError && (
-          <div style={{ color: "red", fontSize: "14px", marginBottom: 12 }}>
-            {emailError}
-          </div>
-        )}
+    <div className="auth-wrap">
+      <div className="auth-card">
+        <div className="brand">
+          <div className="brand-logo">🚀</div>
+          <div className="brand-name">AdLinkPro</div>
+        </div>
         
-        <label>Password</label>
-        <input 
-          type="password" 
-          value={password} 
-          onChange={handlePasswordChange}
-          placeholder="••••••••"
-          style={{ 
-            display: "block", 
-            width: "100%", 
-            marginBottom: passwordError ? 4 : 16, 
-            padding: 8,
-            borderColor: passwordError ? "red" : undefined
-          }} 
-          required
-        />
-        {passwordError && (
-          <div style={{ color: "red", fontSize: "14px", marginBottom: 16 }}>
-            {passwordError}
-          </div>
-        )}
+        <h1 className="auth-title">Вход в систему</h1>
+        <p className="auth-sub">Введите ваши данные для входа</p>
         
-        <button 
-          type="submit" 
-          disabled={loading || !!emailError || !!passwordError} 
-          style={{ 
-            padding: "10px 14px",
-            opacity: (loading || emailError || passwordError) ? 0.6 : 1,
-            cursor: (loading || emailError || passwordError) ? "not-allowed" : "pointer"
-          }}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-        
-        {err && (
-          <div style={{ color: "crimson", marginTop: 12, fontSize: "14px" }}>
-            {err}
+        <form onSubmit={onSubmit}>
+          <div className="auth-field">
+            <label>Электронная почта</label>
+            <input 
+              type="email" 
+              value={email} 
+              onChange={handleEmailChange}
+              placeholder="you@example.com"
+              style={{
+                borderColor: emailError ? "#ef4444" : undefined
+              }}
+              required
+            />
+            {emailError && (
+              <div className="auth-error">
+                {emailError}
+              </div>
+            )}
           </div>
-        )}
-      </form>
+          
+          <div className="auth-field">
+            <label>Пароль</label>
+            <input 
+              type="password" 
+              value={password} 
+              onChange={handlePasswordChange}
+              placeholder="••••••••"
+              style={{
+                borderColor: passwordError ? "#ef4444" : undefined
+              }}
+              required
+            />
+            {passwordError && (
+              <div className="auth-error">
+                {passwordError}
+              </div>
+            )}
+          </div>
+          
+          <div className="auth-ctas">
+            <button 
+              type="submit" 
+              className="auth-btn"
+              disabled={loading || !!emailError || !!passwordError}
+              style={{
+                opacity: (loading || emailError || passwordError) ? 0.6 : 1,
+                cursor: (loading || emailError || passwordError) ? "not-allowed" : "pointer"
+              }}
+            >
+              {loading ? "Вход..." : "Войти"}
+            </button>
+          </div>
+          
+          {err && (
+            <div className="auth-error">
+              {err}
+            </div>
+          )}
+        </form>
+        
+        <div className="auth-actions">
+          <a href="#" className="link">Забыли пароль?</a>
+          <a href="/register" className="link">Регистрация</a>
+        </div>
+      </div>
     </div>
   );
 };
