@@ -4,6 +4,7 @@ import { useSidebar } from '@/contexts/sidebar-context';
 import { useAuth } from '@/contexts/auth-context';
 import { useState, useEffect } from 'react';
 import { validateToken, refreshTokenIfNeeded, setupTokenRefresh } from '@/lib/menu';
+import { getDashboardHref, createLogoutHandler, getUserInitials } from '@/lib/navigation-utils';
 import { 
   BarChart3, 
   Settings, 
@@ -296,25 +297,7 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
     return true;
   });
 
-  const handleLogout = () => {
-    logout();
-    if (onClose) onClose();
-  };
-
-  // Determine dashboard href based on user role
-  const getDashboardHref = () => {
-    if (!user?.role) return '/dashboard';
-    
-    const roleMap: Record<string, string> = {
-      'partner': '/dash',
-      'affiliate': '/dashboard/affiliate',
-      'advertiser': '/dashboard/advertiser',
-      'owner': '/dashboard/owner',
-      'super_admin': '/dashboard/super-admin',
-    };
-    
-    return roleMap[user.role] || '/dashboard';
-  };
+  const handleLogout = createLogoutHandler(logout, onClose);
 
   // Get time until token expiry
   const getTokenExpiryInfo = () => {
@@ -382,7 +365,7 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {user.email ? user.email[0].toUpperCase() : 'U'}
+                {getUserInitials(user)}
               </span>
             </div>
             <div className="flex-1 min-w-0">
@@ -406,12 +389,12 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {/* Dashboard link - special handling */}
-        <Link href={getDashboardHref()}>
+        <Link href={getDashboardHref(user)}>
           <div
             className={cn(
               'flex items-center rounded-lg transition-colors group',
               (collapsed && !isMobile) ? 'px-3 py-3 justify-center' : 'px-3 py-2 space-x-3',
-              (location === getDashboardHref() || location.startsWith('/dashboard'))
+              (location === getDashboardHref(user) || location.startsWith('/dashboard'))
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
             )}
@@ -421,7 +404,7 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
           >
             <Home className={cn(
               'w-5 h-5 flex-shrink-0',
-              (location === getDashboardHref() || location.startsWith('/dashboard'))
+              (location === getDashboardHref(user) || location.startsWith('/dashboard'))
                 ? 'text-blue-600 dark:text-blue-400' : ''
             )} />
             {(!collapsed || isMobile) && (

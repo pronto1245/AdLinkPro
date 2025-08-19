@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useSidebar } from '@/contexts/sidebar-context';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { getDashboardHref, getUserDisplayName, getUserInitials, getRoleDisplayName } from '@/lib/navigation-utils';
 
 interface MenuItem {
   labelKey: string;
@@ -31,11 +32,7 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { labelKey: 'sidebar.dashboard', href: '/dashboard/super-admin', icon: LayoutDashboard, roles: ['super_admin'] },
-  { labelKey: 'sidebar.dashboard', href: '/dashboard/owner', icon: LayoutDashboard, roles: ['owner'] },
-  { labelKey: 'sidebar.dashboard', href: '/dashboard/advertiser', icon: LayoutDashboard, roles: ['advertiser'] },
-  { labelKey: 'sidebar.dashboard', href: '/dash', icon: LayoutDashboard, roles: ['partner', 'affiliate'] },
-  { labelKey: 'sidebar.dashboard', href: '/dashboard/staff', icon: LayoutDashboard, roles: ['staff'] },
+  { labelKey: 'sidebar.dashboard', href: '', icon: LayoutDashboard, roles: ['super_admin', 'owner', 'advertiser', 'partner', 'affiliate', 'staff'] },
   { labelKey: 'sidebar.users', href: '/dashboard/super-admin/users', icon: Users, roles: ['super_admin'], badge: 3 },
   { labelKey: 'sidebar.users', href: '/dashboard/owner/users', icon: Users, roles: ['owner'] },
   { labelKey: 'sidebar.offers', href: '/dashboard/super-admin/offers', icon: Target, roles: ['super_admin'] },
@@ -62,30 +59,11 @@ function Sidebar({ className }: SidebarProps) {
     item.roles.includes(user.role)
   );
 
-  const getUserDisplayName = () => {
-    if (user.firstName && user.lastName) {
-      return `${user.firstName} ${user.lastName}`;
-    }
-    return user.username;
-  };
-
-  const getUserInitials = () => {
-    if (user.firstName && user.lastName) {
-      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
-    }
-    return user.username.substring(0, 2).toUpperCase();
-  };
+  // Special handling for dashboard item
+  const dashboardHref = getDashboardHref(user);
 
   const getRoleLabel = () => {
-    switch (user.role) {
-      case 'super_admin': return 'Super Admin';
-      case 'advertiser': return 'Advertiser';
-      case 'affiliate': return 'Affiliate';
-      case 'partner': return 'Partner';
-      case 'owner': return 'Owner';
-      case 'staff': return 'Staff';
-      default: return user.role;
-    }
+    return getRoleDisplayName(user?.role);
   };
 
   return (
@@ -126,13 +104,15 @@ function Sidebar({ className }: SidebarProps) {
         <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
           {filteredMenuItems.map((item) => {
             const IconComponent = item.icon;
+            const href = item.labelKey === 'sidebar.dashboard' ? dashboardHref : item.href;
+            
             return (
               <Link
-                key={item.href}
-                href={item.href}
+                key={item.href || 'dashboard'}
+                href={href}
                 className={cn(
                   "flex items-center px-3 py-2 text-sm font-medium rounded-lg group transition-colors relative",
-                  location === item.href
+                  location === href
                     ? "text-white bg-blue-600 dark:bg-blue-700"
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-700",
                   isCollapsed ? "justify-center" : ""
@@ -143,7 +123,7 @@ function Sidebar({ className }: SidebarProps) {
                 <IconComponent className={cn(
                   "w-5 h-5",
                   isCollapsed ? "" : "mr-3",
-                  location === item.href ? "text-white" : "text-slate-400 dark:text-slate-500"
+                  location === href ? "text-white" : "text-slate-400 dark:text-slate-500"
                 )} />
                 {!isCollapsed && (
                   <>
