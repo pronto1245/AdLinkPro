@@ -73,8 +73,8 @@ export default function AccessRequests() {
       responseNote?: string;
       advertiserResponse?: string;
     }) => {
-      await apiRequest(`/api/offers/${data.offerId}/access-requests/${data.requestId}`, {
-        method: "PATCH",
+      return await apiRequest(`/api/advertiser/access-requests/${data.requestId}/respond`, {
+        method: "POST",
         body: JSON.stringify({
           action: data.action,
           responseNote: data.responseNote,
@@ -375,10 +375,10 @@ export default function AccessRequests() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {request.response_note || request.advertiser_response ? (
+                      {request.response_note ? (
                         <div className="max-w-xs">
                           <div className="text-sm truncate">
-                            {request.advertiser_response || request.response_note}
+                            {request.response_note}
                           </div>
                         </div>
                       ) : (

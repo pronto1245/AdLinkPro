@@ -29,14 +29,11 @@ app.post('/api/access-requests', authenticateToken, requireRole(['affiliate']), 
     
     // Создаем запрос
     const request = await storage.createOfferAccessRequest({
-      id: randomUUID(),
       partnerId,
       offerId,
       advertiserId: offer.advertiserId,
       status: 'pending',
       requestNote: message || null,
-      createdAt: new Date(),
-      updatedAt: new Date()
     });
     
     res.status(201).json(request);
@@ -65,7 +62,7 @@ app.get('/api/access-requests/partner', authenticateToken, requireRole(['affilia
             name: offer.name,
             category: offer.category,
             payoutType: offer.payoutType,
-            payoutAmount: offer.payoutAmount,
+            payoutAmount: offer.payout,
             currency: offer.currency,
             logo: offer.logo,
             description: offer.description
@@ -127,8 +124,7 @@ app.post('/api/access-requests/:id/respond', authenticateToken, requireRole(['ad
     // Обновляем статус запроса
     const updatedRequest = await storage.updateOfferAccessRequest(requestId, {
       status,
-      responseNote: message || null,
-      updatedAt: new Date()
+      responseNote: message || null
     });
     
     // Если одобрено, создаем связь партнер-оффер
@@ -136,13 +132,10 @@ app.post('/api/access-requests/:id/respond', authenticateToken, requireRole(['ad
       const existingPartnerOffers = await storage.getPartnerOffers(request.partnerId, request.offerId);
       if (existingPartnerOffers.length === 0) {
         await storage.createPartnerOffer({
-          id: randomUUID(),
           partnerId: request.partnerId,
           offerId: request.offerId,
           isApproved: true,
-          customPayout: null,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          customPayout: null
         });
       }
     }
@@ -186,8 +179,7 @@ app.post('/api/access-requests/bulk-action', authenticateToken, requireRole(['ad
         // Обновляем статус запроса
         const updatedRequest = await storage.updateOfferAccessRequest(requestId, {
           status,
-          responseNote: message || null,
-          updatedAt: new Date()
+          responseNote: message || null
         });
         
         // Если одобрено, создаем связь партнер-оффер
@@ -195,13 +187,10 @@ app.post('/api/access-requests/bulk-action', authenticateToken, requireRole(['ad
           const existingPartnerOffers = await storage.getPartnerOffers(request.partnerId, request.offerId);
           if (existingPartnerOffers.length === 0) {
             await storage.createPartnerOffer({
-              id: randomUUID(),
               partnerId: request.partnerId,
               offerId: request.offerId,
               isApproved: true,
-              customPayout: null,
-              createdAt: new Date(),
-              updatedAt: new Date()
+              customPayout: null
             });
           }
         }
@@ -251,7 +240,7 @@ app.get('/api/access-requests/stats', authenticateToken, async (req, res) => {
         approved: requests.filter(r => r.status === 'approved').length,
         rejected: requests.filter(r => r.status === 'rejected').length,
         thisWeek: requests.filter(r => {
-          const requestDate = new Date(r.createdAt);
+          const requestDate = new Date(r.requestedAt);
           const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
           return requestDate > weekAgo;
         }).length
@@ -264,7 +253,7 @@ app.get('/api/access-requests/stats', authenticateToken, async (req, res) => {
         approved: allRequests.filter(r => r.status === 'approved').length,
         rejected: allRequests.filter(r => r.status === 'rejected').length,
         thisWeek: allRequests.filter(r => {
-          const requestDate = new Date(r.createdAt);
+          const requestDate = new Date(r.requestedAt);
           const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
           return requestDate > weekAgo;
         }).length

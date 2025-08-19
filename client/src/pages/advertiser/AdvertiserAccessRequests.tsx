@@ -381,9 +381,9 @@ export default function AdvertiserAccessRequests() {
 
                         {/* Сообщение */}
                         <TableCell>
-                          {request.requestNote ? (
-                            <div className="max-w-xs truncate text-sm" title={request.requestNote}>
-                              {request.requestNote}
+                          {request.message ? (
+                            <div className="max-w-xs truncate text-sm" title={request.message}>
+                              {request.message}
                             </div>
                           ) : (
                             <span className="text-muted-foreground text-sm">Без сообщения</span>
