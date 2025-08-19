@@ -29,7 +29,7 @@ export function useWebSocket(
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const [isConnected, setIsConnected] = useState(false);
-  const [connectionState, setConnectionState] = useState(WebSocket.CLOSED);
+  const [connectionState, setConnectionState] = useState<number>(WebSocket.CLOSED);
   const [lastMessage, setLastMessage] = useState<any>(null);
 
   const {
@@ -101,7 +101,7 @@ export function useWebSocket(
 
   const connect = useCallback(() => {
     // В проде отключено, пока не зададим VITE_WS_URL
-    const WS_URL = import.meta?.env?.VITE_WS_URL as string | undefined;
+    const WS_URL = import.meta.env?.VITE_WS_URL as string | undefined;
     if (!WS_URL) {
       console.debug('WebSocket disabled: VITE_WS_URL not configured');
       return;
