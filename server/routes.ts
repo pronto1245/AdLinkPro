@@ -10322,83 +10322,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
-  // Get custom domains
-  app.get('/api/advertiser/profile/domains', authenticateToken, requireRole(['advertiser']), async (req, res) => {
-    try {
-      // Mock custom domains data
-      const domains = [
-        {
-          id: 'domain_1',
-          domain: 'tracking.example.com',
-          status: 'verified' as const,
-          type: 'cname' as const,
-          verificationValue: 'track.platform.com',
-          createdAt: '2024-12-01T10:00:00Z',
-          lastChecked: '2025-01-05T12:00:00Z',
-          errorMessage: null
-        },
-        {
-          id: 'domain_2',
-          domain: 'links.mysite.com',
-          status: 'pending' as const,
-          type: 'a_record' as const,
-          verificationValue: '192.168.1.100',
-          createdAt: '2025-01-06T15:30:00Z',
-          lastChecked: null,
-          errorMessage: null
-        }
-      ];
-      res.json(domains);
-    } catch (error) {
-      console.error('Get custom domains error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  // Add custom domain
-  app.post('/api/advertiser/profile/domains', authenticateToken, requireRole(['advertiser']), async (req, res) => {
-    try {
-      const { domain, type } = req.body;
-      
-      const newDomain = {
-        id: `domain_${Date.now()}`,
-        domain,
-        status: 'pending' as const,
-        type,
-        verificationValue: type === 'cname' ? 'track.platform.com' : '192.168.1.100',
-        createdAt: new Date().toISOString(),
-        lastChecked: null,
-        errorMessage: null
-      };
-      
-      res.json(newDomain);
-    } catch (error) {
-      console.error('Add custom domain error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  // Verify custom domain
-  app.post('/api/advertiser/profile/domains/:domainId/verify', authenticateToken, requireRole(['advertiser']), async (req, res) => {
-    try {
-      const { domainId } = req.params;
-      res.json({ success: true, message: 'Domain verification started' });
-    } catch (error) {
-      console.error('Verify custom domain error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  // Delete custom domain
-  app.delete('/api/advertiser/profile/domains/:domainId', authenticateToken, requireRole(['advertiser']), async (req, res) => {
-    try {
-      const { domainId } = req.params;
-      res.json({ success: true, message: 'Domain deleted successfully' });
-    } catch (error) {
-      console.error('Delete custom domain error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
+  // Duplicate mock routes removed - using functional routes at line ~3750
 
   // Get webhook settings
   app.get('/api/advertiser/profile/webhook', authenticateToken, requireRole(['advertiser']), async (req, res) => {
@@ -11722,70 +11646,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
-  // Custom Domains Management API
-  app.get("/api/advertiser/domains", authenticateToken, requireRole(['advertiser']), async (req, res) => {
-    try {
-      const userId = (req as any).user.id;
-      const domains = await storage.getCustomDomains(userId);
-      res.json(domains);
-    } catch (error) {
-      console.error("Get custom domains error:", error);
-      res.status(500).json({ error: "Failed to fetch custom domains" });
-    }
-  });
-
-  app.post("/api/advertiser/domains", authenticateToken, requireRole(['advertiser']), async (req, res) => {
-    try {
-      const userId = (req as any).user.id;
-      const { domain, type } = req.body;
-
-      if (!domain || !type) {
-        return res.status(400).json({ error: "Domain and type are required" });
-      }
-
-      // Basic domain validation
-      const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.([a-zA-Z]{2,}\.)*[a-zA-Z]{2,}$/;
-      if (!domainRegex.test(domain)) {
-        return res.status(400).json({ error: "Invalid domain format" });
-      }
-
-      const newDomain = await storage.addCustomDomain(userId, domain, type);
-      res.json(newDomain);
-    } catch (error) {
-      console.error("Add custom domain error:", error);
-      if (error.message?.includes('unique constraint')) {
-        res.status(400).json({ error: "Domain already exists" });
-      } else {
-        res.status(500).json({ error: "Failed to add custom domain" });
-      }
-    }
-  });
-
-  app.post("/api/advertiser/domains/:domainId/verify", authenticateToken, requireRole(['advertiser']), async (req, res) => {
-    try {
-      const userId = (req as any).user.id;
-      const { domainId } = req.params;
-
-      const verifiedDomain = await storage.verifyCustomDomain(userId, domainId);
-      res.json(verifiedDomain);
-    } catch (error) {
-      console.error("Verify custom domain error:", error);
-      res.status(500).json({ error: "Failed to verify custom domain" });
-    }
-  });
-
-  app.delete("/api/advertiser/domains/:domainId", authenticateToken, requireRole(['advertiser']), async (req, res) => {
-    try {
-      const userId = (req as any).user.id;
-      const { domainId } = req.params;
-
-      await storage.deleteCustomDomain(userId, domainId);
-      res.json({ success: true, message: "Domain deleted successfully" });
-    } catch (error) {
-      console.error("Delete custom domain error:", error);
-      res.status(500).json({ error: "Failed to delete custom domain" });
-    }
-  });
+  // Duplicate routes removed - using functional routes at line ~3750
 
   // API Tokens Management
   app.get("/api/advertiser/api-tokens", authenticateToken, requireRole(['advertiser']), async (req, res) => {

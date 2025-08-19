@@ -215,7 +215,7 @@ export class LetsEncryptService {
       await db
         .update(customDomains)
         .set({
-          sslStatus: 'verified',
+          sslStatus: 'issued',
           sslCertificate: certificate,
           sslPrivateKey: certificateKey.toString(),
           sslValidUntil: validUntil,
