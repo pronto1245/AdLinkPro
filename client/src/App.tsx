@@ -28,12 +28,12 @@ const AdvertiserFinances  = lazy(() => import('@/pages/advertiser/AdvertiserFina
 const AdvertiserAntiFraud = lazy(() => import('@/pages/advertiser/AntiFraud'));
 
 // Partner (Affiliate) - Updated to use consistent /dashboard/affiliate prefix
-const AffiliateDash   = lazy(() => import('@/pages/partner/PartnerDashboard'));
+const AffiliateDash   = lazy(() => import('@/pages/affiliate/PartnerDashboard'));
 const AffiliateOffers = lazy(() => import('@/pages/partner/Offers'));
 const AffiliateStats  = lazy(() => import('@/pages/affiliate/Statistics'));
 const AffiliateFin    = lazy(() => import('@/pages/affiliate/Finances'));
 const AffiliatePosts  = lazy(() => import('@/pages/affiliate/Postbacks'));
-const AffiliateProf   = lazy(() => import('@/pages/partner/PartnerProfile'));
+const AffiliateProf   = lazy(() => import('@/pages/affiliate/PartnerProfile'));
 const AffiliateNotifs = lazy(() => import('@/pages/affiliate/PartnerNotifications'));
 
 // Owner
@@ -44,8 +44,8 @@ const OwnerSettings = lazy(() => import('@/pages/owner/Settings'));
 // Super Admin
 const SuperAdminDash   = lazy(() => import('@/pages/super-admin/dashboard'));
 const SuperAdminUsers  = lazy(() => import('@/pages/super-admin/users-management'));
-const SuperAdminOffers = lazy(() => import('@/pages/super-admin/offers'));
-const SuperAdminAnalyt = lazy(() => import('@/pages/super-admin/analytics'));
+const SuperAdminOffers = lazy(() => import('@/pages/super-admin/offers-management'));
+const SuperAdminAnalyt = lazy(() => import('@/pages/super-admin/analytics-new'));
 
 // Staff
 const StaffDash = lazy(() => import('@/pages/staff/StaffDashboard'));
