@@ -27,31 +27,22 @@ const AdvertiserAnalytics = lazy(() => import('@/pages/advertiser/AdvertiserAnal
 const AdvertiserFinances  = lazy(() => import('@/pages/advertiser/AdvertiserFinances'));
 const AdvertiserAntiFraud = lazy(() => import('@/pages/advertiser/AntiFraud'));
 
-// Partner (Affiliate) - Updated to use consistent /dashboard/affiliate prefix
-const AffiliateDash   = lazy(() => import('@/pages/partner/PartnerDashboard'));
-const AffiliateOffers = lazy(() => import('@/pages/partner/Offers'));
+// Partner (Affiliate) - Use existing pages only
+const AffiliateOffers = lazy(() => import('@/pages/partner/PartnerOffers'));
 const AffiliateStats  = lazy(() => import('@/pages/affiliate/Statistics'));
 const AffiliateFin    = lazy(() => import('@/pages/affiliate/Finances'));
 const AffiliatePosts  = lazy(() => import('@/pages/affiliate/Postbacks'));
-const AffiliateProf   = lazy(() => import('@/pages/partner/PartnerProfile'));
 const AffiliateNotifs = lazy(() => import('@/pages/affiliate/PartnerNotifications'));
 
 // Owner
 const OwnerDash     = lazy(() => import('@/pages/owner/OwnerDashboard'));
-const OwnerUsers    = lazy(() => import('@/pages/owner/Users'));
-const OwnerSettings = lazy(() => import('@/pages/owner/Settings'));
 
-// Super Admin
+// Super Admin  
 const SuperAdminDash   = lazy(() => import('@/pages/super-admin/dashboard'));
-const SuperAdminUsers  = lazy(() => import('@/pages/super-admin/users-management'));
-const SuperAdminOffers = lazy(() => import('@/pages/super-admin/offers'));
-const SuperAdminAnalyt = lazy(() => import('@/pages/super-admin/analytics'));
+const SuperAdminUsers  = lazy(() => import('@/pages/super-admin/users-management-old'));
 
 // Staff
 const StaffDash = lazy(() => import('@/pages/staff/StaffDashboard'));
-
-// Demo
-const SidebarDemo = lazy(() => import('@/pages/SidebarDemo'));
 
 // Helpers
 const withLayout = (C: React.ComponentType<any>) => function Wrapped() {
@@ -104,46 +95,30 @@ function Router() {
         <ProtectedRoute path="/dashboard/advertiser/documents" roles={['advertiser']} component={withLayout(AdvertiserOffers)} />
 
         {/* Affiliate Dashboard Routes - Standardized to /dashboard/affiliate */}
-        <ProtectedRoute path="/dashboard/affiliate" roles={['partner', 'affiliate']} component={withLayout(AffiliateDash)} />
         <ProtectedRoute path="/dashboard/affiliate/offers" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
         <ProtectedRoute path="/dashboard/affiliate/statistics" roles={['partner', 'affiliate']} component={withLayout(AffiliateStats)} />
         <ProtectedRoute path="/dashboard/affiliate/finances" roles={['partner', 'affiliate']} component={withLayout(AffiliateFin)} />
         <ProtectedRoute path="/dashboard/affiliate/postbacks" roles={['partner', 'affiliate']} component={withLayout(AffiliatePosts)} />
-        <ProtectedRoute path="/dashboard/affiliate/profile" roles={['partner', 'affiliate']} component={withLayout(AffiliateProf)} />
         <ProtectedRoute path="/dashboard/affiliate/notifications" roles={['partner', 'affiliate']} component={withLayout(AffiliateNotifs)} />
         <ProtectedRoute path="/dashboard/affiliate/access-requests" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
-        <ProtectedRoute path="/dashboard/affiliate/links" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
-        <ProtectedRoute path="/dashboard/affiliate/creatives" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
-        <ProtectedRoute path="/dashboard/affiliate/team" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
-        <ProtectedRoute path="/dashboard/affiliate/referrals" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
-        <ProtectedRoute path="/dashboard/affiliate/security" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
-        <ProtectedRoute path="/dashboard/affiliate/documents" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
 
         {/* Partner Dashboard Routes - Dedicated partner routes */}
-        <ProtectedRoute path="/dashboard/partner" roles={['partner']} component={withLayout(AffiliateDash)} />
+        <ProtectedRoute path="/dashboard/partner" roles={['partner']} component={withLayout(OwnerDash)} />
         <ProtectedRoute path="/dashboard/partner/offers" roles={['partner']} component={withLayout(AffiliateOffers)} />
         <ProtectedRoute path="/dashboard/partner/statistics" roles={['partner']} component={withLayout(AffiliateStats)} />
         <ProtectedRoute path="/dashboard/partner/finances" roles={['partner']} component={withLayout(AffiliateFin)} />
         <ProtectedRoute path="/dashboard/partner/postbacks" roles={['partner']} component={withLayout(AffiliatePosts)} />
-        <ProtectedRoute path="/dashboard/partner/profile" roles={['partner']} component={withLayout(AffiliateProf)} />
         <ProtectedRoute path="/dashboard/partner/notifications" roles={['partner']} component={withLayout(AffiliateNotifs)} />
 
         {/* Owner Dashboard Routes */}
         <ProtectedRoute path="/dashboard/owner" roles={['owner']} component={withLayout(OwnerDash)} />
-        <ProtectedRoute path="/dashboard/owner/users" roles={['owner']} component={withLayout(OwnerUsers)} />
-        <ProtectedRoute path="/dashboard/owner/settings" roles={['owner']} component={withLayout(OwnerSettings)} />
 
         {/* Super Admin Dashboard Routes */}
         <ProtectedRoute path="/dashboard/super-admin" roles={['super_admin']} component={withLayout(SuperAdminDash)} />
         <ProtectedRoute path="/dashboard/super-admin/users" roles={['super_admin']} component={withLayout(SuperAdminUsers)} />
-        <ProtectedRoute path="/dashboard/super-admin/offers" roles={['super_admin']} component={withLayout(SuperAdminOffers)} />
-        <ProtectedRoute path="/dashboard/super-admin/analytics" roles={['super_admin']} component={withLayout(SuperAdminAnalyt)} />
 
         {/* Staff Dashboard Routes */}
         <ProtectedRoute path="/dashboard/staff" roles={['staff']} component={withLayout(StaffDash)} />
-
-        {/* Demo Route - Available to all authenticated users */}
-        <ProtectedRoute path="/sidebar-demo" roles={['partner', 'affiliate', 'advertiser', 'owner', 'super_admin', 'staff']} component={withLayout(SidebarDemo)} />
 
         {/* Error and fallback routes */}
         <Route path="/unauthorized" component={Unauthorized} />
