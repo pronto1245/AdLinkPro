@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      console.log('🔐 LOGIN DEBUG: Starting login for:', username);
+      // Убрано для чистой консоли продакшена
       
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -90,37 +90,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }),
       });
       
-      console.log('🔐 LOGIN DEBUG: Response status:', response.status);
+      // Убрано для чистой консоли продакшена
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Login failed' }));
-        console.log('🔐 LOGIN DEBUG: Error response:', errorData);
+        // Ошибки логина обрабатываются в UI
         throw new Error(errorData.error || 'Login failed');
       }
       
       const data = await response.json();
-      console.log('🔐 LOGIN DEBUG: Success response data:', data);
+      // Убрано для чистой консоли продакшена
       
       // CRITICAL FIX: Проверяем что токен не null перед сохранением
       if (data.token && data.token !== 'null' && data.token !== null) {
         setToken(data.token);
         localStorage.setItem('auth_token', data.token);
-        console.log('🔐 LOGIN DEBUG: Token saved successfully');
+        // Убрано для чистой консоли продакшена
         
         // CRITICAL: Принудительно очищаем все кеши React Query после логина
         if ((window as any).queryClient) {
-          console.log('🔐 LOGIN DEBUG: Clearing query cache');
+          // Убрано для чистой консоли продакшена
           (window as any).queryClient.clear();
         }
       } else {
-        console.log('🔐 LOGIN DEBUG: Invalid token received:', data.token);
+        // Ошибки с недействительным токеном обрабатываются в UI
         throw new Error('Invalid token received from server');
       }
       
       setUser(data.user);
-      console.log('🔐 LOGIN DEBUG: Login completed successfully');
     } catch (error) {
-      console.log('🔐 LOGIN DEBUG: Login error caught:', error);
+      // Ошибки логина обрабатываются в UI
       throw error;
     }
   };
