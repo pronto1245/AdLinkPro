@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { saveToken, getToken } from "@/services/auth";
+import { login } from "@/lib/api";
 import { safeFetch, safeJsonParse, getErrorMessage, setupGlobalErrorHandling } from "@/utils/errorHandler";
 import { throttledNavigate } from "@/utils/navigationThrottle";
 import { routeByRole, extractRoleFromToken } from "@/utils/routeByRole";
 import './auth-ui.css';
 
 const API_BASE = import.meta.env.VITE_API_URL;
-const LOGIN_PATH = import.meta.env.VITE_LOGIN_PATH || "/api/auth/login";
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -99,36 +99,26 @@ const LoginPage = () => {
     setLoading(true);
     
     try {
-      // Use safe fetch with error suppression
-      const res = await safeFetch(`${API_BASE}${LOGIN_PATH}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      // Use centralized login function from api service
+      const result = await login(email, password);
       
-      // Use safe JSON parsing
-      const data = safeJsonParse(await res.text(), {});
-      
-      if (!res.ok) {
-        throw new Error(getErrorMessage(res.status, data, getCustomErrorMessages()));
-      }
-      
-      if (!data?.token) {
-        throw new Error("Login successful but no authentication token received");
+      if (!result.success || !result.token) {
+        throw new Error("Login failed. Please check your credentials.");
       }
 
-      saveToken(data.token);
+      // Token is already saved by the centralized login function
+      const token = result.token;
 
       // Get user profile with safe fetch
       try {
         const meRes = await safeFetch(`${API_BASE}/api/me`, {
-          headers: { Authorization: `Bearer ${data.token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         
         if (!meRes.ok) {
           // If profile fetch fails, extract role from token and redirect using centralized utility
           console.warn("Could not fetch user profile:", meRes.status);
-          const role = extractRoleFromToken(data.token);
+          const role = extractRoleFromToken(token);
           const dashboardRoute = routeByRole(role);
           throttledNavigate(setLocation, dashboardRoute);
           return;
@@ -143,7 +133,7 @@ const LoginPage = () => {
         
       } catch (profileError) {
         // Error already suppressed by our utilities, just provide fallback using centralized utility
-        const role = extractRoleFromToken(data.token);
+        const role = extractRoleFromToken(token);
         const dashboardRoute = routeByRole(role);
         throttledNavigate(setLocation, dashboardRoute);
       }

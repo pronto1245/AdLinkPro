@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { saveToken, getToken } from "@/services/auth";
+import { login } from "@/lib/api";
 import { safeFetch, safeJsonParse, getErrorMessage, setupGlobalErrorHandling } from "@/utils/errorHandler";
 
 const API_BASE = import.meta.env.VITE_API_URL;
-const LOGIN_PATH = import.meta.env.VITE_LOGIN_PATH || "/api/auth/login";
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -90,30 +90,20 @@ export default function Login() {
     setLoading(true);
     
     try {
-      // Use safe fetch with error suppression
-      const res = await safeFetch(`${API_BASE}${LOGIN_PATH}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      // Use centralized login function from api service
+      const result = await login(email, password);
       
-      // Use safe JSON parsing
-      const data = safeJsonParse(await res.text(), {});
-      
-      if (!res.ok) {
-        throw new Error(getErrorMessage(res.status, data, getCustomErrorMessages()));
-      }
-      
-      if (!data?.token) {
-        throw new Error("Login successful but no authentication token received");
+      if (!result.success || !result.token) {
+        throw new Error("Login failed. Please check your credentials.");
       }
 
-      saveToken(data.token);
+      // Token is already saved by the centralized login function
+      const token = result.token;
 
       // Get user profile with safe fetch
       try {
         const meRes = await safeFetch(`${API_BASE}/api/me`, {
-          headers: { Authorization: `Bearer ${data.token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         
         if (!meRes.ok) {
