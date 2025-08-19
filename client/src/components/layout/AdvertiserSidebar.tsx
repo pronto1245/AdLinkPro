@@ -36,81 +36,81 @@ export default function AdvertiserSidebar({ isMobile = false, onClose }: Adverti
   const sidebarItems = [
   {
     title: t('sidebar.home'),
-    href: '/advertiser',
+    href: '/dashboard/advertiser',
     icon: Home,
     description: t('sidebar.homeDesc')
   },
   {
     title: t('sidebar.myOffers'),
-    href: '/advertiser/offers',
+    href: '/dashboard/advertiser/offers',
     icon: Target,
     description: t('sidebar.myOffersDesc')
   },
   {
     title: t('sidebar.partners'),
-    href: '/advertiser/partners',
+    href: '/dashboard/advertiser/partners',
     icon: Users,
     description: t('sidebar.partnersDesc')
   },
   {
     title: t('sidebar.accessRequests'),
-    href: '/advertiser/access-requests',
+    href: '/dashboard/advertiser/access-requests',
     icon: MessageSquare,
     description: t('sidebar.accessRequestsDesc')
   },
   {
     title: 'Уведомления',
-    href: '/advertiser/notifications',
+    href: '/dashboard/advertiser/notifications',
     icon: Bell,
     description: 'Системные уведомления и оповещения'
   },
   {
     title: 'Рефералы',
-    href: '/advertiser/referrals',
+    href: '/dashboard/advertiser/referrals',
     icon: UserPlus,
     description: 'Реферальная программа и статистика'
   },
 
   {
     title: t('sidebar.finances'),
-    href: '/advertiser/finances',
+    href: '/dashboard/advertiser/finances',
     icon: Wallet,
     description: t('sidebar.financesDesc')
   },
   {
     title: t('sidebar.teamMode'),
-    href: '/advertiser/team',
+    href: '/dashboard/advertiser/team',
     icon: Users,
     description: t('sidebar.teamModeDesc')
   },
   {
     title: t('sidebar.antifraud'),
-    href: '/advertiser/antifraud',
+    href: '/dashboard/advertiser/antifraud',
     icon: Shield,
     description: t('sidebar.antifraudDesc')
   },
   {
     title: t('sidebar.analytics'),
-    href: '/advertiser/analytics',
+    href: '/dashboard/advertiser/analytics',
     icon: BarChart3,
     description: t('sidebar.analyticsDesc')
   },
   {
     title: t('sidebar.postbacks'),
-    href: '/advertiser/postbacks',
+    href: '/dashboard/advertiser/postbacks',
     icon: Send,
     description: t('sidebar.postbacksDesc')
   },
   {
     title: t('sidebar.profile'),
-    href: '/advertiser/profile',
+    href: '/dashboard/advertiser/profile',
     icon: Settings,
     description: t('sidebar.profileDesc')
   },
 
   {
     title: t('sidebar.documents'),
-    href: '/advertiser/documents',
+    href: '/dashboard/advertiser/documents',
     icon: FileText,
     description: t('sidebar.documentsDesc')
   }

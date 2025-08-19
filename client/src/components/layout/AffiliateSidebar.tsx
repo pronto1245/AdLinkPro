@@ -22,79 +22,79 @@ import {
 const sidebarItems = [
   {
     title: 'Главная',
-    href: '/affiliate',
+    href: '/dashboard/affiliate',
     icon: Home,
     description: 'Обзор кабинета'
   },
   {
     title: 'Офферы',
-    href: '/affiliate/offers',
+    href: '/dashboard/affiliate/offers',
     icon: Target,
     description: 'Доступные офферы'
   },
   {
     title: 'Запросы доступа',
-    href: '/affiliate/access-requests',
+    href: '/dashboard/affiliate/access-requests',
     icon: Send,
     description: 'Запросы к приватным офферам'
   },
   {
     title: 'Ссылки',
-    href: '/affiliate/links',
+    href: '/dashboard/affiliate/links',
     icon: LinkIcon,
     description: 'Мои трекинговые ссылки'
   },
   {
     title: 'Статистика',
-    href: '/affiliate/analytics',
+    href: '/dashboard/affiliate/statistics',
     icon: BarChart3,
     description: 'Статистика переходов'
   },
   {
     title: 'Креативы',
-    href: '/affiliate/creatives',
+    href: '/dashboard/affiliate/creatives',
     icon: Palette,
     description: 'Рекламные материалы'
   },
   {
     title: 'Постбэки',
-    href: '/affiliate/postbacks',
+    href: '/dashboard/affiliate/postbacks',
     icon: Webhook,
     description: 'Настройка постбэков'
   },
   {
     title: 'Команда',
-    href: '/affiliate/team',
+    href: '/dashboard/affiliate/team',
     icon: Users,
     description: 'Управление командой'
   },
   {
     title: 'Рефералы',
-    href: '/affiliate/referrals',
+    href: '/dashboard/affiliate/referrals',
     icon: Users,
     description: 'Реферальная программа'
   },
   {
     title: 'Финансы',
-    href: '/affiliate/finances',
+    href: '/dashboard/affiliate/finances',
     icon: Wallet,
     description: 'Выплаты и баланс'
   },
   {
     title: 'Профиль',
-    href: '/affiliate/profile',
+    href: '/dashboard/affiliate/profile',
     icon: Settings,
     description: 'Настройки профиля'
   },
   {
     title: 'Безопасность',
-    href: '/affiliate/security',
+    href: '/dashboard/affiliate/security',
     icon: Shield,
     description: 'Настройки безопасности'
   },
   {
     title: 'Документы',
-    href: '/affiliate/documents',
+    href: '/dashboard/affiliate/documents',
     icon: FileText,
     description: 'Документооборот'
   }
