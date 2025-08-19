@@ -31,3 +31,6 @@ AdLinkPro/
 *.temp
 /tmp/
 test-output/
+dist/
+client/dist/
+website-design/
