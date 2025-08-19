@@ -1,15 +1,15 @@
 # AdLinkPro Integration Analysis Report
 
-Generated: 2025-08-19T14:21:47.316Z
+Generated: 2025-08-19T14:50:44.234Z
 
 ## Executive Summary
 
-- **Total Pages**: 99
+- **Total Pages**: 83
 - **Total Backend Routes**: 15
 - **Total Components**: 0
 - **Total Shared Schemas**: 5
 - **Infrastructure Services**: 5
-- **Problems Identified**: 318
+- **Problems Identified**: 303
 - **Dead Modules**: 15
 
 ## Problems Table
@@ -19,9 +19,7 @@ Generated: 2025-08-19T14:21:47.316Z
 | integration | low | Page /EventTesting has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | low | Page /LoginVariants has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | low | Page /NotFound has no backend connections | Add appropriate API calls or connect to backend services |
-| integration | low | Page /SidebarDemo has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | low | Page /Unauthorized has no backend connections | Add appropriate API calls or connect to backend services |
-| integration | high | API call "/api/get-fresh-token" in page /UpdateToken has no matching backend route | Implement backend route for /api/get-fresh-token or fix the API call |
 | integration | high | API call "/api/advertiser/access-requests" in page /advertiser/AccessRequests has no matching backend route | Implement backend route for /api/advertiser/access-requests or fix the API call |
 | integration | high | API call "/api/offers/${data.offerId}/access-requests/${data.requestId}" in page /advertiser/AccessRequests has no matching backend route | Implement backend route for /api/offers/${data.offerId}/access-requests/${data.requestId} or fix the API call |
 | integration | high | API call "/api/advertiser/access-requests" in page /advertiser/AdvertiserAccessRequests has no matching backend route | Implement backend route for /api/advertiser/access-requests or fix the API call |
@@ -200,21 +198,12 @@ Generated: 2025-08-19T14:21:47.316Z
 | integration | low | Page /auth/RegisterUnified has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | low | Page /auth/logout has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | high | API call "/api/auth/register" in page /auth/register-partner has no matching backend route | Implement backend route for /api/auth/register or fix the API call |
-| integration | low | Page /dash/Advertiser has no backend connections | Add appropriate API calls or connect to backend services |
-| integration | low | Page /dash/Owner has no backend connections | Add appropriate API calls or connect to backend services |
-| integration | low | Page /dash/Partner has no backend connections | Add appropriate API calls or connect to backend services |
-| integration | low | Page /dash/SuperAdmin has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | high | API call "/api/owner/metrics" in page /owner/OwnerDashboard has no matching backend route | Implement backend route for /api/owner/metrics or fix the API call |
 | integration | high | API call "/api/owner/business-overview" in page /owner/OwnerDashboard has no matching backend route | Implement backend route for /api/owner/business-overview or fix the API call |
 | integration | high | API call "/api/owner/top-performers" in page /owner/OwnerDashboard has no matching backend route | Implement backend route for /api/owner/top-performers or fix the API call |
-| integration | low | Page /owner/Settings has no backend connections | Add appropriate API calls or connect to backend services |
-| integration | low | Page /owner/Users has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | high | API call "/api/partner/access-requests" in page /partner/AccessRequests has no matching backend route | Implement backend route for /api/partner/access-requests or fix the API call |
 | integration | high | API call "/api/partner/access-requests/${requestId}/cancel" in page /partner/AccessRequests has no matching backend route | Implement backend route for /api/partner/access-requests/${requestId}/cancel or fix the API call |
-| integration | low | Page /partner/Offers has no backend connections | Add appropriate API calls or connect to backend services |
-| integration | low | Page /partner/PartnerDashboard has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | high | API call "/api/partner/offers" in page /partner/PartnerOffers has no matching backend route | Implement backend route for /api/partner/offers or fix the API call |
-| integration | low | Page /partner/PartnerProfile has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | high | API call "/api/staff/metrics" in page /staff/StaffDashboard has no matching backend route | Implement backend route for /api/staff/metrics or fix the API call |
 | integration | high | API call "/api/staff/tickets" in page /staff/StaffDashboard has no matching backend route | Implement backend route for /api/staff/tickets or fix the API call |
 | integration | high | API call "/api/partner/offers/${offerId}/creatives/download" in page /super-admin/OfferDetailsRoleAware has no matching backend route | Implement backend route for /api/partner/offers/${offerId}/creatives/download or fix the API call |
@@ -222,7 +211,6 @@ Generated: 2025-08-19T14:21:47.316Z
 | integration | high | API call "/api/super-admin/offers" in page /super-admin/OfferDetailsRoleAware has no matching backend route | Implement backend route for /api/super-admin/offers or fix the API call |
 | integration | high | API call "/api/admin/analytics?${params}" in page /super-admin/analytics-new has no matching backend route | Implement backend route for /api/admin/analytics?${params} or fix the API call |
 | integration | high | API call "/api/admin/analytics" in page /super-admin/analytics-new has no matching backend route | Implement backend route for /api/admin/analytics or fix the API call |
-| integration | low | Page /super-admin/analytics has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | high | API call "/api/admin/audit-logs?${params.toString()}" in page /super-admin/audit-logs has no matching backend route | Implement backend route for /api/admin/audit-logs?${params.toString()} or fix the API call |
 | integration | high | API call "/api/admin/users" in page /super-admin/audit-logs has no matching backend route | Implement backend route for /api/admin/users or fix the API call |
 | integration | high | API call "/api/admin/audit-logs" in page /super-admin/audit-logs has no matching backend route | Implement backend route for /api/admin/audit-logs or fix the API call |
@@ -267,8 +255,6 @@ Generated: 2025-08-19T14:21:47.316Z
 | integration | high | API call "/api/admin/offers/${offerData.id}" in page /super-admin/offers-management has no matching backend route | Implement backend route for /api/admin/offers/${offerData.id} or fix the API call |
 | integration | high | API call "/api/admin/offers/${offerId}" in page /super-admin/offers-management has no matching backend route | Implement backend route for /api/admin/offers/${offerId} or fix the API call |
 | integration | high | API call "/api/admin/offers/import" in page /super-admin/offers-management has no matching backend route | Implement backend route for /api/admin/offers/import or fix the API call |
-| integration | low | Page /super-admin/offers has no backend connections | Add appropriate API calls or connect to backend services |
-| integration | low | Page /super-admin/postback-management has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | high | API call "/api/admin/global-postbacks" in page /super-admin/postbacks-management has no matching backend route | Implement backend route for /api/admin/global-postbacks or fix the API call |
 | integration | high | API call "/api/admin/postback-logs" in page /super-admin/postbacks-management has no matching backend route | Implement backend route for /api/admin/postback-logs or fix the API call |
 | integration | high | API call "/api/admin/global-postbacks/${id}" in page /super-admin/postbacks-management has no matching backend route | Implement backend route for /api/admin/global-postbacks/${id} or fix the API call |
@@ -308,7 +294,6 @@ Generated: 2025-08-19T14:21:47.316Z
 | integration | high | API call "/api/admin/users/bulk-unblock" in page /super-admin/users-management-old has no matching backend route | Implement backend route for /api/admin/users/bulk-unblock or fix the API call |
 | integration | high | API call "/api/admin/users/bulk-delete" in page /super-admin/users-management-old has no matching backend route | Implement backend route for /api/admin/users/bulk-delete or fix the API call |
 | integration | high | API call "/api/admin/users/export?${params.toString(" in page /super-admin/users-management-old has no matching backend route | Implement backend route for /api/admin/users/export?${params.toString( or fix the API call |
-| integration | low | Page /super-admin/users-management has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | high | API call "/api/admin/users" in page /super-admin/users has no matching backend route | Implement backend route for /api/admin/users or fix the API call |
 | integration | high | API call "/api/admin/users/${userId}" in page /super-admin/users has no matching backend route | Implement backend route for /api/admin/users/${userId} or fix the API call |
 | infrastructure | medium | websocket service is underutilized in pages | Integrate websocket service into more pages where appropriate |
@@ -355,7 +340,7 @@ Generated: 2025-08-19T14:21:47.316Z
 
 ## Recommendations
 
-### HIGH: Address 295 integration integration issues
+### HIGH: Address 280 integration integration issues
 - **Category**: integration
 - **Impact**: Improves system reliability and maintainability
 

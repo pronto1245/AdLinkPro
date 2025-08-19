@@ -1,9 +1,32 @@
 import { Router } from 'express';
+import { requireAuth } from '../middleware/auth';
 
 const router = Router();
 
+// Get current user info
+router.get('/me', requireAuth, (req, res) => {
+  const user = (req as any).user;
+  res.json({
+    id: user?.id || user?.sub,
+    username: user?.username || user?.email,
+    email: user?.email,
+    role: user?.role || 'user',
+    permissions: user?.permissions || [],
+    profile: {
+      name: user?.name || 'Demo User',
+      company: user?.company || 'Demo Company'
+    },
+    settings: {
+      language: 'en',
+      timezone: 'UTC',
+      notifications: true
+    },
+    lastLogin: new Date().toISOString()
+  });
+});
+
 // Демо-логин
-router.post('/auth/login', (req, res) => {
+router.post('/login', (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) {
     return res.status(400).json({ error: 'username and password are required' });
