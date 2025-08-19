@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
+import { createLogoutHandler, getUserInitials, getRoleDisplayName } from '@/lib/navigation-utils';
 
 interface Notification {
   id: string;
@@ -62,9 +63,7 @@ export function TopNavigation() {
 
   // Debug information - Balance and Pending text are now hardcoded in Russian
 
-  const handleLogout = () => {
-    logout();
-  };
+  const handleLogout = createLogoutHandler(logout);
 
   const handleNotificationClick = () => {
     // Navigate to notifications page based on user role
@@ -87,9 +86,7 @@ export function TopNavigation() {
 
   if (!user) return null;
 
-  const userInitials = user.firstName && user.lastName 
-    ? `${user.firstName[0]}${user.lastName[0]}` 
-    : user.username[0].toUpperCase();
+  const userInitials = getUserInitials(user);
 
   return (
     <header className="border-b bg-background">
@@ -166,7 +163,7 @@ export function TopNavigation() {
                     {user.email}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {user.role === 'affiliate' ? 'Партнёр' : user.role === 'advertiser' ? 'Рекламодатель' : user.role}
+                    {getRoleDisplayName(user.role)}
                   </p>
                 </div>
               </DropdownMenuLabel>

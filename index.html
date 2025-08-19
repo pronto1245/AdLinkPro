@@ -509,6 +509,7 @@
     </style>
 </head>
 <body>
+    <!-- Навигация -->
     <nav class="navbar">
         <div class="nav-brand">
             <span>🚀</span>
@@ -531,7 +532,9 @@
         </div>
     </nav>
 
+    <!-- Основной контент -->
     <main class="main-content">
+        <!-- Дашборд -->
         <section id="dashboard" class="section active">
             <div class="page-header">
                 <h1 class="page-title">Дашборд</h1>
@@ -547,7 +550,7 @@
                 <div class="stat-card">
                     <div class="stat-icon">📊</div>
                     <div class="stat-content">
-                        <div class="stat-number" id="totalClicks">2,847</div>
+                        <div class="stat-number" id="totalClicks">0</div>
                         <div class="stat-label">Всего кликов</div>
                         <div class="stat-change positive">+15.2%</div>
                     </div>
@@ -555,7 +558,7 @@
                 <div class="stat-card">
                     <div class="stat-icon">💰</div>
                     <div class="stat-content">
-                        <div class="stat-number" id="totalRevenue">$18,423</div>
+                        <div class="stat-number" id="totalRevenue">$0</div>
                         <div class="stat-label">Доход</div>
                         <div class="stat-change positive">+8.4%</div>
                     </div>
@@ -563,7 +566,7 @@
                 <div class="stat-card">
                     <div class="stat-icon">🎯</div>
                     <div class="stat-content">
-                        <div class="stat-number" id="totalConversions">127</div>
+                        <div class="stat-number" id="totalConversions">0</div>
                         <div class="stat-label">Конверсии</div>
                         <div class="stat-change negative">-2.1%</div>
                     </div>
@@ -571,7 +574,7 @@
                 <div class="stat-card">
                     <div class="stat-icon">📈</div>
                     <div class="stat-content">
-                        <div class="stat-number" id="conversionRate">4.5%</div>
+                        <div class="stat-number" id="conversionRate">0%</div>
                         <div class="stat-label">CR</div>
                         <div class="stat-change positive">+1.3%</div>
                     </div>
@@ -590,6 +593,7 @@
             </div>
         </section>
 
+        <!-- Офферы -->
         <section id="offers" class="section">
             <div class="page-header">
                 <h1 class="page-title">Управление офферами</h1>
@@ -634,11 +638,13 @@
                         </tr>
                     </thead>
                     <tbody id="offersTable">
+                        <!-- Будет заполнено JavaScript -->
                     </tbody>
                 </table>
             </div>
         </section>
 
+        <!-- Партнеры -->
         <section id="partners" class="section">
             <div class="page-header">
                 <h1 class="page-title">Партнеры</h1>
@@ -664,11 +670,13 @@
                         </tr>
                     </thead>
                     <tbody id="partnersTable">
+                        <!-- Будет заполнено JavaScript -->
                     </tbody>
                 </table>
             </div>
         </section>
 
+        <!-- Аналитика -->
         <section id="analytics" class="section">
             <div class="page-header">
                 <h1 class="page-title">Аналитика</h1>
@@ -724,6 +732,7 @@
             </div>
         </section>
 
+        <!-- Настройки -->
         <section id="settings" class="section">
             <div class="page-header">
                 <h1 class="page-title">Настройки</h1>
@@ -771,6 +780,7 @@
         </section>
     </main>
 
+    <!-- Модальное окно создания оффера -->
     <div class="modal" id="createOfferModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -812,32 +822,89 @@
         </div>
     </div>
 
+    <!-- Уведомления -->
     <div class="notification" id="notification"></div>
 
     <script>
+        // Глобальное состояние приложения
         let currentSection = 'dashboard';
         let currentTheme = localStorage.getItem('theme') || 'light';
         
+        // Данные приложения
         let offers = [
-            { id: 1, name: 'Dating App Premium', category: 'dating', payout: 25.50, cr: 2.3, clicks: 1247, status: 'active', url: 'https://example.com/dating', description: 'Премиум приложение для знакомств' },
-            { id: 2, name: 'Casino Welcome Bonus', category: 'gambling', payout: 150.00, cr: 1.8, clicks: 892, status: 'active', url: 'https://example.com/casino', description: 'Бонус за регистрацию в казино' },
-            { id: 3, name: 'Crypto Trading Platform', category: 'finance', payout: 75.00, cr: 3.2, clicks: 654, status: 'paused', url: 'https://example.com/crypto', description: 'Платформа для торговли криптовалютой' }
+            {
+                id: 1,
+                name: 'Dating App Premium',
+                category: 'dating',
+                payout: 25.50,
+                cr: 2.3,
+                clicks: 1247,
+                status: 'active',
+                url: 'https://example.com/dating',
+                description: 'Премиум приложение для знакомств'
+            },
+            {
+                id: 2,
+                name: 'Casino Welcome Bonus',
+                category: 'gambling',
+                payout: 150.00,
+                cr: 1.8,
+                clicks: 892,
+                status: 'active',
+                url: 'https://example.com/casino',
+                description: 'Бонус за регистрацию в казино'
+            },
+            {
+                id: 3,
+                name: 'Crypto Trading Platform',
+                category: 'finance',
+                payout: 75.00,
+                cr: 3.2,
+                clicks: 654,
+                status: 'paused',
+                url: 'https://example.com/crypto',
+                description: 'Платформа для торговли криптовалютой'
+            }
         ];
 
         let partners = [
-            { id: 1, name: 'John Smith', email: 'john@example.com', status: 'active', revenue: 2847, joined: '2024-01-15' },
-            { id: 2, name: 'Maria Garcia', email: 'maria@example.com', status: 'active', revenue: 1923, joined: '2024-02-20' },
-            { id: 3, name: 'Alex Johnson', email: 'alex@example.com', status: 'pending', revenue: 0, joined: '2024-08-10' }
+            {
+                id: 1,
+                name: 'John Smith',
+                email: 'john@example.com',
+                status: 'active',
+                revenue: 2847,
+                joined: '2024-01-15'
+            },
+            {
+                id: 2,
+                name: 'Maria Garcia',
+                email: 'maria@example.com',
+                status: 'active',
+                revenue: 1923,
+                joined: '2024-02-20'
+            },
+            {
+                id: 3,
+                name: 'Alex Johnson',
+                email: 'alex@example.com',
+                status: 'pending',
+                revenue: 0,
+                joined: '2024-08-10'
+            }
         ];
 
+        // Инициализация приложения
         document.addEventListener('DOMContentLoaded', function() {
             initTheme();
             initEventListeners();
+            updateDashboardStats();
             renderOffers();
             renderPartners();
             initCharts();
         });
 
+        // Управление темой
         function initTheme() {
             document.documentElement.setAttribute('data-theme', currentTheme);
         }
@@ -846,31 +913,92 @@
             currentTheme = currentTheme === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', currentTheme);
             localStorage.setItem('theme', currentTheme);
-            showNotification('Тема изменена');
+            showNotification('Тема изменена на ' + (currentTheme === 'dark' ? 'темную' : 'светлую'));
         }
 
+        // Навигация
         function showSection(sectionName) {
+            // Скрыть все секции
             const sections = document.querySelectorAll('.section');
             sections.forEach(section => section.classList.remove('active'));
             
+            // Показать выбранную секцию
             const targetSection = document.getElementById(sectionName);
             if (targetSection) {
                 targetSection.classList.add('active');
             }
 
+            // Обновить навигацию
             const navLinks = document.querySelectorAll('.nav-link');
             navLinks.forEach(link => link.classList.remove('active'));
             const activeLink = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
             if (activeLink) {
                 activeLink.classList.add('active');
             }
+
+            currentSection = sectionName;
         }
 
+        // Пользовательское меню
         function toggleUserMenu() {
             const dropdown = document.getElementById('userDropdown');
             dropdown.classList.toggle('show');
         }
 
+        // Закрыть выпадающие меню при клике вне их
+        document.addEventListener('click', function(event) {
+            const userMenu = document.querySelector('.user-menu');
+            if (!userMenu.contains(event.target)) {
+                document.getElementById('userDropdown').classList.remove('show');
+            }
+        });
+
+        // Обновление статистики дашборда
+        function updateDashboardStats() {
+            const totalClicks = offers.reduce((sum, offer) => sum + offer.clicks, 0);
+            const totalRevenue = offers.reduce((sum, offer) => sum + (offer.payout * offer.clicks * offer.cr / 100), 0);
+            const totalConversions = offers.reduce((sum, offer) => sum + Math.floor(offer.clicks * offer.cr / 100), 0);
+            const avgCR = totalClicks > 0 ? ((totalConversions / totalClicks) * 100) : 0;
+
+            animateNumber('totalClicks', totalClicks);
+            animateNumber('totalRevenue', totalRevenue, '$');
+            animateNumber('totalConversions', totalConversions);
+            animateNumber('conversionRate', avgCR, '', '%');
+        }
+
+        function animateNumber(elementId, targetValue, prefix = '', suffix = '') {
+            const element = document.getElementById(elementId);
+            let startValue = 0;
+            const duration = 1000;
+            const startTime = performance.now();
+
+            function updateNumber(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const currentValue = startValue + (targetValue - startValue) * easeOutCubic(progress);
+                
+                if (suffix === '%') {
+                    element.textContent = prefix + currentValue.toFixed(1) + suffix;
+                } else if (prefix === '$') {
+                    element.textContent = prefix + currentValue.toFixed(0);
+                } else {
+                    element.textContent = prefix + Math.floor(currentValue) + suffix;
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                }
+            }
+
+            requestAnimationFrame(updateNumber);
+        }
+
+        function easeOutCubic(t) {
+            return 1 - Math.pow(1 - t, 3);
+        }
+
+        // Рендеринг таблицы офферов
         function renderOffers() {
             const tableBody = document.getElementById('offersTable');
             tableBody.innerHTML = '';
@@ -886,14 +1014,15 @@
                     <td>${offer.clicks.toLocaleString()}</td>
                     <td><span class="status-badge status-${offer.status}">${getStatusName(offer.status)}</span></td>
                     <td>
-                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="editOffer(${offer.id})">Изменить</button>
-                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; margin-left: 0.5rem;" onclick="deleteOffer(${offer.id})">Удалить</button>
+                        <button class="btn btn-secondary btn-sm" onclick="editOffer(${offer.id})">Изменить</button>
+                        <button class="btn btn-secondary btn-sm" onclick="deleteOffer(${offer.id})">Удалить</button>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
         }
 
+        // Рендеринг таблицы партнеров
         function renderPartners() {
             const tableBody = document.getElementById('partnersTable');
             tableBody.innerHTML = '';
@@ -908,18 +1037,19 @@
                     <td>$${partner.revenue.toLocaleString()}</td>
                     <td>${formatDate(partner.joined)}</td>
                     <td>
-                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="editPartner(${partner.id})">Изменить</button>
-                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; margin-left: 0.5rem;" onclick="deletePartner(${partner.id})">Удалить</button>
+                        <button class="btn btn-secondary btn-sm" onclick="editPartner(${partner.id})">Изменить</button>
+                        <button class="btn btn-secondary btn-sm" onclick="deletePartner(${partner.id})">Удалить</button>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
         }
 
+        // Вспомогательные функции
         function getCategoryName(category) {
             const categories = {
                 'dating': 'Знакомства',
-                'gambling': 'Гемблинг', 
+                'gambling': 'Гемблинг',
                 'finance': 'Финансы',
                 'health': 'Здоровье'
             };
@@ -940,6 +1070,7 @@
             return new Date(dateString).toLocaleDateString('ru-RU');
         }
 
+        // Модальные окна
         function showCreateOfferModal() {
             document.getElementById('createOfferModal').classList.add('show');
         }
@@ -948,7 +1079,9 @@
             document.getElementById(modalId).classList.remove('show');
         }
 
+        // Обработка форм
         function initEventListeners() {
+            // Форма создания оффера
             document.getElementById('createOfferForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(e.target);
@@ -957,7 +1090,7 @@
                     name: formData.get('name'),
                     category: formData.get('category'),
                     payout: parseFloat(formData.get('payout')),
-                    cr: Math.random() * 5,
+                    cr: Math.random() * 5, // Случайный CR для демо
                     clicks: 0,
                     status: 'active',
                     url: formData.get('url'),
@@ -966,11 +1099,13 @@
                 
                 offers.push(newOffer);
                 renderOffers();
+                updateDashboardStats();
                 closeModal('createOfferModal');
                 e.target.reset();
-                showNotification('Оффер создан');
+                showNotification('Оффер успешно создан!');
             });
 
+            // Поиск и фильтрация офферов
             document.getElementById('offerSearch').addEventListener('input', filterOffers);
             document.getElementById('statusFilter').addEventListener('change', filterOffers);
             document.getElementById('categoryFilter').addEventListener('change', filterOffers);
@@ -982,7 +1117,8 @@
             const categoryFilter = document.getElementById('categoryFilter').value;
 
             const filteredOffers = offers.filter(offer => {
-                const matchesSearch = offer.name.toLowerCase().includes(search);
+                const matchesSearch = offer.name.toLowerCase().includes(search) || 
+                                    offer.description.toLowerCase().includes(search);
                 const matchesStatus = !statusFilter || offer.status === statusFilter;
                 const matchesCategory = !categoryFilter || offer.category === categoryFilter;
                 
@@ -1007,25 +1143,28 @@
                     <td>${offer.clicks.toLocaleString()}</td>
                     <td><span class="status-badge status-${offer.status}">${getStatusName(offer.status)}</span></td>
                     <td>
-                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="editOffer(${offer.id})">Изменить</button>
-                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; margin-left: 0.5rem;" onclick="deleteOffer(${offer.id})">Удалить</button>
+                        <button class="btn btn-secondary btn-sm" onclick="editOffer(${offer.id})">Изменить</button>
+                        <button class="btn btn-secondary btn-sm" onclick="deleteOffer(${offer.id})">Удалить</button>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
         }
 
+        // CRUD операции
         function editOffer(id) {
             const offer = offers.find(o => o.id === id);
             if (offer) {
-                showNotification(`Редактирование: ${offer.name}`);
+                showNotification(`Редактирование оффера: ${offer.name}`);
+                // Здесь можно открыть модальное окно редактирования
             }
         }
 
         function deleteOffer(id) {
-            if (confirm('Удалить оффер?')) {
+            if (confirm('Вы уверены, что хотите удалить этот оффер?')) {
                 offers = offers.filter(o => o.id !== id);
                 renderOffers();
+                updateDashboardStats();
                 showNotification('Оффер удален');
             }
         }
@@ -1033,18 +1172,19 @@
         function editPartner(id) {
             const partner = partners.find(p => p.id === id);
             if (partner) {
-                showNotification(`Редактирование: ${partner.name}`);
+                showNotification(`Редактирование партнера: ${partner.name}`);
             }
         }
 
         function deletePartner(id) {
-            if (confirm('Удалить партнера?')) {
+            if (confirm('Вы уверены, что хотите удалить этого партнера?')) {
                 partners = partners.filter(p => p.id !== id);
                 renderPartners();
                 showNotification('Партнер удален');
             }
         }
 
+        // Экспорт данных
         function exportOffers() {
             const csvContent = "data:text/csv;charset=utf-8," 
                 + "ID,Название,Категория,Выплата,CR,Клики,Статус\n"
@@ -1058,19 +1198,21 @@
             link.click();
             document.body.removeChild(link);
             
-            showNotification('Экспорт завершен');
+            showNotification('Данные экспортированы в CSV файл');
         }
 
-        function showNotification(message) {
+        // Уведомления
+        function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
-            notification.classList.add('show');
+            notification.className = `notification show ${type}`;
             
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
         }
 
+        // Инициализация графиков
         function initCharts() {
             const trafficCanvas = document.getElementById('trafficChart');
             const countriesCanvas = document.getElementById('countriesChart');
@@ -1089,19 +1231,24 @@
             const width = canvas.width;
             const height = canvas.height;
             
+            // Очистка холста
             ctx.clearRect(0, 0, width, height);
             
+            // Данные для графика
             const data = [120, 190, 300, 500, 200, 300, 450];
             const labels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
             
+            // Настройки графика
             const padding = 40;
             const chartWidth = width - 2 * padding;
             const chartHeight = height - 2 * padding;
             const maxValue = Math.max(...data);
             
+            // Рисуем оси
             ctx.strokeStyle = '#e2e8f0';
             ctx.lineWidth = 1;
             
+            // Горизонтальные линии
             for (let i = 0; i <= 4; i++) {
                 const y = padding + (chartHeight * i / 4);
                 ctx.beginPath();
@@ -1110,6 +1257,7 @@
                 ctx.stroke();
             }
             
+            // Рисуем линию графика
             ctx.strokeStyle = '#3b82f6';
             ctx.lineWidth = 3;
             ctx.beginPath();
@@ -1127,6 +1275,7 @@
             
             ctx.stroke();
             
+            // Рисуем точки
             ctx.fillStyle = '#3b82f6';
             data.forEach((value, index) => {
                 const x = padding + (chartWidth * index / (data.length - 1));
@@ -1137,8 +1286,9 @@
                 ctx.fill();
             });
             
+            // Подписи
             ctx.fillStyle = '#64748b';
-            ctx.font = '12px sans-serif';
+            ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
             ctx.textAlign = 'center';
             
             labels.forEach((label, index) => {
@@ -1171,39 +1321,40 @@
                 const y = padding + index * (barHeight + barSpacing);
                 const barWidth = (width - 2 * padding) * (country.value / maxValue);
                 
+                // Рисуем столбец
                 ctx.fillStyle = country.color;
                 ctx.fillRect(padding, y, barWidth, barHeight);
                 
+                // Название страны
                 ctx.fillStyle = '#1e293b';
-                ctx.font = '14px sans-serif';
+                ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillText(country.name, 10, y + barHeight / 2 + 5);
                 
+                // Значение
                 ctx.textAlign = 'right';
                 ctx.fillText(`$${country.value}`, width - 10, y + barHeight / 2 + 5);
             });
         }
 
+        // Дополнительные функции
         function showProfile() {
-            showNotification('Профиль пользователя');
+            showNotification('Открытие профиля пользователя');
         }
 
         function logout() {
-            if (confirm('Выйти из системы?')) {
-                showNotification('Выход');
+            if (confirm('Вы уверены, что хотите выйти?')) {
+                showNotification('Выход из системы');
+                // Здесь можно добавить логику выхода
             }
         }
 
         function showAddPartnerModal() {
-            showNotification('Добавление партнера');
+            showNotification('Функция добавления партнера будет реализована');
         }
 
+        // Закрытие модальных окон по клику вне них
         document.addEventListener('click', function(event) {
-            const userMenu = document.querySelector('.user-menu');
-            if (!userMenu.contains(event.target)) {
-                document.getElementById('userDropdown').classList.remove('show');
-            }
-            
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('show');
             }
