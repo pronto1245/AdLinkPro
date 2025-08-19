@@ -193,7 +193,7 @@ export class CustomDomainService {
         await Promise.race([sslPromise, timeoutPromise]);
         console.log(`✅ SSL процесс завершен успешно для ${domain}`);
       } catch (error) {
-        console.error(`❌ SSL процесс прерван для ${domain}:`, error.message);
+        console.error(`❌ SSL процесс прерван для ${domain}:`, error instanceof Error ? error.message : String(error));
         throw error;
       }
       
