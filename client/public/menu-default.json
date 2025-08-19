@@ -1,0 +1,11 @@
+{
+  "userRole": "advertiser",
+  "permissions": [],
+  "items": [
+    { "label": "Панель",      "href": "/dashboard/advertiser" },
+    { "label": "Офферы",      "href": "/offers" },
+    { "label": "Статистика",  "href": "/statistics" },
+    { "label": "Финансы",     "href": "/finances" },
+    { "label": "Профиль",     "href": "/profile" }
+  ]
+}
