@@ -31,15 +31,15 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { labelKey: 'sidebar.dashboard', href: '/dash/super-admin', icon: LayoutDashboard, roles: ['super_admin'] },
+  { labelKey: 'sidebar.dashboard', href: '/dashboard/super-admin', icon: LayoutDashboard, roles: ['super_admin'] },
   { labelKey: 'sidebar.dashboard', href: '/dashboard/owner', icon: LayoutDashboard, roles: ['owner'] },
   { labelKey: 'sidebar.dashboard', href: '/dashboard/advertiser', icon: LayoutDashboard, roles: ['advertiser'] },
   { labelKey: 'sidebar.dashboard', href: '/dash', icon: LayoutDashboard, roles: ['partner', 'affiliate'] },
   { labelKey: 'sidebar.dashboard', href: '/dashboard/staff', icon: LayoutDashboard, roles: ['staff'] },
-  { labelKey: 'sidebar.users', href: '/dash/super-admin/users', icon: Users, roles: ['super_admin'], badge: 3 },
+  { labelKey: 'sidebar.users', href: '/dashboard/super-admin/users', icon: Users, roles: ['super_admin'], badge: 3 },
   { labelKey: 'sidebar.users', href: '/dashboard/owner/users', icon: Users, roles: ['owner'] },
-  { labelKey: 'sidebar.offers', href: '/dash/super-admin/offers', icon: Target, roles: ['super_admin', 'advertiser'] },
-  { labelKey: 'sidebar.analytics', href: '/dash/super-admin/analytics', icon: BarChart3, roles: ['super_admin', 'advertiser', 'affiliate'] },
+  { labelKey: 'sidebar.offers', href: '/dashboard/super-admin/offers', icon: Target, roles: ['super_admin', 'advertiser'] },
+  { labelKey: 'sidebar.analytics', href: '/dashboard/super-admin/analytics', icon: BarChart3, roles: ['super_admin', 'advertiser', 'affiliate'] },
   { labelKey: 'sidebar.support', href: '/dashboard/staff', icon: HeadphonesIcon, roles: ['staff'] },
 ];
 
