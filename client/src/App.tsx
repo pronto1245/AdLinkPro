@@ -1,4 +1,4 @@
-import SuperAdmin from "@/pages/super-admin/SuperAdminDashboard";
+import SuperAdmin from "@/pages/super-admin/dashboard";
 import React, { Suspense, lazy } from 'react';
 import { Switch, Route, Redirect } from 'wouter';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +24,7 @@ const AdvertiserTeam      = lazy(() => import('@/pages/advertiser/TeamManagement
 const AdvertiserPostbacks = lazy(() => import('@/pages/advertiser/Postbacks'));
 const AdvertiserAnalytics = lazy(() => import('@/pages/advertiser/AdvertiserAnalytics'));
 const AdvertiserFinances  = lazy(() => import('@/pages/advertiser/AdvertiserFinances'));
+const AdvertiserAntiFraud = lazy(() => import('@/pages/advertiser/AntiFraud'));
 
 // Partner (Affiliate)
 const PartnerDash   = lazy(() => import('@/pages/partner/PartnerDashboard'));
@@ -90,6 +91,7 @@ function Router() {
         <ProtectedRoute path="/dashboard/advertiser/postbacks" roles={['advertiser']} component={withLayout(AdvertiserPostbacks)} />
         <ProtectedRoute path="/dashboard/advertiser/analytics" roles={['advertiser']} component={withLayout(AdvertiserAnalytics)} />
         <ProtectedRoute path="/dashboard/advertiser/finances" roles={['advertiser']} component={withLayout(AdvertiserFinances)} />
+        <ProtectedRoute path="/dashboard/advertiser/anti-fraud" roles={['advertiser']} component={withLayout(AdvertiserAntiFraud)} />
 
         <ProtectedRoute path="/dash" roles={['partner']} component={PartnerDash} />
         <ProtectedRoute path="/dash/offers" roles={['partner']} component={withLayout(PartnerOffers)} />
