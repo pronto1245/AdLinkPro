@@ -1,0 +1,18 @@
+{
+  "cards": { "revenue": 1234.56, "clicks": 1200, "conversions": 45, "cr": 3.75 },
+  "chart": {
+    "series": [
+      { "name": "Revenue", "data": [120,140,130,160,150,170,190] },
+      { "name": "Clicks",  "data": [150,180,170,200,210,220,270] }
+    ],
+    "labels": ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+  },
+  "topOffers": [
+    { "id": "of-1", "name": "Crypto App", "epc": 0.42, "cr": 2.4, "revenue": 410.2 },
+    { "id": "of-2", "name": "Streaming Trial", "epc": 0.35, "cr": 1.9, "revenue": 308.7 }
+  ],
+  "recentActivity": [
+    { "time": "2025-08-18T12:21:00Z", "message": "Новая конверсия по Crypto App (+$4.20)" },
+    { "time": "2025-08-18T11:50:00Z", "message": "Зачислено 50 кликов по Streaming Trial" }
+  ]
+}
