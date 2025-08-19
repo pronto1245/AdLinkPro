@@ -6280,6 +6280,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Export offers for admin
+  app.get("/api/admin/offers/export", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { format = 'csv', search, status, category, advertiserId } = req.query;
+      
+      // Get all offers with filters
+      let offers = await storage.getAllOffers();
+      
+      // Apply filters if provided
+      if (search) {
+        const searchTerm = (search as string).toLowerCase();
+        offers = offers.filter(offer => 
+          offer.name.toLowerCase().includes(searchTerm) ||
+          (offer.description && offer.description.toLowerCase().includes(searchTerm))
+        );
+      }
+      
+      if (status) {
+        offers = offers.filter(offer => offer.status === status);
+      }
+      
+      if (category) {
+        offers = offers.filter(offer => offer.category === category);
+      }
+      
+      if (advertiserId) {
+        offers = offers.filter(offer => offer.advertiserId === advertiserId);
+      }
+
+      if (format === 'csv') {
+        // Generate CSV content
+        const csvHeaders = [
+          'ID', 'Name', 'Category', 'Description', 'Status', 'Payout Type', 
+          'Payout Amount', 'Currency', 'Advertiser Name', 'Countries', 'Created At'
+        ];
+        
+        const csvRows = offers.map(offer => [
+          offer.id,
+          `"${offer.name || ''}"`,
+          `"${offer.category || ''}"`,
+          `"${typeof offer.description === 'string' ? offer.description.replace(/"/g, '""') : ''}"`,
+          offer.status || '',
+          offer.payoutType || '',
+          offer.payout || 0,
+          offer.currency || 'USD',
+          `"${offer.advertiserName || ''}"`,
+          `"${Array.isArray(offer.countries) ? offer.countries.join(', ') : ''}"`,
+          offer.createdAt ? new Date(offer.createdAt).toISOString().split('T')[0] : ''
+        ]);
+
+        const csvContent = [csvHeaders.join(','), ...csvRows.map(row => row.join(','))].join('\n');
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="admin_offers_export_${new Date().toISOString().split('T')[0]}.csv"`);
+        res.send(csvContent);
+      } else if (format === 'json') {
+        // JSON export
+        const exportData = offers.map(offer => ({
+          id: offer.id,
+          name: offer.name,
+          category: offer.category,
+          description: offer.description,
+          status: offer.status,
+          payoutType: offer.payoutType,
+          payout: offer.payout,
+          currency: offer.currency,
+          advertiserName: offer.advertiserName,
+          countries: offer.countries,
+          landingPages: offer.landingPages,
+          trafficSources: offer.trafficSources,
+          createdAt: offer.createdAt,
+          updatedAt: offer.updatedAt
+        }));
+        
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename="admin_offers_export_${new Date().toISOString().split('T')[0]}.json"`);
+        res.json(exportData);
+      } else {
+        return res.status(400).json({ error: 'Supported formats: csv, json' });
+      }
+      
+    } catch (error) {
+      console.error("Admin offers export error:", error);
+      res.status(500).json({ error: "Ошибка экспорта офферов" });
+    }
+  });
+
   // Moderate offer
   app.post("/api/admin/offers/:id/moderate", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
