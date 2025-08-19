@@ -1,4 +1,4 @@
-export type User = { id?: string; email: string; role: 'partner'|'advertiser'|'owner'|'super_admin'; name?: string };
+export type User = { id?: string; email: string; role: 'partner'|'advertiser'|'owner'|'super_admin'|'affiliate'; name?: string };
 export type LoginArgs = { email: string; password: string; otp?: string; role?: User['role'] };
 export type RegisterArgs = { email: string; password: string; name?: string; role?: User['role'] };
 
@@ -7,6 +7,7 @@ const HOME_BY_ROLE: Record<User['role'], string> = {
   advertiser: '/dashboard/advertiser',
   owner: '/dashboard/owner',
   super_admin: '/dashboard/super-admin',
+  affiliate: '/dashboard/affiliate',
 };
 
 function persist(user: User, token?: string) {
@@ -17,10 +18,29 @@ function persist(user: User, token?: string) {
 
 export async function login(args: LoginArgs): Promise<{user: User, token?: string}> {
   try {
-    const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(args) });
+    const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(args) });
     if (!res.ok) throw new Error('login failed');
     const data = await res.json();
-    const user: User = data.user ?? { email: args.email, role: (data.role ?? args.role ?? 'partner') };
+    
+    // Handle role mapping from server format to client format
+    let clientRole: User['role'] = 'partner'; // default
+    
+    if (data.user && data.user.role) {
+      const roleMap: Record<string, User['role']> = {
+        'OWNER': 'owner',
+        'ADVERTISER': 'advertiser',
+        'PARTNER': 'partner',
+        'SUPER_ADMIN': 'super_admin',
+        'AFFILIATE': 'affiliate',
+      };
+      clientRole = roleMap[data.user.role] || 'partner';
+    }
+    
+    const user: User = { 
+      email: data.user?.email || args.email, 
+      role: clientRole,
+      name: data.user?.username
+    };
     const token: string | undefined = data.token;
     persist(user, token);
     return { user, token };

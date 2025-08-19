@@ -40,6 +40,20 @@ const users = [
     sub: "partner-1",
     username: "partner",
   },
+  {
+    email: process.env.SUPER_ADMIN_EMAIL || "superadmin@gmail.com",
+    password: process.env.SUPER_ADMIN_PASSWORD || "77GeoDav=",
+    role: "SUPER_ADMIN",
+    sub: "super-admin-1",
+    username: "super_admin",
+  },
+  {
+    email: process.env.AFFILIATE_EMAIL || "pablota096@gmail.com",
+    password: process.env.AFFILIATE_PASSWORD || "7787877As",
+    role: "AFFILIATE",
+    sub: "affiliate-1",
+    username: "affiliate",
+  },
 ];
 
 authRouter.post("/login", (req, res) => {
@@ -63,7 +77,15 @@ authRouter.post("/login", (req, res) => {
       { expiresIn: config.JWT_EXPIRES_IN || "7d" }
     );
     
-    return res.json({ token });
+    return res.json({ 
+      token, 
+      user: {
+        email: user.email,
+        role: user.role,
+        username: user.username,
+        sub: user.sub
+      }
+    });
   } catch (error) {
     console.error('JWT signing error:', error);
     return res.status(500).json({ error: "Authentication service error" });
