@@ -27,6 +27,11 @@ const AdvertiserAnalytics = lazy(() => import('@/pages/advertiser/AdvertiserAnal
 const AdvertiserFinances  = lazy(() => import('@/pages/advertiser/AdvertiserFinances'));
 const AdvertiserAntiFraud = lazy(() => import('@/pages/advertiser/AntiFraud'));
 
+// Additional advertiser specialized components
+const AdvertiserAccessRequests = lazy(() => import('@/pages/advertiser/AdvertiserAccessRequests'));
+const AdvertiserReferrals = lazy(() => import('@/pages/advertiser/ReferralStats'));
+const AdvertiserDocuments = lazy(() => import('@/pages/advertiser/AdvertiserDocuments'));
+
 // Partner (Affiliate) - Updated to use consistent /dashboard/affiliate prefix
 const AffiliateDash   = lazy(() => import('@/pages/partner/PartnerDashboard'));
 const AffiliateOffers = lazy(() => import('@/pages/partner/Offers'));
@@ -35,6 +40,14 @@ const AffiliateFin    = lazy(() => import('@/pages/affiliate/Finances'));
 const AffiliatePosts  = lazy(() => import('@/pages/affiliate/Postbacks'));
 const AffiliateProf   = lazy(() => import('@/pages/partner/PartnerProfile'));
 const AffiliateNotifs = lazy(() => import('@/pages/affiliate/PartnerNotifications'));
+
+// Additional specialized affiliate components
+const AffiliateLinks = lazy(() => import('@/pages/affiliate/TrackingLinks'));
+const AffiliateCreatives = lazy(() => import('@/pages/affiliate/CreativesAndTools'));
+const AffiliateTeam = lazy(() => import('@/pages/affiliate/TeamManagement'));
+const AffiliateReferrals = lazy(() => import('@/pages/affiliate/ReferralSystem'));
+const AffiliateSecurity = lazy(() => import('@/pages/affiliate/SecuritySettings'));
+const AffiliateDocuments = lazy(() => import('@/pages/affiliate/DocumentsManager'));
 
 // Owner
 const OwnerDash     = lazy(() => import('@/pages/owner/OwnerDashboard'));
@@ -98,10 +111,10 @@ function Router() {
         <ProtectedRoute path="/dashboard/advertiser/analytics" roles={['advertiser']} component={withLayout(AdvertiserAnalytics)} />
         <ProtectedRoute path="/dashboard/advertiser/finances" roles={['advertiser']} component={withLayout(AdvertiserFinances)} />
         <ProtectedRoute path="/dashboard/advertiser/anti-fraud" roles={['advertiser']} component={withLayout(AdvertiserAntiFraud)} />
-        <ProtectedRoute path="/dashboard/advertiser/access-requests" roles={['advertiser']} component={withLayout(AdvertiserOffers)} />
-        <ProtectedRoute path="/dashboard/advertiser/referrals" roles={['advertiser']} component={withLayout(AdvertiserOffers)} />
+        <ProtectedRoute path="/dashboard/advertiser/access-requests" roles={['advertiser']} component={withLayout(AdvertiserAccessRequests)} />
+        <ProtectedRoute path="/dashboard/advertiser/referrals" roles={['advertiser']} component={withLayout(AdvertiserReferrals)} />
         <ProtectedRoute path="/dashboard/advertiser/antifraud" roles={['advertiser']} component={withLayout(AdvertiserAntiFraud)} />
-        <ProtectedRoute path="/dashboard/advertiser/documents" roles={['advertiser']} component={withLayout(AdvertiserOffers)} />
+        <ProtectedRoute path="/dashboard/advertiser/documents" roles={['advertiser']} component={withLayout(AdvertiserDocuments)} />
 
         {/* Affiliate Dashboard Routes - Standardized to /dashboard/affiliate */}
         <ProtectedRoute path="/dashboard/affiliate" roles={['partner', 'affiliate']} component={withLayout(AffiliateDash)} />
@@ -112,12 +125,12 @@ function Router() {
         <ProtectedRoute path="/dashboard/affiliate/profile" roles={['partner', 'affiliate']} component={withLayout(AffiliateProf)} />
         <ProtectedRoute path="/dashboard/affiliate/notifications" roles={['partner', 'affiliate']} component={withLayout(AffiliateNotifs)} />
         <ProtectedRoute path="/dashboard/affiliate/access-requests" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
-        <ProtectedRoute path="/dashboard/affiliate/links" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
-        <ProtectedRoute path="/dashboard/affiliate/creatives" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
-        <ProtectedRoute path="/dashboard/affiliate/team" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
-        <ProtectedRoute path="/dashboard/affiliate/referrals" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
-        <ProtectedRoute path="/dashboard/affiliate/security" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
-        <ProtectedRoute path="/dashboard/affiliate/documents" roles={['partner', 'affiliate']} component={withLayout(AffiliateOffers)} />
+        <ProtectedRoute path="/dashboard/affiliate/links" roles={['partner', 'affiliate']} component={withLayout(AffiliateLinks)} />
+        <ProtectedRoute path="/dashboard/affiliate/creatives" roles={['partner', 'affiliate']} component={withLayout(AffiliateCreatives)} />
+        <ProtectedRoute path="/dashboard/affiliate/team" roles={['partner', 'affiliate']} component={withLayout(AffiliateTeam)} />
+        <ProtectedRoute path="/dashboard/affiliate/referrals" roles={['partner', 'affiliate']} component={withLayout(AffiliateReferrals)} />
+        <ProtectedRoute path="/dashboard/affiliate/security" roles={['partner', 'affiliate']} component={withLayout(AffiliateSecurity)} />
+        <ProtectedRoute path="/dashboard/affiliate/documents" roles={['partner', 'affiliate']} component={withLayout(AffiliateDocuments)} />
 
         {/* Partner Dashboard Routes - Dedicated partner routes */}
         <ProtectedRoute path="/dashboard/partner" roles={['partner']} component={withLayout(AffiliateDash)} />
@@ -127,6 +140,12 @@ function Router() {
         <ProtectedRoute path="/dashboard/partner/postbacks" roles={['partner']} component={withLayout(AffiliatePosts)} />
         <ProtectedRoute path="/dashboard/partner/profile" roles={['partner']} component={withLayout(AffiliateProf)} />
         <ProtectedRoute path="/dashboard/partner/notifications" roles={['partner']} component={withLayout(AffiliateNotifs)} />
+        <ProtectedRoute path="/dashboard/partner/links" roles={['partner']} component={withLayout(AffiliateLinks)} />
+        <ProtectedRoute path="/dashboard/partner/creatives" roles={['partner']} component={withLayout(AffiliateCreatives)} />
+        <ProtectedRoute path="/dashboard/partner/team" roles={['partner']} component={withLayout(AffiliateTeam)} />
+        <ProtectedRoute path="/dashboard/partner/referrals" roles={['partner']} component={withLayout(AffiliateReferrals)} />
+        <ProtectedRoute path="/dashboard/partner/security" roles={['partner']} component={withLayout(AffiliateSecurity)} />
+        <ProtectedRoute path="/dashboard/partner/documents" roles={['partner']} component={withLayout(AffiliateDocuments)} />
 
         {/* Owner Dashboard Routes */}
         <ProtectedRoute path="/dashboard/owner" roles={['owner']} component={withLayout(OwnerDash)} />
