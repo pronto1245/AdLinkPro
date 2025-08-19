@@ -4,7 +4,7 @@ import { extractRoleFromToken } from '@/utils/routeByRole';
 
 function getRoleFromToken(): string | null {
   // Check both token keys for backward compatibility  
-  const raw = localStorage.getItem('auth:token') || localStorage.getItem('token');
+  const raw = localStorage.getItem('token') || localStorage.getItem('auth:token');
   const role = extractRoleFromToken(raw);
   if (!role) return null;
   

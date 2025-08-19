@@ -10,8 +10,8 @@ export type UserRole = 'partner' | 'affiliate' | 'advertiser' | 'owner' | 'super
  * All routes use the /dashboard prefix for consistency
  */
 const ROLE_ROUTES: Record<UserRole, string> = {
-  partner: '/dashboard/affiliate',      // Partner is treated as affiliate
-  affiliate: '/dashboard/affiliate',    // Standardized affiliate route
+  partner: '/dashboard/partner',         // Partner gets its own route
+  affiliate: '/dashboard/affiliate',     // Standardized affiliate route
   advertiser: '/dashboard/advertiser',
   owner: '/dashboard/owner',
   super_admin: '/dashboard/super-admin',
@@ -21,7 +21,7 @@ const ROLE_ROUTES: Record<UserRole, string> = {
 /**
  * Default fallback route for unknown roles or errors
  */
-const DEFAULT_ROUTE = '/dashboard/affiliate';
+const DEFAULT_ROUTE = '/dashboard/partner';
 
 /**
  * Get the appropriate dashboard route for a user role

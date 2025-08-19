@@ -16,7 +16,7 @@ export function getDashboardHref(user?: User | null): string {
   if (!user?.role) return '/dashboard';
   
   const roleMap: Record<string, string> = {
-    'partner': '/dash',
+    'partner': '/dashboard/partner',
     'affiliate': '/dashboard/affiliate',
     'advertiser': '/dashboard/advertiser',
     'owner': '/dashboard/owner',

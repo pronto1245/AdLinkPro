@@ -1,20 +1,23 @@
 import { api } from './api';
 
-export type User = { id?: string; email: string; role: 'partner'|'advertiser'|'owner'|'super_admin'|'affiliate'; name?: string };
+export type User = { id?: string; email: string; role: 'partner'|'advertiser'|'owner'|'super_admin'|'affiliate'|'staff'; name?: string };
 export type LoginArgs = { email: string; password: string; otp?: string; role?: User['role'] };
 export type RegisterArgs = { email: string; password: string; name?: string; role?: User['role'] };
 
 const HOME_BY_ROLE: Record<User['role'], string> = {
-  partner: '/dash',
+  partner: '/dashboard/partner',
   advertiser: '/dashboard/advertiser',
   owner: '/dashboard/owner',
   super_admin: '/dashboard/super-admin',
   affiliate: '/dashboard/affiliate',
+  staff: '/dashboard/staff',
 };
 
 function persist(user: User, token?: string) {
-  localStorage.setItem('auth:user', JSON.stringify(user));
-  if (token) localStorage.setItem('auth:token', token);
+  // Use consistent localStorage keys
+  localStorage.setItem('user', JSON.stringify(user));
+  localStorage.setItem('role', user.role);
+  if (token) localStorage.setItem('token', token);
   return { user, token, home: HOME_BY_ROLE[user.role] };
 }
 
@@ -37,6 +40,7 @@ export async function login(args: LoginArgs): Promise<{user: User, token?: strin
         'PARTNER': 'partner',
         'SUPER_ADMIN': 'super_admin',
         'AFFILIATE': 'affiliate',
+        'STAFF': 'staff',
       };
       clientRole = roleMap[data.user.role] || 'partner';
     }
@@ -75,12 +79,21 @@ export async function register(args: RegisterArgs): Promise<{user: User}> {
 }
 
 export function logout() {
-  localStorage.removeItem('auth:user');
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  localStorage.removeItem('role');
   localStorage.removeItem('auth:token');
+  localStorage.removeItem('auth:user');
 }
 
 export function getCurrentUser(): User | null {
-  try { return JSON.parse(localStorage.getItem('auth:user') || 'null'); } catch { return null; }
+  const raw = localStorage.getItem('user');
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
 export const HOME = HOME_BY_ROLE;
