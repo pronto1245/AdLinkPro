@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/auth-context';
 import { 
   Activity, 
   Target, 
@@ -20,7 +24,9 @@ import {
   Download,
   Settings,
   Plus,
-  RefreshCw
+  RefreshCw,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
@@ -57,6 +63,8 @@ interface ClickMapData {
 
 export default function AdvertiserDashboard() {
   const { toast } = useToast();
+  const { t } = useTranslation();
+  const { user } = useAuth();
   const [dateRange, setDateRange] = useState<{from?: Date; to?: Date}>({
     from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
     to: new Date()
@@ -66,6 +74,37 @@ export default function AdvertiserDashboard() {
     device: 'all',
     offer: 'all'
   });
+
+  // WebSocket integration for real-time updates
+  const { connectionState, lastMessage } = useWebSocket();
+
+  // React to WebSocket messages for live dashboard updates
+  React.useEffect(() => {
+    if (lastMessage) {
+      try {
+        const data = JSON.parse(lastMessage.data);
+        
+        if (data.type === 'dashboard_update') {
+          // Refetch dashboard data when updates arrive
+          refetch();
+          toast({
+            title: "Dashboard Updated",
+            description: "New data received",
+            variant: "default",
+          });
+        } else if (data.type === 'new_click' || data.type === 'new_conversion') {
+          // Show real-time notification for important events
+          toast({
+            title: data.type === 'new_click' ? "New Click" : "New Conversion",
+            description: `From ${data.country || 'Unknown'} - ${data.offer || 'Offer'}`,
+            variant: "default",
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to parse WebSocket message:', error);
+      }
+    }
+  }, [lastMessage, refetch, toast]);
 
   // Data fetching
   const { data: metrics, isLoading: metricsLoading, refetch } = useQuery<DashboardMetrics>({
@@ -179,20 +218,44 @@ export default function AdvertiserDashboard() {
       {/* Header with greeting from main branch */}
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Панель рекламодателя</h1>
-          <p className="text-muted-foreground">Добро пожаловать в Affilix.Click — раздел рекламодателя.</p>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {t('dashboard.advertiser.title', 'Панель рекламодателя')}
+          </h1>
+          <p className="text-muted-foreground">
+            {user?.username ? 
+              `${t('dashboard.welcome', 'Добро пожаловать')}, ${user.username}! ${t('dashboard.advertiser.subtitle', 'Раздел рекламодателя Affilix.Click')}` :
+              t('dashboard.advertiser.subtitle', 'Добро пожаловать в Affilix.Click — раздел рекламодателя')
+            }
+          </p>
         </div>
         
         {/* Action buttons */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* WebSocket Status Indicator */}
+          <div className="flex items-center gap-2 px-2 py-1 rounded-md text-sm">
+            {connectionState === WebSocket.OPEN ? (
+              <>
+                <Wifi className="h-4 w-4 text-green-500" />
+                <span className="text-green-600">{t('common.connected', 'Live')}</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="h-4 w-4 text-red-500" />
+                <span className="text-red-600">{t('common.offline', 'Offline')}</span>
+              </>
+            )}
+          </div>
+          
           <Button variant="outline" size="icon" onClick={() => refetch()} data-testid="button-refresh" title="Обновить данные">
             <RefreshCw className="h-4 w-4" />
           </Button>
           
           <Button variant="outline" onClick={() => exportMutation.mutate()} data-testid="button-export" title="Экспорт статистики">
             <Download className="h-4 w-4 mr-2" />
-            Экспорт
+            {t('common.export', 'Экспорт')}
           </Button>
+          
+          <ThemeToggle />
           
           <Link to="/advertiser/offers/new">
             <Button data-testid="button-create-offer" title="Создать новый оффер">
