@@ -19,6 +19,45 @@ declare global {
 
 const router = Router();
 
+// Helper function to get postback statistics
+async function getPostbackStatistics(dateFrom: Date, dateTo: Date, advertiserId?: string) {
+  try {
+    const whereConditions = [
+      gte(postbackLogs.createdAt, dateFrom),
+      lte(postbackLogs.createdAt, dateTo)
+    ];
+
+    // If advertiser ID is provided, filter by their postback templates
+    if (advertiserId) {
+      const advertiserPostbacks = await db.select({ id: postbackTemplates.id })
+        .from(postbackTemplates)
+        .where(eq(postbackTemplates.advertiserId, advertiserId));
+      
+      const postbackIds = advertiserPostbacks.map(p => p.id);
+      if (postbackIds.length > 0) {
+        whereConditions.push(sql`${postbackLogs.postbackId} IN ${postbackIds}`);
+      }
+    }
+
+    const [stats] = await db.select({
+      sent: count(),
+      failed: sql<number>`COUNT(CASE WHEN ${postbackLogs.status} = 'failed' THEN 1 END)`,
+      avgResponseTime: avg(postbackLogs.responseTime)
+    })
+    .from(postbackLogs)
+    .where(and(...whereConditions));
+
+    return {
+      sent: Number(stats.sent) || 0,
+      failed: Number(stats.failed) || 0,
+      avgResponseTime: Number(stats.avgResponseTime) || 0
+    };
+  } catch (error) {
+    console.error('Error fetching postback statistics:', error);
+    return { sent: 0, failed: 0, avgResponseTime: 0 };
+  }
+}
+
 // Enhanced statistics query schema
 const enhancedStatsSchema = z.object({
   dateFrom: z.string().optional(),
@@ -144,6 +183,15 @@ router.get('/advertiser/live-statistics', async (req: Request, res: Response) =>
       avgEPC: 0,
       fraudRate: 0
     });
+
+    // Get postback statistics for the same period
+    const postbackStats = await getPostbackStatistics(dateFrom, dateTo, user.id);
+    
+    // Add postback metrics to summary
+    summary.postbacksSent = postbackStats.sent;
+    summary.postbacksFailed = postbackStats.failed;
+    summary.postbacksDeliveryRate = postbackStats.sent > 0 ? ((postbackStats.sent - postbackStats.failed) / postbackStats.sent) * 100 : 0;
+    summary.avgResponseTime = postbackStats.avgResponseTime;
 
     // Calculate derived metrics
     summary.avgCR = summary.totalClicks > 0 ? (summary.totalConversions / summary.totalClicks) * 100 : 0;
@@ -619,6 +667,109 @@ router.get('/postback-analytics', async (req: Request, res: Response) => {
   }
 });
 
-export default router;
+// Postback delivery analytics endpoint
+router.get('/postback/delivery-analytics', async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const filters = enhancedStatsSchema.parse(req.query);
+    
+    // Build date range
+    const dateFrom = filters.dateFrom ? new Date(filters.dateFrom) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const dateTo = filters.dateTo ? new Date(filters.dateTo) : new Date();
+    
+    // Get postback delivery statistics with detailed breakdown
+    const deliveryStats = await db.select({
+      date: sql<string>`DATE(${postbackLogs.createdAt})`,
+      status: postbackLogs.status,
+      eventType: postbackLogs.eventType,
+      count: count(),
+      avgResponseTime: avg(postbackLogs.responseTime),
+      postbackName: postbackTemplates.name
+    })
+    .from(postbackLogs)
+    .leftJoin(postbackTemplates, eq(postbackLogs.postbackId, postbackTemplates.id))
+    .where(and(
+      gte(postbackLogs.createdAt, dateFrom),
+      lte(postbackLogs.createdAt, dateTo),
+      user.role === 'advertiser' ? eq(postbackTemplates.advertiserId, user.id) : sql`1=1`
+    ))
+    .groupBy(
+      sql`DATE(${postbackLogs.createdAt})`,
+      postbackLogs.status,
+      postbackLogs.eventType,
+      postbackTemplates.name
+    )
+    .orderBy(sql`DATE(${postbackLogs.createdAt}) DESC`);
+
+    // Get failure details
+    const failureDetails = await db.select({
+      errorMessage: postbackLogs.errorMessage,
+      count: count(),
+      postbackName: postbackTemplates.name
+    })
+    .from(postbackLogs)
+    .leftJoin(postbackTemplates, eq(postbackLogs.postbackId, postbackTemplates.id))
+    .where(and(
+      gte(postbackLogs.createdAt, dateFrom),
+      lte(postbackLogs.createdAt, dateTo),
+      eq(postbackLogs.status, 'failed'),
+      user.role === 'advertiser' ? eq(postbackTemplates.advertiserId, user.id) : sql`1=1`
+    ))
+    .groupBy(postbackLogs.errorMessage, postbackTemplates.name)
+    .orderBy(desc(count()));
+
+    // Calculate overall metrics
+    const summary = deliveryStats.reduce((acc, stat) => {
+      const count = Number(stat.count);
+      acc.total += count;
+      if (stat.status === 'sent') {
+        acc.successful += count;
+      } else if (stat.status === 'failed') {
+        acc.failed += count;
+      }
+      acc.totalResponseTime += Number(stat.avgResponseTime || 0) * count;
+      return acc;
+    }, { total: 0, successful: 0, failed: 0, totalResponseTime: 0 });
+
+    const successRate = summary.total > 0 ? (summary.successful / summary.total) * 100 : 0;
+    const avgResponseTime = summary.total > 0 ? summary.totalResponseTime / summary.total : 0;
+
+    res.json({
+      summary: {
+        totalPostbacks: summary.total,
+        successful: summary.successful,
+        failed: summary.failed,
+        successRate: Math.round(successRate * 100) / 100,
+        avgResponseTime: Math.round(avgResponseTime),
+        dateRange: { from: dateFrom, to: dateTo }
+      },
+      timeline: deliveryStats.map(stat => ({
+        date: stat.date,
+        status: stat.status,
+        eventType: stat.eventType,
+        count: Number(stat.count),
+        avgResponseTime: Number(stat.avgResponseTime || 0),
+        postbackName: stat.postbackName
+      })),
+      failures: failureDetails.map(failure => ({
+        error: failure.errorMessage,
+        count: Number(failure.count),
+        postbackName: failure.postbackName
+      })),
+      filters
+    });
+
+  } catch (error) {
+    console.error('Postback delivery analytics error:', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Invalid filters', details: error.errors });
+    }
+    res.status(500).json({ error: 'Failed to fetch postback delivery analytics' });
+  }
+});
 
 export default router;

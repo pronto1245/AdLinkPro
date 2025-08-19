@@ -1869,6 +1869,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       detectFraud(req, 'registration', { email: user.email, role: user.role });
       auditLog(req, 'USER_REGISTRATION', undefined, true, { userId: user.id, username: user.username });
 
+      // Trigger automatic postback for registration event
+      try {
+        const postbackEvent = {
+          type: 'registration' as const,
+          clickId: req.headers['x-click-id'] as string || `reg_${user.id}_${Date.now()}`,
+          data: {
+            clickid: req.headers['x-click-id'] as string || `reg_${user.id}_${Date.now()}`,
+            status: 'registration',
+            partner_id: user.ownerId || '',
+            offer_id: req.headers['x-offer-id'] as string || '',
+            user_id: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            referral_code: user.referralCode || '',
+            ip: req.ip || '',
+            user_agent: req.get('user-agent') || '',
+            timestamp: Math.floor(Date.now() / 1000).toString(),
+          },
+          partnerId: user.ownerId,
+          advertiserId: user.advertiserId,
+        };
+        
+        // Send postbacks asynchronously to avoid blocking registration
+        PostbackService.triggerPostbacks(postbackEvent).catch(error => {
+          console.error('Registration postback sending failed:', error);
+        });
+        
+        console.log(`✅ Registration postback triggered for user ${user.username}`);
+      } catch (error) {
+        console.error('Registration postback trigger failed:', error);
+      }
+
       const token = jwt.sign(
         { 
           id: user.id, 

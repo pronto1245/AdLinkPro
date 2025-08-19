@@ -603,8 +603,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserById(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    // Delegate to getUser to avoid duplication
+    return this.getUser(id);
   }
 
   async getUserByTelegramChatId(chatId: number): Promise<User | undefined> {
