@@ -1,29 +1,47 @@
 [build]
-command = "npm ci && npm run build:client"
-publish = "client/dist"
+  command = "npm ci && npm run build:client"
+  publish = "client/dist"
 
-[[redirects]]
-from = "/api/*"
-to = "https://central-matelda-pronto12-95b8129d.koyeb.app/:splat"
-status = 200
-force = true
+[build.environment]
+  NODE_VERSION = "18"
 
+# API proxy to backend
 [[redirects]]
-from = "/dash/*"
-to = "/dashboard/:splat"
-status = 301
+  from = "/api/*"
+  to = "https://central-matelda-pronto12-95b8129d.koyeb.app/api/:splat"
+  status = 200
+  force = true
 
+# SPA fallback - all other routes serve index.html
 [[redirects]]
-from = "/dashbord/*"
-to = "/dashboard/:splat"
-status = 301
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
-[[redirects]]
-from = "/dashbard/*"
-to = "/dashboard/:splat"
-status = 301
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; object-src 'none'; base-uri 'self'"
 
-[[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
+# Cache headers for static assets
+[[headers]]
+  for = "/assets/*.css"
+  [headers.values]
+    Content-Type = "text/css"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
