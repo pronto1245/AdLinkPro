@@ -1,20 +1,28 @@
-import { urlJoin } from './urlJoin';
+export const API_BASE = '/api';
 
-const BASE = import.meta.env.VITE_API_URL || '';
+export async function api(path: string, init: RequestInit = {}) {
+  // убираем двойные префиксы: если пришло "/api/...", оставляем один
+  const cleanPath =
+    path.startsWith('/api/') ? path.slice(4) :
+    path.startsWith('api/') ? path.slice(3) :
+    path;
 
-export function joinUrl(p: string) {
-  return /^https?:\/\//i.test(p) ? p : urlJoin(BASE, p);
-}
+  const token =
+    localStorage.getItem('token') ||
+    localStorage.getItem('auth:token') ||
+    undefined;
 
-export async function json<T = unknown>(urlOrPath: string, body?: any, init?: RequestInit): Promise<T> {
-  const url = joinUrl(urlOrPath);
-  const res = await fetch(url, {
-    method: body ? 'POST' : (init?.method ?? 'GET'),
-    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
-    body: body ? JSON.stringify(body) : undefined,
-    ...init,
-  });
-  const text = await res.text();
-  if (!res.ok) throw new Error(`${res.status}: ${text}`);
-  try { return JSON.parse(text) as T; } catch { return text as unknown as T; }
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(init.headers as Record<string, string> ?? {}),
+  };
+
+  const url = `${API_BASE}${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
+  const res = await fetch(url, { ...init, headers, credentials: 'include' });
+
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+
+  const ct = res.headers.get('content-type') ?? '';
+  return ct.includes('application/json') ? res.json() : res.text();
 }
