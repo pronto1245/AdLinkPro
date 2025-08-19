@@ -12,6 +12,8 @@ import AuthRedirector from '@/components/auth/AuthRedirector';
 import Unauthorized from '@/pages/Unauthorized';
 
 import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
+import SidebarLayout from '@/components/layout/SidebarLayout';
+import SidebarDemo from '@/components/SidebarDemo';
 
 // Advertiser
 const AdvertiserDash      = lazy(() => import('@/pages/advertiser/AdvertiserDashboard'));
@@ -55,6 +57,14 @@ const withLayout = (C: React.ComponentType<any>) => function Wrapped() {
     <RoleBasedLayout>
       <C />
     </RoleBasedLayout>
+  );
+};
+
+const withSidebar = (C: React.ComponentType<any>) => function Wrapped() {
+  return (
+    <SidebarLayout>
+      <C />
+    </SidebarLayout>
   );
 };
 
