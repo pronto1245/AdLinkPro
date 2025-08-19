@@ -1,3 +1,5 @@
+import { api } from './api';
+
 export type User = { id?: string; email: string; role: 'partner'|'advertiser'|'owner'|'super_admin'|'affiliate'; name?: string };
 export type LoginArgs = { email: string; password: string; otp?: string; role?: User['role'] };
 export type RegisterArgs = { email: string; password: string; name?: string; role?: User['role'] };
@@ -18,9 +20,12 @@ function persist(user: User, token?: string) {
 
 export async function login(args: LoginArgs): Promise<{user: User, token?: string}> {
   try {
-    const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(args) });
-    if (!res.ok) throw new Error('login failed');
-    const data = await res.json();
+    // Use centralized API function instead of direct fetch
+    const data = await api('/api/auth/login', { 
+      method: 'POST', 
+      skipAuth: true,
+      body: JSON.stringify(args) 
+    });
     
     // Handle role mapping from server format to client format
     let clientRole: User['role'] = 'partner'; // default
@@ -54,9 +59,12 @@ export async function login(args: LoginArgs): Promise<{user: User, token?: strin
 
 export async function register(args: RegisterArgs): Promise<{user: User}> {
   try {
-    const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(args) });
-    if (!res.ok) throw new Error('register failed');
-    const data = await res.json();
+    // Use centralized API function instead of direct fetch
+    const data = await api('/api/register', { 
+      method: 'POST', 
+      skipAuth: true,
+      body: JSON.stringify(args) 
+    });
     const user: User = data.user ?? { email: args.email, role: (data.role ?? args.role ?? 'partner'), name: args.name };
     return { user };
   } catch {
