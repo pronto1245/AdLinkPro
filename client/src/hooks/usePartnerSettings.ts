@@ -190,17 +190,23 @@ export function usePartnerSettings(): UsePartnerSettingsReturn {
 
     // Notification settings
     notifications,
-    updateNotifications: setNotifications,
+    updateNotifications: (updates: Partial<NotificationSettings>) => {
+      setNotifications(prev => ({ ...prev, ...updates }));
+    },
     saveNotifications: () => notificationsMutation.mutate(notifications),
 
     // Security settings
     security,
-    updateSecurity: setSecurity,
+    updateSecurity: (updates: Partial<SecuritySettings>) => {
+      setSecurity(prev => ({ ...prev, ...updates }));
+    },
     saveSecurity: () => securityMutation.mutate(security),
 
     // General settings
     general,
-    updateGeneral: setGeneral,
+    updateGeneral: (updates: Partial<GeneralSettings>) => {
+      setGeneral(prev => ({ ...prev, ...updates }));
+    },
     saveGeneral: () => generalMutation.mutate(general),
 
     // Password management
