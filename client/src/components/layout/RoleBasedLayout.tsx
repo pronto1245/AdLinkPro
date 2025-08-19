@@ -1,74 +1,82 @@
-import React from "react";
-
-function getRoleFromToken(): 'partner'|'advertiser'|'owner'|'super_admin'|null {
-  try {
-    const raw = localStorage.getItem('token') || '';
-    const payload = JSON.parse(atob(raw.split('.')[1] || ''));
-    const r = String(payload.role || '').toLowerCase();
-    const map: Record<string,string> = {
-      partner: 'partner',
-      advertiser: 'advertiser',
-      owner: 'owner',
-      'super admin': 'super_admin',
-      super_admin: 'super_admin',
-      superadmin: 'super_admin'
-    };
-    return (map[r] as any) || null;
-  } catch { return null; }
-}
-
-const link = (href: string, label: string) => (
-  <a href={href} style={{padding:'8px 10px', borderRadius:8, border:'1px solid #374151', textDecoration:'none', color:'#e5e7eb'}}>
-    {label}
-  </a>
-);
+import React, { useState, useEffect } from "react";
+import UniversalSidebar from "./UniversalSidebar";
+import { cn } from "@/lib/utils";
+import { useSidebar } from "@/contexts/sidebar-context";
+import { Menu } from "lucide-react";
 
 export default function RoleBasedLayout({ children }: { children: React.ReactNode }) {
-  const role = getRoleFromToken();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { collapsed, sidebarWidth } = useSidebar();
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+
+  useEffect(() => {
+    const updateScreenSize = () => {
+      setIsLargeScreen(window.innerWidth >= 1024);
+    };
+
+    updateScreenSize();
+    window.addEventListener('resize', updateScreenSize);
+    
+    return () => window.removeEventListener('resize', updateScreenSize);
+  }, []);
 
   return (
-    <div style={{minHeight:'100vh', background:'#0b0f1a', color:'#e5e7eb', display:'grid', gridTemplateRows:'auto 1fr'}}>
-      <header style={{display:'flex', alignItems:'center', gap:12, padding:'14px 18px', borderBottom:'1px solid #1f2937', position:'sticky', top:0, background:'#0b0f1a'}}>
-        <img src="/logo.png" alt="Affilix.Click" width={28} height={28} style={{borderRadius:6}} />
-        <div style={{fontWeight:700}}>Affilix.Click</div>
-        <div style={{marginLeft:'auto', display:'flex', gap:8}}>
-          {!role && link('/login', 'Войти')}
-          {role === 'partner' && <>
-            {link('/dash', 'Дашборд')}
-            {link('/dash/offers', 'Офферы')}
-            {link('/dash/statistics', 'Статистика')}
-            {link('/dash/finances', 'Финансы')}
-            {link('/dash/profile', 'Профиль')}
-          </>}
-          {role === 'advertiser' && <>
-            {link('/dashboard/advertiser', 'Дашборд')}
-            {link('/dashboard/advertiser/offers', 'Офферы')}
-            {link('/dashboard/advertiser/reports', 'Отчёты')}
-            {link('/dashboard/advertiser/partners', 'Партнёры')}
-            {link('/dashboard/advertiser/profile', 'Профиль')}
-          </>}
-          {role === 'owner' && <>
-            {link('/dashboard/owner', 'Дашборд')}
-            {link('/dashboard/owner/users', 'Пользователи')}
-            {link('/dashboard/owner/settings', 'Настройки')}
-          </>}
-          {role === 'super_admin' && <>
-            {link('/dashboard/super-admin', 'Дашборд')}
-            {link('/dashboard/super-admin/users', 'Пользователи')}
-            {link('/dashboard/super-admin/offers', 'Офферы')}
-            {link('/dashboard/super-admin/analytics', 'Аналитика')}
-          </>}
-          {role === 'staff' && <>
-            {link('/dashboard/staff', 'Дашборд')}
-            {link('/dashboard/staff/tickets', 'Заявки')}
-            {link('/dashboard/staff/support', 'Поддержка')}
-          </>}
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block fixed left-0 top-0 h-full z-40">
+        <UniversalSidebar />
+      </div>
 
-      <main style={{padding:20}}>
-        {children}
-      </main>
+      {/* Mobile Sidebar Overlay */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div 
+            className="fixed inset-0 bg-black/50" 
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="relative">
+            <UniversalSidebar 
+              isMobile={true} 
+              onClose={() => setMobileMenuOpen(false)} 
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <div 
+        className={cn(
+          "flex-1 flex flex-col transition-all duration-300 ease-in-out",
+          isLargeScreen ? "ml-0" : "ml-0"
+        )}
+        style={{
+          marginLeft: isLargeScreen ? `${sidebarWidth}px` : '0px'
+        }}
+      >
+        {/* Mobile Header */}
+        <header className="lg:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Открыть меню"
+            >
+              <Menu className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            </button>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-sm font-bold">A</span>
+              </div>
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white">AdLinkPro</h1>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
