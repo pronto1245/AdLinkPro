@@ -158,13 +158,13 @@ export default function RegisterUnified({ role }: Props) {
                 <label>Компания *</label>
                 <input value={company} onChange={e => setCompany(e.target.value)} placeholder="ООО Ваша компания" required />
               </div>
-              <div className="auth-field" style={{flexDirection:'row',alignItems:'center',gap:10}}>
+              <div className="auth-field checkbox-field">
                 <input id="tos" type="checkbox" checked={agreeTos} onChange={e => setAgreeTos(e.target.checked)} />
-                <label htmlFor="tos">Я согласен с условиями обслуживания *</label>
+                <label htmlFor="tos">Я согласен с <a href="#" onClick={e => e.preventDefault()}>условиями обслуживания</a> *</label>
               </div>
-              <div className="auth-field" style={{flexDirection:'row',alignItems:'center',gap:10}}>
+              <div className="auth-field checkbox-field">
                 <input id="pp" type="checkbox" checked={agreePrivacy} onChange={e => setAgreePrivacy(e.target.checked)} />
-                <label htmlFor="pp">Я согласен с политикой конфиденциальности *</label>
+                <label htmlFor="pp">Я согласен с <a href="#" onClick={e => e.preventDefault()}>политикой конфиденциальности</a> *</label>
               </div>
             </>
           )}
