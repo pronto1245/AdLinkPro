@@ -16,7 +16,6 @@ import {
   Trash2, 
   UserCheck, 
   UserX, 
-  Shield,
   BarChart3,
   MousePointer,
   Download
@@ -98,9 +97,10 @@ export default function TeamManagement() {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">{t('team.title')}</h1>
+          <h1 className="text-3xl font-bold">{t('team.title', 'Управление командой')}</h1>
           <p className="text-muted-foreground mt-2">
             Добавляйте байеров, аналитиков и менеджеров для работы с офферами
           </p>
@@ -123,127 +123,128 @@ export default function TeamManagement() {
                 Добавить участника
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Добавить участника команды</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={createData.email}
-                  onChange={(e) => setCreateData(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="user@example.com"
-                  data-testid="input-team-member-email"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="username">Имя пользователя</Label>
-                <Input
-                  id="username"
-                  value={createData.username}
-                  onChange={(e) => setCreateData(prev => ({ ...prev, username: e.target.value }))}
-                  placeholder="username"
-                  data-testid="input-team-member-username"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="password">Пароль</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={createData.password}
-                  onChange={(e) => setCreateData(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="••••••••"
-                  data-testid="input-team-member-password"
-                />
-              </div>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Добавить участника команды</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={createData.email}
+                    onChange={(e) => setCreateData(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="user@example.com"
+                    data-testid="input-team-member-email"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="username">Имя пользователя</Label>
+                  <Input
+                    id="username"
+                    value={createData.username}
+                    onChange={(e) => setCreateData(prev => ({ ...prev, username: e.target.value }))}
+                    placeholder="username"
+                    data-testid="input-team-member-username"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="password">Пароль</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={createData.password}
+                    onChange={(e) => setCreateData(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="••••••••"
+                    data-testid="input-team-member-password"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="role">Роль</Label>
-                <Select value={createData.role} onValueChange={handleRoleChange}>
-                  <SelectTrigger data-testid="select-team-member-role">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(ROLE_PERMISSIONS).map(([key, role]) => (
-                      <SelectItem key={key} value={key}>
-                        <div className="flex items-center gap-2">
-                          {role.icon}
-                          {role.name}
+                <div>
+                  <Label htmlFor="role">Роль</Label>
+                  <Select value={createData.role} onValueChange={handleRoleChange}>
+                    <SelectTrigger data-testid="select-team-member-role">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(AFFILIATE_ROLE_PERMISSIONS).map(([key, role]) => (
+                        <SelectItem key={key} value={key}>
+                          <div className="flex items-center gap-2">
+                            <MousePointer className="h-4 w-4" />
+                            {role.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="subIdPrefix">Префикс SubID</Label>
+                  <Input
+                    id="subIdPrefix"
+                    value={createData.subIdPrefix}
+                    onChange={(e) => setCreateData(prev => ({ ...prev, subIdPrefix: e.target.value }))}
+                    placeholder="buyer1"
+                    data-testid="input-team-member-subid"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Уникальный префикс для идентификации трафика этого участника
+                  </p>
+                </div>
+
+                <div>
+                  <Label>Разрешения</Label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {AVAILABLE_AFFILIATE_PERMISSIONS.map(permission => (
+                      <div key={permission.id} className="flex items-start space-x-2">
+                        <Checkbox
+                          id={permission.id}
+                          checked={createData.permissions.includes(permission.id)}
+                          onCheckedChange={(checked) => 
+                            handlePermissionChange(permission.id, checked as boolean)
+                          }
+                          data-testid={`checkbox-permission-${permission.id}`}
+                        />
+                        <div className="grid gap-1.5 leading-none">
+                          <label 
+                            htmlFor={permission.id}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            {permission.name}
+                          </label>
+                          <p className="text-xs text-muted-foreground">
+                            {permission.description}
+                          </p>
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="subIdPrefix">Префикс SubID</Label>
-                <Input
-                  id="subIdPrefix"
-                  value={createData.subIdPrefix}
-                  onChange={(e) => setCreateData(prev => ({ ...prev, subIdPrefix: e.target.value }))}
-                  placeholder="buyer1"
-                  data-testid="input-team-member-subid"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Уникальный префикс для идентификации трафика этого участника
-                </p>
-              </div>
-
-              <div>
-                <Label>Разрешения</Label>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {AVAILABLE_PERMISSIONS.map(permission => (
-                    <div key={permission.id} className="flex items-start space-x-2">
-                      <Checkbox
-                        id={permission.id}
-                        checked={createData.permissions.includes(permission.id)}
-                        onCheckedChange={(checked) => 
-                          handlePermissionChange(permission.id, checked as boolean)
-                        }
-                        data-testid={`checkbox-permission-${permission.id}`}
-                      />
-                      <div className="grid gap-1.5 leading-none">
-                        <label 
-                          htmlFor={permission.id}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          {permission.name}
-                        </label>
-                        <p className="text-xs text-muted-foreground">
-                          {permission.description}
-                        </p>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={resetCreateForm}
+                    data-testid="button-cancel-team-member"
+                  >
+                    Отмена
+                  </Button>
+                  <Button
+                    onClick={() => createMemberMutation.mutate(createData)}
+                    disabled={createMemberMutation.isPending}
+                    data-testid="button-save-team-member"
+                  >
+                    {createMemberMutation.isPending ? 'Добавление...' : 'Добавить'}
+                  </Button>
                 </div>
               </div>
-
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsCreateDialogOpen(false)}
-                  data-testid="button-cancel-team-member"
-                >
-                  Отмена
-                </Button>
-                <Button
-                  onClick={() => createMemberMutation.mutate(createData)}
-                  disabled={createMemberMutation.isPending}
-                  data-testid="button-save-team-member"
-                >
-                  {createMemberMutation.isPending ? 'Добавление...' : 'Добавить'}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Team Statistics */}
@@ -342,10 +343,10 @@ export default function TeamManagement() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={ROLE_PERMISSIONS[member.role].color}>
+                        <Badge className={AFFILIATE_ROLE_PERMISSIONS[member.role as keyof typeof AFFILIATE_ROLE_PERMISSIONS].color}>
                           <div className="flex items-center gap-1">
-                            {ROLE_PERMISSIONS[member.role].icon}
-                            {ROLE_PERMISSIONS[member.role].name}
+                            <MousePointer className="h-4 w-4" />
+                            {AFFILIATE_ROLE_PERMISSIONS[member.role as keyof typeof AFFILIATE_ROLE_PERMISSIONS].name}
                           </div>
                         </Badge>
                       </TableCell>
@@ -356,15 +357,15 @@ export default function TeamManagement() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1 max-w-xs">
-                          {member.permissions.slice(0, 2).map(permission => {
-                            const perm = AVAILABLE_PERMISSIONS.find(p => p.id === permission);
+                          {Array.isArray(member.permissions) && member.permissions.slice(0, 2).map(permission => {
+                            const perm = AVAILABLE_AFFILIATE_PERMISSIONS.find(p => p.id === permission);
                             return (
                               <Badge key={permission} variant="outline" className="text-xs">
                                 {perm?.name.split(' ')[0]}
                               </Badge>
                             );
                           })}
-                          {member.permissions.length > 2 && (
+                          {Array.isArray(member.permissions) && member.permissions.length > 2 && (
                             <Badge variant="outline" className="text-xs">
                               +{member.permissions.length - 2}
                             </Badge>
@@ -449,7 +450,7 @@ export default function TeamManagement() {
                 <Select 
                   value={editingMember.role} 
                   onValueChange={(role: 'buyer' | 'analyst' | 'manager') => {
-                    const defaultPermissions = ROLE_PERMISSIONS[role].defaultPermissions;
+                    const defaultPermissions = AFFILIATE_ROLE_PERMISSIONS[role].defaultPermissions;
                     setEditingMember(prev => prev ? {
                       ...prev,
                       role,
@@ -461,10 +462,10 @@ export default function TeamManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(ROLE_PERMISSIONS).map(([key, role]) => (
+                    {Object.entries(AFFILIATE_ROLE_PERMISSIONS).map(([key, role]) => (
                       <SelectItem key={key} value={key}>
                         <div className="flex items-center gap-2">
-                          {role.icon}
+                          <MousePointer className="h-4 w-4" />
                           {role.name}
                         </div>
                       </SelectItem>
@@ -477,7 +478,7 @@ export default function TeamManagement() {
                 <Label htmlFor="editSubIdPrefix">Префикс SubID</Label>
                 <Input
                   id="editSubIdPrefix"
-                  value={editingMember.subIdPrefix}
+                  value={editingMember.subIdPrefix || ''}
                   onChange={(e) => setEditingMember(prev => prev ? {
                     ...prev,
                     subIdPrefix: e.target.value
@@ -516,40 +517,6 @@ export default function TeamManagement() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div>
-                <Label>Разрешения</Label>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {AVAILABLE_PERMISSIONS.map(permission => (
-                    <div key={permission.id} className="flex items-start space-x-2">
-                      <Checkbox
-                        id={`edit-${permission.id}`}
-                        checked={editingMember.permissions.includes(permission.id)}
-                        onCheckedChange={(checked) => {
-                          setEditingMember(prev => prev ? {
-                            ...prev,
-                            permissions: checked
-                              ? [...prev.permissions, permission.id]
-                              : prev.permissions.filter(p => p !== permission.id)
-                          } : null);
-                        }}
-                        data-testid={`checkbox-edit-permission-${permission.id}`}
-                      />
-                      <div className="grid gap-1.5 leading-none">
-                        <label 
-                          htmlFor={`edit-${permission.id}`}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          {permission.name}
-                        </label>
-                        <p className="text-xs text-muted-foreground">
-                          {permission.description}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
