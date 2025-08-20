@@ -354,7 +354,7 @@
     "prelandingType": "Преленд",
     "textType": "Текст",
     "videoType": "Видео",
-    "banners": "[RU] Banners"
+    "banners": "Баннеры"
   },
   "team": {
     "title": "Команда",
@@ -434,6 +434,6 @@
     "noAccount": "Нет аккаунта?",
     "loginHere": "Войдите здесь",
     "registerHere": "Зарегистрируйтесь здесь",
-    "sign_in": "[RU] Sign In"
+    "sign_in": "Войти"
   }
 }

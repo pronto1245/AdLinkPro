@@ -79,7 +79,7 @@ export class I18nService {
             transEmptyNodeValue: '',
             transSupportBasicHtmlNodes: true,
             transKeepBasicHtmlNodesFor: ['br', 'strong', 'i', 'em', 'span'],
-          },
+          } as any,
         });
 
       this.initialized = true;
@@ -120,11 +120,13 @@ export class I18nService {
   }
 
   translate(key: string, defaultValue?: string, options?: any): string {
-    return i18n.t(key, defaultValue, options);
+    const result = i18n.t(key, defaultValue, options);
+    return typeof result === 'string' ? result : String(result);
   }
 
   translateWithNamespace(namespace: string, key: string, defaultValue?: string, options?: any): string {
-    return i18n.t(`${namespace}:${key}`, defaultValue, options);
+    const result = i18n.t(`${namespace}:${key}`, defaultValue, options);
+    return typeof result === 'string' ? result : String(result);
   }
 
   // Get language-specific formatting options
@@ -238,7 +240,69 @@ export class I18nService {
     return missing;
   }
 
-  // Add translations dynamically
+  // Dynamic translation loading from server
+  async loadTranslationsFromServer(language: string): Promise<void> {
+    try {
+      const response = await fetch(`/api/i18n/translations/${language}`);
+      if (!response.ok) {
+        throw new Error(`Failed to load translations: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      // Add the loaded translations to i18n
+      i18n.addResourceBundle(language, this.config.namespace, data.translations, true, true);
+      
+      console.debug(`Loaded ${language} translations from server`);
+    } catch (error) {
+      console.error(`Failed to load ${language} translations from server:`, error);
+      throw error;
+    }
+  }
+
+  // Load available languages from server
+  async getAvailableLanguagesFromServer(): Promise<string[]> {
+    try {
+      const response = await fetch('/api/i18n/languages');
+      if (!response.ok) {
+        throw new Error(`Failed to load languages: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.languages || [];
+    } catch (error) {
+      console.error('Failed to load available languages from server:', error);
+      return this.config.supportedLanguages; // Fallback to config
+    }
+  }
+
+  // Enhanced language change with server sync
+  async changeLanguageWithServerSync(language: string): Promise<void> {
+    if (!this.config.supportedLanguages.includes(language)) {
+      console.warn(`Language '${language}' is not supported`);
+      return;
+    }
+
+    try {
+      // Try to load fresh translations from server
+      await this.loadTranslationsFromServer(language);
+      
+      // Change language
+      await i18n.changeLanguage(language);
+      localStorage.setItem(this.config.storageKey, language);
+      
+      // Trigger custom event for language change
+      window.dispatchEvent(new CustomEvent('languageChanged', {
+        detail: { language, previousLanguage: this.getCurrentLanguage() }
+      }));
+
+      console.debug('Language changed to:', language, 'with server sync');
+    } catch (error) {
+      console.warn('Server sync failed, falling back to cached translations:', error);
+      // Fallback to regular language change
+      await this.changeLanguage(language);
+    }
+  }
   addTranslations(language: string, namespace: string, translations: Record<string, any>): void {
     i18n.addResourceBundle(language, namespace, translations, true, true);
   }
@@ -269,6 +333,12 @@ export const formatRelativeTime = (date: Date | string | number) =>
 
 export const changeLanguage = (language: string) => 
   i18nService.changeLanguage(language);
+
+export const changeLanguageWithServerSync = (language: string) => 
+  i18nService.changeLanguageWithServerSync(language);
+
+export const loadTranslationsFromServer = (language: string) => 
+  i18nService.loadTranslationsFromServer(language);
 
 export const getCurrentLanguage = () => 
   i18nService.getCurrentLanguage();

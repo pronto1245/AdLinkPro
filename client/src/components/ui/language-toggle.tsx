@@ -27,8 +27,15 @@ export function LanguageToggle() {
   }, []);
 
   const changeLanguage = async (lng: string) => {
-    await i18nService.changeLanguage(lng);
-    setCurrentLanguage(lng);
+    try {
+      await i18nService.changeLanguageWithServerSync(lng);
+      setCurrentLanguage(lng);
+    } catch (error) {
+      console.error('Failed to change language:', error);
+      // Fallback to basic language change
+      await i18nService.changeLanguage(lng);
+      setCurrentLanguage(lng);
+    }
   };
 
   return (
