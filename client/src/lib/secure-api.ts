@@ -153,12 +153,19 @@ export const secureAuth = {
       password: data.password
     };
 
-    return secureApi('/api/auth/v2/login', {
+    const result = await secureApi('/api/auth/v2/login', {
       method: 'POST',
       body: JSON.stringify(cleanData),
       skipAuth: true,
       identifier: identifier || cleanData.username
     });
+
+    // Store token securely if login successful (same as regular login method)
+    if (result.token) {
+      secureStorage.setToken(result.token);
+    }
+
+    return result;
   },
 
   async verify2FA(data: { tempToken: string; code: string }, identifier?: string) {
