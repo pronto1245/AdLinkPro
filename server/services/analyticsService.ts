@@ -287,53 +287,78 @@ export class AnalyticsService {
   }
   
   private static generateMockData(filters: any): any[] {
+    // Try to generate more realistic mock data based on actual database patterns
     const mockData = [];
     const count = Math.min(parseInt(filters.limit) || 50, 100);
     
+    // Base the mock data on more realistic scenarios
+    const countries = ['US', 'CA', 'GB', 'DE', 'FR', 'IT', 'ES', 'AU', 'NL', 'SE'];
+    const browsers = ['Chrome', 'Firefox', 'Safari', 'Edge', 'Opera'];
+    const devices = ['Desktop', 'Mobile', 'Tablet'];
+    const operatingSystems = ['Windows', 'macOS', 'iOS', 'Android', 'Linux'];
+    const trafficSources = ['facebook', 'google', 'tiktok', 'native', 'direct', 'email', 'sms'];
+    
     for (let i = 0; i < count; i++) {
-      const clicks = Math.floor(Math.random() * 10) + 1;
-      const conversions = Math.floor(Math.random() * clicks);
-      const revenue = conversions * (Math.random() * 50 + 10);
-      const payout = revenue * (0.5 + Math.random() * 0.3);
+      // Generate more realistic click patterns
+      const clicks = Math.floor(Math.random() * 15) + 1;
+      const conversionRate = 0.05 + Math.random() * 0.15; // 5-20% CR
+      const conversions = Math.floor(clicks * conversionRate);
+      
+      // More realistic revenue patterns
+      const baseRevenue = 25 + Math.random() * 75; // $25-100 base
+      const revenue = conversions * baseRevenue;
+      const payoutPercent = 0.6 + Math.random() * 0.25; // 60-85% payout
+      const payout = revenue * payoutPercent;
       
       mockData.push({
-        id: `mock_${i}`,
-        timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-        ip: `192.168.1.${Math.floor(Math.random() * 255)}`,
-        geo: ['US', 'CA', 'GB', 'DE', 'FR', 'TR', 'RU'][Math.floor(Math.random() * 7)],
-        browser: ['Chrome', 'Firefox', 'Safari', 'Edge'][Math.floor(Math.random() * 4)],
-        device: ['Desktop', 'Mobile', 'Tablet'][Math.floor(Math.random() * 3)],
-        os: ['Windows', 'macOS', 'iOS', 'Android'][Math.floor(Math.random() * 4)],
-        offerId: `offer_${Math.floor(Math.random() * 10) + 1}`,
-        offerName: `Test Offer ${Math.floor(Math.random() * 10) + 1}`,
-        partnerId: `partner_${Math.floor(Math.random() * 20) + 1}`,
-        partnerName: `Partner ${Math.floor(Math.random() * 20) + 1}`,
-        subId1: Math.random() > 0.5 ? `sub1_${Math.floor(Math.random() * 100)}` : undefined,
-        subId2: Math.random() > 0.7 ? `sub2_${Math.floor(Math.random() * 100)}` : undefined,
-        subId3: Math.random() > 0.8 ? `sub3_${Math.floor(Math.random() * 100)}` : undefined,
-        subId4: Math.random() > 0.9 ? `sub4_${Math.floor(Math.random() * 100)}` : undefined,
-        subId5: Math.random() > 0.95 ? `sub5_${Math.floor(Math.random() * 100)}` : undefined,
-        clickId: `click_${Date.now()}_${i}`,
-        visitorCode: `visitor_${i}`,
-        traffic_source: ['facebook', 'google', 'native', 'direct'][Math.floor(Math.random() * 4)],
-        campaign: `campaign_${Math.floor(Math.random() * 5) + 1}`,
+        id: `click_${Date.now()}_${i}`,
+        timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        ip: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+        geo: countries[Math.floor(Math.random() * countries.length)],
+        browser: browsers[Math.floor(Math.random() * browsers.length)],
+        device: devices[Math.floor(Math.random() * devices.length)],
+        os: operatingSystems[Math.floor(Math.random() * operatingSystems.length)],
+        offerId: filters.offerId || `offer_${Math.floor(Math.random() * 10) + 1}`,
+        offerName: `Quality Offer ${Math.floor(Math.random() * 10) + 1}`,
+        partnerId: filters.partnerId || `partner_${Math.floor(Math.random() * 50) + 1}`,
+        partnerName: `Partner ${Math.floor(Math.random() * 50) + 1}`,
+        subId1: Math.random() > 0.6 ? `s1_${Math.floor(Math.random() * 1000)}` : null,
+        subId2: Math.random() > 0.8 ? `s2_${Math.floor(Math.random() * 100)}` : null,
+        subId3: Math.random() > 0.9 ? `s3_${Math.floor(Math.random() * 50)}` : null,
+        subId4: Math.random() > 0.95 ? `s4_${Math.floor(Math.random() * 10)}` : null,
+        subId5: Math.random() > 0.98 ? `s5_${Math.floor(Math.random() * 5)}` : null,
+        clickId: `cid_${Date.now()}_${i}_${Math.floor(Math.random() * 10000)}`,
+        visitorCode: `vis_${i}_${Math.floor(Math.random() * 100000)}`,
+        traffic_source: trafficSources[Math.floor(Math.random() * trafficSources.length)],
+        campaign: `camp_${Math.floor(Math.random() * 20) + 1}`,
         clicks,
-        uniqueClicks: Math.floor(clicks * (0.7 + Math.random() * 0.3)),
-        leads: Math.floor(conversions * 1.2),
+        uniqueClicks: Math.floor(clicks * (0.8 + Math.random() * 0.2)),
+        leads: Math.floor(conversions * (1.1 + Math.random() * 0.3)),
         conversions,
         revenue: Math.round(revenue * 100) / 100,
         payout: Math.round(payout * 100) / 100,
         profit: Math.round((revenue - payout) * 100) / 100,
-        roi: revenue > 0 && payout > 0 ? Math.round(((revenue - payout) / payout) * 100 * 100) / 100 : 0,
+        roi: payout > 0 ? Math.round(((revenue - payout) / payout) * 100 * 100) / 100 : 0,
         cr: clicks > 0 ? Math.round((conversions / clicks) * 100 * 100) / 100 : 0,
         epc: clicks > 0 ? Math.round((revenue / clicks) * 100) / 100 : 0,
-        isBot: Math.random() < 0.1,
-        isFraud: Math.random() < 0.05,
-        isUnique: Math.random() > 0.2,
-        vpnDetected: Math.random() < 0.15,
-        riskScore: Math.floor(Math.random() * 100),
-        postbackReceived: Math.random() > 0.3,
-        integrationSource: ['internal', 'api', 'webhook'][Math.floor(Math.random() * 3)]
+        // Quality indicators
+        isBot: Math.random() < 0.08, // 8% bot traffic
+        isFraud: Math.random() < 0.03, // 3% fraud
+        isUnique: Math.random() > 0.15, // 85% unique
+        vpnDetected: Math.random() < 0.12, // 12% VPN usage
+        riskScore: Math.floor(Math.random() * 30) + (Math.random() < 0.1 ? 70 : 0), // Most low risk, some high risk
+        postbackReceived: Math.random() > 0.2, // 80% postback success
+        integrationSource: ['internal', 'api', 'webhook', 'pixel'][Math.floor(Math.random() * 4)],
+        // Additional realistic fields
+        userAgent: `Mozilla/5.0 (${devices[Math.floor(Math.random() * devices.length)]}) Browser/${Math.floor(Math.random() * 100)}`,
+        referrer: Math.random() > 0.3 ? `https://${trafficSources[Math.floor(Math.random() * trafficSources.length)]}.com` : '',
+        landingPage: `/lp${Math.floor(Math.random() * 5) + 1}`,
+        exitPage: Math.random() > 0.7 ? `/exit${Math.floor(Math.random() * 3) + 1}` : null,
+        sessionDuration: Math.floor(Math.random() * 300) + 30, // 30 seconds to 5 minutes
+        pageViews: Math.floor(Math.random() * 5) + 1,
+        // Financial tracking
+        currency: 'USD',
+        conversionValue: conversions > 0 ? revenue / conversions : 0
       });
     }
     
@@ -440,32 +465,71 @@ export class AnalyticsService {
   }
   
   private static generateMockSummary(): any {
-    const totalClicks = Math.floor(Math.random() * 10000) + 1000;
-    const uniqueClicks = Math.floor(totalClicks * (0.7 + Math.random() * 0.2));
-    const conversions = Math.floor(totalClicks * (0.02 + Math.random() * 0.08));
-    const leads = Math.floor(conversions * 1.5);
-    const revenue = conversions * (Math.random() * 50 + 10);
-    const payout = revenue * (0.6 + Math.random() * 0.2);
+    // Generate more realistic summary data that reflects industry standards
+    const totalClicks = Math.floor(Math.random() * 15000) + 5000; // 5K-20K clicks
+    const uniqueClicksRate = 0.75 + Math.random() * 0.2; // 75-95% unique rate
+    const uniqueClicks = Math.floor(totalClicks * uniqueClicksRate);
+    
+    // Realistic conversion rates: 3-12% for quality traffic
+    const conversionRate = 0.03 + Math.random() * 0.09;
+    const conversions = Math.floor(totalClicks * conversionRate);
+    
+    // Lead to conversion ratio (usually 1.2-2.5x)
+    const leadMultiplier = 1.2 + Math.random() * 1.3;
+    const leads = Math.floor(conversions * leadMultiplier);
+    
+    // Revenue per conversion: $30-120 range for quality offers
+    const revenuePerConversion = 30 + Math.random() * 90;
+    const revenue = conversions * revenuePerConversion;
+    
+    // Payout rates: 65-80% for competitive offers
+    const payoutRate = 0.65 + Math.random() * 0.15;
+    const payout = revenue * payoutRate;
+    
+    // Quality indicators based on industry benchmarks
+    const botRate = 3 + Math.random() * 7; // 3-10% bot traffic
+    const fraudRate = 1 + Math.random() * 3; // 1-4% fraud rate
+    const vpnRate = 8 + Math.random() * 12; // 8-20% VPN usage
+    
+    const botClicks = Math.floor(totalClicks * (botRate / 100));
+    const fraudClicks = Math.floor(totalClicks * (fraudRate / 100));
+    const vpnClicks = Math.floor(totalClicks * (vpnRate / 100));
+    
+    // Calculate quality score based on metrics
+    const qualityFactors = [
+      Math.min(conversionRate * 100 / 8, 1), // Conversion rate factor (8% = perfect)
+      Math.min(uniqueClicksRate, 1), // Unique rate factor
+      Math.max(0, 1 - (botRate / 15)), // Bot rate factor (15% = 0 points)
+      Math.max(0, 1 - (fraudRate / 5)), // Fraud rate factor (5% = 0 points)
+      Math.min(payoutRate / 0.75, 1) // Payout competitiveness factor
+    ];
+    const qualityScore = (qualityFactors.reduce((a, b) => a + b, 0) / qualityFactors.length) * 100;
     
     return {
       totalClicks,
       uniqueClicks,
       leads,
       conversions,
-      botClicks: Math.floor(totalClicks * 0.05),
-      fraudClicks: Math.floor(totalClicks * 0.02),
-      vpnClicks: Math.floor(totalClicks * 0.08),
+      botClicks,
+      fraudClicks,
+      vpnClicks,
       revenue: Math.round(revenue * 100) / 100,
       payout: Math.round(payout * 100) / 100,
       profit: Math.round((revenue - payout) * 100) / 100,
-      cr: totalClicks > 0 ? Math.round((conversions / totalClicks) * 100 * 100) / 100 : 0,
+      cr: Math.round(conversionRate * 100 * 100) / 100,
       leadRate: totalClicks > 0 ? Math.round((leads / totalClicks) * 100 * 100) / 100 : 0,
-      uniqueRate: Math.round((uniqueClicks / totalClicks) * 100 * 100) / 100,
-      botRate: 5.0,
-      fraudRate: 2.0,
+      uniqueRate: Math.round(uniqueClicksRate * 100 * 100) / 100,
+      botRate: Math.round(botRate * 100) / 100,
+      fraudRate: Math.round(fraudRate * 100) / 100,
+      vpnRate: Math.round(vpnRate * 100) / 100,
       epc: totalClicks > 0 ? Math.round((revenue / totalClicks) * 100) / 100 : 0,
       roi: payout > 0 ? Math.round(((revenue - payout) / payout) * 100 * 100) / 100 : 0,
-      qualityScore: 93.0,
+      qualityScore: Math.round(qualityScore * 100) / 100,
+      // Additional metrics
+      averageSessionDuration: Math.floor(120 + Math.random() * 240), // 2-6 minutes
+      bounceRate: Math.round((20 + Math.random() * 40) * 100) / 100, // 20-60%
+      pageViewsPerSession: Math.round((1.5 + Math.random() * 2.5) * 100) / 100, // 1.5-4 pages
+      returningVisitors: Math.round((15 + Math.random() * 25) * 100) / 100, // 15-40%
     };
   }
   

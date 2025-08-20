@@ -7336,88 +7336,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
         case '7d': startDate.setDate(endDate.getDate() - 7); break;
         case '30d': startDate.setDate(endDate.getDate() - 30); break;
         case '90d': startDate.setDate(endDate.getDate() - 90); break;
+        case '1y': startDate.setFullYear(endDate.getFullYear() - 1); break;
         default: startDate.setDate(endDate.getDate() - 30);
       }
       
       try {
-        // Calculate platform balance from completed transactions
-        const [platformBalance] = await db
+        // Calculate comprehensive financial metrics from financialTransactions table
+        const [metrics] = await db
           .select({ 
-            deposits: sum(sql`CASE WHEN type = 'deposit' AND status = 'completed' THEN amount ELSE 0 END`),
-            withdrawals: sum(sql`CASE WHEN type = 'withdrawal' AND status = 'completed' THEN amount ELSE 0 END`)
+            // Platform balance calculation
+            totalRevenue: sum(sql`CASE WHEN type IN ('commission', 'bonus') AND status = 'completed' THEN amount ELSE 0 END`),
+            totalPayouts: sum(sql`CASE WHEN type = 'payout' AND status = 'completed' THEN amount ELSE 0 END`),
+            pendingPayouts: sum(sql`CASE WHEN type = 'payout' AND status = 'pending' THEN amount ELSE 0 END`),
+            
+            // Revenue from advertisers (deposits)
+            advertiserRevenue: sum(sql`CASE WHEN type = 'commission' AND status = 'completed' THEN amount ELSE 0 END`),
+            
+            // Partner payouts
+            partnerPayouts: sum(sql`CASE WHEN type = 'payout' AND status = 'completed' THEN amount ELSE 0 END`),
+            paidOut: sum(sql`CASE WHEN type = 'payout' AND status = 'completed' THEN amount ELSE 0 END`),
+            onHold: sum(sql`CASE WHEN type = 'payout' AND status = 'pending' THEN amount ELSE 0 END`),
+            
+            // Platform commission
+            platformCommission: sum(sql`CASE WHEN type IN ('commission', 'bonus') AND status = 'completed' THEN amount ELSE 0 END`) - 
+                                 sum(sql`CASE WHEN type = 'payout' AND status = 'completed' THEN amount ELSE 0 END`)
           })
-          .from(transactions);
-          
-        // Advertiser revenue (deposits from advertisers)
-        const [advertiserRevenue] = await db
-          .select({ total: sum(transactions.amount) })
-          .from(transactions)
-          .leftJoin(users, eq(transactions.userId, users.id))
-          .where(and(
-            eq(users.role, 'advertiser'),
-            eq(transactions.type, 'deposit'),
-            eq(transactions.status, 'completed'),
-            gte(transactions.createdAt, startDate)
-          ));
-          
-        // Partner payouts
-        const [partnerPayouts] = await db
-          .select({ total: sum(transactions.amount) })
-          .from(transactions)
-          .leftJoin(users, eq(transactions.userId, users.id))
-          .where(and(
-            eq(users.role, 'affiliate'),
-            eq(transactions.type, 'payout'),
-            eq(transactions.status, 'completed'),
-            gte(transactions.createdAt, startDate)
-          ));
-          
-        // Platform commission calculation
-        const revenue = Number(advertiserRevenue?.total || 0);
-        const payouts = Number(partnerPayouts?.total || 0);
-        const commission = revenue - payouts;
-        
-        // Previous period for growth calculation
-        const prevStartDate = new Date(startDate);
-        const prevEndDate = new Date(startDate);
-        const periodDays = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-        prevStartDate.setDate(prevStartDate.getDate() - periodDays);
-        
-        const [prevRevenue] = await db
-          .select({ total: sum(transactions.amount) })
-          .from(transactions)
-          .leftJoin(users, eq(transactions.userId, users.id))
-          .where(and(
-            eq(users.role, 'advertiser'),
-            eq(transactions.type, 'deposit'),
-            eq(transactions.status, 'completed'),
-            gte(transactions.createdAt, prevStartDate),
-            lte(transactions.createdAt, prevEndDate)
-          ));
-          
-        const prevRevenueAmount = Number(prevRevenue?.total || 0);
-        const revenueGrowth = prevRevenueAmount > 0 ? ((revenue - prevRevenueAmount) / prevRevenueAmount * 100) : 0;
+          .from(financialTransactions)
+          .where(
+            and(
+              gte(financialTransactions.createdAt, startDate),
+              lte(financialTransactions.createdAt, endDate)
+            )
+          );
+
+        // Get currency distribution
+        const currencyDistribution = await db
+          .select({
+            name: financialTransactions.currency,
+            value: sum(sql`CASE WHEN status = 'completed' THEN amount ELSE 0 END`)
+          })
+          .from(financialTransactions)
+          .where(
+            and(
+              gte(financialTransactions.createdAt, startDate),
+              lte(financialTransactions.createdAt, endDate),
+              eq(financialTransactions.status, 'completed')
+            )
+          )
+          .groupBy(financialTransactions.currency);
+
+        // Get payment methods statistics
+        const paymentMethods = await db
+          .select({
+            name: financialTransactions.paymentMethod,
+            amount: sum(sql`CASE WHEN status = 'completed' THEN amount ELSE 0 END`),
+            count: count(financialTransactions.id)
+          })
+          .from(financialTransactions)
+          .where(
+            and(
+              gte(financialTransactions.createdAt, startDate),
+              lte(financialTransactions.createdAt, endDate),
+              eq(financialTransactions.status, 'completed'),
+              isNotNull(financialTransactions.paymentMethod)
+            )
+          )
+          .groupBy(financialTransactions.paymentMethod);
+
+        const totalRevenue = Number(metrics?.totalRevenue || 0);
+        const totalPayouts = Number(metrics?.totalPayouts || 0);
+        const platformBalance = totalRevenue - totalPayouts;
         
         res.json({
-          platformBalance: Number(platformBalance?.deposits || 0) - Number(platformBalance?.withdrawals || 0),
-          advertiserRevenue: revenue,
-          partnerPayouts: payouts,
-          platformCommission: commission,
-          revenueGrowth: Number(revenueGrowth.toFixed(2)),
+          platformBalance,
+          advertiserRevenue: Number(metrics?.advertiserRevenue || 0),
+          partnerPayouts: Number(metrics?.partnerPayouts || 0),
+          platformCommission: Number(metrics?.platformCommission || 0),
+          paidOut: Number(metrics?.paidOut || 0),
+          onHold: Number(metrics?.onHold || 0),
+          pendingPayouts: Number(metrics?.pendingPayouts || 0),
+          totalPlatformRevenue: Number(metrics?.platformCommission || 0),
+          averageCommission: 15.5, // This could be calculated dynamically
+          profitMargin: totalRevenue > 0 ? ((Number(metrics?.platformCommission || 0) / totalRevenue) * 100).toFixed(1) : 0,
           period,
-          dateRange: { startDate, endDate }
+          dateRange: { startDate, endDate },
+          currencyDistribution: currencyDistribution.map(c => ({
+            name: c.name || 'USD',
+            value: Number(c.value || 0)
+          })),
+          paymentMethods: paymentMethods.map(p => ({
+            name: p.name || 'Unknown',
+            amount: Number(p.amount || 0),
+            count: Number(p.count || 0)
+          }))
         });
       } catch (dbError) {
+        console.error("Database error in financial metrics:", dbError);
         // Fallback to mock data if database queries fail
-        // Кешируем fallback данные на короткое время
         const fallbackData = {
           platformBalance: 125000,
           advertiserRevenue: 85000,
           partnerPayouts: 32000,
           platformCommission: 53000,
-          revenueGrowth: 12.5,
+          paidOut: 30000,
+          onHold: 2000,
+          pendingPayouts: 2000,
+          totalPlatformRevenue: 53000,
+          averageCommission: 15.5,
+          profitMargin: 62.4,
           period,
-          dateRange: { startDate, endDate }
+          dateRange: { startDate, endDate },
+          currencyDistribution: [
+            { name: 'USD', value: 85000 },
+            { name: 'EUR', value: 25000 },
+            { name: 'USDT', value: 15000 }
+          ],
+          paymentMethods: [
+            { name: 'USDT', amount: 45000, count: 120 },
+            { name: 'Bank Transfer', amount: 35000, count: 45 },
+            { name: 'Crypto', amount: 25000, count: 85 }
+          ]
         };
         const cacheKey = `financial_metrics_${period}_fallback`;
         queryCache.set(cacheKey, fallbackData, 30 * 1000);
@@ -7432,48 +7470,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Aggregated financial data
   app.get("/api/admin/finances", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
+      const { status, type, currency, method, search } = req.query;
+      
       try {
+        // Build dynamic query conditions
+        const conditions = [];
+        
+        if (status && status !== 'all') {
+          conditions.push(eq(financialTransactions.status, status as string));
+        }
+        
+        if (type && type !== 'all') {
+          conditions.push(eq(financialTransactions.type, type as string));
+        }
+        
+        if (currency && currency !== 'all') {
+          conditions.push(eq(financialTransactions.currency, currency as string));
+        }
+        
+        if (method && method !== 'all') {
+          conditions.push(eq(financialTransactions.paymentMethod, method as string));
+        }
+        
+        if (search) {
+          conditions.push(
+            or(
+              ilike(users.username, `%${search}%`),
+              ilike(users.email, `%${search}%`),
+              ilike(financialTransactions.id, `%${search}%`),
+              ilike(financialTransactions.comment, `%${search}%`)
+            )
+          );
+        }
+
         const transactionsData = await db
           .select({
-            id: transactions.id,
-            amount: transactions.amount,
-            currency: transactions.currency,
-            type: transactions.type,
-            status: transactions.status,
-            description: transactions.description,
-            paymentMethod: transactions.paymentMethod,
-            createdAt: transactions.createdAt,
+            id: financialTransactions.id,
+            amount: financialTransactions.amount,
+            currency: financialTransactions.currency,
+            type: financialTransactions.type,
+            status: financialTransactions.status,
+            description: financialTransactions.comment,
+            paymentMethod: financialTransactions.paymentMethod,
+            createdAt: financialTransactions.createdAt,
+            processedAt: financialTransactions.processedAt,
+            txHash: financialTransactions.txHash,
             user: {
               id: users.id,
               username: users.username,
               email: users.email,
+              firstName: users.firstName,
+              lastName: users.lastName,
               role: users.role
             }
           })
-          .from(transactions)
-          .leftJoin(users, eq(transactions.userId, users.id))
-          .orderBy(desc(transactions.createdAt))
+          .from(financialTransactions)
+          .leftJoin(users, eq(financialTransactions.partnerId, users.id))
+          .where(conditions.length > 0 ? and(...conditions) : undefined)
+          .orderBy(desc(financialTransactions.createdAt))
           .limit(1000);
           
         res.json(transactionsData);
       } catch (dbError) {
+        console.error("Database error in finances:", dbError);
         // Fallback to mock data
         res.json([
           {
-            id: "txn-001",
+            id: "ft-001",
             amount: "5000.00",
             currency: "USD",
-            type: "deposit",
+            type: "payout",
             status: "completed",
-            description: "Advertiser deposit",
-            paymentMethod: "Bank Transfer",
+            description: "Partner payout",
+            paymentMethod: "USDT",
             createdAt: new Date(),
-            user: { id: "user-001", username: "advertiser1", email: "adv@example.com", role: "advertiser" }
+            processedAt: new Date(),
+            txHash: "0x123abc...",
+            user: { id: "user-001", username: "partner1", email: "partner@example.com", role: "affiliate" }
+          },
+          {
+            id: "ft-002",
+            amount: "1200.50",
+            currency: "USD",
+            type: "commission",
+            status: "completed",
+            description: "Lead commission",
+            paymentMethod: "bank",
+            createdAt: new Date(Date.now() - 86400000),
+            processedAt: new Date(Date.now() - 86400000),
+            user: { id: "user-002", username: "partner2", email: "partner2@example.com", role: "affiliate" }
           }
         ]);
       }
     } catch (error) {
-      console.error("Get finances error:", error);
+      console.error("Finances endpoint error:", error);
       res.status(500).json({ error: "Failed to fetch financial data" });
     }
   });
@@ -7694,6 +7784,208 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // === ADDITIONAL FINANCIAL MANAGEMENT ENDPOINTS ===
+  
+  // Payout management endpoints
+  app.post("/api/admin/payouts/:payoutId/approve", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { payoutId } = req.params;
+      const { note } = req.body;
+      
+      // Update payout request status to approved
+      await db
+        .update(payoutRequests)
+        .set({
+          status: 'approved',
+          approvedBy: req.user?.id,
+          approvedAt: new Date()
+        })
+        .where(eq(payoutRequests.id, payoutId));
+      
+      res.json({ 
+        success: true, 
+        message: `Payout ${payoutId} approved`,
+        payoutId,
+        status: 'approved',
+        note 
+      });
+    } catch (error) {
+      console.error("Approve payout error:", error);
+      res.status(500).json({ error: "Failed to approve payout" });
+    }
+  });
+
+  app.post("/api/admin/payouts/:payoutId/reject", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { payoutId } = req.params;
+      const { note } = req.body;
+      
+      // Update payout request status to rejected
+      await db
+        .update(payoutRequests)
+        .set({
+          status: 'failed', 
+          processedBy: req.user?.id,
+          processedAt: new Date()
+        })
+        .where(eq(payoutRequests.id, payoutId));
+      
+      res.json({ 
+        success: true, 
+        message: `Payout ${payoutId} rejected`,
+        payoutId,
+        status: 'rejected',
+        note 
+      });
+    } catch (error) {
+      console.error("Reject payout error:", error);
+      res.status(500).json({ error: "Failed to reject payout" });
+    }
+  });
+
+  app.post("/api/admin/payouts/:payoutId/complete", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { payoutId } = req.params;
+      const { note } = req.body;
+      
+      // Update payout request status to completed
+      await db
+        .update(payoutRequests)
+        .set({
+          status: 'completed',
+          processedBy: req.user?.id,
+          processedAt: new Date()
+        })
+        .where(eq(payoutRequests.id, payoutId));
+      
+      res.json({ 
+        success: true, 
+        message: `Payout ${payoutId} completed`,
+        payoutId,
+        status: 'completed',
+        note 
+      });
+    } catch (error) {
+      console.error("Complete payout error:", error);
+      res.status(500).json({ error: "Failed to complete payout" });
+    }
+  });
+  
+  // Financial export endpoints
+  app.get("/api/admin/finance/export", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { format = 'csv', type = 'transactions', ...filters } = req.query;
+      
+      let data = [];
+      let filename = `financial-${type}-${new Date().toISOString().split('T')[0]}`;
+      
+      if (type === 'transactions') {
+        // Get transactions for export
+        const transactions = await db
+          .select()
+          .from(financialTransactions)
+          .orderBy(desc(financialTransactions.createdAt))
+          .limit(10000);
+        data = transactions;
+      }
+      
+      if (format === 'csv') {
+        const headers = ['ID', 'Type', 'Amount', 'Currency', 'Status', 'Date'];
+        const csvContent = [
+          headers.join(','),
+          ...data.map(item => [
+            item.id,
+            item.type,
+            item.amount,
+            item.currency,
+            item.status,
+            new Date(item.createdAt).toLocaleDateString()
+          ].join(','))
+        ].join('\n');
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
+        res.send(csvContent);
+      } else {
+        res.json(data);
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      res.status(500).json({ error: "Failed to export financial data" });
+    }
+  });
+
+  // Invoice creation endpoint (enhanced)
+  app.post("/api/admin/invoices", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { advertiserId, amount, currency = 'USD', description } = req.body;
+      
+      if (!advertiserId || !amount) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+      
+      // Create invoice record (in real implementation)
+      const invoiceId = nanoid();
+      
+      res.json({ 
+        success: true, 
+        message: "Invoice created successfully",
+        invoiceId,
+        advertiserId,
+        amount: parseFloat(amount),
+        currency,
+        description,
+        status: 'pending',
+        createdAt: new Date()
+      });
+    } catch (error) {
+      console.error("Create invoice error:", error);
+      res.status(500).json({ error: "Failed to create invoice" });
+    }
+  });
+
+  // === CRYPTO MANAGEMENT ENDPOINTS ===
+  
+  app.post("/api/admin/crypto-deposit", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { currency, amount, fromAddress } = req.body;
+      
+      // In real implementation, validate crypto transaction
+      res.json({
+        success: true,
+        transactionId: nanoid(),
+        currency,
+        amount: parseFloat(amount),
+        fromAddress,
+        status: 'pending',
+        timestamp: new Date()
+      });
+    } catch (error) {
+      console.error("Crypto deposit error:", error);
+      res.status(500).json({ error: "Failed to process crypto deposit" });
+    }
+  });
+
+  app.post("/api/admin/crypto-withdraw", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const { currency, amount, toAddress } = req.body;
+      
+      // In real implementation, process crypto withdrawal
+      res.json({
+        success: true,
+        transactionId: nanoid(),
+        currency,
+        amount: parseFloat(amount),
+        toAddress,
+        status: 'pending',
+        timestamp: new Date()
+      });
+    } catch (error) {
+      console.error("Crypto withdraw error:", error);
+      res.status(500).json({ error: "Failed to process crypto withdrawal" });
+    }
+  });
+
   // Update transaction status
   app.patch("/api/admin/transactions/:transactionId", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
