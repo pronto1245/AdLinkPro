@@ -233,27 +233,8 @@ export default function AdvertiserProfile() {
     }
   });
 
-  // 2FA Toggle Mutation
-  const toggle2FAMutation = useMutation({
-    mutationFn: async (enable: boolean) => {
-      return apiRequest('/api/advertiser/2fa/toggle', 'POST', { enabled: enable });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-      toast({
-        title: "2FA обновлена",
-        description: "Настройки двухфакторной аутентификации изменены",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось изменить настройки 2FA",
-        variant: "destructive",
-      });
-    },
-  });
-
+  // Removed 2FA Toggle Mutation - 2FA is disabled
+  
   const generateTokenMutation = useMutation({
     mutationFn: async (tokenName: string) => {
       return apiRequest('/api/advertiser/api-tokens', 'POST', { name: tokenName });
@@ -450,10 +431,7 @@ export default function AdvertiserProfile() {
     updateNotificationsMutation.mutate(notificationForm);
   };
 
-  const handle2FAToggle = () => {
-    const enable = !formData?.twoFactorEnabled;
-    toggle2FAMutation.mutate(enable);
-  };
+  // Removed handle2FAToggle - 2FA is disabled
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -1114,30 +1092,26 @@ export default function AdvertiserProfile() {
             </CardContent>
           </Card>
 
-          {/* Статус 2FA */}
+          {/* 2FA Status - Disabled */}
           <Card>
             <CardHeader>
               <CardTitle>Двухфакторная аутентификация (2FA)</CardTitle>
               <CardDescription>
-                Ваша безопасность важна. Мы рекомендуем включить 2FA.
+                2FA временно отключена для упрощения входа в систему.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground" data-testid="text-2fa-status">
-                  Статус: <strong>{formData?.twoFactorEnabled ? 'Включена' : 'Отключена'}</strong>
+                  Статус: <strong>Отключена</strong>
                 </p>
               </div>
               <Button 
                 variant="outline" 
-                onClick={handle2FAToggle}
-                disabled={toggle2FAMutation.isPending}
+                disabled={true}
                 data-testid="button-toggle-2fa"
               >
-                {toggle2FAMutation.isPending 
-                  ? 'Обработка...' 
-                  : (formData?.twoFactorEnabled ? 'Отключить 2FA' : 'Включить 2FA')
-                }
+                Недоступно
               </Button>
             </CardContent>
           </Card>
