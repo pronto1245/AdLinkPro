@@ -46,3 +46,8 @@ adlinkpro-audit.zip
 adlinkpro-audit-split.z01
 adlinkpro-audit-split.z02
 adlinkpro-audit-split.zip
+
+# Development files
+.env
+test-password-recovery-manual.mjs
+PASSWORD_RECOVERY_TESTING.md
