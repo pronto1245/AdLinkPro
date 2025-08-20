@@ -113,6 +113,12 @@ export const twoFactorSchema = z.object({
   tempToken: z.string().min(1, 'Временный токен отсутствует'),
 });
 
+// Password reset validation schema
+export const resetPasswordSchema = z.object({
+  email: emailSchema
+});
+
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegistrationFormData = z.infer<typeof registrationSchema>;
 export type TwoFactorFormData = z.infer<typeof twoFactorSchema>;
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
