@@ -2,6 +2,8 @@ import express, { Router } from "express";
 import jwt from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
+import { Pool } from "pg";
+import { DatabasePasswordResetService, InMemoryPasswordResetService, PasswordResetService } from "../services/password-reset";
 
 export const authV2Router = Router();
 authV2Router.use(express.json());
@@ -42,6 +44,19 @@ const users = [
     twoFactorSecret: null,
   },
 ];
+
+// Initialize password reset service
+let passwordResetService: PasswordResetService;
+
+// Initialize with database service (will be set up when pool is available)
+export function initPasswordResetService(pool: Pool) {
+  passwordResetService = new DatabasePasswordResetService(pool);
+}
+
+// Fallback to in-memory service if no database
+if (!passwordResetService) {
+  passwordResetService = new InMemoryPasswordResetService(users);
+}
 
 // Enhanced login endpoint with 2FA support
 authV2Router.post("/login", (req, res) => {
@@ -176,7 +191,7 @@ authV2Router.post("/verify-2fa", (req, res) => {
 });
 
 // Password recovery endpoint
-authV2Router.post("/reset-password", (req, res) => {
+authV2Router.post("/reset-password", async (req, res) => {
   try {
     const { email } = req.body || {};
     
@@ -184,28 +199,91 @@ authV2Router.post("/reset-password", (req, res) => {
       return res.status(400).json({ error: "Email is required" });
     }
 
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    
-    // Always return success to prevent email enumeration
-    // In a real implementation, send an actual email with reset link
-    console.log(`Password reset requested for email: ${email}`);
-    
-    if (user) {
-      const resetToken = crypto.randomBytes(32).toString('hex');
-      console.log(`Generated reset token for ${user.username}: ${resetToken}`);
-      
-      // Store reset token with expiration (would use database in production)
-      // For demo, just log it
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: "Invalid email format" });
     }
 
+    // Request password reset
+    const result = await passwordResetService.requestPasswordReset(email);
+
+    console.log(`[AUTH] Password reset requested for: ${email}`);
+    
     return res.json({
-      success: true,
-      message: "If an account with this email exists, a password reset link has been sent."
+      success: result.success,
+      message: result.message
     });
 
   } catch (error) {
     console.error("Password recovery error:", error);
+    return res.status(500).json({ 
+      error: "Internal server error",
+      message: "Произошла ошибка при обработке запроса"
+    });
+  }
+});
+
+// Validate reset token endpoint
+authV2Router.post("/validate-reset-token", async (req, res) => {
+  try {
+    const { token } = req.body || {};
+    
+    if (!token) {
+      return res.status(400).json({ error: "Token is required" });
+    }
+
+    const validation = await passwordResetService.validateResetToken(token);
+    
+    return res.json({
+      valid: validation.valid,
+      message: validation.valid ? "Token is valid" : "Invalid or expired token"
+    });
+
+  } catch (error) {
+    console.error("Token validation error:", error);
     return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Complete password reset endpoint
+authV2Router.post("/complete-password-reset", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body || {};
+    
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: "Token and new password are required" });
+    }
+
+    // Basic password validation
+    if (newPassword.length < 8) {
+      return res.status(400).json({ 
+        error: "Password too short",
+        message: "Пароль должен содержать минимум 8 символов"
+      });
+    }
+
+    const result = await passwordResetService.resetPassword(token, newPassword);
+    
+    if (result.success) {
+      console.log(`[AUTH] Password reset completed successfully`);
+      return res.json({
+        success: true,
+        message: result.message
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: result.message
+      });
+    }
+
+  } catch (error) {
+    console.error("Password reset completion error:", error);
+    return res.status(500).json({ 
+      error: "Internal server error",
+      message: "Произошла ошибка при сбросе пароля"
+    });
   }
 });
 
