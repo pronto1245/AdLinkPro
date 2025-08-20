@@ -1,48 +1,22 @@
-const API_BASE: string = (import.meta as any).env?.VITE_API_BASE || '';
+const API = import.meta.env.VITE_API_BASE || '';
 
-type HttpInit = RequestInit & { headers?: Record<string, string> };
-
-async function api(path: string, init: HttpInit = {}): Promise<any> {
-  const token = localStorage.getItem('token') || localStorage.getItem('auth:token') || '';
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(init.headers || {}),
-  };
-  const res = await fetch(API_BASE + path, { ...init, headers, credentials: 'include' });
-  const ct = res.headers.get('content-type') || '';
-  if (!res.ok) {
-    const err: any = new Error(`HTTP ${res.status}`);
-    err.status = res.status;
-    err.url = API_BASE + path;
-    try {
-      err.body = ct.includes('application/json') ? await res.clone().text() : await res.text();
-    } catch {}
-    throw err;
-  }
-  return ct.includes('application/json') ? res.json() : res.text();
+export async function api(path: string, init?: RequestInit) {
+  const res = await fetch(`${API}${path}`, init);
+  if (!res.ok) throw new Error(`http_${res.status}`);
+  return res.json();
 }
 
-function json(path: string, body?: any, init: HttpInit = {}): Promise<any> {
-  return api(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined, ...init });
-}
+export type LoginResponse = {
+  token: string;
+  user: { sub: number; email: string; role: string; username: string };
+};
 
-export { api, json, API_BASE };
-export default api;
-
-export async function login(email: string, password: string): Promise<{ token: string }> {
-  return json('/api/auth/login', { email, password });
-}
-
-export async function me(): Promise<any> {
-  return api('/api/me');
-}
-
-export async function getMenu(): Promise<any> {
-  try {
-    return await api('/api/menu/data');
-  } catch (e: any) {
-    const r = await fetch('/menu-default.json', { credentials: 'include' });
-    return r.json();
-  }
+export async function login(email: string, password: string): Promise<LoginResponse> {
+  const res = await fetch(`${API}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  if (!res.ok) throw new Error('login_failed');
+  return res.json();
 }
