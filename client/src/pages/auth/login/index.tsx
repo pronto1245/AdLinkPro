@@ -96,6 +96,18 @@ export default function Login() {
     return () => clearInterval(interval);
   }, [tempTokenExpiry]);
 
+  // Watch form state changes for debugging
+  useEffect(() => {
+    if (show2FA && process.env.NODE_ENV === 'development') {
+      console.log('2FA Form State:', {
+        isValid: twoFactorForm.formState.isValid,
+        errors: twoFactorForm.formState.errors,
+        values: twoFactorForm.getValues(),
+        otpValue,
+      });
+    }
+  }, [twoFactorForm.formState.isValid, twoFactorForm.formState.errors, otpValue, show2FA]);
+
   // Format remaining time for temp token
   const getRemainingTime = () => {
     if (!tempTokenExpiry) return "";
@@ -390,7 +402,7 @@ export default function Login() {
                   </Button>
                   <Button 
                     type="submit" 
-                    disabled={loading || rateLimitInfo.blocked || otpValue.length !== 6} 
+                    disabled={loading || rateLimitInfo.blocked || otpValue.length !== 6 || !twoFactorForm.formState.isValid} 
                     className="flex-1"
                   >
                     {loading ? (
@@ -410,6 +422,19 @@ export default function Login() {
                     <p className="text-xs text-orange-600">
                       Попытка {attempts} из 5
                     </p>
+                  </div>
+                )}
+
+                {/* Debug info for development */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded border">
+                    <div>OTP Length: {otpValue.length}/6</div>
+                    <div>Form Valid: {twoFactorForm.formState.isValid ? 'Yes' : 'No'}</div>
+                    <div>TempToken Set: {twoFactorForm.getValues('tempToken') ? 'Yes' : 'No'}</div>
+                    <div>Loading: {loading ? 'Yes' : 'No'}</div>
+                    {Object.keys(twoFactorForm.formState.errors).length > 0 && (
+                      <div>Errors: {JSON.stringify(twoFactorForm.formState.errors)}</div>
+                    )}
                   </div>
                 )}
               </form>
