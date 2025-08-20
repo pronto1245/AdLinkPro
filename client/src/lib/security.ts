@@ -97,6 +97,18 @@ export const sanitizeInput = {
   },
 
   /**
+   * Sanitize telegram username (@username format)
+   */
+  cleanTelegram: (telegram: string): string => {
+    const cleaned = telegram
+      .trim()
+      .replace(/[^a-zA-Z0-9_@]/g, '');
+    
+    // Ensure it starts with @
+    return cleaned.startsWith('@') ? cleaned : `@${cleaned}`;
+  },
+
+  /**
    * Clean phone number (digits and + only)
    */
   cleanPhone: (phone: string): string => {
