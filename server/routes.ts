@@ -2921,6 +2921,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const authUser = getAuthenticatedUser(req);
       const offerId = req.params.id;
+      const { soft } = req.query; // Check if soft delete is requested
       
       // Verify offer ownership
       const existingOffer = await storage.getOffer(offerId);
@@ -2932,15 +2933,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Access denied - not your offer" });
       }
       
-      // Perform deletion
-      await storage.deleteOffer(offerId);
+      // Perform deletion (soft or hard)
+      if (soft === 'true') {
+        const deletedOffer = await storage.softDeleteOffer(offerId, authUser.id);
+        res.status(200).json({ 
+          message: "Offer archived successfully", 
+          offer: deletedOffer,
+          canRestore: true
+        });
+      } else {
+        await storage.deleteOffer(offerId);
+        res.status(200).json({ message: "Offer deleted successfully" });
+      }
+      
+      // Clear cache
+      queryCache.clear();
+    } catch (error) {
+      console.error("Delete offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Restore archived offer
+  app.post("/api/advertiser/offers/:id/restore", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerId = req.params.id;
+      
+      // Verify offer ownership
+      const existingOffer = await storage.getOffer(offerId);
+      if (!existingOffer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      if (existingOffer.advertiserId !== authUser.id) {
+        return res.status(403).json({ error: "Access denied - not your offer" });
+      }
+      
+      // Restore the offer
+      const restoredOffer = await storage.restoreOffer(offerId);
       
       // Clear cache
       queryCache.clear();
       
-      res.status(200).json({ message: "Offer deleted successfully" });
+      res.status(200).json({ 
+        message: "Offer restored successfully", 
+        offer: restoredOffer 
+      });
     } catch (error) {
-      console.error("Delete offer error:", error);
+      console.error("Restore offer error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

@@ -36,6 +36,7 @@ import SortableItem from '@/components/ui/SortableItem';
 import { formatCountries } from '@/utils/countries';
 import { getCategoryBadgeProps } from '@/utils/categories';
 import { formatCR } from '@/utils/formatters';
+import { handleOfferError } from '@/utils/errorHandler';
 
 interface Offer {
   id: string;
@@ -122,18 +123,45 @@ const MyOffersDragDrop: React.FC = () => {
   });
 
   const deleteOfferMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/advertiser/offers/${id}`, 'DELETE'),
-    onSuccess: () => { 
+    mutationFn: async (id: string) => {
+      // Check if soft delete is preferred
+      const softDelete = localStorage.getItem('preferSoftDelete') === 'true';
+      const queryParams = softDelete ? '?soft=true' : '';
+      
+      return apiRequest(`/api/advertiser/offers/${id}${queryParams}`, 'DELETE');
+    },
+    onSuccess: (data, id) => { 
+      const message = data?.canRestore ? "Оффер архивирован (можно восстановить)" : "Оффер удален";
       toast({
         title: "Успех",
-        description: "Оффер удален"
+        description: message
       }); 
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
     },
     onError: (error: any) => {
+      const errorMessage = handleOfferError(error, 'Delete Offer');
       toast({
         title: "Ошибка",
-        description: "Ошибка удаления оффера: " + error.message,
+        description: "Ошибка удаления оффера: " + errorMessage,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const restoreOfferMutation = useMutation({
+    mutationFn: (id: string) => apiRequest(`/api/advertiser/offers/${id}/restore`, 'POST'),
+    onSuccess: () => { 
+      toast({
+        title: "Успех",
+        description: "Оффер восстановлен"
+      }); 
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
+    },
+    onError: (error: any) => {
+      const errorMessage = handleOfferError(error, 'Restore Offer');
+      toast({
+        title: "Ошибка",
+        description: "Ошибка восстановления оффера: " + errorMessage,
         variant: "destructive"
       });
     }
@@ -320,10 +348,29 @@ const MyOffersDragDrop: React.FC = () => {
 
   const filteredOffers = offers.filter((offer: Offer) => {
     const statusMatch = filterStatus === 'all' || offer.status === filterStatus;
-    const categoryMatch = filterCategory === 'all-categories' || !filterCategory || offer.category?.includes(filterCategory);
+    const categoryMatch = filterCategory === 'all-categories' || !filterCategory || 
+      (typeof offer.category === 'string' ? 
+        offer.category.toLowerCase().includes(filterCategory.toLowerCase()) :
+        offer.category?.ru?.toLowerCase().includes(filterCategory.toLowerCase()) || 
+        offer.category?.en?.toLowerCase().includes(filterCategory.toLowerCase())
+      );
+    
     const searchMatch = !searchQuery || 
       offer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      offer.category?.toLowerCase().includes(searchQuery.toLowerCase());
+      (typeof offer.category === 'string' ? 
+        offer.category.toLowerCase().includes(searchQuery.toLowerCase()) :
+        offer.category?.ru?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        offer.category?.en?.toLowerCase().includes(searchQuery.toLowerCase())
+      ) ||
+      (typeof offer.description === 'string' ? 
+        offer.description.toLowerCase().includes(searchQuery.toLowerCase()) :
+        offer.description?.ru?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        offer.description?.en?.toLowerCase().includes(searchQuery.toLowerCase())
+      ) ||
+      offer.countries?.some(country => 
+        country.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      
     return statusMatch && categoryMatch && searchMatch;
   });
 

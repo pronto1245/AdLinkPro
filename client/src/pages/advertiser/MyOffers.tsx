@@ -65,8 +65,8 @@ import {
   Ban,
   HelpCircle
 } from 'lucide-react';
-import { Link } from 'wouter';
-import { cn } from '@/lib/utils';
+import { handleOfferError } from '@/utils/errorHandler';
+import { apiRequest } from '@/lib/queryClient';
 
 interface Offer {
   id: string;
@@ -132,20 +132,7 @@ export default function MyOffers() {
   // Мутация для изменения статуса оффера
   const updateOfferStatusMutation = useMutation({
     mutationFn: async ({ offerId, status }: { offerId: string; status: string }) => {
-      const response = await fetch(`/api/advertiser/offers/${offerId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ status })
-      });
-
-      if (!response.ok) {
-        throw new Error('Не удалось изменить статус оффера');
-      }
-
-      return response.json();
+      return apiRequest(`/api/advertiser/offers/${offerId}/status`, 'PATCH', { status });
     },
     onSuccess: (data, variables) => {
       // Обновляем кеш после успешного изменения
@@ -159,12 +146,11 @@ export default function MyOffers() {
         );
       });
       
-      // Показываем уведомление об успехе
       console.log('Статус оффера успешно изменен:', variables.status);
     },
     onError: (error) => {
-      console.error('Ошибка при изменении статуса:', error);
-      // Здесь можно добавить toast уведомление об ошибке
+      const errorMessage = handleOfferError(error, 'Update Offer Status');
+      console.error('Ошибка при изменении статуса:', errorMessage);
     }
   });
 
