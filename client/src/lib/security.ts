@@ -117,12 +117,12 @@ export const sanitizeInput = {
 };
 
 /**
- * Rate Limiting Helper
+ * Rate Limiting Helper with improved UX
  */
 export class RateLimitTracker {
   private attempts: Map<string, { count: number; lastAttempt: number }> = new Map();
-  private readonly windowMs: number = 15 * 60 * 1000; // 15 minutes
-  private readonly maxAttempts: number = 5;
+  private readonly windowMs: number = 10 * 60 * 1000; // 10 minutes (reduced from 15)
+  private readonly maxAttempts: number = 8; // increased from 5 for better UX
 
   isRateLimited(identifier: string): boolean {
     const now = Date.now();

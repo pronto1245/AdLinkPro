@@ -2,7 +2,7 @@ import { describe, test, expect } from '@jest/globals';
 import { 
   passwordSchema, 
   emailSchema, 
-  usernameSchema, 
+  nameSchema, 
   loginSchema, 
   registrationSchema,
   twoFactorSchema 
@@ -80,44 +80,40 @@ describe('Security Validation Schemas', () => {
     });
   });
 
-  describe('usernameSchema', () => {
-    test('should accept valid usernames', () => {
-      const validUsernames = [
-        'user123',
-        'test_user',
-        'my-username',
-        'Username',
+  describe('nameSchema', () => {
+    test('should accept valid names', () => {
+      const validNames = [
+        'John Doe',
+        'Mary O\'Connor',
+        'Иван Петров',
+        'Jean-Luc'
       ];
 
-      validUsernames.forEach(username => {
-        expect(() => usernameSchema.parse(username)).not.toThrow();
+      validNames.forEach(name => {
+        expect(() => nameSchema.parse(name)).not.toThrow();
       });
     });
 
-    test('should reject reserved usernames', () => {
-      const reservedUsernames = [
-        'admin',
-        'root',
-        'system',
-        'api',
-        'www',
+    test('should reject invalid names', () => {
+      const invalidNames = [
+        '', // Empty
+        'A', // Too short
+        'John123', // Numbers not allowed
+        'John@Doe', // Special chars not allowed
+        'John<script>alert()</script>', // XSS attempt
+        'A'.repeat(101), // Too long
       ];
 
-      reservedUsernames.forEach(username => {
-        expect(() => usernameSchema.parse(username)).toThrow();
+      invalidNames.forEach(name => {
+        expect(() => nameSchema.parse(name)).toThrow();
       });
     });
 
-    test('should reject invalid characters', () => {
-      const invalidUsernames = [
-        'user@domain',
-        'user space',
-        'user!',
-        'user#hash',
-      ];
-
-      invalidUsernames.forEach(username => {
-        expect(() => usernameSchema.parse(username)).toThrow();
+    test('should reject names with only whitespace', () => {
+      const whitespaceNames = ['  ', '\t\t', '\n\n'];
+      
+      whitespaceNames.forEach(name => {
+        expect(() => nameSchema.parse(name)).toThrow();
       });
     });
   });
@@ -148,7 +144,7 @@ describe('Security Validation Schemas', () => {
       const validData = {
         name: 'John Doe',
         email: 'john@company.com',
-        username: 'johndoe',
+        telegram: '@johndoe',
         password: 'StrongPass123!',
         confirmPassword: 'StrongPass123!',
         phone: '+1234567890',
@@ -167,6 +163,7 @@ describe('Security Validation Schemas', () => {
       const invalidData = {
         name: 'John Doe',
         email: 'john@company.com',
+        telegram: '@johndoe',
         password: 'StrongPass123!',
         confirmPassword: 'DifferentPass123!',
         agreeTerms: true,
@@ -180,6 +177,7 @@ describe('Security Validation Schemas', () => {
       const invalidData = {
         name: 'John Doe',
         email: 'john@company.com',
+        telegram: '@johndoe',
         password: 'StrongPass123!',
         confirmPassword: 'StrongPass123!',
         agreeTerms: false, // Required
