@@ -1,44 +1,48 @@
-const API_BASE = '';
+const API_BASE: string = (import.meta as any).env?.VITE_API_BASE || '';
 
-function resolveUrl(path: string) {
-  if (!path) return '';
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${API_BASE}${path}`;
-}
+type HttpInit = RequestInit & { headers?: Record<string, string> };
 
-async function api(path: string, init: RequestInit = {}) {
-  const token =
-    (typeof localStorage !== 'undefined' && (localStorage.getItem('token') || localStorage.getItem('auth:token'))) || '';
-
+async function api(path: string, init: HttpInit = {}): Promise<any> {
+  const token = localStorage.getItem('token') || localStorage.getItem('auth:token') || '';
   const headers: Record<string, string> = {
-    Accept: 'application/json, text/plain, */*',
+    'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(init.headers as Record<string, string> | undefined),
+    ...(init.headers || {}),
   };
-
-  const res = await fetch(resolveUrl(path), { ...init, headers, credentials: 'include' });
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-
+  const res = await fetch(API_BASE + path, { ...init, headers, credentials: 'include' });
   const ct = res.headers.get('content-type') || '';
+  if (!res.ok) {
+    const err: any = new Error(`HTTP ${res.status}`);
+    err.status = res.status;
+    err.url = API_BASE + path;
+    try {
+      err.body = ct.includes('application/json') ? await res.clone().text() : await res.text();
+    } catch {}
+    throw err;
+  }
   return ct.includes('application/json') ? res.json() : res.text();
 }
 
-async function json(path: string, body?: unknown, init: RequestInit = {}) {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(init.headers as Record<string, string> | undefined),
-  };
-  const method = init.method || 'POST';
-  return api(path, { ...init, method, headers, body: body !== undefined ? JSON.stringify(body) : init.body });
+function json(path: string, body?: any, init: HttpInit = {}): Promise<any> {
+  return api(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined, ...init });
 }
 
 export { api, json, API_BASE };
 export default api;
 
-export async function login(email: string, password: string) {
+export async function login(email: string, password: string): Promise<{ token: string }> {
   return json('/api/auth/login', { email, password });
 }
 
-export async function me() {
+export async function me(): Promise<any> {
   return api('/api/me');
+}
+
+export async function getMenu(): Promise<any> {
+  try {
+    return await api('/api/menu/data');
+  } catch (e: any) {
+    const r = await fetch('/menu-default.json', { credentials: 'include' });
+    return r.json();
+  }
 }
