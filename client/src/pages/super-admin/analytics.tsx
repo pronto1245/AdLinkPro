@@ -46,7 +46,7 @@ export default function SuperAdminAnalytics() {
   const [refreshing, setRefreshing] = useState(false);
 
   // Get analytics data
-  const { data: analytics, isLoading, refetch } = useQuery({
+  const { data: analytics, isLoading, error, refetch } = useQuery({
     queryKey: ['/api/admin/analytics', period],
     queryFn: async () => {
       const response = await fetch(`/api/admin/analytics?period=${period}`, {
@@ -54,9 +54,14 @@ export default function SuperAdminAnalytics() {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch analytics');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to fetch analytics`);
+      }
       return response.json();
-    }
+    },
+    retry: 2,
+    retryDelay: 1000,
   });
 
   const handleRefresh = async () => {
@@ -177,160 +182,227 @@ export default function SuperAdminAnalytics() {
   }, []).slice(0, 5) : []; // Top 5 countries
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
-        isCollapsed ? 'ml-0 lg:ml-16' : 'ml-0 lg:ml-64'
+      <div className={`h-full flex flex-col transition-all duration-300 ${
+        isCollapsed ? 'ml-16' : 'ml-64'
       }`}>
         <Header title="Аналитика системы" />
-        <main className="flex-1 overflow-auto">
-          <div className="space-y-6 p-4 sm:p-6 max-w-full">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  Аналитика системы
-                </h1>
-                <p className="text-muted-foreground text-sm sm:text-base">
-                  Общая аналитика кликов, конверсий и доходов
-                </p>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                <Select value={period} onValueChange={setPeriod}>
-                  <SelectTrigger className="w-[150px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7d">За 7 дней</SelectItem>
-                    <SelectItem value="30d">За 30 дней</SelectItem>
-                    <SelectItem value="90d">За 90 дней</SelectItem>
-                  </SelectContent>
-                </Select>
+        <main className="flex-1 overflow-auto p-4">
+          <div className="space-y-4 max-w-full">
+            {/* Header with title and controls */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border">
+              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                    Аналитика системы
+                  </h1>
+                  <p className="text-muted-foreground text-sm sm:text-base">
+                    Общая аналитика кликов, конверсий и доходов
+                  </p>
+                </div>
                 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                >
-                  <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-                </Button>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <Select value={period} onValueChange={setPeriod}>
+                    <SelectTrigger className="w-[150px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="7d">За 7 дней</SelectItem>
+                      <SelectItem value="30d">За 30 дней</SelectItem>
+                      <SelectItem value="90d">За 90 дней</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                  >
+                    <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                  </Button>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => exportData('csv')}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Экспорт CSV
-                </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportData('csv')}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Экспорт CSV
+                  </Button>
+                </div>
               </div>
             </div>
+
+            {/* Error State */}
+            {error && (
+              <Card className="border-red-200 bg-red-50">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 text-red-700">
+                    <AlertTriangle className="h-5 w-5" />
+                    <div>
+                      <p className="font-semibold">Ошибка загрузки данных</p>
+                      <p className="text-sm">{error.message}</p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => refetch()} 
+                        className="mt-2"
+                      >
+                        Попробовать снова
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Loading State */}
             {isLoading && (
               <div className="flex items-center justify-center h-64">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <span className="ml-3 text-muted-foreground">Загрузка аналитики...</span>
               </div>
             )}
 
-            {/* Metrics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {mainMetrics.map((metric) => (
-                <Card key={metric.title}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {metric.title}
-                    </CardTitle>
-                    <metric.icon className={`h-4 w-4 text-${metric.color}-600`} />
+            {/* Analytics Content */}
+            {!isLoading && !error && (
+              <>
+                {/* Metrics Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {mainMetrics.map((metric) => (
+                    <Card key={metric.title}>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          {metric.title}
+                        </CardTitle>
+                        <metric.icon className={`h-4 w-4 text-${metric.color}-600`} />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">{metric.value}</div>
+                        <p className={`text-xs ${
+                          metric.changeType === 'increase' 
+                            ? 'text-green-600' 
+                            : 'text-red-600'
+                        }`}>
+                          {metric.change} за период
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Clicks and Conversions Trend */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Тренд кликов и конверсий</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        {chartData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={chartData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="date" />
+                              <YAxis />
+                              <Tooltip />
+                              <Line type="monotone" dataKey="clicks" stroke="#8884d8" />
+                              <Line type="monotone" dataKey="conversions" stroke="#82ca9d" />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-muted-foreground">
+                            Нет данных для отображения
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Country Distribution */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Распределение по странам</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        {countryData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={countryData}
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="value"
+                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                              >
+                                {countryData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-muted-foreground">
+                            Нет данных для отображения
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Revenue Breakdown */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Доходы по дням</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{metric.value}</div>
-                    <p className={`text-xs ${
-                      metric.changeType === 'increase' 
-                        ? 'text-green-600' 
-                        : 'text-red-600'
-                    }`}>
-                      {metric.change} за период
-                    </p>
+                    <div className="h-80">
+                      {chartData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="date" />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="revenue" fill="#8884d8" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-muted-foreground">
+                          Нет данных для отображения
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
 
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Clicks and Conversions Trend */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Тренд кликов и конверсий</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Line type="monotone" dataKey="clicks" stroke="#8884d8" />
-                        <Line type="monotone" dataKey="conversions" stroke="#82ca9d" />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Country Distribution */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Распределение по странам</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={countryData}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {countryData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Revenue Breakdown */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Доходы по дням</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="revenue" fill="#8884d8" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+                {/* Data Source Info */}
+                {analytics && analytics.length > 0 && analytics[0]?.integrationSource === 'MOCK_DATA' && (
+                  <Card className="border-yellow-200 bg-yellow-50">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-2 text-yellow-700">
+                        <AlertTriangle className="h-5 w-5" />
+                        <div>
+                          <p className="font-semibold">Используются тестовые данные</p>
+                          <p className="text-sm">
+                            Отображаются демонстрационные данные. Для получения реальной аналитики 
+                            необходимо настроить интеграцию с базой данных отслеживания.
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            )}
           </div>
         </main>
       </div>
