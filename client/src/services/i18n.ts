@@ -17,7 +17,7 @@ export interface I18nConfig {
 export const defaultI18nConfig: I18nConfig = {
   defaultLanguage: 'ru',
   supportedLanguages: ['ru', 'en'],
-  fallbackLanguage: 'en',
+  fallbackLanguage: 'ru',
   namespace: 'translation',
   storageKey: 'i18nextLng'
 };
@@ -70,7 +70,7 @@ export class I18nService {
             order: ['localStorage', 'navigator', 'htmlTag'],
             lookupLocalStorage: this.config.storageKey,
             caches: ['localStorage'],
-            checkWhitelist: true,
+            checkWhitelist: false,
           },
 
           react: {
