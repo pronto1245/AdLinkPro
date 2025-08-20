@@ -62,7 +62,7 @@ export const loginSchema = z.object({
   rememberMe: z.boolean().optional(),
 });
 
-// Registration form validation schema (base)
+// Registration form validation schema (base - without refinements)
 const baseRegistrationSchema = z.object({
   name: nameSchema,
   email: emailSchema,
@@ -77,42 +77,70 @@ const baseRegistrationSchema = z.object({
   agreeTerms: z.boolean().refine(val => val === true, 'Необходимо согласиться с условиями использования'),
   agreePrivacy: z.boolean().refine(val => val === true, 'Необходимо согласиться с политикой конфиденциальности'),
   agreeMarketing: z.boolean().optional(),
+});
+
+// Shared refinement functions
+const passwordMatchRefinement = (data: any) => data.password === data.confirmPassword;
+const contactRefinement = (data: any) => {
+  if (data.contactType && !data.contact) {
+    return false;
+  }
+  if (data.contact && !data.contactType) {
+    return false;
+  }
+  return true;
+};
+
+// Advertiser registration schema (company required)
+export const advertiserRegistrationSchema = baseRegistrationSchema.extend({
+  company: companySchema,
 }).refine(
-  (data) => data.password === data.confirmPassword,
+  passwordMatchRefinement,
   {
     message: 'Пароли не совпадают',
     path: ['confirmPassword'],
   }
 ).refine(
-  (data) => {
-    if (data.contactType && !data.contact) {
-      return false;
-    }
-    if (data.contact && !data.contactType) {
-      return false;
-    }
-    return true;
-  },
+  contactRefinement,
   {
     message: 'Укажите тип контакта и контактные данные',
     path: ['contact'],
   }
 );
 
-// Advertiser registration schema (company required)
-export const advertiserRegistrationSchema = baseRegistrationSchema.extend({
-  company: companySchema,
-});
-
 // Partner registration schema (no company)
 export const partnerRegistrationSchema = baseRegistrationSchema.extend({
   company: z.string().optional(),
-});
+}).refine(
+  passwordMatchRefinement,
+  {
+    message: 'Пароли не совпадают',
+    path: ['confirmPassword'],
+  }
+).refine(
+  contactRefinement,
+  {
+    message: 'Укажите тип контакта и контактные данные',
+    path: ['contact'],
+  }
+);
 
 // Generic registration schema for compatibility
 export const registrationSchema = baseRegistrationSchema.extend({
   company: companySchema.optional(),
-});
+}).refine(
+  passwordMatchRefinement,
+  {
+    message: 'Пароли не совпадают',
+    path: ['confirmPassword'],
+  }
+).refine(
+  contactRefinement,
+  {
+    message: 'Укажите тип контакта и контактные данные',
+    path: ['contact'],
+  }
+);
 
 // 2FA code validation schema
 export const twoFactorSchema = z.object({
