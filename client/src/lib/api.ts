@@ -8,8 +8,7 @@ function resolveUrl(path: string) {
 
 async function api(path: string, init: RequestInit = {}) {
   const token =
-    (typeof localStorage !== 'undefined' && (localStorage.getItem('token') || localStorage.getItem('auth:token'))) ||
-    '';
+    (typeof localStorage !== 'undefined' && (localStorage.getItem('token') || localStorage.getItem('auth:token'))) || '';
 
   const headers: Record<string, string> = {
     Accept: 'application/json, text/plain, */*',
