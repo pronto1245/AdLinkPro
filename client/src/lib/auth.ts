@@ -79,10 +79,8 @@ export async function register(args: RegisterArgs): Promise<{user: User}> {
 }
 
 export function logout() {
-  localStorage.removeItem('token');
   localStorage.removeItem('user');
   localStorage.removeItem('role');
-  localStorage.removeItem('auth:token');
   localStorage.removeItem('auth:user');
 }
 
