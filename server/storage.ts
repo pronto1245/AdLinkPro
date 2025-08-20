@@ -5167,8 +5167,6 @@ class MemStorage implements IStorage {
   async createFraudBlock(): Promise<any> { return {}; }
   async deleteFraudBlock(): Promise<void> {}
   async getPostbacksWithFilters(): Promise<any> { return { data: [], total: 0 }; }
-  async getSystemSettings(): Promise<any[]> { return []; }
-  async getSmartAlerts(): Promise<any[]> { return []; }
   async getBlacklistEntries(): Promise<any[]> { return []; }
   async createBlacklistEntry(): Promise<any> { return {}; }
   async updateBlacklistEntry(): Promise<any> { return {}; }
