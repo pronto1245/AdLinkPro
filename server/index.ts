@@ -14,7 +14,7 @@ import cors from 'cors';
 import path from 'node:path';
 import fs from 'node:fs';
 import authRouter from './routes/auth';
-import authV2Router from './routes/auth-v2';
+import authV2Router, { initPasswordResetService } from './routes/auth-v2';
 
 const app = express();
 app.use(express.json());
@@ -33,8 +33,32 @@ async function ensureUsersTable() {
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
   );`);
+  
+  // Create password reset tokens table
+  await pool.query(`
+  CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id SERIAL PRIMARY KEY,
+    email TEXT NOT NULL,
+    token TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    used BOOLEAN DEFAULT FALSE
+  );`);
+  
+  // Create index for faster token lookups
+  await pool.query(`
+  CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token 
+  ON password_reset_tokens (token) WHERE NOT used;`);
 }
 ensureUsersTable().catch(err=>console.error('ensureUsersTable error', err));
+
+// Initialize password reset service with database pool
+try {
+  initPasswordResetService(pool);
+  console.log('[PASSWORD_RESET] Service initialized with database connection');
+} catch (error) {
+  console.error('[PASSWORD_RESET] Failed to initialize service:', error);
+}
 
 // DEV сидирование (только если ALLOW_SEED=1)
 if (process.env.ALLOW_SEED === '1') {

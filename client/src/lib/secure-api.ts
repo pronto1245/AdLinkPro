@@ -233,6 +233,29 @@ export const secureAuth = {
     });
   },
 
+  async validateResetToken(token: string) {
+    const cleanToken = sanitizeInput.cleanString(token);
+
+    return secureApi('/api/auth/v2/validate-reset-token', {
+      method: 'POST',
+      body: JSON.stringify({ token: cleanToken }),
+      skipAuth: true
+    });
+  },
+
+  async completePasswordReset(token: string, newPassword: string) {
+    const cleanToken = sanitizeInput.cleanString(token);
+
+    return secureApi('/api/auth/v2/complete-password-reset', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        token: cleanToken,
+        newPassword: newPassword // Don't sanitize password, just validate
+      }),
+      skipAuth: true
+    });
+  },
+
   async me() {
     return secureApi('/api/me');
   },
