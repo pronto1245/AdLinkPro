@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import Login from '@/pages/auth/login';
 import Logout from '@/pages/auth/logout';
+import ForgotPassword from '@/pages/auth/ForgotPassword';
 // Remove the RegisterUnified import as we now use separate components
 import { LoginPartner, LoginAdvertiser, RegisterPartnerComponent, RegisterAdvertiserComponent } from '@/pages/LoginVariants';
 
