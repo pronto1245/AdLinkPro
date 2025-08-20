@@ -1,13 +1,13 @@
 # AdLinkPro Integration Analysis Report
 
-Generated: 2025-08-20T20:52:42.725Z
+Generated: 2025-08-20T20:58:02.367Z
 
 ## Executive Summary
 
 - **Total Pages**: 82
 - **Total Backend Routes**: 15
 - **Total Components**: 0
-- **Total Shared Schemas**: 5
+- **Total Shared Schemas**: 7
 - **Infrastructure Services**: 5
 - **Problems Identified**: 297
 - **Dead Modules**: 15
