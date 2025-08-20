@@ -92,6 +92,55 @@ app.get('/api/admin/postback-templates/:id', mockAuth, (req, res) => {
   });
 });
 
+// Postback analytics dashboard
+app.get('/api/analytics/postback-analytics', mockAuth, (req, res) => {
+  res.json({
+    summary: {
+      totalPostbacks: 2547,
+      successfulPostbacks: 2398,
+      failedPostbacks: 149,
+      averageResponseTime: 185,
+      successRate: "94.2",
+      retryRate: "8.3"
+    },
+    statusBreakdown: {
+      delivered: 2398,
+      pending: 23,
+      failed: 89,
+      retrying: 37
+    },
+    errorTypes: {
+      network: 45,
+      timeout: 22,
+      server_error: 31,
+      client_error: 8,
+      auth_failed: 3
+    }
+  });
+});
+
+// Postback monitoring dashboard
+app.get('/api/postback/monitoring', mockAuth, (req, res) => {
+  res.json({
+    status: 'healthy',
+    uptime: process.uptime(),
+    activeProfiles: 47,
+    queueSize: 23,
+    processing: {
+      currentLoad: "34.2%",
+      avgProcessingTime: 142,
+      processedLastHour: 287,
+      errorsLastHour: 12
+    },
+    healthChecks: {
+      database: 'healthy',
+      postbackService: 'healthy', 
+      storage: 'healthy',
+      lastCheck: new Date().toISOString()
+    }
+  });
+});
+
 // Postback profiles (affiliate)
 app.get('/api/postback/profiles', mockAuth, (req, res) => {
   res.json([

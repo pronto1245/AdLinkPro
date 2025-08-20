@@ -33,6 +33,25 @@ const ENDPOINTS_TO_TEST = [
     description: 'Admin postback templates',
     requiresAuth: true
   },
+  {
+    method: 'GET',
+    path: '/api/admin/postback-templates/test-id',
+    description: 'Admin single postback template',
+    requiresAuth: true
+  },
+  // Analytics and monitoring endpoints
+  {
+    method: 'GET',
+    path: '/api/analytics/postback-analytics',
+    description: 'Postback analytics dashboard',
+    requiresAuth: true
+  },
+  {
+    method: 'GET',
+    path: '/api/postback/monitoring',
+    description: 'Postback monitoring dashboard',
+    requiresAuth: true
+  },
   // Standard postback endpoints  
   {
     method: 'GET',
@@ -57,6 +76,12 @@ const ENDPOINTS_TO_TEST = [
     method: 'GET',
     path: '/api/postback-profiles',
     description: 'Postback profiles collection',
+    requiresAuth: true
+  },
+  {
+    method: 'GET',
+    path: '/api/postback-profiles/test-id',
+    description: 'Single postback profile by ID',
     requiresAuth: true
   },
   // Health check (no auth needed)
