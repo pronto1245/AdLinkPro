@@ -16,6 +16,8 @@ import { useToast } from '@/hooks/use-toast';
 import DomainVerification from '@/components/advertiser/DomainVerification';
 import { CustomDomainManager } from '@/components/advertiser/CustomDomainManager';
 import { LANGUAGES, CURRENCIES, TIMEZONES } from '@/config/profile-constants';
+import { profileSchema, passwordChangeSchema, webhookSchema } from '@/schemas/profile-validation';
+import { validateFormData } from '@/utils/form-validation';
 
 interface AdvertiserProfile {
   id: string;
@@ -81,6 +83,7 @@ export default function AdvertiserProfile() {
   const [showTokens, setShowTokens] = useState<{ [key: string]: boolean }>({});
   const [newPassword, setNewPassword] = useState({ current: '', new: '', confirm: '' });
   const [formData, setFormData] = useState<Partial<AdvertiserProfile>>({});
+  const [newTokenName, setNewTokenName] = useState('');
 
   const [webhookForm, setWebhookForm] = useState<WebhookSettings>({
     defaultUrl: '',
@@ -341,29 +344,61 @@ export default function AdvertiserProfile() {
 
   // --- HANDLERS ---
   const handleProfileSave = () => {
-    updateProfileMutation.mutate(formData);
+    const validatedData = validateFormData(
+      profileSchema,
+      formData,
+      (message, details) => {
+        toast({
+          title: "Ошибка валидации",
+          description: message,
+          variant: "destructive"
+        });
+      }
+    );
+    
+    if (validatedData) {
+      updateProfileMutation.mutate(validatedData);
+    }
   };
 
   const handlePasswordChange = () => {
-    if (newPassword.new !== newPassword.confirm) {
+    const passwordData = {
+      current: newPassword.current,
+      new: newPassword.new,
+      confirm: newPassword.confirm
+    };
+    
+    const validatedData = validateFormData(
+      passwordChangeSchema,
+      passwordData,
+      (message, details) => {
+        toast({
+          title: "Ошибка валидации",
+          description: message,
+          variant: "destructive"
+        });
+      }
+    );
+    
+    if (validatedData) {
+      changePasswordMutation.mutate({
+        currentPassword: validatedData.current,
+        newPassword: validatedData.new
+      });
+    }
+  };
+
+  const handleTokenGenerate = () => {
+    if (!newTokenName.trim()) {
       toast({
         title: "Ошибка",
-        description: "Новые пароли не совпадают",
+        description: "Введите название токена",
         variant: "destructive"
       });
       return;
     }
-    changePasswordMutation.mutate({
-      currentPassword: newPassword.current,
-      newPassword: newPassword.new
-    });
-  };
-
-  const handleTokenGenerate = () => {
-    const tokenName = window.prompt('Введите название токена:');
-    if (tokenName && tokenName.trim()) {
-      generateTokenMutation.mutate(tokenName.trim());
-    }
+    generateTokenMutation.mutate(newTokenName.trim());
+    setNewTokenName(''); // Clear the input after generating
   };
 
   const handleCopyToken = async (token: string) => {
@@ -397,7 +432,21 @@ export default function AdvertiserProfile() {
 
 
   const handleWebhookSave = () => {
-    updateWebhookMutation.mutate(webhookForm);
+    const validatedData = validateFormData(
+      webhookSchema,
+      webhookForm,
+      (message, details) => {
+        toast({
+          title: "Ошибка валидации",
+          description: message,
+          variant: "destructive"
+        });
+      }
+    );
+    
+    if (validatedData) {
+      updateWebhookMutation.mutate(validatedData);
+    }
   };
 
   const handleSaveNotifications = () => {
@@ -602,10 +651,20 @@ export default function AdvertiserProfile() {
         <TabsContent value="api" className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold">API-доступ</h2>
-            <Button onClick={handleTokenGenerate} data-testid="button-generate-token">
-              <Key className="h-4 w-4 mr-2" />
-              Создать новый токен
-            </Button>
+            <div className="flex items-center gap-2">
+              <Input 
+                placeholder="Название токена" 
+                value={newTokenName}
+                onChange={(e) => setNewTokenName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleTokenGenerate()}
+                className="w-48"
+                data-testid="input-token-name"
+              />
+              <Button onClick={handleTokenGenerate} data-testid="button-generate-token">
+                <Key className="h-4 w-4 mr-2" />
+                Создать новый токен
+              </Button>
+            </div>
           </div>
 
           {/* API TOKENS */}
