@@ -1,99 +1,10 @@
-import { urlJoin, fixApiUrl } from '../utils/urlJoin';
+import { api as _api, json as _json, API_BASE } from '../services/http'
 
-const API_BASE = import.meta.env.DEV ? (import.meta.env.VITE_API_URL || '') : '';
+export const api = _api
+export const json = _json
+export { API_BASE }
+export default api
 
-export async function api<T>(path: string, init?: RequestInit & { skipAuth?: boolean }): Promise<T> {
-  const headers = new Headers(init?.headers);
-  headers.set('Content-Type', 'application/json');
-
-  if (!init?.skipAuth) {
-    const token = localStorage.getItem('token');
-    if (token) headers.set('Authorization', `Bearer ${token}`);
-  }
-
-  // Use urlJoin to properly construct the URL and then fix any duplication issues
-  const url = fixApiUrl(urlJoin(API_BASE, path));
-  
-  const res = await fetch(url, { ...init, headers, credentials: 'include' });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-  const ct = res.headers.get('content-type') || '';
-  return ct.includes('application/json') ? (await res.json()) as T : ({} as T);
-}
-
-export interface LoginResponse {
-  success: boolean;
-  token?: string;
-  user?: any;
-  requires2FA?: boolean;
-  tempToken?: string;
-}
-
-export async function login(username: string, password: string): Promise<LoginResponse> {
-  const data: any = await api('/api/auth/login', {
-    method: 'POST',
-    skipAuth: true,
-    body: JSON.stringify({ username, password }),
-  });
-  
-  const token = data?.token ?? data?.data?.token;
-  if (token) {
-    localStorage.setItem('token', token);
-    return {
-      success: true,
-      token,
-      user: data?.user ?? data?.data?.user
-    };
-  }
-  
-  return data;
-}
-
-export async function loginV2(username: string, password: string): Promise<LoginResponse> {
-  const data: any = await api('/api/auth/v2/login', {
-    method: 'POST',
-    skipAuth: true,
-    body: JSON.stringify({ username, password }),
-  });
-  
-  // Handle 2FA required response
-  if (data?.requires2FA) {
-    return {
-      success: false,
-      requires2FA: true,
-      tempToken: data.tempToken
-    };
-  }
-  
-  const token = data?.token ?? data?.data?.token;
-  if (token) {
-    localStorage.setItem('token', token);
-    return {
-      success: true,
-      token,
-      user: data?.user ?? data?.data?.user
-    };
-  }
-  
-  return data;
-}
-
-export async function verify2FA(tempToken: string, code: string): Promise<LoginResponse> {
-  const data: any = await api('/api/auth/v2/verify-2fa', {
-    method: 'POST',
-    skipAuth: true,
-    body: JSON.stringify({ token: tempToken, code }),
-  });
-  
-  const token = data?.token ?? data?.data?.token;
-  if (token) {
-    localStorage.setItem('token', token);
-    return {
-      success: true,
-      token,
-      user: data?.user ?? data?.data?.user
-    };
-  }
-  
-  return data;
+export async function login(email: string, password: string) {
+  return json('/api/auth/login', { email, password })
 }
