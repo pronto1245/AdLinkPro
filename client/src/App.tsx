@@ -81,6 +81,7 @@ function Router() {
         <Route path="/login/advertiser" component={LoginAdvertiser} />
         <Route path="/login" component={Login} />
         <Route path="/logout" component={Logout} />
+        <Route path="/auth/forgot-password" component={ForgotPassword} />
 
         <Route path="/register/partner" component={RegisterPartnerComponent} />
         <Route path="/register/advertiser" component={RegisterAdvertiserComponent} />

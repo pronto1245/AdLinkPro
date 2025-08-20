@@ -220,6 +220,19 @@ export const secureAuth = {
     });
   },
 
+  async resetPassword(data: { email: string }, identifier?: string) {
+    const cleanData = {
+      email: sanitizeInput.cleanEmail(data.email)
+    };
+
+    return secureApi('/api/auth/v2/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(cleanData),
+      skipAuth: true,
+      identifier: identifier || cleanData.email
+    });
+  },
+
   async me() {
     return secureApi('/api/me');
   },
