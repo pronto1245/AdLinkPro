@@ -346,6 +346,33 @@ export default function Login() {
             </form>
           )}
 
+          {!show2FA && (
+            /* Registration CTAs */
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <p className="text-center text-sm text-gray-600 mb-4">
+                Нет аккаунта?
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => navigate('/register/partner')}
+                  disabled={loading}
+                >
+                  Стать партнером
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => navigate('/register/advertiser')}
+                  disabled={loading}
+                >
+                  Стать рекламодателем
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Security indicators */}
           <div className="mt-6 pt-4 border-t border-gray-200">
             <div className="flex items-center justify-center text-xs text-gray-500 space-x-4">
