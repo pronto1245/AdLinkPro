@@ -22,7 +22,7 @@ if (!passwordResetService) {
   passwordResetService = new InMemoryPasswordResetService(users);
 }
 
-// Enhanced login endpoint with 2FA support
+// Enhanced login endpoint without 2FA requirement
 authV2Router.post("/login", (req, res) => {
   try {
     const { username, password } = req.body || {};
@@ -42,29 +42,7 @@ authV2Router.post("/login", (req, res) => {
     const secret = process.env.JWT_SECRET;
     if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
 
-    // Check if user has 2FA enabled
-    if (user.twoFactorEnabled) {
-      // Generate temporary token for 2FA verification
-      const tempToken = crypto.randomBytes(32).toString('hex');
-      tempTokens.set(tempToken, {
-        userId: user.id,
-        timestamp: Date.now(),
-        user: user
-      });
-
-      // Clean up expired temp tokens (5 minutes)
-      setTimeout(() => {
-        tempTokens.delete(tempToken);
-      }, 5 * 60 * 1000);
-
-      return res.json({
-        requires2FA: true,
-        tempToken: tempToken,
-        message: "Please provide 2FA code"
-      });
-    }
-
-    // Normal login without 2FA
+    // Always perform direct login (bypassing 2FA for simplified flow)
     const token = jwt.sign(
       { sub: user.sub, role: user.role, email: user.email, username: user.username },
       secret,
@@ -79,7 +57,7 @@ authV2Router.post("/login", (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        twoFactorEnabled: user.twoFactorEnabled
+        twoFactorEnabled: false // Always false for simplified login
       }
     });
   } catch (error) {
