@@ -18,8 +18,15 @@ import {
   GripVertical,
   Search,
   Filter,
-  Plus
+  Plus,
+  MoreHorizontal
 } from 'lucide-react';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -224,31 +231,76 @@ const MyOffersDragDrop: React.FC = () => {
     reader.readAsText(file);
   };
 
-  const exportToCSV = () => {
-    const csvContent = offers.map((offer: Offer) => 
-      [
-        offer.name || '',
-        (offer.countries || []).join(','),
-        offer.payout || '',
-        offer.category || '',
-        offer.cap || '',
-        offer.status || ''
-      ].join(';')
-    ).join('\n');
+  const exportToCSV = async () => {
+    try {
+      const response = await fetch('/api/advertiser/offers/export?format=csv', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка экспорта данных');
+      }
+      
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'offers.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Успех",
+        description: "Экспорт завершён"
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Ошибка",
+        description: "Ошибка экспорта: " + (error as Error).message,
+        variant: "destructive"
+      });
+    }
+  };
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'offers.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast({
-      title: "Успех",
-      description: "Экспорт завершён"
-    });
+  const exportToJSON = async () => {
+    try {
+      const response = await fetch('/api/advertiser/offers/export?format=json', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка экспорта данных');
+      }
+      
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'offers.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Успех",
+        description: "Экспорт завершён"
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Ошибка",
+        description: "Ошибка экспорта: " + (error as Error).message,
+        variant: "destructive"
+      });
+    }
   };
 
   const bulkStatusUpdate = (newStatus: string) => {
@@ -486,15 +538,29 @@ const MyOffersDragDrop: React.FC = () => {
         </div>
         
         <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={exportToCSV}
-            data-testid="button-export-csv"
-          >
-            <FileDown className="h-4 w-4 mr-2" />
-            Экспорт
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                size="sm" 
+                variant="outline"
+                data-testid="button-export-dropdown"
+              >
+                <FileDown className="h-4 w-4 mr-2" />
+                Экспорт
+                <MoreHorizontal className="h-4 w-4 ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={exportToCSV}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Экспорт в CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportToJSON}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Экспорт в JSON
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           <div className="relative">
             <Input 

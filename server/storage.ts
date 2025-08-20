@@ -90,6 +90,7 @@ export interface IStorage {
   deleteOffer(id: string): Promise<void>;
   softDeleteOffer(id: string, deletedBy: string): Promise<Offer>;
   restoreOffer(id: string): Promise<Offer>;
+  getOfferDependencies(id: string): Promise<{ partners: number; statistics: number; trackingLinks: number; canDelete: boolean }>;
   
   // Received offers management
   getReceivedOffers(advertiserId: string): Promise<ReceivedOffer[]>;
@@ -834,6 +835,40 @@ export class DatabaseStorage implements IStorage {
       .where(eq(offers.id, id))
       .returning();
     return offer;
+  }
+
+  async getOfferDependencies(id: string): Promise<{ partners: number; statistics: number; trackingLinks: number; canDelete: boolean }> {
+    // Get count of partners connected to this offer
+    const [partnersResult] = await db
+      .select({ count: count() })
+      .from(partnerOffers)
+      .where(eq(partnerOffers.offerId, id));
+    
+    // Get count of statistics records
+    const [statsResult] = await db
+      .select({ count: count() })
+      .from(statistics)
+      .where(eq(statistics.offerId, id));
+    
+    // Get count of tracking links
+    const [linksResult] = await db
+      .select({ count: count() })
+      .from(trackingLinks)
+      .where(eq(trackingLinks.offerId, id));
+
+    const partnersCount = partnersResult?.count || 0;
+    const statisticsCount = statsResult?.count || 0;
+    const trackingLinksCount = linksResult?.count || 0;
+    
+    // Allow deletion if no critical dependencies exist
+    const canDelete = statisticsCount === 0 || statisticsCount < 100; // Allow deletion if less than 100 stats records
+    
+    return {
+      partners: partnersCount,
+      statistics: statisticsCount,
+      trackingLinks: trackingLinksCount,
+      canDelete
+    };
   }
 
   async getPartnerOffers(partnerId?: string, offerId?: string): Promise<PartnerOffer[]> {
