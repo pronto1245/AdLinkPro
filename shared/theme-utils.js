@@ -128,6 +128,14 @@ function getCurrentTheme() {
     return legacyTheme;
   }
 
+  // Check for old vite theme key
+  const viteTheme = storage.get('vite-ui-theme');
+  if (viteTheme && [THEMES.LIGHT, THEMES.DARK].includes(viteTheme)) {
+    storage.set(THEME_STORAGE_KEY, viteTheme);
+    storage.remove('vite-ui-theme');
+    return viteTheme;
+  }
+
   // Default to system preference
   return THEMES.SYSTEM;
 }
@@ -234,6 +242,72 @@ function getThemeInfo() {
   };
 }
 
+/**
+ * Recover from corrupted theme state
+ */
+function recoverThemeState() {
+  try {
+    // Clear all potentially corrupted theme data
+    storage.clear();
+    
+    // Reset to system default
+    const systemTheme = getSystemTheme();
+    storage.set(THEME_STORAGE_KEY, THEMES.SYSTEM);
+    
+    // Apply the resolved theme
+    applyTheme(THEMES.SYSTEM, true);
+    
+    console.log('Theme state recovered, reset to system preference:', systemTheme);
+    return { recovered: true, theme: systemTheme };
+  } catch (error) {
+    console.error('Failed to recover theme state:', error);
+    return { recovered: false, error: error.message };
+  }
+}
+
+/**
+ * Validate theme integrity
+ */
+function validateThemeIntegrity() {
+  try {
+    const currentTheme = getCurrentTheme();
+    const resolvedTheme = resolveTheme(currentTheme);
+    const systemTheme = getSystemTheme();
+    
+    // Check if current theme is valid
+    if (!Object.values(THEMES).includes(currentTheme)) {
+      console.warn('Invalid theme detected, recovering...');
+      return recoverThemeState();
+    }
+    
+    // Check if DOM state matches expected state
+    const root = document.documentElement;
+    const hasDataTheme = root.hasAttribute('data-theme');
+    const dataThemeValue = root.getAttribute('data-theme');
+    const hasClassTheme = root.classList.contains(THEMES.LIGHT) || root.classList.contains(THEMES.DARK);
+    
+    if (!hasDataTheme && !hasClassTheme) {
+      console.warn('No theme applied to DOM, applying current theme...');
+      applyTheme(currentTheme, hasDataTheme || !hasClassTheme);
+    }
+    
+    return {
+      valid: true,
+      preference: currentTheme,
+      resolved: resolvedTheme,
+      system: systemTheme,
+      domState: {
+        hasDataTheme,
+        dataThemeValue,
+        hasClassTheme
+      }
+    };
+  } catch (error) {
+    console.error('Theme validation failed:', error);
+    return recoverThemeState();
+  }
+}
+
 // Export for different module systems
 if (typeof module !== 'undefined' && module.exports) {
   // CommonJS
@@ -248,7 +322,9 @@ if (typeof module !== 'undefined' && module.exports) {
     toggleTheme,
     initTheme,
     enableThemeTransitions,
-    getThemeInfo
+    getThemeInfo,
+    recoverThemeState,
+    validateThemeIntegrity
   };
 } else if (typeof window !== 'undefined') {
   // Browser global
@@ -263,6 +339,8 @@ if (typeof module !== 'undefined' && module.exports) {
     toggleTheme,
     initTheme,
     enableThemeTransitions,
-    getThemeInfo
+    getThemeInfo,
+    recoverThemeState,
+    validateThemeIntegrity
   };
 }

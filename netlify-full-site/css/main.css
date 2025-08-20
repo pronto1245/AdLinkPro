@@ -18,6 +18,11 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --sidebar-width: 280px;
   --navbar-height: 70px;
+  
+  /* Theme transition properties */
+  --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-colors: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base), fill var(--transition-base), stroke var(--transition-base);
+  --transition-all: var(--transition-colors), opacity var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
 }
 
 [data-theme="dark"] {
@@ -30,12 +35,42 @@
   --border-color: #4a5568;
   --accent-color: #63b3ed;
   --accent-hover: #4299e1;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-base: 0ms;
+    --transition-colors: none;
+    --transition-all: none;
+  }
+  
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  /* Apply smooth theme transitions */
+  transition: var(--transition-colors);
+}
+
+/* Enhanced transition for specific elements */
+*:not(.no-transition) {
+  transition: var(--transition-colors);
+}
+
+/* Special handling for interactive elements */
+button, a, input, textarea, select {
+  transition: var(--transition-all);
 }
 
 body {
@@ -43,7 +78,7 @@ body {
   line-height: 1.6;
   color: var(--text-primary);
   background-color: var(--bg-primary);
-  transition: all 0.3s ease;
+  transition: var(--transition-colors);
 }
 
 .container {
