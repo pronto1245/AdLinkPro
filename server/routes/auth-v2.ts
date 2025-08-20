@@ -4,46 +4,10 @@ import bcryptjs from "bcryptjs";
 import crypto from "crypto";
 import { Pool } from "pg";
 import { DatabasePasswordResetService, InMemoryPasswordResetService, PasswordResetService } from "../services/password-reset";
+import { tempTokens, recovery2FACodes, users, verifyTOTP } from "../shared/2fa-utils";
 
 export const authV2Router = Router();
 authV2Router.use(express.json());
-
-// Temporary storage for 2FA codes and temp tokens (in production, use Redis)
-const tempTokens = new Map();
-const recovery2FACodes = new Map();
-
-const users = [
-  {
-    id: "1",
-    email: process.env.OWNER_EMAIL || "9791207@gmail.com",
-    password: process.env.OWNER_PASSWORD || "owner123",
-    role: "OWNER",
-    sub: "owner-1",
-    username: "owner",
-    twoFactorEnabled: false,
-    twoFactorSecret: null,
-  },
-  {
-    id: "2", 
-    email: process.env.ADVERTISER_EMAIL || "12345@gmail.com",
-    password: process.env.ADVERTISER_PASSWORD || "adv123",
-    role: "ADVERTISER",
-    sub: "adv-1",
-    username: "advertiser",
-    twoFactorEnabled: true,
-    twoFactorSecret: "JBSWY3DPEHPK3PXP", // Demo secret for testing
-  },
-  {
-    id: "3",
-    email: process.env.PARTNER_EMAIL || "4321@gmail.com",
-    password: process.env.PARTNER_PASSWORD || "partner123",
-    role: "PARTNER",
-    sub: "partner-1",
-    username: "partner",
-    twoFactorEnabled: false,
-    twoFactorSecret: null,
-  },
-];
 
 // Initialize password reset service
 let passwordResetService: PasswordResetService;
@@ -123,14 +87,6 @@ authV2Router.post("/login", (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 });
-
-// Simple TOTP verification (demo implementation)
-function verifyTOTP(secret: string, token: string): boolean {
-  // In a real implementation, use a proper TOTP library like 'speakeasy'
-  // For demo purposes, we'll accept specific codes
-  const validCodes = ["123456", "000000", "111111"];
-  return validCodes.includes(token);
-}
 
 // 2FA verification endpoint
 authV2Router.post("/verify-2fa", (req, res) => {
