@@ -33,9 +33,9 @@ async function json(path: string, body?: unknown, init: RequestInit = {}) {
   return api(path, { ...init, method, headers, body: body !== undefined ? JSON.stringify(body) : init.body });
 }
 
-export { api, json };
+export { api, json, API_BASE };
 export default api;
 
 export async function login(email: string, password: string) {
-  return json('/api/api/auth/login', { email, password });
+  return json('/api/auth/login', { email, password });
 }

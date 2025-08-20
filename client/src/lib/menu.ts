@@ -141,7 +141,7 @@ export async function refreshTokenIfNeeded(): Promise<boolean> {
   }
 
   try {
-    const response = await api<{ token: string }>('/auth/refresh', {
+    const response = await api<{ token: string }>('/api/auth/refresh', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
