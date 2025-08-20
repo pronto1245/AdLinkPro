@@ -10,6 +10,9 @@ export function setToken(t: string) {
 
 export function clearToken() {
   localStorage.removeItem('token');
+  localStorage.removeItem('auth:user');
+  localStorage.removeItem('user');
+  localStorage.removeItem('role');
 }
 
 export function logout() {
@@ -21,3 +24,4 @@ export async function login(email: string, password: string): Promise<LoginRespo
   if (data?.token) setToken(data.token);
   return data;
 }
+

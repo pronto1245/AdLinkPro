@@ -1,7 +1,7 @@
 export function setupGlobalErrorHandling() {
   window.addEventListener('unhandledrejection', (e: any) => {
-    const status = e?.reason?.status ?? e?.detail?.status;
-    if (status === 401 || status === 403) {
+    const st = e?.reason?.status ?? e?.detail?.status;
+    if (st === 401 || st === 403) {
       try {
         localStorage.removeItem('token');
         localStorage.removeItem('auth:token');
