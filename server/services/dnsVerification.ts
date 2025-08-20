@@ -42,12 +42,12 @@ export class DNSVerificationService {
           error: 'Verification code not found in DNS TXT records' 
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(`DNS verification error for ${domain}:`, error);
       return { 
         success: false, 
         method: 'dns', 
-        error: `DNS lookup failed: ${error.message}` 
+        error: `DNS lookup failed: ${error?.message || 'Unknown error'}` 
       };
     }
   }
@@ -95,12 +95,12 @@ export class DNSVerificationService {
           error: 'Verification code not found in file content'
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(`File verification error for ${domain}:`, error);
       return {
         success: false,
         method: 'file',
-        error: `File verification failed: ${error.message}`
+        error: `File verification failed: ${error?.message || 'Unknown error'}`
       };
     }
   }
