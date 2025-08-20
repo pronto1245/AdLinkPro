@@ -107,7 +107,15 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   useEffect(() => {
     if (!user) return;
 
-    const ws = new WebSocket(`ws://localhost:5000/ws`);
+    // Use environment variable or fallback to localhost in development
+    const WS_URL = import.meta.env.VITE_WS_URL || (import.meta.env.DEV ? 'ws://localhost:5000/ws' : null);
+    
+    if (!WS_URL) {
+      console.log('WebSocket disabled: VITE_WS_URL not configured for production');
+      return;
+    }
+
+    const ws = new WebSocket(WS_URL);
     
     ws.onopen = () => {
       console.log('WebSocket connected');

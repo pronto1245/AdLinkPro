@@ -10,6 +10,10 @@ module.exports = {
       }
     }],
   },
+  moduleNameMapper: {
+    '^@shared/(.*)$': '<rootDir>/shared/$1',
+    '^@/(.*)$': '<rootDir>/client/src/$1'
+  },
   collectCoverageFrom: [
     'server/**/*.ts',
     '!server/**/*.d.ts',

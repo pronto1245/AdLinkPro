@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { ToastAction } from '@/components/ui/toast';
 
 interface WebSocketMessage {
   type: string;
@@ -43,10 +44,14 @@ export function WebSocketManager() {
       title: data.title,
       description: data.message,
       variant: data.type === 'error' ? 'destructive' : 'default',
-      action: data.action ? {
-        altText: data.action.label,
-        onClick: () => window.location.href = data.action!.url
-      } : undefined
+      action: data.action ? (
+        <ToastAction
+          altText={data.action.label}
+          onClick={() => window.location.href = data.action!.url}
+        >
+          {data.action.label}
+        </ToastAction>
+      ) : undefined
     });
 
     // Store notification in localStorage for persistence
@@ -97,7 +102,7 @@ export function WebSocketManager() {
 
     // Show system update notification if significant
     if (['offer', 'payout'].includes(data.entity)) {
-      const messages = {
+      const messages: Record<string, Record<string, string>> = {
         offer: {
           created: t('notifications.offerCreated', 'New offer available'),
           updated: t('notifications.offerUpdated', 'Offer updated'),
@@ -111,7 +116,8 @@ export function WebSocketManager() {
         }
       };
 
-      const message = messages[data.entity as keyof typeof messages]?.[data.action as string];
+      const entityMessages = messages[data.entity];
+      const message = entityMessages?.[data.action];
       if (message) {
         toast({
           title: t('notifications.systemUpdate', 'System Update'),
