@@ -62,6 +62,12 @@ export default function Login() {
 
   // Check rate limiting on mount and periodically
   useEffect(() => {
+    // Don't apply login rate limiting when in 2FA mode
+    if (show2FA) {
+      setRateLimitInfo({ blocked: false, remaining: 0 });
+      return;
+    }
+
     const checkRateLimit = () => {
       const email = loginForm.getValues("email");
       if (email) {
@@ -74,7 +80,7 @@ export default function Login() {
     checkRateLimit();
     const interval = setInterval(checkRateLimit, 1000);
     return () => clearInterval(interval);
-  }, [loginForm.watch("email")]);
+  }, [loginForm.watch("email"), show2FA]);
 
   // Handle temp token expiry countdown
   useEffect(() => {
@@ -95,6 +101,16 @@ export default function Login() {
 
     return () => clearInterval(interval);
   }, [tempTokenExpiry]);
+
+  // Check if OTP is valid (6 digits)
+  const isValidOTP = (value: string) => {
+    return value.length === 6 && /^\d{6}$/.test(value);
+  };
+
+  // Check if temp token is expired
+  const isTempTokenExpired = () => {
+    return tempTokenExpiry > 0 && Date.now() >= tempTokenExpiry;
+  };
 
   // Format remaining time for temp token
   const getRemainingTime = () => {
@@ -236,8 +252,8 @@ export default function Login() {
     setOtpError("");
     twoFactorForm.setValue("code", value);
     
-    // Auto-submit when 6 digits are entered
-    if (value.length === 6 && /^\d{6}$/.test(value)) {
+    // Auto-submit when 6 digits are entered and temp token is valid
+    if (isValidOTP(value) && !isTempTokenExpired()) {
       twoFactorForm.handleSubmit(on2FA)();
     }
   };
@@ -349,7 +365,13 @@ export default function Login() {
                       <p className="text-sm text-red-600 text-center">{otpError}</p>
                     )}
                     
-                    {twoFactorForm.formState.errors.code && !otpError && (
+                    {isTempTokenExpired() && !otpError && (
+                      <p className="text-sm text-red-600 text-center">
+                        Время сессии истекло. Вернитесь к входу и попробуйте снова.
+                      </p>
+                    )}
+                    
+                    {twoFactorForm.formState.errors.code && !otpError && !isTempTokenExpired() && (
                       <p className="text-sm text-red-600 text-center">
                         {twoFactorForm.formState.errors.code.message}
                       </p>
@@ -387,7 +409,7 @@ export default function Login() {
                   </Button>
                   <Button 
                     type="submit" 
-                    disabled={loading || rateLimitInfo.blocked || otpValue.length !== 6} 
+                    disabled={loading || rateLimitInfo.blocked || !isValidOTP(otpValue) || isTempTokenExpired()} 
                     className="flex-1"
                   >
                     {loading ? (
