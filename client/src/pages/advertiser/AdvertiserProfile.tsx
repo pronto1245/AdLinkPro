@@ -15,6 +15,9 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import DomainVerification from '@/components/advertiser/DomainVerification';
 import { CustomDomainManager } from '@/components/advertiser/CustomDomainManager';
+import { LANGUAGES, CURRENCIES, TIMEZONES } from '@/config/profile-constants';
+import { profileSchema, passwordChangeSchema, webhookSchema } from '@/schemas/profile-validation';
+import { validateFormData } from '@/utils/form-validation';
 
 interface AdvertiserProfile {
   id: string;
@@ -70,34 +73,6 @@ interface WebhookSettings {
   enabled: boolean;
 }
 
-const LANGUAGES = [
-  { value: 'en', label: 'English' },
-  { value: 'ru', label: 'Русский' },
-  { value: 'es', label: 'Español' },
-  { value: 'pt', label: 'Português' },
-  { value: 'fr', label: 'Français' },
-  { value: 'de', label: 'Deutsch' },
-  { value: 'tr', label: 'Türkçe' },
-  { value: 'zh', label: '中文' },
-  { value: 'it', label: 'Italiano' }
-];
-
-const CURRENCIES = [
-  { value: 'USD', label: 'US Dollar' },
-  { value: 'EUR', label: 'Euro' },
-  { value: 'GBP', label: 'British Pound' },
-  { value: 'RUB', label: 'Russian Ruble' },
-  { value: 'BRL', label: 'Brazilian Real' }
-];
-
-const TIMEZONES = [
-  { value: 'UTC', label: 'UTC' },
-  { value: 'America/New_York', label: 'New York (EST/EDT)' },
-  { value: 'Europe/London', label: 'London (GMT/BST)' },
-  { value: 'Europe/Moscow', label: 'Moscow (MSK)' },
-  { value: 'Asia/Tokyo', label: 'Tokyo (JST)' }
-];
-
 export default function AdvertiserProfile() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -108,6 +83,7 @@ export default function AdvertiserProfile() {
   const [showTokens, setShowTokens] = useState<{ [key: string]: boolean }>({});
   const [newPassword, setNewPassword] = useState({ current: '', new: '', confirm: '' });
   const [formData, setFormData] = useState<Partial<AdvertiserProfile>>({});
+  const [newTokenName, setNewTokenName] = useState('');
 
   const [webhookForm, setWebhookForm] = useState<WebhookSettings>({
     defaultUrl: '',
@@ -143,40 +119,40 @@ export default function AdvertiserProfile() {
         firstName: user.firstName || '',
         lastName: user.lastName || '', 
         email: user.email || '',
-        phone: (user as any).phone || '',
+        phone: user.phone || '',
         company: user.company || '',
-        country: (user as any).country || 'US',
+        country: user.country || 'US',
         language: user.language || 'en',
-        timezone: (user as any).timezone || 'UTC',
-        currency: (user as any).currency || 'USD',
+        timezone: user.timezone || 'UTC',
+        currency: user.currency || 'USD',
         twoFactorEnabled: (user as any).twoFactorEnabled || false,
         settings: {
-          brandName: (user as any).settings?.brandName || '',
-          brandDescription: (user as any).settings?.brandDescription || '',
-          brandLogo: (user as any).settings?.brandLogo || '',
-          vertical: (user as any).settings?.vertical || '',
-          partnerRules: (user as any).settings?.partnerRules || '',
+          brandName: user.settings?.brandName || '',
+          brandDescription: user.settings?.brandDescription || '',
+          brandLogo: user.settings?.brandLogo || '',
+          vertical: user.settings?.vertical || '',
+          partnerRules: user.settings?.partnerRules || '',
           notifications: {
-            email: (user as any).settings?.notifications?.email || false,
-            telegram: (user as any).settings?.notifications?.telegram || false,
-            sms: (user as any).settings?.notifications?.sms || false
+            email: user.settings?.notifications?.email || false,
+            telegram: user.settings?.notifications?.telegram || false,
+            sms: user.settings?.notifications?.sms || false
           }
         }
       });
       
       setNotificationForm({
-        email: (user as any).settings?.notifications?.email || false,
-        telegram: (user as any).settings?.notifications?.telegram || false,
-        sms: (user as any).settings?.notifications?.sms || false
+        email: user.settings?.notifications?.email || false,
+        telegram: user.settings?.notifications?.telegram || false,
+        sms: user.settings?.notifications?.sms || false
       });
 
-      setTelegramChatId((user as any).telegramChatId ? String((user as any).telegramChatId) : '');
+      setTelegramChatId(user.telegramChatId ? String(user.telegramChatId) : '');
       
-      // Также обновляем formData с Telegram полем
+      // Also update formData with Telegram field
       setFormData(prev => ({
         ...prev,
-        telegram: (user as any).telegram || '',
-        telegramChatId: (user as any).telegramChatId || null
+        telegram: user.telegram || '',
+        telegramChatId: user.telegramChatId || null
       }));
     }
   }, [user]);
@@ -368,29 +344,61 @@ export default function AdvertiserProfile() {
 
   // --- HANDLERS ---
   const handleProfileSave = () => {
-    updateProfileMutation.mutate(formData);
+    const validatedData = validateFormData(
+      profileSchema,
+      formData,
+      (message, details) => {
+        toast({
+          title: "Ошибка валидации",
+          description: message,
+          variant: "destructive"
+        });
+      }
+    );
+    
+    if (validatedData) {
+      updateProfileMutation.mutate(validatedData);
+    }
   };
 
   const handlePasswordChange = () => {
-    if (newPassword.new !== newPassword.confirm) {
+    const passwordData = {
+      current: newPassword.current,
+      new: newPassword.new,
+      confirm: newPassword.confirm
+    };
+    
+    const validatedData = validateFormData(
+      passwordChangeSchema,
+      passwordData,
+      (message, details) => {
+        toast({
+          title: "Ошибка валидации",
+          description: message,
+          variant: "destructive"
+        });
+      }
+    );
+    
+    if (validatedData) {
+      changePasswordMutation.mutate({
+        currentPassword: validatedData.current,
+        newPassword: validatedData.new
+      });
+    }
+  };
+
+  const handleTokenGenerate = () => {
+    if (!newTokenName.trim()) {
       toast({
         title: "Ошибка",
-        description: "Новые пароли не совпадают",
+        description: "Введите название токена",
         variant: "destructive"
       });
       return;
     }
-    changePasswordMutation.mutate({
-      currentPassword: newPassword.current,
-      newPassword: newPassword.new
-    });
-  };
-
-  const handleTokenGenerate = () => {
-    const tokenName = window.prompt('Введите название токена:');
-    if (tokenName && tokenName.trim()) {
-      generateTokenMutation.mutate(tokenName.trim());
-    }
+    generateTokenMutation.mutate(newTokenName.trim());
+    setNewTokenName(''); // Clear the input after generating
   };
 
   const handleCopyToken = async (token: string) => {
@@ -424,7 +432,21 @@ export default function AdvertiserProfile() {
 
 
   const handleWebhookSave = () => {
-    updateWebhookMutation.mutate(webhookForm);
+    const validatedData = validateFormData(
+      webhookSchema,
+      webhookForm,
+      (message, details) => {
+        toast({
+          title: "Ошибка валидации",
+          description: message,
+          variant: "destructive"
+        });
+      }
+    );
+    
+    if (validatedData) {
+      updateWebhookMutation.mutate(validatedData);
+    }
   };
 
   const handleSaveNotifications = () => {
@@ -433,36 +455,45 @@ export default function AdvertiserProfile() {
 
   // Removed handle2FAToggle - 2FA is disabled
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  // Unified form change handler to reduce duplication
+  const handleFormChange = (path: string, value: string | boolean) => {
+    const pathParts = path.split('.');
+    
+    setFormData(prev => {
+      if (pathParts.length === 1) {
+        // Direct field update
+        return { ...prev, [pathParts[0]]: value };
+      } else if (pathParts.length === 2 && pathParts[0] === 'settings') {
+        // Settings field update
+        return {
+          ...prev,
+          settings: {
+            ...prev.settings,
+            [pathParts[1]]: value
+          }
+        };
+      } else if (pathParts.length === 3 && pathParts[0] === 'settings' && pathParts[1] === 'notifications') {
+        // Notification field update
+        return {
+          ...prev,
+          settings: {
+            ...prev.settings,
+            notifications: {
+              email: pathParts[2] === 'email' ? (value as boolean) : prev.settings?.notifications?.email || false,
+              telegram: pathParts[2] === 'telegram' ? (value as boolean) : prev.settings?.notifications?.telegram || false,
+              sms: pathParts[2] === 'sms' ? (value as boolean) : prev.settings?.notifications?.sms || false
+            }
+          }
+        };
+      }
+      return prev;
+    });
   };
 
-  const handleSettingsChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      settings: {
-        ...prev.settings,
-        [field]: value
-      }
-    }));
-  };
-
-  const handleNotificationChange = (field: string, value: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      settings: {
-        ...prev.settings,
-        notifications: {
-          email: field === 'email' ? value : prev.settings?.notifications?.email || false,
-          telegram: field === 'telegram' ? value : prev.settings?.notifications?.telegram || false,
-          sms: field === 'sms' ? value : prev.settings?.notifications?.sms || false
-        }
-      }
-    }));
-  };
+  // Legacy handlers for backward compatibility
+  const handleInputChange = (field: string, value: string) => handleFormChange(field, value);
+  const handleSettingsChange = (field: string, value: string) => handleFormChange(`settings.${field}`, value);
+  const handleNotificationChange = (field: string, value: boolean) => handleFormChange(`settings.notifications.${field}`, value);
 
   const handleLinkTelegram = () => {
     if (!telegramChatId) {
@@ -620,10 +651,20 @@ export default function AdvertiserProfile() {
         <TabsContent value="api" className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold">API-доступ</h2>
-            <Button onClick={handleTokenGenerate} data-testid="button-generate-token">
-              <Key className="h-4 w-4 mr-2" />
-              Создать новый токен
-            </Button>
+            <div className="flex items-center gap-2">
+              <Input 
+                placeholder="Название токена" 
+                value={newTokenName}
+                onChange={(e) => setNewTokenName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleTokenGenerate()}
+                className="w-48"
+                data-testid="input-token-name"
+              />
+              <Button onClick={handleTokenGenerate} data-testid="button-generate-token">
+                <Key className="h-4 w-4 mr-2" />
+                Создать новый токен
+              </Button>
+            </div>
           </div>
 
           {/* API TOKENS */}
