@@ -24,7 +24,7 @@ function persist(user: User, token?: string) {
 export async function login(args: LoginArgs): Promise<{user: User, token?: string}> {
   try {
     // Use centralized API function instead of direct fetch
-    const data: any = await api('/api/auth/login', { 
+    const data: any = await api('/auth/login', { 
       method: 'POST', 
       skipAuth: true,
       body: JSON.stringify(args) 

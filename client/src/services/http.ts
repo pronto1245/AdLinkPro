@@ -1,32 +1,33 @@
-export const API_BASE = (import.meta.env.VITE_API_BASE ?? '').replace(/\/+$/,'');
-
+const RAW_BASE = (import.meta.env.VITE_API_BASE ?? '').trim()
+const API_BASE = (() => {
+  if (!RAW_BASE) return '/api'
+  const base = RAW_BASE.replace(/\/+$/, '')
+  return base.endsWith('/api') ? base : `${base}/api`
+})()
 function buildUrl(path: string) {
-  if (/^https?:\/\//i.test(path)) return path;
-  let p = path.startsWith('/') ? path : `/${path}`;
-  const baseHasApi = /\/api$/i.test(API_BASE);
-  if (!p.startsWith('/api/')) p = `${baseHasApi ? '' : '/api'}${p}`;
-  return `${API_BASE}${p}`;
+  const p = path.startsWith('/') ? path : `/${path}`
+  return `${API_BASE}${p}`
 }
-
+function getToken(): string {
+  return localStorage.getItem('token') || localStorage.getItem('auth:token') || ''
+}
 export async function api(path: string, init: RequestInit = {}) {
-  const token = localStorage.getItem('token') || localStorage.getItem('auth:token');
-  const headers: HeadersInit = {
+  const token = getToken()
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(init.headers || {}),
-  };
-  const url = buildUrl(path);
-  const res = await fetch(url, { ...init, headers, credentials: 'include' });
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-  const ct = res.headers.get('content-type') ?? '';
-  return ct.includes('application/json') ? res.json() : res.text();
+    ...(init.headers as any),
+  }
+  const res = await fetch(buildUrl(path), { ...init, headers, credentials: 'include' })
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  const ct = res.headers.get('content-type') ?? ''
+  return ct.includes('application/json') ? res.json() : res.text()
 }
-
-export const get = <T=any>(p: string, init?: RequestInit) =>
-  api(p, { ...(init||{}), method: 'GET' }) as Promise<T>;
-
-export const post = <T=any>(p: string, body?: any, init?: RequestInit) =>
-  api(p, { ...(init||{}), method: 'POST', body: body instanceof FormData ? body : JSON.stringify(body ?? {}) }) as Promise<T>;
-
-// совместимость, если где-то импортируется json()
-export const json = api;
+export async function json(path: string, body?: unknown, init: RequestInit = {}) {
+  return api(path, {
+    method: init.method ?? 'POST',
+    body: body !== undefined ? JSON.stringify(body) : init.body,
+    ...init,
+  })
+}
+export { API_BASE }

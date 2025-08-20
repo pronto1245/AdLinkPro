@@ -31,7 +31,7 @@ export function getToken() {
   return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 }
 
-const LOGIN_PATH = import.meta.env.VITE_LOGIN_PATH || '/api/auth/login';
+const LOGIN_PATH = import.meta.env.VITE_LOGIN_PATH || '/auth/login';
 
 export async function login(email: string, password: string) {
   const data = await json<any>(LOGIN_PATH, { email, password });

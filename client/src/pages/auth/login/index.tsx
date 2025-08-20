@@ -30,7 +30,7 @@ export default function Login() {
       localStorage.setItem("auth:token", data.token);
       const u = await me() as any;
       navigate(roleToPath(u?.role));
-    } catch (err: any) {
+    } catch {
       setError("Неверный email или пароль");
     } finally {
       setLoading(false);

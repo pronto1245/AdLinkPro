@@ -65,7 +65,7 @@ export async function getMenuData(): Promise<MenuData> {
     }
 
     // Try to fetch menu data from API
-    const data = await api<MenuData>('/api/menu/data');
+    const data = await api<MenuData>('/menu/data');
     return data;
   } catch (error) {
     console.warn('Failed to fetch menu data from API, using fallback:', error);
@@ -141,7 +141,7 @@ export async function refreshTokenIfNeeded(): Promise<boolean> {
   }
 
   try {
-    const response = await api<{ token: string }>('/api/auth/refresh', {
+    const response = await api<{ token: string }>('/auth/refresh', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
