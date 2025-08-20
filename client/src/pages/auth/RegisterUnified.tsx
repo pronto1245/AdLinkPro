@@ -10,6 +10,7 @@ import {
   Loader2, 
   CheckCircle, 
   User, 
+  Building, 
   Mail, 
   Phone,
   UserCheck,
@@ -27,7 +28,12 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 
 import { secureAuth, SecureAPIError } from '@/lib/secure-api';
-import { partnerRegistrationSchema, PartnerRegistrationFormData } from '@/lib/validation';
+import { 
+  advertiserRegistrationSchema, 
+  partnerRegistrationSchema,
+  AdvertiserRegistrationFormData,
+  PartnerRegistrationFormData 
+} from '@/lib/validation';
 import { 
   passwordStrength, 
   RateLimitTracker, 
@@ -39,7 +45,17 @@ import {
 const rateLimitTracker = new RateLimitTracker();
 const csrfManager = CSRFManager.getInstance();
 
-export default function RegisterPartner() {
+// Union type for form data
+type UnifiedRegistrationFormData = AdvertiserRegistrationFormData & PartnerRegistrationFormData;
+
+// Role type
+export type RegistrationRole = 'ADVERTISER' | 'PARTNER';
+
+interface RegisterUnifiedProps {
+  role: RegistrationRole;
+}
+
+export default function RegisterUnified({ role }: RegisterUnifiedProps) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   
@@ -57,8 +73,35 @@ export default function RegisterPartner() {
     feedback: string[] 
   }>({ score: 0, feedback: [] });
 
-  const form = useForm<PartnerRegistrationFormData>({
-    resolver: zodResolver(partnerRegistrationSchema),
+  // Role-specific configurations
+  const isPartner = role === 'PARTNER';
+  const schema = isPartner ? partnerRegistrationSchema : advertiserRegistrationSchema;
+  
+  const config = {
+    ADVERTISER: {
+      title: 'Регистрация рекламодателя',
+      description: 'Создайте аккаунт для размещения рекламных кампаний',
+      icon: Building,
+      buttonText: 'Зарегистрироваться как рекламодатель',
+      backgroundClass: 'bg-gradient-to-br from-blue-50 to-indigo-100',
+      iconColor: 'text-blue-600',
+      loginPath: '/login/advertiser',
+      requireCompany: true
+    },
+    PARTNER: {
+      title: 'Регистрация партнёра',
+      description: 'Присоединяйтесь к нашей партнёрской программе',
+      icon: UserCheck,
+      buttonText: 'Стать партнёром',
+      backgroundClass: 'bg-gradient-to-br from-green-50 to-emerald-100',
+      iconColor: 'text-green-600',
+      loginPath: '/login/partner',
+      requireCompany: false
+    }
+  }[role];
+
+  const form = useForm<UnifiedRegistrationFormData>({
+    resolver: zodResolver(schema),
     defaultValues: {
       name: '',
       email: '',
@@ -66,7 +109,7 @@ export default function RegisterPartner() {
       password: '',
       confirmPassword: '',
       phone: '',
-      company: undefined, // Partners don't need company
+      company: isPartner ? undefined : '',
       contactType: undefined,
       contact: '',
       agreeTerms: false,
@@ -101,7 +144,7 @@ export default function RegisterPartner() {
     }
   }, [watchedPassword]);
 
-  const handleSubmit = async (data: PartnerRegistrationFormData) => {
+  const handleSubmit = async (data: UnifiedRegistrationFormData) => {
     const userIdentifier = data.email;
 
     // Check rate limiting
@@ -130,10 +173,10 @@ export default function RegisterPartner() {
         telegram: sanitizeInput.cleanTelegram(data.telegram),
         password: data.password, // Don't sanitize password
         phone: data.phone ? sanitizeInput.cleanPhone(data.phone) : undefined,
-        company: undefined, // Partners don't have company
+        company: config.requireCompany ? sanitizeInput.cleanString(data.company || '') : undefined,
         contactType: data.contactType,
         contact: data.contact ? sanitizeInput.cleanString(data.contact) : undefined,
-        role: 'PARTNER',
+        role,
         agreeTerms: data.agreeTerms,
         agreePrivacy: data.agreePrivacy,
         agreeMarketing: data.agreeMarketing,
@@ -144,14 +187,18 @@ export default function RegisterPartner() {
       // Reset rate limiting on successful registration
       rateLimitTracker.reset(userIdentifier);
 
+      const successMessage = isPartner 
+        ? 'Ваша заявка партнёра отправлена на рассмотрение. С вами свяжется менеджер в течение 24 часов.'
+        : 'Ваша заявка рекламодателя отправлена на рассмотрение. С вами свяжется менеджер в течение 24 часов.';
+
       toast({
         title: 'Регистрация успешна!',
-        description: result.message || 'Ваша заявка партнёра отправлена на рассмотрение. С вами свяжется менеджер в течение 24 часов.',
+        description: result.message || successMessage,
       });
 
-      // Redirect to login page after a short delay
+      // Redirect to appropriate login page after a short delay
       setTimeout(() => {
-        setLocation('/login/partner');
+        setLocation(config.loginPath);
       }, 2000);
 
     } catch (err) {
@@ -181,17 +228,17 @@ export default function RegisterPartner() {
   const strengthLabel = passwordStrength.getStrengthLabel(passwordStrengthInfo.score);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 p-4">
+    <div className={`min-h-screen flex items-center justify-center ${config.backgroundClass} p-4`}>
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center pb-6">
           <div className="flex items-center justify-center mb-4">
-            <UserCheck className="h-8 w-8 text-green-600 mr-2" />
+            <config.icon className={`h-8 w-8 ${config.iconColor} mr-2`} />
             <CardTitle className="text-2xl font-bold text-gray-900">
-              Регистрация партнёра
+              {config.title}
             </CardTitle>
           </div>
           <p className="text-gray-600">
-            Присоединяйтесь к нашей партнёрской программе
+            {config.description}
           </p>
         </CardHeader>
 
@@ -371,6 +418,28 @@ export default function RegisterPartner() {
               )}
             </div>
 
+            {/* Company Field (Only for advertisers) */}
+            {config.requireCompany && (
+              <div className="space-y-2">
+                <Label htmlFor="company">Название компании *</Label>
+                <div className="relative">
+                  <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="company"
+                    {...form.register('company')}
+                    className="pl-10"
+                    placeholder="ООО 'Ваша компания'"
+                    disabled={loading}
+                  />
+                </div>
+                {form.formState.errors.company && (
+                  <p className="text-sm text-red-600">
+                    {form.formState.errors.company.message}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Contact Information */}
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -485,14 +554,14 @@ export default function RegisterPartner() {
                     Регистрируем...
                   </>
                 ) : (
-                  'Стать партнёром'
+                  config.buttonText
                 )}
               </Button>
 
               <p className="text-center text-sm text-gray-600 mt-4">
                 Уже есть аккаунт?{' '}
                 <a 
-                  href="/login/partner" 
+                  href={config.loginPath} 
                   className="text-blue-600 hover:underline"
                 >
                   Войти в систему

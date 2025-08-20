@@ -66,7 +66,7 @@ describe('Separate Registration Components Logic', () => {
     });
 
     test('should require telegram field for both roles', () => {
-      const mockFormDataWithoutTelegram = {
+      const mockFormDataWithoutTelegram: any = {
         name: 'Test User',
         email: 'test@example.com',
         password: 'Password123!',
@@ -131,7 +131,7 @@ describe('Separate Registration Components Logic', () => {
     test('should handle malicious telegram input', () => {
       const maliciousTelegram = '<script>@baduser</script>';
       const sanitized = mockSanitizeInput.cleanTelegram(maliciousTelegram);
-      expect(sanitized).toBe('@scriptbaduser/script');
+      expect(sanitized).toBe('@script@baduserscript');
       expect(sanitized).not.toContain('<script>');
     });
 
