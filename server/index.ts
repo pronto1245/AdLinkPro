@@ -15,6 +15,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import authRouter from './routes/auth';
 import authV2Router, { initPasswordResetService } from './routes/auth-v2';
+import twoFARouter from './routes/2fa';
 
 const app = express();
 app.use(express.json());
@@ -234,6 +235,8 @@ app.get('/health', (_req, res) => res.status(200).json({ ok: true }));
 app.use('/api', authRouter);
 // --- API: новая версия аутентификации с 2FA
 app.use('/api/auth/v2', authV2Router);
+// --- API: 2FA operations
+app.use('/api/auth/2fa', twoFARouter);
 
 // --- простая проверка токена для стабов ---
 function requireAuth(req: any, res: any, next: any) {

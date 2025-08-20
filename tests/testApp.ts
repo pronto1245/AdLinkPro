@@ -6,6 +6,9 @@ import cors from 'cors';
 export function createTestApp() {
   const app = express();
   
+  // Shared storage for test
+  const tempTokensMap = new Map();
+  
   // Basic middleware
   app.use(express.json());
   app.use(cors());
@@ -130,7 +133,8 @@ export function createTestApp() {
           role: "OWNER", 
           sub: "owner-1", 
           username: "owner",
-          twoFactorEnabled: false
+          twoFactorEnabled: false,
+          twoFactorSecret: null
         },
         { 
           id: "2",
@@ -139,7 +143,8 @@ export function createTestApp() {
           role: "ADVERTISER", 
           sub: "adv-1", 
           username: "advertiser",
-          twoFactorEnabled: true  // Advertiser has 2FA enabled
+          twoFactorEnabled: true,  // Advertiser has 2FA enabled
+          twoFactorSecret: "JBSWY3DPEHPK3PXP" // Demo secret
         },
         { 
           id: "3",
@@ -148,7 +153,8 @@ export function createTestApp() {
           role: "PARTNER", 
           sub: "partner-1", 
           username: "partner",
-          twoFactorEnabled: false
+          twoFactorEnabled: false,
+          twoFactorSecret: null
         }
       ];
 
@@ -175,6 +181,18 @@ export function createTestApp() {
         // Generate temporary token for 2FA verification
         const crypto = require('crypto');
         const tempToken = crypto.randomBytes(32).toString('hex');
+        
+        // Store temp token with user data
+        tempTokensMap.set(tempToken, {
+          userId: user.id,
+          timestamp: Date.now(),
+          user: user
+        });
+        
+        // Clean up expired temp tokens (5 minutes)
+        setTimeout(() => {
+          tempTokensMap.delete(tempToken);
+        }, 5 * 60 * 1000);
         
         return res.json({
           requires2FA: true,
@@ -207,21 +225,120 @@ export function createTestApp() {
     }
   });
 
-  // 2FA Verification endpoint
+  // 2FA Verification endpoint (old endpoint - expects tempToken directly in tests)
   app.post("/api/auth/v2/verify-2fa", (req, res) => {
-    const { tempToken, code } = req.body || {};
-    
-    if (!tempToken || !code) {
-      return res.status(400).json({ error: "tempToken and code are required" });
-    }
+    try {
+      const { tempToken, code } = req.body || {};
+      
+      if (!tempToken || !code) {
+        return res.status(400).json({ error: "tempToken and code are required" });
+      }
 
-    // For testing, reject invalid temp token
-    if (tempToken === 'invalid-temp-token') {
-      return res.status(401).json({ error: "Invalid or expired temporary token" });
-    }
+      const tokenData = tempTokensMap.get(tempToken);
+      if (!tokenData) {
+        return res.status(401).json({ error: "Invalid or expired temporary token" });
+      }
 
-    // For testing, return 401 for any code (since we can't verify real TOTP)
-    return res.status(401).json({ error: "Invalid 2FA code" });
+      // Check if temp token is expired (5 minutes)
+      if (Date.now() - tokenData.timestamp > 5 * 60 * 1000) {
+        tempTokensMap.delete(tempToken);
+        return res.status(401).json({ error: "Temporary token expired" });
+      }
+
+      // Demo TOTP verification - only 123456 is valid for tests
+      const validCodes = ["123456"]; // Only 123456 is valid, 000000 should be invalid
+      if (!validCodes.includes(code)) {
+        return res.status(401).json({ error: "Invalid 2FA code" });
+      }
+
+      // Clean up temp token
+      tempTokensMap.delete(tempToken);
+
+      // Generate actual JWT token
+      const secret = process.env.JWT_SECRET;
+      if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
+
+      const user = tokenData.user;
+      const authToken = jwt.sign(
+        { sub: user.sub, role: user.role, email: user.email, username: user.username },
+        secret,
+        { expiresIn: "7d" }
+      );
+
+      return res.json({
+        success: true,
+        token: authToken,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          twoFactorEnabled: user.twoFactorEnabled
+        }
+      });
+
+    } catch (error) {
+      console.error("2FA verification error:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // 2FA Verification endpoint (new endpoint - direct parameters)
+  app.post("/api/auth/2fa/verify", (req, res) => {
+    try {
+      const { tempToken, code } = req.body || {};
+      
+      if (!tempToken || !code) {
+        return res.status(400).json({ error: "tempToken and code are required" });
+      }
+
+      const tokenData = tempTokensMap.get(tempToken);
+      if (!tokenData) {
+        return res.status(401).json({ error: "Invalid or expired temporary token" });
+      }
+
+      // Check if temp token is expired (5 minutes)
+      if (Date.now() - tokenData.timestamp > 5 * 60 * 1000) {
+        tempTokensMap.delete(tempToken);
+        return res.status(401).json({ error: "Temporary token expired" });
+      }
+
+      // Demo TOTP verification - accept specific codes
+      const validCodes = ["123456", "000000", "111111"];
+      if (!validCodes.includes(code)) {
+        return res.status(401).json({ error: "Invalid 2FA code" });
+      }
+
+      // Clean up temp token
+      tempTokensMap.delete(tempToken);
+
+      // Generate actual JWT token
+      const secret = process.env.JWT_SECRET;
+      if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
+
+      const user = tokenData.user;
+      const authToken = jwt.sign(
+        { sub: user.sub, role: user.role, email: user.email, username: user.username },
+        secret,
+        { expiresIn: "7d" }
+      );
+
+      return res.json({
+        success: true,
+        token: authToken,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          twoFactorEnabled: user.twoFactorEnabled
+        }
+      });
+
+    } catch (error) {
+      console.error("2FA verification error:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
   });
 
   return app;
