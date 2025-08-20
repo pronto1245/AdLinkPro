@@ -42,6 +42,14 @@ SENDGRID_API_KEY=your-sendgrid-api-key
 FROM_EMAIL=noreply@yourdomain.com
 ```
 
+**Email Service Information:**
+- The system includes two email service implementations:
+  - `server/services/email.ts` - Full-featured email service with complex parameters
+  - `src/services/email.ts` - Simple email service with basic signature: `sendEmail(to, subject, html)`
+- If `SENDGRID_API_KEY` is not set, emails will be skipped gracefully with warning logs
+- The `FROM_EMAIL` defaults to `noreply@platform.com` if not specified
+- Both services support lazy initialization for graceful degradation in development
+
 ## Настройка в Replit
 
 1. Откройте панель Secrets в Replit
