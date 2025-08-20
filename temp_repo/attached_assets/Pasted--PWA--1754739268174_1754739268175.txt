@@ -1,0 +1,208 @@
+Цель
+Собрать события и параметры визита на PWA/лендинге, обогатить на бэке (гео/устройство/антифрод), хранить в БД и передавать в Keitaro (или другой трекер). Поддержать пользовательский набор “своих значений”, кодируемых в sub2 в формате:
+
+php-template
+Copy
+Edit
+<ключ1>-<значение1>|<ключ2>-<значение2>|...
+1) События
+Минимально поддерживаемые типы: click, lp_click, install, open, reg, deposit, sale, lead, lp_leave.
+
+Для lp_leave обязательно поле time_on_page_ms.
+
+2) Параметры запроса (фронт → /event)
+Отправляем JSON со строго заданными полями:
+
+Атрибуция
+
+clickid (== ваш Subid, главный ключ)
+
+visitor_code (UUID в cookie)
+
+campaign_id, source_id, flow_id, offer_id, landing_id
+
+ad_campaign_id (если есть), external_id (если приходит), creative_id (если есть)
+
+Маркетинг/Метки
+
+referrer, site (hostname)
+
+utm_* (если есть)
+
+sub1, sub2, … sub10
+
+sub2 — резерв под «свои значения» (см. раздел 4)
+
+Клиент
+
+user_agent, lang, tz, screen (WxH), connection (navigator.connection.effectiveType), device_type (desktop/mobile/tablet)
+
+Событие
+
+type (см. список)
+
+revenue/revenue_deposit/revenue_reg (если применимо)
+
+currency (если есть выручка)
+
+txid (если есть внешний ID)
+
+ts_client (ms)
+
+3) Обогащение на бэке (server)
+После приёма /event сервер автоматически добавляет:
+
+Сеть/гео: ip, country_iso, region, city, isp (провайдер), operator (моб. оператор), is_proxy
+
+UA-парсинг: browser_name, browser_version, os_name, os_version, device_model
+
+Время: ts_server (UTC ms). Разрезы (год/месяц/неделя/день/час) считаются в вьюхах/ETL, не храним в фактах.
+
+Поисковик/ключевик: вычисляем из referrer (в ETL)
+
+Уникальности: is_unique_global, is_unique_campaign, is_unique_flow — считаем и кэшируем (Redis), в факты можно не дублировать
+
+4) «Свои значения» в sub2 (формат и правила)
+Назначение: передавать гибкий набор полей без расширения схемы сабов.
+
+Формат строки sub2:
+<ключ1>-<значение1>|<ключ2>-<значение2>|...|<ключN>-<значениеN>
+Разделитель пар: |
+
+Разделитель ключ–значение: -
+
+URL-энкодинг обязателен при сборке в браузере.
+
+Примеры sub2:
+
+Пример 1: geo-TR|dev-mobile|src-fb|adset-TR_25_34|lang-tr
+
+Пример 2: tier-A|risk-low|abtest-B|cohort-2025W32
+
+Пример 3: pp-1.2|fpr-strong|anti-allow|seg-vip
+
+Ограничения:
+
+Суммарная длина sub2 ≤ 200 символов (рекомендуем).
+
+Ключи — латиница/цифры/подчёркивание (regex: ^[a-z0-9_]{1,16}$).
+
+Значения — латиница/цифры/-/_ (до 32 символов) — перед отправкой URL-энкодить.
+
+Конфиг (на бэке) для проверки допустимых ключей:
+{
+  "sub2_allowed_keys": [
+    "geo","dev","src","adset","lang","tier","risk","abtest","cohort","pp","fpr","anti","seg"
+  ],
+  "sub2_max_pairs": 8
+}
+Если встречен неизвестный ключ — логируем предупреждение и пропускаем (или отбрасываем пару — по настройке).
+pairs = sub2.split('|')
+for p in pairs:
+  k, v = p.split('-', 1)
+  if k in allowed: sub2_map[k] = v
+В БД можно хранить:
+
+как строку sub2_raw (исходное),
+
+и как JSON sub2_map (jsonb для удобных фильтров в отчётах).
+
+5) Маппинг в трекер (Keitaro)
+subid = ваш clickid
+
+sub1 = как есть
+
+sub2 = строка с «своими значениями» (формат выше)
+
+sub3..sub10 = по вашему пресету
+
+Статус:
+reg → lead, deposit → sale, остальное как есть.
+
+Постбек (пример GET):Парсинг на бэке (псевдо):
+https://keitaro.example.com/postback?key=KEY
+  &subid={CLICKID}
+  &status={STATUS}
+  &payout={REVENUE}
+  &currency={CUR}
+  &txid={TXID}
+  &sub1={SUB1}
+  &sub2={SUB2}   <-- наши «свои значения»
+6) Эндпоинты
+GET /click — создаёт/фиксирует clickid, редиректит на LP поставщика, подставляя clickid и сабы.
+
+POST /event — приём события (см. поля в п.2), обогащение, запись, постбек в трекер (если тип требует).
+
+Валидация /event:
+
+clickid: обязательный, формат UUID/строка ≤ 64
+
+type: один из допустимых
+
+sub2: длина ≤ 200, пары по правилам п.4
+
+revenue: число ≥ 0 (если передано)
+
+currency: ISO 4217 (строка 3 символа)
+
+7) База данных (Postgres)
+clicks (факт клика)
+clickid PK, visitor_code
+
+campaign_id,source_id,flow_id,offer_id,landing_id,ad_campaign_id,external_id,creative_id
+
+site, referrer
+
+sub1 … sub10
+
+sub2_raw (text), sub2_map (jsonb)
+
+ip, country_iso, region, city, isp, operator, is_proxy
+
+user_agent, browser_name, browser_version, os_name, os_version, device_model, device_type, connection, lang
+
+ts (timestamptz)
+
+Индексы: clickid, (campaign_id, ts), sub2_map gin, country_iso, (source_id, ts).
+
+events (факт события)
+id PK, clickid FK
+
+type ENUM
+
+revenue, currency, txid
+
+ts (timestamptz), time_on_page_ms (nullable)
+
+raw jsonb (опционально — для аудита)
+
+Индексы: (clickid, type), (type, ts).
+
+8) UI/Отчёты (минимум)
+Фильтры: период, кампания/источник/оффер/лендинг, GEO, устройство.
+Колонки: clickid, sub1, sub2 (отображать как «ключи:значения»), country_iso, device_type, browser_name, os_name, reg, deposit, revenue, cost, profit, roi, time_on_page_ms (avg).
+
+9) Ошибки/ретраи
+Постбек 5xx → очередь с backoff (Redis). 5 попыток, лог последней ошибки.
+
+Валидация sub2 провалилась → 400 или автопочинка (режим «мягкий»).
+
+10) Безопасность/приватность
+Не отправлять PII в sub2/сабы.
+
+Cookie banner (согласие на атрибуцию).
+
+Логирование IP — по вашей политике хранения.
+
+Быстрый пример сборки sub2 на фронте
+<script>
+function encodePairs(pairs){ // {geo:'TR',dev:'mobile',src:'fb'}
+  return Object.entries(pairs)
+    .map(([k,v]) => `${encodeURIComponent(k)}-${encodeURIComponent(String(v))}`)
+    .join('|');
+}
+
+// пример: субы для ссылки или /event
+const sub2 = encodePairs({ geo:'TR', dev:'mobile', src:'fb', abtest:'B' });
+// sub2 = "geo-TR|dev-mobile|src-fb|abtest-B"
+</script>

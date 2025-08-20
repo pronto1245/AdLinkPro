@@ -1,0 +1,1 @@
+console.log('Current i18n language:', i18n.language); console.log('Common refresh translation:', i18n.t('common.refresh')); console.log('All common translations:', i18n.t('common', { returnObjects: true }));

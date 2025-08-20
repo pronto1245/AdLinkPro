@@ -1,0 +1,325 @@
+Цель и результат
+Сделать модуль, который:
+
+принимает трафик, фиксирует клики и события,
+
+обогащает визиты (Geo/IP/UA/девайс),
+
+маршрутизирует постбеки внутри системы (для Партнёра, Рекламодателя, Владельца с учётом прав) и во внешний трекер,
+
+поддерживает «свои значения» в sub2 (key-value|key2-value2),
+
+гарантирует доставку (очередь, ретраи, логи, идемпотентность),
+
+даёт UI для настройки профилей постбеков и просмотра логов по ролям.
+
+2) Роли и доступ (ACL)
+Владелец (Owner): видит/настраивает всё: все рекламодатели, партнёры, офферы, профили постбеков, логи, трекеры.
+
+Рекламодатель (Advertiser): управляет своими кампаниями/офферами/потоками и своими партнёрами; видит их логи; создаёт профили постбеков в своей области; может разрешать/запрещать партнёрам свои профили.
+
+Партнёр (Partner): льёт трафик по выданным офферам; видит только свои клики/события/логи; может создавать только свои профили постбеков в рамках выданных офферов (если разрешено рекламодателем); не видит секреты рекламодателя.
+
+Матрица видимости логов и профилей:
+
+Owner → всё.
+
+Advertiser → свои + своих партнёров (в контексте своих офферов).
+
+Partner → только свои; чужие ключи/секреты скрыты.
+
+3) Архитектура
+Front (LP/PWA): сниппет для сбора clickid/visitor_code и отправки событий на 1st-party /event.
+
+Backend (Track-сервис): эндпоинты /click, /event, админ-API профилей постбеков, воркер доставки, ACL.
+
+DB: PostgreSQL.
+
+Queue: Redis Streams / RabbitMQ / SQS — доставка постбеков с ретраями.
+
+Admin UI: раздел «Интеграции → Постбеки» (список/форма/тест/логи).
+
+Интеграции: GeoIP2 (City+ASN), UA-парсер (device-detector/ua-parser).
+
+4) Поток данных (сквозная логика)
+Клик (GET /click)
+Принимаем параметры (campaign_id, offer_id, flow_id, partner_id, sub1..sub16, sub2, utm_*), генерируем clickid, пишем запись click (IP/UA/метки/привязки), редиректим 302 на LP поставщика с clickid и сабами.
+
+События на фронте (скрипт)
+Сохраняем clickid, генерируем visitor_code. Шлём /event типы:
+open, lp_click, reg(txid), deposit(amount,currency,txid), sale, lead, lp_leave(time_on_page_ms).
+
+Приём события (POST /event)
+Валидация → парс sub2 → обогащение (Geo/ASN/UA) → идемпотентность (clickid,type,txid) → запись в events → маршрутизация постбеков:
+
+внутренние профили получателей (Партнёр/Рекламодатель/Владелец) по их области,
+
+профили внешних трекеров.
+На каждого адресата — задача в очередь.
+
+Доставка (worker)
+Маппит статус (reg→lead, deposit→sale и т.п.), подставляет переменные, добавляет HMAC (если надо), отправляет (GET/POST) с ретраями и логирует попытки.
+
+5) Front: требования
+Сниппет подключается на всех LP/PWA (перед </body>).
+
+Хранение: clickid и visitor_code в cookie+localStorage.
+
+События:
+open — на первое открытие; lp_click — по CTA; reg/deposit — при факте; lp_leave — при уходе с time_on_page_ms.
+
+Параметры запроса включают sub2 как строку «свои значения» key-value|key2-value2 (URL-encode).
+
+6) API Backend
+6.1 GET /click
+Вход: campaign_id, offer_id, flow_id, partner_id?, sub1..sub10, sub2, utm_*.
+
+Действие: создать clickid (если не пришёл), сохранить клик (табл. clicks), редирект 302 на LP поставщика с clickid + сабами/UTM.
+
+Лог: IP, UA, ts.
+
+6.2 POST /event (JSON)
+Проверки:
+
+type ∈ {open,lp_click,reg,deposit,sale,lead,lp_leave}
+
+clickid обязателен
+
+sub2 ≤ 200 символов; пары через |, внутри -; URL-decoded; допустимые ключи (конфиг).
+
+Обогащение: GeoIP2 (country/region/city), ASN/ISP, признак is_proxy; UA → browser/os/device.
+
+Идемпотентность: уникальный ключ (clickid,type,coalesce(txid,'')) — повтор не писать и не слать постбек.
+
+Запись в events.
+
+Маршрут постбеков: выбрать профили по области (см. §7) → запушить задачи в очередь.
+
+7) Профили постбеков и маршрутизация
+7.1 Уровни области (от узкой к широкой)
+flow → offer → campaign → advertiser-global → owner-global.
+На выбранном самом специфичном уровне отправляем всем активным профилям (по priority), и — по настройке — можно разрешить каскад выше (по умолчанию отключен).
+
+7.2 Владелец / Рекламодатель / Партнёр
+Партнёрские профили: owner_scope=partner, scope ∈ (flow/offer/campaign/global) в пределах выданных офферов партнёру. Не видит секреты рекламодателя.
+
+Рекламодателя: owner_scope=advertiser — действуют на его кампании/офферы/потоки и его партнёров.
+
+Владельца: owner_scope=owner — глобальные системные (по политике; опционально).
+
+7.3 Шаблоны параметров (Mustache)
+Доступные переменные:
+{{clickid}}, {{campaign_id}}, {{offer_id}}, {{landing_id}}, {{flow_id}}, {{ad_campaign_id}}, {{external_id}}, {{creative_id}}, {{sub1}}..{{sub10}}, {{sub2}} (строка key-value|...), {{revenue}}, {{currency}}, {{txid}}, {{status_mapped}}, {{country_iso}}, {{region}}, {{city}}, {{device_type}}, {{os_name}}, {{browser_name}}, {{ts}}.
+
+7.4 HMAC (опц.)
+Поля профиля: hmac_enabled, hmac_secret, hmac_payload_tpl (строка-шаблон), hmac_param_name (имя параметра подписи).
+
+Подпись — SHA256 по собранной строке; добавляется в query (GET) или в body (POST).
+
+7.5 Фильтры отправки
+revenue>0 (toggle)
+
+whitelist/blacklist стран
+
+исключать ботов (is_bot / hosting ASN / headless)
+
+8) Формат sub2 (кастомные пары)
+Строка в ссылке и в событии: key-value|key2-value2|... (URL-encode).
+
+Допустимые ключи (ENV): geo,dev,src,adset,lang,tier,abtest,cohort,pp,fpr,seg (можно расширить).
+
+Лимиты: ≤ 8 пар, ≤ 200 символов итого.
+
+Хранить как sub2_raw (TEXT) и sub2_map (JSONB).
+Пример: geo-TR|dev-mobile|abtest-B → {"geo":"TR","dev":"mobile","abtest":"B"}.
+
+9) База данных (PostgreSQL — основные таблицы)
+-- пользователи/роли
+users(id, role, advertiser_id NULL) -- partner привязан к advertiser
+
+-- офферы/кампании/потоки
+offers(id, advertiser_id, ...)
+campaigns(id, advertiser_id, ...)
+flows(id, advertiser_id, ...)
+
+-- выдачи офферов партнёрам
+partner_offers(id, advertiser_id, partner_id, offer_id, status, created_at)
+
+-- клики
+CREATE TABLE clicks (
+  clickid TEXT PRIMARY KEY,
+  advertiser_id BIGINT NOT NULL,
+  partner_id BIGINT,                      -- NULL если без партнёра
+  campaign_id BIGINT, offer_id BIGINT, flow_id BIGINT,
+  site TEXT, referrer TEXT,
+  sub1 TEXT, sub2_raw TEXT, sub2_map JSONB,
+  sub3 TEXT, sub4 TEXT, sub5 TEXT, sub6 TEXT, sub7 TEXT, sub8 TEXT, sub9 TEXT, sub10 TEXT,
+  utm_source TEXT, utm_campaign TEXT,
+  ip INET, country_iso TEXT, region TEXT, city TEXT,
+  isp TEXT, operator TEXT, is_proxy BOOLEAN,
+  user_agent TEXT, browser_name TEXT, browser_version TEXT,
+  os_name TEXT, os_version TEXT, device_model TEXT, device_type TEXT, connection TEXT, lang TEXT,
+  ts TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ix_clicks_campaign_ts ON clicks(campaign_id, ts);
+CREATE INDEX ix_clicks_advertiser_ts ON clicks(advertiser_id, ts);
+CREATE INDEX ix_clicks_partner_ts ON clicks(partner_id, ts);
+CREATE INDEX ix_clicks_sub2_map ON clicks USING GIN(sub2_map);
+
+-- события
+CREATE TABLE events (
+  id BIGSERIAL PRIMARY KEY,
+  clickid TEXT REFERENCES clicks(clickid),
+  advertiser_id BIGINT NOT NULL,
+  partner_id BIGINT,
+  type TEXT NOT NULL,                      -- open/reg/deposit/sale/...
+  revenue NUMERIC(18,6), currency CHAR(3), txid TEXT,
+  time_on_page_ms INT,
+  ts TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (clickid, type, coalesce(txid,''))
+);
+CREATE INDEX ix_events_type_ts ON events(type, ts);
+
+-- профили постбеков
+CREATE TABLE postback_profiles (
+  id BIGSERIAL PRIMARY KEY,
+  owner_scope TEXT NOT NULL,               -- 'owner'|'advertiser'|'partner'
+  owner_id BIGINT NOT NULL,                -- id владельца уровня
+  scope_type TEXT NOT NULL,                -- 'global'|'campaign'|'offer'|'flow'
+  scope_id BIGINT,
+  name TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  priority INT NOT NULL DEFAULT 100,
+
+  endpoint_url TEXT NOT NULL,
+  method TEXT NOT NULL CHECK (method IN ('GET','POST')),
+  id_param TEXT NOT NULL,                  -- 'subid'|'clickid'
+  auth_query_key TEXT, auth_query_val TEXT,
+  auth_header_name TEXT, auth_header_val TEXT,
+
+  status_map JSONB NOT NULL DEFAULT '{}'::jsonb,
+  params_template JSONB NOT NULL DEFAULT '{}'::jsonb,
+  url_encode BOOLEAN NOT NULL DEFAULT TRUE,
+
+  hmac_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  hmac_secret TEXT, hmac_payload_tpl TEXT, hmac_param_name TEXT,
+
+  retries SMALLINT NOT NULL DEFAULT 5,
+  timeout_ms INT NOT NULL DEFAULT 4000,
+  backoff_base_sec INT NOT NULL DEFAULT 2,
+
+  filter_revenue_gt0 BOOLEAN NOT NULL DEFAULT FALSE,
+  filter_country_whitelist TEXT[],
+  filter_country_blacklist TEXT[],
+  filter_exclude_bots BOOLEAN NOT NULL DEFAULT TRUE,
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ix_postbacks_scope ON postback_profiles(owner_scope, owner_id, scope_type, scope_id) WHERE enabled;
+
+-- логи доставок
+CREATE TABLE postback_deliveries (
+  id BIGSERIAL PRIMARY KEY,
+  profile_id BIGINT NOT NULL REFERENCES postback_profiles(id) ON DELETE CASCADE,
+  event_id BIGINT REFERENCES events(id),
+  advertiser_id BIGINT NOT NULL,
+  partner_id BIGINT,
+  clickid TEXT NOT NULL,
+  attempt SMALLINT NOT NULL,
+  max_attempts SMALLINT NOT NULL,
+  request_method TEXT NOT NULL,
+  request_url TEXT NOT NULL,
+  request_body TEXT,
+  request_headers JSONB,
+  response_code INT, response_body TEXT, error TEXT,
+  duration_ms INT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+10) Очередь/воркер доставки
+Задача: {profile_id, event_id, payload}.
+
+Сборка запроса:
+status_mapped = profile.status_map[type] || type; подстановка переменных Mustache в params_template.
+HMAC при hmac_enabled по hmac_payload_tpl.
+
+Транспорт: GET (query) или POST (JSON). Таймаут timeout_ms.
+
+Ретраи: retries раз с backoff delay = backoff_base_sec * 2^(attempt-1) ± 20%.
+
+Лог: каждая попытка в postback_deliveries.
+
+Антидубли доставки: кэш (profile_id, clickid, status_mapped, coalesce(txid,'')) на N часов — не слать повторно при успехе.
+
+11) Admin UI: «Интеграции → Постбеки»
+Список: название, владелец профиля (роль/имя), область (flow/offer/campaign/global), метод, id-параметр, вкл/выкл, приоритет, последняя доставка (код/время), действия (Редакт/Дублировать/Тест/Логи/Вкл-Выкл/Удалить).
+
+Форма: все поля из postback_profiles (с маскированием секретов).
+Поддержка темплейтов (Mustache), примеры переменных; toggle URL-encode; HMAC секция.
+
+Тест: ввод clickid, тип/сумма/валюта/txid → показывает собранный запрос, код ответа, первые 2 КБ тела, время; логируется как тест.
+
+Логи доставок: фильтры по профилю/коду/типу; строки: время, профиль, тип, clickid, попытка, код/ошибка, «повторить».
+
+Права UI:
+
+Owner — всё.
+
+Advertiser — свои/партнёрские.
+
+Partner — только свои (без чужих секретов).
+
+12) Идемпотентность и уникальности
+События: уникальный ключ (clickid,type,txid) — дубли не пишем/не шлём.
+
+Доставка: кэш успешных (profile_id, clickid, status_mapped, txid) → не повторять.
+
+Уникальности визитов (по желанию): Redis/БД по (visitor_code) и (visitor_code, campaign_id/flow_id) — для отчётов.
+
+13) Безопасность и приватность
+Секреты (auth/hmac) хранить шифрованно (KMS/at-rest), в UI маскировать, вести аудит изменений.
+
+CORS/CSP: /event принимать только с белых доменов рекламодателя; deny-лист для рефереров.
+
+IP — тип inet (v4/v6); срок хранения по политике (например, 90 дней).
+
+Не отправлять PII в сабах/постбеках.
+
+Rate-limit на тест-отправки; защита от бурстов для /event.
+
+14) Мониторинг и алёрты
+Метрики: размер очереди, % ошибок постбеков, p95 времени ответа, доля ботов/прокси.
+
+Алерты: рост 5xx, исчерпаны ретраи, выключен критичный профиль.
+
+Логи: централизованно (ELK/CloudWatch), корреляция по clickid/event_id.
+
+15) Тест-план (E2E)
+Клик → LP: создаётся clickid, запись в clicks, редирект на LP с сабами.
+
+События: open, reg, deposit(100,USD,tx1) — в events один раз (идемпотентность).
+
+Маршрут: одно событие уходит партнёрскому и рекламодателю (и, опц., владельцу) по их профилям на нужном уровне.
+
+Трекер: Keitaro получает subid=clickid, status (mapped), payout, currency, sub1, sub2 как строку.
+
+Ретраи: при 5xx у получателя — до 5 попыток с backoff, потом успех; логи фиксируются.
+
+Права: Partner не видит секреты Advertiser; Advertiser видит логи Partner в пределах своих офферов; Owner видит всё.
+
+HMAC: при включении — подпись валидна на стороне мок-сервиса.
+
+sub2: строка geo-TR|dev-mobile|abtest-B сохраняется в raw + JSONB; работает фильтрация по ключам.
+
+Нагрузочно: выдержать целевой RPS (указать), без роста лага очереди.
+
+16) ENV/конфиг (минимум)
+DB_URL, REDIS_URL
+
+POSTBACK_MAX_RETRIES=5, POSTBACK_TIMEOUT_MS=4000, POSTBACK_BACKOFF_BASE=2
+
+ENABLE_OWNER_GLOBAL_PROFILES=true|false
+
+SUB2_ALLOWED_KEYS=geo,dev,src,adset,lang,tier,abtest,cohort,pp,fpr,seg
+
+Ключи/URL внешних трекеров (если создаём предзаданные профили) — шифровать.

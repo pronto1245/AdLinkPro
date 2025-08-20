@@ -1,0 +1,31 @@
+{
+  "timestamp": "2025-08-17T19:37:06.499Z",
+  "grade": "A-",
+  "score": "88/100",
+  "productionReady": true,
+  "criticalIssues": 1,
+  "totalIssues": 3,
+  "issues": [
+    {
+      "category": "Performance",
+      "severity": "Medium",
+      "issue": "Large JavaScript bundle: index-CzEErWKc.js (2.42MB)",
+      "recommendation": "Implement code splitting and lazy loading for routes",
+      "impact": "Slower loading on poor connections"
+    },
+    {
+      "category": "SEO",
+      "severity": "Low",
+      "issue": "Missing meta description",
+      "recommendation": "Add meta description for better SEO",
+      "impact": "Search engines may not display good snippets"
+    },
+    {
+      "category": "Security",
+      "severity": "High",
+      "issue": "Development secrets in environment file",
+      "recommendation": "Use production secrets for deployment",
+      "impact": "Security vulnerability if deployed to production"
+    }
+  ]
+}

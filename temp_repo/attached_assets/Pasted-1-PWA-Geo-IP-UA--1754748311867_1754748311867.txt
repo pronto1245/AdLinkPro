@@ -1,0 +1,131 @@
+1) Цель
+Фиксировать клики и события PWA/лендингов.
+
+Обогащать визиты (Geo/IP/UA), считать уникальности.
+
+Передавать события в трекер S2S-постбеками с ретраями и логами.
+
+Поддержать «свои значения» в sub2 (формат key-value|key2-value2).
+
+2) Роли и доступ
+Owner/Admin — полный доступ.
+
+рекламодатель — управляет своими партнерами/кампаниями/офферами/потоками и постбеками в рамках своих сущностей.
+партнер -управляет своими кампаниями/офферами/потоками и постбеками в рамках 
+3) Архитектура
+Front (лендинги/PWA): сбор клика/событий и отправка на 1st-party эндпоинт /event.
+
+Track Backend: сервис с эндпоинтами /click, /event, обогащением, БД, очередью и доставкой постбеков.
+
+DB: PostgreSQL.
+
+Queue/Worker: Redis Streams/RabbitMQ/SQS — отправка постбеков с ретраями.
+
+Admin UI: раздел «Интеграции → Постбеки» (создание/тест/логи).
+
+4) Поток данных (логика)
+Клик по смарт-ссылке
+
+URL: https://trk.domain.com/click?campaign_id=...&offer_id=...&flow_id=...&sub1=...&sub2=geo-TR|dev-mobile|abtest-B&utm_source=...
+
+Бэк генерирует clickid (UUID) → пишет click (сырые метки, IP, UA) → делает 302-редирект на LP поставщика, добавив clickid и сабы/utm.
+
+События на фронте
+Скрипт на лендинге:
+
+Сохраняет clickid и visitor_code (UUID) в cookie+localStorage.
+
+Отправляет open, lp_click, reg(txid), deposit(amount,currency,txid), lp_leave(time_on_page_ms) на /event.
+
+Приём /event на бэке
+
+Валидация полей; парс sub2 в JSON-карту.
+
+Обогащение: GeoIP/ASN/Proxy, UA→OS/Browser/Device, время.
+
+Запись в events.
+
+Маппинг статуса под трекер (напр. reg→lead, deposit→sale).
+
+Постановка задачи в очередь доставки постбека (с профилем по области).
+
+Worker доставки
+
+Формирует запрос (GET/POST), подставляет переменные, HMAC-подпись (если включена).
+
+Таймаут, ретраии по backoff.
+
+Логирует каждую попытку в postback_deliveries.
+
+5) Front: требования и вставка скрипта
+На всех LP/PWA подключить сниппет (до </body>).
+
+Обязательные события: open (при первом открытии), lp_leave (при уходе), lp_click (по клику на CTA), reg, deposit.
+
+Пример (сокр.):
+
+<script>
+(function(){
+  const u=new URL(location.href), get=k=>u.searchParams.get(k);
+  const cid=get('clickid')||localStorage.getItem('clickid'); if(cid) localStorage.setItem('clickid',cid);
+  const visitor=localStorage.getItem('visitor_code')||crypto.randomUUID(); localStorage.setItem('visitor_code',visitor);
+  const base={ clickid:cid, visitor_code:visitor, campaign_id:get('campaign_id'), source_id:get('source_id'),
+               flow_id:get('flow_id'), offer_id:get('offer_id'), landing_id:get('landing_id'),
+               ad_campaign_id:get('ad_campaign_id'), external_id:get('external_id'), creative_id:get('creative_id'),
+               sub1:get('sub1'), sub2:get('sub2'), sub3:get('sub3'), sub4:get('sub4'), sub5:get('sub5'),
+               sub6:get('sub6'), sub7:get('sub7'), sub8:get('sub8'), sub9:get('sub9'), sub10:get('sub10'),
+               site:location.hostname, referrer:document.referrer||null };
+  const started=performance.now();
+  const meta=()=>({ user_agent:navigator.userAgent, lang:navigator.language,
+    tz:Intl.DateTimeFormat().resolvedOptions().timeZone||null, screen:`${screen.width}x${screen.height}`,
+    connection:navigator.connection?.effectiveType||null, device_type:/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)?'mobile':'desktop', ts_client:Date.now() });
+  async function send(type,extra={}){ const p={type,...base,...meta(),...extra};
+    try{ await (navigator.sendBeacon&&navigator.sendBeacon('/event',new Blob([JSON.stringify(p)],{type:'application/json'}))) ||
+      fetch('/event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p),keepalive:true}); }catch(e){}}
+  send('open'); window.trackLpClick=()=>send('lp_click');
+  window.trackReg=txid=>send('reg',{txid});
+  window.trackDeposit=(amt,c='USD',txid)=>send('deposit',{revenue_deposit:amt,currency:c,txid});
+  addEventListener('beforeunload',()=>send('lp_leave',{time_on_page_ms:Math.round(performance.now()-started)}));
+})();
+</script>
+6) API бэка
+6.1 GET /click
+Генерирует clickid (если не передан).
+
+Пишет запись в clicks.
+
+302 на LP поставщика с добавлением clickid, sub1..sub10, utm_*.
+
+Логи: IP, UA, ts.
+
+6.2 POST /event (JSON)
+Валидация:
+
+type ∈ {open, lp_click, reg, deposit, sale, lead, lp_leave}
+
+clickid обязателен
+
+sub2 ≤ 200 символов; пары key-value, разделитель |, внутри -; URL-decoded
+
+Обогащение:
+
+IP: x-forwarded-for → GeoIP2 country/region/city, ASN/ISP, is_proxy
+
+UA: browser_name/version, os_name/version, device_model, device_type
+
+Время: ts_server=now()
+
+Идемпотентность:
+
+Ключ события: (clickid, type, coalesce(txid,'-'))
+
+Повтор по тому же ключу → не записывать второй раз и не слать постбек.
+
+Запись в events.
+
+Маппинг статуса и постановка задачи на доставку постбека (если профиль активен и фильтры прошли).
+
+7) Sub2 — «свои значения»
+Формат строки: key-value|key2-value2|... (URL-encode на фронте, decode на бэке).
+
+Конфиг допустимых ключей (ENV): SUB2_ALLOWED_KEYS=geo,dev,src,adset,lang,tier,abtest,c...

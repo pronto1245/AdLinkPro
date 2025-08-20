@@ -1,0 +1,71 @@
+        {/* SECURITY TAB */}
+        <TabsContent value="security" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Безопасность</h2>
+          </div>
+
+          {/* Смена пароля */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Сменить пароль</CardTitle>
+              <CardDescription>
+                Мы рекомендуем использовать уникальный и сложный пароль
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="currentPassword">Текущий пароль</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    value={newPassword.current}
+                    onChange={(e) => setNewPassword(prev => ({ ...prev, current: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="newPassword">Новый пароль</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword.new}
+                    onChange={(e) => setNewPassword(prev => ({ ...prev, new: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirmPassword">Повторите пароль</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={newPassword.confirm}
+                    onChange={(e) => setNewPassword(prev => ({ ...prev, confirm: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <Button onClick={handlePasswordChange}>
+                Обновить пароль
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Статус 2FA */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Двухфакторная аутентификация (2FA)</CardTitle>
+              <CardDescription>
+                Ваша безопасность важна. Мы рекомендуем включить 2FA.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Статус: <strong>{formData?.twoFactorEnabled ? 'Включена' : 'Отключена'}</strong>
+                </p>
+              </div>
+              <Button variant="outline" disabled>
+                {formData?.twoFactorEnabled ? 'Отключить 2FA' : 'Включить 2FA'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>

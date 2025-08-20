@@ -1,0 +1,8 @@
+{
+  "balance": 1000.00,
+  "pending": 250.00,
+  "payouts": [
+    { "id": "p-1003", "amount": 200.00, "status": "paid",   "date": "2025-07-30" },
+    { "id": "p-1004", "amount": 150.00, "status": "pending","date": "2025-08-15" }
+  ]
+}

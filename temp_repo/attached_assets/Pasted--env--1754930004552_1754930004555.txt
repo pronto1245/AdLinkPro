@@ -1,0 +1,111 @@
+Окей, значит валится всё ещё на жёсткой проверке env где-то в сборке/стартовом коде. Вот быстрый чек-лист, который почти всегда снимает такую ошибку.
+
+Почему это происходит чаще всего
+Проверка env идёт на этапе build, а переменные заданы только на runtime.
+
+Переменные заданы в неверном контексте (Preview вместо Production / не для Edge-функций).
+
+Есть второй валидатор (скрипт/конфиг), о котором мы не знали.
+
+Кэш билда — деплой берёт старый код.
+
+В контейнер/под не пробрасываются переменные.
+
+Починим по шагам (сделай все пункты)
+1) Убедись, что переменные заданы именно там, где их читает билд
+Netlify (скорее всего у тебя он):
+Site settings → Build & deploy → Environment variables (Production).
+Если используешь Edge Functions — продублируй их в: Site settings → Functions → Edge environment variables.
+Потом нажми “Clear cache and deploy site”.
+
+Vercel: Project → Settings → Environment Variables → Production scope → Redeploy (Skip build cache).
+
+Docker/K8s: проверь environment:/envFrom:. Убедись, что контейнер их видит: docker exec env / kubectl exec -- printenv.
+
+2) Сдвинь валидацию с build на runtime
+Проверь, что нигде в конфигурации (например, next.config.js, vite.config.ts, serverless.ts, scripts/check-config.*) не вызывается загрузка/валидация env.
+
+Ищи по проекту и убери жёсткость:
+
+perl
+Copy
+Edit
+grep -R "JWT_SECRET must" -n
+grep -R "process.exit(" -n
+grep -R "SENDGRID_API_KEY" -n
+grep -R "envalid\\|zod\\|joi" -n
+Правильный вариант — валидация в runtime и только JWT_SECRET обязателен в проде:
+
+ts
+Copy
+Edit
+// src/config/env.ts
+import 'dotenv/config';
+const requiredProd = ['JWT_SECRET'];
+const missing = requiredProd.filter(k => !process.env[k]?.trim());
+if (process.env.NODE_ENV === 'production' && missing.length) {
+  console.error('[ENV] Missing required prod vars:', missing.join(', '));
+  process.exit(1);
+}
+// остальное — только варнинги
+['SENDGRID_API_KEY','VOLUUM_TOKEN','KEITARO_TOKEN','BINOM_TOKEN','REDTRACK_TOKEN',
+ 'GOOGLE_PROJECT_ID','GOOGLE_CLOUD_REGION','GCS_BUCKET',
+ 'GOOGLE_APPLICATION_CREDENTIALS','GOOGLE_CLOUD_CREDENTIALS_JSON'
+].forEach(k => !process.env[k] && console.warn('[ENV] Optional:', k,'not set'));
+export const env = { NODE_ENV: process.env.NODE_ENV ?? 'production',
+  PORT: Number(process.env.PORT ?? 3000), JWT_SECRET: process.env.JWT_SECRET! };
+Важно: не импортируй этот модуль в файлах, которые выполняются на этапе build (напр. конфиг сборщика). Импортируй только в серверном runtime.
+
+3) Проверь, нет ли второго «стоп-крана»
+Часто падает тут:
+
+package.json → scripts: prebuild / build / postinstall вызывает node scripts/validate-env.js.
+→ Убери падение там (оставь warning).
+
+server.ts/main.ts вызывает validateEnv() до поднятия сервера. Это норм, если он «мягкий» как выше.
+
+next.config.js / nuxt.config тянет process.env.JWT_SECRET в момент сборки → убрать, оставить только NEXT_PUBLIC_* на клиент.
+
+4) Сбрось кэш билда и деплоя
+Netlify: Clear cache and deploy site.
+
+Vercel: Redeploy → Skip build cache.
+
+5) Подтверди, что минимум действительно задан
+В проде обязательно должны быть:
+
+ini
+Copy
+Edit
+NODE_ENV=production
+PORT=3000
+JWT_SECRET=<32+ симв.>
+Секрет можно сгенерить:
+
+bash
+Copy
+Edit
+openssl rand -base64 48
+# или
+node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"
+6) Не давай коду падать из-за опциональных сервисов
+В местах интеграций сделай «ленивые» заглушки:
+
+Нет SENDGRID_API_KEY → лог + skip отправки, но без throw в проде.
+
+Нет токенов Voluum/Keitaro/Binom/RedTrack → лог + skip, без падения.
+
+Нет GCP → не инициализируй клиент до тех пор, пока фича не включена.
+
+7) (Если k8s) убери crash-loop шум
+Добавь /livez и /healthz, включи readinessProbe/livenessProbe и ставь ready после инициализации.
+
+Быстрый тест, что всё ок
+В самый верх server.ts перед стартом добавь (временный) лог без секретов:
+
+ts
+Copy
+Edit
+console.log('[BOOT] NODE_ENV=%s PORT=%s JWT?%s',
+  process.env.NODE_ENV, process.env.PORT, process.env.JWT_SECRET ? 'yes':'no');
+Если в логах JWT?no — переменная не попадает на билд/рантайм в твоей платформе → вернись к шагу 1.

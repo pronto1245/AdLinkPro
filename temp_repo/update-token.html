@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Обновление токена</title>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; text-align: center; }
+        .token-info { 
+            margin: 20px 0; 
+            padding: 15px; 
+            background: #f8f9fa; 
+            border-radius: 5px;
+            font-family: monospace; 
+            word-break: break-all;
+            border-left: 4px solid #007bff;
+        }
+        .button { 
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 12px 24px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+        }
+        .button:hover { background: #0056b3; }
+        .status { text-align: center; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Обновление токена</h1>
+        <p>Для работы партнерской аналитики нужно обновить токен аутентификации:</p>
+        
+        <div id="current-token" class="token-info"></div>
+        
+        <button onclick="updateToken()" class="button">Обновить токен</button>
+        
+        <div id="status" class="status"></div>
+        
+        <p style="text-align: center; margin-top: 30px; color: #666;">
+            После обновления вы будете перенаправлены на страницу статистики
+        </p>
+    </div>
+    
+    <script>
+        function updateToken() {
+            const newToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA0YjA2Yzg3LWM2Y2YtNDQwOS1hZjY0LTNlMDViZjZjOWM3YyIsInVzZXJuYW1lIjoidGVzdF9hZmZpbGlhdGUiLCJyb2xlIjoiYWZmaWxpYXRlIiwiYWR2ZXJ0aXNlcklkIjpudWxsLCJpYXQiOjE3NTQ3NjQ0MDcsImV4cCI6MTc1NDg1MDgwN30.6Qt4VWftu7iQLnDtCzolxMDcmLDefrf4HEsPeXFK_xg';
+            
+            // Очищаем старый токен
+            localStorage.removeItem('token');
+            
+            // Устанавливаем новый токен
+            localStorage.setItem('token', newToken);
+            
+            document.getElementById('status').innerHTML = '<span style="color: green;">✓ Токен обновлен успешно! Перенаправление...</span>';
+            
+            // Принудительная очистка кеша
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                    });
+                });
+            }
+            
+            setTimeout(() => {
+                window.location.href = '/affiliate/statistics';
+            }, 1000);
+        }
+        
+        // Автоматически показываем текущий токен для диагностики
+        window.onload = function() {
+            const currentToken = localStorage.getItem('token');
+            if (currentToken) {
+                document.getElementById('current-token').innerHTML = 
+                    '<strong>Текущий токен:</strong> ' + currentToken.substring(0, 50) + '...';
+            } else {
+                document.getElementById('current-token').innerHTML = '<strong>Токен не найден</strong>';
+            }
+        }
+    </script>
+</body>
+</html>

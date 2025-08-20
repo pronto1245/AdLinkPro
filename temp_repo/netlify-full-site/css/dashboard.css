@@ -1,0 +1,329 @@
+/* Dashboard Specific Styles */
+
+/* Add CSS animations */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Partner status variations */
+.partner-status.pending {
+  background: rgba(251, 191, 36, 0.1);
+  color: var(--warning-color);
+}
+
+/* Additional form styling */
+.form-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Enhanced table styling */
+.offers-table .offer-checkbox {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.offers-table th:first-child,
+.offers-table td:first-child {
+  width: 40px;
+  text-align: center;
+}
+
+/* Enhanced modal styling */
+.modal-content {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Notification styles */
+.notification {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--success-color);
+  border-left: 4px solid var(--success-color);
+}
+
+/* Responsive improvements */
+@media (max-width: 640px) {
+  .modal-content {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions .btn {
+    width: 100%;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .nav-links {
+    display: none;
+  }
+  
+  .nav-links.mobile-open {
+    display: flex;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .mobile-menu-toggle {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+}
+
+@media (min-width: 641px) {
+  .mobile-menu-toggle {
+    display: none;
+  }
+}
+
+/* Loading and success states */
+.success-message {
+  padding: 1rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--success-color);
+  border-radius: 8px;
+  color: var(--success-color);
+  margin: 1rem 0;
+}
+
+.error-message {
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--error-color);
+  border-radius: 8px;
+  color: var(--error-color);
+  margin: 1rem 0;
+}
+
+/* Enhanced chart styles */
+.chart-container canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Improved activity styling */
+.activity-item {
+  animation: slideInLeft 0.3s ease;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Enhanced button hover effects */
+.btn:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Improved status badges */
+.status-badge {
+  font-variant: all-small-caps;
+  letter-spacing: 0.5px;
+}
+
+/* Better form focus states */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+/* Enhanced table hover effects */
+.offers-table tr:hover {
+  background: var(--bg-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Improved card hover animations */
+.stat-card,
+.chart-card,
+.activity-card,
+.partner-card,
+.analytics-card {
+  transition: all 0.3s ease;
+}
+
+/* Better scrollbar styling */
+.activity-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.activity-list::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 3px;
+}
+
+.activity-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.activity-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Enhanced filter panel */
+.filters-panel {
+  backdrop-filter: blur(10px);
+}
+
+/* Improved bulk actions animation */
+.bulk-actions {
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--accent-color);
+}
+
+/* Better modal animations */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(5px);
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: scale(0.9) translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-overlay.active {
+  animation: modalFadeIn 0.3s ease forwards;
+}
+
+.modal-overlay.active .modal-content {
+  animation: modalSlideIn 0.3s ease forwards;
+}
+
+/* Print styles */
+@media print {
+  .navbar,
+  .header-actions,
+  .action-buttons,
+  .bulk-actions {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-top: 0;
+  }
+  
+  .section {
+    display: block !important;
+  }
+  
+  .page-header h1 {
+    border-bottom: 2px solid #000;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* Accessibility improvements */
+.btn:focus,
+.user-avatar:focus,
+.offer-checkbox:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border-color: #000;
+    --text-muted: #333;
+  }
+  
+  [data-theme="dark"] {
+    --border-color: #fff;
+    --text-muted: #ccc;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .stat-card:hover,
+  .chart-card:hover,
+  .partner-card:hover {
+    transform: none;
+  }
+}
+
+/* Color scheme support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1a202c;
+    --bg-secondary: #2d3748;
+    --bg-accent: #4a5568;
+    --text-primary: #f7fafc;
+    --text-secondary: #e2e8f0;
+    --text-muted: #a0aec0;
+    --border-color: #4a5568;
+  }
+}

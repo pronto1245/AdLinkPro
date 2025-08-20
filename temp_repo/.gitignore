@@ -1,0 +1,53 @@
+node_modules/
+client/node_modules/
+server/node_modules/
+client/dist/
+server/dist/
+dist/
+build/
+uploads/
+.env
+.env.*
+google.key.json
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Temp files and demos
+sidebar-integration-demo.html
+
+# Test files
+client/src/test-*.js
+client/src/test-*.ts
+
+# Local Netlify folder
+.netlify
+AdLinkPro/
+
+# Test files and temporary files
+*.tmp
+*.temp
+/tmp/
+test-output/
+dist/
+client/dist/
+website-design/
+
+# large local archives
+adlinkpro-audit.zip
+adlinkpro-audit-split.z01
+adlinkpro-audit-split.z02
+adlinkpro-audit-split.zip
+
+# large local archives
+adlinkpro-audit.zip
+adlinkpro-audit-split.z01
+adlinkpro-audit-split.z02
+adlinkpro-audit-split.zip
+
+# Development files
+.env
+test-password-recovery-manual.mjs
+PASSWORD_RECOVERY_TESTING.md

@@ -1,0 +1,107 @@
+        {/* DOMAIN TAB */}
+        <TabsContent value="domain" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Кастомный домен</h2>
+          </div>
+
+          {/* Форма добавления домена */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Подключение кастомного домена</CardTitle>
+              <CardDescription>
+                Используйте собственный домен для генерации партнёрских ссылок
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <Label htmlFor="customDomain">Домен</Label>
+                  <Input
+                    id="customDomain"
+                    value={domainForm.domain}
+                    onChange={(e) => setDomainForm(prev => ({ ...prev, domain: e.target.value }))}
+                    placeholder="example.com"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="domainType">Тип записи</Label>
+                  <Select
+                    value={domainForm.type}
+                    onValueChange={(value: 'cname' | 'a_record') => setDomainForm(prev => ({ ...prev, type: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cname">CNAME</SelectItem>
+                      <SelectItem value="a_record">A Record</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Button onClick={handleDomainAdd}>
+                Добавить домен
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Список подключённых доменов */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Подключенные домены</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {domainsLoading ? (
+                  <div>Загрузка доменов...</div>
+                ) : customDomains && customDomains.length > 0 ? (
+                  customDomains.map(domain => (
+                    <div key={domain.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-3">
+                          <div className="font-medium">{domain.domain}</div>
+                          {getStatusBadge(domain.status)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Добавлен: {new Date(domain.createdAt).toLocaleDateString()}
+                          {domain.lastChecked && ` • Проверка: ${new Date(domain.lastChecked).toLocaleDateString()}`}
+                        </div>
+
+                        {domain.status === 'pending' && (
+                          <div className="text-sm mt-1">
+                            <div className="font-medium">DNS-инструкция:</div>
+                            <div>Создайте {domain.type === 'cname' ? 'CNAME' : 'A'} запись:</div>
+                            <div className="font-mono bg-muted p-2 rounded mt-1">
+                              {domain.type === 'cname'
+                                ? `${domain.domain} CNAME ${domain.verificationValue}`
+                                : `${domain.domain} A ${domain.verificationValue}`}
+                            </div>
+                          </div>
+                        )}
+
+                        {domain.status === 'error' && domain.errorMessage && (
+                          <div className="text-sm text-red-600">
+                            Ошибка: {domain.errorMessage}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Button size="sm" variant="outline" onClick={() => verifyDomainMutation.mutate(domain.id)}>
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => deleteDomainMutation.mutate(domain.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    У вас пока нет подключённых доменов
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>

@@ -1,0 +1,170 @@
+СКОПИРУЙТЕ ЭТОТ ТЕКСТ И СОХРАНИТЕ КАК index.html
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiliate Marketing Platform - Готово к деплою</title>
+    <meta name="description" content="Профессиональная платформа для партнерского маркетинга с Object Storage и Netlify интеграцией">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon">🚀</span>
+                <span class="brand-text">Affiliate Pro</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Возможности</a>
+                <a href="#demo">Демо</a>
+                <a href="#contact">Контакты</a>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">Мощная платформа для партнерского маркетинга</h1>
+                <p class="hero-subtitle">Полная интеграция с Object Storage, реальная база данных PostgreSQL, и готовность к деплою на Netlify</p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" data-target="99.9">0</span>
+                        <span class="stat-label">% Аптайм</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-target="1000">0</span>
+                        <span class="stat-label">+ Офферов</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-target="50">0</span>
+                        <span class="stat-label">+ Партнеров</span>
+                    </div>
+                </div>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="showDemo()">Демо платформы</button>
+                    <button class="btn btn-secondary" onclick="showTech()">Технологии</button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="hero-card">
+                    <div class="card-header">
+                        <span class="status-dot status-green"></span>
+                        <span>Система активна</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="metric">
+                            <span class="metric-label">Object Storage</span>
+                            <span class="metric-value">Подключен</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">PostgreSQL</span>
+                            <span class="metric-value">Работает</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">JWT Auth</span>
+                            <span class="metric-value">Активен</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Ключевые возможности</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Реальная аналитика</h3>
+                    <p>Живые данные из PostgreSQL, без моков и демо-данных</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>JWT авторизация</h3>
+                    <p>Безопасная система ролей: супер-админ, рекламодатель, партнер</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📁</div>
+                    <h3>Object Storage</h3>
+                    <p>Интеграция с Google Cloud Storage для загрузки файлов</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Готов к деплою</h3>
+                    <p>Netlify, Railway, Vercel - развертывание одной кнопкой</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Высокая производительность</h3>
+                    <p>React Query, кэширование, оптимизация запросов</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Real-time обновления</h3>
+                    <p>WebSocket уведомления и живая синхронизация данных</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="demo" class="demo">
+        <div class="container">
+            <h2 class="section-title">Техническая архитектура</h2>
+            <div class="demo-content">
+                <div class="tech-stack">
+                    <div class="tech-category">
+                        <h3>Frontend</h3>
+                        <ul>
+                            <li>React 18 + TypeScript</li>
+                            <li>Shadcn/ui + Tailwind CSS</li>
+                            <li>React Query для состояния</li>
+                            <li>Wouter для роутинга</li>
+                        </ul>
+                    </div>
+                    <div class="tech-category">
+                        <h3>Backend</h3>
+                        <ul>
+                            <li>Node.js + Express</li>
+                            <li>Drizzle ORM + PostgreSQL</li>
+                            <li>JWT + bcrypt авторизация</li>
+                            <li>WebSocket для real-time</li>
+                        </ul>
+                    </div>
+                    <div class="tech-category">
+                        <h3>Инфраструктура</h3>
+                        <ul>
+                            <li>Google Cloud Storage</li>
+                            <li>Neon Database</li>
+                            <li>Telegram бот интеграция</li>
+                            <li>SSL сертификаты</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="brand-icon">🚀</span>
+                    <span class="brand-text">Affiliate Pro</span>
+                </div>
+                <div class="footer-info">
+                    <p>Развернуто с Object Storage → Netlify</p>
+                    <p>Bucket: replit-objstore-6b899733-6fa6-40a7-a433-b8bbe153777d</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

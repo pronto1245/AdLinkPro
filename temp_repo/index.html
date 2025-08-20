@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiliate Pro - Платформа партнерского маркетинга</title>
+    <meta name="description" content="Профессиональная платформа для управления партнерскими программами и офферами">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #64748b;
+            --bg-main: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --border-color: #334155;
+            --primary-color: #3b82f6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-left: auto;
+            margin-right: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--primary-color);
+            background: var(--bg-secondary);
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem;
+            min-width: 180px;
+            box-shadow: var(--shadow-lg);
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .dropdown-item:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .main-content {
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+            padding: 2rem;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            margin-left: auto;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+
+        .stat-change.positive {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .stat-change.negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .table tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-paused {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .status-archived {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--text-muted);
+        }
+
+        .filters-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .form-input {
+            padding: 0.625rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-select {
+            padding: 0.625rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1rem;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 1rem;
+            background: var(--success-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            box-shadow: var(--shadow-lg);
+            z-index: 3000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-row {
+                flex-direction: column;
+            }
+        }
+
+        /* Modal styles enhancements */
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .modal-footer .btn {
+            min-width: 80px;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .close-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        /* Button functionality fixes */
+        .btn, button, [onclick] {
+            cursor: pointer !important;
+            pointer-events: auto !important;
+        }
+
+        .btn:disabled, button:disabled {
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+            opacity: 0.6;
+        }
+
+        /* Ensure dropdown shows correctly */
+        .user-dropdown.show {
+            display: block !important;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span>🚀</span>
+            <span>Affiliate Pro</span>
+        </div>
+        <div class="nav-links">
+            <a href="#" class="nav-link active" onclick="showSection('dashboard')">Дашборд</a>
+            <a href="#" class="nav-link" onclick="showSection('offers')">Офферы</a>
+            <a href="#" class="nav-link" onclick="showSection('partners')">Партнеры</a>
+            <a href="#" class="nav-link" onclick="showSection('analytics')">Аналитика</a>
+            <a href="#" class="nav-link" onclick="showSection('settings')">Настройки</a>
+        </div>
+        <div class="user-menu">
+            <button class="user-avatar" onclick="toggleUserMenu()">A</button>
+            <div class="user-dropdown" id="userDropdown">
+                <button class="dropdown-item" onclick="showProfile()">Профиль</button>
+                <button class="dropdown-item" onclick="toggleTheme()">Тема</button>
+                <button class="dropdown-item" onclick="logout()">Выход</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="main-content">
+        <!-- Дашборд -->
+        <section id="dashboard" class="section active">
+            <div class="page-header">
+                <h1 class="page-title">Дашборд</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showCreateOfferModal()">
+                        <span>+</span>
+                        Создать оффер
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="totalClicks">0</div>
+                        <div class="stat-label">Всего кликов</div>
+                        <div class="stat-change positive">+15.2%</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="totalRevenue">$0</div>
+                        <div class="stat-label">Доход</div>
+                        <div class="stat-change positive">+8.4%</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="totalConversions">0</div>
+                        <div class="stat-label">Конверсии</div>
+                        <div class="stat-change negative">-2.1%</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="conversionRate">0%</div>
+                        <div class="stat-label">CR</div>
+                        <div class="stat-change positive">+1.3%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Статистика трафика</h3>
+                </div>
+                <div class="card-content">
+                    <div class="chart-container">
+                        <canvas id="trafficChart" width="800" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Офферы -->
+        <section id="offers" class="section">
+            <div class="page-header">
+                <h1 class="page-title">Управление офферами</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="exportOffers()">Экспорт</button>
+                    <button class="btn btn-primary" onclick="showCreateOfferModal()">
+                        <span>+</span>
+                        Создать оффер
+                    </button>
+                </div>
+            </div>
+
+            <div class="filters-row">
+                <input type="text" class="form-input" placeholder="Поиск офферов..." id="offerSearch" style="flex: 1;">
+                <select class="form-select" id="statusFilter">
+                    <option value="">Все статусы</option>
+                    <option value="active">Активные</option>
+                    <option value="paused">Приостановленные</option>
+                    <option value="archived">Архивированные</option>
+                </select>
+                <select class="form-select" id="categoryFilter">
+                    <option value="">Все категории</option>
+                    <option value="dating">Знакомства</option>
+                    <option value="gambling">Гемблинг</option>
+                    <option value="finance">Финансы</option>
+                    <option value="health">Здоровье</option>
+                </select>
+            </div>
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Название</th>
+                            <th>Категория</th>
+                            <th>Выплата</th>
+                            <th>CR</th>
+                            <th>Клики</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="offersTable">
+                        <!-- Будет заполнено JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Партнеры -->
+        <section id="partners" class="section">
+            <div class="page-header">
+                <h1 class="page-title">Партнеры</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showAddPartnerModal()">
+                        <span>+</span>
+                        Добавить партнера
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Партнер</th>
+                            <th>Email</th>
+                            <th>Статус</th>
+                            <th>Доход</th>
+                            <th>Регистрация</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="partnersTable">
+                        <!-- Будет заполнено JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Аналитика -->
+        <section id="analytics" class="section">
+            <div class="page-header">
+                <h1 class="page-title">Аналитика</h1>
+                <div class="header-actions">
+                    <select class="form-select">
+                        <option>Последние 7 дней</option>
+                        <option>Последние 30 дней</option>
+                        <option>Последние 90 дней</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <div class="stat-number">142</div>
+                        <div class="stat-label">Активных партнеров</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-content">
+                        <div class="stat-number">28</div>
+                        <div class="stat-label">Активных офферов</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💎</div>
+                    <div class="stat-content">
+                        <div class="stat-number">$2,847</div>
+                        <div class="stat-label">Средний доход</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📍</div>
+                    <div class="stat-content">
+                        <div class="stat-number">23</div>
+                        <div class="stat-label">Стран</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Доходы по странам</h3>
+                </div>
+                <div class="card-content">
+                    <div class="chart-container">
+                        <canvas id="countriesChart" width="800" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Настройки -->
+        <section id="settings" class="section">
+            <div class="page-header">
+                <h1 class="page-title">Настройки</h1>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Общие настройки</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label class="form-label">Название компании</label>
+                            <input type="text" class="form-input" value="Affiliate Pro" style="width: 100%;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Часовой пояс</label>
+                            <select class="form-select" style="width: 100%;">
+                                <option>UTC+3 (Москва)</option>
+                                <option>UTC+0 (Лондон)</option>
+                                <option>UTC-5 (Нью-Йорк)</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary">Сохранить</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Интеграции</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label class="form-label">Telegram Bot Token</label>
+                            <input type="password" class="form-input" placeholder="Введите токен..." style="width: 100%;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">API ключ для трекинга</label>
+                            <input type="password" class="form-input" placeholder="Введите API ключ..." style="width: 100%;">
+                        </div>
+                        <button class="btn btn-primary">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Модальное окно создания оффера -->
+    <div class="modal" id="createOfferModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Создать новый оффер</h3>
+                <button class="close-btn" onclick="closeModal('createOfferModal')">&times;</button>
+            </div>
+            <form id="createOfferForm">
+                <div class="form-group">
+                    <label class="form-label">Название оффера</label>
+                    <input type="text" class="form-input" name="name" required style="width: 100%;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Категория</label>
+                    <select class="form-select" name="category" required style="width: 100%;">
+                        <option value="">Выберите категорию</option>
+                        <option value="dating">Знакомства</option>
+                        <option value="gambling">Гемблинг</option>
+                        <option value="finance">Финансы</option>
+                        <option value="health">Здоровье</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Выплата ($)</label>
+                    <input type="number" class="form-input" name="payout" required style="width: 100%;" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">URL оффера</label>
+                    <input type="url" class="form-input" name="url" required style="width: 100%;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Описание</label>
+                    <textarea class="form-input" name="description" rows="3" style="width: 100%; resize: vertical;"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('createOfferModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Создать оффер</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Глобальное состояние приложения
+        let currentSection = 'dashboard';
+        let currentTheme = localStorage.getItem('theme') || 'light';
+        
+        // Данные приложения
+        let offers = [
+            {
+                id: 1,
+                name: 'Dating App Premium',
+                category: 'dating',
+                payout: 25.50,
+                cr: 2.3,
+                clicks: 1247,
+                status: 'active',
+                url: 'https://example.com/dating',
+                description: 'Премиум приложение для знакомств'
+            },
+            {
+                id: 2,
+                name: 'Casino Welcome Bonus',
+                category: 'gambling',
+                payout: 150.00,
+                cr: 1.8,
+                clicks: 892,
+                status: 'active',
+                url: 'https://example.com/casino',
+                description: 'Бонус за регистрацию в казино'
+            },
+            {
+                id: 3,
+                name: 'Crypto Trading Platform',
+                category: 'finance',
+                payout: 75.00,
+                cr: 3.2,
+                clicks: 654,
+                status: 'paused',
+                url: 'https://example.com/crypto',
+                description: 'Платформа для торговли криптовалютой'
+            }
+        ];
+
+        let partners = [
+            {
+                id: 1,
+                name: 'John Smith',
+                email: 'john@example.com',
+                status: 'active',
+                revenue: 2847,
+                joined: '2024-01-15'
+            },
+            {
+                id: 2,
+                name: 'Maria Garcia',
+                email: 'maria@example.com',
+                status: 'active',
+                revenue: 1923,
+                joined: '2024-02-20'
+            },
+            {
+                id: 3,
+                name: 'Alex Johnson',
+                email: 'alex@example.com',
+                status: 'pending',
+                revenue: 0,
+                joined: '2024-08-10'
+            }
+        ];
+
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            initEventListeners();
+            updateDashboardStats();
+            renderOffers();
+            renderPartners();
+            initCharts();
+        });
+
+        // Управление темой
+        function initTheme() {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+        }
+
+        function toggleTheme() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('theme', currentTheme);
+            showNotification('Тема изменена на ' + (currentTheme === 'dark' ? 'темную' : 'светлую'));
+        }
+
+        // Навигация
+        function showSection(sectionName) {
+            // Скрыть все секции
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Показать выбранную секцию
+            const targetSection = document.getElementById(sectionName);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+
+            // Обновить навигацию
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+            const activeLink = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+
+            currentSection = sectionName;
+        }
+
+        // Пользовательское меню
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Закрыть выпадающие меню при клике вне их
+        document.addEventListener('click', function(event) {
+            const userMenu = document.querySelector('.user-menu');
+            if (!userMenu.contains(event.target)) {
+                document.getElementById('userDropdown').classList.remove('show');
+            }
+        });
+
+        // Обновление статистики дашборда
+        function updateDashboardStats() {
+            const totalClicks = offers.reduce((sum, offer) => sum + offer.clicks, 0);
+            const totalRevenue = offers.reduce((sum, offer) => sum + (offer.payout * offer.clicks * offer.cr / 100), 0);
+            const totalConversions = offers.reduce((sum, offer) => sum + Math.floor(offer.clicks * offer.cr / 100), 0);
+            const avgCR = totalClicks > 0 ? ((totalConversions / totalClicks) * 100) : 0;
+
+            animateNumber('totalClicks', totalClicks);
+            animateNumber('totalRevenue', totalRevenue, '$');
+            animateNumber('totalConversions', totalConversions);
+            animateNumber('conversionRate', avgCR, '', '%');
+        }
+
+        function animateNumber(elementId, targetValue, prefix = '', suffix = '') {
+            const element = document.getElementById(elementId);
+            let startValue = 0;
+            const duration = 1000;
+            const startTime = performance.now();
+
+            function updateNumber(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const currentValue = startValue + (targetValue - startValue) * easeOutCubic(progress);
+                
+                if (suffix === '%') {
+                    element.textContent = prefix + currentValue.toFixed(1) + suffix;
+                } else if (prefix === '$') {
+                    element.textContent = prefix + currentValue.toFixed(0);
+                } else {
+                    element.textContent = prefix + Math.floor(currentValue) + suffix;
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                }
+            }
+
+            requestAnimationFrame(updateNumber);
+        }
+
+        function easeOutCubic(t) {
+            return 1 - Math.pow(1 - t, 3);
+        }
+
+        // Рендеринг таблицы офферов
+        function renderOffers() {
+            const tableBody = document.getElementById('offersTable');
+            tableBody.innerHTML = '';
+
+            offers.forEach(offer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${offer.id}</td>
+                    <td>${offer.name}</td>
+                    <td>${getCategoryName(offer.category)}</td>
+                    <td>$${offer.payout.toFixed(2)}</td>
+                    <td>${offer.cr.toFixed(1)}%</td>
+                    <td>${offer.clicks.toLocaleString()}</td>
+                    <td><span class="status-badge status-${offer.status}">${getStatusName(offer.status)}</span></td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" onclick="editOffer(${offer.id})">Изменить</button>
+                        <button class="btn btn-secondary btn-sm" onclick="deleteOffer(${offer.id})">Удалить</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Рендеринг таблицы партнеров
+        function renderPartners() {
+            const tableBody = document.getElementById('partnersTable');
+            tableBody.innerHTML = '';
+
+            partners.forEach(partner => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${partner.id}</td>
+                    <td>${partner.name}</td>
+                    <td>${partner.email}</td>
+                    <td><span class="status-badge status-${partner.status}">${getStatusName(partner.status)}</span></td>
+                    <td>$${partner.revenue.toLocaleString()}</td>
+                    <td>${formatDate(partner.joined)}</td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" onclick="editPartner(${partner.id})">Изменить</button>
+                        <button class="btn btn-secondary btn-sm" onclick="deletePartner(${partner.id})">Удалить</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Вспомогательные функции
+        function getCategoryName(category) {
+            const categories = {
+                'dating': 'Знакомства',
+                'gambling': 'Гемблинг',
+                'finance': 'Финансы',
+                'health': 'Здоровье'
+            };
+            return categories[category] || category;
+        }
+
+        function getStatusName(status) {
+            const statuses = {
+                'active': 'Активный',
+                'paused': 'Приостановлен',
+                'archived': 'Архивирован',
+                'pending': 'На рассмотрении'
+            };
+            return statuses[status] || status;
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('ru-RU');
+        }
+
+        // Модальные окна
+        function showCreateOfferModal() {
+            document.getElementById('createOfferModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // Обработка форм
+        function initEventListeners() {
+            // Форма создания оффера
+            document.getElementById('createOfferForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const newOffer = {
+                    id: offers.length + 1,
+                    name: formData.get('name'),
+                    category: formData.get('category'),
+                    payout: parseFloat(formData.get('payout')),
+                    cr: Math.random() * 5, // Случайный CR для демо
+                    clicks: 0,
+                    status: 'active',
+                    url: formData.get('url'),
+                    description: formData.get('description')
+                };
+                
+                offers.push(newOffer);
+                renderOffers();
+                updateDashboardStats();
+                closeModal('createOfferModal');
+                e.target.reset();
+                showNotification('Оффер успешно создан!');
+            });
+
+            // Поиск и фильтрация офферов
+            document.getElementById('offerSearch').addEventListener('input', filterOffers);
+            document.getElementById('statusFilter').addEventListener('change', filterOffers);
+            document.getElementById('categoryFilter').addEventListener('change', filterOffers);
+        }
+
+        function filterOffers() {
+            const search = document.getElementById('offerSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+
+            const filteredOffers = offers.filter(offer => {
+                const matchesSearch = offer.name.toLowerCase().includes(search) || 
+                                    offer.description.toLowerCase().includes(search);
+                const matchesStatus = !statusFilter || offer.status === statusFilter;
+                const matchesCategory = !categoryFilter || offer.category === categoryFilter;
+                
+                return matchesSearch && matchesStatus && matchesCategory;
+            });
+
+            renderFilteredOffers(filteredOffers);
+        }
+
+        function renderFilteredOffers(filteredOffers) {
+            const tableBody = document.getElementById('offersTable');
+            tableBody.innerHTML = '';
+
+            filteredOffers.forEach(offer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${offer.id}</td>
+                    <td>${offer.name}</td>
+                    <td>${getCategoryName(offer.category)}</td>
+                    <td>$${offer.payout.toFixed(2)}</td>
+                    <td>${offer.cr.toFixed(1)}%</td>
+                    <td>${offer.clicks.toLocaleString()}</td>
+                    <td><span class="status-badge status-${offer.status}">${getStatusName(offer.status)}</span></td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" onclick="editOffer(${offer.id})">Изменить</button>
+                        <button class="btn btn-secondary btn-sm" onclick="deleteOffer(${offer.id})">Удалить</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // CRUD операции
+        function editOffer(id) {
+            const offer = offers.find(o => o.id === id);
+            if (offer) {
+                showNotification(`Редактирование оффера: ${offer.name}`);
+                // Здесь можно открыть модальное окно редактирования
+            }
+        }
+
+        function deleteOffer(id) {
+            if (confirm('Вы уверены, что хотите удалить этот оффер?')) {
+                offers = offers.filter(o => o.id !== id);
+                renderOffers();
+                updateDashboardStats();
+                showNotification('Оффер удален');
+            }
+        }
+
+        function editPartner(id) {
+            const partner = partners.find(p => p.id === id);
+            if (partner) {
+                showNotification(`Редактирование партнера: ${partner.name}`);
+            }
+        }
+
+        function deletePartner(id) {
+            if (confirm('Вы уверены, что хотите удалить этого партнера?')) {
+                partners = partners.filter(p => p.id !== id);
+                renderPartners();
+                showNotification('Партнер удален');
+            }
+        }
+
+        // Экспорт данных
+        function exportOffers() {
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + "ID,Название,Категория,Выплата,CR,Клики,Статус\n"
+                + offers.map(o => `${o.id},"${o.name}","${getCategoryName(o.category)}",${o.payout},${o.cr},${o.clicks},"${getStatusName(o.status)}"`).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "offers.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Данные экспортированы в CSV файл');
+        }
+
+        // Уведомления
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification show ${type}`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Инициализация графиков
+        function initCharts() {
+            const trafficCanvas = document.getElementById('trafficChart');
+            const countriesCanvas = document.getElementById('countriesChart');
+            
+            if (trafficCanvas) {
+                drawTrafficChart(trafficCanvas);
+            }
+            
+            if (countriesCanvas) {
+                drawCountriesChart(countriesCanvas);
+            }
+        }
+
+        function drawTrafficChart(canvas) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Очистка холста
+            ctx.clearRect(0, 0, width, height);
+            
+            // Данные для графика
+            const data = [120, 190, 300, 500, 200, 300, 450];
+            const labels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            
+            // Настройки графика
+            const padding = 40;
+            const chartWidth = width - 2 * padding;
+            const chartHeight = height - 2 * padding;
+            const maxValue = Math.max(...data);
+            
+            // Рисуем оси
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            
+            // Горизонтальные линии
+            for (let i = 0; i <= 4; i++) {
+                const y = padding + (chartHeight * i / 4);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+            
+            // Рисуем линию графика
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            data.forEach((value, index) => {
+                const x = padding + (chartWidth * index / (data.length - 1));
+                const y = padding + chartHeight - (chartHeight * value / maxValue);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+            
+            // Рисуем точки
+            ctx.fillStyle = '#3b82f6';
+            data.forEach((value, index) => {
+                const x = padding + (chartWidth * index / (data.length - 1));
+                const y = padding + chartHeight - (chartHeight * value / maxValue);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+            
+            // Подписи
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+            ctx.textAlign = 'center';
+            
+            labels.forEach((label, index) => {
+                const x = padding + (chartWidth * index / (data.length - 1));
+                ctx.fillText(label, x, height - 10);
+            });
+        }
+
+        function drawCountriesChart(canvas) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            const countries = [
+                { name: 'США', value: 3500, color: '#3b82f6' },
+                { name: 'Германия', value: 2800, color: '#10b981' },
+                { name: 'Канада', value: 2200, color: '#f59e0b' },
+                { name: 'Франция', value: 1900, color: '#ef4444' },
+                { name: 'Италия', value: 1600, color: '#8b5cf6' }
+            ];
+            
+            const maxValue = Math.max(...countries.map(c => c.value));
+            const barHeight = 40;
+            const barSpacing = 20;
+            const padding = 60;
+            
+            countries.forEach((country, index) => {
+                const y = padding + index * (barHeight + barSpacing);
+                const barWidth = (width - 2 * padding) * (country.value / maxValue);
+                
+                // Рисуем столбец
+                ctx.fillStyle = country.color;
+                ctx.fillRect(padding, y, barWidth, barHeight);
+                
+                // Название страны
+                ctx.fillStyle = '#1e293b';
+                ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(country.name, 10, y + barHeight / 2 + 5);
+                
+                // Значение
+                ctx.textAlign = 'right';
+                ctx.fillText(`$${country.value}`, width - 10, y + barHeight / 2 + 5);
+            });
+        }
+
+        // Дополнительные функции
+        function showProfile() {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Профиль пользователя</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Имя пользователя:</label>
+                            <input type="text" value="Администратор" readonly class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" value="admin@adlinkpro.com" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Роль:</label>
+                            <input type="text" value="Супер-администратор" readonly class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Дата регистрации:</label>
+                            <input type="text" value="${new Date().toLocaleDateString('ru-RU')}" readonly class="form-input">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Отмена</button>
+                        <button class="btn btn-primary" onclick="saveProfile(); this.closest('.modal').remove();">Сохранить</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Close modal on backdrop click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function saveProfile() {
+            showNotification('Профиль успешно сохранен');
+        }
+
+        function logout() {
+            if (confirm('Вы уверены, что хотите выйти из системы?')) {
+                showNotification('Выход из системы...');
+                // Simulate logout process
+                setTimeout(() => {
+                    // Clear any stored data
+                    sessionStorage.clear();
+                    localStorage.removeItem('user_session');
+                    
+                    // Redirect to login or reload page
+                    showNotification('Вы успешно вышли из системы');
+                    // In a real app, this would redirect to login page
+                    // window.location.href = '/login';
+                }, 1000);
+            }
+        }
+
+        function showAddPartnerModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Добавить партнера</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Имя партнера:</label>
+                            <input type="text" placeholder="Введите имя" class="form-input" id="partnerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" placeholder="partner@example.com" class="form-input" id="partnerEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Телефон:</label>
+                            <input type="tel" placeholder="+7 (999) 123-45-67" class="form-input" id="partnerPhone">
+                        </div>
+                        <div class="form-group">
+                            <label>Источник трафика:</label>
+                            <select class="form-select" id="partnerSource">
+                                <option value="">Выберите источник</option>
+                                <option value="social">Социальные сети</option>
+                                <option value="search">Поисковые системы</option>
+                                <option value="direct">Прямой трафик</option>
+                                <option value="email">Email рассылка</option>
+                                <option value="other">Другое</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Отмена</button>
+                        <button class="btn btn-primary" onclick="createPartner(); this.closest('.modal').remove();">Создать</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Close modal on backdrop click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function createPartner() {
+            const name = document.getElementById('partnerName').value;
+            const email = document.getElementById('partnerEmail').value;
+            const phone = document.getElementById('partnerPhone').value;
+            const source = document.getElementById('partnerSource').value;
+            
+            if (!name || !email) {
+                showNotification('Пожалуйста, заполните обязательные поля');
+                return;
+            }
+            
+            // Simulate partner creation
+            const newPartner = {
+                id: partners.length + 1,
+                name,
+                email,
+                phone,
+                source,
+                status: 'pending',
+                revenue: 0,
+                joined: new Date().toISOString()
+            };
+            
+            partners.push(newPartner);
+            renderPartners();
+            showNotification(`Партнер ${name} успешно добавлен`);
+        }
+
+        // Закрытие модальных окон по клику вне них
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

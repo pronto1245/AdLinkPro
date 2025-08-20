@@ -1,0 +1,158 @@
+// ✅ AdvertiserOffers.tsx: офферы рекламодателя — drag’n’drop, фильтры, массовые действия, предпросмотр, редактор лендингов, статусы, архив, экспорт
+
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
+import { Plus, Trash2, Eye, Archive, Copy, Play, GripVertical } from 'lucide-react';
+import OfferEditModal from './OfferEditModal';
+import { apiRequest } from '@/lib/api';
+import { useLocation } from 'wouter';
+import { DndContext } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+function DraggableRow({ offer, children }: any) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: offer.id });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+  return (
+    <TableRow ref={setNodeRef} style={style} {...attributes}>
+      <TableCell {...listeners} className="cursor-grab"><GripVertical className="w-4 h-4 text-muted-foreground" /></TableCell>
+      {children}
+    </TableRow>
+  );
+}
+
+const AdvertiserOffers = () => {
+  const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
+  const [editOffer, setEditOffer] = useState(null);
+  const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [search, setSearch] = useState('');
+
+  const { data: offers = [] } = useQuery({ queryKey: ['offers'], queryFn: () => apiRequest('/offers') });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: any) => data.id
+      ? apiRequest(`/offers/${data.id}`, 'PATCH', data)
+      : apiRequest(`/offers`, 'POST', data),
+    onSuccess: () => {
+      toast.success('Сохранено'); queryClient.invalidateQueries(['offers']);
+    },
+  });
+
+  const bulkStatusMutation = useMutation({
+    mutationFn: ({ ids, status }: { ids: string[], status: string }) =>
+      apiRequest(`/offers/bulk-update`, 'POST', { ids, status }),
+    onSuccess: () => {
+      toast.success('Статус обновлён'); queryClient.invalidateQueries(['offers']); setSelectedOffers([]);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (ids: string[]) => apiRequest(`/offers/bulk-delete`, 'POST', { ids }),
+    onSuccess: () => {
+      toast.success('Удалено'); queryClient.invalidateQueries(['offers']); setSelectedOffers([]);
+    },
+  });
+
+  const filtered = offers
+    .filter(o => o.name.toLowerCase().includes(search.toLowerCase()))
+    .filter(o => selectedStatus === 'all' ? true : o.status === selectedStatus);
+
+  const handleAction = (offer: any, action: string) => {
+    switch (action) {
+      case 'edit': setEditOffer(offer); break;
+      case 'duplicate':
+        const duplicated = { ...offer, id: undefined, name: offer.name + ' (копия)' };
+        updateMutation.mutate(duplicated); break;
+      case 'delete': deleteMutation.mutate([offer.id]); break;
+      case 'preview':
+        if (offer?.landingUrls?.[0]) window.open(offer.landingUrls[0], '_blank');
+        else toast.warning('Нет ссылки'); break;
+      case 'archive': updateMutation.mutate({ ...offer, status: 'archived' }); break;
+      case 'activate': updateMutation.mutate({ ...offer, status: 'active' }); break;
+    }
+  };
+
+  const handleBulkAction = (action: string) => {
+    if (action === 'delete') deleteMutation.mutate(selectedOffers);
+    else bulkStatusMutation.mutate({ ids: selectedOffers, status: action });
+  };
+
+  return (
+    <div className="p-6 space-y-4">
+      <div className="flex justify-between items-center gap-2">
+        <Input placeholder="Поиск..." value={search} onChange={e => setSearch(e.target.value)} className="max-w-xs" />
+        <div className="flex gap-2">
+          <Button onClick={() => setEditOffer({})}><Plus className="w-4 h-4 mr-2" /> Новый оффер</Button>
+          <Button variant="outline" onClick={() => handleBulkAction('active')} disabled={!selectedOffers.length}>Активировать</Button>
+          <Button variant="outline" onClick={() => handleBulkAction('archived')} disabled={!selectedOffers.length}>В архив</Button>
+          <Button variant="destructive" onClick={() => handleBulkAction('delete')} disabled={!selectedOffers.length}>Удалить</Button>
+        </div>
+      </div>
+
+      <DndContext onDragEnd={({ active, over }) => {
+        if (active.id !== over?.id) {
+          const oldIndex = offers.findIndex(o => o.id === active.id);
+          const newIndex = offers.findIndex(o => o.id === over?.id);
+          const reordered = arrayMove(offers, oldIndex, newIndex);
+          // TODO: сохранить порядок в БД
+        }
+      }}>
+        <SortableContext items={filtered.map(o => o.id)} strategy={verticalListSortingStrategy}>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead />
+                <TableHead><Checkbox checked={selectedOffers.length === filtered.length} onCheckedChange={checked => {
+                  setSelectedOffers(checked ? filtered.map(o => o.id) : []);
+                }} /></TableHead>
+                <TableHead>Оффер</TableHead>
+                <TableHead>Статус</TableHead>
+                <TableHead>GEO</TableHead>
+                <TableHead>CR / EPC</TableHead>
+                <TableHead>Действия</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map(offer => (
+                <DraggableRow key={offer.id} offer={offer}>
+                  <TableCell />
+                  <TableCell>
+                    <Checkbox checked={selectedOffers.includes(offer.id)} onCheckedChange={checked => {
+                      setSelectedOffers(checked
+                        ? [...selectedOffers, offer.id]
+                        : selectedOffers.filter(id => id !== offer.id));
+                    }} />
+                  </TableCell>
+                  <TableCell>{offer.name}</TableCell>
+                  <TableCell><Badge>{offer.status}</Badge></TableCell>
+                  <TableCell>{offer.geo?.join(', ')}</TableCell>
+                  <TableCell>{offer.cr || '-'} / {offer.epc || '-'}</TableCell>
+                  <TableCell className="flex gap-1">
+                    <Button size="icon" variant="ghost" onClick={() => handleAction(offer, 'edit')}><Play className="w-4 h-4" /></Button>
+                    <Button size="icon" variant="ghost" onClick={() => handleAction(offer, 'preview')}><Eye className="w-4 h-4" /></Button>
+                    <Button size="icon" variant="ghost" onClick={() => handleAction(offer, 'duplicate')}><Copy className="w-4 h-4" /></Button>
+                    <Button size="icon" variant="ghost" onClick={() => handleAction(offer, 'archive')}><Archive className="w-4 h-4" /></Button>
+                    <Button size="icon" variant="ghost" onClick={() => handleAction(offer, 'delete')}><Trash2 className="w-4 h-4" /></Button>
+                  </TableCell>
+                </DraggableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </SortableContext>
+      </DndContext>
+
+      {!!editOffer && <OfferEditModal offer={editOffer} onClose={() => setEditOffer(null)} onSave={updateMutation.mutate} />}
+    </div>
+  );
+};
+
+export default AdvertiserOffers;

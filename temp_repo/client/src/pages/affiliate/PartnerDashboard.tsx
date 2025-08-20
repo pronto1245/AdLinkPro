@@ -1,0 +1,423 @@
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
+import { Link, useLocation } from "wouter";
+import { ContactManagerModal } from "@/components/partner/ContactManagerModal";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import {
+  TrendingUp,
+  TrendingDown,
+  Users,
+  DollarSign,
+  MousePointer,
+  Target,
+  AlertTriangle,
+  RefreshCw,
+  CheckCircle,
+  Bell,
+} from "lucide-react";
+
+interface MetricCardProps {
+  title: string;
+  value: string | number;
+  change?: string;
+  changeType?: 'positive' | 'negative' | 'neutral';
+  icon: React.ComponentType<{ className?: string }>;
+  cardType?: 'clicks' | 'conversions' | 'revenue' | 'cr' | 'uniqueClicks' | 'activeOffers' | 'status' | 'epc';
+}
+
+const MetricCard = ({ title, value, change, changeType, icon: Icon, cardType }: MetricCardProps) => {
+  const getChangeColor = () => {
+    switch (changeType) {
+      case 'positive':
+        return 'text-green-600 dark:text-green-400';
+      case 'negative':
+        return 'text-red-600 dark:text-red-400';
+      default:
+        return 'text-muted-foreground';
+    }
+  };
+
+  const getChangeIcon = () => {
+    if (changeType === 'positive') return <TrendingUp className="h-3 w-3" />;
+    if (changeType === 'negative') return <TrendingDown className="h-3 w-3" />;
+    return null;
+  };
+
+  const getCardStyle = () => {
+    if (cardType === 'clicks') return 'border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/20 dark:to-background';
+    if (cardType === 'conversions') return 'border-l-4 border-l-green-500 bg-gradient-to-r from-green-50 to-white dark:from-green-950/20 dark:to-background';
+    if (cardType === 'revenue') return 'border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-50 to-white dark:from-amber-950/20 dark:to-background';
+    if (cardType === 'cr') return 'border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50 to-white dark:from-purple-950/20 dark:to-background';
+    if (cardType === 'uniqueClicks') return 'border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-50 to-white dark:from-indigo-950/20 dark:to-background';
+    if (cardType === 'activeOffers') return 'border-l-4 border-l-pink-500 bg-gradient-to-r from-pink-50 to-white dark:from-pink-950/20 dark:to-background';
+    if (cardType === 'status') return 'border-l-4 border-l-emerald-500 bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-950/20 dark:to-background';
+    if (cardType === 'epc') return 'border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-50 to-white dark:from-indigo-950/20 dark:to-background';
+    return 'border-l-4 border-l-slate-500 bg-gradient-to-r from-slate-50 to-white dark:from-slate-950/20 dark:to-background';
+  };
+
+  const getTitleColor = () => {
+    if (cardType === 'clicks') return 'text-blue-700 dark:text-blue-300';
+    if (cardType === 'conversions') return 'text-green-700 dark:text-green-300';
+    if (cardType === 'revenue') return 'text-amber-700 dark:text-amber-300';
+    if (cardType === 'cr') return 'text-purple-700 dark:text-purple-300';
+    if (cardType === 'uniqueClicks') return 'text-indigo-700 dark:text-indigo-300';
+    if (cardType === 'activeOffers') return 'text-pink-700 dark:text-pink-300';
+    if (cardType === 'status') return 'text-emerald-700 dark:text-emerald-300';
+    if (cardType === 'epc') return 'text-indigo-700 dark:text-indigo-300';
+    return 'text-slate-700 dark:text-slate-300';
+  };
+
+  const getValueColor = () => {
+    if (cardType === 'clicks') return 'text-blue-600 dark:text-blue-400';
+    if (cardType === 'conversions') return 'text-green-600 dark:text-green-400';
+    if (cardType === 'revenue') return 'text-amber-600 dark:text-amber-400';
+    if (cardType === 'cr') return 'text-purple-600 dark:text-purple-400';
+    if (cardType === 'uniqueClicks') return 'text-indigo-600 dark:text-indigo-400';
+    if (cardType === 'activeOffers') return 'text-pink-600 dark:text-pink-400';
+    if (cardType === 'status') return 'text-emerald-600 dark:text-emerald-400';
+    if (cardType === 'epc') return 'text-indigo-600 dark:text-indigo-400';
+    return 'text-slate-600 dark:text-slate-400';
+  };
+
+  const getIconColor = () => {
+    if (cardType === 'clicks') return 'text-blue-500';
+    if (cardType === 'conversions') return 'text-green-500';
+    if (cardType === 'revenue') return 'text-amber-500';
+    if (cardType === 'cr') return 'text-purple-500';
+    if (cardType === 'uniqueClicks') return 'text-indigo-500';
+    if (cardType === 'activeOffers') return 'text-pink-500';
+    if (cardType === 'status') return 'text-emerald-500';
+    if (cardType === 'epc') return 'text-indigo-500';
+    return 'text-slate-500';
+  };
+
+  return (
+    <Card className={getCardStyle()}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className={`text-sm font-medium ${getTitleColor()}`}>{title}</CardTitle>
+        <Icon className={`h-4 w-4 ${getIconColor()}`} />
+      </CardHeader>
+      <CardContent>
+        <div className={`text-2xl font-bold ${getValueColor()}`}>{value}</div>
+        {change && (
+          <div className={`flex items-center gap-1 text-xs ${getChangeColor()}`}>
+            {getChangeIcon()}
+            <span>{change}</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default function PartnerDashboard() {
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { t } = useTranslation();
+  const [location, navigate] = useLocation();
+
+  const { data: dashboardData, isLoading, error } = useQuery({
+    queryKey: ['/api/partner/dashboard', refreshKey],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Отдельный запрос для уведомлений, синхронизированный с основной страницей уведомлений
+  const { data: recentNotifications = [] } = useQuery({
+    queryKey: ['/api/notifications'],
+    staleTime: 30 * 1000, // 30 seconds
+  });
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+    queryClient.invalidateQueries({ queryKey: ['/api/partner/dashboard'] });
+    toast({
+      title: t('dashboard.dataUpdated'),
+      description: t('dashboard.dataUpdatedDescription'),
+    });
+  };
+
+  const handleFindOffers = () => {
+    navigate('/affiliate/offers');
+    toast({
+      title: t('dashboard.navigateToOffers'),
+      description: t('dashboard.navigateToOffersDescription'),
+    });
+  };
+
+  const handleCheckStatistics = () => {
+    navigate('/affiliate/statistics');
+    toast({
+      title: t('dashboard.navigateToStatistics'),
+      description: t('dashboard.navigateToStatisticsDescription'),
+    });
+  };
+
+  const handleContactManager = () => {
+    setIsContactModalOpen(true);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-64 mt-2" />
+          </div>
+          <Skeleton className="h-9 w-24" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-3 w-20" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto" />
+          <h3 className="text-lg font-semibold">Ошибка загрузки данных</h3>
+          <p className="text-muted-foreground">Не удалось загрузить данные дашборда</p>
+          <Button onClick={handleRefresh} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Повторить
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Используем реальные данные с API  
+  const { metrics, topOffers } = dashboardData || {
+    metrics: {
+      totalClicks: 0,
+      conversions: 0,
+      revenue: 0,
+      conversionRate: 0,
+      epc: 0,
+      avgOfferPayout: 0,
+      activeOffers: 0,
+      pendingRequests: 0
+    },
+    topOffers: []
+  };
+
+  return (
+    <div className="space-y-6 p-6">
+      {/* Header */}
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-black dark:text-white">{t('dashboard.title')}</h1>
+          <p className="text-black/70 dark:text-white/70">{t('dashboard.subtitle')}</p>
+        </div>
+        <Button variant="outline" onClick={handleRefresh} className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+          <RefreshCw className="h-4 w-4 mr-2" />
+{t('common.refresh')}
+        </Button>
+      </div>
+
+      {/* Main Metrics */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title={t('dashboard.totalClicks')}
+          value={metrics.totalClicks?.toLocaleString() || '0'}
+          change={dashboardData?.metrics?.clicksGrowth ? `${dashboardData.metrics.clicksGrowth > 0 ? '+' : ''}${dashboardData.metrics.clicksGrowth.toFixed(1)}%` : undefined}
+          changeType={dashboardData?.metrics?.clicksGrowth > 0 ? "positive" : "negative"}
+          icon={MousePointer}
+          cardType="clicks"
+        />
+        <MetricCard
+          title={t('dashboard.conversions')}
+          value={metrics.conversions?.toLocaleString() || '0'}
+          change={dashboardData?.metrics?.conversionsGrowth ? `${dashboardData.metrics.conversionsGrowth > 0 ? '+' : ''}${dashboardData.metrics.conversionsGrowth.toFixed(1)}%` : undefined}
+          changeType={dashboardData?.metrics?.conversionsGrowth > 0 ? "positive" : "negative"}
+          icon={Target}
+          cardType="conversions"
+        />
+        <MetricCard
+          title={t('dashboard.revenue')}
+          value={`$${metrics.revenue?.toLocaleString() || '0'}`}
+          change={dashboardData?.metrics?.revenueGrowth ? `${dashboardData.metrics.revenueGrowth > 0 ? '+' : ''}${dashboardData.metrics.revenueGrowth.toFixed(1)}%` : undefined}
+          changeType={dashboardData?.metrics?.revenueGrowth > 0 ? "positive" : "negative"}
+          icon={DollarSign}
+          cardType="revenue"
+        />
+        <MetricCard
+          title={t('dashboard.conversionRate')}
+          value={`${metrics.conversionRate?.toFixed(2) || '0'}%`}
+          change="-0.8%"
+          changeType="negative"
+          icon={TrendingUp}
+          cardType="cr"
+        />
+      </div>
+
+      {/* Secondary Metrics */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title={t('dashboard.uniqueClicks')}
+          value={`${Math.floor((metrics.totalClicks * 0.85) || 0).toLocaleString()}`}
+          change="+7.1%"
+          changeType="positive"
+          icon={Users}
+          cardType="uniqueClicks"
+        />
+        <MetricCard
+          title={t('dashboard.activeOffers')}
+          value={`${metrics.activeOffers || '0'}`}
+          changeType="neutral"
+          icon={Target}
+          cardType="activeOffers"
+        />
+        <MetricCard
+          title={t('dashboard.status')}
+          value={t('dashboard.active')}
+          icon={CheckCircle}
+          cardType="status"
+        />
+        <MetricCard
+          title={t('dashboard.avgEPC')}
+          value={`$${metrics.epc?.toFixed(2) || '0'}`}
+          icon={DollarSign}
+          cardType="epc"
+        />
+      </div>
+
+      {/* Quick Actions */}
+      <Card className="border-l-4 border-l-cyan-500 bg-gradient-to-r from-cyan-50 to-white dark:from-cyan-950/20 dark:to-background">
+        <CardHeader>
+          <CardTitle className="text-cyan-700 dark:text-cyan-300">{t('dashboard.quickActions')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-3">
+            <Button 
+              variant="outline" 
+              className="justify-start border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 shadow-md"
+              onClick={handleFindOffers}
+              title={t('dashboard.goToOffers')}
+            >
+              <Target className="h-4 w-4 mr-2 text-green-500" />
+              {t('dashboard.findNewOffers')}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="justify-start border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 shadow-md"
+              onClick={() => window.location.href = '/dash/offers'}
+              title={t('dashboard.browseOffersTitle')}
+            >
+              <Target className="h-4 w-4 mr-2 text-green-500" />
+              {t('dashboard.browseOffers')}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="justify-start border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 shadow-md"
+              onClick={handleCheckStatistics}
+              title={t('dashboard.viewDetailedStats')}
+            >
+              <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
+              {t('dashboard.checkStatistics')}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="justify-start border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 shadow-md"
+              onClick={handleContactManager}
+              title={t('dashboard.contactManagerTitle')}
+            >
+              <Users className="h-4 w-4 mr-2 text-purple-500" />
+              {t('dashboard.contactManager')}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="justify-start border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20 shadow-md"
+              onClick={() => window.location.href = '/dash/finances'}
+              title={t('dashboard.viewFinances')}
+            >
+              <DollarSign className="h-4 w-4 mr-2 text-orange-500" />
+              {t('dashboard.finances')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Notifications */}
+      <Card className="border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-orange-700 dark:text-orange-300">Последние уведомления</CardTitle>
+          {recentNotifications && recentNotifications.length > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/affiliate/notifications')}
+              className="text-orange-600 hover:text-orange-700 hover:bg-orange-100 dark:hover:bg-orange-950/20"
+              title="Посмотреть все уведомления"
+            >
+              Все уведомления
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {recentNotifications && recentNotifications.length > 0 ? (
+              // Показываем только последние 3 уведомления
+              recentNotifications.slice(0, 3).map((notification: any) => (
+                <div key={notification.id} className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                  <Target className="h-4 w-4 text-blue-500 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{notification.title}</p>
+                        <p className="text-sm text-muted-foreground">{notification.message}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="secondary">{notification.type}</Badge>
+                          {!notification.is_read && (
+                            <Badge variant="destructive" className="text-xs px-1 py-0">новое</Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Уведомлений нет</h3>
+                <p className="text-gray-600 dark:text-gray-400">Здесь будут отображаться важные уведомления о ваших запросах</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Contact Manager Modal */}
+      <ContactManagerModal 
+        isOpen={isContactModalOpen} 
+        onClose={() => setIsContactModalOpen(false)} 
+      />
+    </div>
+  );
+}
