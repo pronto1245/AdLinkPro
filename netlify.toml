@@ -3,7 +3,7 @@
   publish = "client/dist"
 
 [[redirects]]
-  from = "/api/menu/data"
+  from = "/api/menu/data*"
   to = "/menu-default.json"
   status = 200
 
