@@ -134,6 +134,9 @@ export default function Login() {
         setOtpValue("");
         setOtpError("");
         
+        // Set tempToken in the form for validation
+        twoFactorForm.setValue("tempToken", result.tempToken);
+        
         toast({
           title: "2FA требуется",
           description: "Откройте приложение аутентификации и введите 6-значный код",
