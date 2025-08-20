@@ -1,5 +1,5 @@
 import React from 'react';
-import Login from '@/pages/auth/login';
+import Login from '@/pages/api/auth/login';
 import RegisterUnified from '@/pages/auth/RegisterUnified';
 
 export const LoginPartner = () => <Login role="partner" />;

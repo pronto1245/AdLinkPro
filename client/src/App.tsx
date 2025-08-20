@@ -3,7 +3,7 @@ import React, { Suspense, lazy } from 'react';
 import { Switch, Route, Redirect } from 'wouter';
 import { useTranslation } from 'react-i18next';
 
-import Login from '@/pages/auth/login';
+import Login from '@/pages/api/auth/login';
 import Logout from '@/pages/auth/logout';
 import RegisterUnified from '@/pages/auth/RegisterUnified';
 import { LoginPartner, LoginAdvertiser, RegisterPartner, RegisterAdvertiser } from '@/pages/LoginVariants';
