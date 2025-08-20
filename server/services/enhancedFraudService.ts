@@ -273,33 +273,14 @@ export class EnhancedFraudService extends FraudService {
   }
   
   /**
-   * Get real-time fraud statistics
+   * Get real-time fraud statistics (extends parent getFraudStats)
    */
   static async getRealTimeFraudStats(): Promise<any> {
     try {
-      const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      // Use parent service for basic fraud stats
+      const basicStats = await super.getFraudStats({ period: '24h' });
       
-      const [totalClicks] = await db
-        .select({ count: count() })
-        .from(trackingClicks)
-        .where(gte(trackingClicks.createdAt, last24Hours));
-      
-      const [botClicks] = await db
-        .select({ count: count() })
-        .from(trackingClicks)
-        .where(and(
-          gte(trackingClicks.createdAt, last24Hours),
-          eq(trackingClicks.isBot, true)
-        ));
-      
-      const [fraudClicks] = await db
-        .select({ count: count() })
-        .from(trackingClicks)
-        .where(and(
-          gte(trackingClicks.createdAt, last24Hours),
-          gte(trackingClicks.fraudScore, 70)
-        ));
-      
+      // Add enhanced real-time specific metrics
       const [blockedIPs] = await db
         .select({ count: count() })
         .from(fraudBlocks)
@@ -310,32 +291,17 @@ export class EnhancedFraudService extends FraudService {
         .from(fraudReports)
         .where(eq(fraudReports.status, 'pending'));
       
-      const botRate = totalClicks.count > 0 ? (botClicks.count / totalClicks.count) * 100 : 0;
-      const fraudRate = totalClicks.count > 0 ? (fraudClicks.count / totalClicks.count) * 100 : 0;
-      
       return {
-        totalClicks: totalClicks.count,
-        botClicks: botClicks.count,
-        fraudClicks: fraudClicks.count,
+        ...basicStats,
         blockedIPs: blockedIPs.count,
         pendingReports: pendingReports.count,
-        botRate: Math.round(botRate * 100) / 100,
-        fraudRate: Math.round(fraudRate * 100) / 100,
         lastUpdated: new Date().toISOString()
       };
       
     } catch (error) {
       console.error('Error getting real-time fraud stats:', error);
-      return {
-        totalClicks: 0,
-        botClicks: 0,
-        fraudClicks: 0,
-        blockedIPs: 0,
-        pendingReports: 0,
-        botRate: 0,
-        fraudRate: 0,
-        lastUpdated: new Date().toISOString()
-      };
+      // Fallback to basic stats
+      return await super.getFraudStats({ period: '24h' });
     }
   }
 }

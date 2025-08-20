@@ -241,22 +241,26 @@ router.get('/fraud-metrics', async (req, res) => {
     
     // Calculate date range based on period
     let dateFrom: Date;
+    let previousDateFrom: Date;
     const now = new Date();
     
     switch (period) {
       case '24h':
         dateFrom = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        previousDateFrom = new Date(now.getTime() - 48 * 60 * 60 * 1000);
         break;
       case '7d':
         dateFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        previousDateFrom = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
         break;
       case '30d':
       default:
         dateFrom = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        previousDateFrom = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
         break;
     }
 
-    // Get active alerts count
+    // Get current period active alerts count
     const [activeAlertsResult] = await db
       .select({ count: count() })
       .from(fraudAlerts)
@@ -265,8 +269,22 @@ router.get('/fraud-metrics', async (req, res) => {
         gte(fraudAlerts.createdAt, dateFrom)
       ));
 
+    // Get previous period active alerts count for comparison
+    const [previousAlertsResult] = await db
+      .select({ count: count() })
+      .from(fraudAlerts)
+      .where(and(
+        eq(fraudAlerts.isResolved, false),
+        gte(fraudAlerts.createdAt, previousDateFrom),
+        lte(fraudAlerts.createdAt, dateFrom)
+      ));
+
     // Get fraud rate from storage
     const fraudStats = await storage.getFraudStats({ dateFrom, dateTo: now });
+    const previousFraudStats = await storage.getFraudStats({ 
+      dateFrom: previousDateFrom, 
+      dateTo: dateFrom 
+    });
 
     // Get blocked revenue (estimated)
     const [blockedRevenueResult] = await db
@@ -277,12 +295,24 @@ router.get('/fraud-metrics', async (req, res) => {
         gte(fraudBlocks.createdAt, dateFrom)
       ));
 
+    const [previousBlockedRevenueResult] = await db
+      .select({ count: count() })
+      .from(fraudBlocks)
+      .where(and(
+        eq(fraudBlocks.isActive, true),
+        gte(fraudBlocks.createdAt, previousDateFrom),
+        lte(fraudBlocks.createdAt, dateFrom)
+      ));
+
     // Calculate blocked revenue estimate (mock calculation)
     const blockedRevenue = blockedRevenueResult.count * 150; // Avg $150 per blocked fraud
+    const previousBlockedRevenue = previousBlockedRevenueResult.count * 150;
 
     // Get resolved today count
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
+    
+    const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
     
     const [resolvedTodayResult] = await db
       .select({ count: count() })
@@ -292,11 +322,30 @@ router.get('/fraud-metrics', async (req, res) => {
         gte(fraudAlerts.resolvedAt, todayStart)
       ));
 
+    const [resolvedYesterdayResult] = await db
+      .select({ count: count() })
+      .from(fraudAlerts)
+      .where(and(
+        eq(fraudAlerts.isResolved, true),
+        gte(fraudAlerts.resolvedAt, yesterdayStart),
+        lte(fraudAlerts.resolvedAt, todayStart)
+      ));
+
+    // Calculate changes
+    const alertsChange = activeAlertsResult.count - previousAlertsResult.count;
+    const fraudRateChange = (fraudStats.fraudRate || 0) - (previousFraudStats.fraudRate || 0);
+    const blockedRevenueChange = blockedRevenue - previousBlockedRevenue;
+    const resolvedTodayChange = resolvedTodayResult.count - resolvedYesterdayResult.count;
+
     const metrics = {
       activeAlerts: activeAlertsResult.count,
+      alertsChange: alertsChange,
       fraudRate: fraudStats.fraudRate || 0,
+      fraudRateChange: Math.round(fraudRateChange * 100) / 100,
       blockedRevenue: blockedRevenue,
+      blockedRevenueChange: blockedRevenueChange,
       resolvedToday: resolvedTodayResult.count,
+      resolvedTodayChange: resolvedTodayChange,
       period: period,
       totalReports: fraudStats.totalReports || 0,
       blockedTransactions: fraudStats.blockedAmount || 0,
