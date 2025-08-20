@@ -42,3 +42,5 @@ export async function me() {
 }
 
 export default api;
+
+export { api };
