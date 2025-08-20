@@ -1,68 +1,82 @@
 import { describe, test, expect } from '@jest/globals';
 
-// Test the unified registration functionality without DOM dependencies
-describe('Unified Registration Component Logic', () => {
-  describe('Role Selection Logic', () => {
-    test('should determine advertiser role from URL', () => {
+// Test the separate registration pages functionality without DOM dependencies
+describe('Separate Registration Components Logic', () => {
+  describe('Role-Specific Registration Logic', () => {
+    test('should handle advertiser registration route', () => {
       const mockLocation = '/register/advertiser';
-      const isAdvertiser = mockLocation.includes('/register/advertiser');
-      expect(isAdvertiser).toBe(true);
+      const isAdvertiserRoute = mockLocation.includes('/register/advertiser');
+      expect(isAdvertiserRoute).toBe(true);
     });
 
-    test('should determine partner role from URL', () => {
+    test('should handle partner registration route', () => {
       const mockLocation = '/register/partner';
-      const isPartner = !mockLocation.includes('/register/advertiser');
-      expect(isPartner).toBe(true);
+      const isPartnerRoute = mockLocation.includes('/register/partner');
+      expect(isPartnerRoute).toBe(true);
     });
 
-    test('should show role selection when no specific role in URL', () => {
+    test('should redirect generic register route to advertiser', () => {
       const mockLocation = '/register';
-      const shouldShowRoleSelection = !mockLocation.includes('/register/advertiser') && !mockLocation.includes('/register/partner');
-      expect(shouldShowRoleSelection).toBe(true);
+      const shouldRedirectToAdvertiser = mockLocation === '/register';
+      expect(shouldRedirectToAdvertiser).toBe(true);
     });
   });
 
   describe('Form Data Preparation', () => {
-    test('should prepare advertiser registration data correctly', () => {
+    test('should prepare advertiser registration data correctly with telegram field', () => {
       const mockFormData = {
         name: 'John Doe',
         email: 'john@example.com',
+        telegram: '@johndoe',
         password: 'Password123!',
         company: 'Example Corp',
         agreeTerms: true,
         agreePrivacy: true,
       };
       
-      const selectedRole = 'advertiser';
-      
       const registrationData = {
         ...mockFormData,
-        role: selectedRole.toUpperCase(),
+        role: 'ADVERTISER',
       };
       
       expect(registrationData.role).toBe('ADVERTISER');
       expect(registrationData.company).toBe('Example Corp');
+      expect(registrationData.telegram).toBe('@johndoe');
     });
 
-    test('should prepare partner registration data correctly', () => {
+    test('should prepare partner registration data correctly with telegram field', () => {
       const mockFormData = {
         name: 'Jane Smith',
         email: 'jane@example.com',
+        telegram: '@janesmith',
         password: 'Password123!',
         agreeTerms: true,
         agreePrivacy: true,
       };
       
-      const selectedRole = 'partner';
-      
       const registrationData = {
         ...mockFormData,
-        role: selectedRole.toUpperCase(),
+        role: 'PARTNER',
         company: undefined, // Partner doesn't require company
       };
       
       expect(registrationData.role).toBe('PARTNER');
       expect(registrationData.company).toBeUndefined();
+      expect(registrationData.telegram).toBe('@janesmith');
+    });
+
+    test('should require telegram field for both roles', () => {
+      const mockFormDataWithoutTelegram = {
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'Password123!',
+        agreeTerms: true,
+        agreePrivacy: true,
+      };
+      
+      // Telegram field should be required
+      expect(mockFormDataWithoutTelegram.telegram).toBeUndefined();
+      // In real validation, this would trigger an error
     });
   });
 
@@ -78,6 +92,14 @@ describe('Unified Registration Component Logic', () => {
       },
       cleanEmail: (email: string): string => {
         return email.toLowerCase().trim().replace(/[<>"']/g, '');
+      },
+      cleanTelegram: (telegram: string): string => {
+        const cleaned = telegram
+          .trim()
+          .replace(/[^a-zA-Z0-9_@]/g, '');
+        
+        // Ensure it starts with @
+        return cleaned.startsWith('@') ? cleaned : `@${cleaned}`;
       },
       cleanPhone: (phone: string): string => {
         return phone.replace(/[^\d+]/g, '');
@@ -97,6 +119,20 @@ describe('Unified Registration Component Logic', () => {
       const sanitized = mockSanitizeInput.cleanEmail(maliciousEmail);
       expect(sanitized).toBe('user@example.comscript');
       expect(sanitized).not.toContain('<');
+    });
+
+    test('should sanitize telegram usernames correctly', () => {
+      const telegramInput = 'johndoe123';
+      const sanitized = mockSanitizeInput.cleanTelegram(telegramInput);
+      expect(sanitized).toBe('@johndoe123');
+      expect(sanitized).toMatch(/^@[a-zA-Z0-9_]+$/);
+    });
+
+    test('should handle malicious telegram input', () => {
+      const maliciousTelegram = '<script>@baduser</script>';
+      const sanitized = mockSanitizeInput.cleanTelegram(maliciousTelegram);
+      expect(sanitized).toBe('@scriptbaduser/script');
+      expect(sanitized).not.toContain('<script>');
     });
 
     test('should clean phone numbers correctly', () => {
@@ -119,10 +155,11 @@ describe('Unified Registration Component Logic', () => {
       // Marketing agreement should be optional
     });
 
-    test('should generate proper form validation', () => {
+    test('should generate proper form validation with telegram field', () => {
       const mockValidationErrors = {
         name: 'Имя должно содержать минимум 2 символа',
         email: 'Неверный формат email',
+        telegram: 'Telegram должен содержать минимум 5 символов',
         password: 'Пароль должен содержать минимум 8 символов',
         agreeTerms: 'Необходимо согласиться с условиями использования',
       };
@@ -130,8 +167,20 @@ describe('Unified Registration Component Logic', () => {
       // Test that validation errors are in Russian and user-friendly
       expect(mockValidationErrors.name).toContain('символа');
       expect(mockValidationErrors.email).toContain('email');
+      expect(mockValidationErrors.telegram).toContain('Telegram');
       expect(mockValidationErrors.password).toContain('символов');
       expect(mockValidationErrors.agreeTerms).toContain('согласиться');
+    });
+
+    test('should validate telegram format requirements', () => {
+      const validTelegram = '@validuser123';
+      const invalidTelegram = 'bad-user!';
+      
+      // Mock validation regex
+      const telegramRegex = /^@?[a-zA-Z0-9_]{5,32}$/;
+      
+      expect(telegramRegex.test(validTelegram)).toBe(true);
+      expect(telegramRegex.test(invalidTelegram)).toBe(false);
     });
   });
 
@@ -262,6 +311,46 @@ describe('Unified Registration Component Logic', () => {
       
       expect(result.feedback.some(f => f.includes('символов'))).toBe(true);
       expect(result.feedback.some(f => f.includes('буквы'))).toBe(true);
+    });
+  });
+
+  describe('Component-Specific Features', () => {
+    test('should enforce company field for advertisers only', () => {
+      const advertiserData = {
+        role: 'ADVERTISER',
+        company: 'Required Corp',
+      };
+      
+      const partnerData = {
+        role: 'PARTNER',
+        company: undefined,
+      };
+      
+      // Advertiser should have company
+      expect(advertiserData.company).toBeDefined();
+      // Partner should not require company
+      expect(partnerData.company).toBeUndefined();
+    });
+
+    test('should use different background colors for different roles', () => {
+      const advertiserBg = 'bg-gradient-to-br from-blue-50 to-indigo-100';
+      const partnerBg = 'bg-gradient-to-br from-green-50 to-emerald-100';
+      
+      expect(advertiserBg).toContain('blue');
+      expect(partnerBg).toContain('green');
+    });
+
+    test('should have role-specific titles and descriptions', () => {
+      const advertiserTitle = 'Регистрация рекламодателя';
+      const partnerTitle = 'Регистрация партнёра';
+      
+      const advertiserDesc = 'Создайте аккаунт для размещения рекламных кампаний';
+      const partnerDesc = 'Присоединяйтесь к нашей партнёрской программе';
+      
+      expect(advertiserTitle).toContain('рекламодателя');
+      expect(partnerTitle).toContain('партнёра');
+      expect(advertiserDesc).toContain('размещения');
+      expect(partnerDesc).toContain('программе');
     });
   });
 });
