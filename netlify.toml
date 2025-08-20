@@ -1,3 +1,28 @@
 [build]
-  command = "npm ci && npm run build:client"
-  publish = "client/dist"
+command = "npm ci && npm run build:client"
+publish = "client/dist"
+
+[[redirects]]
+from = "/api/*"
+to = "https://central-matelda-pronto12-95b8129d.koyeb.app/api/:splat"
+status = 200
+force = true
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+
+[headers]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store"
+
+[headers]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Content-Security-Policy = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https:; script-src 'self'; connect-src 'self' https://central-matelda-pronto12-95b8129d.koyeb.app https://affilix.click; base-uri 'none'; frame-ancestors 'none'; upgrade-insecure-requests"

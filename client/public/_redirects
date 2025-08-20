@@ -1,10 +1,2 @@
-/api/menu/data*                        /menu-default.json                     200
-/api/dashboard/advertiser/summary*     /api-stubs/advertiser-summary.json     200
-/api/dashboard/advertiser*             /api-stubs/advertiser-summary.json     200
-/api/offers*                           /api-stubs/offers.json                 200
-/api/statistics*                       /api-stubs/statistics.json             200
-/api/finances/summary*                 /api-stubs/finances.json               200
-/api/notifications*                    /api-stubs/notifications.json          200
-/api/version*                          /version.json                          200
-/api/*           https://central-matelda-pronto12-95b8129d.koyeb.app/api/:splat   200
-/*               /index.html   200
+/api/*  https://central-matelda-pronto12-95b8129d.koyeb.app/api/:splat  200
+/*      /index.html  200
