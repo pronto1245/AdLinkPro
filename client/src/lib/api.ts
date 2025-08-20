@@ -38,3 +38,7 @@ export default api;
 export async function login(email: string, password: string) {
   return json('/api/auth/login', { email, password });
 }
+
+export async function me() {
+  return api('/api/me');
+}
