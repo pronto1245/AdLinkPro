@@ -592,7 +592,11 @@ export const fraudAlerts = pgTable("fraud_alerts", {
   description: text("description"),
   data: jsonb("data"),
   isResolved: boolean("is_resolved").default(false),
+  resolvedAt: timestamp("resolved_at"),
+  resolvedBy: varchar("resolved_by").references(() => users.id),
+  resolvedNotes: text("resolved_notes"),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Creative assets for offers

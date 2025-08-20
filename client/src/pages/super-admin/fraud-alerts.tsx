@@ -34,7 +34,7 @@ export default function FraudAlertsManagement() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [selectedAlert, setSelectedAlert] = useState<any>(null);
 
-  const { data: allFraudAlerts, isLoading } = useQuery({
+  const { data: fraudAlertsResponse, isLoading } = useQuery({
     queryKey: ['/api/admin/fraud-alerts'],
     queryFn: async () => {
       const response = await fetch('/api/admin/fraud-alerts', {
@@ -44,6 +44,9 @@ export default function FraudAlertsManagement() {
       return response.json();
     },
   });
+
+  // Extract alerts from API response 
+  const allFraudAlerts = fraudAlertsResponse?.data || [];
 
   // Filter alerts based on search term and filters
   const fraudAlerts = allFraudAlerts?.filter((alert: any) => {
@@ -79,7 +82,11 @@ export default function FraudAlertsManagement() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ isResolved }),
+        body: JSON.stringify({ 
+          isResolved,
+          resolvedBy: token ? JSON.parse(atob(token.split('.')[1])).sub : 'unknown',
+          notes: isResolved ? 'Resolved via admin interface' : 'Reopened via admin interface'
+        }),
       });
       if (!response.ok) throw new Error('Failed to update fraud alert');
       return response.json();
@@ -113,32 +120,32 @@ export default function FraudAlertsManagement() {
     {
       label: 'active_alerts',
       value: fraudMetrics?.activeAlerts?.toString() || '0',
-      change: '+5',
-      changeType: 'increase' as const,
+      change: fraudMetrics?.alertsChange || '0',
+      changeType: (fraudMetrics?.alertsChange || 0) >= 0 ? 'increase' as const : 'decrease' as const,
       icon: <AlertTriangle className="w-5 h-5" />,
       iconBg: 'bg-red-50',
     },
     {
       label: 'fraud_rate',
       value: `${fraudMetrics?.fraudRate || '0'}%`,
-      change: '-0.5%',
-      changeType: 'decrease' as const,
+      change: `${fraudMetrics?.fraudRateChange || '0'}%`,
+      changeType: (fraudMetrics?.fraudRateChange || 0) >= 0 ? 'increase' as const : 'decrease' as const,
       icon: <Shield className="w-5 h-5" />,
       iconBg: 'bg-blue-50',
     },
     {
       label: 'blocked_revenue',
       value: `$${fraudMetrics?.blockedRevenue || '0'}`,
-      change: '+$1,250',
-      changeType: 'increase' as const,
+      change: `$${fraudMetrics?.blockedRevenueChange || '0'}`,
+      changeType: (fraudMetrics?.blockedRevenueChange || 0) >= 0 ? 'increase' as const : 'decrease' as const,
       icon: <DollarSign className="w-5 h-5" />,
       iconBg: 'bg-green-50',
     },
     {
       label: 'resolved_today',
       value: fraudMetrics?.resolvedToday?.toString() || '0',
-      change: '+3',
-      changeType: 'increase' as const,
+      change: `${fraudMetrics?.resolvedTodayChange || '0'}`,
+      changeType: (fraudMetrics?.resolvedTodayChange || 0) >= 0 ? 'increase' as const : 'decrease' as const,
       icon: <Check className="w-5 h-5" />,
       iconBg: 'bg-purple-50',
     },

@@ -119,6 +119,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/postbacks', postbackRoutes.default);
   console.log('=== POSTBACK AND TRACKING ROUTES ADDED ===');
 
+  // Import and register fraud management routes
+  const fraudManagementRoutes = await import('./routes/admin/fraud-management');
+  const enhancedFraudRoutes = await import('./routes/admin/enhanced-fraud');
+  
+  // Add fraud management routes with authentication
+  app.use('/api/admin', authenticateToken, requireRole(['super_admin', 'admin']), fraudManagementRoutes.default);
+  app.use('/api/admin/enhanced-fraud', authenticateToken, requireRole(['super_admin', 'admin']), enhancedFraudRoutes.default);
+  console.log('=== FRAUD MANAGEMENT ROUTES ADDED ===');
+
   // FIXED: Team API routes added first without middleware for testing
   console.log('=== ADDING TEAM ROUTES WITHOUT MIDDLEWARE ===');
   
