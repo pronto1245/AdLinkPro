@@ -19,16 +19,13 @@ export const emailSchema = z
     'Email содержит недопустимые символы'
   );
 
-// Username validation schema  
-export const usernameSchema = z
+// Telegram validation schema  
+export const telegramSchema = z
   .string()
-  .min(3, 'Имя пользователя должно содержать минимум 3 символа')
-  .max(30, 'Имя пользователя слишком длинное')
-  .regex(/^[a-zA-Z0-9_-]+$/, 'Имя пользователя может содержать только буквы, цифры, дефисы и подчеркивания')
-  .refine(
-    (username) => !['admin', 'root', 'system', 'api', 'www'].includes(username.toLowerCase()),
-    'Это имя пользователя зарезервировано'
-  );
+  .min(5, 'Telegram должен содержать минимум 5 символов')
+  .max(32, 'Telegram слишком длинный')
+  .regex(/^@?[a-zA-Z0-9_]{5,32}$/, 'Telegram должен начинаться с @ и содержать только буквы, цифры и подчеркивания')
+  .transform((val) => val.startsWith('@') ? val : `@${val}`);
 
 // Phone validation schema
 export const phoneSchema = z
@@ -55,8 +52,7 @@ export const companySchema = z
   .refine(
     (company) => company.trim().length >= 2,
     'Название компании не может состоять только из пробелов'
-  )
-  .optional();
+  );
 
 // Login form validation schema
 export const loginSchema = z.object({
@@ -66,15 +62,14 @@ export const loginSchema = z.object({
   rememberMe: z.boolean().optional(),
 });
 
-// Registration form validation schema
-export const registrationSchema = z.object({
+// Registration form validation schema (base - without refinements)
+const baseRegistrationSchema = z.object({
   name: nameSchema,
   email: emailSchema,
-  username: usernameSchema.optional(),
+  telegram: telegramSchema,
   password: passwordSchema,
   confirmPassword: z.string(),
   phone: phoneSchema,
-  company: companySchema,
   contactType: z.enum(['email', 'phone', 'telegram'], {
     errorMap: () => ({ message: 'Выберите тип контакта' })
   }).optional(),
@@ -82,22 +77,65 @@ export const registrationSchema = z.object({
   agreeTerms: z.boolean().refine(val => val === true, 'Необходимо согласиться с условиями использования'),
   agreePrivacy: z.boolean().refine(val => val === true, 'Необходимо согласиться с политикой конфиденциальности'),
   agreeMarketing: z.boolean().optional(),
+});
+
+// Shared refinement functions
+const passwordMatchRefinement = (data: any) => data.password === data.confirmPassword;
+const contactRefinement = (data: any) => {
+  if (data.contactType && !data.contact) {
+    return false;
+  }
+  if (data.contact && !data.contactType) {
+    return false;
+  }
+  return true;
+};
+
+// Advertiser registration schema (company required)
+export const advertiserRegistrationSchema = baseRegistrationSchema.extend({
+  company: companySchema,
 }).refine(
-  (data) => data.password === data.confirmPassword,
+  passwordMatchRefinement,
   {
     message: 'Пароли не совпадают',
     path: ['confirmPassword'],
   }
 ).refine(
-  (data) => {
-    if (data.contactType && !data.contact) {
-      return false;
-    }
-    if (data.contact && !data.contactType) {
-      return false;
-    }
-    return true;
-  },
+  contactRefinement,
+  {
+    message: 'Укажите тип контакта и контактные данные',
+    path: ['contact'],
+  }
+);
+
+// Partner registration schema (no company)
+export const partnerRegistrationSchema = baseRegistrationSchema.extend({
+  company: z.string().optional(),
+}).refine(
+  passwordMatchRefinement,
+  {
+    message: 'Пароли не совпадают',
+    path: ['confirmPassword'],
+  }
+).refine(
+  contactRefinement,
+  {
+    message: 'Укажите тип контакта и контактные данные',
+    path: ['contact'],
+  }
+);
+
+// Generic registration schema for compatibility
+export const registrationSchema = baseRegistrationSchema.extend({
+  company: companySchema.optional(),
+}).refine(
+  passwordMatchRefinement,
+  {
+    message: 'Пароли не совпадают',
+    path: ['confirmPassword'],
+  }
+).refine(
+  contactRefinement,
   {
     message: 'Укажите тип контакта и контактные данные',
     path: ['contact'],
@@ -115,4 +153,6 @@ export const twoFactorSchema = z.object({
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegistrationFormData = z.infer<typeof registrationSchema>;
+export type AdvertiserRegistrationFormData = z.infer<typeof advertiserRegistrationSchema>;
+export type PartnerRegistrationFormData = z.infer<typeof partnerRegistrationSchema>;
 export type TwoFactorFormData = z.infer<typeof twoFactorSchema>;

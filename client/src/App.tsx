@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 
 import Login from '@/pages/auth/login';
 import Logout from '@/pages/auth/logout';
-import RegisterUnified from '@/pages/auth/RegisterUnified';
-import { LoginPartner, LoginAdvertiser, RegisterPartner, RegisterAdvertiser } from '@/pages/LoginVariants';
+// Remove the RegisterUnified import as we now use separate components
+import { LoginPartner, LoginAdvertiser, RegisterPartnerComponent, RegisterAdvertiserComponent } from '@/pages/LoginVariants';
 
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import AuthRedirector from '@/components/auth/AuthRedirector';
@@ -82,9 +82,9 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/logout" component={Logout} />
 
-        <Route path="/register/partner" component={RegisterPartner} />
-        <Route path="/register/advertiser" component={RegisterAdvertiser} />
-        <Route path="/register" component={RegisterUnified} />
+        <Route path="/register/partner" component={RegisterPartnerComponent} />
+        <Route path="/register/advertiser" component={RegisterAdvertiserComponent} />
+        <Route path="/register" component={() => <Redirect to="/register/advertiser" />} />
 
         {/* Advertiser Dashboard Routes */}
         <ProtectedRoute path="/dashboard/advertiser" roles={['advertiser']} component={withLayout(AdvertiserDash)} />
