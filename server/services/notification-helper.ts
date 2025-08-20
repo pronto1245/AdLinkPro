@@ -51,7 +51,9 @@ export async function createNotification(data: NotificationData): Promise<void> 
             type: data.priority === 'urgent' ? 'error' : data.priority === 'high' ? 'warning' : 'info',
             title: data.title,
             message: data.message,
-            metadata: data.metadata
+            metadata: data.metadata,
+            notificationType: data.type,
+            priority: data.priority
           },
           timestamp: new Date().toISOString()
         });

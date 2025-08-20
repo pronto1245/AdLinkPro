@@ -113,11 +113,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import tracking and postback routes
   const trackingRoutes = await import('./routes/tracking');
   const postbackRoutes = await import('./routes/postbacks');
+  const notificationRoutes = await import('./routes/notifications');
   
   // Add new tracking and postback routes
   app.use('/track', trackingRoutes.default);
   app.use('/api/postbacks', postbackRoutes.default);
-  console.log('=== POSTBACK AND TRACKING ROUTES ADDED ===');
+  app.use('/api', notificationRoutes.default);
+  console.log('=== POSTBACK, TRACKING AND NOTIFICATION ROUTES ADDED ===');
 
   // FIXED: Team API routes added first without middleware for testing
   console.log('=== ADDING TEAM ROUTES WITHOUT MIDDLEWARE ===');
