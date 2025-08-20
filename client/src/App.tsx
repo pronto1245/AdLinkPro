@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import Login from '@/pages/auth/login';
 import Logout from '@/pages/auth/logout';
+import ForgotPassword from '@/pages/auth/ForgotPassword';
 // Remove the RegisterUnified import as we now use separate components
 import { LoginPartner, LoginAdvertiser, RegisterPartnerComponent, RegisterAdvertiserComponent } from '@/pages/LoginVariants';
 
@@ -81,6 +82,7 @@ function Router() {
         <Route path="/login/advertiser" component={LoginAdvertiser} />
         <Route path="/login" component={Login} />
         <Route path="/logout" component={Logout} />
+        <Route path="/auth/forgot-password" component={ForgotPassword} />
 
         <Route path="/register/partner" component={RegisterPartnerComponent} />
         <Route path="/register/advertiser" component={RegisterAdvertiserComponent} />
