@@ -6,7 +6,7 @@ export const users = [
   {
     id: "1",
     email: process.env.OWNER_EMAIL || "9791207@gmail.com",
-    password: process.env.OWNER_PASSWORD || "owner123",
+    password: process.env.OWNER_PASSWORD || "Affilix123!",
     role: "OWNER",
     sub: "owner-1",
     username: "owner",
