@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,70 +19,22 @@ import {
   Shield,
   BarChart3,
   MousePointer,
-  Eye,
-  DollarSign
+  Download
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-
-interface TeamMember {
-  id: string;
-  userId: string;
-  username: string;
-  email: string;
-  role: 'buyer' | 'analyst' | 'manager';
-  permissions: string[];
-  subIdPrefix: string;
-  isActive: boolean;
-  createdAt: string;
-}
-
-interface CreateTeamMemberData {
-  email: string;
-  username: string;
-  password: string;
-  role: 'buyer' | 'analyst' | 'manager';
-  permissions: string[];
-  subIdPrefix: string;
-}
-
-const ROLE_PERMISSIONS = {
-  buyer: {
-    name: 'Байер',
-    color: 'bg-blue-100 text-blue-800',
-    icon: <MousePointer className="h-4 w-4" />,
-    permissions: ['view_offers', 'generate_links', 'view_statistics'],
-    defaultPermissions: ['view_offers', 'generate_links', 'view_statistics']
-  },
-  analyst: {
-    name: 'Аналитик', 
-    color: 'bg-green-100 text-green-800',
-    icon: <BarChart3 className="h-4 w-4" />,
-    permissions: ['view_offers', 'view_statistics', 'view_creatives'],
-    defaultPermissions: ['view_offers', 'view_statistics', 'view_creatives']
-  },
-  manager: {
-    name: 'Менеджер',
-    color: 'bg-purple-100 text-purple-800', 
-    icon: <Shield className="h-4 w-4" />,
-    permissions: ['view_offers', 'generate_links', 'view_statistics', 'view_creatives', 'manage_team'],
-    defaultPermissions: ['view_offers', 'generate_links', 'view_statistics', 'view_creatives', 'manage_team']
-  }
-};
-
-const AVAILABLE_PERMISSIONS = [
-  { id: 'view_offers', name: 'Просмотр офферов', description: 'Доступ к списку офферов' },
-  { id: 'generate_links', name: 'Генерация ссылок', description: 'Создание трекинговых ссылок' },
-  { id: 'view_statistics', name: 'Статистика', description: 'Просмотр статистики и отчётов' },
-  { id: 'view_creatives', name: 'Креативы', description: 'Доступ к креативам и материалам' },
-  { id: 'view_payouts', name: 'Выплаты', description: 'Просмотр информации о выплатах' },
-  { id: 'manage_team', name: 'Управление командой', description: 'Добавление и управление участниками' }
-];
+import { useTeamManagement } from "@/hooks/team/useTeamManagement";
+import type { 
+  TeamMember, 
+  CreateAffiliateTeamMemberData 
+} from "@/types/team";
+import { 
+  AFFILIATE_ROLE_PERMISSIONS, 
+  AVAILABLE_AFFILIATE_PERMISSIONS 
+} from "@/types/team";
 
 export default function TeamManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
-  const [createData, setCreateData] = useState<CreateTeamMemberData>({
+  const [createData, setCreateData] = useState<CreateAffiliateTeamMemberData>({
     email: '',
     username: '',
     password: '',
@@ -92,90 +42,20 @@ export default function TeamManagement() {
     permissions: [],
     subIdPrefix: ''
   });
-  const { toast } = useToast();
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
 
-  // Fetch team members
-  const { data: teamMembers = [], isLoading } = useQuery<TeamMember[]>({
-    queryKey: ['/api/affiliate/team'],
-  });
-
-  // Create team member mutation
-  const createMemberMutation = useMutation({
-    mutationFn: (data: CreateTeamMemberData) => 
-      apiRequest('/api/affiliate/team', 'POST', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/affiliate/team'] });
-      setIsCreateDialogOpen(false);
-      setCreateData({
-        email: '',
-        username: '',
-        password: '',
-        role: 'buyer',
-        permissions: [],
-        subIdPrefix: ''
-      });
-      toast({
-        title: "Участник добавлен",
-        description: "Новый участник команды успешно добавлен",
-      });
-    },
-    onError: (error: any) => {
-      console.error('Create member error:', error);
-      const errorMessage = error?.message || error?.error || "Не удалось добавить участника команды";
-      toast({
-        title: "Ошибка",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Update team member mutation
-  const updateMemberMutation = useMutation({
-    mutationFn: ({ id, ...data }: Partial<TeamMember> & { id: string }) => 
-      apiRequest(`/api/affiliate/team/${id}`, 'PATCH', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/affiliate/team'] });
-      setEditingMember(null);
-      toast({
-        title: "Участник обновлён",
-        description: "Информация об участнике команды обновлена",
-      });
-    },
-    onError: (error: any) => {
-      console.error('Update member error:', error);
-      toast({
-        title: "Ошибка",
-        description: error?.message || "Не удалось обновить участника команды",
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Delete team member mutation
-  const deleteMemberMutation = useMutation({
-    mutationFn: (id: string) => 
-      apiRequest(`/api/affiliate/team/${id}`, 'DELETE'),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/affiliate/team'] });
-      toast({
-        title: "Участник удалён",
-        description: "Участник команды удалён из системы",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось удалить участника команды",
-        variant: "destructive",
-      });
-    }
-  });
+  // Use shared team management hook
+  const {
+    teamMembers,
+    isLoadingMembers,
+    createMemberMutation,
+    updateMemberMutation,
+    handleDeleteMember,
+    handleExportTeamData
+  } = useTeamManagement('affiliate');
 
   const handleRoleChange = (role: 'buyer' | 'analyst' | 'manager') => {
-    const defaultPermissions = ROLE_PERMISSIONS[role].defaultPermissions;
+    const defaultPermissions = AFFILIATE_ROLE_PERMISSIONS[role].defaultPermissions;
     setCreateData(prev => ({
       ...prev,
       role,
@@ -192,15 +72,19 @@ export default function TeamManagement() {
     }));
   };
 
-
-
-  const handleDeleteMember = (member: TeamMember) => {
-    if (confirm(`Вы уверены, что хотите удалить участника ${member.username}?`)) {
-      deleteMemberMutation.mutate(member.id);
-    }
+  const resetCreateForm = () => {
+    setCreateData({
+      email: '',
+      username: '',
+      password: '',
+      role: 'buyer',
+      permissions: [],
+      subIdPrefix: ''
+    });
+    setIsCreateDialogOpen(false);
   };
 
-  if (isLoading) {
+  if (isLoadingMembers) {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
@@ -222,13 +106,23 @@ export default function TeamManagement() {
           </p>
         </div>
         
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button data-testid="button-add-team-member">
-              <Plus className="h-4 w-4 mr-2" />
-              Добавить участника
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => handleExportTeamData('csv')}
+            data-testid="button-export-team"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Экспорт
+          </Button>
+          
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button data-testid="button-add-team-member">
+                <Plus className="h-4 w-4 mr-2" />
+                Добавить участника
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Добавить участника команды</DialogTitle>
