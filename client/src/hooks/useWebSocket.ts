@@ -22,7 +22,7 @@ export interface WebSocketHookReturn {
 }
 
 export function useWebSocket(
-  token?: string,
+  url?: string | null,
   options: WebSocketHookOptions = {}
 ): WebSocketHookReturn {
   const wsRef = useRef<WebSocket | null>(null);
@@ -33,6 +33,7 @@ export function useWebSocket(
   const [lastMessage, setLastMessage] = useState<any>(null);
 
   const {
+    token,
     userId,
     onMessage,
     onError,
@@ -100,10 +101,10 @@ export function useWebSocket(
   }, [onClose, reconnect, maxReconnectAttempts, reconnectDelay]);
 
   const connect = useCallback(() => {
-    // В проде отключено, пока не зададим VITE_WS_URL
-    const WS_URL = import.meta?.env?.VITE_WS_URL as string | undefined;
+    // Use provided URL or fall back to environment variable
+    const WS_URL = url || import.meta?.env?.VITE_WS_URL as string | undefined;
     if (!WS_URL) {
-      console.debug('WebSocket disabled: VITE_WS_URL not configured');
+      console.debug('WebSocket disabled: No URL provided and VITE_WS_URL not configured');
       return;
     }
 
@@ -117,11 +118,11 @@ export function useWebSocket(
     }
 
     try {
-      const url = new URL(WS_URL);
-      if (token) url.searchParams.set('token', token);
-      if (userId) url.searchParams.set('userId', userId);
+      const wsUrl = new URL(WS_URL);
+      if (token) wsUrl.searchParams.set('token', token);
+      if (userId) wsUrl.searchParams.set('userId', userId);
       
-      const ws = new WebSocket(url.toString());
+      const ws = new WebSocket(wsUrl.toString());
       wsRef.current = ws;
       
       setConnectionState(WebSocket.CONNECTING);
@@ -135,7 +136,7 @@ export function useWebSocket(
       console.error('Failed to create WebSocket connection:', error);
       setConnectionState(WebSocket.CLOSED);
     }
-  }, [token, userId, handleOpen, handleMessage, handleError, handleClose]);
+  }, [url, token, userId, handleOpen, handleMessage, handleError, handleClose]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -154,14 +155,14 @@ export function useWebSocket(
   }, []);
 
   useEffect(() => {
-    if (token) {
+    if (url && token) {
       connect();
     }
 
     return () => {
       disconnect();
     };
-  }, [token, connect, disconnect]);
+  }, [url, token, connect, disconnect]);
 
   // Update connection state when WebSocket state changes
   useEffect(() => {

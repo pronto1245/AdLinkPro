@@ -13111,5 +13111,261 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
     }
   });
 
+  // Owner Dashboard APIs
+  app.get("/api/owner/metrics", authenticateToken, requireRole(['owner']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { period = '30d' } = req.query;
+      const cacheKey = `owner_metrics_${authUser.id}_${period}`;
+      
+      // Check cache
+      let metrics = queryCache.get(cacheKey);
+      
+      if (!metrics) {
+        // Calculate owner metrics
+        const totalRevenue = await db.select({ sum: sum(financialTransactions.amount) })
+          .from(financialTransactions)
+          .where(eq(financialTransactions.type, 'revenue'));
+          
+        const activeAdvertisers = await db.select({ count: count() })
+          .from(users)
+          .where(and(
+            eq(users.role, 'advertiser'),
+            eq(users.status, 'active')
+          ));
+          
+        const activePartners = await db.select({ count: count() })
+          .from(users)
+          .where(and(
+            or(eq(users.role, 'partner'), eq(users.role, 'affiliate')),
+            eq(users.status, 'active')
+          ));
+
+        const totalClicks = await db.select({ count: count() })
+          .from(trackingClicks)
+          .where(gte(trackingClicks.createdAt, new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)));
+
+        const totalConversions = await db.select({ count: count() })
+          .from(trackingClicks)
+          .where(and(
+            isNotNull(trackingClicks.conversionValue),
+            gte(trackingClicks.createdAt, new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
+          ));
+
+        metrics = {
+          totalRevenue: totalRevenue[0]?.sum || 0,
+          activeAdvertisers: activeAdvertisers[0]?.count || 0,
+          activePartners: activePartners[0]?.count || 0,
+          totalClicks: totalClicks[0]?.count || 0,
+          totalConversions: totalConversions[0]?.count || 0,
+          platformGrowth: Math.round(Math.random() * 20 + 5) // Mock calculation
+        };
+        
+        // Cache for 5 minutes
+        queryCache.set(cacheKey, metrics, 5 * 60 * 1000);
+      }
+      
+      res.json(metrics);
+    } catch (error) {
+      console.error("Owner metrics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/owner/business-overview", authenticateToken, requireRole(['owner']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const cacheKey = `owner_business_overview_${authUser.id}`;
+      
+      let overview = queryCache.get(cacheKey);
+      
+      if (!overview) {
+        // Get business overview data
+        const revenueQuery = await db.select({ sum: sum(financialTransactions.amount) })
+          .from(financialTransactions)
+          .where(eq(financialTransactions.type, 'revenue'));
+          
+        const advertisersQuery = await db.select({ count: count() })
+          .from(users)
+          .where(eq(users.role, 'advertiser'));
+          
+        const partnersQuery = await db.select({ count: count() })
+          .from(users)
+          .where(or(eq(users.role, 'partner'), eq(users.role, 'affiliate')));
+
+        overview = {
+          totalRevenue: revenueQuery[0]?.sum || 0,
+          activeAdvertisers: advertisersQuery[0]?.count || 0,
+          activePartners: partnersQuery[0]?.count || 0,
+          platformGrowth: Math.round(Math.random() * 25 + 10) // Mock growth calculation
+        };
+        
+        queryCache.set(cacheKey, overview, 5 * 60 * 1000);
+      }
+      
+      res.json(overview);
+    } catch (error) {
+      console.error("Owner business overview error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/owner/top-performers", authenticateToken, requireRole(['owner']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const cacheKey = `owner_top_performers_${authUser.id}`;
+      
+      let performers = queryCache.get(cacheKey);
+      
+      if (!performers) {
+        // Get top performing partners and advertisers
+        const topPartners = await db.select({
+          id: users.id,
+          email: users.email,
+          name: sql<string>`COALESCE(${users.firstName}, '') || ' ' || COALESCE(${users.lastName}, '')`,
+          role: users.role,
+          revenue: sum(financialTransactions.amount)
+        })
+        .from(users)
+        .leftJoin(financialTransactions, eq(users.id, financialTransactions.userId))
+        .where(or(eq(users.role, 'partner'), eq(users.role, 'affiliate')))
+        .groupBy(users.id, users.email, users.firstName, users.lastName, users.role)
+        .orderBy(desc(sum(financialTransactions.amount)))
+        .limit(10);
+
+        performers = topPartners.map(p => ({
+          ...p,
+          revenue: Number(p.revenue) || 0
+        }));
+        
+        queryCache.set(cacheKey, performers, 10 * 60 * 1000);
+      }
+      
+      res.json(performers);
+    } catch (error) {
+      console.error("Owner top performers error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Admin metrics API (for super admin dashboard)
+  app.get("/api/admin/metrics", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const { period = '30d' } = req.query;
+      const cacheKey = `admin_metrics_${period}`;
+      
+      let metrics = queryCache.get(cacheKey);
+      
+      if (!metrics) {
+        const totalUsers = await db.select({ count: count() }).from(users);
+        const totalOffers = await db.select({ count: count() }).from(offers);
+        const totalRevenue = await db.select({ sum: sum(financialTransactions.amount) })
+          .from(financialTransactions)
+          .where(eq(financialTransactions.type, 'revenue'));
+        const fraudAlertCount = await db.select({ count: count() }).from(fraudAlerts);
+
+        metrics = {
+          totalUsers: totalUsers[0]?.count || 0,
+          totalOffers: totalOffers[0]?.count || 0,
+          totalRevenue: totalRevenue[0]?.sum || 0,
+          fraudAlerts: fraudAlertCount[0]?.count || 0,
+          systemHealth: 'good', // Mock system health
+          serverUptime: process.uptime()
+        };
+        
+        queryCache.set(cacheKey, metrics, 2 * 60 * 1000);
+      }
+      
+      res.json(metrics);
+    } catch (error) {
+      console.error("Admin metrics error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/system-stats", authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const cacheKey = 'admin_system_stats';
+      let stats = queryCache.get(cacheKey);
+      
+      if (!stats) {
+        stats = {
+          cpuUsage: Math.round(Math.random() * 50 + 20), // Mock CPU usage
+          memoryUsage: Math.round(Math.random() * 40 + 30), // Mock memory usage
+          diskUsage: Math.round(Math.random() * 30 + 40), // Mock disk usage
+          activeConnections: Math.floor(Math.random() * 100 + 50),
+          requestsPerMinute: Math.floor(Math.random() * 1000 + 500),
+          lastBackup: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000)
+        };
+        
+        queryCache.set(cacheKey, stats, 30 * 1000);
+      }
+      
+      res.json(stats);
+    } catch (error) {
+      console.error("Admin system stats error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Affiliate dashboard API (missing route)
+  app.get("/api/affiliate/dashboard", authenticateToken, requireRole(['partner', 'affiliate']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const cacheKey = `affiliate_dashboard_${authUser.id}`;
+      
+      let dashboard = queryCache.get(cacheKey);
+      
+      if (!dashboard) {
+        // Get affiliate dashboard data
+        const clicks = await db.select({ count: count() })
+          .from(trackingClicks)
+          .where(and(
+            eq(trackingClicks.userId, authUser.id),
+            gte(trackingClicks.createdAt, new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
+          ));
+
+        const conversions = await db.select({ 
+          count: count(),
+          revenue: sum(trackingClicks.conversionValue)
+        })
+          .from(trackingClicks)
+          .where(and(
+            eq(trackingClicks.userId, authUser.id),
+            isNotNull(trackingClicks.conversionValue),
+            gte(trackingClicks.createdAt, new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
+          ));
+
+        const activeOffers = await db.select({ count: count() })
+          .from(partnerOffers)
+          .where(and(
+            eq(partnerOffers.partnerId, authUser.id),
+            eq(partnerOffers.status, 'active')
+          ));
+
+        dashboard = {
+          totalClicks: clicks[0]?.count || 0,
+          totalConversions: conversions[0]?.count || 0,
+          totalRevenue: Number(conversions[0]?.revenue) || 0,
+          activeOffers: activeOffers[0]?.count || 0,
+          conversionRate: clicks[0]?.count > 0 
+            ? ((conversions[0]?.count || 0) / clicks[0].count * 100) 
+            : 0,
+          epc: clicks[0]?.count > 0 
+            ? ((Number(conversions[0]?.revenue) || 0) / clicks[0].count) 
+            : 0
+        };
+        
+        queryCache.set(cacheKey, dashboard, 2 * 60 * 1000);
+      }
+      
+      res.json(dashboard);
+    } catch (error) {
+      console.error("Affiliate dashboard error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   return httpServer;
 }
