@@ -117,6 +117,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add new tracking and postback routes
   app.use('/track', trackingRoutes.default);
   app.use('/api/postbacks', postbackRoutes.default);
+  // Also register under /api/postback for backward compatibility
+  app.use('/api/postback', postbackRoutes.default);
   console.log('=== POSTBACK AND TRACKING ROUTES ADDED ===');
 
   // FIXED: Team API routes added first without middleware for testing
@@ -7936,6 +7938,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get single postback template by ID
+  app.get('/api/admin/postback-templates/:id', authenticateToken, requireRole(['super_admin']), async (req, res) => {
+    try {
+      const templates = await storage.getPostbackTemplates({});
+      const template = templates.find(t => t.id === req.params.id);
+      if (!template) {
+        return res.status(404).json({ error: 'Postback template not found' });
+      }
+      res.json(template);
+    } catch (error) {
+      console.error('Get postback template error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Delete postback template
   app.delete('/api/admin/postback-templates/:id', authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
@@ -8733,6 +8750,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Analytics export error:", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // V1 Postback API endpoint (for affiliates)
+  app.get('/api/v1/postback', authenticateToken, async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      
+      // Only allow affiliates (partners) to use v1 API
+      if (user.role !== 'partner') {
+        return res.status(403).json({ error: 'Access denied: V1 API is for affiliates only' });
+      }
+
+      const profiles = await db.select().from(postbackProfiles)
+        .where(eq(postbackProfiles.ownerId, user.id))
+        .orderBy(desc(postbackProfiles.createdAt));
+
+      res.json({
+        success: true,
+        data: profiles,
+        count: profiles.length
+      });
+    } catch (error) {
+      console.error('V1 postback API error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // V1 Postback API endpoint - CREATE (for affiliates)
+  app.post('/api/v1/postback', authenticateToken, async (req, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      
+      // Only allow affiliates (partners) to use v1 API
+      if (user.role !== 'partner') {
+        return res.status(403).json({ error: 'Access denied: V1 API is for affiliates only' });
+      }
+
+      const profile = await db.insert(postbackProfiles)
+        .values({
+          ownerId: user.id,
+          ownerScope: 'partner',
+          ...req.body
+        })
+        .returning();
+
+      res.status(201).json({
+        success: true,
+        data: profile[0]
+      });
+    } catch (error) {
+      console.error('V1 postback create error:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -12553,6 +12623,31 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       res.json(profiles);
     } catch (error) {
       console.error('Get postback profiles error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get single postback profile by ID
+  app.get("/api/postback-profiles/:id", authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      
+      const profile = await db.select().from(postbackProfiles)
+        .where(
+          and(
+            eq(postbackProfiles.id, req.params.id),
+            user.role === 'super_admin' ? sql`true` : eq(postbackProfiles.ownerId, user.id)
+          )
+        )
+        .limit(1);
+
+      if (profile.length === 0) {
+        return res.status(404).json({ error: 'Postback profile not found' });
+      }
+
+      res.json(profile[0]);
+    } catch (error) {
+      console.error('Get postback profile by ID error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
