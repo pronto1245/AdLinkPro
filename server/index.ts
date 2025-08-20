@@ -7,6 +7,9 @@ import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import { Pool } from 'pg';
 import authRouter from '../src/routes/auth';
+import { registerRoutes } from './routes';
+import partnerRouter from './routes/partner';
+import affiliateRouter from './routes/affiliate';
 
 const app = express();
 app.use(express.json());
@@ -35,7 +38,12 @@ async function ensureUsersTable() {
 }
 ensureUsersTable().catch(console.error);
 
+// Register the basic auth router
 app.use(authRouter);
+
+// Register partner/affiliate routes 
+app.use('/api', partnerRouter);
+app.use('/api/affiliate', affiliateRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, where: 'server/index.ts' });
@@ -55,6 +63,13 @@ app.get('/api/me', (req, res) => {
 });
 
 const PORT = Number(process.env.PORT) || 5050;
-app.listen(PORT, () => {
-  console.log(`✅ Server started at http://localhost:${PORT}`);
+
+// Register comprehensive routes and start server
+registerRoutes(app).then(server => {
+  server.listen(PORT, () => {
+    console.log(`✅ Server started at http://localhost:${PORT}`);
+  });
+}).catch(error => {
+  console.error('Failed to register routes:', error);
+  process.exit(1);
 });

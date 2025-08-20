@@ -29,31 +29,23 @@ const AdvertiserAnalytics = lazy(() => import('@/pages/advertiser/AdvertiserAnal
 const AdvertiserFinances  = lazy(() => import('@/pages/advertiser/AdvertiserFinances'));
 const AdvertiserAntiFraud = lazy(() => import('@/pages/advertiser/AntiFraud'));
 
-// Partner (Affiliate) - Updated to use consistent /dashboard/affiliate prefix
-const AffiliateDash   = lazy(() => import('@/pages/partner/PartnerDashboard'));
-const AffiliateOffers = lazy(() => import('@/pages/partner/Offers'));
+// Partner (Affiliate) - Using working affiliate pages
+const AffiliateDash   = lazy(() => import('@/pages/affiliate/PartnerDashboard'));
+const AffiliateOffers = lazy(() => import('@/pages/affiliate/PartnerOffers'));
 const AffiliateStats  = lazy(() => import('@/pages/affiliate/Statistics'));
 const AffiliateFin    = lazy(() => import('@/pages/affiliate/Finances'));
 const AffiliatePosts  = lazy(() => import('@/pages/affiliate/Postbacks'));
-const AffiliateProf   = lazy(() => import('@/pages/partner/PartnerProfile'));
+const AffiliateProf   = lazy(() => import('@/pages/affiliate/PartnerProfile'));
 const AffiliateNotifs = lazy(() => import('@/pages/affiliate/PartnerNotifications'));
 
 // Owner
 const OwnerDash     = lazy(() => import('@/pages/owner/OwnerDashboard'));
-const OwnerUsers    = lazy(() => import('@/pages/owner/Users'));
-const OwnerSettings = lazy(() => import('@/pages/owner/Settings'));
 
 // Super Admin
 const SuperAdminDash   = lazy(() => import('@/pages/super-admin/dashboard'));
-const SuperAdminUsers  = lazy(() => import('@/pages/super-admin/users-management'));
-const SuperAdminOffers = lazy(() => import('@/pages/super-admin/offers'));
-const SuperAdminAnalyt = lazy(() => import('@/pages/super-admin/analytics'));
 
 // Staff
 const StaffDash = lazy(() => import('@/pages/staff/StaffDashboard'));
-
-// Demo
-const SidebarDemo = lazy(() => import('@/pages/SidebarDemo'));
 
 // Helpers
 const withLayout = (C: React.ComponentType<any>) => function Wrapped() {
@@ -134,20 +126,12 @@ function Router() {
 
         {/* Owner Dashboard Routes */}
         <ProtectedRoute path="/dashboard/owner" roles={['owner']} component={withLayout(OwnerDash)} />
-        <ProtectedRoute path="/dashboard/owner/users" roles={['owner']} component={withLayout(OwnerUsers)} />
-        <ProtectedRoute path="/dashboard/owner/settings" roles={['owner']} component={withLayout(OwnerSettings)} />
 
         {/* Super Admin Dashboard Routes */}
         <ProtectedRoute path="/dashboard/super-admin" roles={['super_admin']} component={withLayout(SuperAdminDash)} />
-        <ProtectedRoute path="/dashboard/super-admin/users" roles={['super_admin']} component={withLayout(SuperAdminUsers)} />
-        <ProtectedRoute path="/dashboard/super-admin/offers" roles={['super_admin']} component={withLayout(SuperAdminOffers)} />
-        <ProtectedRoute path="/dashboard/super-admin/analytics" roles={['super_admin']} component={withLayout(SuperAdminAnalyt)} />
 
         {/* Staff Dashboard Routes */}
         <ProtectedRoute path="/dashboard/staff" roles={['staff']} component={withLayout(StaffDash)} />
-
-        {/* Demo Route - Available to all authenticated users */}
-        <ProtectedRoute path="/sidebar-demo" roles={['partner', 'affiliate', 'advertiser', 'owner', 'super_admin', 'staff']} component={withLayout(SidebarDemo)} />
 
         {/* Error and fallback routes */}
         <Route path="/unauthorized" component={Unauthorized} />
