@@ -18,8 +18,15 @@ import {
   GripVertical,
   Search,
   Filter,
-  Plus
+  Plus,
+  MoreHorizontal
 } from 'lucide-react';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -36,6 +43,7 @@ import SortableItem from '@/components/ui/SortableItem';
 import { formatCountries } from '@/utils/countries';
 import { getCategoryBadgeProps } from '@/utils/categories';
 import { formatCR } from '@/utils/formatters';
+import { handleOfferError } from '@/utils/errorHandler';
 
 interface Offer {
   id: string;
@@ -122,18 +130,45 @@ const MyOffersDragDrop: React.FC = () => {
   });
 
   const deleteOfferMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/advertiser/offers/${id}`, 'DELETE'),
-    onSuccess: () => { 
+    mutationFn: async (id: string) => {
+      // Check if soft delete is preferred
+      const softDelete = localStorage.getItem('preferSoftDelete') === 'true';
+      const queryParams = softDelete ? '?soft=true' : '';
+      
+      return apiRequest(`/api/advertiser/offers/${id}${queryParams}`, 'DELETE');
+    },
+    onSuccess: (data, id) => { 
+      const message = data?.canRestore ? "Оффер архивирован (можно восстановить)" : "Оффер удален";
       toast({
         title: "Успех",
-        description: "Оффер удален"
+        description: message
       }); 
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
     },
     onError: (error: any) => {
+      const errorMessage = handleOfferError(error, 'Delete Offer');
       toast({
         title: "Ошибка",
-        description: "Ошибка удаления оффера: " + error.message,
+        description: "Ошибка удаления оффера: " + errorMessage,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const restoreOfferMutation = useMutation({
+    mutationFn: (id: string) => apiRequest(`/api/advertiser/offers/${id}/restore`, 'POST'),
+    onSuccess: () => { 
+      toast({
+        title: "Успех",
+        description: "Оффер восстановлен"
+      }); 
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
+    },
+    onError: (error: any) => {
+      const errorMessage = handleOfferError(error, 'Restore Offer');
+      toast({
+        title: "Ошибка",
+        description: "Ошибка восстановления оффера: " + errorMessage,
         variant: "destructive"
       });
     }
@@ -196,31 +231,76 @@ const MyOffersDragDrop: React.FC = () => {
     reader.readAsText(file);
   };
 
-  const exportToCSV = () => {
-    const csvContent = offers.map((offer: Offer) => 
-      [
-        offer.name || '',
-        (offer.countries || []).join(','),
-        offer.payout || '',
-        offer.category || '',
-        offer.cap || '',
-        offer.status || ''
-      ].join(';')
-    ).join('\n');
+  const exportToCSV = async () => {
+    try {
+      const response = await fetch('/api/advertiser/offers/export?format=csv', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка экспорта данных');
+      }
+      
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'offers.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Успех",
+        description: "Экспорт завершён"
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Ошибка",
+        description: "Ошибка экспорта: " + (error as Error).message,
+        variant: "destructive"
+      });
+    }
+  };
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'offers.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast({
-      title: "Успех",
-      description: "Экспорт завершён"
-    });
+  const exportToJSON = async () => {
+    try {
+      const response = await fetch('/api/advertiser/offers/export?format=json', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка экспорта данных');
+      }
+      
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'offers.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Успех",
+        description: "Экспорт завершён"
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Ошибка",
+        description: "Ошибка экспорта: " + (error as Error).message,
+        variant: "destructive"
+      });
+    }
   };
 
   const bulkStatusUpdate = (newStatus: string) => {
@@ -320,10 +400,29 @@ const MyOffersDragDrop: React.FC = () => {
 
   const filteredOffers = offers.filter((offer: Offer) => {
     const statusMatch = filterStatus === 'all' || offer.status === filterStatus;
-    const categoryMatch = filterCategory === 'all-categories' || !filterCategory || offer.category?.includes(filterCategory);
+    const categoryMatch = filterCategory === 'all-categories' || !filterCategory || 
+      (typeof offer.category === 'string' ? 
+        offer.category.toLowerCase().includes(filterCategory.toLowerCase()) :
+        offer.category?.ru?.toLowerCase().includes(filterCategory.toLowerCase()) || 
+        offer.category?.en?.toLowerCase().includes(filterCategory.toLowerCase())
+      );
+    
     const searchMatch = !searchQuery || 
       offer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      offer.category?.toLowerCase().includes(searchQuery.toLowerCase());
+      (typeof offer.category === 'string' ? 
+        offer.category.toLowerCase().includes(searchQuery.toLowerCase()) :
+        offer.category?.ru?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        offer.category?.en?.toLowerCase().includes(searchQuery.toLowerCase())
+      ) ||
+      (typeof offer.description === 'string' ? 
+        offer.description.toLowerCase().includes(searchQuery.toLowerCase()) :
+        offer.description?.ru?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        offer.description?.en?.toLowerCase().includes(searchQuery.toLowerCase())
+      ) ||
+      offer.countries?.some(country => 
+        country.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      
     return statusMatch && categoryMatch && searchMatch;
   });
 
@@ -439,15 +538,29 @@ const MyOffersDragDrop: React.FC = () => {
         </div>
         
         <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={exportToCSV}
-            data-testid="button-export-csv"
-          >
-            <FileDown className="h-4 w-4 mr-2" />
-            Экспорт
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                size="sm" 
+                variant="outline"
+                data-testid="button-export-dropdown"
+              >
+                <FileDown className="h-4 w-4 mr-2" />
+                Экспорт
+                <MoreHorizontal className="h-4 w-4 ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={exportToCSV}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Экспорт в CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportToJSON}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Экспорт в JSON
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           <div className="relative">
             <Input 

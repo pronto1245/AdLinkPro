@@ -2921,6 +2921,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const authUser = getAuthenticatedUser(req);
       const offerId = req.params.id;
+      const { soft } = req.query; // Check if soft delete is requested
       
       // Verify offer ownership
       const existingOffer = await storage.getOffer(offerId);
@@ -2932,15 +2933,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Access denied - not your offer" });
       }
       
-      // Perform deletion
-      await storage.deleteOffer(offerId);
+      // Perform deletion (soft or hard)
+      if (soft === 'true') {
+        const deletedOffer = await storage.softDeleteOffer(offerId, authUser.id);
+        res.status(200).json({ 
+          message: "Offer archived successfully", 
+          offer: deletedOffer,
+          canRestore: true
+        });
+      } else {
+        await storage.deleteOffer(offerId);
+        res.status(200).json({ message: "Offer deleted successfully" });
+      }
+      
+      // Clear cache
+      queryCache.clear();
+    } catch (error) {
+      console.error("Delete offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Restore archived offer
+  app.post("/api/advertiser/offers/:id/restore", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerId = req.params.id;
+      
+      // Verify offer ownership
+      const existingOffer = await storage.getOffer(offerId);
+      if (!existingOffer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      if (existingOffer.advertiserId !== authUser.id) {
+        return res.status(403).json({ error: "Access denied - not your offer" });
+      }
+      
+      // Restore the offer
+      const restoredOffer = await storage.restoreOffer(offerId);
       
       // Clear cache
       queryCache.clear();
       
-      res.status(200).json({ message: "Offer deleted successfully" });
+      res.status(200).json({ 
+        message: "Offer restored successfully", 
+        offer: restoredOffer 
+      });
     } catch (error) {
-      console.error("Delete offer error:", error);
+      console.error("Restore offer error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get offer dependencies before deletion
+  app.get("/api/advertiser/offers/:id/dependencies", authenticateToken, requireRole(['advertiser']), async (req, res) => {
+    try {
+      const authUser = getAuthenticatedUser(req);
+      const offerId = req.params.id;
+      
+      // Verify offer ownership
+      const existingOffer = await storage.getOffer(offerId);
+      if (!existingOffer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      if (existingOffer.advertiserId !== authUser.id) {
+        return res.status(403).json({ error: "Access denied - not your offer" });
+      }
+      
+      // Get dependencies
+      const dependencies = await storage.getOfferDependencies(offerId);
+      
+      res.json({
+        offerId,
+        dependencies,
+        recommendedAction: dependencies.canDelete ? 'delete' : 'archive',
+        warnings: dependencies.canDelete ? [] : [
+          `Оффер имеет ${dependencies.statistics} записей статистики`,
+          dependencies.partners > 0 ? `Подключено партнеров: ${dependencies.partners}` : null,
+          dependencies.trackingLinks > 0 ? `Активных ссылок: ${dependencies.trackingLinks}` : null
+        ].filter(Boolean)
+      });
+    } catch (error) {
+      console.error("Get offer dependencies error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -3059,24 +3135,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/advertiser/offers/export", authenticateToken, requireRole(['advertiser']), async (req, res) => {
     try {
       const authUser = getAuthenticatedUser(req);
+      const format = (req.query.format as string) || 'csv'; // Default to CSV
       const offers = await storage.getAdvertiserOffers(authUser.id, {});
       
-      // Simple CSV export
-      const csvData = offers.map(offer => ({
+      const exportData = offers.map(offer => ({
+        id: offer.id,
         name: offer.name,
-        category: offer.category,
+        category: typeof offer.category === 'string' ? offer.category : (offer.category?.en || offer.category?.ru || ''),
         payoutType: offer.payoutType,
-        payoutAmount: offer.payoutAmount,
+        payout: offer.payout,
         currency: offer.currency,
         status: offer.status,
+        countries: Array.isArray(offer.countries) ? offer.countries.join(', ') : '',
         partnersCount: offer.partnersCount || 0,
+        clicks: offer.clicks || 0,
         leads: offer.leads || 0,
-        revenue: offer.revenue || 0
+        conversionRate: offer.conversionRate ? offer.conversionRate.toFixed(2) + '%' : '0%',
+        revenue: offer.revenue || 0,
+        createdAt: offer.createdAt ? new Date(offer.createdAt).toISOString().split('T')[0] : '',
+        lastUpdated: offer.updatedAt ? new Date(offer.updatedAt).toISOString().split('T')[0] : ''
       }));
-      
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Content-Disposition', 'attachment; filename=offers.json');
-      res.json(csvData);
+
+      if (format === 'csv') {
+        // Generate CSV
+        const headers = [
+          'ID', 'Name', 'Category', 'Payout Type', 'Payout', 'Currency', 'Status', 
+          'Countries', 'Partners Count', 'Clicks', 'Leads', 'Conversion Rate', 
+          'Revenue', 'Created Date', 'Last Updated'
+        ];
+        
+        const csvRows = [
+          headers.join(','),
+          ...exportData.map(offer => [
+            offer.id,
+            `"${offer.name.replace(/"/g, '""')}"`, // Escape quotes in CSV
+            `"${offer.category.replace(/"/g, '""')}"`,
+            offer.payoutType,
+            offer.payout,
+            offer.currency,
+            offer.status,
+            `"${offer.countries}"`,
+            offer.partnersCount,
+            offer.clicks,
+            offer.leads,
+            offer.conversionRate,
+            offer.revenue,
+            offer.createdAt,
+            offer.lastUpdated
+          ].join(','))
+        ];
+        
+        const csvContent = csvRows.join('\n');
+        const filename = `offers_${new Date().toISOString().split('T')[0]}.csv`;
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.send(csvContent);
+      } else {
+        // Return JSON
+        const filename = `offers_${new Date().toISOString().split('T')[0]}.json`;
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.json({
+          exportedAt: new Date().toISOString(),
+          totalOffers: exportData.length,
+          data: exportData
+        });
+      }
     } catch (error) {
       console.error("Export offers error:", error);
       res.status(500).json({ error: "Internal server error" });
