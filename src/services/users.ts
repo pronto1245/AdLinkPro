@@ -110,7 +110,7 @@ export async function findUserById(id: number) {
 }
 
 export async function checkPassword(user: { passwordHash: string }, password: string) {
-  return bcrypt.compare(password, user.passwordHash);
+  return await bcrypt.compare(password, user.passwordHash);
 }
 
 export async function createUser(userData: {

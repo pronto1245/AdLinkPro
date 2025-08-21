@@ -20,5 +20,5 @@ export async function findUserByEmail(email: string) {
 
 export async function checkPassword(user: any, password: string) {
   if (!user?.password_hash) return false;
-  return bcrypt.compare(password, user.password_hash);
+  return await bcrypt.compare(password, user.password_hash);
 }
