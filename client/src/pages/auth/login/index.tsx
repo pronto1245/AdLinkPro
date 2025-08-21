@@ -11,10 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { useNotifications } from "@/components/NotificationToast";
-import { useAuth } from "@/contexts/auth-context";
 
-import { SecureAPIError } from "@/lib/secure-api";
+import { secureAuth, SecureAPIError } from "@/lib/secure-api";
 import { loginSchema, LoginFormData } from "@/lib/validation";
 
 function roleToPath(role?: string) {
@@ -24,7 +22,7 @@ function roleToPath(role?: string) {
   if (r === "owner") return "/dashboard/owner";
   if (r === "staff") return "/dashboard/staff";
   if (r === "super_admin") return "/dashboard/super-admin";
-  return "/dashboard/affiliate";
+  return "/dashboard/partner";
 }
 
 export default function Login() {
@@ -33,8 +31,6 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const { toast } = useToast();
-  const { showNotification } = useNotifications();
-  const { login } = useAuth();
 
   // Login form
   const loginForm = useForm<LoginFormData>({
@@ -46,64 +42,41 @@ export default function Login() {
     },
   });
 
-  // Handle login form submission
+  // Handle login form submission - simplified without 2FA
   async function onLogin(data: LoginFormData) {
     setError("");
     setLoading(true);
 
     try {
-      const result = await login(data.email, data.password);
+      const result = await secureAuth.loginWithV2({
+        username: data.email,
+        password: data.password,
+      }, data.email);
 
-      // Check if 2FA is required
-      if (result.requires2FA) {
-        showNotification({
-          type: 'info',
-          title: '2FA требуется',
-          message: 'Требуется двухфакторная аутентификация',
-        });
-        // Here you would redirect to 2FA page or show 2FA modal
-        // For now, just show error
-        setError("Двухфакторная аутентификация пока не поддерживается в этом интерфейсе");
-        return;
-      }
-
-      // Login successful
+      // Login successful - backend now always returns token directly
       if (result.token) {
-        showNotification({
-          type: 'success',
-          title: 'Успешный вход',
-          message: 'Добро пожаловать в систему!',
+        toast({
+          title: "Успешный вход",
+          description: "Перенаправляем в панель управления...",
         });
 
-        // Redirect based on user role
-        const userRole = result.user?.role;
-        const redirectPath = roleToPath(userRole);
-        navigate(redirectPath);
+        // Get user info and navigate
+        const user = await secureAuth.me();
+        navigate(roleToPath(user?.role));
       } else {
         setError("Ошибка входа. Попробуйте снова.");
       }
 
     } catch (err) {
-      let errorMessage = "Ошибка соединения. Проверьте интернет-подключение.";
-      
       if (err instanceof SecureAPIError) {
         if (err.status === 401) {
-          errorMessage = "Неверный email или пароль";
-        } else if (err.status === 429) {
-          errorMessage = `Слишком много попыток входа. Попробуйте через ${err.retryAfter || 60} секунд.`;
+          setError("Неверный email или пароль");
         } else {
-          errorMessage = err.message || err.statusText || "Ошибка входа";
+          setError(err.statusText || "Ошибка входа");
         }
-      } else if (err instanceof Error) {
-        errorMessage = err.message;
+      } else {
+        setError("Ошибка соединения. Проверьте интернет-подключение.");
       }
-      
-      setError(errorMessage);
-      showNotification({
-        type: 'error',
-        title: 'Ошибка входа',
-        message: errorMessage,
-      });
     } finally {
       setLoading(false);
     }
@@ -229,10 +202,18 @@ export default function Login() {
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => navigate('/auth/register')}
+                onClick={() => navigate('/register/partner')}
                 disabled={loading}
               >
-                Регистрация
+                Стать партнером
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => navigate('/register/advertiser')}
+                disabled={loading}
+              >
+                Стать рекламодателем
               </Button>
             </div>
           </div>

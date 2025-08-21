@@ -170,79 +170,72 @@ export class RateLimitTracker {
 }
 
 /**
- * Secure Token Storage
+ * Simple Token Storage using localStorage only
+ * Simplified approach for better compatibility and reliability
  */
-export const secureStorage = {
+export const tokenStorage = {
   setToken: (token: string): void => {
     if (typeof localStorage === 'undefined') return;
     
-    // Clear any old tokens
-    localStorage.removeItem('token');
+    // Clear any old tokens from different storage approaches
+    localStorage.removeItem('auth:secure_token');
     localStorage.removeItem('auth:token');
     
-    // Set new token with timestamp
-    const tokenData = {
-      token,
-      timestamp: Date.now(),
-      expires: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
-    };
-    
-    localStorage.setItem('auth:secure_token', JSON.stringify(tokenData));
+    // Use single consistent key for token storage
+    localStorage.setItem('token', token);
   },
 
   getToken: (): string | null => {
     if (typeof localStorage === 'undefined') return null;
     
-    try {
-      const tokenDataStr = localStorage.getItem('auth:secure_token');
-      if (!tokenDataStr) {
-        // Fallback to old token storage for compatibility
-        return localStorage.getItem('token') || localStorage.getItem('auth:token');
-      }
-      
-      const tokenData = JSON.parse(tokenDataStr);
-      
-      // Check if token is expired
-      if (Date.now() > tokenData.expires) {
-        localStorage.removeItem('auth:secure_token');
-        return null;
-      }
-      
-      return tokenData.token;
-    } catch {
-      return null;
+    // Check primary token storage
+    const token = localStorage.getItem('token');
+    if (token) return token;
+    
+    // Fallback to legacy storage for compatibility
+    const authToken = localStorage.getItem('auth:token');
+    if (authToken) {
+      // Migrate to new storage approach
+      localStorage.setItem('token', authToken);
+      localStorage.removeItem('auth:token');
+      return authToken;
     }
+    
+    // Check secure token storage and migrate if found
+    try {
+      const secureTokenStr = localStorage.getItem('auth:secure_token');
+      if (secureTokenStr) {
+        const tokenData = JSON.parse(secureTokenStr);
+        if (tokenData.token) {
+          // Migrate to simple storage
+          localStorage.setItem('token', tokenData.token);
+          localStorage.removeItem('auth:secure_token');
+          return tokenData.token;
+        }
+      }
+    } catch {
+      // If secure token is corrupted, clean it up
+      localStorage.removeItem('auth:secure_token');
+    }
+    
+    return null;
   },
 
   clearToken: (): void => {
     if (typeof localStorage === 'undefined') return;
     
-    localStorage.removeItem('auth:secure_token');
+    // Clear all possible token storage locations
     localStorage.removeItem('token');
     localStorage.removeItem('auth:token');
+    localStorage.removeItem('auth:secure_token');
     localStorage.removeItem('user');
     localStorage.removeItem('role');
     localStorage.removeItem('auth:user');
-  },
-
-  isTokenExpiring: (): boolean => {
-    if (typeof localStorage === 'undefined') return false;
-    
-    try {
-      const tokenDataStr = localStorage.getItem('auth:secure_token');
-      if (!tokenDataStr) return false;
-      
-      const tokenData = JSON.parse(tokenDataStr);
-      const timeLeft = tokenData.expires - Date.now();
-      const oneDayInMs = 24 * 60 * 60 * 1000;
-      
-      return timeLeft < oneDayInMs && timeLeft > 0;
-    } catch {
-      return false;
-    }
   }
 };
 
+// Backward compatibility alias
+export const secureStorage = tokenStorage;
 /**
  * Password Strength Checker
  */

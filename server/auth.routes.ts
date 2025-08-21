@@ -69,7 +69,13 @@ authRouter.post("/login", async (req, res) => {
     
     // Try to find user in database first
     console.log(`🔍 [AUTH] Looking up user in database: ${loginIdentifier}`);
-    let user = await findUserByEmail(loginIdentifier.toLowerCase());
+    let user = null;
+    try {
+      user = await findUserByEmail(loginIdentifier.toLowerCase());
+    } catch (dbError) {
+      console.log(`⚠️ [AUTH] Database lookup failed: ${dbError.message}`);
+      console.log(`🔄 [AUTH] Falling back to hardcoded users...`);
+    }
     
     if (!user) {
       console.log(`❌ [AUTH] User not found in database: ${loginIdentifier}`);

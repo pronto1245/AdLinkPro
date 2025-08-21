@@ -51,8 +51,8 @@ export default function ProtectedRoute({ path, roles, component: C, children }: 
     );
   }
 
-  // Check if user is authenticated
-  if (!isAuthenticated) {
+  // Check if user is authenticated (use auth context first, fallback to token check)
+  if (!isAuthenticated && !token && !secureStorage.getToken()) {
     return <Redirect to={`/login?next=${encodeURIComponent(path)}`} />;
   }
 

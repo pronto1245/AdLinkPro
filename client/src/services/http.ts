@@ -9,7 +9,7 @@ function buildUrl(path: string) {
   return `${API_BASE}${p}`
 }
 function getToken(): string {
-  return localStorage.getItem('token') || localStorage.getItem('auth:token') || ''
+  return localStorage.getItem('token') || ''
 }
 export async function api(path: string, init: RequestInit = {}) {
   const token = getToken()
