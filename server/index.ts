@@ -10,7 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import authRouter from '../src/routes/auth';
 import { authV2Router } from './routes/auth-v2';
-import authFixedRouter from './routes/auth-fixed';
+import { authFixedRouter } from './routes/auth-fixed';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,11 +46,13 @@ async function ensureUsersTable() {
 }
 ensureUsersTable().catch(console.error);
 
-// Mount authentication routes - prioritize the fixed auth router
+// Mount authentication routes - ensure all auth endpoints are accessible
 console.log('🔐 [SERVER] Mounting authentication routes...');
-app.use('/api/auth/fixed', authFixedRouter); // New fixed authentication
-app.use('/api/auth/v2', authV2Router);
-app.use(authRouter); // Original routes as fallback
+app.use('/api/auth/fixed', authFixedRouter); // Fixed auth routes at /api/auth/fixed/login
+app.use('/api/auth/v2', authV2Router); // V2 auth routes at /api/auth/v2/login  
+app.use('/api/auth', authV2Router); // Also mount V2 routes at /api/auth/login for compatibility
+app.use('/auth', authV2Router); // Mount V2 routes at /auth/login for compatibility
+app.use(authRouter); // Original routes that define /api/auth/login
 
 // Serve static files from client dist directory
 const distPath = path.join(__dirname, '..', 'client', 'dist');
