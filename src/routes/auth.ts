@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { findUserByEmail, checkPassword } from '../services/users';
+import { findUserByEmail, checkPassword, createUser } from '../services/users';
 
 const router = Router();
 
@@ -25,6 +25,38 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
     }
 
     if (!user) {
+      // Check in-memory registered users first
+      console.log('🔍 [AUTH] Checking in-memory registered users for:', email);
+      const inMemoryUser = inMemoryUsers.get(email.toLowerCase());
+      
+      if (inMemoryUser) {
+        console.log('✅ [AUTH] Found user in memory, checking password');
+        const passwordValid = await bcrypt.compare(password, inMemoryUser.passwordHash);
+        
+        if (passwordValid) {
+          console.log('✅ [AUTH] In-memory user authentication successful:', inMemoryUser.email);
+          
+          const secret = process.env.JWT_SECRET;
+          if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });
+          
+          const token = jwt.sign(
+            { sub: inMemoryUser.id, role: inMemoryUser.role, email: inMemoryUser.email, username: inMemoryUser.username },
+            secret,
+            { expiresIn: '7d' }
+          );
+          
+          return res.json({ 
+            token,
+            user: {
+              id: inMemoryUser.id,
+              email: inMemoryUser.email,
+              role: inMemoryUser.role,
+              username: inMemoryUser.username
+            }
+          });
+        }
+      }
+      
       // FALLBACK: Try hardcoded users when database is unavailable
       console.log('🔍 [AUTH] Checking hardcoded users for:', email);
       const hardcodedUsers = [
@@ -78,7 +110,7 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
         });
       }
       
-      console.log('❌ [AUTH] User not found in database or hardcoded users');
+      console.log('❌ [AUTH] User not found in database, memory, or hardcoded users');
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -111,12 +143,12 @@ router.post('/api/auth/register', async (req: Request, res: Response) => {
       password, 
       phone, 
       company, 
-      role = 'PARTNER',
+      role = 'affiliate', // Use lowercase to match schema default
       agreeTerms,
       agreePrivacy 
     } = req.body || {};
 
-    console.log('REGISTER start', email, role);
+    console.log('🔐 [REGISTER] Registration attempt for:', email, 'role:', role);
 
     // Validate required fields
     if (!name || !email || !password || !agreeTerms || !agreePrivacy) {
@@ -136,71 +168,105 @@ router.post('/api/auth/register', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Пароль должен содержать минимум 8 символов' });
     }
 
-    // Check if user already exists (database or in-memory)
+    // Check if user already exists in database
+    console.log('🔍 [REGISTER] Checking for existing user:', email);
     const existingUser = await findUserByEmail(email);
     const inMemoryUser = inMemoryUsers.get(email.toLowerCase());
     
     if (existingUser || inMemoryUser) {
-      console.log('REGISTER user exists', email);
+      console.log('❌ [REGISTER] User already exists:', email);
       return res.status(409).json({ error: 'Пользователь с таким email уже существует' });
     }
 
-    console.log('REGISTER new user', email, role);
+    console.log('✅ [REGISTER] Creating new user:', email, 'with role:', role);
 
-    // In a real implementation, you would:
-    // 1. Hash the password with bcrypt
-    // 2. Save user to database
-    // 3. Send verification email
-    // 4. Return success without generating JWT (user needs to verify email first)
+    try {
+      // Try to create user in database
+      const newUser = await createUser({
+        name,
+        email,
+        password,
+        phone,
+        company,
+        role: role.toLowerCase() // Ensure lowercase role for database
+      });
 
-    // For now, simulate successful registration
-    const hashedPassword = await bcrypt.hash(password, 12);
-    
-    console.log('REGISTER password hashed for', email);
-    
-    // Mock user creation (in real app, save to database)
-    const newUser = {
-      id: Date.now(),
-      name,
-      email: email.toLowerCase(),
-      username: email.split('@')[0],
-      role: role.toUpperCase(),
-      passwordHash: hashedPassword,
-      phone,
-      company,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      twoFactorEnabled: false,
-      emailVerified: false // In real app, would be false initially
-    };
+      console.log('✅ [REGISTER] User created successfully in database:', { 
+        id: newUser.id, 
+        email: newUser.email, 
+        role: newUser.role 
+      });
 
-    console.log('REGISTER user created (mock)', { 
-      id: newUser.id, 
-      email: newUser.email, 
-      role: newUser.role 
-    });
+      // Return success response
+      return res.json({
+        success: true,
+        message: role.toLowerCase() === 'advertiser' 
+          ? 'Заявка рекламодателя отправлена на рассмотрение. Мы свяжемся с вами в ближайшее время.' 
+          : 'Регистрация успешна! Проверьте email для подтверждения аккаунта.',
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          name: newUser.firstName || name,
+          username: newUser.username,
+          role: newUser.role,
+          emailVerified: false // Will be handled by email verification system
+        }
+      });
 
-    // Store in memory for duplicate checking when database is unavailable
-    inMemoryUsers.set(email.toLowerCase(), newUser);
-    console.log('REGISTER user stored in memory for duplicate prevention');
-
-    // Return success response
-    return res.json({
-      success: true,
-      message: role === 'ADVERTISER' 
-        ? 'Заявка рекламодателя отправлена на рассмотрение. Мы свяжемся с вами в ближайшее время.' 
-        : 'Регистрация успешна! Проверьте email для подтверждения аккаунта.',
-      user: {
-        id: newUser.id,
-        email: newUser.email,
-        name: newUser.name,
-        role: newUser.role,
-        emailVerified: newUser.emailVerified
+    } catch (dbError) {
+      console.error('❌ [REGISTER] Database error:', dbError.message);
+      
+      // Handle specific database errors
+      if (dbError.message === 'EMAIL_EXISTS') {
+        return res.status(409).json({ error: 'Пользователь с таким email уже существует' });
       }
-    });
+      if (dbError.message === 'USERNAME_EXISTS') {
+        return res.status(409).json({ error: 'Пользователь с таким именем уже существует' });
+      }
+      if (dbError.message === 'USER_EXISTS') {
+        return res.status(409).json({ error: 'Пользователь уже существует' });
+      }
+
+      // Fallback to in-memory storage for development when database is unavailable
+      console.log('⚠️ [REGISTER] Database unavailable, falling back to in-memory storage');
+      
+      const hashedPassword = await bcrypt.hash(password, 12);
+      const fallbackUser = {
+        id: Date.now(),
+        name,
+        email: email.toLowerCase(),
+        username: email.split('@')[0],
+        role: role.toUpperCase(), // Legacy format for in-memory users
+        passwordHash: hashedPassword,
+        phone,
+        company,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        twoFactorEnabled: false,
+        emailVerified: false
+      };
+
+      // Store in memory for duplicate checking
+      inMemoryUsers.set(email.toLowerCase(), fallbackUser);
+      console.log('🔄 [REGISTER] User stored in memory as fallback');
+
+      return res.json({
+        success: true,
+        message: role.toLowerCase() === 'advertiser' 
+          ? 'Заявка рекламодателя отправлена на рассмотрение. Мы свяжемся с вами в ближайшее время.' 
+          : 'Регистрация успешна! Проверьте email для подтверждения аккаунта.',
+        user: {
+          id: fallbackUser.id,
+          email: fallbackUser.email,
+          name: fallbackUser.name,
+          role: fallbackUser.role,
+          emailVerified: fallbackUser.emailVerified
+        }
+      });
+    }
 
   } catch (e) {
-    console.error('register error', e);
+    console.error('❌ [REGISTER] Unexpected error:', e);
     return res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
