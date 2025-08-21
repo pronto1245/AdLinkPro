@@ -1,0 +1,92 @@
+import authBypass from "./routes/auth-bypass";
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
+import jwt from 'jsonwebtoken';
+import { Pool } from 'pg';
+
+const app = express();
+app.use('/api/auth', authBypass);
+app.use(express.json());
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "http://localhost:5173");
+  res.header("Vary", "Origin");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+app.use(express.json());
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "http://localhost:5173");
+  res.header("Vary", "Origin");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+app.use(express.json());
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "http://localhost:5173");
+  res.header("Vary", "Origin");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(express.json());
+app.use(express.json());
+
+const origins = (process.env.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
+app.use(cors({ origin: origins.length ? origins : '*', credentials: true }));
+app.use(helmet());
+app.use(compression());
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+async function ensureUsersTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      username TEXT UNIQUE NOT NULL,
+      role TEXT NOT NULL CHECK (role IN ('OWNER','ADVERTISER','PARTNER')),
+      password_hash TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      two_factor_enabled BOOLEAN NOT NULL DEFAULT false
+    );
+  `);
+}
+ensureUsersTable().catch(console.error);
+
+
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, where: 'server/index.ts' });
+});
+
+app.get('/api/me', (req, res) => {
+  try {
+    const h = String(req.headers['authorization'] || '');
+    const raw = h.startsWith('Bearer ') ? h.slice(7) : h;
+    if (!raw) return res.status(401).json({ error: 'no token' });
+    const p: any = jwt.verify(raw, process.env.JWT_SECRET as string);
+    const role = String(p.role || '').toLowerCase();
+    res.json({ id: p.sub || null, username: p.username || null, email: p.email || null, role });
+  } catch {
+    res.status(401).json({ error: 'invalid token' });
+  }
+});
+
+const PORT = Number(process.env.PORT) || 5050;
+app.listen(PORT, () => {
+  console.log(`✅ Server started at http://localhost:${PORT}`);
+});

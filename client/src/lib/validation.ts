@@ -148,7 +148,7 @@ export const twoFactorSchema = z.object({
     .string()
     .length(6, '2FA код должен содержать 6 цифр')
     .regex(/^\d{6}$/, '2FA код должен содержать только цифры'),
-  tempToken: z.string().min(1, 'Временный токен отсутствует'),
+  token: z.string().min(1, 'Временный токен отсутствует'),
 });
 
 // Password reset validation schema

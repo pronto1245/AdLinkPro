@@ -1,28 +1,36 @@
 import { Router } from 'express';
+import jwt from 'jsonwebtoken';
+import { findUserByEmail, checkPassword } from '../services/users';
 
 const router = Router();
 
-// Демо-логин
-router.post('/auth/login', (req, res) => {
-  const { username, password } = req.body || {};
-  if (!username || !password) {
-    return res.status(400).json({ error: 'username and password are required' });
+router.post('/auth/login', async (req, res) => {
+  const { email, password } = req.body || {};
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
   }
-  // супер-админ
-  if (username === 'superadmin' && password === 'password123') {
-    const payload = {
-      user: { id: 1, username: 'superadmin', role: 'superadmin' },
-      token: 'dev-token', // фронту всё равно — он шлёт Bearer как строку
-      success: true,
-      message: 'ok',
-      data: {
-        user: { id: 1, username: 'superadmin', role: 'superadmin' },
-        token: 'dev-token'
-      }
-    };
-    return res.json(payload);
-  }
-  return res.status(401).json({ error: 'Invalid credentials' });
+
+  const user = await findUserByEmail(email);
+  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+
+  const match = await checkPassword(user, password);
+  if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+
+  const token = jwt.sign(
+    { sub: user.id, email: user.email, role: user.role },
+    process.env.JWT_SECRET!,
+    { expiresIn: '7d' }
+  );
+
+  return res.json({
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+    },
+  });
 });
 
 export default router;

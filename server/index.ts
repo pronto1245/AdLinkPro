@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import express from 'express';
-import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
@@ -22,10 +21,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// CORS и JSON — строго до роутов
+const allowed = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map(s => s.trim()).filter(Boolean);
+app.use((req, res, next) => {
+  const origin = String(req.headers.origin || '');
+  if (origin && (allowed.includes('*') || allowed.includes(origin) || allowed.includes('http://localhost:5173'))) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Vary', 'Origin');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
 app.use(express.json());
 
-const origins = (process.env.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
-app.use(cors({ origin: origins.length ? origins : '*', credentials: true }));
+// Безопасность и лимиты
 app.use(helmet());
 app.use(compression());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
@@ -41,6 +54,8 @@ app.use(requestLogger);
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+// DB
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 async function ensureUsersTable() {
   try {
     await pool.query(`
@@ -99,7 +114,7 @@ app.get('/api/me', (req, res) => {
     const h = String(req.headers['authorization'] || '');
     const raw = h.startsWith('Bearer ') ? h.slice(7) : h;
     if (!raw) return res.status(401).json({ error: 'no token' });
-    const p: any = jwt.verify(raw, process.env.JWT_SECRET as string);
+    const p: any = jwt.verify(raw, process.env.JWT_SECRET || 'dev_secret');
     const role = String(p.role || '').toLowerCase();
     res.json({ id: p.sub || null, username: p.username || null, email: p.email || null, role });
   } catch {

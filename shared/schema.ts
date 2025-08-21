@@ -1,92 +1,11 @@
-import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, integer, decimal, timestamp, boolean, jsonb, pgEnum, serial, bigint, char, smallint, numeric, index } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 
-// Enums
-export const userRoleEnum = pgEnum('user_role', ['super_admin', 'advertiser', 'affiliate', 'staff']);
-export const adminRoleEnum = pgEnum('admin_role', ['super', 'financial', 'technical', 'moderator', 'analyst']);
-export const offerStatusEnum = pgEnum('offer_status', ['active', 'paused', 'draft', 'pending', 'archived', 'on_request']);
-export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'completed', 'failed', 'cancelled']);
-export const ticketStatusEnum = pgEnum('ticket_status', ['open', 'in_progress', 'resolved', 'closed']);
-export const kycStatusEnum = pgEnum('kyc_status', ['pending', 'approved', 'rejected']);
-export const postbackStatusEnum = pgEnum('postback_status', ['pending', 'sent', 'failed', 'retry']);
-export const trackerTypeEnum = pgEnum('tracker_type', ['keitaro', 'custom']);
-export const scopeTypeEnum = pgEnum('scope_type', ['global', 'campaign', 'offer', 'flow']);
-export const httpMethodEnum = pgEnum('http_method', ['GET', 'POST']);
-export const idParamEnum = pgEnum('id_param', ['subid', 'clickid']);
-export const eventTypeEnum = pgEnum('event_type', ['open', 'lp_click', 'reg', 'deposit', 'sale', 'lead', 'lp_leave']);
-export const auditActionEnum = pgEnum('audit_action', ['create', 'update', 'delete', 'login', 'logout', 'view', 'approve', 'reject']);
-export const userStatusEnum = pgEnum('user_status', ['active', 'blocked', 'deleted', 'pending_verification']);
-export const userTypeEnum = pgEnum('user_type', ['advertiser', 'affiliate', 'staff', 'admin']);
-export const walletTypeEnum = pgEnum('wallet_type', ['platform', 'user']);
-export const cryptoCurrencyEnum = pgEnum('crypto_currency', ['BTC', 'ETH', 'USDT', 'USDC', 'TRX', 'LTC', 'BCH', 'XRP']);
-export const walletStatusEnum = pgEnum('wallet_status', ['active', 'suspended', 'maintenance']);
-export const accessRequestStatusEnum = pgEnum('access_request_status', ['pending', 'approved', 'rejected', 'cancelled']);
-export const domainStatusEnum = pgEnum('domain_status', ['pending', 'verified', 'error']);
-export const domainTypeEnum = pgEnum('domain_type', ['a_record', 'cname', 'txt_record']);
-export const ownerScopeEnum = pgEnum('owner_scope', ['owner', 'advertiser', 'partner']);
-export const postbackScopeTypeEnum = pgEnum('postback_scope_type', ['global', 'campaign', 'offer', 'flow']);
-export const postbackMethodEnum = pgEnum('postback_method', ['GET', 'POST']);
-export const postbackIdParamEnum = pgEnum('postback_id_param', ['subid', 'clickid']);
-export const deliveryStatusEnum = pgEnum('delivery_status', ['pending', 'success', 'failed', 'retrying']);
-
-// Users table  
-export const users: any = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
-  role: userRoleEnum("role").notNull().default('affiliate'),
-  partnerNumber: text("partner_number").unique(), // 4-digit sequential number for affiliates (0001, 0002, etc.)
-  adminRole: adminRoleEnum("admin_role"), // For super_admin users - defines their specific admin permissions
-  ipRestrictions: jsonb("ip_restrictions"), // Array of allowed IP addresses for admin access
-  twoFactorEnabled: boolean("two_factor_enabled").default(false),
-  twoFactorSecret: text("two_factor_secret"),
-  lastIpAddress: text("last_ip_address"),
-  sessionToken: text("session_token"),
-  firstName: text("first_name"),
-  lastName: text("last_name"),
-  company: text("company"),
-  phone: text("phone"),
-  telegram: text("telegram"),
-  telegramChatId: bigint("telegram_chat_id", { mode: 'number' }),
-  country: text("country"),
-  language: text("language").default('en'),
-  timezone: text("timezone").default('UTC'),
-  currency: text("currency").default('USD'),
-  kycStatus: kycStatusEnum("kyc_status").default('pending'),
-  isActive: boolean("is_active").default(true),
-  status: userStatusEnum("status").default('active'),
-  userType: userTypeEnum("user_type").default('affiliate'),
-  lastLoginAt: timestamp("last_login_at"),
-  registrationIp: text("registration_ip"),
-  geoRestrictions: jsonb("geo_restrictions"), // Array of allowed countries
-  timeRestrictions: jsonb("time_restrictions"), // Login time restrictions
-  isBlocked: boolean("is_blocked").default(false),
-  blockReason: text("block_reason"),
-  blockedAt: timestamp("blocked_at"),
-  blockedBy: varchar("blocked_by").references(() => users.id),
-  isDeleted: boolean("is_deleted").default(false),
-  deletedAt: timestamp("deleted_at"),
-  deletedBy: varchar("deleted_by").references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-  // Hierarchy fields - who created/owns this user
-  ownerId: varchar("owner_id"), // Who created this user (advertiser creates staff/affiliates)
-  // Advertiser specific fields  
-  advertiserId: varchar("advertiser_id"),
-  balance: decimal("balance", { precision: 15, scale: 2 }).default('0.00'),
-  holdAmount: decimal("hold_amount", { precision: 15, scale: 2 }).default('0.00'),
-  registrationApproved: boolean("registration_approved").default(false),
-  documentsVerified: boolean("documents_verified").default(false),
-  // Referral system
-  referralCode: text("referral_code").unique(), // Unique code for referrals (e.g., "ABC123")
-  referredBy: varchar("referred_by").references(() => users.id), // Who referred this user
-  referralCommission: decimal("referral_commission", { precision: 5, scale: 2 }).default('5.00'), // Commission % for referrals
-  referralProgramEnabled: boolean("referral_program_enabled").default(true), // Включена ли реферальная программа у рекламодателя
-  // Settings
-  settings: jsonb("settings"),
+  username: text("username"),
+  role: text("role").default("partner"),
 });
 
 // Offers table

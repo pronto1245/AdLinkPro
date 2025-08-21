@@ -123,11 +123,13 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
 
 // Secure authentication functions
 export const secureAuth = {
-  async login(data: { email: string; password: string; twoFactorCode?: string; rememberMe?: boolean }, identifier?: string) {
-    // Sanitize inputs
+  async login(
+    data: { email: string; password: string; twoFactorCode?: string; rememberMe?: boolean },
+    identifier?: string
+  ) {
     const cleanData = {
-      email: sanitizeInput.cleanEmail(data.email),
-      password: data.password, // Don't sanitize password, just validate
+      email: data.email.trim(),
+      password: data.password,
       ...(data.twoFactorCode && { twoFactorCode: data.twoFactorCode.replace(/\D/g, '') }),
       ...(data.rememberMe !== undefined && { rememberMe: data.rememberMe })
     };
@@ -136,7 +138,7 @@ export const secureAuth = {
       method: 'POST',
       body: JSON.stringify(cleanData),
       skipAuth: true,
-      identifier: identifier || sanitizeInput.cleanEmail(data.email)
+      identifier: identifier || cleanData.email
     });
 
     // Store token securely if login successful
@@ -147,9 +149,12 @@ export const secureAuth = {
     return result;
   },
 
-  async loginWithV2(data: { username: string; password: string }, identifier?: string) {
+  async loginWithV2(
+    data: { username: string; password: string },
+    identifier?: string
+  ) {
     const cleanData = {
-      username: sanitizeInput.cleanString(data.username),
+      username: data.username.trim(),
       password: data.password
     };
 
@@ -319,7 +324,3 @@ export const secureAuth = {
     }
   }
 };
-
-// Export the secure API function and error class
-export { secureApi, SecureAPIError };
-export default secureApi;

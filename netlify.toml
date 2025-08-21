@@ -1,11 +1,10 @@
 [build]
-  command = "npm ci && npm run build:client"
+  base = "client"
+  command = "npm run build"
   publish = "client/dist"
 
-[build.environment]
-  NODE_VERSION = "20"
-
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/api/*"
+  to = "https://central-matelda-pronto12-95b8129d.koyeb.app/:splat"
   status = 200
+  force = true
