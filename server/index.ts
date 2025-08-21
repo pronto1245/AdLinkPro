@@ -8,9 +8,13 @@ import jwt from 'jsonwebtoken';
 import { Pool } from 'pg';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import authRouter from '../src/routes/auth';
 import { authV2Router } from './routes/auth-v2';
 import { authFixedRouter } from './routes/auth-fixed';
+import { adminRoutes } from './routes/admin-routes';
+import { invitationRoutes } from './routes/invitations';
+import { requestLogger, errorLogger } from './middleware/logging';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,6 +27,15 @@ app.use(cors({ origin: origins.length ? origins : '*', credentials: true }));
 app.use(helmet());
 app.use(compression());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
+
+// Create logs directory if it doesn't exist
+const logsDir = path.join(process.cwd(), 'logs');
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true });
+}
+
+// Add request logging
+app.use(requestLogger);
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -53,12 +66,22 @@ app.use('/api/auth/fixed', authFixedRouter); // Fixed auth routes at /api/auth/f
 app.use('/api/auth/v2', authV2Router); // V2 auth routes at /api/auth/v2/login  
 app.use('/auth', authV2Router); // Mount V2 routes at /auth/login for compatibility
 
+// Mount new enhanced routes
+console.log('📊 [SERVER] Mounting enhanced API routes...');
+app.use('/api/admin', adminRoutes);
+app.use('/api', invitationRoutes);
+
 // Serve static files from client dist directory
 const distPath = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(distPath));
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, where: 'server/index.ts' });
+  res.json({ 
+    ok: true, 
+    where: 'server/index.ts',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
 });
 
 app.get('/api/me', (req, res) => {
@@ -74,6 +97,9 @@ app.get('/api/me', (req, res) => {
   }
 });
 
+// Add error handling middleware
+app.use(errorLogger);
+
 // Serve React app for all non-API routes
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api')) {
@@ -86,4 +112,6 @@ app.get('*', (req, res) => {
 const PORT = Number(process.env.PORT) || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Server started at http://localhost:${PORT}`);
+  console.log(`📊 Enhanced API endpoints available at /api/admin/*`);
+  console.log(`👥 Team invitations available at /api/invitations/*`);
 });
