@@ -89,7 +89,7 @@ export function TopNavigation() {
     // Simple token refresh setup - check token validity every 30 minutes
     const setupTokenRefresh = () => {
       const interval = setInterval(() => {
-        const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+        const token = localStorage.getItem('token');
         if (token && user) {
           // Token refresh logic could be implemented here
           console.log('Token refresh check');
@@ -219,7 +219,7 @@ export function TopNavigation() {
   const filteredMenuItems = getMenuItems().filter(item => {
     if (!item.requiresToken) return true;
     
-    const token = localStorage.getItem('token') || localStorage.getItem('auth:token');
+    const token = localStorage.getItem('token');
     const validation = validateToken(token);
     return validation.valid;
   });

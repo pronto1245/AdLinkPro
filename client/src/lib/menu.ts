@@ -57,7 +57,7 @@ export function validateToken(token: string | null): TokenValidationResult {
  */
 export async function getMenuData(): Promise<MenuData> {
   try {
-    const token = localStorage.getItem('token') || localStorage.getItem('auth:token');
+    const token = localStorage.getItem('token');
     const validation = validateToken(token);
     
     if (!validation.valid) {
@@ -71,7 +71,7 @@ export async function getMenuData(): Promise<MenuData> {
     console.warn('Failed to fetch menu data from API, using fallback:', error);
     
     // Fallback: determine menu items based on token
-    const token = localStorage.getItem('token') || localStorage.getItem('auth:token');
+    const token = localStorage.getItem('token');
     const validation = validateToken(token);
     
     const fallbackRole = validation.user?.role?.toLowerCase() || 'partner';
@@ -96,7 +96,7 @@ export function hasPermission(permission: string, userPermissions: string[] = []
  * Get user role from token
  */
 export function getUserRoleFromToken(): string | null {
-  const token = localStorage.getItem('token') || localStorage.getItem('auth:token');
+  const token = localStorage.getItem('token');
   const validation = validateToken(token);
   
   if (!validation.valid || !validation.user) {
@@ -124,7 +124,7 @@ export function getUserRoleFromToken(): string | null {
  * Refresh token if needed
  */
 export async function refreshTokenIfNeeded(): Promise<boolean> {
-  const token = localStorage.getItem('token') || localStorage.getItem('auth:token');
+  const token = localStorage.getItem('token');
   const validation = validateToken(token);
   
   // If token is valid and not expiring soon (within 5 minutes), no need to refresh
@@ -150,7 +150,6 @@ export async function refreshTokenIfNeeded(): Promise<boolean> {
 
     if (response.token) {
       localStorage.setItem('token', response.token);
-      localStorage.setItem('auth:token', response.token);
       return true;
     }
 
@@ -159,7 +158,6 @@ export async function refreshTokenIfNeeded(): Promise<boolean> {
     console.warn('Token refresh failed:', error);
     // Clear invalid tokens
     localStorage.removeItem('token');
-    localStorage.removeItem('auth:token');
     return false;
   }
 }
