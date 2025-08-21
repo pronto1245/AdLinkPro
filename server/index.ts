@@ -14,6 +14,7 @@ import { authV2Router } from './routes/auth-v2';
 import { authFixedRouter } from './routes/auth-fixed';
 import { adminRoutes } from './routes/admin-routes';
 import { invitationRoutes } from './routes/invitations';
+import { registerRoutes } from './routes'; // Import the main routes that contain registration endpoints
 import { requestLogger, errorLogger } from './middleware/logging';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -70,6 +71,11 @@ app.use('/auth', authV2Router); // Mount V2 routes at /auth/login for compatibil
 console.log('📊 [SERVER] Mounting enhanced API routes...');
 app.use('/api/admin', adminRoutes);
 app.use('/api', invitationRoutes);
+
+// Register main application routes (this includes the new registration endpoints)
+registerRoutes(app).then(() => {
+  console.log('✅ Main registration routes loaded');
+}).catch(console.error);
 
 // Serve static files from client dist directory
 const distPath = path.join(__dirname, '..', 'client', 'dist');

@@ -276,9 +276,9 @@ export const passwordStrength = {
   },
 
   getStrengthLabel: (score: number): { label: string; color: string } => {
-    if (score <= 2) return { label: 'Слабый', color: 'text-red-500' };
-    if (score <= 4) return { label: 'Средний', color: 'text-yellow-500' };
-    return { label: 'Сильный', color: 'text-green-500' };
+    if (score <= 2) return { label: 'Weak', color: 'text-red-500' };
+    if (score <= 4) return { label: 'Medium', color: 'text-yellow-500' };
+    return { label: 'Strong', color: 'text-green-500' };
   }
 };
 

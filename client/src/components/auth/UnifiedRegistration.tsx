@@ -182,17 +182,17 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
       // Record the attempt for rate limiting
       rateLimitTracker.recordAttempt(userIdentifier);
 
-      // Prepare registration data with proper sanitization
+      // Prepare registration data with proper sanitization and field mapping
       const registrationData = {
-        name: sanitizeInput.cleanString(data.name),
+        name: sanitizeInput.cleanString(data.name), // fullName as per requirements
         email: sanitizeInput.cleanEmail(data.email),
         telegram: sanitizeInput.cleanTelegram(data.telegram),
         password: data.password, // Don't sanitize password
-        phone: data.phone ? sanitizeInput.cleanPhone(data.phone) : undefined,
+        phone: data.phone ? sanitizeInput.cleanPhone(data.phone) : undefined, // phoneNumber as per requirements
         company: config.requiresCompany && 'company' in data ? 
-          sanitizeInput.cleanString(data.company) : undefined,
+          sanitizeInput.cleanString(data.company) : undefined, // companyName as per requirements
         contactType: data.contactType,
-        contact: data.contact ? sanitizeInput.cleanString(data.contact) : undefined,
+        contact: data.contact ? sanitizeInput.cleanString(data.contact) : undefined, // contactValue as per requirements
         role: config.role,
         agreeTerms: data.agreeTerms,
         agreePrivacy: data.agreePrivacy,
@@ -204,29 +204,59 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
       // Reset rate limiting on successful registration
       rateLimitTracker.reset(userIdentifier);
 
+      // Add debugging console.log for server response
+      console.log("✅ Registration successful - Server data:", result);
+
+      // Auto-login user and save token to localStorage as required
+      if (result.token) {
+        localStorage.setItem('authToken', result.token);
+        console.log("🔐 Token saved to localStorage");
+        
+        // Set user data if available
+        if (result.user) {
+          localStorage.setItem('userData', JSON.stringify(result.user));
+        }
+      }
+
       toast({
         title: 'Регистрация успешна!',
         description: result.message || config.successMessage,
       });
 
-      // Redirect to login page after a short delay
+      // Redirect based on role as required
+      const redirectPath = result.user?.role === 'affiliate' ? '/dashboard/partner' : '/dashboard/advertiser';
+      console.log("🔄 Redirecting to:", redirectPath);
+      
       setTimeout(() => {
-        setLocation(config.loginPath);
+        setLocation(redirectPath);
       }, 2000);
 
     } catch (err) {
+      console.log("❌ Registration error details:", err);
+      
       if (err instanceof SecureAPIError) {
         if (err.code === 'RATE_LIMITED') {
           const minutes = Math.ceil((err.retryAfter || 60) / 60);
           setError(`Превышен лимит попыток регистрации. Попробуйте через ${minutes} ${minutes === 1 ? 'минуту' : minutes < 5 ? 'минуты' : 'минут'}.`);
           setRateLimitInfo({ blocked: true, remaining: err.retryAfter || 60 });
-        } else if (err.status === 409) {
-          setError('Пользователь с таким email уже существует. Попробуйте войти в систему или используйте другой email.');
+        } else if (err.status === 409 || err.message?.includes('already exists') || err.message?.includes('already in use')) {
+          setError('Email already in use');
+        } else if (err.message?.includes('Invalid email')) {
+          setError('Invalid email format');
+        } else if (err.message?.includes('Password')) {
+          setError('Password is too weak');
+        } else if (err.message?.includes('terms') || err.message?.includes('согласиться')) {
+          setError('You must agree to the terms');
         } else {
           setError(err.message || 'Произошла ошибка при регистрации. Пожалуйста, попробуйте еще раз.');
         }
       } else {
-        setError('Произошла неожиданная ошибка. Пожалуйста, попробуйте позже или обратитесь в службу поддержки.');
+        // Handle validation errors (passwords do not match, etc.)
+        if (err?.message?.includes('not match') || err?.message?.includes('не совпадают')) {
+          setError('Passwords do not match');
+        } else {
+          setError('Произошла неожиданная ошибка. Пожалуйста, попробуйте позже или обратитесь в службу поддержки.');
+        }
       }
 
       toast({
