@@ -341,5 +341,126 @@ export function createTestApp() {
     }
   });
 
+  // Add dashboard API endpoints for testing
+  
+  // Mock authentication middleware for dashboard endpoints
+  const authenticateToken = (req: express.Request, res: express.Response, next: any) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Authorization header missing or invalid' });
+      }
+      
+      const token = authHeader.slice(7);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+      (req as any).user = decoded;
+      next();
+    } catch (error) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+  };
+
+  // Mock role-based middleware
+  const requireRole = (roles: string[]) => {
+    return (req: express.Request, res: express.Response, next: any) => {
+      const user = (req as any).user;
+      if (!user || !roles.includes(user.role)) {
+        return res.status(403).json({ error: 'Insufficient permissions' });
+      }
+      next();
+    };
+  };
+
+  // Owner Dashboard APIs
+  app.get('/api/owner/metrics', authenticateToken, requireRole(['OWNER']), (req, res) => {
+    res.json({
+      total_revenue: 125000.50,
+      active_advertisers: 45,
+      active_partners: 123,
+      platform_growth: 15.2,
+      period: req.query.period || '30d'
+    });
+  });
+
+  app.get('/api/owner/business-overview', authenticateToken, requireRole(['OWNER']), (req, res) => {
+    res.json({
+      total_offers: 234,
+      active_campaigns: 87,
+      monthly_revenue: 45000.75,
+      growth_rate: 12.5,
+      top_performers: [
+        { id: 1, name: 'Campaign A', revenue: 15000 },
+        { id: 2, name: 'Campaign B', revenue: 12000 }
+      ]
+    });
+  });
+
+  // Advertiser Dashboard API
+  app.get('/api/advertiser/dashboard', authenticateToken, requireRole(['ADVERTISER']), (req, res) => {
+    res.json({
+      metrics: {
+        total_clicks: 15420,
+        total_conversions: 876,
+        total_revenue: 32450.75,
+        conversion_rate: 5.68,
+        active_offers: 12,
+        pending_offers: 3
+      },
+      charts: {
+        revenue_trend: [
+          { date: '2024-01-01', revenue: 1200 },
+          { date: '2024-01-02', revenue: 1450 }
+        ],
+        conversion_metrics: [
+          { offer: 'Offer A', conversions: 45 },
+          { offer: 'Offer B', conversions: 32 }
+        ]
+      }
+    });
+  });
+
+  // Affiliate/Partner Dashboard API
+  app.get('/api/affiliate/dashboard', authenticateToken, requireRole(['PARTNER', 'AFFILIATE']), (req, res) => {
+    res.json({
+      metrics: {
+        clicks: 8750,
+        conversions: 234,
+        revenue: 4567.89,
+        conversion_rate: 2.67,
+        approved_offers: 15,
+        pending_offers: 2
+      },
+      charts: {
+        performance_trend: [
+          { date: '2024-01-01', clicks: 450, conversions: 12 },
+          { date: '2024-01-02', clicks: 523, conversions: 15 }
+        ]
+      }
+    });
+  });
+
+  // Admin Dashboard APIs
+  app.get('/api/admin/metrics', authenticateToken, requireRole(['SUPER_ADMIN']), (req, res) => {
+    res.json({
+      total_users: 1234,
+      total_offers: 567,
+      total_revenue: 234567.89,
+      fraud_alerts: 12,
+      system_health: 98.5,
+      period: req.query.period || '30d'
+    });
+  });
+
+  app.get('/api/admin/system-stats', authenticateToken, requireRole(['SUPER_ADMIN']), (req, res) => {
+    res.json({
+      cpu_usage: 45.2,
+      memory_usage: 67.8,
+      disk_usage: 34.1,
+      active_connections: 156,
+      uptime: 98.9,
+      server_health: 'healthy'
+    });
+  });
+
   return app;
 }
