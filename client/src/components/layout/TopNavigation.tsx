@@ -219,7 +219,7 @@ export function TopNavigation() {
   const filteredMenuItems = getMenuItems().filter(item => {
     if (!item.requiresToken) return true;
     
-    const token = localStorage.getItem('token') || localStorage.getItem('auth:token');
+    const token = localStorage.getItem('token');
     const validation = validateToken(token);
     return validation.valid;
   });

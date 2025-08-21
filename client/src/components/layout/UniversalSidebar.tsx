@@ -279,7 +279,7 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
   // Enhanced token validation with automatic refresh
   useEffect(() => {
     const validateAndRefreshToken = async () => {
-      const currentToken = token || localStorage.getItem('token') || localStorage.getItem('auth:token');
+      const currentToken = token || localStorage.getItem('token');
       const validation = validateToken(currentToken);
       
       setIsTokenValid(validation.valid);
