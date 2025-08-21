@@ -1,40 +1,129 @@
+// Import unified theme utility
+const ThemeUtils = window.ThemeUtils;
+
 // Main application state
 let currentSection = 'dashboard';
-let currentTheme = localStorage.getItem('theme') || 'light';
 let currentLanguage = localStorage.getItem('language') || 'ru';
+
+// Localization for theme messages
+const messages = {
+    ru: {
+        themeChanged: 'Тема изменена на',
+        lightTheme: 'светлую',
+        darkTheme: 'темную',
+        systemTheme: 'системную',
+        lightThemeButton: 'Светлая тема',
+        darkThemeButton: 'Темная тема',
+        systemThemeButton: 'Системная тема',
+        languageChanged: 'Язык изменен на',
+        russian: 'русский',
+        english: 'English'
+    },
+    en: {
+        themeChanged: 'Theme changed to',
+        lightTheme: 'light',
+        darkTheme: 'dark',
+        systemTheme: 'system',
+        lightThemeButton: 'Light Theme',
+        darkThemeButton: 'Dark Theme',  
+        systemThemeButton: 'System Theme',
+        languageChanged: 'Language changed to',
+        russian: 'русский',
+        english: 'English'
+    }
+};
+
+function t(key) {
+    return messages[currentLanguage]?.[key] || messages.ru[key] || key;
+}
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
-    initTheme();
-    initNavigation();
-    initUserMenu();
-    showSection('dashboard');
-    initOffersManagement();
-    animateCounters();
-    loadActivityFeed();
-    initCharts();
+    // Load theme utils first
+    const script = document.createElement('script');
+    script.src = '/shared/theme-utils.js';
+    script.onload = function() {
+        initTheme();
+        initNavigation();
+        initUserMenu();
+        showSection('dashboard');
+        initOffersManagement();
+        animateCounters();
+        loadActivityFeed();
+        initCharts();
+    };
+    script.onerror = function() {
+        // Fallback to basic theme initialization
+        console.warn('Failed to load theme utils, using fallback');
+        initThemeBasic();
+        initNavigation();
+        initUserMenu();
+        showSection('dashboard');
+        initOffersManagement();
+        animateCounters();
+        loadActivityFeed();
+        initCharts();
+    };
+    document.head.appendChild(script);
 });
 
-// Theme Management
+// Theme Management with unified utility
 function initTheme() {
-    document.documentElement.setAttribute('data-theme', currentTheme);
+    if (window.ThemeUtils) {
+        const result = window.ThemeUtils.initTheme(true); // Use data-theme attribute
+        updateThemeIcon();
+        window.ThemeUtils.enableThemeTransitions();
+    } else {
+        initThemeBasic();
+    }
+}
+
+// Fallback theme initialization
+function initThemeBasic() {
+    const savedTheme = localStorage.getItem('app-theme') || localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme === 'system' ? 
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : 
+        savedTheme);
     updateThemeIcon();
 }
 
 function toggleTheme() {
-    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    localStorage.setItem('theme', currentTheme);
-    updateThemeIcon();
-    showNotification('Тема изменена на ' + (currentTheme === 'dark' ? 'темную' : 'светлую'));
+    if (window.ThemeUtils) {
+        const resolvedTheme = window.ThemeUtils.toggleTheme(true);
+        updateThemeIcon();
+        
+        const themeInfo = window.ThemeUtils.getThemeInfo();
+        const themeKey = themeInfo.preference === 'system' ? 'systemTheme' : 
+                        (resolvedTheme === 'dark' ? 'darkTheme' : 'lightTheme');
+        
+        showNotification(t('themeChanged') + ' ' + t(themeKey));
+    } else {
+        // Fallback toggle
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('app-theme', newTheme);
+        updateThemeIcon();
+        showNotification(t('themeChanged') + ' ' + t(newTheme === 'dark' ? 'darkTheme' : 'lightTheme'));
+    }
 }
 
 function updateThemeIcon() {
     const buttons = document.querySelectorAll('[onclick="toggleTheme()"]');
     buttons.forEach(btn => {
-        const icon = currentTheme === 'light' ? '🌙' : '☀️';
-        const text = currentTheme === 'light' ? 'Темная тема' : 'Светлая тема';
-        btn.innerHTML = `${icon} ${text}`;
+        if (window.ThemeUtils) {
+            const themeInfo = window.ThemeUtils.getThemeInfo();
+            const resolved = themeInfo.resolved;
+            const icon = resolved === 'light' ? '🌙' : '☀️';
+            const text = resolved === 'light' ? t('darkThemeButton') : t('lightThemeButton');
+            btn.innerHTML = `${icon} ${text}`;
+        } else {
+            // Fallback
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const icon = currentTheme === 'light' ? '🌙' : '☀️';
+            const text = currentTheme === 'light' ? t('darkThemeButton') : t('lightThemeButton');
+            btn.innerHTML = `${icon} ${text}`;
+        }
     });
 }
 
