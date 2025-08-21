@@ -1,4 +1,5 @@
 // Authentication service
+import { secureStorage } from '../lib/security';
 export interface LoginResponse {
   token: string;
   role: string;
@@ -29,8 +30,8 @@ export const normalizeRole = (role?: string): string => {
 
 export const saveToken = (data: LoginResponse): void => {
   if (data.token) {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('auth_token', data.token);
+    // Use unified secure storage instead of direct localStorage
+    secureStorage.setToken(data.token);
   }
   if (data.role) {
     localStorage.setItem('role', normalizeRole(data.role));
@@ -45,7 +46,8 @@ export const saveToken = (data: LoginResponse): void => {
 
 export const getStoredAuth = (): { token: string | null; role: string | null; email: string | null; user: any } => {
   return {
-    token: localStorage.getItem('token') || localStorage.getItem('auth_token'),
+    // Use unified secure storage for token retrieval
+    token: secureStorage.getToken(),
     role: localStorage.getItem('role'),
     email: localStorage.getItem('email'),
     user: (() => {
@@ -60,8 +62,8 @@ export const getStoredAuth = (): { token: string | null; role: string | null; em
 };
 
 export const clearAuth = (): void => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('auth_token');
+  // Use unified secure storage for comprehensive token clearing
+  secureStorage.clearToken();
   localStorage.removeItem('role');
   localStorage.removeItem('email');
   localStorage.removeItem('user');

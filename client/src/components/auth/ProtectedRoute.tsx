@@ -38,6 +38,7 @@ type Props = {
 
 export default function ProtectedRoute({ path, roles, component: C, children }: Props) {
   const [match] = useRoute(path);
+<<<<<<< HEAD
   const { isAuthenticated, isLoading, token, user } = useAuth();
   
   if (!match) return null;
@@ -62,6 +63,17 @@ export default function ProtectedRoute({ path, roles, component: C, children }: 
     if (!userRole || !roles.includes(userRole)) {
       return <Redirect to="/unauthorized" />;
     }
+=======
+  if (!match) return null;
+
+  const role = getRoleFromToken();
+  if (!role) {
+    return <Redirect to={`/login?next=${encodeURIComponent(path)}`} />;
+  }
+
+  if (roles && !roles.includes(role)) {
+    return <Redirect to="/unauthorized" />;
+>>>>>>> pr148-branch
   }
 
   return C ? <C /> : <>{children}</>;

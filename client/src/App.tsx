@@ -87,11 +87,17 @@ function Router() {
         <Route path="/auth/forgot-password" component={ForgotPassword} />
         <Route path="/auth/reset-password" component={ResetPassword} />
 
+<<<<<<< HEAD
         {/* Registration routes */}
         <Route path="/auth/register" component={Register} />
         <Route path="/register/partner" component={RegisterPartnerComponent} />
         <Route path="/register/advertiser" component={RegisterAdvertiserComponent} />
         <Route path="/register" component={() => <Redirect to="/auth/register" />} />
+=======
+        <Route path="/register/partner" component={RegisterPartnerComponent} />
+        <Route path="/register/advertiser" component={RegisterAdvertiserComponent} />
+        <Route path="/register" component={() => <Redirect to="/register/advertiser" />} />
+>>>>>>> pr148-branch
 
         {/* Advertiser Dashboard Routes */}
         <ProtectedRoute path="/dashboard/advertiser" roles={['advertiser']} component={withLayout(AdvertiserDash)} />

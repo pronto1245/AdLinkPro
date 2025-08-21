@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, useEffect, type ReactNode } from 'react';
-import { secureAuth, SecureAPIError } from '@/lib/secure-api';
+import { login as apiLogin, type LoginResponse } from '@/lib/api';
 import { secureStorage } from '@/lib/security';
 
 type User = {
@@ -16,9 +16,8 @@ type AuthContextValue = {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<any>;
+  login: (username: string, password: string) => Promise<LoginResponse>;
   logout: () => void;
-  refreshUser: () => Promise<void>;
 };
 
 const AuthCtx = createContext<AuthContextValue | undefined>(undefined);
@@ -35,22 +34,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedToken = secureStorage.getToken();
         if (storedToken) {
           setToken(storedToken);
-          // Validate token by fetching user info
-          const userInfo = await secureAuth.me();
-          if (userInfo) {
-            setUser(userInfo);
-          } else {
-            // Invalid token, clear it
-            secureStorage.clearToken();
-            setToken(null);
-          }
+          // For now, we don't validate the token against server since we're using simplified approach
+          // You can add token validation here later if needed
         }
       } catch (error) {
-        // Token is invalid or expired
-        console.warn('Token validation failed:', error);
+        console.warn('Token initialization failed:', error);
         secureStorage.clearToken();
-        setToken(null);
-        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -59,66 +48,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeAuth();
   }, []);
 
-  const doLogin = useCallback(async (username: string, password: string): Promise<any> => {
+  const doLogin = useCallback(async (username: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await secureAuth.loginWithV2({ username, password }, username);
+      const response = await apiLogin(username, password);
       
       // If 2FA is required, return the response without setting user/token
       if (response.requires2FA) {
         return response;
       }
       
-      // If login is successful, get user info and set state
-      if (response.token) {
+      // If login is successful, set user and token
+      if (response.success && response.token && response.user) {
+        setUser(response.user);
         setToken(response.token);
-        
-        // Fetch user info to get complete user data
-        try {
-          const userInfo = await secureAuth.me();
-          setUser(userInfo);
-        } catch (error) {
-          console.warn('Failed to fetch user info after login:', error);
-          // Set minimal user info from response if available
-          if (response.user) {
-            setUser(response.user);
-          }
-        }
+        secureStorage.setToken(response.token);
       }
       
       return response;
     } catch (error) {
-      if (error instanceof SecureAPIError) {
-        throw error;
-      }
-      throw new Error('Login failed');
+      throw error;
     }
   }, []);
 
-  const refreshUser = useCallback(async () => {
-    if (!token) return;
-    
-    try {
-      const userInfo = await secureAuth.me();
-      setUser(userInfo);
-    } catch (error) {
-      console.warn('Failed to refresh user info:', error);
-      // Token might be invalid, clear auth
-      secureStorage.clearToken();
-      setToken(null);
-      setUser(null);
-    }
-  }, [token]);
-
-  const logout = useCallback(async () => {
-    try {
-      await secureAuth.logout();
-    } catch (error) {
-      // Ignore logout errors, still clear local state
-      console.warn('Logout error (ignored):', error);
-    }
-    
+  const logout = useCallback(() => {
     setUser(null);
     setToken(null);
+    secureStorage.clearToken();
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -128,10 +83,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       isAuthenticated: !!token && !!user,
       login: doLogin, 
-      logout, 
-      refreshUser 
+      logout
     }),
-    [user, token, isLoading, doLogin, logout, refreshUser]
+    [user, token, isLoading, doLogin, logout]
   );
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;

@@ -42,6 +42,7 @@ i18nService.initialize().then(() => {
     <StrictMode>
       <ThemeProvider defaultTheme="light" storageKey="affiliate-platform-theme">
         <QueryClientProvider client={queryClient}>
+<<<<<<< HEAD
           <NotificationProvider>
             <AuthProvider>
               <SidebarProvider>
@@ -49,6 +50,13 @@ i18nService.initialize().then(() => {
               </SidebarProvider>
             </AuthProvider>
           </NotificationProvider>
+=======
+          <AuthProvider>
+            <SidebarProvider>
+              <App />
+            </SidebarProvider>
+          </AuthProvider>
+>>>>>>> pr148-branch
         </QueryClientProvider>
       </ThemeProvider>
     </StrictMode>
@@ -60,6 +68,7 @@ i18nService.initialize().then(() => {
     <StrictMode>
       <ThemeProvider defaultTheme="light" storageKey="affiliate-platform-theme">
         <QueryClientProvider client={queryClient}>
+<<<<<<< HEAD
           <NotificationProvider>
             <AuthProvider>
               <SidebarProvider>
@@ -67,6 +76,13 @@ i18nService.initialize().then(() => {
               </SidebarProvider>
             </AuthProvider>
           </NotificationProvider>
+=======
+          <AuthProvider>
+            <SidebarProvider>
+              <App />
+            </SidebarProvider>
+          </AuthProvider>
+>>>>>>> pr148-branch
         </QueryClientProvider>
       </ThemeProvider>
     </StrictMode>

@@ -1,4 +1,4 @@
-import { csrfManager, secureStorage, rateLimitTracker, deviceFingerprint, sanitizeInput } from './security';
+import { csrfManager, tokenStorage, rateLimitTracker, deviceFingerprint, sanitizeInput } from './security';
 
 const API_BASE = '';
 
@@ -40,7 +40,7 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
   }
 
   // Get authentication token
-  const token = !init.skipAuth ? secureStorage.getToken() : null;
+  const token = !init.skipAuth ? tokenStorage.getToken() : null;
 
   // Prepare headers
   const headers: Record<string, string> = {
@@ -76,7 +76,11 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
 
     // Handle authentication errors
     if (res.status === 401) {
+<<<<<<< HEAD
       secureStorage.clearToken();
+=======
+      tokenStorage.clearToken();
+>>>>>>> pr148-branch
       csrfManager.clearToken();
       throw new SecureAPIError(401, 'Unauthorized', 'AUTH_FAILED');
     }
@@ -141,7 +145,11 @@ export const secureAuth = {
 
     // Store token securely if login successful
     if (result.token) {
+<<<<<<< HEAD
       secureStorage.setToken(result.token);
+=======
+      tokenStorage.setToken(result.token);
+>>>>>>> pr148-branch
     }
 
     return result;
@@ -162,7 +170,11 @@ export const secureAuth = {
 
     // Store token securely if login successful (same as regular login method)
     if (result.token) {
+<<<<<<< HEAD
       secureStorage.setToken(result.token);
+=======
+      tokenStorage.setToken(result.token);
+>>>>>>> pr148-branch
     }
 
     return result;
@@ -183,7 +195,11 @@ export const secureAuth = {
 
     // Store token securely if verification successful
     if (result.token) {
+<<<<<<< HEAD
       secureStorage.setToken(result.token);
+=======
+      tokenStorage.setToken(result.token);
+>>>>>>> pr148-branch
     }
 
     return result;
@@ -274,7 +290,11 @@ export const secureAuth = {
       // Ignore errors on logout
     } finally {
       // Always clear local storage
+<<<<<<< HEAD
       secureStorage.clearToken();
+=======
+      tokenStorage.clearToken();
+>>>>>>> pr148-branch
       csrfManager.clearToken();
     }
   },
@@ -283,12 +303,20 @@ export const secureAuth = {
     try {
       const result = await secureApi('/api/auth/refresh', { method: 'POST' });
       if (result.token) {
+<<<<<<< HEAD
         secureStorage.setToken(result.token);
+=======
+        tokenStorage.setToken(result.token);
+>>>>>>> pr148-branch
       }
       return result;
     } catch {
       // If refresh fails, clear tokens
+<<<<<<< HEAD
       secureStorage.clearToken();
+=======
+      tokenStorage.clearToken();
+>>>>>>> pr148-branch
       throw new SecureAPIError(401, 'Token refresh failed', 'REFRESH_FAILED');
     }
   }
