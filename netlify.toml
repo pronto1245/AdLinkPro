@@ -1,10 +1,10 @@
 [build]
   base = "client"
   command = "npm run build"
-  publish = "client/dist"
+  publish = "dist"
 
 [functions]
-  directory = "client/netlify/functions"
+  directory = "netlify/functions"
 
 [[redirects]]
   from = "/api/auth/login"
