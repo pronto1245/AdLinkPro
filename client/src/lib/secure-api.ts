@@ -1,4 +1,4 @@
-import { csrfManager, secureStorage, rateLimitTracker, deviceFingerprint, sanitizeInput } from './security';
+import { csrfManager, tokenStorage, rateLimitTracker, deviceFingerprint, sanitizeInput } from './security';
 
 const API_BASE = '';
 
@@ -40,7 +40,7 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
   }
 
   // Get authentication token
-  const token = !init.skipAuth ? secureStorage.getToken() : null;
+  const token = !init.skipAuth ? tokenStorage.getToken() : null;
 
   // Prepare headers
   const headers: Record<string, string> = {

@@ -1,11 +1,13 @@
 import React from 'react';
 import { Redirect, useRoute } from 'wouter';
 import { extractRoleFromToken } from '@/utils/routeByRole';
-import { secureStorage } from '@/lib/security';
 
 function getRoleFromToken(): string | null {
-  // Use secure storage to get token (handles both new and old storage locations)
-  const raw = secureStorage.getToken();
+  // Use simple localStorage token access
+  const raw = localStorage.getItem('token') || 
+              localStorage.getItem('auth:token') ||
+              null;
+  
   const role = extractRoleFromToken(raw);
   if (!role) return null;
   

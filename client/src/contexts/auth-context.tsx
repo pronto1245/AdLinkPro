@@ -14,7 +14,7 @@ const AuthCtx = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser]   = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('auth:token') || localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
   const doLogin = useCallback(async (username: string, password: string): Promise<LoginResponse> => {
     const response = await apiLogin(username, password);
@@ -28,8 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (response.success && response.token && response.user) {
       setUser(response.user);
       setToken(response.token);
-      // Save to both keys for backward compatibility
-      localStorage.setItem('auth:token', response.token);
+      // Save token with simple localStorage approach
       localStorage.setItem('token', response.token);
     }
     
@@ -39,9 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
-    // Remove from both keys for backward compatibility
-    localStorage.removeItem('auth:token');
+    // Clear all possible token storage locations
     localStorage.removeItem('token');
+    localStorage.removeItem('auth:token');
+    localStorage.removeItem('auth:secure_token');
   }, []);
 
   const value = useMemo<AuthContextValue>(
