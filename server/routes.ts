@@ -4208,12 +4208,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Verify current password
       const user = await storage.getUser(authUser.id);
-      if (!user || !bcryptjs.compareSync(currentPassword, user.passwordHash || '')) {
+      if (!user || !await bcryptjs.compare(currentPassword, user.passwordHash || '')) {
         return res.status(400).json({ error: "Invalid current password" });
       }
       
       // Update password
-      const hashedPassword = bcryptjs.hashSync(newPassword, 10);
+      const hashedPassword = await bcryptjs.hash(newPassword, 12);
       await storage.updateUser(authUser.id, { passwordHash: hashedPassword });
       res.json({ success: true });
     } catch (error) {
@@ -4629,7 +4629,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check current password
       const passwordValid = user.passwordHash ? 
-        bcryptjs.compareSync(currentPassword, user.passwordHash) : 
+        await bcryptjs.compare(currentPassword, user.passwordHash) : 
         user.password === currentPassword;
         
       if (!passwordValid) {
@@ -4637,7 +4637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update password
-      const hashedPassword = bcryptjs.hashSync(newPassword, 10);
+      const hashedPassword = await bcryptjs.hash(newPassword, 12);
       await storage.updateUser(authUser.id, { passwordHash: hashedPassword });
       
       console.log("Partner password changed successfully for user:", authUser.id);
