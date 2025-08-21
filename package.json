@@ -18,7 +18,11 @@
     "audit:integration": "node scripts/integration-audit.mjs",
     "audit:verbose": "VERBOSE=1 node scripts/integration-audit.mjs",
     "audit:problems": "node scripts/generate-problems-table.mjs",
-    "audit:full": "npm run audit:integration && npm run audit:problems"
+    "audit:full": "npm run audit:integration && npm run audit:problems",
+    "i18n:validate": "node scripts/validate-translations.mjs",
+    "i18n:complete": "node scripts/complete-translations.mjs",
+    "i18n:cleanup": "node scripts/cleanup-i18n.mjs",
+    "i18n:all": "npm run i18n:validate && npm run i18n:complete && npm run i18n:cleanup"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

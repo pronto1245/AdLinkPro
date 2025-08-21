@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdLinkPro - Translation Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .language-switcher {
+            display: flex;
+            gap: 10px;
+        }
+        .lang-btn {
+            padding: 8px 16px;
+            border: 2px solid #007bff;
+            background: white;
+            color: #007bff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            background: #007bff;
+            color: white;
+        }
+        .lang-btn:hover {
+            background: #0056b3;
+            color: white;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 data-key="dashboard.title">AdLinkPro - Тест переводов</h1>
+            <div class="language-switcher">
+                <button class="lang-btn active" data-lang="ru">🇷🇺 RU</button>
+                <button class="lang-btn" data-lang="en">🇺🇸 EN</button>
+            </div>
+        </div>
+
+        <div id="status" class="status success">
+            <strong data-key="common.status">Статус</strong>: 
+            <span data-key="language.system.ready">Система переводов готова к тестированию</span>
+        </div>
+
+        <div class="test-section">
+            <h3 data-key="common.navigation">Навигация</h3>
+            <ul>
+                <li data-key="navigation.dashboard">Дашборд</li>
+                <li data-key="navigation.offers">Офферы</li>
+                <li data-key="navigation.partners">Партнеры</li>
+                <li data-key="common.settings">Настройки</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3 data-key="auth.title">Авторизация</h3>
+            <div>
+                <label data-key="common.email">Email</label>: 
+                <input type="email" placeholder="user@example.com">
+            </div>
+            <div style="margin-top: 10px;">
+                <label data-key="common.password">Пароль</label>: 
+                <input type="password" placeholder="••••••••">
+            </div>
+            <div style="margin-top: 15px;">
+                <button data-key="auth.sign_in">Войти</button>
+                <button data-key="common.cancel" style="margin-left: 10px;">Отмена</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3 data-key="common.actions">Действия</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button data-key="common.save">Сохранить</button>
+                <button data-key="common.edit">Редактировать</button>
+                <button data-key="common.delete">Удалить</button>
+                <button data-key="common.export">Экспорт</button>
+                <button data-key="common.refresh">Обновить</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3 data-key="sidebar.title">Боковая панель</h3>
+            <div>
+                <p><strong data-key="sidebar.myOffers">Мои офферы</strong> - <span data-key="sidebar.myOffersDesc">Управление офферами</span></p>
+                <p><strong data-key="sidebar.partners">Партнёры</strong> - <span data-key="sidebar.partnersDesc">Управление партнёрами</span></p>
+                <p><strong data-key="sidebar.analytics">Аналитика</strong> - <span data-key="sidebar.analyticsDesc">Детальная аналитика и отчёты</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock translation data for testing
+        const translations = {
+            ru: {
+                'dashboard.title': 'AdLinkPro - Тест переводов',
+                'common.status': 'Статус',
+                'language.system.ready': 'Система переводов готова к тестированию',
+                'common.navigation': 'Навигация',
+                'navigation.dashboard': 'Дашборд',
+                'navigation.offers': 'Офферы',
+                'navigation.partners': 'Партнеры',
+                'common.settings': 'Настройки',
+                'auth.title': 'Авторизация',
+                'common.email': 'Email',
+                'common.password': 'Пароль',
+                'auth.sign_in': 'Войти',
+                'common.cancel': 'Отмена',
+                'common.actions': 'Действия',
+                'common.save': 'Сохранить',
+                'common.edit': 'Редактировать',
+                'common.delete': 'Удалить',
+                'common.export': 'Экспорт',
+                'common.refresh': 'Обновить',
+                'sidebar.title': 'Боковая панель',
+                'sidebar.myOffers': 'Мои офферы',
+                'sidebar.myOffersDesc': 'Управление офферами',
+                'sidebar.partners': 'Партнёры',
+                'sidebar.partnersDesc': 'Управление партнёрами',
+                'sidebar.analytics': 'Аналитика',
+                'sidebar.analyticsDesc': 'Детальная аналитика и отчёты'
+            },
+            en: {
+                'dashboard.title': 'AdLinkPro - Translation Test',
+                'common.status': 'Status',
+                'language.system.ready': 'Translation system ready for testing',
+                'common.navigation': 'Navigation',
+                'navigation.dashboard': 'Dashboard',
+                'navigation.offers': 'Offers',
+                'navigation.partners': 'Partners',
+                'common.settings': 'Settings',
+                'auth.title': 'Authentication',
+                'common.email': 'Email',
+                'common.password': 'Password',
+                'auth.sign_in': 'Sign In',
+                'common.cancel': 'Cancel',
+                'common.actions': 'Actions',
+                'common.save': 'Save',
+                'common.edit': 'Edit',
+                'common.delete': 'Delete',
+                'common.export': 'Export',
+                'common.refresh': 'Refresh',
+                'sidebar.title': 'Sidebar',
+                'sidebar.myOffers': 'My Offers',
+                'sidebar.myOffersDesc': 'Offer Management',
+                'sidebar.partners': 'Partners',
+                'sidebar.partnersDesc': 'Partner Management',
+                'sidebar.analytics': 'Analytics',
+                'sidebar.analyticsDesc': 'Detailed analytics and reports'
+            }
+        };
+
+        let currentLanguage = 'ru';
+
+        function getTranslation(key, language) {
+            return translations[language] && translations[language][key] || key;
+        }
+
+        function updateContent(language) {
+            const elements = document.querySelectorAll('[data-key]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-key');
+                const translation = getTranslation(key, language);
+                element.textContent = translation;
+            });
+
+            // Update document title
+            document.title = getTranslation('dashboard.title', language);
+            document.documentElement.lang = language;
+        }
+
+        function switchLanguage(language) {
+            if (currentLanguage === language) return;
+            
+            currentLanguage = language;
+            
+            // Update active button
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang') === language) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Update content
+            updateContent(language);
+            
+            // Show success status
+            const status = document.getElementById('status');
+            status.className = 'status success';
+            status.innerHTML = `
+                <strong>${getTranslation('common.status', language)}</strong>: 
+                <span>Language switched to ${language.toUpperCase()} successfully!</span>
+            `;
+            
+            console.log('Language switched to:', language);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers to language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const lang = this.getAttribute('data-lang');
+                    switchLanguage(lang);
+                });
+            });
+
+            // Initialize with Russian
+            updateContent('ru');
+        });
+    </script>
+</body>
+</html>
