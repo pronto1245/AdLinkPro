@@ -7,7 +7,10 @@ dist/
 build/
 uploads/
 .env
-.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 google.key.json
 .DS_Store
 Thumbs.db
@@ -47,8 +50,7 @@ adlinkpro-audit-split.z01
 adlinkpro-audit-split.z02
 adlinkpro-audit-split.zip
 
-# Development files
-.env
+# Development environment files (keep .env.example for setup guidance)
 test-password-recovery-manual.mjs
 PASSWORD_RECOVERY_TESTING.md
 theme-test.html
