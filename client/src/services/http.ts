@@ -1,4 +1,4 @@
-const RAW_BASE = (import.meta.env.VITE_API_BASE ?? '').trim()
+const RAW_BASE = (import.meta.env.VITE_API_URL ?? '').trim()
 const API_BASE = (() => {
   if (!RAW_BASE) return '/api'
   const base = RAW_BASE.replace(/\/+$/, '')
