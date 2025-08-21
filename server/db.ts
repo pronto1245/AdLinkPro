@@ -1,7 +1,7 @@
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
-import * as schema from "@shared/schema";
+// import * as schema from "@shared/schema"; // Temporarily disabled due to schema errors
 
 neonConfig.webSocketConstructor = ws;
 
@@ -16,7 +16,7 @@ export const pool = new Pool({
   connectionTimeoutMillis: 10000, // таймаут подключения
 });
 
-export const db = drizzle({ client: pool, schema });
+export const db = drizzle({ client: pool }); // Schema temporarily disabled
 
 // Простое кеширование для часто используемых запросов
 export class QueryCache {
