@@ -48,11 +48,10 @@ ensureUsersTable().catch(console.error);
 
 // Mount authentication routes - ensure all auth endpoints are accessible
 console.log('🔐 [SERVER] Mounting authentication routes...');
+app.use(authRouter); // Original routes that define /api/auth/login (mount FIRST to avoid conflicts)
 app.use('/api/auth/fixed', authFixedRouter); // Fixed auth routes at /api/auth/fixed/login
 app.use('/api/auth/v2', authV2Router); // V2 auth routes at /api/auth/v2/login  
-app.use('/api/auth', authV2Router); // Also mount V2 routes at /api/auth/login for compatibility
 app.use('/auth', authV2Router); // Mount V2 routes at /auth/login for compatibility
-app.use(authRouter); // Original routes that define /api/auth/login
 
 // Serve static files from client dist directory
 const distPath = path.join(__dirname, '..', 'client', 'dist');
