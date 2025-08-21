@@ -10,6 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import authRouter from '../src/routes/auth';
 import { authV2Router } from './routes/auth-v2';
+import authFixedRouter from './routes/auth-fixed';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,9 +46,11 @@ async function ensureUsersTable() {
 }
 ensureUsersTable().catch(console.error);
 
-// Mount authentication routes
-app.use(authRouter);
+// Mount authentication routes - prioritize the fixed auth router
+console.log('🔐 [SERVER] Mounting authentication routes...');
+app.use('/api/auth/fixed', authFixedRouter); // New fixed authentication
 app.use('/api/auth/v2', authV2Router);
+app.use(authRouter); // Original routes as fallback
 
 // Serve static files from client dist directory
 const distPath = path.join(__dirname, '..', 'client', 'dist');
