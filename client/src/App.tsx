@@ -4,6 +4,7 @@ import { Switch, Route, Redirect } from 'wouter';
 import { useTranslation } from 'react-i18next';
 
 import Login from '@/pages/auth/login';
+import Register from '@/pages/auth/Register';
 import Logout from '@/pages/auth/logout';
 import ForgotPassword from '@/pages/auth/ForgotPassword';
 import ResetPassword from '@/pages/auth/ResetPassword';
@@ -86,9 +87,11 @@ function Router() {
         <Route path="/auth/forgot-password" component={ForgotPassword} />
         <Route path="/auth/reset-password" component={ResetPassword} />
 
+        {/* Registration routes */}
+        <Route path="/auth/register" component={Register} />
         <Route path="/register/partner" component={RegisterPartnerComponent} />
         <Route path="/register/advertiser" component={RegisterAdvertiserComponent} />
-        <Route path="/register" component={() => <Redirect to="/register/advertiser" />} />
+        <Route path="/register" component={() => <Redirect to="/auth/register" />} />
 
         {/* Advertiser Dashboard Routes */}
         <ProtectedRoute path="/dashboard/advertiser" roles={['advertiser']} component={withLayout(AdvertiserDash)} />

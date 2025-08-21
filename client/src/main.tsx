@@ -12,6 +12,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/auth-context";
 import { SidebarProvider } from "./contexts/sidebar-context";
+import { NotificationProvider } from "./components/NotificationToast";
 import { fixApiUrl } from "./utils/urlJoin";
 
 // Global fetch interceptor to fix API URL duplication issues
@@ -41,11 +42,13 @@ i18nService.initialize().then(() => {
     <StrictMode>
       <ThemeProvider defaultTheme="light" storageKey="affiliate-platform-theme">
         <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <SidebarProvider>
-              <App />
-            </SidebarProvider>
-          </AuthProvider>
+          <NotificationProvider>
+            <AuthProvider>
+              <SidebarProvider>
+                <App />
+              </SidebarProvider>
+            </AuthProvider>
+          </NotificationProvider>
         </QueryClientProvider>
       </ThemeProvider>
     </StrictMode>
@@ -57,11 +60,13 @@ i18nService.initialize().then(() => {
     <StrictMode>
       <ThemeProvider defaultTheme="light" storageKey="affiliate-platform-theme">
         <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <SidebarProvider>
-              <App />
-            </SidebarProvider>
-          </AuthProvider>
+          <NotificationProvider>
+            <AuthProvider>
+              <SidebarProvider>
+                <App />
+              </SidebarProvider>
+            </AuthProvider>
+          </NotificationProvider>
         </QueryClientProvider>
       </ThemeProvider>
     </StrictMode>
