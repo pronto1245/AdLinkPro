@@ -1,5 +1,6 @@
 import React from 'react';
 import { Redirect, useRoute } from 'wouter';
+import { useAuth } from '@/contexts/auth-context';
 import { extractRoleFromToken } from '@/utils/routeByRole';
 import { secureStorage } from '@/lib/security';
 
@@ -37,15 +38,30 @@ type Props = {
 
 export default function ProtectedRoute({ path, roles, component: C, children }: Props) {
   const [match] = useRoute(path);
+  const { isAuthenticated, isLoading, token, user } = useAuth();
+  
   if (!match) return null;
 
-  const role = getRoleFromToken();
-  if (!role) {
+  // Show loading spinner while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Check if user is authenticated
+  if (!isAuthenticated) {
     return <Redirect to={`/login?next=${encodeURIComponent(path)}`} />;
   }
 
-  if (roles && !roles.includes(role)) {
-    return <Redirect to="/unauthorized" />;
+  // Check role-based access if roles are specified
+  if (roles && roles.length > 0) {
+    const userRole = user?.role || getRoleFromToken();
+    if (!userRole || !roles.includes(userRole)) {
+      return <Redirect to="/unauthorized" />;
+    }
   }
 
   return C ? <C /> : <>{children}</>;
