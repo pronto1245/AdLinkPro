@@ -45,3 +45,52 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     return res.status(401).json({ error: 'Invalid token' });
   }
 }
+
+// Enhanced authentication token middleware
+export function authenticateToken(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    (req as any).user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).json({ error: 'Invalid or expired token' });
+  }
+}
+
+// Get authenticated user from request
+export function getAuthenticatedUser(req: Request): any {
+  return (req as any).user;
+}
+
+// Role-based access control middleware
+export function requireRole(allowedRoles: string[]) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = (req as any).user;
+      
+      if (!user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      // Check if user role is in allowed roles
+      if (!allowedRoles.includes(user.role)) {
+        return res.status(403).json({ 
+          error: 'Insufficient permissions',
+          required: allowedRoles,
+          current: user.role
+        });
+      }
+
+      next();
+    } catch (error) {
+      return res.status(500).json({ error: 'Authorization error' });
+    }
+  };
+}

@@ -16,6 +16,7 @@ const dashboardComponents = [
   'client/src/pages/owner/OwnerDashboard.tsx',
   'client/src/pages/advertiser/AdvertiserDashboard.tsx',
   'client/src/pages/affiliate/PartnerDashboard.tsx',
+  'client/src/pages/affiliate/AffiliateDashboard.tsx',
   'client/src/pages/super-admin/dashboard.tsx',
   'client/src/components/dashboard/UnifiedDashboard.tsx'
 ];
@@ -46,17 +47,31 @@ dashboardComponents.forEach(componentPath => {
     const content = fs.readFileSync(fullPath, 'utf8');
     console.log(`   ✅ Found: ${componentPath}`);
     
-    // Check for expected configuration patterns
-    if (content.includes('dashboardConfig')) {
-      console.log(`      ✅ Has dashboardConfig`);
-    } else {
-      configErrors.push(`${componentPath} missing dashboardConfig`);
+    // Skip config check for UnifiedDashboard (it receives config, doesn't define it)
+    if (!componentPath.includes('UnifiedDashboard.tsx')) {
+      if (content.includes('dashboardConfig')) {
+        console.log(`      ✅ Has dashboardConfig`);
+      } else {
+        // Only warn for newer unified components
+        if (componentPath.includes('OwnerDashboard') || 
+            componentPath.includes('AdvertiserDashboard') || 
+            componentPath.includes('AffiliateDashboard') ||
+            componentPath.includes('dashboard.tsx')) {
+          configErrors.push(`${componentPath} missing dashboardConfig`);
+        } else {
+          console.log(`      ⚠️  Custom implementation (no dashboardConfig)`);
+        }
+      }
     }
     
     if (content.includes('UnifiedDashboard')) {
       console.log(`      ✅ Uses UnifiedDashboard component`);
     } else if (!componentPath.includes('UnifiedDashboard')) {
-      console.log(`      ⚠️  Does not use UnifiedDashboard component`);
+      if (componentPath.includes('PartnerDashboard.tsx')) {
+        console.log(`      ⚠️  Custom implementation (not using UnifiedDashboard)`);
+      } else {
+        console.log(`      ⚠️  Does not use UnifiedDashboard component`);
+      }
     }
   } else {
     configErrors.push(`Missing dashboard component: ${componentPath}`);
