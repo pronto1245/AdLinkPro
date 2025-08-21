@@ -202,7 +202,11 @@ export const secureAuth = {
     agreeTerms: boolean;
     agreePrivacy: boolean;
     agreeMarketing?: boolean;
+    telegram?: string;
   }, identifier?: string) {
+    // Add debugging console.log as required
+    console.log("📤 Frontend registration request - Email:", data.email, "Role:", data.role);
+    
     // Sanitize inputs
     const cleanData = {
       name: sanitizeInput.cleanString(data.name),
@@ -213,18 +217,40 @@ export const secureAuth = {
       ...(data.company && { company: sanitizeInput.cleanString(data.company) }),
       ...(data.contactType && { contactType: data.contactType }),
       ...(data.contact && { contact: sanitizeInput.cleanString(data.contact) }),
+      ...(data.telegram && { telegram: sanitizeInput.cleanTelegram(data.telegram) }),
       ...(data.role && { role: data.role }),
       agreeTerms: data.agreeTerms,
       agreePrivacy: data.agreePrivacy,
       ...(data.agreeMarketing !== undefined && { agreeMarketing: data.agreeMarketing })
     };
 
-    return secureApi('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(cleanData),
-      skipAuth: true,
-      identifier: identifier || sanitizeInput.cleanEmail(data.email)
-    });
+    // Use role-specific endpoints as required
+    let endpoint = '/api/auth/register';
+    if (data.role === 'PARTNER' || data.role === 'affiliate') {
+      endpoint = '/api/auth/register/partner';
+      console.log("📤 Using partner registration API:", endpoint);
+    } else if (data.role === 'ADVERTISER' || data.role === 'advertiser') {
+      endpoint = '/api/auth/register/advertiser';
+      console.log("📤 Using advertiser registration API:", endpoint);
+    }
+
+    try {
+      const result = await secureApi(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(cleanData),
+        skipAuth: true,
+        identifier: identifier || sanitizeInput.cleanEmail(data.email)
+      });
+      
+      // Add debugging for server response as required
+      console.log("✅ Registration server response:", result);
+      
+      return result;
+    } catch (error) {
+      // Add debugging for errors as required
+      console.log("❌ Registration error:", error?.message || error);
+      throw error;
+    }
   },
 
   async resetPassword(data: { email: string }, identifier?: string) {

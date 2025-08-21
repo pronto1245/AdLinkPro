@@ -2021,6 +2021,281 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Partner registration endpoint
+  app.post("/api/auth/register/partner", async (req, res) => {
+    // Add debugging console.log as required
+    console.log("📝 Partner registration request - Email:", req.body.email, "Role: affiliate", "API: /api/auth/register/partner");
+    
+    try {
+      // Add partner-specific logic and force role to be 'affiliate'
+      const registrationData = {
+        ...req.body,
+        role: 'affiliate'  // Force role to affiliate for partner registration
+      };
+      
+      const userData = insertUserSchema.parse(registrationData);
+      const { ref } = req.query; // Реферальный код из URL параметра
+      
+      // Check if user already exists (email or telegram uniqueness)
+      const existingUser = await storage.getUserByUsername(userData.username as string) || 
+                          await storage.getUserByEmail(userData.email as string);
+      
+      if (existingUser) {
+        return res.status(400).json({ error: "Email already in use" });
+      }
+
+      // Check telegram uniqueness if provided
+      if (userData.telegram) {
+        const existingTelegramUser = await storage.getUserByTelegram?.(userData.telegram as string);
+        if (existingTelegramUser) {
+          return res.status(400).json({ error: "Telegram already in use" });
+        }
+      }
+
+      // Проверяем реферальный код, если передан
+      let referredBy = null;
+      if (ref) {
+        const { users } = await import('@shared/schema');
+        const { eq } = await import('drizzle-orm');
+        const { db } = await import('./db');
+        
+        const referrer = await db.select().from(users).where(eq(users.referralCode, ref as string)).limit(1);
+        if (referrer.length > 0) {
+          referredBy = referrer[0].id;
+          console.log('🔗 Partner referred by:', referrer[0].username, 'Code:', ref);
+        } else {
+          console.log('❌ Invalid referral code:', ref);
+        }
+      }
+
+      // Hash password
+      const hashedPassword = await bcryptjs.hash(userData.password as string, 10);
+      
+      // Генерируем уникальный реферальный код для нового пользователя
+      const crypto = await import('crypto');
+      const referralCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+      
+      const user = await storage.createUser({
+        ...userData,
+        password: hashedPassword,
+        referredBy, // Добавляем ID пригласившего
+        referralCode: referralCode, // Добавляем реферальный код для affiliate
+      });
+
+      // Trigger postbacks for user registration event
+      try {
+        const userClickId = req.body.clickId || PostbackService.generateClickId();
+        await PostbackService.triggerPostbacks({
+          type: 'registration',
+          clickId: userClickId,
+          data: {
+            partner_id: user.id,
+            username: user.username,
+            email: user.email,
+            country: user.country,
+            role: user.role,
+            referralCode: ref as string || undefined
+          },
+          partnerId: user.id,
+          advertiserId: user.ownerId
+        });
+        console.log('✅ Partner registration postbacks triggered for user:', user.username);
+      } catch (postbackError) {
+        console.error('❌ Failed to trigger partner registration postbacks:', postbackError);
+      }
+
+      // Send registration notification
+      await notificationService.sendNotification({
+        type: 'user_registration',
+        userId: user.id,
+        data: {
+          email: user.email,
+          username: user.username,
+          firstName: user.firstName,
+          role: user.role
+        },
+        timestamp: new Date()
+      });
+      
+      // Detect fraud patterns
+      detectFraud(req, 'registration', { email: user.email, role: user.role });
+      auditLog(req, 'PARTNER_REGISTRATION', undefined, true, { userId: user.id, username: user.username });
+
+      const token = jwt.sign(
+        { 
+          id: user.id, 
+          username: user.username, 
+          role: user.role,
+          advertiserId: user.advertiserId 
+        },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      console.log("✅ Partner registration successful - Server response:", { 
+        success: true, 
+        role: user.role, 
+        email: user.email,
+        token: token ? 'generated' : 'missing'
+      });
+
+      res.status(201).json({ 
+        success: true,
+        token, 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          email: user.email,
+          role: user.role,
+          firstName: user.firstName,
+          lastName: user.lastName
+        },
+        message: "Partner registration successful"
+      });
+    } catch (error) {
+      console.log("❌ Partner registration error:", error?.message || error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Advertiser registration endpoint  
+  app.post("/api/auth/register/advertiser", async (req, res) => {
+    // Add debugging console.log as required
+    console.log("📝 Advertiser registration request - Email:", req.body.email, "Role: advertiser", "API: /api/auth/register/advertiser");
+    
+    try {
+      // Add advertiser-specific logic and force role to be 'advertiser'
+      const registrationData = {
+        ...req.body,
+        role: 'advertiser'  // Force role to advertiser for advertiser registration
+      };
+      
+      const userData = insertUserSchema.parse(registrationData);
+      const { ref } = req.query; // Реферальный код из URL параметра
+      
+      // Check if user already exists (email or telegram uniqueness)
+      const existingUser = await storage.getUserByUsername(userData.username as string) || 
+                          await storage.getUserByEmail(userData.email as string);
+      
+      if (existingUser) {
+        return res.status(400).json({ error: "Email already in use" });
+      }
+
+      // Check telegram uniqueness if provided
+      if (userData.telegram) {
+        const existingTelegramUser = await storage.getUserByTelegram?.(userData.telegram as string);
+        if (existingTelegramUser) {
+          return res.status(400).json({ error: "Telegram already in use" });
+        }
+      }
+
+      // Проверяем реферральный код, если передан
+      let referredBy = null;
+      if (ref) {
+        const { users } = await import('@shared/schema');
+        const { eq } = await import('drizzle-orm');
+        const { db } = await import('./db');
+        
+        const referrer = await db.select().from(users).where(eq(users.referralCode, ref as string)).limit(1);
+        if (referrer.length > 0) {
+          referredBy = referrer[0].id;
+          console.log('🔗 Advertiser referred by:', referrer[0].username, 'Code:', ref);
+        } else {
+          console.log('❌ Invalid referral code:', ref);
+        }
+      }
+
+      // Hash password
+      const hashedPassword = await bcryptjs.hash(userData.password as string, 10);
+      
+      const user = await storage.createUser({
+        ...userData,
+        password: hashedPassword,
+        referredBy, // Добавляем ID пригласившего
+        referralCode: undefined, // Advertisers don't get referral codes
+      });
+
+      // Trigger postbacks for user registration event
+      try {
+        const userClickId = req.body.clickId || PostbackService.generateClickId();
+        await PostbackService.triggerPostbacks({
+          type: 'registration',
+          clickId: userClickId,
+          data: {
+            advertiser_id: user.id,
+            username: user.username,
+            email: user.email,
+            country: user.country,
+            role: user.role,
+            referralCode: ref as string || undefined
+          },
+          advertiserId: user.id
+        });
+        console.log('✅ Advertiser registration postbacks triggered for user:', user.username);
+      } catch (postbackError) {
+        console.error('❌ Failed to trigger advertiser registration postbacks:', postbackError);
+      }
+
+      // Send registration notification
+      await notificationService.sendNotification({
+        type: 'user_registration',
+        userId: user.id,
+        data: {
+          email: user.email,
+          username: user.username,
+          firstName: user.firstName,
+          role: user.role
+        },
+        timestamp: new Date()
+      });
+      
+      // Detect fraud patterns
+      detectFraud(req, 'registration', { email: user.email, role: user.role });
+      auditLog(req, 'ADVERTISER_REGISTRATION', undefined, true, { userId: user.id, username: user.username });
+
+      const token = jwt.sign(
+        { 
+          id: user.id, 
+          username: user.username, 
+          role: user.role,
+          advertiserId: user.id  // For advertisers, they are their own advertiser
+        },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      console.log("✅ Advertiser registration successful - Server response:", { 
+        success: true, 
+        role: user.role, 
+        email: user.email,
+        token: token ? 'generated' : 'missing'
+      });
+
+      res.status(201).json({ 
+        success: true,
+        token, 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          email: user.email,
+          role: user.role,
+          firstName: user.firstName,
+          lastName: user.lastName
+        },
+        message: "Advertiser registration successful"
+      });
+    } catch (error) {
+      console.log("❌ Advertiser registration error:", error?.message || error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Protected routes
   app.get("/api/auth/me", authenticateToken, async (req, res) => {
     try {
