@@ -1,45 +1,26 @@
-# 2FA Authentication Endpoints
+# Authentication Endpoints
 
-This document describes the 2FA authentication endpoints available in the AdLinkPro API.
+This document describes the authentication endpoints available in the AdLinkPro API.
 
 ## Overview
 
-The system supports Two-Factor Authentication (2FA) with the following flow:
+The system provides direct authentication without requiring Two-Factor Authentication (2FA):
 1. User logs in with username/password via `/api/auth/v2/login`
-2. If user has 2FA enabled, system returns a temporary token
-3. User provides 2FA code along with temporary token to complete authentication
-4. System returns JWT token upon successful verification
+2. System validates credentials and returns JWT token immediately
+3. No 2FA verification required for current implementation
+
+**Note:** 2FA functionality exists for future use but is currently disabled for all users. All users have `twoFactorEnabled: false` in their profiles.
 
 ## Endpoints
 
 ### POST /api/auth/v2/login
-Standard login endpoint that initiates 2FA flow when required.
+Primary login endpoint that provides direct authentication.
 
 **Request Body:**
 ```json
 {
   "username": "string",
   "password": "string"
-}
-```
-
-**Response (2FA Required):**
-```json
-{
-  "requires2FA": true,
-  "tempToken": "string",
-  "message": "Please provide 2FA code"
-}
-```
-
-### POST /api/auth/2fa/verify
-**New endpoint** - Verifies 2FA code with direct parameter names.
-
-**Request Body:**
-```json
-{
-  "tempToken": "string",
-  "code": "string"
 }
 ```
 
@@ -50,22 +31,43 @@ Standard login endpoint that initiates 2FA flow when required.
   "token": "jwt_token_string",
   "user": {
     "id": "string",
-    "username": "string",
+    "username": "string", 
     "email": "string",
     "role": "string",
-    "twoFactorEnabled": true
+    "twoFactorEnabled": false
   }
 }
 ```
 
 **Error Responses:**
-- `400`: Missing tempToken or code
-- `401`: Invalid or expired temporary token
-- `401`: Invalid 2FA code
+- `400`: Missing username or password
+- `401`: Invalid credentials
 - `500`: Internal server error
 
+### POST /api/auth/2fa/verify
+**Legacy 2FA endpoint** - Currently unused as 2FA is disabled for all users.
+
+This endpoint exists for future 2FA functionality but returns errors for all requests since no temporary tokens are generated.
+
+**Request Body:**
+```json
+{
+  "tempToken": "string",
+  "code": "string"
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "error": "Invalid or expired temporary token"
+}
+```
+
 ### POST /api/auth/v2/verify-2fa
-Legacy endpoint - Verifies 2FA code with mapped parameters.
+**Legacy 2FA endpoint** - Currently unused as 2FA is disabled for all users.
+
+This endpoint exists for future 2FA functionality but returns errors for all requests since no temporary tokens are generated.
 
 **Request Body:**
 ```json
@@ -75,16 +77,31 @@ Legacy endpoint - Verifies 2FA code with mapped parameters.
 }
 ```
 
-*Note: This endpoint maps the `token` parameter to `tempToken` internally.*
+**Error Response (401):**
+```json
+{
+  "error": "Invalid or expired temporary token"
+}
+```
 
 ## Implementation Details
 
-- Temporary tokens expire after 5 minutes
-- Both endpoints share the same backend logic via shared utilities
-- Both endpoints return identical response structures
-- The new `/api/auth/2fa/verify` endpoint uses more intuitive parameter names
-- All 2FA operations use the same token storage and validation logic
+- **2FA is currently disabled** for all users in the system
+- All users have `twoFactorEnabled: false` in their profiles
+- The `/api/auth/v2/login` endpoint provides direct authentication without 2FA steps
+- Legacy 2FA endpoints exist but are non-functional since no temporary tokens are generated
+- JWT tokens are issued directly upon successful username/password verification
 
-## Usage Recommendation
+## Migration Notes
 
-Use the new `/api/auth/2fa/verify` endpoint for cleaner API integration, as it accepts `tempToken` directly without requiring client-side parameter mapping.
+If you were previously using 2FA endpoints:
+- Replace calls to `/api/auth/v2/login` followed by `/api/auth/v2/verify-2fa` with just `/api/auth/v2/login`
+- The login response now includes the final JWT token directly
+- No temporary tokens or 2FA codes are needed
+
+## Future 2FA Implementation
+
+The 2FA infrastructure remains in place for future activation:
+- User profiles support `twoFactorEnabled` and `twoFactorSecret` fields
+- 2FA verification endpoints are implemented but disabled
+- To enable 2FA, modify the `users` data in `server/shared/2fa-utils.ts`
