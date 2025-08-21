@@ -4,9 +4,9 @@ import { createTestApp } from './testApp';
 
 const app = createTestApp();
 
-describe('New 2FA Endpoint /api/auth/2fa/verify', () => {
+describe('Legacy 2FA Endpoint /api/auth/2fa/verify (No Longer Used)', () => {
   
-  describe('POST /api/auth/2fa/verify - New 2FA Verification Endpoint', () => {
+  describe('POST /api/auth/2fa/verify - Legacy 2FA Verification Endpoint', () => {
     
     it('should return 400 for missing tempToken', async () => {
       const response = await request(app)
@@ -42,8 +42,8 @@ describe('New 2FA Endpoint /api/auth/2fa/verify', () => {
       expect(response.body.error).toBe('Invalid or expired temporary token');
     });
 
-    it('should handle complete 2FA flow with new endpoint', async () => {
-      // First, get a temp token from the login endpoint
+    it('should show direct login behavior instead of 2FA flow', async () => {
+      // Since 2FA is disabled, login now returns direct tokens
       const loginResponse = await request(app)
         .post('/api/auth/v2/login')
         .send({
@@ -52,71 +52,34 @@ describe('New 2FA Endpoint /api/auth/2fa/verify', () => {
         });
 
       expect(loginResponse.status).toBe(200);
-      expect(loginResponse.body.requires2FA).toBe(true);
-      const tempToken = loginResponse.body.tempToken;
-
-      // Now verify with the new endpoint using tempToken (not token)
-      const verifyResponse = await request(app)
-        .post('/api/auth/2fa/verify')
-        .send({
-          tempToken: tempToken,
-          code: '123456' // This is a valid code in the demo implementation
-        });
-
-      expect(verifyResponse.status).toBe(200);
-      expect(verifyResponse.body.success).toBe(true);
-      expect(verifyResponse.body.token).toBeDefined();
-      expect(verifyResponse.body.user).toBeDefined();
-      expect(verifyResponse.body.user.username).toBe('advertiser');
-      expect(verifyResponse.body.user.role).toBe('ADVERTISER');
-      expect(verifyResponse.body.user.twoFactorEnabled).toBe(true);
+      expect(loginResponse.body.success).toBe(true);
+      expect(loginResponse.body.token).toBeDefined();
+      expect(loginResponse.body.user.twoFactorEnabled).toBe(false);
+      expect(loginResponse.body).not.toHaveProperty('requires2FA');
+      expect(loginResponse.body).not.toHaveProperty('tempToken');
 
       // Verify the token is a valid JWT
-      const decoded = jwt.verify(verifyResponse.body.token, process.env.JWT_SECRET!) as any;
+      const decoded = jwt.verify(loginResponse.body.token, process.env.JWT_SECRET!) as any;
       expect(decoded.sub).toBe('adv-1');
       expect(decoded.role).toBe('ADVERTISER');
       expect(decoded.username).toBe('advertiser');
     });
 
-    it('should return 401 for invalid 2FA code with new endpoint', async () => {
-      // First, get a temp token from the login endpoint
-      const loginResponse = await request(app)
-        .post('/api/auth/v2/login')
-        .send({
-          username: 'advertiser',
-          password: process.env.ADVERTISER_PASSWORD || 'adv123'
-        });
-
-      expect(loginResponse.status).toBe(200);
-      const tempToken = loginResponse.body.tempToken;
-
-      // Try to verify with invalid code
+    it('should return 401 for any token since 2FA is disabled', async () => {
+      // Since 2FA is disabled, any attempt to use 2FA verify should fail
       const verifyResponse = await request(app)
         .post('/api/auth/2fa/verify')
         .send({
-          tempToken: tempToken,
-          code: '999999' // Invalid code
+          tempToken: 'any-token',
+          code: '999999'
         });
 
       expect(verifyResponse.status).toBe(401);
-      expect(verifyResponse.body.error).toBe('Invalid 2FA code');
+      expect(verifyResponse.body.error).toBe('Invalid or expired temporary token');
     });
 
-    it('should return 401 for expired temp token', async () => {
-      // First, get a temp token from the login endpoint
-      const loginResponse = await request(app)
-        .post('/api/auth/v2/login')
-        .send({
-          username: 'advertiser',
-          password: process.env.ADVERTISER_PASSWORD || 'adv123'
-        });
-
-      expect(loginResponse.status).toBe(200);
-      const tempToken = loginResponse.body.tempToken;
-
-      // Manually expire the token by manipulating its timestamp
-      // Note: This test assumes we can access the tempTokens map
-      // In a real test environment, we might mock time or use a different approach
+    it('should return 401 for any temp token since none are generated', async () => {
+      // Since 2FA is disabled, no temp tokens are generated, so any token should be invalid
       const response = await request(app)
         .post('/api/auth/2fa/verify')
         .send({
@@ -129,9 +92,9 @@ describe('New 2FA Endpoint /api/auth/2fa/verify', () => {
     });
   });
 
-  describe('Comparison with existing endpoint', () => {
-    it('should work consistently with both old and new endpoints', async () => {
-      // Get temp tokens from two separate login attempts
+  describe('Comparison with Direct Login', () => {
+    it('should show that 2FA endpoints are no longer needed', async () => {
+      // With 2FA disabled, login provides direct tokens
       const loginResponse1 = await request(app)
         .post('/api/auth/v2/login')
         .send({
@@ -146,37 +109,34 @@ describe('New 2FA Endpoint /api/auth/2fa/verify', () => {
           password: process.env.ADVERTISER_PASSWORD || 'adv123'
         });
 
-      const tempToken1 = loginResponse1.body.tempToken;
-      const tempToken2 = loginResponse2.body.tempToken;
+      // Both should provide direct login without 2FA
+      expect(loginResponse1.status).toBe(200);
+      expect(loginResponse2.status).toBe(200);
+      expect(loginResponse1.body.success).toBe(true);
+      expect(loginResponse2.body.success).toBe(true);
+      expect(loginResponse1.body.token).toBeDefined();
+      expect(loginResponse2.body.token).toBeDefined();
+      expect(loginResponse1.body).not.toHaveProperty('tempToken');
+      expect(loginResponse2.body).not.toHaveProperty('tempToken');
 
-      // Use old endpoint with first token
+      // Trying to use the 2FA endpoints should fail since no temp tokens exist
       const oldEndpointResponse = await request(app)
         .post('/api/auth/v2/verify-2fa')
         .send({
-          tempToken: tempToken1,  // Note: old endpoint in testApp expects 'tempToken' parameter
+          tempToken: 'no-temp-token-exists',
           code: '123456'
         });
 
-      // Use new endpoint with second token
       const newEndpointResponse = await request(app)
         .post('/api/auth/2fa/verify')
         .send({
-          tempToken: tempToken2,  // Note: new endpoint uses 'tempToken' parameter
+          tempToken: 'no-temp-token-exists',
           code: '123456'
         });
 
-      // Both should work and return similar structures
-      expect(oldEndpointResponse.status).toBe(200);
-      expect(newEndpointResponse.status).toBe(200);
-      
-      expect(oldEndpointResponse.body.success).toBe(true);
-      expect(newEndpointResponse.body.success).toBe(true);
-      
-      expect(oldEndpointResponse.body.token).toBeDefined();
-      expect(newEndpointResponse.body.token).toBeDefined();
-      
-      expect(oldEndpointResponse.body.user.username).toBe('advertiser');
-      expect(newEndpointResponse.body.user.username).toBe('advertiser');
+      // Both 2FA endpoints should return 401 since no temp tokens are generated
+      expect(oldEndpointResponse.status).toBe(401);
+      expect(newEndpointResponse.status).toBe(401);
     });
   });
 });

@@ -5776,14 +5776,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Toggle 2FA for user
+  // Toggle 2FA for user (Currently disabled system-wide)
   app.patch("/api/admin/users/:id/2fa", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
-      const { id } = req.params;
-      const { enabled } = req.body;
-      
-      const user = await storage.updateUser(id, { twoFactorEnabled: enabled });
-      res.json({ success: true, twoFactorEnabled: enabled });
+      // 2FA is disabled system-wide, so always return false
+      res.json({ 
+        success: true, 
+        twoFactorEnabled: false,
+        message: "2FA is disabled system-wide" 
+      });
     } catch (error) {
       console.error("Update 2FA error:", error);
       res.status(500).json({ error: "Internal server error" });
