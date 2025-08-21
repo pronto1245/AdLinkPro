@@ -326,6 +326,58 @@ export const transactions = pgTable("transactions", {
   processedAt: timestamp("processed_at"),
 });
 
+// Deposits table
+export const deposits = pgTable("deposits", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  currency: text("currency").default('USD'),
+  status: transactionStatusEnum("status").default('pending'),
+  method: text("method").notNull(), // 'bank_transfer', 'crypto', 'card', 'manual'
+  transactionId: text("transaction_id"), // External transaction ID
+  notes: text("notes"),
+  processedAt: timestamp("processed_at"),
+  processedBy: varchar("processed_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Payouts table  
+export const payouts = pgTable("payouts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  currency: text("currency").default('USD'),
+  status: transactionStatusEnum("status").default('pending'),
+  method: text("method").notNull(), // 'bank_transfer', 'crypto', 'paypal', 'manual'
+  walletAddress: text("wallet_address"), // For crypto payouts
+  bankDetails: jsonb("bank_details"), // For bank transfer payouts
+  transactionHash: text("transaction_hash"), // For crypto payouts
+  notes: text("notes"),
+  rejectionReason: text("rejection_reason"), // Reason for rejection
+  processedAt: timestamp("processed_at"),
+  processedBy: varchar("processed_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Team Invitations table
+export const teamInvitations = pgTable("team_invitations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  invitedBy: varchar("invited_by").notNull().references(() => users.id),
+  email: text("email").notNull(),
+  role: userRoleEnum("role").notNull(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  message: text("message"),
+  token: text("token").notNull().unique(),
+  status: text("status").default('pending'), // 'pending', 'accepted', 'declined', 'cancelled', 'expired'
+  acceptedAt: timestamp("accepted_at"),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Crypto Wallets table
 export const cryptoWallets = pgTable("crypto_wallets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -2087,5 +2139,33 @@ export const insertEventSchema = createInsertSchema(events).omit({
 
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
+
+// Deposits and Payouts schemas
+export const insertDepositSchema = createInsertSchema(deposits).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPayoutSchema = createInsertSchema(payouts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type Deposit = typeof deposits.$inferSelect;
+export type InsertDeposit = z.infer<typeof insertDepositSchema>;
+export type Payout = typeof payouts.$inferSelect;
+export type InsertPayout = z.infer<typeof insertPayoutSchema>;
+
+// Team Invitations schemas
+export const insertTeamInvitationSchema = createInsertSchema(teamInvitations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type TeamInvitation = typeof teamInvitations.$inferSelect;
+export type InsertTeamInvitation = z.infer<typeof insertTeamInvitationSchema>;
 
 // DUPLICATE SCHEMA DEFINITIONS REMOVED - USING VERSIONS AT LINES 1824, 1830
