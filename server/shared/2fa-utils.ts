@@ -20,8 +20,8 @@ export const users = [
     role: "ADVERTISER",
     sub: "adv-1",
     username: "advertiser",
-    twoFactorEnabled: true,
-    twoFactorSecret: "JBSWY3DPEHPK3PXP", // Demo secret for testing
+    twoFactorEnabled: false,
+    twoFactorSecret: null,
   },
   {
     id: "3",

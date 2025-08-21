@@ -143,8 +143,8 @@ export function createTestApp() {
           role: "ADVERTISER", 
           sub: "adv-1", 
           username: "advertiser",
-          twoFactorEnabled: true,  // Advertiser has 2FA enabled
-          twoFactorSecret: "JBSWY3DPEHPK3PXP" // Demo secret
+          twoFactorEnabled: false,  // 2FA disabled for all users
+          twoFactorSecret: null
         },
         { 
           id: "3",
@@ -176,32 +176,7 @@ export function createTestApp() {
       const secret = process.env.JWT_SECRET;
       if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
 
-      // Check if user has 2FA enabled
-      if (user.twoFactorEnabled) {
-        // Generate temporary token for 2FA verification
-        const crypto = require('crypto');
-        const tempToken = crypto.randomBytes(32).toString('hex');
-        
-        // Store temp token with user data
-        tempTokensMap.set(tempToken, {
-          userId: user.id,
-          timestamp: Date.now(),
-          user: user
-        });
-        
-        // Clean up expired temp tokens (5 minutes)
-        setTimeout(() => {
-          tempTokensMap.delete(tempToken);
-        }, 5 * 60 * 1000);
-        
-        return res.json({
-          requires2FA: true,
-          tempToken: tempToken,
-          message: "Please provide 2FA code"
-        });
-      }
-
-      // Normal login without 2FA
+      // Always perform direct login (2FA disabled for all users)
       const token = jwt.sign(
         { sub: user.sub, role: user.role, email: user.email, username: user.username },
         secret,
@@ -216,7 +191,7 @@ export function createTestApp() {
           username: user.username,
           email: user.email,
           role: user.role,
-          twoFactorEnabled: user.twoFactorEnabled
+          twoFactorEnabled: false // Always false - 2FA disabled
         }
       });
     } catch(e) {

@@ -4,23 +4,27 @@ import { createTestApp } from './testApp';
 
 const app = createTestApp();
 
-describe('Two-Factor Authentication (2FA) Tests', () => {
+describe('Authentication Tests (2FA Disabled)', () => {
   
-  describe('POST /api/auth/v2/login - 2FA Flow', () => {
+  describe('POST /api/auth/v2/login - Direct Login Flow', () => {
     
-    it('should initiate 2FA flow for users with 2FA enabled', async () => {
+    it('should complete direct login for all users (2FA disabled)', async () => {
       const response = await request(app)
         .post('/api/auth/v2/login')
         .send({
-          username: 'advertiser', // This user has 2FA enabled in auth-v2.ts
+          username: 'advertiser', // 2FA is now disabled for all users
           password: process.env.ADVERTISER_PASSWORD || 'adv123'
         });
 
       expect(response.status).toBe(200);
-      expect(response.body.requires2FA).toBe(true);
-      expect(response.body.tempToken).toBeDefined();
-      expect(response.body.message).toBe('Please provide 2FA code');
-      expect(response.body).not.toHaveProperty('token'); // Should not return final token yet
+      expect(response.body.success).toBe(true);
+      expect(response.body.token).toBeDefined();
+      expect(response.body.user).toBeDefined();
+      expect(response.body.user.username).toBe('advertiser');
+      expect(response.body.user.role).toBe('ADVERTISER');
+      expect(response.body.user.twoFactorEnabled).toBe(false);
+      expect(response.body).not.toHaveProperty('requires2FA');
+      expect(response.body).not.toHaveProperty('tempToken');
     });
 
     it('should complete login without 2FA for users without 2FA enabled', async () => {
@@ -40,7 +44,7 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
       expect(response.body).not.toHaveProperty('requires2FA');
     });
 
-    it('should return 401 for invalid credentials in 2FA flow', async () => {
+    it('should return 401 for invalid credentials in login flow', async () => {
       const response = await request(app)
         .post('/api/auth/v2/login')
         .send({
@@ -53,7 +57,7 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
       expect(response.body).not.toHaveProperty('tempToken');
     });
 
-    it('should return 400 for missing credentials in 2FA flow', async () => {
+    it('should return 400 for missing credentials in login flow', async () => {
       const response = await request(app)
         .post('/api/auth/v2/login')
         .send({
@@ -65,7 +69,7 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
       expect(response.body.error).toBe('username and password are required');
     });
 
-    it('should accept both email and username for 2FA login', async () => {
+    it('should accept both email and username for direct login', async () => {
       // Test with email
       const emailResponse = await request(app)
         .post('/api/auth/v2/login')
@@ -75,7 +79,8 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
         });
 
       expect(emailResponse.status).toBe(200);
-      expect(emailResponse.body.requires2FA).toBe(true);
+      expect(emailResponse.body.success).toBe(true);
+      expect(emailResponse.body.token).toBeDefined();
 
       // Test with username
       const usernameResponse = await request(app)
@@ -86,10 +91,11 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
         });
 
       expect(usernameResponse.status).toBe(200);
-      expect(usernameResponse.body.requires2FA).toBe(true);
+      expect(usernameResponse.body.success).toBe(true);
+      expect(usernameResponse.body.token).toBeDefined();
     });
 
-    it('should generate different temp tokens for each 2FA request', async () => {
+    it('should return consistent direct login tokens', async () => {
       const response1 = await request(app)
         .post('/api/auth/v2/login')
         .send({
@@ -106,13 +112,17 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
 
       expect(response1.status).toBe(200);
       expect(response2.status).toBe(200);
-      expect(response1.body.tempToken).not.toBe(response2.body.tempToken);
+      expect(response1.body.success).toBe(true);
+      expect(response2.body.success).toBe(true);
+      expect(response1.body.token).toBeDefined();
+      expect(response2.body.token).toBeDefined();
+      // Tokens will be different due to different timestamps but both should be valid
     });
   });
 
-  describe('POST /api/auth/v2/verify-2fa - 2FA Verification', () => {
+  describe('POST /api/auth/v2/verify-2fa - Legacy 2FA Endpoint (No longer used)', () => {
     
-    it('should return 400 for missing temp token', async () => {
+    it('should return 400 for missing temp token since 2FA is disabled', async () => {
       const response = await request(app)
         .post('/api/auth/v2/verify-2fa')
         .send({
@@ -123,7 +133,7 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
       expect(response.body.error).toBe('tempToken and code are required');
     });
 
-    it('should return 400 for missing 2FA code', async () => {
+    it('should return 400 for missing 2FA code since 2FA is disabled', async () => {
       const response = await request(app)
         .post('/api/auth/v2/verify-2fa')
         .send({
@@ -134,7 +144,7 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
       expect(response.body.error).toBe('tempToken and code are required');
     });
 
-    it('should return 401 for invalid temp token', async () => {
+    it('should return 401 for any temp token since none are generated', async () => {
       const response = await request(app)
         .post('/api/auth/v2/verify-2fa')
         .send({
@@ -149,8 +159,8 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
     // Note: Testing actual 2FA code verification would require mocking the TOTP verification
     // For now, we test the flow structure
     
-    it('should handle 2FA verification endpoint structure', async () => {
-      // First get a temp token
+    it('should return direct login instead of 2FA verification endpoint', async () => {
+      // Since 2FA is disabled, this test now verifies direct login behavior
       const loginResponse = await request(app)
         .post('/api/auth/v2/login')
         .send({
@@ -159,25 +169,16 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
         });
 
       expect(loginResponse.status).toBe(200);
-      const tempToken = loginResponse.body.tempToken;
-
-      // Try to verify with invalid code (will fail, but tests endpoint structure)
-      const verifyResponse = await request(app)
-        .post('/api/auth/v2/verify-2fa')
-        .send({
-          tempToken: tempToken,
-          code: '000000' // Invalid code
-        });
-
-      // Should return 401 for invalid code, not 404 or 500
-      expect(verifyResponse.status).toBe(401);
-      expect(verifyResponse.body).toHaveProperty('error');
+      expect(loginResponse.body.success).toBe(true);
+      expect(loginResponse.body.token).toBeDefined();
+      expect(loginResponse.body).not.toHaveProperty('tempToken');
+      expect(loginResponse.body).not.toHaveProperty('requires2FA');
     });
   });
 
-  describe('Token Management in 2FA Flow', () => {
+  describe('Token Management with Direct Login', () => {
     
-    it('should not return permanent token before 2FA verification', async () => {
+    it('should return permanent token immediately for all users', async () => {
       const response = await request(app)
         .post('/api/auth/v2/login')
         .send({
@@ -186,12 +187,13 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
         });
 
       expect(response.status).toBe(200);
-      expect(response.body.requires2FA).toBe(true);
-      expect(response.body.tempToken).toBeDefined();
-      expect(response.body).not.toHaveProperty('token'); // No permanent token yet
+      expect(response.body.success).toBe(true);
+      expect(response.body.token).toBeDefined(); // Direct token now
+      expect(response.body).not.toHaveProperty('requires2FA');
+      expect(response.body).not.toHaveProperty('tempToken');
     });
 
-    it('should generate valid JWT tokens for non-2FA users', async () => {
+    it('should generate valid JWT tokens for all users', async () => {
       const response = await request(app)
         .post('/api/auth/v2/login')
         .send({
@@ -229,9 +231,9 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
     });
   });
 
-  describe('User Role Handling in 2FA', () => {
+  describe('User Role Handling with Direct Login', () => {
     
-    it('should handle different user roles correctly in 2FA flow', async () => {
+    it('should handle all user roles with direct login (no 2FA)', async () => {
       const testUsers = [
         { 
           username: 'owner', 
@@ -243,7 +245,7 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
           username: 'advertiser', 
           password: process.env.ADVERTISER_PASSWORD || 'adv123',
           expectedRole: 'ADVERTISER',
-          has2FA: true 
+          has2FA: false // Changed: 2FA disabled for all users
         },
         { 
           username: 'partner', 
@@ -263,33 +265,45 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
 
         expect(response.status).toBe(200);
 
-        if (user.has2FA) {
-          expect(response.body.requires2FA).toBe(true);
-          expect(response.body.tempToken).toBeDefined();
-        } else {
-          expect(response.body.success).toBe(true);
-          expect(response.body.token).toBeDefined();
-          expect(response.body.user.role).toBe(user.expectedRole);
-          expect(response.body.user.username).toBe(user.username);
-        }
+        // All users should get direct login now (no 2FA)
+        expect(response.body.success).toBe(true);
+        expect(response.body.token).toBeDefined();
+        expect(response.body.user.role).toBe(user.expectedRole);
+        expect(response.body.user.username).toBe(user.username);
+        expect(response.body.user.twoFactorEnabled).toBe(false);
+        expect(response.body).not.toHaveProperty('requires2FA');
+        expect(response.body).not.toHaveProperty('tempToken');
       }
     });
   });
 
-  describe('Security in 2FA Flow', () => {
+  describe('Security in Direct Login Flow', () => {
     
-    it('should validate input properly in 2FA endpoints', async () => {
-      // Test malformed requests
-      const malformedRequests = [
+    it('should validate input properly in login endpoints', async () => {
+      // Test malformed login requests
+      const malformedLoginRequests = [
         { endpoint: '/api/auth/v2/login', data: {} },
         { endpoint: '/api/auth/v2/login', data: { username: '' } },
-        { endpoint: '/api/auth/v2/login', data: { password: 'test' } },
+        { endpoint: '/api/auth/v2/login', data: { password: 'test' } }
+      ];
+
+      for (const req of malformedLoginRequests) {
+        const response = await request(app)
+          .post(req.endpoint)
+          .send(req.data);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty('error');
+      }
+
+      // Test legacy 2FA endpoint (should still validate but not be used in flow)
+      const legacy2FARequests = [
         { endpoint: '/api/auth/v2/verify-2fa', data: {} },
         { endpoint: '/api/auth/v2/verify-2fa', data: { tempToken: '' } },
         { endpoint: '/api/auth/v2/verify-2fa', data: { code: '123' } }
       ];
 
-      for (const req of malformedRequests) {
+      for (const req of legacy2FARequests) {
         const response = await request(app)
           .post(req.endpoint)
           .send(req.data);
@@ -299,7 +313,7 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
       }
     });
 
-    it('should handle concurrent 2FA requests safely', async () => {
+    it('should handle concurrent login requests safely', async () => {
       const promises = Array.from({ length: 3 }, () =>
         request(app)
           .post('/api/auth/v2/login')
@@ -311,17 +325,20 @@ describe('Two-Factor Authentication (2FA) Tests', () => {
 
       const responses = await Promise.all(promises);
 
-      // All should succeed and return different temp tokens
+      // All should succeed with direct login
       responses.forEach(response => {
         expect(response.status).toBe(200);
-        expect(response.body.requires2FA).toBe(true);
-        expect(response.body.tempToken).toBeDefined();
+        expect(response.body.success).toBe(true);
+        expect(response.body.token).toBeDefined();
+        expect(response.body.user.twoFactorEnabled).toBe(false);
       });
 
-      // Temp tokens should be unique
-      const tempTokens = responses.map(r => r.body.tempToken);
-      const uniqueTokens = [...new Set(tempTokens)];
-      expect(uniqueTokens.length).toBe(tempTokens.length);
+      // Login tokens should be valid (they might be different due to timestamps)
+      const tokens = responses.map(r => r.body.token);
+      tokens.forEach(token => {
+        expect(token).toBeDefined();
+        expect(typeof token).toBe('string');
+      });
     });
   });
 });
