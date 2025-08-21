@@ -5,6 +5,9 @@ import { findUserByEmail, checkPassword } from '../services/users';
 
 const router = Router();
 
+// In-memory store for registered users when database is unavailable
+const inMemoryUsers = new Map<string, any>();
+
 router.post('/api/auth/login', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body || {};
@@ -71,9 +74,11 @@ router.post('/api/auth/register', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Пароль должен содержать минимум 8 символов' });
     }
 
-    // Check if user already exists
+    // Check if user already exists (database or in-memory)
     const existingUser = await findUserByEmail(email);
-    if (existingUser) {
+    const inMemoryUser = inMemoryUsers.get(email.toLowerCase());
+    
+    if (existingUser || inMemoryUser) {
       console.log('REGISTER user exists', email);
       return res.status(409).json({ error: 'Пользователь с таким email уже существует' });
     }
@@ -112,6 +117,10 @@ router.post('/api/auth/register', async (req: Request, res: Response) => {
       email: newUser.email, 
       role: newUser.role 
     });
+
+    // Store in memory for duplicate checking when database is unavailable
+    inMemoryUsers.set(email.toLowerCase(), newUser);
+    console.log('REGISTER user stored in memory for duplicate prevention');
 
     // Return success response
     return res.json({
