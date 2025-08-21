@@ -31,8 +31,21 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 
-// Безопасность и лимиты
-app.use(helmet());
+// Безопасность и лимиты - Updated CSP for SPA
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      fontSrc: ["'self'", "data:"],
+      connectSrc: ["'self'", "https:"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"]
+    }
+  }
+}));
 app.use(compression());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
 
@@ -166,7 +179,7 @@ authRouter.post('/api/auth/login', async (req: Request, res: Response) => {
 app.use(authRouter);
 
 // Serve static files from client dist directory
-const distPath = path.join(__dirname, '..', 'dist');
+const distPath = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(distPath));
 
 app.get('/api/health', (_req, res) => {
