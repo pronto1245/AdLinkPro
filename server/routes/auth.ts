@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { findUserByEmail, checkPassword } from '../services/users';
@@ -11,9 +12,19 @@ router.post('/auth/login', async (req, res) => {
   }
 
   const user = await findUserByEmail(email);
+  if (!user || !user.password_hash) {n
+    return res.status(401).json({ error: "Invalid credentials" });n
+  }n
+n
+  const [{ match }] = await db.execute(n
+    sql`SELECT crypt(${password}, ${user.password_hash}) = ${user.password_hash} as match`n
+  );n
+n
+  if (!match) {n
+    return res.status(401).json({ error: "Invalid credentials" });n
+  }n
   if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-  const match = await checkPassword(user, password);
   if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
   const token = jwt.sign(

@@ -2015,3 +2015,6 @@ export type TeamInvitation = typeof teamInvitations.$inferSelect;
 
 export { insertPostbackSchema, insertReceivedOfferSchema } from "./postback-schema";
 
+
+export const postbackDeliveries = {} as any;
+
