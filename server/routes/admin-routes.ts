@@ -257,4 +257,63 @@ router.put('/users/:id',
   }
 );
 
+// === Audit and Security Monitoring ===
+// Get audit logs (enhanced monitoring endpoint)
+router.get('/audit/logs',
+  requireRole('super_admin', 'owner'),
+  requirePermission('viewAuditLogs'),
+  async (req, res) => {
+    try {
+      const { getAuditLogs, getAuditStats } = await import('../middleware/security');
+      
+      const {
+        userId,
+        action,
+        success,
+        fromDate,
+        toDate,
+        limit = 100
+      } = req.query;
+      
+      const filters: any = {};
+      if (userId) filters.userId = userId as string;
+      if (action) filters.action = action as string;
+      if (success !== undefined) filters.success = success === 'true';
+      if (fromDate) filters.fromDate = new Date(fromDate as string);
+      if (toDate) filters.toDate = new Date(toDate as string);
+      if (limit) filters.limit = parseInt(limit as string);
+      
+      const logs = getAuditLogs(filters);
+      const stats = getAuditStats();
+      
+      res.json({
+        logs,
+        stats,
+        total: logs.length,
+        filters
+      });
+    } catch (error) {
+      console.error('[ADMIN] Error fetching audit logs:', error);
+      res.status(500).json({ error: 'Failed to fetch audit logs' });
+    }
+  }
+);
+
+// Get audit statistics only
+router.get('/audit/stats',
+  requireRole('super_admin', 'owner'),
+  requirePermission('viewAuditLogs'),
+  async (req, res) => {
+    try {
+      const { getAuditStats } = await import('../middleware/security');
+      const stats = getAuditStats();
+      
+      res.json(stats);
+    } catch (error) {
+      console.error('[ADMIN] Error fetching audit stats:', error);
+      res.status(500).json({ error: 'Failed to fetch audit statistics' });
+    }
+  }
+);
+
 export { router as adminRoutes };

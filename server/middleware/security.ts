@@ -22,28 +22,153 @@ interface AuditEntry {
   details?: any;
 }
 
-const auditLogs: AuditEntry[] = [];
+// Enhanced audit log storage with rotation and structured logging
+interface AuditEntry {
+  timestamp: Date;
+  userId?: string;
+  action: string;
+  resource?: string;
+  ip: string;
+  userAgent?: string;
+  success: boolean;
+  details?: any;
+  sessionId?: string;
+  method?: string;
+  path?: string;
+  responseTime?: number;
+}
 
+const auditLogs: AuditEntry[] = [];
+const MAX_AUDIT_LOGS = 50000; // Increased capacity for better traceability
+
+// Enhanced audit logging with structured data and better traceability
 export const auditLog = (req: Request, action: string, resource?: string, success: boolean = true, details?: any) => {
   const entry: AuditEntry = {
     timestamp: new Date(),
     userId: req.user?.id,
     action,
     resource,
-    ip: req.ip || req.connection.remoteAddress || 'unknown',
+    ip: getClientIP(req),
     userAgent: req.get('User-Agent'),
     success,
-    details
+    details,
+    sessionId: req.sessionID || req.get('x-session-id'),
+    method: req.method,
+    path: req.path,
+    responseTime: req.responseTime
   };
   
   auditLogs.push(entry);
   
-  // Keep only last 10000 entries
-  if (auditLogs.length > 10000) {
-    auditLogs.splice(0, auditLogs.length - 10000);
+  // Rotate logs when they exceed maximum capacity
+  if (auditLogs.length > MAX_AUDIT_LOGS) {
+    // Remove oldest 25% when capacity is exceeded
+    const removeCount = Math.floor(MAX_AUDIT_LOGS * 0.25);
+    auditLogs.splice(0, removeCount);
   }
   
-  console.log(`AUDIT: ${action} by ${entry.userId || 'anonymous'} from ${entry.ip} - ${success ? 'SUCCESS' : 'FAILED'}`);
+  // Enhanced structured logging with more context
+  const logLevel = success ? 'INFO' : 'WARN';
+  const logMessage = {
+    level: logLevel,
+    timestamp: entry.timestamp.toISOString(),
+    action: entry.action,
+    userId: entry.userId || 'anonymous',
+    ip: entry.ip,
+    method: entry.method,
+    path: entry.path,
+    resource: entry.resource,
+    success: entry.success,
+    userAgent: entry.userAgent,
+    details: entry.details
+  };
+  
+  console.log(`[AUDIT-${logLevel}]`, JSON.stringify(logMessage));
+  
+  // TODO: In production, consider writing to database or external logging service
+  // Example: await writeToDatabase(entry); or await sendToLoggingService(entry);
+};
+
+// Helper function to extract client IP with better reliability
+function getClientIP(req: Request): string {
+  const forwarded = req.get('x-forwarded-for');
+  if (forwarded) {
+    // Get the first IP from x-forwarded-for header
+    return forwarded.split(',')[0].trim();
+  }
+  
+  const realIP = req.get('x-real-ip');
+  if (realIP) {
+    return realIP;
+  }
+  
+  return req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || 'unknown';
+}
+
+// Export function to get audit logs for monitoring/debugging
+export const getAuditLogs = (filters?: {
+  userId?: string;
+  action?: string;
+  success?: boolean;
+  fromDate?: Date;
+  toDate?: Date;
+  limit?: number;
+}): AuditEntry[] => {
+  let filteredLogs = [...auditLogs];
+  
+  if (filters) {
+    if (filters.userId) {
+      filteredLogs = filteredLogs.filter(log => log.userId === filters.userId);
+    }
+    if (filters.action) {
+      filteredLogs = filteredLogs.filter(log => log.action === filters.action);
+    }
+    if (filters.success !== undefined) {
+      filteredLogs = filteredLogs.filter(log => log.success === filters.success);
+    }
+    if (filters.fromDate) {
+      filteredLogs = filteredLogs.filter(log => log.timestamp >= filters.fromDate!);
+    }
+    if (filters.toDate) {
+      filteredLogs = filteredLogs.filter(log => log.timestamp <= filters.toDate!);
+    }
+  }
+  
+  // Sort by timestamp descending (newest first)
+  filteredLogs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  
+  if (filters?.limit) {
+    filteredLogs = filteredLogs.slice(0, filters.limit);
+  }
+  
+  return filteredLogs;
+};
+
+// Get audit log statistics for monitoring
+export const getAuditStats = () => {
+  const now = new Date();
+  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  
+  const recentLogs = auditLogs.filter(log => log.timestamp >= oneHourAgo);
+  const dailyLogs = auditLogs.filter(log => log.timestamp >= oneDayAgo);
+  
+  return {
+    total: auditLogs.length,
+    lastHour: {
+      total: recentLogs.length,
+      failed: recentLogs.filter(log => !log.success).length,
+      actions: recentLogs.reduce((acc, log) => {
+        acc[log.action] = (acc[log.action] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
+    },
+    lastDay: {
+      total: dailyLogs.length,
+      failed: dailyLogs.filter(log => !log.success).length,
+      uniqueUsers: new Set(dailyLogs.map(log => log.userId).filter(Boolean)).size
+    }
+  };
 };
 
 export const checkIPBlacklist = (req: Request, res: Response, next: NextFunction) => {

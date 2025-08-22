@@ -7,49 +7,105 @@ import { auditLog } from './security';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
-// Enhanced authentication middleware
+// Enhanced error response format for consistency
+interface AuthError {
+  error: string;
+  code: string;
+  timestamp: string;
+  details?: any;
+}
+
+function createAuthError(code: string, message: string, details?: any): AuthError {
+  return {
+    error: message,
+    code,
+    timestamp: new Date().toISOString(),
+    details
+  };
+}
+
+// Enhanced authentication middleware with better error handling and JWT validation
 export function authenticateToken(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ error: 'Access token required' });
+    const error = createAuthError('TOKEN_MISSING', 'Access token required');
+    auditLog(req, 'AUTHENTICATION_FAILED', undefined, false, { reason: 'Missing token' });
+    return res.status(401).json(error);
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    // Enhanced JWT verification with proper typing
+    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & { 
+      id: string; 
+      role: string; 
+      email: string; 
+    };
+    
+    // Additional validation checks
+    if (!decoded.id || !decoded.role) {
+      throw new Error('Invalid token payload: missing required fields');
+    }
+
+    // Check token expiration more explicitly
+    if (decoded.exp && decoded.exp < Date.now() / 1000) {
+      throw new Error('Token expired');
+    }
+
     (req as any).user = decoded;
+    auditLog(req, 'AUTHENTICATION_SUCCESS', undefined, true, { userId: decoded.id });
     next();
   } catch (error) {
-    auditLog(req, 'INVALID_TOKEN', undefined, false);
-    return res.status(403).json({ error: 'Invalid or expired token' });
+    let errorCode = 'TOKEN_INVALID';
+    let errorMessage = 'Invalid or expired token';
+    
+    if (error instanceof jwt.TokenExpiredError) {
+      errorCode = 'TOKEN_EXPIRED';
+      errorMessage = 'Token has expired';
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      errorCode = 'TOKEN_MALFORMED';
+      errorMessage = 'Malformed token';
+    }
+    
+    const authError = createAuthError(errorCode, errorMessage);
+    auditLog(req, 'AUTHENTICATION_FAILED', undefined, false, { 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      errorCode 
+    });
+    
+    return res.status(403).json(authError);
   }
 }
 
-// Role-based access control middleware
+// Role-based access control middleware with enhanced error handling
 export function requireRole(...allowedRoles: string[]) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = (req as any).user;
       
       if (!user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        const error = createAuthError('USER_NOT_AUTHENTICATED', 'Authentication required');
+        auditLog(req, 'ACCESS_DENIED', undefined, false, { reason: 'No user context' });
+        return res.status(401).json(error);
       }
 
       // Check if user role is in allowed roles
       if (!allowedRoles.includes(user.role)) {
-        auditLog(req, 'UNAUTHORIZED_ACCESS', undefined, false, { 
-          userRole: user.role, 
-          requiredRoles: allowedRoles 
-        });
-        return res.status(403).json({ 
-          error: 'Insufficient permissions',
+        const error = createAuthError('INSUFFICIENT_PERMISSIONS', 'Access denied: insufficient permissions', {
           required: allowedRoles,
           current: user.role
         });
+        auditLog(req, 'UNAUTHORIZED_ACCESS', undefined, false, { 
+          userId: user.id,
+          userRole: user.role, 
+          requiredRoles: allowedRoles,
+          resource: req.path
+        });
+        return res.status(403).json(error);
       }
 
-      // Additional check - verify user is still active
+      // Additional check - verify user is still active in database
       const [dbUser] = await db
         .select({ 
           isActive: users.isActive,
@@ -60,18 +116,57 @@ export function requireRole(...allowedRoles: string[]) {
         .where(eq(users.id, user.id))
         .limit(1);
 
-      if (!dbUser || !dbUser.isActive || dbUser.isBlocked) {
-        auditLog(req, 'INACTIVE_USER_ACCESS', undefined, false, { userId: user.id });
-        return res.status(403).json({ error: 'Account is inactive or blocked' });
+      if (!dbUser) {
+        const error = createAuthError('USER_NOT_FOUND', 'User account not found');
+        auditLog(req, 'ACCESS_DENIED', undefined, false, { 
+          userId: user.id, 
+          reason: 'User not found in database' 
+        });
+        return res.status(401).json(error);
       }
 
-      // Update user object with current role from DB
-      (req as any).user.role = dbUser.role;
-      
+      if (dbUser.isBlocked) {
+        const error = createAuthError('USER_BLOCKED', 'User account is blocked');
+        auditLog(req, 'ACCESS_DENIED', undefined, false, { 
+          userId: user.id, 
+          reason: 'User is blocked' 
+        });
+        return res.status(403).json(error);
+      }
+
+      if (!dbUser.isActive) {
+        const error = createAuthError('USER_INACTIVE', 'User account is inactive');
+        auditLog(req, 'ACCESS_DENIED', undefined, false, { 
+          userId: user.id, 
+          reason: 'User is inactive' 
+        });
+        return res.status(403).json(error);
+      }
+
+      // Role sync check - ensure JWT role matches database role
+      if (dbUser.role !== user.role) {
+        const error = createAuthError('ROLE_MISMATCH', 'User role has been changed, please log in again');
+        auditLog(req, 'ACCESS_DENIED', undefined, false, { 
+          userId: user.id, 
+          jwtRole: user.role, 
+          dbRole: dbUser.role,
+          reason: 'Role mismatch between JWT and database'
+        });
+        return res.status(403).json(error);
+      }
+
+      auditLog(req, 'ACCESS_GRANTED', req.path, true, { 
+        userId: user.id, 
+        userRole: user.role,
+        resource: req.path
+      });
       next();
     } catch (error) {
-      console.error('Role check error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      const authError = createAuthError('AUTHORIZATION_ERROR', 'Authorization check failed');
+      auditLog(req, 'AUTHORIZATION_ERROR', undefined, false, { 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      return res.status(500).json(authError);
     }
   };
 }
