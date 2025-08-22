@@ -313,14 +313,26 @@ export const conversionEventSchema = z.object({
 
 // Temporary fix - remove omit to avoid syntax errors
 export const createPostbackProfileSchema = createInsertSchema(postbackProfiles);
+export const insertPostbackProfileSchema = createInsertSchema(postbackProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPostbackDeliverySchema = createInsertSchema(postbackDeliveries).omit({
+  id: true,
+  createdAt: true,
+});
 
 export const updatePostbackProfileSchema = createPostbackProfileSchema.partial();
 
 export type PostbackProfile = typeof postbackProfiles.$inferSelect;
 export type CreatePostbackProfile = z.infer<typeof createPostbackProfileSchema>;
+export type InsertPostbackProfile = z.infer<typeof insertPostbackProfileSchema>;
 export type UpdatePostbackProfile = z.infer<typeof updatePostbackProfileSchema>;
 export type TrackingClick = typeof trackingClicks.$inferSelect;
 export type TrackingEvent = typeof trackingEvents.$inferSelect;
 export type PostbackDelivery = typeof postbackDeliveries.$inferSelect;
+export type InsertPostbackDelivery = z.infer<typeof insertPostbackDeliverySchema>;
 export type ClickEvent = z.infer<typeof clickEventSchema>;
 export type ConversionEvent = z.infer<typeof conversionEventSchema>;

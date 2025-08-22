@@ -473,6 +473,12 @@ export const postbacks = pgTable("postbacks", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const insertPostbackSchema = createInsertSchema(postbacks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Support tickets
 export const tickets = pgTable("tickets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -1652,11 +1658,6 @@ export const insertTransactionSchema = createInsertSchema(transactions).omit({
   processedAt: true,
 });
 
-export const insertPostbackSchema = createInsertSchema(postbacks).omit({
-  id: true,
-  createdAt: true,
-});
-
 export const insertTicketSchema = createInsertSchema(tickets).omit({
   id: true,
   createdAt: true,
@@ -1720,17 +1721,6 @@ export const insertPostbackTemplateSchema = createInsertSchema(postbackTemplates
   updatedAt: true,
 });
 
-export const insertPostbackProfileSchema = createInsertSchema(postbackProfiles).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertPostbackDeliverySchema = createInsertSchema(postbackDeliveries).omit({
-  id: true,
-  createdAt: true,
-});
-
 export const insertPostbackDeliveryLogSchema = createInsertSchema(postbackDeliveryLogs).omit({
   id: true,
   createdAt: true,
@@ -1755,9 +1745,7 @@ export type Transaction = typeof transactions.$inferSelect;
 export type InsertPostback = z.infer<typeof insertPostbackSchema>;
 export type Postback = typeof postbacks.$inferSelect;
 export type PostbackProfile = typeof postbackProfiles.$inferSelect;
-export type InsertPostbackProfile = z.infer<typeof insertPostbackProfileSchema>;
 export type PostbackDelivery = typeof postbackDeliveries.$inferSelect;
-export type InsertPostbackDelivery = z.infer<typeof insertPostbackDeliverySchema>;
 export type InsertTicket = z.infer<typeof insertTicketSchema>;
 export type Ticket = typeof tickets.$inferSelect;
 export type InsertFraudAlert = z.infer<typeof insertFraudAlertSchema>;
