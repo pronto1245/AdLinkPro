@@ -10,7 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import authRouter from '../src/routes/auth';
-import { authV2Router } from './routes/auth-v2';
+// import { authV2Router } from './routes/auth-v2'; // TODO: Create this route or remove if not needed
 import { authFixedRouter } from './routes/auth-fixed';
 import { adminRoutes } from './routes/admin-routes';
 import { invitationRoutes } from './routes/invitations';
@@ -52,8 +52,6 @@ if (!fs.existsSync(logsDir)) {
 // Add request logging
 app.use(requestLogger);
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
 // DB
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 async function ensureUsersTable() {
@@ -80,8 +78,8 @@ ensureUsersTable().catch(console.error);
 console.log('🔐 [SERVER] Mounting authentication routes...');
 app.use(authRouter); // Original routes that define /api/auth/login (mount FIRST to avoid conflicts)
 app.use('/api/auth/fixed', authFixedRouter); // Fixed auth routes at /api/auth/fixed/login
-app.use('/api/auth/v2', authV2Router); // V2 auth routes at /api/auth/v2/login  
-app.use('/auth', authV2Router); // Mount V2 routes at /auth/login for compatibility
+// app.use('/api/auth/v2', authV2Router); // V2 auth routes at /api/auth/v2/login - TODO: Create this route or remove
+// app.use('/auth', authV2Router); // Mount V2 routes at /auth/login for compatibility - TODO: Create this route or remove
 
 // Mount new enhanced routes
 console.log('📊 [SERVER] Mounting enhanced API routes...');

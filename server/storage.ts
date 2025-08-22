@@ -149,7 +149,7 @@ export interface IStorage {
   getAllUsers(role?: string): Promise<User[]>;
   deleteUser(id: string): Promise<void>;
   getAllOffers(): Promise<(Offer & { advertiserName?: string })[]>;
-  getAdminAnalytics(): Promise<any>;
+  getAdminAnalytics(filters?: any): Promise<any>;
   
   // System Settings
   getSystemSettings(): Promise<any[]>;
@@ -336,7 +336,7 @@ export interface IStorage {
   createFraudBlock(block: InsertFraudBlock): Promise<FraudBlock>;
   updateFraudBlock(id: string, data: Partial<InsertFraudBlock>): Promise<FraudBlock>;
   createDeviceTracking(tracking: InsertDeviceTracking): Promise<DeviceTracking>;
-  getAdminAnalytics(filters: any): Promise<any[]>;
+  getAdminAnalytics(filters?: any): Promise<any>;
   
   // Partner Dashboard
   getPartnerDashboard(partnerId: string, filters: {
@@ -1635,20 +1635,27 @@ export class DatabaseStorage implements IStorage {
     return { id: randomUUID(), ...data, isActive: true, createdAt: new Date() };
   }
 
-  async getAdminAnalytics(): Promise<any> {
+  async getAdminAnalytics(filters: any = {}): Promise<any> {
     try {
-      // Get basic counts from database
-      const [totalUsersCount] = await db.select({ count: count() }).from(users);
-      const [totalOffersCount] = await db.select({ count: count() }).from(offers);
-      const [totalRevenueSum] = await db.select({ sum: sum(statistics.revenue) }).from(statistics);
-      const [pendingKycCount] = await db.select({ count: count() }).from(users).where(eq(users.kycStatus, 'pending'));
+      // If no filters specified, return basic analytics
+      if (!filters || Object.keys(filters).length === 0) {
+        // Get basic counts from database
+        const [totalUsersCount] = await db.select({ count: count() }).from(users);
+        const [totalOffersCount] = await db.select({ count: count() }).from(offers);
+        const [totalRevenueSum] = await db.select({ sum: sum(statistics.revenue) }).from(statistics);
+        const [pendingKycCount] = await db.select({ count: count() }).from(users).where(eq(users.kycStatus, 'pending'));
 
-      return {
-        totalUsers: totalUsersCount.count || 0,
-        totalOffers: totalOffersCount.count || 0,
-        totalRevenue: totalRevenueSum.sum || 0,
-        pendingKyc: pendingKycCount.count || 0
-      };
+        return {
+          totalUsers: totalUsersCount.count || 0,
+          totalOffers: totalOffersCount.count || 0,
+          totalRevenue: totalRevenueSum.sum || 0,
+          pendingKyc: pendingKycCount.count || 0
+        };
+      }
+      
+      // For filtered requests, use the AnalyticsService
+      const { AnalyticsService } = await import('./services/analyticsService');
+      return AnalyticsService.getAnalyticsData(filters);
     } catch (error) {
       console.error('Error getting admin analytics:', error);
       return {
@@ -1658,12 +1665,6 @@ export class DatabaseStorage implements IStorage {
         pendingKyc: 0
       };
     }
-  }
-
-  async getAdminAnalytics(filters: any = {}): Promise<any[]> {
-    // Import and use the AnalyticsService
-    const { AnalyticsService } = await import('./services/analyticsService');
-    return AnalyticsService.getAnalyticsData(filters);
   }
 
   async getKycDocuments(): Promise<any[]> {
@@ -5128,7 +5129,7 @@ class MemStorage implements IStorage {
   async bulkDeleteUsers(): Promise<any> { return { deleted: 0 }; }
   async getAllOffers(): Promise<any[]> { return []; }
   async deleteUser(): Promise<void> {}
-  async getPartnerOffers(): Promise<any[]> { return []; }
+  // Moved getPartnerOffers implementation to the comprehensive version below
   async createPartnerOffer(): Promise<any> { return {}; }
   async updatePartnerOffer(): Promise<any> { return {}; }
   async getTrackingLinks(): Promise<any[]> { return []; }
@@ -5354,7 +5355,7 @@ class MemStorage implements IStorage {
     }
   }
 
-  async verifyCustomDomain(userId: string, domainId: string): Promise<CustomDomain> {
+  async verifyCustomDomain(userId: string, domainId: string): Promise<any> {
     try {
       const domain = await db
         .select()
@@ -5451,26 +5452,31 @@ class MemStorage implements IStorage {
   }
 
   // Custom Domains methods for MemStorage - pure in-memory implementation
-  private customDomains: any[] = [
-    {
-      id: '1',
-      domain: 'track.example.com',
-      type: 'cname',
-      status: 'verified',
-      verificationValue: 'affiliate-tracker.replit.app',
-      targetValue: 'affiliate-tracker.replit.app',
-      dnsInstructions: {
-        type: 'CNAME',
-        host: 'track',
-        value: 'affiliate-tracker.replit.app'
-      },
-      createdAt: new Date(),
-      verifiedAt: new Date(),
-      advertiserId: '2'
+  // Initialize customDomains with default data if empty
+  private initializeCustomDomains(): void {
+    if (this.customDomains.length === 0) {
+      this.customDomains.push({
+        id: '1',
+        domain: 'track.example.com',
+        type: 'cname',
+        status: 'verified',
+        verificationValue: 'affiliate-tracker.replit.app',
+        targetValue: 'affiliate-tracker.replit.app',
+        dnsInstructions: {
+          type: 'CNAME',
+          host: 'track',
+          value: 'affiliate-tracker.replit.app'
+        },
+        createdAt: new Date(),
+        verifiedAt: new Date(),
+        advertiserId: '2'
+      });
     }
-  ];
+  }
 
   async getCustomDomains(userId: string): Promise<any[]> {
+    // Initialize customDomains if needed
+    this.initializeCustomDomains();
     // Pure in-memory - no database calls
     return this.customDomains.filter(domain => domain.advertiserId === userId);
   }
@@ -5506,16 +5512,7 @@ class MemStorage implements IStorage {
     return newDomain;
   }
 
-  async verifyCustomDomain(userId: string, domainId: string): Promise<any> {
-    return { success: true };
-  }
-
-  async deleteCustomDomain(userId: string, domainId: string): Promise<void> {
-    const index = this.customDomains.findIndex(d => d.id === domainId && d.advertiserId === userId);
-    if (index > -1) {
-      this.customDomains.splice(index, 1);
-    }
-  }
+  
 
   // Creative files management
   async getCreativeFilesByOfferId(offerId: string): Promise<any[]> {
