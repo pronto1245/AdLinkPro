@@ -1,33 +1,6 @@
 import React from 'react';
 import { Redirect, useRoute } from 'wouter';
 import { useAuth } from '@/contexts/auth-context';
-import { extractRoleFromToken } from '@/utils/routeByRole';
-import { secureStorage } from '@/lib/security';
-
-function getRoleFromToken(): string | null {
-  // Use secure storage to get token (handles both new and old storage locations)
-  const raw = secureStorage.getToken();
-  const role = extractRoleFromToken(raw);
-  if (!role) return null;
-  
-  // Role mapping for backward compatibility
-  const map: Record<string,string> = { 
-    partner:'partner', 
-    PARTNER:'partner', 
-    affiliate:'affiliate',
-    AFFILIATE:'affiliate',
-    advertiser:'advertiser', 
-    ADVERTISER:'advertiser', 
-    owner:'owner', 
-    OWNER:'owner', 
-    super_admin:'super_admin', 
-    'super admin':'super_admin', 
-    SUPER_ADMIN:'super_admin',
-    staff:'staff',
-    STAFF:'staff'
-  };
-  return map[role.trim()] || role.toLowerCase() || null;
-}
 
 type Props = {
   path: string;
@@ -38,7 +11,7 @@ type Props = {
 
 export default function ProtectedRoute({ path, roles, component: C, children }: Props) {
   const [match] = useRoute(path);
-  const { isAuthenticated, isLoading, token, user } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   
   if (!match) return null;
 
@@ -58,7 +31,7 @@ export default function ProtectedRoute({ path, roles, component: C, children }: 
 
   // Check role-based access if roles are specified
   if (roles && roles.length > 0) {
-    const userRole = user?.role || getRoleFromToken();
+    const userRole = user?.role;
     if (!userRole || !roles.includes(userRole)) {
       return <Redirect to="/unauthorized" />;
     }

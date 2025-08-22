@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/components/NotificationToast";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -24,7 +23,7 @@ function roleToPath(role?: string) {
   if (r === "owner") return "/dashboard/owner";
   if (r === "staff") return "/dashboard/staff";
   if (r === "super_admin") return "/dashboard/super-admin";
-  return "/dashboard/affiliate";
+  return "/dashboard/partner";
 }
 
 export default function Login() {
@@ -32,7 +31,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const { toast } = useToast();
   const { showNotification } = useNotifications();
   const { login } = useAuth();
 
@@ -229,10 +227,18 @@ export default function Login() {
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => navigate('/auth/register')}
+                onClick={() => navigate('/register/partner')}
                 disabled={loading}
               >
-                Регистрация
+                Стать партнером
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => navigate('/register/advertiser')}
+                disabled={loading}
+              >
+                Стать рекламодателем
               </Button>
             </div>
           </div>
