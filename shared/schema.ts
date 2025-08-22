@@ -3,6 +3,12 @@ import { pgTable, text, varchar, uuid, decimal, jsonb, boolean, timestamp, integ
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Enums
+export const offerStatusEnum = pgEnum('offer_status', ['draft', 'active', 'paused', 'archived']);
+export const accessRequestStatusEnum = pgEnum('access_request_status', ['pending', 'approved', 'rejected']);
+export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'completed', 'failed', 'cancelled']);
+export const cryptoCurrencyEnum = pgEnum('crypto_currency', ['BTC', 'ETH', 'USDT', 'USDC', 'LTC']);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
