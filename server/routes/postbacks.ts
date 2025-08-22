@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { storage } from '../storage';
-import { insertPostbackProfileSchema } from '@shared/schema';
+import { insertPostbackProfileSchema } from '@shared/postback-schema';
 import { z } from 'zod';
 import { authenticateToken } from '../middleware/auth';
 
