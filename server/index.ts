@@ -54,8 +54,7 @@ app.use(requestLogger);
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-// DB
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// DB connection and table setup
 async function ensureUsersTable() {
   try {
     await pool.query(`
