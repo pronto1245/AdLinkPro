@@ -14,7 +14,7 @@ function resolveUrl(path: string) {
   return `${API_BASE}${path}`;
 }
 
-class SecureAPIError extends Error {
+export class SecureAPIError extends Error {
   constructor(
     public status: number,
     public statusText: string,
@@ -25,8 +25,6 @@ class SecureAPIError extends Error {
     this.name = 'SecureAPIError';
   }
 }
-
-export { SecureAPIError };
 
 async function secureApi(path: string, init: SecureRequestInit = {}) {
   // Check rate limiting
