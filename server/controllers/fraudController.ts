@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { db } from '../db';
-import { fraudAlerts, fraudBlocks, ipAnalysis, users, trackingClicks, conversionData } from '@shared/schema';
+import { fraudAlerts, fraudBlocks, ipAnalysis, users, conversionData } from '@shared/schema';
+import { trackingClicks } from '@shared/tracking-schema';
 import { eq, desc, and, or, gte, lte, sql, count, sum } from 'drizzle-orm';
 import { auditLog } from '../middleware/security';
 import { applyOwnerIdFilter } from '../middleware/authorization';

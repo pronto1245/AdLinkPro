@@ -1,7 +1,8 @@
 import { createHmac, randomBytes } from 'crypto';
 import { eq, and, or, desc, asc, gte, lte } from 'drizzle-orm';
 import { db } from '../db';
-import { postbacks, postbackLogs, postbackTemplates, trackingClicks, users, offers } from '../../shared/schema';
+import { postbacks, postbackLogs, postbackTemplates, users, offers } from '../../shared/schema';
+import { trackingClicks } from '../../shared/tracking-schema';
 import { postbackMonitor } from './postbackMonitoring';
 
 // Type imports for fraud service integration

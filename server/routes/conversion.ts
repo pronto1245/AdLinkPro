@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { trackingClicks, postbackLogs } from '@shared/schema';
+import { postbackLogs } from '@shared/schema';
+import { trackingClicks } from '@shared/tracking-schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { PostbackService } from '../services/postback';
 

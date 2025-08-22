@@ -1,6 +1,7 @@
 import express from 'express';
 import { db } from '../../db';
-import { trackingClicks, offers, users } from '@shared/schema';
+import { offers, users } from '@shared/schema';
+import { trackingClicks } from '@shared/tracking-schema';
 import { FraudService } from '../../services/fraudService';
 import { GeoService } from '../../services/geoService';
 import { randomUUID } from 'crypto';

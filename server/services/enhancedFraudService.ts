@@ -1,5 +1,6 @@
 import { db } from "../db";
-import { trackingClicks, fraudAlerts, fraudReports, ipAnalysis, fraudBlocks } from "@shared/schema";
+import { fraudAlerts, fraudReports, ipAnalysis, fraudBlocks } from "@shared/schema";
+import { trackingClicks } from "@shared/tracking-schema";
 import { eq, count, and, gte, lte, sql } from "drizzle-orm";
 import { FraudService, type ClickData, type FraudAnalysisResult } from './fraudService';
 

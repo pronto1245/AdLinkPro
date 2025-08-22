@@ -322,7 +322,7 @@ export const updatePostbackProfileSchema = createPostbackProfileSchema.partial()
 export type PostbackProfile = typeof postbackProfiles.$inferSelect;
 export type CreatePostbackProfile = z.infer<typeof createPostbackProfileSchema>;
 export type UpdatePostbackProfile = z.infer<typeof updatePostbackProfileSchema>;
-export type TrackingClick = typeof trackingClicks.$inferSelect;
+// TrackingClick type moved to tracking-schema.ts to eliminate duplication
 export type TrackingEvent = typeof trackingEvents.$inferSelect;
 export type PostbackDelivery = typeof postbackDeliveries.$inferSelect;
 export type ClickEvent = z.infer<typeof clickEventSchema>;
