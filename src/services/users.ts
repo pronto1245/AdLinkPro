@@ -12,13 +12,14 @@ function getPool() {
 }
 
 // Mock users for development when database is unavailable
+// Using hashSync here because these are initialization values - the hashes are compatible with async bcrypt.compare()
 const mockUsers = [
   {
     id: 1,
     email: process.env.OWNER_EMAIL || "9791207@gmail.com",
     username: "owner",
     role: "OWNER",
-    passwordHash: bcrypt.hashSync(process.env.OWNER_PASSWORD || "Affilix123!", 10),
+    passwordHash: bcrypt.hashSync(process.env.OWNER_PASSWORD || "Affilix123!", 12),
     createdAt: new Date(),
     updatedAt: new Date(),
     twoFactorEnabled: false,
@@ -29,7 +30,7 @@ const mockUsers = [
     email: process.env.ADVERTISER_EMAIL || "12345@gmail.com",
     username: "advertiser", 
     role: "ADVERTISER",
-    passwordHash: bcrypt.hashSync(process.env.ADVERTISER_PASSWORD || "adv123", 10),
+    passwordHash: bcrypt.hashSync(process.env.ADVERTISER_PASSWORD || "adv123", 12),
     createdAt: new Date(),
     updatedAt: new Date(),
     twoFactorEnabled: false,
@@ -40,7 +41,7 @@ const mockUsers = [
     email: process.env.PARTNER_EMAIL || "4321@gmail.com",
     username: "partner",
     role: "PARTNER", 
-    passwordHash: bcrypt.hashSync(process.env.PARTNER_PASSWORD || "partner123", 10),
+    passwordHash: bcrypt.hashSync(process.env.PARTNER_PASSWORD || "partner123", 12),
     createdAt: new Date(),
     updatedAt: new Date(),
     twoFactorEnabled: false,
@@ -109,7 +110,7 @@ export async function findUserById(id: number) {
 }
 
 export async function checkPassword(user: { passwordHash: string }, password: string) {
-  return bcrypt.compare(password, user.passwordHash);
+  return await bcrypt.compare(password, user.passwordHash);
 }
 
 export async function createUser(userData: {

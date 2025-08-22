@@ -26,6 +26,8 @@ class SecureAPIError extends Error {
   }
 }
 
+export { SecureAPIError };
+
 async function secureApi(path: string, init: SecureRequestInit = {}) {
   // Check rate limiting
   const identifier = init.identifier || 'anonymous';

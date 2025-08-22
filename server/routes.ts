@@ -1903,7 +1903,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Hash password
-      const hashedPassword = await bcryptjs.hash(userData.password as string, 10);
+      const hashedPassword = await bcryptjs.hash(userData.password as string, 12);
       
       // Генерируем уникальный реферальный код для нового пользователя
       const crypto = await import('crypto');
@@ -2096,7 +2096,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Hash password
-      const hashedPassword = await bcryptjs.hash(userData.password as string, 10);
+      const hashedPassword = await bcryptjs.hash(userData.password as string, 12);
       
       // Генерируем уникальный реферальный код для нового пользователя
       const crypto = await import('crypto');
@@ -2284,7 +2284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Hash password
-      const hashedPassword = await bcryptjs.hash(userData.password as string, 10);
+      const hashedPassword = await bcryptjs.hash(userData.password as string, 12);
       
       // Try to create user using database storage first
       let user;
@@ -3597,7 +3597,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Hash password
-      const hashedPassword = await bcryptjs.hash(userData.password as string, 10);
+      const hashedPassword = await bcryptjs.hash(userData.password as string, 12);
       
       const user = await storage.createUser({
         ...userData,
@@ -4208,12 +4208,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Verify current password
       const user = await storage.getUser(authUser.id);
-      if (!user || !bcryptjs.compareSync(currentPassword, user.passwordHash || '')) {
+      if (!user || !await bcryptjs.compare(currentPassword, user.passwordHash || '')) {
         return res.status(400).json({ error: "Invalid current password" });
       }
       
       // Update password
-      const hashedPassword = bcryptjs.hashSync(newPassword, 10);
+      const hashedPassword = await bcryptjs.hash(newPassword, 12);
       await storage.updateUser(authUser.id, { passwordHash: hashedPassword });
       res.json({ success: true });
     } catch (error) {
@@ -4629,7 +4629,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check current password
       const passwordValid = user.passwordHash ? 
-        bcryptjs.compareSync(currentPassword, user.passwordHash) : 
+        await bcryptjs.compare(currentPassword, user.passwordHash) : 
         user.password === currentPassword;
         
       if (!passwordValid) {
@@ -4637,7 +4637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update password
-      const hashedPassword = bcryptjs.hashSync(newPassword, 10);
+      const hashedPassword = await bcryptjs.hash(newPassword, 12);
       await storage.updateUser(authUser.id, { passwordHash: hashedPassword });
       
       console.log("Partner password changed successfully for user:", authUser.id);
@@ -6069,7 +6069,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "User already exists" });
       }
 
-      const hashedPassword = await bcryptjs.hash(userData.password as string, 10);
+      const hashedPassword = await bcryptjs.hash(userData.password as string, 12);
       const user = await storage.createUser({
         ...userData,
         password: hashedPassword,
@@ -6111,7 +6111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Hash password if provided
       if (updateData.password) {
-        updateData.password = await bcryptjs.hash(updateData.password, 10);
+        updateData.password = await bcryptjs.hash(updateData.password, 12);
       }
       
       const user = await storage.updateUser(id, updateData);
@@ -6131,7 +6131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Hash password if provided
       if (updateData.password) {
-        updateData.password = await bcryptjs.hash(updateData.password, 10);
+        updateData.password = await bcryptjs.hash(updateData.password, 12);
       }
       
       const user = await storage.updateUser(id, updateData);
@@ -10546,7 +10546,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       
       // Generate temporary password
       const tempPassword = Math.random().toString(36).slice(-8);
-      const hashedPassword = await bcryptjs.hash(tempPassword, 10);
+      const hashedPassword = await bcryptjs.hash(tempPassword, 12);
       
       // Create team member
       const teamMember = await storage.createUser({
@@ -10801,7 +10801,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       }
 
       // Hash new password
-      const hashedPassword = await bcryptjs.hash(newPassword, 10);
+      const hashedPassword = await bcryptjs.hash(newPassword, 12);
       
       // Update password
       await storage.updateUser(authUser.id, { password: hashedPassword });
@@ -13101,7 +13101,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       console.log('Partner found:', { partner: partner.username, advertiserId: partner.advertiserId });
 
       // Hash password
-      const hashedPassword = await bcryptjs.hash(password, 10);
+      const hashedPassword = await bcryptjs.hash(password, 12);
 
       // Create new user for team member
       const newUser = await db.insert(users).values({
