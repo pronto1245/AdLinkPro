@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { db } from '../db.js';
-import { postbackProfiles, postbackDeliveries } from '../../shared/schema.js';
+import { postbackProfiles, postbackDeliveries } from '../../shared/postback-schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 import { authenticateToken } from '../middleware/auth.js';
 

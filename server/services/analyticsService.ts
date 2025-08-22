@@ -1,5 +1,6 @@
 import { db } from '../db';
-import { trackingClicks, offers, users, statistics } from '@shared/schema';
+import { offers, users, statistics } from '@shared/schema';
+import { trackingClicks } from '@shared/tracking-schema';
 import { eq, desc, and, gte, lt, lte, count, sum, sql, like, or, asc } from "drizzle-orm";
 
 export class AnalyticsService {
