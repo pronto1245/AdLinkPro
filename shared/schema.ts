@@ -1,4 +1,25 @@
-import { pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sql, relations } from "drizzle-orm";
+import { pgTable, text, varchar, uuid, decimal, jsonb, boolean, timestamp, integer, bigint, serial, pgEnum, index, numeric, char, smallint } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+// Define enums that are referenced in the schema
+export const userRoleEnum = pgEnum('user_role', ['owner', 'advertiser', 'partner', 'admin', 'staff']);
+export const offerStatusEnum = pgEnum('offer_status', ['draft', 'active', 'paused', 'archived']);
+export const accessRequestStatusEnum = pgEnum('access_request_status', ['pending', 'approved', 'rejected']);
+export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'completed', 'failed', 'cancelled']);
+export const cryptoCurrencyEnum = pgEnum('crypto_currency', ['BTC', 'ETH', 'USDT', 'USDC', 'LTC']);
+export const deliveryStatusEnum = pgEnum('delivery_status', ['pending', 'success', 'failed', 'retrying']);
+export const walletTypeEnum = pgEnum('wallet_type', ['crypto', 'bank', 'paypal', 'skrill', 'neteller']);
+export const walletStatusEnum = pgEnum('wallet_status', ['active', 'inactive', 'blocked', 'pending']);
+export const eventTypeEnum = pgEnum('event_type', ['open', 'lp_click', 'reg', 'deposit', 'sale', 'lead', 'lp_leave']);
+export const ownerScopeEnum = pgEnum('owner_scope', ['owner', 'advertiser', 'partner']);
+export const postbackScopeTypeEnum = pgEnum('postback_scope_type', ['global', 'campaign', 'offer', 'flow']);
+export const postbackMethodEnum = pgEnum('postback_method', ['GET', 'POST']);
+export const postbackIdParamEnum = pgEnum('postback_id_param', ['subid', 'clickid']);
+export const ticketStatusEnum = pgEnum('ticket_status', ['open', 'in_progress', 'resolved', 'closed']);
+export const postbackStatusEnum = pgEnum('postback_status', ['pending', 'sent', 'failed', 'cancelled']);
+export const auditActionEnum = pgEnum('audit_action', ['create', 'update', 'delete', 'login', 'logout']);
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -6,6 +27,9 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   username: text("username"),
   role: text("role").default("partner"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  lastLoginAt: timestamp("last_login_at"),
 });
 
 // Offers table
@@ -143,65 +167,6 @@ export const trackingLinks = pgTable("tracking_links", {
 });
 
 // Tracking clicks for postback system
-export const trackingClicks = pgTable("tracking_clicks", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  clickId: text("click_id").notNull().unique(), // Generated clickid for macros
-  partnerId: varchar("partner_id").notNull().references(() => users.id),
-  offerId: varchar("offer_id").notNull().references(() => offers.id),
-  trackingLinkId: varchar("tracking_link_id").references(() => trackingLinks.id),
-  ip: text("ip"),
-  userAgent: text("user_agent"),
-  referer: text("referer"),
-  country: text("country"),
-  device: text("device"),
-  browser: text("browser"),
-  os: text("os"),
-  subId1: text("sub_id_1"),
-  subId2: text("sub_id_2"),
-  subId3: text("sub_id_3"),
-  subId4: text("sub_id_4"),
-  subId5: text("sub_id_5"),
-  subId6: text("sub_id_6"),
-  subId7: text("sub_id_7"),
-  subId8: text("sub_id_8"),
-  subId9: text("sub_id_9"),
-  subId10: text("sub_id_10"),
-  subId11: text("sub_id_11"),
-  subId12: text("sub_id_12"),
-  subId13: text("sub_id_13"),
-  subId14: text("sub_id_14"),
-  subId15: text("sub_id_15"),
-  subId16: text("sub_id_16"),
-  subId17: text("sub_id_17"),
-  subId18: text("sub_id_18"),
-  subId19: text("sub_id_19"),
-  subId20: text("sub_id_20"),
-  subId21: text("sub_id_21"),
-  subId22: text("sub_id_22"),
-  subId23: text("sub_id_23"),
-  subId24: text("sub_id_24"),
-  subId25: text("sub_id_25"),
-  subId26: text("sub_id_26"),
-  subId27: text("sub_id_27"),
-  subId28: text("sub_id_28"),
-  subId29: text("sub_id_29"),
-  subId30: text("sub_id_30"),
-  // Fraud and Bot Detection fields
-  fraudScore: integer("fraud_score").default(0),
-  isBot: boolean("is_bot").default(false),
-  vpnDetected: boolean("vpn_detected").default(false),
-  riskLevel: text("risk_level").default('low'), // 'low', 'medium', 'high'
-  // Additional analytics fields
-  mobileCarrier: text("mobile_carrier"),
-  connectionType: text("connection_type"), // 'wifi', 'mobile', 'cable'
-  timeOnLanding: integer("time_on_landing"), // seconds
-  landingUrl: text("landing_url"),
-  isUnique: boolean("is_unique").default(true),
-  status: text("status").default('active'), // 'active', 'converted', 'rejected'
-  conversionData: jsonb("conversion_data"), // Additional conversion details
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
 // Statistics
 export const statistics = pgTable("statistics", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -422,101 +387,6 @@ export const events = pgTable("events", {
 }, (table) => ({
   // Unique constraint for idempotency: (clickid, type, coalesce(txid,''))
   uniqueEvent: sql`UNIQUE (clickid, type, COALESCE(txid, ''))`,
-}));
-
-// Postback profiles table (from technical specification)
-export const postbackProfiles = pgTable("postback_profiles", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
-  // Ownership and scope
-  ownerScope: ownerScopeEnum("owner_scope").notNull(), // 'owner', 'advertiser', 'partner'
-  ownerId: varchar("owner_id").notNull().references(() => users.id), // ID of the owner
-  scopeType: postbackScopeTypeEnum("scope_type").notNull(), // 'global', 'campaign', 'offer', 'flow'
-  scopeId: varchar("scope_id"), // ID of the specific scope (offer_id, campaign_id, flow_id)
-  
-  // Profile settings
-  name: text("name").notNull(),
-  enabled: boolean("enabled").notNull().default(true),
-  priority: integer("priority").notNull().default(100),
-  
-  // Endpoint configuration
-  endpointUrl: text("endpoint_url").notNull(),
-  method: postbackMethodEnum("method").notNull(), // 'GET', 'POST'
-  idParam: postbackIdParamEnum("id_param").notNull(), // 'subid', 'clickid'
-  
-  // Authentication
-  authQueryKey: text("auth_query_key"), // Query parameter name for auth
-  authQueryVal: text("auth_query_val"), // Query parameter value for auth (encrypted)
-  authHeaderName: text("auth_header_name"), // Header name for auth
-  authHeaderVal: text("auth_header_val"), // Header value for auth (encrypted)
-  
-  // Status mapping and parameters
-  statusMap: jsonb("status_map").notNull().default(sql`'{}'::jsonb`), // Map event types to postback statuses
-  paramsTemplate: jsonb("params_template").notNull().default(sql`'{}'::jsonb`), // Mustache template for parameters
-  urlEncode: boolean("url_encode").notNull().default(true),
-  
-  // HMAC settings
-  hmacEnabled: boolean("hmac_enabled").notNull().default(false),
-  hmacSecret: text("hmac_secret"), // Encrypted HMAC secret
-  hmacPayloadTpl: text("hmac_payload_tpl"), // Mustache template for HMAC payload
-  hmacParamName: text("hmac_param_name"), // Parameter name for HMAC signature
-  
-  // Retry and timeout settings
-  retries: integer("retries").notNull().default(5),
-  timeoutMs: integer("timeout_ms").notNull().default(4000),
-  backoffBaseSec: integer("backoff_base_sec").notNull().default(2),
-  
-  // Filters
-  filterRevenueGt0: boolean("filter_revenue_gt0").notNull().default(false),
-  filterCountryWhitelist: jsonb("filter_country_whitelist"), // Array of allowed countries
-  filterCountryBlacklist: jsonb("filter_country_blacklist"), // Array of blocked countries
-  filterExcludeBots: boolean("filter_exclude_bots").notNull().default(true),
-  
-  // Timestamps
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Enhanced postback deliveries table with comprehensive tracking and indexing
-export const postbackDeliveries = pgTable("postback_deliveries", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  profileId: varchar("profile_id").notNull().references(() => postbackProfiles.id, { onDelete: 'cascade' }),
-  eventId: varchar("event_id").references(() => events.id),
-  conversionId: varchar("conversion_id").references(() => conversions.id),
-  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
-  partnerId: varchar("partner_id").references(() => users.id),
-  clickid: text("clickid").notNull(),
-  type: text("type"),
-  txid: text("txid"),
-  statusMapped: text("status_mapped"),
-  
-  // Delivery attempt information
-  attempt: integer("attempt").notNull(),
-  maxAttempts: integer("max_attempts").notNull(),
-  
-  // Request details
-  requestMethod: text("request_method").notNull(),
-  requestUrl: text("request_url").notNull(),
-  requestBody: text("request_body"),
-  requestHeaders: jsonb("request_headers"),
-  
-  // Response details
-  responseCode: integer("response_code"),
-  responseBody: text("response_body"),
-  error: text("error"),
-  durationMs: integer("duration_ms"),
-  
-  // Status and timestamps
-  status: deliveryStatusEnum("status").notNull().default('pending'),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (t) => ({
-  // Enhanced indexes for performance optimization
-  ix_delivery_profile: index("ix_delivery_profile").on(t.profileId),
-  ix_delivery_clickid: index("ix_delivery_clickid").on(t.clickid),
-  ix_delivery_attempt: index("ix_delivery_attempt").on(t.attempt),
-  ix_delivery_created: index("ix_delivery_created").on(t.createdAt),
-  ix_delivery_status: index("ix_delivery_status").on(t.status),
-  ix_delivery_conversion: index("ix_delivery_conversion").on(t.conversionId),
 }));
 
 // Postbacks
@@ -741,7 +611,7 @@ export const apiKeys = pgTable("api_keys", {
 export const postbackLogs = pgTable("postback_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   postbackId: varchar("postback_id").references(() => postbackTemplates.id),
-  clickId: varchar("click_id").references(() => trackingClicks.id),
+  clickId: varchar("click_id"), // Reference to trackingClicks.id (no FK constraint to avoid circular dependency)
   eventType: text("event_type").notNull(), // 'click', 'lead', 'deposit', etc.
   url: text("url").notNull(),
   method: text("method").notNull(),
@@ -1350,12 +1220,6 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   tickets: many(tickets),
   assignedTickets: many(tickets, { relationName: 'assignedTickets' }),
   fraudAlerts: many(fraudAlerts),
-  advertiser: one(users, {
-    fields: [users.advertiserId],
-    references: [users.id],
-    relationName: 'advertiserStaff'
-  }),
-  staff: many(users, { relationName: 'advertiserStaff' }),
 }));
 
 export const offersRelations = relations(offers, ({ one, many }) => ({
@@ -1808,11 +1672,6 @@ export const insertPostbackDeliveryLogSchema = createInsertSchema(postbackDelive
   createdAt: true,
 });
 
-export const insertTrackingClickSchema = createInsertSchema(trackingClicks).omit({
-  id: true,
-  createdAt: true,
-});
-
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -1852,8 +1711,6 @@ export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertPostbackLog = z.infer<typeof insertPostbackLogSchema>;
 export type PostbackLog = typeof postbackLogs.$inferSelect;
-export type InsertTrackingClick = z.infer<typeof insertTrackingClickSchema>;
-export type TrackingClick = typeof trackingClicks.$inferSelect;
 export type InsertReceivedOffer = z.infer<typeof insertReceivedOfferSchema>;
 export type ReceivedOffer = typeof receivedOffers.$inferSelect;
 

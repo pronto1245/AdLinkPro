@@ -1,16 +1,17 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, integer, decimal, timestamp, boolean, jsonb, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, decimal, timestamp, boolean, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { users, offers } from "./schema";
-
-// Additional enums for postback system
-export const ownerScopeEnum = pgEnum('owner_scope', ['owner', 'advertiser', 'partner']);
-export const postbackScopeTypeEnum = pgEnum('postback_scope_type', ['global', 'campaign', 'offer', 'flow']);
-export const postbackMethodEnum = pgEnum('postback_method', ['GET', 'POST']);
-export const postbackIdParamEnum = pgEnum('postback_id_param', ['subid', 'clickid']);
-export const deliveryStatusEnum = pgEnum('delivery_status', ['pending', 'success', 'failed', 'retrying']);
-export const eventTypeEnum = pgEnum('event_type', ['open', 'lp_click', 'reg', 'deposit', 'sale', 'lead', 'lp_leave']);
+import { 
+  users, 
+  offers, 
+  ownerScopeEnum, 
+  postbackScopeTypeEnum, 
+  postbackMethodEnum, 
+  postbackIdParamEnum, 
+  deliveryStatusEnum, 
+  eventTypeEnum 
+} from "./schema";
 
 // Sub2 configuration
 export const sub2Config = {
@@ -22,63 +23,10 @@ export const sub2Config = {
   maxLength: 200
 };
 
-// Enhanced clicks table for comprehensive tracking
-export const trackingClicks = pgTable("tracking_clicks", {
-  clickid: text("clickid").primaryKey(),
-  advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
-  partnerId: varchar("partner_id").references(() => users.id),
-  campaignId: varchar("campaign_id"),
-  offerId: varchar("offer_id").references(() => offers.id),
-  flowId: varchar("flow_id"),
-  site: text("site"),
-  referrer: text("referrer"),
-  
-  // Sub parameters
-  sub1: text("sub1"),
-  sub2Raw: text("sub2_raw"), // Raw sub2 string as received
-  sub2Map: jsonb("sub2_map"), // Parsed key-value pairs
-  sub3: text("sub3"),
-  sub4: text("sub4"),
-  sub5: text("sub5"),
-  sub6: text("sub6"),
-  sub7: text("sub7"),
-  sub8: text("sub8"),
-  sub9: text("sub9"),
-  sub10: text("sub10"),
-  
-  // UTM parameters
-  utmSource: text("utm_source"),
-  utmCampaign: text("utm_campaign"),
-  utmMedium: text("utm_medium"),
-  utmTerm: text("utm_term"),
-  utmContent: text("utm_content"),
-  
-  // Client and server data
-  ip: text("ip"),
-  countryIso: text("country_iso"),
-  region: text("region"),
-  city: text("city"),
-  isp: text("isp"),
-  operator: text("operator"),
-  isProxy: boolean("is_proxy").default(false),
-  
-  userAgent: text("user_agent"),
-  browserName: text("browser_name"),
-  browserVersion: text("browser_version"),
-  osName: text("os_name"),
-  osVersion: text("os_version"),
-  deviceModel: text("device_model"),
-  deviceType: text("device_type"),
-  connection: text("connection"),
-  lang: text("lang"),
-  
-  ts: timestamp("ts").defaultNow(),
-});
-
 // Enhanced events table for tracking conversions
 export const trackingEvents = pgTable("tracking_events", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  clickid: text("clickid").notNull().references(() => trackingClicks.clickid),
+  clickid: text("clickid").notNull(), // Reference to trackingClicks.clickid (no FK to avoid circular dependency)
   advertiserId: varchar("advertiser_id").notNull().references(() => users.id),
   partnerId: varchar("partner_id").references(() => users.id),
   type: eventTypeEnum("type").notNull(),
@@ -187,27 +135,7 @@ export const deliveryQueue = pgTable("delivery_queue", {
 });
 
 // Relations
-export const trackingClicksRelations = relations(trackingClicks, ({ one, many }) => ({
-  advertiser: one(users, {
-    fields: [trackingClicks.advertiserId],
-    references: [users.id],
-  }),
-  partner: one(users, {
-    fields: [trackingClicks.partnerId],
-    references: [users.id],
-  }),
-  offer: one(offers, {
-    fields: [trackingClicks.offerId],
-    references: [offers.id],
-  }),
-  events: many(trackingEvents),
-}));
-
 export const trackingEventsRelations = relations(trackingEvents, ({ one }) => ({
-  click: one(trackingClicks, {
-    fields: [trackingEvents.clickid],
-    references: [trackingClicks.clickid],
-  }),
   advertiser: one(users, {
     fields: [trackingEvents.advertiserId],
     references: [users.id],
@@ -322,7 +250,6 @@ export const updatePostbackProfileSchema = createPostbackProfileSchema.partial()
 export type PostbackProfile = typeof postbackProfiles.$inferSelect;
 export type CreatePostbackProfile = z.infer<typeof createPostbackProfileSchema>;
 export type UpdatePostbackProfile = z.infer<typeof updatePostbackProfileSchema>;
-export type TrackingClick = typeof trackingClicks.$inferSelect;
 export type TrackingEvent = typeof trackingEvents.$inferSelect;
 export type PostbackDelivery = typeof postbackDeliveries.$inferSelect;
 export type ClickEvent = z.infer<typeof clickEventSchema>;
