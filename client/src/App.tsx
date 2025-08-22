@@ -8,10 +8,6 @@ import Register from '@/pages/auth/Register';
 import Logout from '@/pages/auth/logout';
 import ForgotPassword from '@/pages/auth/ForgotPassword';
 import ResetPassword from '@/pages/auth/ResetPassword';
-// Import separate registration components
-import { LoginPartner, LoginAdvertiser } from '@/pages/LoginVariants';
-import RegisterPartner from '@/pages/auth/RegisterPartner';
-import RegisterAdvertiser from '@/pages/auth/RegisterAdvertiser';
 
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import AuthRedirector from '@/components/auth/AuthRedirector';
@@ -82,18 +78,13 @@ function Router() {
         <Route path="/" component={() => <Redirect to="/login" />} />
 
         {/* Authentication routes */}
-        <Route path="/login/partner" component={LoginPartner} />
-        <Route path="/login/advertiser" component={LoginAdvertiser} />
         <Route path="/login" component={Login} />
         <Route path="/logout" component={Logout} />
-        <Route path="/auth/forgot-password" component={ForgotPassword} />
-        <Route path="/auth/reset-password" component={ResetPassword} />
+        <Route path="/forgot-password" component={ForgotPassword} />
+        <Route path="/reset-password" component={ResetPassword} />
 
         {/* Registration routes */}
-        <Route path="/auth/register" component={Register} />
-        <Route path="/register/partner" component={RegisterPartner} />
-        <Route path="/register/advertiser" component={RegisterAdvertiser} />
-        <Route path="/register" component={() => <Redirect to="/auth/register" />} />
+        <Route path="/register" component={Register} />
 
         {/* Advertiser Dashboard Routes */}
         <ProtectedRoute path="/dashboard/advertiser" roles={['advertiser']} component={withLayout(AdvertiserDash)} />
@@ -163,5 +154,5 @@ function Router() {
 }
 
 export default function App() {
-  return <Login />;
+  return <Router />;
 }

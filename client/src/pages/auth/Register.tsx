@@ -12,7 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNotifications } from "@/components/NotificationToast";
 
 import { secureAuth, SecureAPIError } from "@/lib/secure-api";
@@ -40,13 +39,17 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function Register() {
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<"advertiser" | "partner">("advertiser");
   const { showNotification } = useNotifications();
+
+  // Get role from URL parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const roleFromUrl = urlParams.get('role') as 'partner' | 'advertiser' | null;
+  const defaultRole = roleFromUrl || 'advertiser';
 
   // Registration form
   const registerForm = useForm<RegisterFormData>({
@@ -61,19 +64,14 @@ export default function Register() {
       company: "",
       contactType: "telegram",
       contact: "",
-      role: "advertiser",
+      role: defaultRole,
       agreeTerms: false,
       agreePrivacy: false,
       agreeMarketing: false,
     },
   });
 
-  // Update form role when tab changes
-  const handleTabChange = (value: string) => {
-    const role = value as "advertiser" | "partner";
-    setActiveTab(role);
-    registerForm.setValue("role", role);
-  };
+
 
   // Handle registration form submission
   async function onRegister(data: RegisterFormData) {
@@ -130,10 +128,13 @@ export default function Register() {
             <UserPlus className="h-8 w-8 text-blue-600 mr-2" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            Создание аккаунта
+            Регистрация {defaultRole === 'partner' ? 'партнёра' : 'рекламодателя'}
           </CardTitle>
           <p className="text-gray-600 mt-2">
-            Выберите тип аккаунта и заполните форму регистрации
+            {defaultRole === 'partner' 
+              ? 'Партнёры продвигают офферы рекламодателей и получают комиссию за результат'
+              : 'Рекламодатели создают офферы и работают с партнёрами для продвижения своих продуктов'
+            }
           </p>
         </CardHeader>
 
@@ -145,22 +146,6 @@ export default function Register() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-
-          {/* Account type tabs */}
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="advertiser">Рекламодатель</TabsTrigger>
-              <TabsTrigger value="partner">Партнер</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="advertiser" className="text-sm text-gray-600">
-              <p>Рекламодатели создают офферы и работают с партнерами для продвижения своих продуктов</p>
-            </TabsContent>
-            
-            <TabsContent value="partner" className="text-sm text-gray-600">
-              <p>Партнеры продвигают офферы рекламодателей и получают комиссию за результат</p>
-            </TabsContent>
-          </Tabs>
 
           {/* Registration Form */}
           <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
