@@ -1,7 +1,7 @@
 {
   "name": "rest-express",
   "version": "1.0.0",
-  "type": "commonjs",
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
@@ -12,7 +12,7 @@
     "lint:fix": "eslint server/**/*.ts client/src/**/*.{ts,tsx} --fix",
     "db:push": "drizzle-kit push",
     "build:client": "vite build --config client/vite.config.ts",
-    "build:server": "esbuild server/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.js",
+    "build:server": "esbuild server/index.ts --platform=node --bundle --format=esm --outdir=dist --sourcemap",
     "preview": "vite preview --config client/vite.config.ts",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -24,7 +24,8 @@
     "i18n:validate": "node scripts/validate-translations.mjs",
     "i18n:complete": "node scripts/complete-translations.mjs",
     "i18n:cleanup": "node scripts/cleanup-i18n.mjs",
-    "i18n:all": "npm run i18n:validate && npm run i18n:complete && npm run i18n:cleanup"
+    "i18n:all": "npm run i18n:validate && npm run i18n:complete && npm run i18n:cleanup",
+    "start:server": "node dist/index.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
