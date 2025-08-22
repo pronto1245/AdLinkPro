@@ -10,7 +10,7 @@ const ipBlacklist = new Set<string>([
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const loginAttempts = new Map<string, { count: number; lastAttempt: number; blocked: boolean }>();
 
-// Audit log storage
+// Enhanced Audit log storage with more detailed tracking
 interface AuditEntry {
   timestamp: Date;
   userId?: string;
@@ -20,30 +20,167 @@ interface AuditEntry {
   userAgent?: string;
   success: boolean;
   details?: any;
+  // Enhanced fields for better tracking
+  origin?: string; // CORS origin
+  referer?: string;
+  geolocation?: string; // If IP geolocation service is available
+  sessionId?: string;
+  deviceFingerprint?: string;
+  riskScore?: number;
 }
 
 const auditLogs: AuditEntry[] = [];
 
+// Enhanced audit logging with CORS and IP-level tracking
 export const auditLog = (req: Request, action: string, resource?: string, success: boolean = true, details?: any) => {
   const entry: AuditEntry = {
     timestamp: new Date(),
-    userId: req.user?.id,
+    userId: req.user?.id || req.user?.sub,
     action,
     resource,
-    ip: req.ip || req.connection.remoteAddress || 'unknown',
+    ip: getClientIP(req),
     userAgent: req.get('User-Agent'),
     success,
-    details
+    details,
+    // Enhanced tracking fields
+    origin: req.get('Origin'),
+    referer: req.get('Referer'),
+    sessionId: req.sessionID || req.get('x-session-id'),
+    // Basic risk scoring based on request patterns
+    riskScore: calculateRiskScore(req, action, success)
   };
   
   auditLogs.push(entry);
   
-  // Keep only last 10000 entries
+  // Keep only last 10000 entries (in production, should use database or log service)
   if (auditLogs.length > 10000) {
     auditLogs.splice(0, auditLogs.length - 10000);
   }
   
-  console.log(`AUDIT: ${action} by ${entry.userId || 'anonymous'} from ${entry.ip} - ${success ? 'SUCCESS' : 'FAILED'}`);
+  // Enhanced logging with more context
+  const logMessage = `AUDIT: ${action} by ${entry.userId || 'anonymous'} from ${entry.ip} (${entry.origin || 'no-origin'}) - ${success ? 'SUCCESS' : 'FAILED'}${entry.riskScore ? ` [Risk: ${entry.riskScore}]` : ''}`;
+  console.log(logMessage);
+  
+  // Alert on high-risk activities
+  if (entry.riskScore && entry.riskScore > 7) {
+    console.warn(`🚨 HIGH RISK ACTIVITY DETECTED: ${logMessage}`, entry);
+  }
+  
+  // Store suspicious activities for further analysis
+  if (!success && entry.riskScore && entry.riskScore > 5) {
+    storeSuspiciousActivity(entry);
+  }
+};
+
+// Get client IP with proxy support
+function getClientIP(req: Request): string {
+  return (
+    req.get('CF-Connecting-IP') || // Cloudflare
+    req.get('True-Client-IP') ||   // Akamai/Cloudflare
+    req.get('X-Real-IP') ||        // Nginx proxy
+    req.get('X-Forwarded-For')?.split(',')[0]?.trim() || // Load balancer/proxy
+    req.ip ||
+    req.connection.remoteAddress ||
+    req.socket.remoteAddress ||
+    'unknown'
+  );
+}
+
+// Calculate risk score based on various factors
+function calculateRiskScore(req: Request, action: string, success: boolean): number {
+  let score = 0;
+  
+  // Base score for failed attempts
+  if (!success) score += 2;
+  
+  // High-risk actions
+  const highRiskActions = ['INVALID_TOKEN', 'UNAUTHORIZED_ACCESS', 'PERMISSION_DENIED', 'OWNERSHIP_VIOLATION'];
+  if (highRiskActions.includes(action)) score += 3;
+  
+  // Suspicious user agents
+  const userAgent = req.get('User-Agent') || '';
+  if (userAgent.toLowerCase().includes('bot') || userAgent.length < 20) score += 2;
+  
+  // Missing or suspicious origins
+  const origin = req.get('Origin');
+  if (!origin && req.method === 'POST') score += 1;
+  
+  // Rate limiting violations
+  const ip = getClientIP(req);
+  const recentAttempts = auditLogs.filter(
+    log => log.ip === ip && 
+           Date.now() - log.timestamp.getTime() < 60000 // Last minute
+  );
+  if (recentAttempts.length > 10) score += 3;
+  
+  // Known suspicious IPs
+  if (ipBlacklist.has(ip)) score += 5;
+  
+  return Math.min(score, 10); // Cap at 10
+}
+
+// Store suspicious activities for analysis
+const suspiciousActivities: AuditEntry[] = [];
+
+function storeSuspiciousActivity(entry: AuditEntry) {
+  suspiciousActivities.push(entry);
+  
+  // Keep only last 1000 suspicious entries
+  if (suspiciousActivities.length > 1000) {
+    suspiciousActivities.splice(0, suspiciousActivities.length - 1000);
+  }
+}
+
+// Get audit logs with filtering
+export const getAuditLogs = (filters: {
+  userId?: string;
+  action?: string;
+  ip?: string;
+  success?: boolean;
+  timeFrom?: Date;
+  timeTo?: Date;
+  limit?: number;
+} = {}) => {
+  let filtered = auditLogs;
+  
+  if (filters.userId) {
+    filtered = filtered.filter(log => log.userId === filters.userId);
+  }
+  
+  if (filters.action) {
+    filtered = filtered.filter(log => log.action === filters.action);
+  }
+  
+  if (filters.ip) {
+    filtered = filtered.filter(log => log.ip === filters.ip);
+  }
+  
+  if (filters.success !== undefined) {
+    filtered = filtered.filter(log => log.success === filters.success);
+  }
+  
+  if (filters.timeFrom) {
+    filtered = filtered.filter(log => log.timestamp >= filters.timeFrom!);
+  }
+  
+  if (filters.timeTo) {
+    filtered = filtered.filter(log => log.timestamp <= filters.timeTo!);
+  }
+  
+  // Sort by timestamp (most recent first)
+  filtered = filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  
+  // Apply limit
+  if (filters.limit) {
+    filtered = filtered.slice(0, filters.limit);
+  }
+  
+  return filtered;
+};
+
+// Get suspicious activities
+export const getSuspiciousActivities = () => {
+  return suspiciousActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 };
 
 export const checkIPBlacklist = (req: Request, res: Response, next: NextFunction) => {
@@ -240,41 +377,7 @@ export const detectFraud = (req: Request, action: string, details: any) => {
   }
 };
 
-// Helper functions for getting audit logs
-export const getAuditLogs = (filters?: {
-  userId?: string;
-  action?: string;
-  fromDate?: Date;
-  toDate?: Date;
-  limit?: number;
-}) => {
-  let filtered = [...auditLogs];
-  
-  if (filters?.userId) {
-    filtered = filtered.filter(log => log.userId === filters.userId);
-  }
-  
-  if (filters?.action) {
-    filtered = filtered.filter(log => log.action.includes(filters.action || ''));
-  }
-  
-  if (filters?.fromDate) {
-    filtered = filtered.filter(log => log.timestamp >= filters.fromDate!);
-  }
-  
-  if (filters?.toDate) {
-    filtered = filtered.filter(log => log.timestamp <= filters.toDate!);
-  }
-  
-  // Sort by timestamp descending
-  filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-  
-  if (filters?.limit) {
-    filtered = filtered.slice(0, filters.limit);
-  }
-  
-  return filtered;
-};
+// The enhanced getAuditLogs function is already defined above
 
 export const addToBlacklist = (ip: string) => {
   ipBlacklist.add(ip);

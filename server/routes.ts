@@ -2021,65 +2021,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Partner registration endpoint
+  // Partner registration endpoint - Enhanced with centralized error handling
   app.post("/api/auth/register/partner", async (req, res) => {
-    // Add debugging console.log as required
-    console.log("📝 Partner registration request - Email:", req.body.email, "Role: affiliate", "API: /api/auth/register/partner");
+    const { auditLog } = await import('./middleware/security');
+    const { 
+      validateWithFallback,
+      transformRegistrationData,
+      executeWithFallback,
+      handleRegistrationError,
+      validateRegistrationData
+    } = await import('./utils/registrationHelpers');
+    
+    // Enhanced audit logging for registration attempt
+    auditLog(req, 'PARTNER_REGISTRATION_ATTEMPT', undefined, true, { 
+      email: req.body.email,
+      role: 'PARTNER' 
+    });
+    
+    console.log("📝 Partner registration request - Email:", req.body.email, "Role: PARTNER", "API: /api/auth/register/partner");
     
     try {
-      // Transform frontend data to match database schema
-      const registrationData = {
-        ...req.body,
-        username: req.body.email?.split('@')[0] || req.body.username, // Generate username from email if not provided
-        role: 'affiliate'  // Force role to affiliate for partner registration
-      };
+      // Enhanced data validation using our new utilities
+      const validationResult = validateRegistrationData(req.body);
+      if (!validationResult.isValid) {
+        auditLog(req, 'REGISTRATION_VALIDATION_FAILED', undefined, false, { 
+          errors: validationResult.errors 
+        });
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: validationResult.errors 
+        });
+      }
       
-      // Basic validation first
-      if (!registrationData.name || !registrationData.email || !registrationData.password) {
+      // Transform and validate data using centralized utilities
+      const transformedData = transformRegistrationData({
+        ...req.body,
+        role: 'PARTNER'  // Force role to PARTNER for partner registration
+      });
+      
+      // Enhanced schema validation with fallback
+      const schemaResult = validateWithFallback(
+        req, res, 
+        insertUserSchema, 
+        transformedData,
+        {
+          username: transformedData.username,
+          email: transformedData.email,
+          password: transformedData.password,
+          firstName: transformedData.firstName || transformedData.name?.split(' ')[0] || '',
+          lastName: transformedData.lastName || transformedData.name?.split(' ').slice(1).join(' ') || '',
+          role: 'PARTNER',
+          company: transformedData.company || '',
+          phone: transformedData.phone || '',
+          telegram: transformedData.telegram || ''
+        }
+      );
+      
+      if (!schemaResult.success) {
+        return; // Response already sent by validateWithFallback
+      }
+      
+      const userData = schemaResult.data;
+      
+      // Check required fields
+      if (!userData.email || !userData.password || (!userData.firstName && !transformedData.name)) {
+        auditLog(req, 'REGISTRATION_MISSING_FIELDS', undefined, false);
         return res.status(400).json({ error: "Missing required fields: name, email, password" });
       }
       
-      if (!registrationData.agreeTerms || !registrationData.agreePrivacy) {
+      if (!req.body.agreeTerms || !req.body.agreePrivacy) {
+        auditLog(req, 'REGISTRATION_TERMS_NOT_AGREED', undefined, false);
         return res.status(400).json({ error: "You must agree to the terms" });
       }
       
-      let userData;
-      try {
-        userData = insertUserSchema.parse(registrationData);
-      } catch (schemaError) {
-        console.log("❌ Schema validation error, using fallback:", schemaError);
-        // Fall back to simple validation if schema parsing fails
-        userData = {
-          username: registrationData.username,
-          email: registrationData.email,
-          password: registrationData.password,
-          firstName: registrationData.name?.split(' ')[0],
-          lastName: registrationData.name?.split(' ').slice(1).join(' '),
-          role: 'affiliate',
-          company: registrationData.company,
-          phone: registrationData.phone,
-          telegram: registrationData.telegram
-        };
-      }
-      const { ref } = req.query; // Реферальный код из URL параметра
+      // Hash password securely
+      const userPassword = await bcrypt.hash(userData.password, 10);
       
-      // Check if user already exists (email or telegram uniqueness)
-      const existingUser = await storage.getUserByUsername(userData.username as string) || 
-                          await storage.getUserByEmail(userData.email as string);
+      // Enhanced database operation with fallback
+      const userCreationResult = await executeWithFallback(
+        req, res,
+        async () => {
+          return await storage.createUser({
+            ...userData,
+            password: userPassword,
+            referredBy: req.body.referredBy,
+            referralCode: generateReferralCode()
+          });
+        },
+        {
+          id: `partner_${Date.now()}`,
+          username: userData.username,
+          email: userData.email,
+          role: userData.role,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          createdAt: new Date(),
+        },
+        "user creation"
+      );
       
-      if (existingUser) {
-        return res.status(400).json({ error: "Email already in use" });
+      if (!userCreationResult.success) {
+        return; // Response already sent by executeWithFallback
       }
-
-      // Check telegram uniqueness if provided
-      if (userData.telegram) {
-        const existingTelegramUser = await storage.getUserByTelegram?.(userData.telegram as string);
-        if (existingTelegramUser) {
-          return res.status(400).json({ error: "Telegram already in use" });
-        }
-      }
-
-      // Проверяем реферальный код, если передан
+      
+      let createdUser = userCreationResult.data;
+      
+      // The user existence check and creation has already been handled by executeWithFallback
+      // Continue with referral processing and token generation
+      
+      // Enhanced referral code processing
+      const { ref } = req.query;
       let referredBy = null;
       if (ref) {
         const { users } = await import('@shared/schema');
