@@ -54,9 +54,13 @@ export const companySchema = z
     'Название компании не может состоять только из пробелов'
   );
 
-// Login form validation schema
+// Login form validation schema (simplified - less strict than registration)
 export const loginSchema = z.object({
-  email: emailSchema,
+  email: z
+    .string()
+    .min(1, 'Email обязателен')
+    .email('Неверный формат email')
+    .max(255, 'Email слишком длинный'),
   password: z.string().min(1, 'Пароль обязателен'),
   twoFactorCode: z.string().optional(),
   rememberMe: z.boolean().optional(),

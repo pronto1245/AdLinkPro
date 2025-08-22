@@ -13,8 +13,23 @@ export default function LoginPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    
+    console.log("🔐 [SIMPLE_LOGIN] Starting login process...", {
+      email,
+      hasPassword: !!password,
+      apiBase: API_BASE,
+      loginPath: LOGIN_PATH
+    });
+    
     setErr('');
     setLoading(true);
+
+    // Add timeout safety mechanism
+    const timeoutId = setTimeout(() => {
+      console.warn("🔐 [SIMPLE_LOGIN] Login timeout - resetting loading state");
+      setLoading(false);
+      setErr('Время ожидания истекло. Попробуйте еще раз.');
+    }, 30000); // 30 second timeout
 
     try {
       const body = { email, password };
@@ -34,14 +49,26 @@ export default function LoginPage() {
 
       console.log("📦 JSON ответ:", data);
 
-      if (!res.ok) throw new Error(data?.error || 'Ошибка входа');
-      if (!data.token) throw new Error('Токен не получен');
+      if (!res.ok) {
+        const errorMsg = data?.error || 'Ошибка входа';
+        console.error("🔐 [SIMPLE_LOGIN] Login failed:", errorMsg);
+        throw new Error(errorMsg);
+      }
+      
+      if (!data.token) {
+        console.error("🔐 [SIMPLE_LOGIN] No token received:", data);
+        throw new Error('Токен не получен');
+      }
 
+      console.log("🔐 [SIMPLE_LOGIN] Login successful, storing token and redirecting...");
       localStorage.setItem('token', data.token);
       setLocation('/');
     } catch (e: any) {
+      console.error("🔐 [SIMPLE_LOGIN] Login error:", e);
       setErr(e.message);
     } finally {
+      console.log("🔐 [SIMPLE_LOGIN] Clearing timeout and setting loading to false...");
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   }

@@ -44,12 +44,24 @@ export default function Login() {
 
   // Handle login form submission
   async function onLogin(data: LoginFormData) {
+    console.log("🔐 [LOGIN] Starting login process...", {
+      email: data.email,
+      hasPassword: !!data.password,
+      rememberMe: data.rememberMe
+    });
+    
     setError("");
     setLoading(true);
 
     try {
       // Login successful - backend now always returns token directly
+      console.log("🔐 [LOGIN] Calling secureAuth.login...");
       const result = await secureAuth.login(data.email, data.password);
+      
+      console.log("🔐 [LOGIN] Login result:", {
+        hasToken: !!result.token,
+        result: result
+      });
       
       if (result.token) {
         toast({
@@ -58,22 +70,40 @@ export default function Login() {
         });
 
         // Get user info and navigate
+        console.log("🔐 [LOGIN] Getting user info...");
         const user = await secureAuth.me();
-        navigate(roleToPath(user?.role));
+        console.log("🔐 [LOGIN] User info received:", user);
+        
+        const targetPath = roleToPath(user?.role);
+        console.log("🔐 [LOGIN] Navigating to:", targetPath);
+        navigate(targetPath);
       } else {
+        console.warn("🔐 [LOGIN] No token in response:", result);
         setError("Ошибка входа. Попробуйте снова.");
       }
     } catch (err) {
+      console.error("🔐 [LOGIN] Login error:", err);
+      
       if (err instanceof SecureAPIError) {
+        console.error("🔐 [LOGIN] SecureAPI error:", {
+          status: err.status,
+          statusText: err.statusText,
+          code: err.code
+        });
+        
         if (err.status === 401) {
           setError("Неверный email или пароль");
+        } else if (err.status === 429) {
+          setError("Слишком много попыток входа. Попробуйте позже.");
         } else {
           setError(err.statusText || "Ошибка входа");
         }
       } else {
+        console.error("🔐 [LOGIN] Network or other error:", err);
         setError("Ошибка соединения. Проверьте интернет-подключение.");
       }
     } finally {
+      console.log("🔐 [LOGIN] Setting loading to false...");
       setLoading(false);
     }
   }

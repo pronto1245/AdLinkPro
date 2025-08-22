@@ -46,26 +46,41 @@ function extractAndValidateToken(req: Request): { token: string | null; errors: 
 
 // Unified authentication middleware - replaces both auth.ts and authorization.ts versions
 export function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  console.log("🛡️  [AUTH_MIDDLEWARE] Authenticating token...", {
+    path: req.path,
+    method: req.method,
+    hasAuthHeader: !!req.headers['authorization']
+  });
+
   const { token, errors } = extractAndValidateToken(req);
 
   if (!token) {
+    console.log("🛡️  [AUTH_MIDDLEWARE] Token extraction failed:", errors);
     auditLog(req, 'AUTH_FAILED', undefined, false, { errors });
     return sendAuthenticationRequired(req, res);
   }
 
   try {
+    console.log("🛡️  [AUTH_MIDDLEWARE] Verifying JWT token...");
     const decoded = jwt.verify(token, JWT_SECRET) as any;
     
     // Additional token payload validation
     if (!decoded.sub && !decoded.id) {
+      console.error("🛡️  [AUTH_MIDDLEWARE] Missing user identifier in token");
       return sendJWTValidationError(req, res, { reason: 'Missing user identifier in token' });
     }
 
     if (!decoded.role) {
+      console.error("🛡️  [AUTH_MIDDLEWARE] Missing role in token");
       return sendJWTValidationError(req, res, { reason: 'Missing role in token' });
     }
 
     req.user = decoded;
+    
+    console.log("🛡️  [AUTH_MIDDLEWARE] Token verified successfully", {
+      userId: decoded.sub || decoded.id,
+      role: decoded.role
+    });
     
     // Log successful authentication
     auditLog(req, 'AUTH_SUCCESS', decoded.sub || decoded.id, true, { 
@@ -85,6 +100,7 @@ export function authenticateToken(req: AuthenticatedRequest, res: Response, next
       errorDetails = 'Token not active yet';
     }
 
+    console.error("🛡️  [AUTH_MIDDLEWARE] Token verification failed:", errorDetails, error);
     auditLog(req, 'INVALID_TOKEN', undefined, false, { error: errorDetails });
     return sendInvalidToken(req, res, { reason: errorDetails });
   }

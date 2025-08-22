@@ -27,10 +27,18 @@ export class SecureAPIError extends Error {
 }
 
 async function secureApi(path: string, init: SecureRequestInit = {}) {
+  console.log("🌐 [SECURE_API] Making request:", {
+    path,
+    method: init.method || 'GET',
+    skipAuth: init.skipAuth,
+    identifier: init.identifier
+  });
+
   // Check rate limiting
   const identifier = init.identifier || 'anonymous';
   if (rateLimitTracker.isRateLimited(identifier)) {
     const remainingTime = rateLimitTracker.getRemainingTime(identifier);
+    console.warn("🌐 [SECURE_API] Rate limited:", { identifier, remainingTime });
     throw new SecureAPIError(
       429,
       'Too Many Requests',
@@ -41,6 +49,10 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
 
   // Get authentication token
   const token = !init.skipAuth ? tokenStorage.getToken() : null;
+  console.log("🌐 [SECURE_API] Auth token:", {
+    hasToken: !!token,
+    skipAuth: init.skipAuth
+  });
 
   // Prepare headers
   const headers: Record<string, string> = {
@@ -54,6 +66,7 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
   if (!init.skipCSRF && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(init.method?.toUpperCase() || 'GET')) {
     const csrfToken = csrfManager.getToken() || csrfManager.generateToken();
     Object.assign(headers, csrfManager.getHeaders());
+    console.log("🌐 [SECURE_API] Added CSRF protection");
   }
 
   // Add device fingerprint
@@ -61,14 +74,22 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
   headers['X-Device-Fingerprint'] = fingerprint;
 
   try {
+    console.log("🌐 [SECURE_API] Sending fetch request...");
     const res = await fetch(resolveUrl(path), {
       ...init,
       headers,
       credentials: 'include'
     });
 
+    console.log("🌐 [SECURE_API] Fetch response:", {
+      status: res.status,
+      ok: res.ok,
+      statusText: res.statusText
+    });
+
     // Handle rate limiting
     if (res.status === 429) {
+      console.warn("🌐 [SECURE_API] Rate limited by server");
       rateLimitTracker.recordAttempt(identifier);
       const retryAfter = parseInt(res.headers.get('Retry-After') || '0');
       throw new SecureAPIError(429, 'Too Many Requests', 'RATE_LIMITED', retryAfter);
@@ -76,6 +97,7 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
 
     // Handle authentication errors
     if (res.status === 401) {
+      console.warn("🌐 [SECURE_API] Authentication failed, clearing tokens");
       tokenStorage.clearToken();
       csrfManager.clearToken();
       throw new SecureAPIError(401, 'Unauthorized', 'AUTH_FAILED');
@@ -83,6 +105,7 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
 
     // Handle CSRF errors
     if (res.status === 403 && res.headers.get('X-CSRF-Error')) {
+      console.warn("🌐 [SECURE_API] CSRF error, regenerating token");
       csrfManager.clearToken();
       csrfManager.generateToken();
       throw new SecureAPIError(403, 'CSRF Token Invalid', 'CSRF_ERROR');
@@ -96,8 +119,17 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
         const errorData = await res.json();
         errorCode = errorData.code || errorCode;
         errorMessage = errorData.message || errorData.error || errorMessage;
+        console.error("🌐 [SECURE_API] Server error:", {
+          status: res.status,
+          errorCode,
+          errorMessage,
+          errorData
+        });
       } catch {
-        // Use default error message if JSON parsing fails
+        console.error("🌐 [SECURE_API] Server error (no JSON):", {
+          status: res.status,
+          statusText: res.statusText
+        });
       }
 
       throw new SecureAPIError(res.status, errorMessage, errorCode);
@@ -109,9 +141,13 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
     }
 
     const ct = res.headers.get('content-type') || '';
-    return ct.includes('application/json') ? res.json() : res.text();
+    const result = ct.includes('application/json') ? res.json() : res.text();
+    console.log("🌐 [SECURE_API] Request successful");
+    return result;
     
   } catch (error) {
+    console.error("🌐 [SECURE_API] Request error:", error);
+    
     if (error instanceof SecureAPIError) {
       throw error;
     }
@@ -127,6 +163,14 @@ export const secureAuth = {
     data: { email: string; password: string; twoFactorCode?: string; rememberMe?: boolean },
     identifier?: string
   ) {
+    console.log("🔐 [SECURE_API] Login called with:", {
+      email: data.email,
+      hasPassword: !!data.password,
+      hasTwoFactorCode: !!data.twoFactorCode,
+      rememberMe: data.rememberMe,
+      identifier
+    });
+
     const cleanData = {
       email: data.email.trim(),
       password: data.password,
@@ -134,19 +178,35 @@ export const secureAuth = {
       ...(data.rememberMe !== undefined && { rememberMe: data.rememberMe })
     };
 
-    const result = await secureApi('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(cleanData),
-      skipAuth: true,
-      identifier: identifier || cleanData.email
-    });
+    console.log("🔐 [SECURE_API] Making API call to /api/auth/login...");
 
-    // Store token securely if login successful
-    if (result.token) {
-      tokenStorage.setToken(result.token);
+    try {
+      const result = await secureApi('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(cleanData),
+        skipAuth: true,
+        identifier: identifier || cleanData.email
+      });
+
+      console.log("🔐 [SECURE_API] API call successful:", {
+        hasToken: !!result.token,
+        hasUser: !!result.user,
+        result
+      });
+
+      // Store token securely if login successful
+      if (result.token) {
+        console.log("🔐 [SECURE_API] Storing token...");
+        tokenStorage.setToken(result.token);
+      } else {
+        console.warn("🔐 [SECURE_API] No token in response:", result);
+      }
+
+      return result;
+    } catch (error) {
+      console.error("🔐 [SECURE_API] Login error:", error);
+      throw error;
     }
-
-    return result;
   },
 
   async loginWithV2(
