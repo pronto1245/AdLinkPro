@@ -8,12 +8,15 @@ build/
 uploads/
 .env
 .env.*
+!.env.example
+!.env.production
 google.key.json
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 *.log
+logs/
 
 # Temp files and demos
 sidebar-integration-demo.html
