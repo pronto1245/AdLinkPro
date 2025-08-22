@@ -153,6 +153,7 @@
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.21",
+    "depcheck": "^1.4.7",
     "drizzle-kit": "^0.30.4",
     "esbuild": "^0.25.9",
     "jest": "^30.0.5",
