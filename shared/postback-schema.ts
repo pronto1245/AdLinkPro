@@ -1,16 +1,17 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, integer, decimal, timestamp, boolean, jsonb, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, decimal, timestamp, boolean, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { users, offers } from "./schema";
-
-// Additional enums for postback system
-export const ownerScopeEnum = pgEnum('owner_scope', ['owner', 'advertiser', 'partner']);
-export const postbackScopeTypeEnum = pgEnum('postback_scope_type', ['global', 'campaign', 'offer', 'flow']);
-export const postbackMethodEnum = pgEnum('postback_method', ['GET', 'POST']);
-export const postbackIdParamEnum = pgEnum('postback_id_param', ['subid', 'clickid']);
-export const deliveryStatusEnum = pgEnum('delivery_status', ['pending', 'success', 'failed', 'retrying']);
-export const eventTypeEnum = pgEnum('event_type', ['open', 'lp_click', 'reg', 'deposit', 'sale', 'lead', 'lp_leave']);
+import { 
+  users, 
+  offers, 
+  ownerScopeEnum, 
+  postbackScopeTypeEnum, 
+  postbackMethodEnum, 
+  postbackIdParamEnum, 
+  deliveryStatusEnum, 
+  eventTypeEnum 
+} from "./schema";
 
 // Sub2 configuration
 export const sub2Config = {
