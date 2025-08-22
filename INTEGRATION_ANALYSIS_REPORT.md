@@ -1,15 +1,15 @@
 # AdLinkPro Integration Analysis Report
 
-Generated: 2025-08-20T19:33:05.578Z
+Generated: 2025-08-22T07:18:36.981Z
 
 ## Executive Summary
 
-- **Total Pages**: 94
+- **Total Pages**: 95
 - **Total Backend Routes**: 15
 - **Total Components**: 0
 - **Total Shared Schemas**: 5
 - **Infrastructure Services**: 5
-- **Problems Identified**: 316
+- **Problems Identified**: 310
 - **Dead Modules**: 15
 
 ## Problems Table
@@ -30,8 +30,7 @@ Generated: 2025-08-20T19:33:05.578Z
 | integration | high | API call "/api/analytics/advertiser/partners" in page /advertiser/AdvertiserAnalytics has no matching backend route | Implement backend route for /api/analytics/advertiser/partners or fix the API call |
 | integration | high | API call "/api/analytics/advertiser/statistics/export?${params}" in page /advertiser/AdvertiserAnalytics has no matching backend route | Implement backend route for /api/analytics/advertiser/statistics/export?${params} or fix the API call |
 | integration | high | API call "/api/analytics/advertiser/statistics" in page /advertiser/AdvertiserAnalytics has no matching backend route | Implement backend route for /api/analytics/advertiser/statistics or fix the API call |
-| integration | high | API call "/api/advertiser/dashboard" in page /advertiser/AdvertiserDashboardNew has no matching backend route | Implement backend route for /api/advertiser/dashboard or fix the API call |
-| integration | high | API call "/api/advertiser/export" in page /advertiser/AdvertiserDashboardNew has no matching backend route | Implement backend route for /api/advertiser/export or fix the API call |
+| integration | high | API call "/api/advertiser/dashboard" in page /advertiser/AdvertiserDashboard has no matching backend route | Implement backend route for /api/advertiser/dashboard or fix the API call |
 | integration | high | API call "/api/advertiser/documentation" in page /advertiser/AdvertiserDocuments has no matching backend route | Implement backend route for /api/advertiser/documentation or fix the API call |
 | integration | high | API call "/api/advertiser/documentation/${feedback.sectionId}/feedback" in page /advertiser/AdvertiserDocuments has no matching backend route | Implement backend route for /api/advertiser/documentation/${feedback.sectionId}/feedback or fix the API call |
 | integration | high | API call "/api/advertiser/documentation/download-pdf" in page /advertiser/AdvertiserDocuments has no matching backend route | Implement backend route for /api/advertiser/documentation/download-pdf or fix the API call |
@@ -128,10 +127,10 @@ Generated: 2025-08-20T19:33:05.578Z
 | integration | high | API call "/api/dashboard/metrics" in page /advertiser/dashboard has no matching backend route | Implement backend route for /api/dashboard/metrics or fix the API call |
 | integration | high | API call "/api/offers" in page /advertiser/dashboard has no matching backend route | Implement backend route for /api/offers or fix the API call |
 | integration | high | API call "/api/transactions" in page /advertiser/dashboard has no matching backend route | Implement backend route for /api/transactions or fix the API call |
-| integration | high | API call "/api/advertiser/dashboard" in page /advertiser/simple-dashboard has no matching backend route | Implement backend route for /api/advertiser/dashboard or fix the API call |
 | integration | high | API call "/api/partner/access-requests" in page /affiliate/AccessRequestsManager has no matching backend route | Implement backend route for /api/partner/access-requests or fix the API call |
 | integration | high | API call "/api/partner/offers/available" in page /affiliate/AccessRequestsManager has no matching backend route | Implement backend route for /api/partner/offers/available or fix the API call |
 | integration | high | API call "/api/partner/offer-access-request" in page /affiliate/AccessRequestsManager has no matching backend route | Implement backend route for /api/partner/offer-access-request or fix the API call |
+| integration | high | API call "/api/affiliate/dashboard" in page /affiliate/AffiliateDashboard has no matching backend route | Implement backend route for /api/affiliate/dashboard or fix the API call |
 | integration | high | API call "/api/partner/offers" in page /affiliate/AffiliateOffers has no matching backend route | Implement backend route for /api/partner/offers or fix the API call |
 | integration | high | API call "/api/affiliate/creatives/${creative.id}/download" in page /affiliate/CreativesAndTools has no matching backend route | Implement backend route for /api/affiliate/creatives/${creative.id}/download or fix the API call |
 | integration | high | API call "/api/affiliate/creatives" in page /affiliate/CreativesAndTools has no matching backend route | Implement backend route for /api/affiliate/creatives or fix the API call |
@@ -190,25 +189,22 @@ Generated: 2025-08-20T19:33:05.578Z
 | integration | high | API call "/api/affiliate/team" in page /affiliate/TeamManagement has no matching backend route | Implement backend route for /api/affiliate/team or fix the API call |
 | integration | high | API call "/api/affiliate/team/${id}" in page /affiliate/TeamManagement has no matching backend route | Implement backend route for /api/affiliate/team/${id} or fix the API call |
 | integration | high | API call "/api/affiliate/dashboard" in page /affiliate/dashboard has no matching backend route | Implement backend route for /api/affiliate/dashboard or fix the API call |
-| integration | high | API call "/api/offers" in page /affiliate/dashboard has no matching backend route | Implement backend route for /api/offers or fix the API call |
-| integration | high | API call "/api/tracking-links" in page /affiliate/dashboard has no matching backend route | Implement backend route for /api/tracking-links or fix the API call |
-| integration | high | API call "/api/partner/dashboard" in page /affiliate/simple-dashboard has no matching backend route | Implement backend route for /api/partner/dashboard or fix the API call |
-| integration | high | API call "/api/partner/offers" in page /affiliate/simple-dashboard has no matching backend route | Implement backend route for /api/partner/offers or fix the API call |
 | integration | low | Page /auth/ForgotPassword has no backend connections | Add appropriate API calls or connect to backend services |
+| integration | low | Page /auth/Register has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | low | Page /auth/RegisterAdvertiser has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | low | Page /auth/RegisterPartner has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | low | Page /auth/ResetPassword has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | low | Page /auth/login/index has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | low | Page /auth/logout has no backend connections | Add appropriate API calls or connect to backend services |
+| integration | high | API call "${API_BASE}${LOGIN_PATH}" in page /login has no matching backend route | Implement backend route for ${API_BASE}${LOGIN_PATH} or fix the API call |
+| integration | high | API call "/api/auth/login" in page /login has no matching backend route | Implement backend route for /api/auth/login or fix the API call |
 | integration | high | API call "/api/owner/metrics" in page /owner/OwnerDashboard has no matching backend route | Implement backend route for /api/owner/metrics or fix the API call |
-| integration | high | API call "/api/owner/business-overview" in page /owner/OwnerDashboard has no matching backend route | Implement backend route for /api/owner/business-overview or fix the API call |
-| integration | high | API call "/api/owner/top-performers" in page /owner/OwnerDashboard has no matching backend route | Implement backend route for /api/owner/top-performers or fix the API call |
 | integration | low | Page /owner/Settings has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | low | Page /owner/Users has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | high | API call "/api/partner/access-requests" in page /partner/AccessRequests has no matching backend route | Implement backend route for /api/partner/access-requests or fix the API call |
 | integration | high | API call "/api/partner/access-requests/${requestId}/cancel" in page /partner/AccessRequests has no matching backend route | Implement backend route for /api/partner/access-requests/${requestId}/cancel or fix the API call |
 | integration | low | Page /partner/Offers has no backend connections | Add appropriate API calls or connect to backend services |
-| integration | low | Page /partner/PartnerDashboard has no backend connections | Add appropriate API calls or connect to backend services |
+| integration | high | API call "/api/partner/dashboard" in page /partner/PartnerDashboard has no matching backend route | Implement backend route for /api/partner/dashboard or fix the API call |
 | integration | high | API call "/api/partner/offers" in page /partner/PartnerOffers has no matching backend route | Implement backend route for /api/partner/offers or fix the API call |
 | integration | low | Page /partner/PartnerProfile has no backend connections | Add appropriate API calls or connect to backend services |
 | integration | low | Page /partner/SomePage has no backend connections | Add appropriate API calls or connect to backend services |
@@ -231,8 +227,6 @@ Generated: 2025-08-20T19:33:05.578Z
 | integration | high | API call "/api/admin/blacklist?${params.toString(" in page /super-admin/blacklist-management has no matching backend route | Implement backend route for /api/admin/blacklist?${params.toString( or fix the API call |
 | integration | high | API call "/api/admin/blacklist/${id}" in page /super-admin/blacklist-management has no matching backend route | Implement backend route for /api/admin/blacklist/${id} or fix the API call |
 | integration | high | API call "/api/admin/metrics" in page /super-admin/dashboard has no matching backend route | Implement backend route for /api/admin/metrics or fix the API call |
-| integration | high | API call "/api/admin/system-stats" in page /super-admin/dashboard has no matching backend route | Implement backend route for /api/admin/system-stats or fix the API call |
-| integration | high | API call "/api/admin/recent-activity" in page /super-admin/dashboard has no matching backend route | Implement backend route for /api/admin/recent-activity or fix the API call |
 | integration | high | API call "/api/admin/financial-metrics/${dateFilter}" in page /super-admin/finances has no matching backend route | Implement backend route for /api/admin/financial-metrics/${dateFilter} or fix the API call |
 | integration | high | API call "/api/admin/finances" in page /super-admin/finances has no matching backend route | Implement backend route for /api/admin/finances or fix the API call |
 | integration | high | API call "/api/admin/payout-requests" in page /super-admin/finances has no matching backend route | Implement backend route for /api/admin/payout-requests or fix the API call |
@@ -353,7 +347,7 @@ Generated: 2025-08-20T19:33:05.578Z
 
 ## Recommendations
 
-### HIGH: Address 293 integration integration issues
+### HIGH: Address 287 integration integration issues
 - **Category**: integration
 - **Impact**: Improves system reliability and maintainability
 
