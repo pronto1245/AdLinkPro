@@ -12,7 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNotifications } from "@/components/NotificationToast";
 
 import { secureAuth, SecureAPIError } from "@/lib/secure-api";
@@ -40,13 +39,17 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function Register() {
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<"advertiser" | "partner">("advertiser");
   const { showNotification } = useNotifications();
+
+  // Get role from URL parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const roleFromUrl = urlParams.get('role') as 'partner' | 'advertiser' | null;
+  const defaultRole = roleFromUrl || 'advertiser';
 
   // Registration form
   const registerForm = useForm<RegisterFormData>({
@@ -61,19 +64,14 @@ export default function Register() {
       company: "",
       contactType: "telegram",
       contact: "",
-      role: "advertiser",
+      role: defaultRole,
       agreeTerms: false,
       agreePrivacy: false,
       agreeMarketing: false,
     },
   });
 
-  // Update form role when tab changes
-  const handleTabChange = (value: string) => {
-    const role = value as "advertiser" | "partner";
-    setActiveTab(role);
-    registerForm.setValue("role", role);
-  };
+
 
   // Handle registration form submission
   async function onRegister(data: RegisterFormData) {
@@ -123,17 +121,20 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8">
-      <Card className="w-full max-w-2xl shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 px-4 py-8">
+      <Card className="w-full max-w-2xl shadow-2xl border-2 border-white/50 backdrop-blur-sm bg-white/95 dark:bg-slate-900/95 dark:border-slate-700/50">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center mb-4">
             <UserPlus className="h-8 w-8 text-blue-600 mr-2" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            Создание аккаунта
+            Регистрация {defaultRole === 'partner' ? 'партнёра' : 'рекламодателя'}
           </CardTitle>
           <p className="text-gray-600 mt-2">
-            Выберите тип аккаунта и заполните форму регистрации
+            {defaultRole === 'partner' 
+              ? 'Партнёры продвигают офферы рекламодателей и получают комиссию за результат'
+              : 'Рекламодатели создают офферы и работают с партнёрами для продвижения своих продуктов'
+            }
           </p>
         </CardHeader>
 
@@ -145,22 +146,6 @@ export default function Register() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-
-          {/* Account type tabs */}
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="advertiser">Рекламодатель</TabsTrigger>
-              <TabsTrigger value="partner">Партнер</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="advertiser" className="text-sm text-gray-600">
-              <p>Рекламодатели создают офферы и работают с партнерами для продвижения своих продуктов</p>
-            </TabsContent>
-            
-            <TabsContent value="partner" className="text-sm text-gray-600">
-              <p>Партнеры продвигают офферы рекламодателей и получают комиссию за результат</p>
-            </TabsContent>
-          </Tabs>
 
           {/* Registration Form */}
           <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
@@ -384,7 +369,7 @@ export default function Register() {
             {/* Submit button */}
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200" 
               disabled={loading}
             >
               {loading ? (
@@ -400,11 +385,11 @@ export default function Register() {
 
           {/* Login link */}
           <div className="mt-6 pt-4 border-t border-gray-200 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Уже есть аккаунт?{" "}
               <Button
                 variant="link"
-                className="p-0 h-auto font-normal text-blue-600"
+                className="p-0 h-auto font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                 onClick={() => navigate('/login')}
                 disabled={loading}
               >

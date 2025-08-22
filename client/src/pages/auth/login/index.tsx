@@ -17,12 +17,13 @@ import { loginSchema, LoginFormData } from "@/lib/validation";
 
 function roleToPath(role?: string) {
   const r = (role || "").toLowerCase();
-  if (r === "advertiser") return "/dashboard/advertiser";
-  if (r === "affiliate" || r === "partner") return "/dashboard/affiliate";
-  if (r === "owner") return "/dashboard/owner";
+  if (r === "advertiser") return "/advertiser";
+  if (r === "partner") return "/partner";
+  if (r === "owner") return "/owner";
+  if (r === "affiliate") return "/partner"; // affiliate maps to partner route
   if (r === "staff") return "/dashboard/staff";
   if (r === "super_admin") return "/dashboard/super-admin";
-  return "/dashboard/partner";
+  return "/partner"; // default fallback
 }
 
 export default function Login() {
@@ -44,12 +45,24 @@ export default function Login() {
 
   // Handle login form submission
   async function onLogin(data: LoginFormData) {
+    console.log("🔐 [LOGIN] Starting login process...", {
+      email: data.email,
+      hasPassword: !!data.password,
+      rememberMe: data.rememberMe
+    });
+    
     setError("");
     setLoading(true);
 
     try {
       // Login successful - backend now always returns token directly
+      console.log("🔐 [LOGIN] Calling secureAuth.login...");
       const result = await secureAuth.login(data.email, data.password);
+      
+      console.log("🔐 [LOGIN] Login result:", {
+        hasToken: !!result.token,
+        result: result
+      });
       
       if (result.token) {
         toast({
@@ -58,29 +71,47 @@ export default function Login() {
         });
 
         // Get user info and navigate
+        console.log("🔐 [LOGIN] Getting user info...");
         const user = await secureAuth.me();
-        navigate(roleToPath(user?.role));
+        console.log("🔐 [LOGIN] User info received:", user);
+        
+        const targetPath = roleToPath(user?.role);
+        console.log("🔐 [LOGIN] Navigating to:", targetPath);
+        navigate(targetPath);
       } else {
+        console.warn("🔐 [LOGIN] No token in response:", result);
         setError("Ошибка входа. Попробуйте снова.");
       }
     } catch (err) {
+      console.error("🔐 [LOGIN] Login error:", err);
+      
       if (err instanceof SecureAPIError) {
+        console.error("🔐 [LOGIN] SecureAPI error:", {
+          status: err.status,
+          statusText: err.statusText,
+          code: err.code
+        });
+        
         if (err.status === 401) {
           setError("Неверный email или пароль");
+        } else if (err.status === 429) {
+          setError("Слишком много попыток входа. Попробуйте позже.");
         } else {
           setError(err.statusText || "Ошибка входа");
         }
       } else {
+        console.error("🔐 [LOGIN] Network or other error:", err);
         setError("Ошибка соединения. Проверьте интернет-подключение.");
       }
     } finally {
+      console.log("🔐 [LOGIN] Setting loading to false...");
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8">
-      <Card className="w-full max-w-md shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 px-4 py-8">
+      <Card className="w-full max-w-md shadow-2xl border-2 border-white/50 backdrop-blur-sm bg-white/95 dark:bg-slate-900/95 dark:border-slate-700/50">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center mb-4">
             <Shield className="h-8 w-8 text-blue-600 mr-2" />
@@ -166,7 +197,7 @@ export default function Login() {
 
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200" 
               disabled={loading}
             >
               {loading ? (
@@ -181,7 +212,7 @@ export default function Login() {
 
             <div className="text-center">
               <a 
-                href="/auth/forgot-password" 
+                href="/forgot-password" 
                 className="text-sm text-blue-600 hover:underline"
               >
                 Забыли пароль?
@@ -197,16 +228,16 @@ export default function Login() {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="flex-1"
-                onClick={() => navigate('/register/partner')}
+                className="flex-1 border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700 font-medium dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/20"
+                onClick={() => navigate('/register?role=partner')}
                 disabled={loading}
               >
-                Стать партнером
+                Стать партнёром
               </Button>
               <Button
                 variant="outline"
-                className="flex-1"
-                onClick={() => navigate('/register/advertiser')}
+                className="flex-1 border-2 border-purple-200 hover:border-purple-300 hover:bg-purple-50 text-purple-700 font-medium dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/20"
+                onClick={() => navigate('/register?role=advertiser')}
                 disabled={loading}
               >
                 Стать рекламодателем
