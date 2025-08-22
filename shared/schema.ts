@@ -1,4 +1,25 @@
-import { pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sql, relations } from "drizzle-orm";
+import { pgTable, text, varchar, uuid, decimal, jsonb, boolean, timestamp, integer, bigint, serial, pgEnum, index, numeric, char, smallint } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+// Define enums that are referenced in the schema
+export const userRoleEnum = pgEnum('user_role', ['owner', 'advertiser', 'partner', 'admin', 'staff']);
+export const offerStatusEnum = pgEnum('offer_status', ['draft', 'active', 'paused', 'archived']);
+export const accessRequestStatusEnum = pgEnum('access_request_status', ['pending', 'approved', 'rejected']);
+export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'completed', 'failed', 'cancelled']);
+export const cryptoCurrencyEnum = pgEnum('crypto_currency', ['BTC', 'ETH', 'USDT', 'USDC', 'LTC']);
+export const deliveryStatusEnum = pgEnum('delivery_status', ['pending', 'success', 'failed', 'retrying']);
+export const walletTypeEnum = pgEnum('wallet_type', ['crypto', 'bank', 'paypal', 'skrill', 'neteller']);
+export const walletStatusEnum = pgEnum('wallet_status', ['active', 'inactive', 'blocked', 'pending']);
+export const eventTypeEnum = pgEnum('event_type', ['open', 'lp_click', 'reg', 'deposit', 'sale', 'lead', 'lp_leave']);
+export const ownerScopeEnum = pgEnum('owner_scope', ['owner', 'advertiser', 'partner']);
+export const postbackScopeTypeEnum = pgEnum('postback_scope_type', ['global', 'campaign', 'offer', 'flow']);
+export const postbackMethodEnum = pgEnum('postback_method', ['GET', 'POST']);
+export const postbackIdParamEnum = pgEnum('postback_id_param', ['subid', 'clickid']);
+export const ticketStatusEnum = pgEnum('ticket_status', ['open', 'in_progress', 'resolved', 'closed']);
+export const postbackStatusEnum = pgEnum('postback_status', ['pending', 'sent', 'failed', 'cancelled']);
+export const auditActionEnum = pgEnum('audit_action', ['create', 'update', 'delete', 'login', 'logout']);
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -6,6 +27,9 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   username: text("username"),
   role: text("role").default("partner"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  lastLoginAt: timestamp("last_login_at"),
 });
 
 // Offers table
@@ -1350,12 +1374,6 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   tickets: many(tickets),
   assignedTickets: many(tickets, { relationName: 'assignedTickets' }),
   fraudAlerts: many(fraudAlerts),
-  advertiser: one(users, {
-    fields: [users.advertiserId],
-    references: [users.id],
-    relationName: 'advertiserStaff'
-  }),
-  staff: many(users, { relationName: 'advertiserStaff' }),
 }));
 
 export const offersRelations = relations(offers, ({ one, many }) => ({
