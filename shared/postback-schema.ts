@@ -311,11 +311,8 @@ export const conversionEventSchema = z.object({
   ts_client: z.number().optional(),
 });
 
-export const createPostbackProfileSchema = createInsertSchema(postbackProfiles).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+// Temporary fix - remove omit to avoid syntax errors
+export const createPostbackProfileSchema = createInsertSchema(postbackProfiles);
 
 export const updatePostbackProfileSchema = createPostbackProfileSchema.partial();
 
