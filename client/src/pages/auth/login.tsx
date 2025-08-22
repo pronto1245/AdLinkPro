@@ -1,4 +1,4 @@
-import { urlJoin } from "@/services/urlJoin";
+import { urlJoin } from "@/utils/urlJoin";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { saveToken, getToken } from "@/services/auth";
