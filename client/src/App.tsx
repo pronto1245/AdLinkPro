@@ -8,8 +8,10 @@ import Register from '@/pages/auth/Register';
 import Logout from '@/pages/auth/logout';
 import ForgotPassword from '@/pages/auth/ForgotPassword';
 import ResetPassword from '@/pages/auth/ResetPassword';
-// Remove the RegisterUnified import as we now use separate components
-import { LoginPartner, LoginAdvertiser, RegisterPartnerComponent, RegisterAdvertiserComponent } from '@/pages/LoginVariants';
+// Import separate registration components
+import { LoginPartner, LoginAdvertiser } from '@/pages/LoginVariants';
+import RegisterPartner from '@/pages/auth/RegisterPartner';
+import RegisterAdvertiser from '@/pages/auth/RegisterAdvertiser';
 
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import AuthRedirector from '@/components/auth/AuthRedirector';
@@ -89,8 +91,8 @@ function Router() {
 
         {/* Registration routes */}
         <Route path="/auth/register" component={Register} />
-        <Route path="/register/partner" component={RegisterPartnerComponent} />
-        <Route path="/register/advertiser" component={RegisterAdvertiserComponent} />
+        <Route path="/register/partner" component={RegisterPartner} />
+        <Route path="/register/advertiser" component={RegisterAdvertiser} />
         <Route path="/register" component={() => <Redirect to="/auth/register" />} />
 
         {/* Advertiser Dashboard Routes */}
