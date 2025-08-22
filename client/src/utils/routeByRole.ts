@@ -1,30 +1,35 @@
 /**
  * Centralized route mapping utility for role-based navigation
- * Eliminates redirects and provides consistent routing for all user roles
+ * Updated to match the requirements from the problem statement
  */
 
-export type UserRole = 'partner' | 'affiliate' | 'advertiser' | 'owner' | 'super_admin' | 'staff';
+export type UserRole = 'advertiser' | 'publisher' | 'admin' | 'partner' | 'affiliate' | 'owner' | 'super_admin' | 'staff';
 
 /**
- * Role to route mapping configuration
- * All routes use the /dashboard prefix for consistency
+ * Role to route mapping configuration as per problem statement requirements
+ * HOME_BY_ROLE implementation for dashboard redirection
  */
-const ROLE_ROUTES: Record<UserRole, string> = {
-  partner: '/dashboard/partner',         // Partner gets its own route
-  affiliate: '/dashboard/affiliate',     // Standardized affiliate route
-  advertiser: '/dashboard/advertiser',
-  owner: '/dashboard/owner',
-  super_admin: '/dashboard/super-admin',
-  staff: '/dashboard/staff'
+const HOME_BY_ROLE: Record<string, string> = {
+  advertiser: '/advertiser',
+  publisher: '/publisher', 
+  admin: '/admin',
+  // Additional mappings for backwards compatibility
+  partner: '/publisher',    // Partners map to publisher dashboard
+  affiliate: '/publisher',  // Affiliates map to publisher dashboard
+  owner: '/admin',         // Owner maps to admin dashboard
+  super_admin: '/admin',   // Super admin maps to admin dashboard
+  staff: '/publisher'      // Staff maps to publisher dashboard
 };
 
 /**
- * Default fallback route for unknown roles or errors
+ * Default fallback route for unknown roles or errors  
  */
-const DEFAULT_ROUTE = '/dashboard/partner';
+const DEFAULT_ROUTE = '/publisher';
 
 /**
  * Get the appropriate dashboard route for a user role
+ * Implements the HOME_BY_ROLE logic from the problem statement:
+ * navigate(HOME_BY_ROLE[user.role]);
  * @param role - User role
  * @returns Dashboard route path
  */
@@ -36,20 +41,8 @@ export function routeByRole(role: string | null | undefined): string {
   // Normalize role string (handle case variations and trim whitespace)
   const normalizedRole = role.toLowerCase().trim();
   
-  // Handle role variations and aliases
-  const roleMapping: Record<string, UserRole> = {
-    'partner': 'partner',
-    'affiliate': 'affiliate', 
-    'advertiser': 'advertiser',
-    'owner': 'owner',
-    'super_admin': 'super_admin',
-    'super admin': 'super_admin',
-    'superadmin': 'super_admin',
-    'staff': 'staff'
-  };
-
-  const mappedRole = roleMapping[normalizedRole];
-  return ROLE_ROUTES[mappedRole] || DEFAULT_ROUTE;
+  // Direct lookup from HOME_BY_ROLE mapping
+  return HOME_BY_ROLE[normalizedRole] || DEFAULT_ROUTE;
 }
 
 /**
@@ -57,7 +50,7 @@ export function routeByRole(role: string | null | undefined): string {
  * @returns Array of all dashboard routes
  */
 export function getAllDashboardRoutes(): string[] {
-  return Object.values(ROLE_ROUTES);
+  return [...new Set(Object.values(HOME_BY_ROLE))]; // Remove duplicates
 }
 
 /**
@@ -70,12 +63,13 @@ export function isValidDashboardRoute(route: string): boolean {
 }
 
 /**
- * Get the role from a dashboard route
+ * Get the primary role from a dashboard route
  * @param route - Dashboard route
  * @returns User role or null if route doesn't match
  */
 export function getRoleFromRoute(route: string): UserRole | null {
-  const entry = Object.entries(ROLE_ROUTES).find(([, routePath]) => routePath === route);
+  // Find the first role that maps to this route
+  const entry = Object.entries(HOME_BY_ROLE).find(([, routePath]) => routePath === route);
   return entry ? entry[0] as UserRole : null;
 }
 
