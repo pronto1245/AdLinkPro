@@ -1,4 +1,7 @@
-import { pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sql, relations } from "drizzle-orm";
+import { pgTable, text, uuid, varchar, decimal, timestamp, boolean, jsonb, integer, pgEnum, index, serial, bigint } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
