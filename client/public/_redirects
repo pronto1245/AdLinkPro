@@ -1,2 +1,3 @@
+/api/auth/login  /.netlify/functions/login  200
 /api/*  https://central-matelda-pronto12-95b8129d.koyeb.app/api/:splat  200
 /*      /index.html  200
