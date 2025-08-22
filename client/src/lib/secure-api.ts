@@ -324,3 +324,5 @@ export const secureAuth = {
     }
   }
 };
+
+export { SecureAPIError };

@@ -47,16 +47,9 @@ export default function Login() {
     setError("");
     setLoading(true);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setErr(null)
-    setLoading(true)
     try {
-      const body: any = { password }
-      if (email) body.email = email
-      else if (username) body.username = username
-      else throw new Error('Введите email или username')
-
+      const result = await secureAuth.login(data);
+      
       // Login successful - backend now always returns token directly
       if (result.token) {
         toast({
@@ -82,14 +75,14 @@ export default function Login() {
         setError("Ошибка соединения. Проверьте интернет-подключение.");
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8">
       <div className="rounded-lg border bg-card text-card-foreground w-full max-w-md shadow-xl">
-        <div className="flex flex-col space-y-1.5 p-6 text-center">
+        <CardHeader className="flex flex-col space-y-1.5 p-6 text-center">
           <div className="flex items-center justify-center mb-4">
             <Shield className="h-8 w-8 text-blue-600 mr-2" />
           </div>
@@ -237,7 +230,6 @@ export default function Login() {
                 Забыли пароль?
               </a>
             </div>
-          </form>
 
           <div className="mt-6 pt-4 border-t border-gray-200">
             <div className="flex items-center justify-center text-xs text-gray-500 space-x-4">
@@ -247,8 +239,7 @@ export default function Login() {
               </div>
             </div>
           </div>
-
-        </div>
+        </CardContent>
       </div>
     </div>
   )
