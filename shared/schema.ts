@@ -611,7 +611,7 @@ export const apiKeys = pgTable("api_keys", {
 export const postbackLogs = pgTable("postback_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   postbackId: varchar("postback_id").references(() => postbackTemplates.id),
-  clickId: varchar("click_id").references(() => trackingClicks.id),
+  clickId: varchar("click_id"), // Reference to trackingClicks.id (no FK constraint to avoid circular dependency)
   eventType: text("event_type").notNull(), // 'click', 'lead', 'deposit', etc.
   url: text("url").notNull(),
   method: text("method").notNull(),
@@ -1672,11 +1672,6 @@ export const insertPostbackDeliveryLogSchema = createInsertSchema(postbackDelive
   createdAt: true,
 });
 
-export const insertTrackingClickSchema = createInsertSchema(trackingClicks).omit({
-  id: true,
-  createdAt: true,
-});
-
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -1716,8 +1711,6 @@ export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertPostbackLog = z.infer<typeof insertPostbackLogSchema>;
 export type PostbackLog = typeof postbackLogs.$inferSelect;
-export type InsertTrackingClick = z.infer<typeof insertTrackingClickSchema>;
-export type TrackingClick = typeof trackingClicks.$inferSelect;
 export type InsertReceivedOffer = z.infer<typeof insertReceivedOfferSchema>;
 export type ReceivedOffer = typeof receivedOffers.$inferSelect;
 
