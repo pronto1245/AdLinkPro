@@ -121,8 +121,8 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8">
-      <Card className="w-full max-w-2xl shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 px-4 py-8">
+      <Card className="w-full max-w-2xl shadow-2xl border-2 border-white/50 backdrop-blur-sm bg-white/95 dark:bg-slate-900/95 dark:border-slate-700/50">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center mb-4">
             <UserPlus className="h-8 w-8 text-blue-600 mr-2" />
@@ -369,7 +369,7 @@ export default function Register() {
             {/* Submit button */}
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200" 
               disabled={loading}
             >
               {loading ? (
@@ -385,11 +385,11 @@ export default function Register() {
 
           {/* Login link */}
           <div className="mt-6 pt-4 border-t border-gray-200 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Уже есть аккаунт?{" "}
               <Button
                 variant="link"
-                className="p-0 h-auto font-normal text-blue-600"
+                className="p-0 h-auto font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                 onClick={() => navigate('/login')}
                 disabled={loading}
               >

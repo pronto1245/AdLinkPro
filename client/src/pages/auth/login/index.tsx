@@ -110,8 +110,8 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8">
-      <Card className="w-full max-w-md shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 px-4 py-8">
+      <Card className="w-full max-w-md shadow-2xl border-2 border-white/50 backdrop-blur-sm bg-white/95 dark:bg-slate-900/95 dark:border-slate-700/50">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center mb-4">
             <Shield className="h-8 w-8 text-blue-600 mr-2" />
@@ -197,7 +197,7 @@ export default function Login() {
 
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200" 
               disabled={loading}
             >
               {loading ? (
@@ -228,7 +228,7 @@ export default function Login() {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="flex-1"
+                className="flex-1 border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700 font-medium dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/20"
                 onClick={() => navigate('/register?role=partner')}
                 disabled={loading}
               >
@@ -236,7 +236,7 @@ export default function Login() {
               </Button>
               <Button
                 variant="outline"
-                className="flex-1"
+                className="flex-1 border-2 border-purple-200 hover:border-purple-300 hover:bg-purple-50 text-purple-700 font-medium dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/20"
                 onClick={() => navigate('/register?role=advertiser')}
                 disabled={loading}
               >
