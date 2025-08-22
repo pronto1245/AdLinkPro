@@ -1,16 +1,10 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, integer, decimal, timestamp, boolean, jsonb, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, decimal, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { users, offers } from "./schema";
-
-// Additional enums for postback system
-export const ownerScopeEnum = pgEnum('owner_scope', ['owner', 'advertiser', 'partner']);
-export const postbackScopeTypeEnum = pgEnum('postback_scope_type', ['global', 'campaign', 'offer', 'flow']);
-export const postbackMethodEnum = pgEnum('postback_method', ['GET', 'POST']);
-export const postbackIdParamEnum = pgEnum('postback_id_param', ['subid', 'clickid']);
-export const deliveryStatusEnum = pgEnum('delivery_status', ['pending', 'success', 'failed', 'retrying']);
-export const eventTypeEnum = pgEnum('event_type', ['open', 'lp_click', 'reg', 'deposit', 'sale', 'lead', 'lp_leave']);
+import { users } from "./user-tables";
+import { offers } from "./offer-tables";
+import { ownerScopeEnum, postbackScopeTypeEnum, postbackMethodEnum, postbackIdParamEnum, deliveryStatusEnum, eventTypeEnum } from "./enums";
 
 // Sub2 configuration
 export const sub2Config = {
@@ -311,28 +305,21 @@ export const conversionEventSchema = z.object({
   ts_client: z.number().optional(),
 });
 
-// Temporary fix - remove omit to avoid syntax errors
+// Schema exports
 export const createPostbackProfileSchema = createInsertSchema(postbackProfiles);
-export const insertPostbackProfileSchema = createInsertSchema(postbackProfiles).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertPostbackProfileSchema = createInsertSchema(postbackProfiles);
 
-export const insertPostbackDeliverySchema = createInsertSchema(postbackDeliveries).omit({
-  id: true,
-  createdAt: true,
-});
+export const insertPostbackDeliverySchema = createInsertSchema(postbackDeliveries);
 
 export const updatePostbackProfileSchema = createPostbackProfileSchema.partial();
 
 export type PostbackProfile = typeof postbackProfiles.$inferSelect;
-export type CreatePostbackProfile = z.infer<typeof createPostbackProfileSchema>;
-export type InsertPostbackProfile = z.infer<typeof insertPostbackProfileSchema>;
+export type CreatePostbackProfile = typeof postbackProfiles.$inferInsert;
+export type InsertPostbackProfile = typeof postbackProfiles.$inferInsert;
 export type UpdatePostbackProfile = z.infer<typeof updatePostbackProfileSchema>;
 export type TrackingClick = typeof trackingClicks.$inferSelect;
 export type TrackingEvent = typeof trackingEvents.$inferSelect;
 export type PostbackDelivery = typeof postbackDeliveries.$inferSelect;
-export type InsertPostbackDelivery = z.infer<typeof insertPostbackDeliverySchema>;
+export type InsertPostbackDelivery = typeof postbackDeliveries.$inferInsert;
 export type ClickEvent = z.infer<typeof clickEventSchema>;
 export type ConversionEvent = z.infer<typeof conversionEventSchema>;
