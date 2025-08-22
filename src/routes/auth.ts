@@ -34,6 +34,14 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
         const passwordValid = await bcrypt.compare(password, inMemoryUser.passwordHash);
         
         if (passwordValid) {
+          console.log('✅ [AUTH] In-memory user found, checking activation status:', inMemoryUser.email);
+          
+          // Check if account is active
+          if (inMemoryUser.is_active === false) {
+            console.log('❌ [AUTH] Account is inactive:', inMemoryUser.email);
+            return res.status(403).json({ error: 'Для активации аккаунта с Вами свяжется менеджер в течении 24 часов' });
+          }
+          
           console.log('✅ [AUTH] In-memory user authentication successful:', inMemoryUser.email);
           
           const secret = process.env.JWT_SECRET;
@@ -62,24 +70,27 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
       const hardcodedUsers = [
         {
           id: 'owner-1',
-          email: process.env.OWNER_EMAIL || "9791207@gmail.com",
-          password: process.env.OWNER_PASSWORD || "owner123",
-          role: "OWNER",
+          email: "ovner@test.com",
+          password: "Ovner#123",
+          role: "owner",
           username: "owner",
+          is_active: true
         },
         {
-          id: 'adv-1',
-          email: process.env.ADVERTISER_EMAIL || "12345@gmail.com", 
-          password: process.env.ADVERTISER_PASSWORD || "adv123",
-          role: "ADVERTISER",
+          id: 'advertiser-1',
+          email: "advertiser@test.com",
+          password: "Advertiser#123",
+          role: "advertiser",
           username: "advertiser",
+          is_active: true
         },
         {
           id: 'partner-1',
-          email: process.env.PARTNER_EMAIL || "4321@gmail.com",
-          password: process.env.PARTNER_PASSWORD || "partner123",
-          role: "PARTNER",
+          email: "partner@test.com",
+          password: "Partner#123",
+          role: "partner",
           username: "partner",
+          is_active: true
         },
       ];
       
@@ -88,6 +99,14 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
       );
       
       if (hardcodedUser && hardcodedUser.password === password) {
+        console.log('✅ [AUTH] Hardcoded user found, checking activation status:', hardcodedUser.email);
+        
+        // Check if account is active
+        if (!hardcodedUser.is_active) {
+          console.log('❌ [AUTH] Account is inactive:', hardcodedUser.email);
+          return res.status(403).json({ error: 'Для активации аккаунта с Вами свяжется менеджер в течении 24 часов' });
+        }
+        
         console.log('✅ [AUTH] Hardcoded user authentication successful:', hardcodedUser.email);
         
         const secret = process.env.JWT_SECRET;
@@ -118,6 +137,12 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
     console.log('🔑 [AUTH] Password check result:', ok);
     if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
+    // Check if account is active
+    if (user.is_active === false) {
+      console.log('❌ [AUTH] Database user account is inactive:', user.email);
+      return res.status(403).json({ error: 'Для активации аккаунта с Вами свяжется менеджер в течении 24 часов' });
+    }
+
     const secret = process.env.JWT_SECRET;
     if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });
 
@@ -143,12 +168,16 @@ router.post('/api/auth/register', async (req: Request, res: Response) => {
       password, 
       phone, 
       company, 
-      role = 'affiliate', // Use lowercase to match schema default
+      role = 'partner', // Default to partner if not specified
       agreeTerms,
       agreePrivacy 
     } = req.body || {};
 
-    console.log('🔐 [REGISTER] Registration attempt for:', email, 'role:', role);
+    // Get role from query parameter if not in body
+    const roleFromQuery = req.query.role as string;
+    const finalRole = roleFromQuery || role;
+
+    console.log('🔐 [REGISTER] Registration attempt for:', email, 'role:', finalRole);
 
     // Validate required fields
     if (!name || !email || !password || !agreeTerms || !agreePrivacy) {
@@ -178,7 +207,7 @@ router.post('/api/auth/register', async (req: Request, res: Response) => {
       return res.status(409).json({ error: 'Пользователь с таким email уже существует' });
     }
 
-    console.log('✅ [REGISTER] Creating new user:', email, 'with role:', role);
+    console.log('✅ [REGISTER] Creating new user:', email, 'with role:', finalRole);
 
     try {
       // Try to create user in database
@@ -188,7 +217,8 @@ router.post('/api/auth/register', async (req: Request, res: Response) => {
         password,
         phone,
         company,
-        role: role.toLowerCase() // Ensure lowercase role for database
+        role: finalRole.toLowerCase(), // Use finalRole
+        is_active: false // All new users are inactive
       });
 
       console.log('✅ [REGISTER] User created successfully in database:', { 
@@ -200,16 +230,17 @@ router.post('/api/auth/register', async (req: Request, res: Response) => {
       // Return success response
       return res.json({
         success: true,
-        message: role.toLowerCase() === 'advertiser' 
+        message: finalRole.toLowerCase() === 'advertiser' 
           ? 'Заявка рекламодателя отправлена на рассмотрение. Мы свяжемся с вами в ближайшее время.' 
-          : 'Регистрация успешна! Проверьте email для подтверждения аккаунта.',
+          : 'Регистрация успешна! Мы свяжемся с вами в ближайшее время для активации аккаунта.',
         user: {
           id: newUser.id,
           email: newUser.email,
           name: newUser.firstName || name,
           username: newUser.username,
           role: newUser.role,
-          emailVerified: false // Will be handled by email verification system
+          is_active: false,
+          emailVerified: false
         }
       });
 
@@ -236,10 +267,11 @@ router.post('/api/auth/register', async (req: Request, res: Response) => {
         name,
         email: email.toLowerCase(),
         username: email.split('@')[0],
-        role: role.toUpperCase(), // Legacy format for in-memory users
+        role: finalRole.toLowerCase(),
         passwordHash: hashedPassword,
         phone,
         company,
+        is_active: false, // All new users are inactive
         createdAt: new Date(),
         updatedAt: new Date(),
         twoFactorEnabled: false,
@@ -252,14 +284,15 @@ router.post('/api/auth/register', async (req: Request, res: Response) => {
 
       return res.json({
         success: true,
-        message: role.toLowerCase() === 'advertiser' 
+        message: finalRole.toLowerCase() === 'advertiser' 
           ? 'Заявка рекламодателя отправлена на рассмотрение. Мы свяжемся с вами в ближайшее время.' 
-          : 'Регистрация успешна! Проверьте email для подтверждения аккаунта.',
+          : 'Регистрация успешна! Мы свяжемся с вами в ближайшее время для активации аккаунта.',
         user: {
           id: fallbackUser.id,
           email: fallbackUser.email,
           name: fallbackUser.name,
           role: fallbackUser.role,
+          is_active: fallbackUser.is_active,
           emailVerified: fallbackUser.emailVerified
         }
       });

@@ -17,12 +17,13 @@ import { loginSchema, LoginFormData } from "@/lib/validation";
 
 function roleToPath(role?: string) {
   const r = (role || "").toLowerCase();
-  if (r === "advertiser") return "/dashboard/advertiser";
-  if (r === "affiliate" || r === "partner") return "/dashboard/affiliate";
-  if (r === "owner") return "/dashboard/owner";
+  if (r === "advertiser") return "/advertiser";
+  if (r === "partner") return "/partner";
+  if (r === "owner") return "/owner";
+  if (r === "affiliate") return "/partner"; // affiliate maps to partner route
   if (r === "staff") return "/dashboard/staff";
   if (r === "super_admin") return "/dashboard/super-admin";
-  return "/dashboard/partner";
+  return "/partner"; // default fallback
 }
 
 export default function Login() {
@@ -211,7 +212,7 @@ export default function Login() {
 
             <div className="text-center">
               <a 
-                href="/auth/forgot-password" 
+                href="/forgot-password" 
                 className="text-sm text-blue-600 hover:underline"
               >
                 Забыли пароль?
@@ -228,15 +229,15 @@ export default function Login() {
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => navigate('/register/partner')}
+                onClick={() => navigate('/register?role=partner')}
                 disabled={loading}
               >
-                Стать партнером
+                Стать партнёром
               </Button>
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => navigate('/register/advertiser')}
+                onClick={() => navigate('/register?role=advertiser')}
                 disabled={loading}
               >
                 Стать рекламодателем
