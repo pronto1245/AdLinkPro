@@ -25,7 +25,6 @@ export const deliveryStatusEnum = pgEnum('delivery_status', ['pending', 'success
 export const eventTypeEnum = pgEnum('event_type', ['open', 'lp_click', 'reg', 'deposit', 'sale', 'lead', 'lp_leave']);
 
 // Import postback tables from dedicated schema to avoid duplication
-export { postbackProfiles, postbackDeliveries } from './postback-schema';
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -2014,12 +2013,5 @@ export const insertTeamInvitationSchema = createInsertSchema(teamInvitations).om
 export type TeamInvitation = typeof teamInvitations.$inferSelect;
 */
 
-// DUPLICATE SCHEMA DEFINITIONS REMOVED - USING VERSIONS AT LINES 1824, 1830
-// TODO: Fix schema validation syntax and restore these exports for server compatibility
-
-// --- TEMP STUBS FOR BOOT ---
-export const customDomains = null as any;
-export type CustomDomain = any;
-export type InsertCustomDomain = any;
-export const insertEventSchema = {} as any;
+export { insertPostbackSchema, insertReceivedOfferSchema } from "./postback-schema";
 

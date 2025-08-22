@@ -269,7 +269,7 @@ export function encodeSub2(pairs: Record<string, string>): string {
 
 // Insert schemas
 export const insertClickSchema = createInsertSchema(clicks);
-export const insertEventSchema = createInsertSchema(events);
+export const trackingInsertEventSchema = createInsertSchema(events);
 
 // Select schemas
 export const selectClickSchema = createSelectSchema(clicks);
