@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { useTranslation } from 'react-i18next';
+
 import { RefreshCw, TrendingUp, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
-interface PostbackMetrics {
+interface PostbackMetricsData {
   summary: {
     totalPostbacks: number;
     successfulPostbacks: number;
@@ -37,7 +37,7 @@ interface PostbackMetricsProps {
 export default function PostbackMetrics({ dateFrom, dateTo, className = '' }: PostbackMetricsProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const { data: metrics, refetch, isLoading, error } = useQuery<PostbackMetrics>({
+  const { data: metrics, refetch, isLoading, error } = useQuery<PostbackMetricsData>({
     queryKey: ['postback-analytics', dateFrom, dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();

@@ -1,5 +1,4 @@
 import { storage } from "../storage";
-import { notificationService } from "./notification";
 
 interface TelegramMessage {
   chat_id: number;
@@ -176,7 +175,7 @@ ${severityEmoji[data.severity]} <b>FRAUD ALERT!</b>
     // Получаем статистику за сегодня
     const today = new Date();
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+    const _endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
     // Здесь должна быть реальная статистика из базы данных
     const stats = {
@@ -287,7 +286,7 @@ ${severityEmoji[data.severity]} <b>FRAUD ALERT!</b>
     await this.sendMessage(chatId, message);
   }
 
-  private async handleStatsCommand(chatId: number, telegramUserId: number) {
+  private async handleStatsCommand(chatId: number, _telegramUserId: number) {
     // Попробуем найти пользователя по Telegram Chat ID
     const user = await storage.getUserByTelegramChatId(chatId);
     
@@ -313,7 +312,7 @@ ${severityEmoji[data.severity]} <b>FRAUD ALERT!</b>
     await this.sendMessage(chatId, message);
   }
 
-  private async handleReportCommand(chatId: number, telegramUserId: number) {
+  private async handleReportCommand(chatId: number, _telegramUserId: number) {
     const user = await storage.getUserByTelegramChatId(chatId);
     
     if (!user) {
@@ -326,7 +325,7 @@ ${severityEmoji[data.severity]} <b>FRAUD ALERT!</b>
     await this.sendDailyReport(user.id);
   }
 
-  private async handleSettingsCommand(chatId: number, telegramUserId: number) {
+  private async handleSettingsCommand(chatId: number, _telegramUserId: number) {
     const message = `
 ⚙️ <b>НАСТРОЙКИ УВЕДОМЛЕНИЙ</b>
 

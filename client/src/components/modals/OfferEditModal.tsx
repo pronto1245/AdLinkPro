@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Minus, Upload, Image, Globe, DollarSign, Target, Settings, Save, Eye, Trash2, X, Shield, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Plus, Upload, Image, Globe, DollarSign, Target, Settings, Eye, Trash2, X, Shield, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ObjectUploader } from '@/components/ObjectUploader';
 

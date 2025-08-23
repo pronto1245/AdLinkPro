@@ -54,7 +54,7 @@ interface CustomDomain {
 export function CustomDomainManager() {
   const [newDomain, setNewDomain] = useState('');
   const [domainType, setDomainType] = useState<'cname' | 'a_record' | 'txt_record'>('cname');
-  const [selectedDomain, setSelectedDomain] = useState<CustomDomain | null>(null);
+  const [, setSelectedDomain] = useState<CustomDomain | null>(null);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -133,7 +133,7 @@ export function CustomDomainManager() {
     onError: (error: Error) => {
       toast({
         title: "Ошибка выдачи SSL",
-        description: error?.error || "Не удалось запустить выдачу SSL сертификата",
+        description: error.message || "Не удалось запустить выдачу SSL сертификата",
         variant: "destructive"
       });
     }

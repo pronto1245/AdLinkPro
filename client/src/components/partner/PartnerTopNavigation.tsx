@@ -54,7 +54,7 @@ export function PartnerTopNavigation() {
 
   const userInitials = user.firstName && user.lastName 
     ? `${user.firstName[0]}${user.lastName[0]}` 
-    : user.username[0].toUpperCase();
+    : user.username?.[0]?.toUpperCase() ?? '?';
 
   return (
     <header className="border-b bg-card dark:bg-card">
