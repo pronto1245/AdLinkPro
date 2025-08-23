@@ -1,3 +1,4 @@
+// client/src/lib/secure-api.ts
 import { csrfManager, tokenStorage, rateLimitTracker, deviceFingerprint, sanitizeInput } from './security';
 
 const API_BASE = '';
@@ -9,8 +10,8 @@ interface SecureRequestInit extends RequestInit {
 }
 
 function resolveUrl(path: string) {
-  if (!path) {return '';}
-  if (/^https?:\/\//i.test(path)) {return path;}
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path)) return path;
   return `${API_BASE}${path}`;
 }
 
@@ -34,27 +35,19 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
     identifier: init.identifier
   });
 
-  // Check rate limiting
+  // Rate limit
   const identifier = init.identifier || 'anonymous';
   if (rateLimitTracker.isRateLimited(identifier)) {
     const remainingTime = rateLimitTracker.getRemainingTime(identifier);
     console.warn("🌐 [SECURE_API] Rate limited:", { identifier, remainingTime });
-    throw new SecureAPIError(
-      429,
-      'Too Many Requests',
-      'RATE_LIMITED',
-      remainingTime
-    );
+    throw new SecureAPIError(429, 'Too Many Requests', 'RATE_LIMITED', remainingTime);
   }
 
-  // Get authentication token
+  // Auth token
   const token = !init.skipAuth ? tokenStorage.getToken() : null;
-  console.log("🌐 [SECURE_API] Auth token:", {
-    hasToken: !!token,
-    skipAuth: init.skipAuth
-  });
+  console.log("🌐 [SECURE_API] Auth token:", { hasToken: !!token, skipAuth: init.skipAuth });
 
-  // Prepare headers
+  // Headers
   const headers: Record<string, string> = {
     Accept: 'application/json, text/plain, */*',
     'Content-Type': 'application/json',
@@ -62,14 +55,14 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
     ...(init.headers as Record<string, string> | undefined),
   };
 
-  // Add CSRF protection for state-changing operations
-  if (!init.skipCSRF && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(init.method?.toUpperCase() || 'GET')) {
-    const csrfToken = csrfManager.getToken() || csrfManager.generateToken();
+  // CSRF for state-changing
+  if (!init.skipCSRF && ['POST', 'PUT', 'PATCH', 'DELETE'].includes((init.method || 'GET').toUpperCase())) {
+    csrfManager.getToken() || csrfManager.generateToken();
     Object.assign(headers, csrfManager.getHeaders());
     console.log("🌐 [SECURE_API] Added CSRF protection");
   }
 
-  // Add device fingerprint
+  // Device fingerprint
   const fingerprint = deviceFingerprint.get() || deviceFingerprint.store();
   headers['X-Device-Fingerprint'] = fingerprint;
 
@@ -87,15 +80,15 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
       statusText: res.statusText
     });
 
-    // Handle rate limiting
+    // 429
     if (res.status === 429) {
       console.warn("🌐 [SECURE_API] Rate limited by server");
       rateLimitTracker.recordAttempt(identifier);
-      const retryAfter = parseInt(res.headers.get('Retry-After') || '0');
+      const retryAfter = parseInt(res.headers.get('Retry-After') || '0', 10);
       throw new SecureAPIError(429, 'Too Many Requests', 'RATE_LIMITED', retryAfter);
     }
 
-    // Handle authentication errors
+    // 401
     if (res.status === 401) {
       console.warn("🌐 [SECURE_API] Authentication failed, clearing tokens");
       tokenStorage.clearToken();
@@ -103,7 +96,7 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
       throw new SecureAPIError(401, 'Unauthorized', 'AUTH_FAILED');
     }
 
-    // Handle CSRF errors
+    // CSRF errors
     if (res.status === 403 && res.headers.get('X-CSRF-Error')) {
       console.warn("🌐 [SECURE_API] CSRF error, regenerating token");
       csrfManager.clearToken();
@@ -117,8 +110,8 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
 
       try {
         const errorData = await res.json();
-        errorCode = errorData.code || errorCode;
-        errorMessage = errorData.message || errorData.error || errorMessage;
+        errorCode = (errorData && (errorData.code || errorData.error)) || errorCode;
+        errorMessage = (errorData && (errorData.message || errorData.error)) || errorMessage;
         console.error("🌐 [SECURE_API] Server error:", {
           status: res.status,
           errorCode,
@@ -135,29 +128,23 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
       throw new SecureAPIError(res.status, errorMessage, errorCode);
     }
 
-    // Reset rate limiting on successful request
     if (res.ok && identifier !== 'anonymous') {
       rateLimitTracker.reset(identifier);
     }
 
     const ct = res.headers.get('content-type') || '';
-    const result = ct.includes('application/json') ? res.json() : res.text();
+    const result = ct.includes('application/json') ? await res.json() : await res.text();
     console.log("🌐 [SECURE_API] Request successful");
     return result;
-    
+
   } catch (error) {
     console.error("🌐 [SECURE_API] Request error:", error);
-    
-    if (error instanceof SecureAPIError) {
-      throw error;
-    }
-    
-    // Network or other errors
+    if (error instanceof SecureAPIError) throw error;
     throw new SecureAPIError(0, 'Network Error', 'NETWORK_ERROR');
   }
 }
 
-// Secure authentication functions
+// Secure authentication functions (без 2FA)
 export const secureAuth = {
   async login(
     data: { email: string; password: string; rememberMe?: boolean },
@@ -187,14 +174,14 @@ export const secureAuth = {
       });
 
       console.log("🔐 [SECURE_API] API call successful:", {
-        hasToken: !!result.token,
-        hasUser: !!result.user,
+        hasToken: !!(result as any).token,
+        hasUser: !!(result as any).user,
         result
       });
 
-      if (result.token) {
+      if ((result as any).token) {
         console.log("🔐 [SECURE_API] Storing token...");
-        tokenStorage.setToken(result.token);
+        tokenStorage.setToken((result as any).token);
       } else {
         console.warn("🔐 [SECURE_API] No token in response:", result);
       }
@@ -211,7 +198,7 @@ export const secureAuth = {
     identifier?: string
   ) {
     const cleanData = {
-      username: data.username.trim(),
+      username: data.username?.trim() || '',
       password: data.password
     };
 
@@ -222,8 +209,8 @@ export const secureAuth = {
       identifier: identifier || cleanData.username
     });
 
-    if (result.token) {
-      tokenStorage.setToken(result.token);
+    if ((result as any).token) {
+      tokenStorage.setToken((result as any).token);
     }
 
     return result;
@@ -244,6 +231,9 @@ export const secureAuth = {
     agreeMarketing?: boolean;
     telegram?: string;
   }, identifier?: string) {
+    // (лог оставлю — он был в твоём варианте)
+    console.log("📤 Frontend registration request - Email:", data.email, "Role:", data.role);
+
     const cleanData = {
       name: sanitizeInput.cleanString(data.name),
       email: sanitizeInput.cleanEmail(data.email),
@@ -263,132 +253,6 @@ export const secureAuth = {
     let endpoint = '/api/auth/register';
     if (data.role === 'PARTNER' || data.role === 'affiliate') {
       endpoint = '/api/auth/register/partner';
-    } else if (data.role === 'ADVERTISER' || data.role === 'advertiser') {
-      endpoint = '/api/auth/register/advertiser';
-    }
-
-    const result = await secureApi(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(cleanData),
-      skipAuth: true,
-      identifier: identifier || sanitizeInput.cleanEmail(data.email)
-    });
-
-    return result;
-  },
-
-  async resetPassword(data: { email: string }, identifier?: string) {
-    const cleanData = {
-      email: sanitizeInput.cleanEmail(data.email)
-    };
-
-    return secureApi('/api/auth/v2/reset-password', {
-      method: 'POST',
-      body: JSON.stringify(cleanData),
-      skipAuth: true,
-      identifier: identifier || cleanData.email
-    });
-  },
-
-  async validateResetToken(token: string) {
-    const cleanToken = sanitizeInput.cleanString(token);
-
-    return secureApi('/api/auth/v2/validate-reset-token', {
-      method: 'POST',
-      body: JSON.stringify({ token: cleanToken }),
-      skipAuth: true
-    });
-  },
-
-  async completePasswordReset(token: string, newPassword: string) {
-    const cleanToken = sanitizeInput.cleanString(token);
-
-    return secureApi('/api/auth/v2/complete-password-reset', {
-      method: 'POST',
-      body: JSON.stringify({ 
-        token: cleanToken,
-        newPassword: newPassword
-      }),
-      skipAuth: true
-    });
-  },
-
-  async me() {
-    return secureApi('/api/me');
-  },
-
-  async logout() {
-    try {
-      await secureApi('/api/auth/logout', { method: 'POST' });
-    } catch {
-      // Ignore errors on logout
-    } finally {
-      tokenStorage.clearToken();
-      csrfManager.clearToken();
-    }
-  },
-
-  async refreshToken() {
-    try {
-      const result = await secureApi('/api/auth/refresh', { method: 'POST' });
-      if (result.token) {
-        tokenStorage.setToken(result.token);
-      }
-      return result;
-    } catch {
-      tokenStorage.clearToken();
-      throw new SecureAPIError(401, 'Token refresh failed', 'REFRESH_FAILED');
-    }
-  }
-};
-
-    // Store token securely if verification successful
-    if (result.token) {
-      tokenStorage.setToken(result.token);
-    }
-
-    return result;
-  },
-
-  async register(data: {
-    name: string;
-    email: string;
-    username?: string;
-    password: string;
-    phone?: string;
-    company?: string;
-    contactType?: string;
-    contact?: string;
-    role?: string;
-    agreeTerms: boolean;
-    agreePrivacy: boolean;
-    agreeMarketing?: boolean;
-    telegram?: string;
-  }, identifier?: string) {
-    // Add debugging console.log as required
-    console.log("📤 Frontend registration request - Email:", data.email, "Role:", data.role);
-    
-    // Sanitize inputs
-    const cleanData = {
-      name: sanitizeInput.cleanString(data.name),
-      email: sanitizeInput.cleanEmail(data.email),
-      ...(data.username && { username: sanitizeInput.cleanUsername(data.username) }),
-      password: data.password, // Don't sanitize password
-      ...(data.phone && { phone: sanitizeInput.cleanPhone(data.phone) }),
-      ...(data.company && { company: sanitizeInput.cleanString(data.company) }),
-      ...(data.contactType && { contactType: data.contactType }),
-      ...(data.contact && { contact: sanitizeInput.cleanString(data.contact) }),
-      ...(data.telegram && { telegram: sanitizeInput.cleanTelegram(data.telegram) }),
-      ...(data.role && { role: data.role }),
-      agreeTerms: data.agreeTerms,
-      agreePrivacy: data.agreePrivacy,
-      ...(data.agreeMarketing !== undefined && { agreeMarketing: data.agreeMarketing })
-    };
-
-    // Use role-specific endpoints as required
-    let endpoint = '/api/auth/register';
-    if (data.role === 'PARTNER' || data.role === 'affiliate') {
-      endpoint = '/api/auth/register/partner';
       console.log("📤 Using partner registration API:", endpoint);
     } else if (data.role === 'ADVERTISER' || data.role === 'advertiser') {
       endpoint = '/api/auth/register/advertiser';
@@ -402,22 +266,17 @@ export const secureAuth = {
         skipAuth: true,
         identifier: identifier || sanitizeInput.cleanEmail(data.email)
       });
-      
-      // Add debugging for server response as required
+
       console.log("✅ Registration server response:", result);
-      
       return result;
-    } catch (_error) {
-      // Add debugging for errors as required
+    } catch (error: any) {
       console.log("❌ Registration error:", error?.message || error);
       throw error;
     }
   },
 
   async resetPassword(data: { email: string }, identifier?: string) {
-    const cleanData = {
-      email: sanitizeInput.cleanEmail(data.email)
-    };
+    const cleanData = { email: sanitizeInput.cleanEmail(data.email) };
 
     return secureApi('/api/auth/v2/reset-password', {
       method: 'POST',
@@ -442,9 +301,9 @@ export const secureAuth = {
 
     return secureApi('/api/auth/v2/complete-password-reset', {
       method: 'POST',
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         token: cleanToken,
-        newPassword: newPassword // Don't sanitize password, just validate
+        newPassword: newPassword // пароль не «санитим»
       }),
       skipAuth: true
     });
@@ -458,9 +317,8 @@ export const secureAuth = {
     try {
       await secureApi('/api/auth/logout', { method: 'POST' });
     } catch {
-      // Ignore errors on logout
+      // ignore
     } finally {
-      // Always clear local storage
       tokenStorage.clearToken();
       csrfManager.clearToken();
     }
@@ -469,14 +327,14 @@ export const secureAuth = {
   async refreshToken() {
     try {
       const result = await secureApi('/api/auth/refresh', { method: 'POST' });
-      if (result.token) {
-        tokenStorage.setToken(result.token);
+      if ((result as any).token) {
+        tokenStorage.setToken((result as any).token);
       }
       return result;
     } catch {
-      // If refresh fails, clear tokens
       tokenStorage.clearToken();
       throw new SecureAPIError(401, 'Token refresh failed', 'REFRESH_FAILED');
     }
   }
 };
+
