@@ -12,12 +12,8 @@ import {
   offerAccessRequests, partnerOffers, creativeFiles, customDomains, trackingLinks, partnerTeam, referralCommissions
 } from "@shared/schema";
 import { 
-  trackingClicks as newTrackingClicks, trackingEvents, postbackProfiles, postbackDeliveries, deliveryQueue,
-  clickEventSchema, conversionEventSchema, createPostbackProfileSchema, updatePostbackProfileSchema,
-  type TrackingClick, type TrackingEvent, type PostbackProfile, type PostbackDelivery,
-  sub2Config
-} from "@shared/postback-schema";
-import { sql, SQL } from "drizzle-orm";
+  sql, SQL 
+} from "drizzle-orm";
 import { eq, and, gte, lte, count, sum, desc, or, ilike, isNull, isNotNull, inArray, avg } from "drizzle-orm";
 import { db, queryCache } from "./db";
 import { z } from "zod";
@@ -12844,7 +12840,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       }
 
       // Store click data
-      await db.insert(newTrackingClicks).values({
+      await db.insert(trackingClicks).values({
         clickid,
         advertiserId,
         partnerId,
@@ -12885,7 +12881,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       });
 
       // Trigger click event
-      await db.insert(trackingEvents).values({
+      await db.insert(events).values({
         clickid,
         advertiserId,
         partnerId,
@@ -12909,8 +12905,8 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
       const eventData = conversionEventSchema.parse(req.body);
       
       // Check if click exists
-      const click = await db.select().from(newTrackingClicks)
-        .where(eq(newTrackingClicks.clickid, eventData.clickid))
+      const click = await db.select().from(trackingClicks)
+        .where(eq(trackingClicks.clickid, eventData.clickid))
         .limit(1);
         
       if (click.length === 0) {
@@ -12921,7 +12917,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
 
       // Insert event with duplicate prevention
       try {
-        const eventId = await db.insert(trackingEvents).values({
+        const eventId = await db.insert(events).values({
           clickid: eventData.clickid,
           advertiserId: clickRecord.advertiserId,
           partnerId: clickRecord.partnerId,

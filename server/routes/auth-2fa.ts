@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { users } from '../db/schema';
+import { users } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
