@@ -1,11 +1,8 @@
 import { Request, Response } from 'express';
 import { db, queryCache } from '../db';
-import {
-  users, offers, partnerOffers, trackingClicks, conversionData,
-  analyticsData, statistics, transactions
 import { 
-  users, offers, trackingClicks, conversionData, 
-  transactions 
+  users, offers, partnerOffers, trackingClicks, conversionData, 
+  analyticsData, statistics, transactions 
 } from '@shared/schema';
 import { eq, desc, and, gte, lte, sql, sum, count, avg } from 'drizzle-orm';
 import { auditLog } from '../middleware/security';
