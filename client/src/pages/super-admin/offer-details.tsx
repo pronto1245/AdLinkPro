@@ -40,7 +40,7 @@ export default function OfferDetails() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  
+
   // Analytics filters state
   const [dateFilter, setDateFilter] = useState('7');
   const [customDateFrom, setCustomDateFrom] = useState('');
@@ -53,18 +53,18 @@ export default function OfferDetails() {
   const [advertiserSearchTerm, setAdvertiserSearchTerm] = useState('');
   const [partnerFilter, setPartnerFilter] = useState('all');
   const [partnerSearchTerm, setPartnerSearchTerm] = useState('');
-  
+
   // Analytics pagination state
   const [analyticsPages, setAnalyticsPages] = useState({
     uniques: 1
   });
-  
+
   // Edit offer state
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  
+
   // Copy URL state
   const [copiedUrls, setCopiedUrls] = useState<{[key: string]: boolean}>({});
-  
+
   // Copy URL function
   const copyToClipboard = async (text: string, id: string) => {
     try {
@@ -81,11 +81,11 @@ export default function OfferDetails() {
       toast({
         title: t('copy_error'),
         description: t('copy_error_message'),
-        variant: "destructive"
+        variant: 'destructive'
       });
     }
   };
-  
+
   const offerId = params.id;
 
   // Fetch all offers and find the specific one
@@ -96,13 +96,13 @@ export default function OfferDetails() {
 
   const offer = (allOffers as any[]).find((o: any) => o.id === offerId);
 
-  // Fetch offer stats  
+  // Fetch offer stats
   const { data: stats } = useQuery({
     queryKey: ['/api/admin/offer-stats', offerId],
     enabled: !!offerId
   });
 
-  // Type safety check  
+  // Type safety check
   const statsData = stats as any;
 
   if (isLoading) {
@@ -128,7 +128,6 @@ export default function OfferDetails() {
       </div>
     );
   }
-
 
 
   // Category colors
@@ -177,20 +176,20 @@ export default function OfferDetails() {
         return `${flag}${geo.country}-${geo.payout}`;
       }).join(' ');
     }
-    
+
     // Резервный вариант - базовая выплата
     if (fallbackPayout && fallbackPayout !== '0.00') {
       const currencySymbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'RUB' ? '₽' : currency || '';
       return `${currencySymbol}${fallbackPayout}`;
     }
-    
+
     return 'Не указано';
   };
 
   // Format traffic sources with colors
   const formatTrafficSources = (sources: any) => {
     if (!sources || !Array.isArray(sources)) {return [];}
-    
+
     const sourceColors: { [key: string]: string } = {
       'Facebook': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
       'Instagram': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
@@ -219,10 +218,10 @@ export default function OfferDetails() {
   // Format applications with colors
   const formatApplications = (apps: any) => {
     if (!apps || !Array.isArray(apps)) {return [];}
-    
+
     const appNames: { [key: string]: string } = {
       'web': 'Веб-сайты',
-      'mobile_app': 'Мобильные приложения', 
+      'mobile_app': 'Мобильные приложения',
       'social_media': 'Социальные сети',
       'email': 'Email рассылки',
       'sms': 'SMS рассылки',
@@ -254,7 +253,7 @@ export default function OfferDetails() {
     if (!files || files.length === 0) {return;}
 
     setIsUploading(true);
-    
+
     try {
       const formData = new FormData();
       Array.from(files).forEach((file, index) => {
@@ -278,14 +277,14 @@ export default function OfferDetails() {
       setUploadedCreatives(prev => [...prev, ...newCreatives]);
 
       toast({
-        title: "Успех",
+        title: 'Успех',
         description: `Загружено ${files.length} файлов`,
       });
     } catch (_error) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить файлы",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Не удалось загрузить файлы',
+        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
@@ -302,8 +301,8 @@ export default function OfferDetails() {
   const removeCreative = (id: number) => {
     setUploadedCreatives(prev => prev.filter(creative => creative.id !== id));
     toast({
-      title: "Удалено",
-      description: "Креатив удален",
+      title: 'Удалено',
+      description: 'Креатив удален',
     });
   };
 
@@ -334,7 +333,7 @@ export default function OfferDetails() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             {t('back_to_offers')}
           </Button>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <div className="mb-2">
@@ -355,12 +354,12 @@ export default function OfferDetails() {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4">
 
               {offer.logo && (
-                <img 
-                  src={offer.logo} 
+                <img
+                  src={offer.logo}
                   alt={offer.name}
                   className="w-20 h-20 object-contain rounded-lg border border-gray-200 dark:border-gray-700"
                 />
@@ -372,29 +371,29 @@ export default function OfferDetails() {
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
-            <TabsTrigger 
-              value="details" 
+            <TabsTrigger
+              value="details"
               className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
             >
               <Target className="w-4 h-4" />
               {t('details')}
             </TabsTrigger>
-            <TabsTrigger 
-              value="analytics" 
+            <TabsTrigger
+              value="analytics"
               className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
             >
               <BarChart3 className="w-4 h-4" />
               {t('analytics')}
             </TabsTrigger>
-            <TabsTrigger 
-              value="creatives" 
+            <TabsTrigger
+              value="creatives"
               className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
             >
               <Image className="w-4 h-4" />
               {t('creatives')}
             </TabsTrigger>
-            <TabsTrigger 
-              value="history" 
+            <TabsTrigger
+              value="history"
               className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
             >
               <Clock className="w-4 h-4" />
@@ -451,8 +450,8 @@ export default function OfferDetails() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="ghost"
                               size="sm"
                               className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
                               onClick={() => copyToClipboard(landing.url, `landing-${index}`)}
@@ -464,9 +463,9 @@ export default function OfferDetails() {
                                 <Copy className="w-4 h-4 text-blue-600" />
                               )}
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               className="h-8 w-8 p-0 hover:bg-purple-100 hover:text-purple-600"
                               asChild
                               title={t('preview_url')}
@@ -477,7 +476,7 @@ export default function OfferDetails() {
                             </Button>
                           </div>
                         </div>
-                        
+
                         {/* Зеленый прямоугольник с выплатой и информацией */}
                         <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
@@ -489,7 +488,7 @@ export default function OfferDetails() {
                               <div className="text-xl font-bold text-green-700 dark:text-green-300">
                                 {(() => {
                                   const currencySymbol = offer.currency === 'USD' ? '$' : offer.currency === 'EUR' ? '€' : offer.currency === 'RUB' ? '₽' : '';
-                                  
+
                                   // Приоритет: payoutAmount -> payout -> базовая выплата оффера
                                   if (landing.payoutAmount) {
                                     return `${currencySymbol}${landing.payoutAmount}`;
@@ -504,7 +503,7 @@ export default function OfferDetails() {
                                 })()}
                               </div>
                             </div>
-                            
+
                             {/* Валюта */}
                             <div className="text-center">
                               <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
@@ -514,7 +513,7 @@ export default function OfferDetails() {
                                 {offer.currency || 'USD'}
                               </div>
                             </div>
-                            
+
                             {/* Тип */}
                             <div className="text-center">
                               <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
@@ -524,7 +523,7 @@ export default function OfferDetails() {
                                 {offer.payoutType?.toUpperCase() || 'CPA'}
                               </div>
                             </div>
-                            
+
                             {/* Гео с флагами */}
                             <div className="text-center">
                               <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
@@ -538,7 +537,7 @@ export default function OfferDetails() {
                                     'pl': '🇵🇱', 'nl': '🇳🇱', 'se': '🇸🇪', 'no': '🇳🇴', 'dk': '🇩🇰', 'fi': '🇫🇮',
                                     'jp': '🇯🇵', 'kr': '🇰🇷', 'cn': '🇨🇳', 'in': '🇮🇳', 'th': '🇹🇭', 'vn': '🇻🇳'
                                   };
-                                  
+
                                   if (landing.geo) {
                                     const geo = landing.geo.toLowerCase();
                                     const flag = countryFlags[geo] || '🌍';
@@ -548,7 +547,7 @@ export default function OfferDetails() {
                                       </span>
                                     );
                                   }
-                                  
+
                                   return <span className="text-sm">Не указано</span>;
                                 })()}
                               </div>
@@ -584,7 +583,7 @@ export default function OfferDetails() {
                           })()}
                         </div>
                       </div>
-                      
+
                       {/* Валюта */}
                       <div>
                         <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
@@ -594,7 +593,7 @@ export default function OfferDetails() {
                           {offer.currency || 'USD'}
                         </div>
                       </div>
-                      
+
                       {/* Тип */}
                       <div>
                         <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
@@ -604,7 +603,7 @@ export default function OfferDetails() {
                           {offer.payoutType?.toUpperCase() || 'CPA'}
                         </div>
                       </div>
-                      
+
                       {/* Гео */}
                       <div>
                         <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
@@ -614,24 +613,24 @@ export default function OfferDetails() {
                           {(() => {
                             // Приоритет: geo-pricing -> общие страны оффера
                             let countries = [];
-                            
+
                             if (offer.geoPricing && Array.isArray(offer.geoPricing) && offer.geoPricing.length > 0) {
                               countries = offer.geoPricing.map((geo: any) => geo.country).filter(Boolean);
                             } else if (offer.countries && Array.isArray(offer.countries) && offer.countries.length > 0) {
                               countries = offer.countries;
                             }
-                            
+
                             if (countries.length === 0) {
                               return <span className="text-sm">{t('not_specified')}</span>;
                             }
-                            
+
                             const countryFlags: { [key: string]: string } = {
                               'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹',
                               'CA': '🇨🇦', 'AU': '🇦🇺', 'BR': '🇧🇷', 'MX': '🇲🇽', 'RU': '🇷🇺', 'UA': '🇺🇦',
                               'PL': '🇵🇱', 'NL': '🇳🇱', 'SE': '🇸🇪', 'NO': '🇳🇴', 'DK': '🇩🇰', 'FI': '🇫🇮',
                               'JP': '🇯🇵', 'KR': '🇰🇷', 'CN': '🇨🇳', 'IN': '🇮🇳', 'TH': '🇹🇭', 'VN': '🇻🇳'
                             };
-                            
+
                             return (
                               <div className="flex flex-wrap justify-center gap-1">
                                 {countries.slice(0, 3).map((country: string, idx: number) => (
@@ -697,7 +696,6 @@ export default function OfferDetails() {
             </Card>
 
 
-
             {/* Additional Info */}
             <Card>
               <CardHeader>
@@ -742,7 +740,6 @@ export default function OfferDetails() {
                 </CardContent>
               </Card>
             )}
-
 
 
             {/* Description */}
@@ -845,7 +842,7 @@ export default function OfferDetails() {
                         <SelectItem value="custom">Пользовательский</SelectItem>
                       </SelectContent>
                     </Select>
-                    
+
                     {/* Custom Date Range */}
                     {dateFilter === 'custom' && (
                       <div className="grid grid-cols-2 gap-2 mt-2">
@@ -946,10 +943,10 @@ export default function OfferDetails() {
                               { code: 'KZ', name: 'Казахстан', flag: '🇰🇿' },
                               { code: 'UZ', name: 'Узбекистан', flag: '🇺🇿' }
                             ];
-                            
+
                             return countries
-                              .filter(country => 
-                                geoSearchTerm === '' || 
+                              .filter(country =>
+                                geoSearchTerm === '' ||
                                 country.name.toLowerCase().includes(geoSearchTerm.toLowerCase()) ||
                                 country.code.toLowerCase().includes(geoSearchTerm.toLowerCase())
                               )
@@ -996,10 +993,10 @@ export default function OfferDetails() {
                               { value: 'smart-tv', name: 'Smart TV', icon: '📺' },
                               { value: 'console', name: 'Игровые консоли', icon: '🎮' }
                             ];
-                            
+
                             return devices
-                              .filter(device => 
-                                deviceSearchTerm === '' || 
+                              .filter(device =>
+                                deviceSearchTerm === '' ||
                                 device.name.toLowerCase().includes(deviceSearchTerm.toLowerCase()) ||
                                 device.value.toLowerCase().includes(deviceSearchTerm.toLowerCase())
                               )
@@ -1046,10 +1043,10 @@ export default function OfferDetails() {
                               { id: 'advertiser9', name: 'Traffic Universe' },
                               { id: 'advertiser10', name: 'Lead Generation Pro' }
                             ];
-                            
+
                             return advertisers
-                              .filter(advertiser => 
-                                advertiserSearchTerm === '' || 
+                              .filter(advertiser =>
+                                advertiserSearchTerm === '' ||
                                 advertiser.name.toLowerCase().includes(advertiserSearchTerm.toLowerCase()) ||
                                 advertiser.id.toLowerCase().includes(advertiserSearchTerm.toLowerCase())
                               )
@@ -1101,10 +1098,10 @@ export default function OfferDetails() {
                               { id: 'partner14', name: 'Growth Partners' },
                               { id: 'partner15', name: 'Media Professionals' }
                             ];
-                            
+
                             return partners
-                              .filter(partner => 
-                                partnerSearchTerm === '' || 
+                              .filter(partner =>
+                                partnerSearchTerm === '' ||
                                 partner.name.toLowerCase().includes(partnerSearchTerm.toLowerCase()) ||
                                 partner.id.toLowerCase().includes(partnerSearchTerm.toLowerCase())
                               )
@@ -1126,7 +1123,7 @@ export default function OfferDetails() {
                     <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Активные фильтры:</span>
                     {dateFilter !== 'all' && (
                       <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
-                        {dateFilter === '1' ? 'Сегодня' : 
+                        {dateFilter === '1' ? 'Сегодня' :
                          dateFilter === '7' ? '7 дней' :
                          dateFilter === '30' ? '30 дней' :
                          dateFilter === '90' ? '90 дней' :
@@ -1171,7 +1168,7 @@ export default function OfferDetails() {
                          partnerFilter === 'partner5' ? 'Global Traffic Hub' : partnerFilter}
                       </Badge>
                     )}
-                    {dateFilter === 'all' && geoFilter === 'all' && deviceFilter === 'all' && 
+                    {dateFilter === 'all' && geoFilter === 'all' && deviceFilter === 'all' &&
                      advertiserFilter === 'all' && partnerFilter === 'all' && (
                       <span className="text-sm text-gray-500 dark:text-gray-400">Нет активных фильтров</span>
                     )}
@@ -1198,7 +1195,7 @@ export default function OfferDetails() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
@@ -1264,8 +1261,8 @@ export default function OfferDetails() {
                   <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                     <span className="text-sm text-gray-600 dark:text-gray-400">CTR</span>
                     <span className="text-sm font-medium">
-                      {statsData?.clicks && statsData?.clicks > 0 ? 
-                        `${((statsData.conversions || 0) / statsData.clicks * 100).toFixed(2)}%` : 
+                      {statsData?.clicks && statsData?.clicks > 0 ?
+                        `${((statsData.conversions || 0) / statsData.clicks * 100).toFixed(2)}%` :
                         '0%'
                       }
                     </span>
@@ -1273,8 +1270,8 @@ export default function OfferDetails() {
                   <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                     <span className="text-sm text-gray-600 dark:text-gray-400">ARPU</span>
                     <span className="text-sm font-medium">
-                      ${statsData?.conversions && statsData.conversions > 0 ? 
-                        ((statsData.revenue || 0) / statsData.conversions).toFixed(2) : 
+                      ${statsData?.conversions && statsData.conversions > 0 ?
+                        ((statsData.revenue || 0) / statsData.conversions).toFixed(2) :
                         '0'
                       }
                     </span>
@@ -1282,8 +1279,8 @@ export default function OfferDetails() {
                   <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                     <span className="text-sm text-gray-600 dark:text-gray-400">EPC</span>
                     <span className="text-sm font-medium">
-                      ${statsData?.clicks && statsData.clicks > 0 ? 
-                        ((statsData.revenue || 0) / statsData.clicks).toFixed(3) : 
+                      ${statsData?.clicks && statsData.clicks > 0 ?
+                        ((statsData.revenue || 0) / statsData.clicks).toFixed(3) :
                         '0'
                       }
                     </span>
@@ -1372,12 +1369,12 @@ export default function OfferDetails() {
                             'Партнер': `П#${rowIndex + 1}`
                           };
                         });
-                        
+
                         const csvContent = [
                           '\ufeff' + Object.keys(tableData[0]).join(','), // BOM for proper encoding
                           ...tableData.map(row => Object.values(row).join(','))
                         ].join('\n');
-                        
+
                         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                         const link = document.createElement('a');
                         const url = URL.createObjectURL(blob);
@@ -1387,10 +1384,10 @@ export default function OfferDetails() {
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
-                        
+
                         toast({
-                          title: "Экспорт завершен",
-                          description: "Таблица аналитики экспортирована в CSV файл",
+                          title: 'Экспорт завершен',
+                          description: 'Таблица аналитики экспортирована в CSV файл',
                         });
                       }}
                       className="flex items-center gap-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
@@ -1399,7 +1396,7 @@ export default function OfferDetails() {
                       <Download className="w-4 h-4" />
                       Экспорт CSV
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -1419,13 +1416,13 @@ export default function OfferDetails() {
                             'Партнер': `П#${rowIndex + 1}`
                           };
                         });
-                        
+
                         // Create Excel-like format with tabs
                         const excelContent = [
                           Object.keys(tableData[0]).join('\t'),
                           ...tableData.map(row => Object.values(row).join('\t'))
                         ].join('\n');
-                        
+
                         const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
                         const link = document.createElement('a');
                         const url = URL.createObjectURL(blob);
@@ -1435,10 +1432,10 @@ export default function OfferDetails() {
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
-                        
+
                         toast({
-                          title: "Экспорт завершен",
-                          description: "Таблица аналитики экспортирована в Excel файл",
+                          title: 'Экспорт завершен',
+                          description: 'Таблица аналитики экспортирована в Excel файл',
                         });
                       }}
                       className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
@@ -1467,10 +1464,10 @@ export default function OfferDetails() {
                 />
                 <div className="flex justify-center mt-4 gap-2">
                   {analyticsPages.uniques > 1 && (
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
-                      onClick={() => setAnalyticsPages(prev => ({...prev, uniques: prev.uniques - 1}))}
+                      onClick={() => setAnalyticsPages(prev => ({ ...prev, uniques: prev.uniques - 1 }))}
                     >
                       ← Страница {analyticsPages.uniques - 1}
                     </Button>
@@ -1478,10 +1475,10 @@ export default function OfferDetails() {
                   <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
                     Страница {analyticsPages.uniques}
                   </span>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
-                    onClick={() => setAnalyticsPages(prev => ({...prev, uniques: prev.uniques + 1}))}
+                    onClick={() => setAnalyticsPages(prev => ({ ...prev, uniques: prev.uniques + 1 }))}
                   >
                     Страница {analyticsPages.uniques + 1} →
                   </Button>
@@ -1499,7 +1496,7 @@ export default function OfferDetails() {
                     <Image className="w-5 h-5" />
                     Рекламные материалы
                   </div>
-                  <Button 
+                  <Button
                     onClick={handleUploadClick}
                     disabled={isUploading}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -1527,7 +1524,7 @@ export default function OfferDetails() {
                   onChange={handleFileUpload}
                   className="hidden"
                 />
-                
+
                 {uploadedCreatives.length === 0 ? (
                   <div className="text-center py-12">
                     <Image className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -1548,10 +1545,10 @@ export default function OfferDetails() {
                         Загружено файлов: {uploadedCreatives.length}
                       </p>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {uploadedCreatives.map((creative) => (
-                        <div 
+                        <div
                           key={creative.id}
                           className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800"
                         >
@@ -1574,11 +1571,11 @@ export default function OfferDetails() {
                               <X className="w-4 h-4" />
                             </Button>
                           </div>
-                          
+
                           {creative.type.startsWith('image/') ? (
                             <div className="mb-3">
-                              <img 
-                                src={creative.url} 
+                              <img
+                                src={creative.url}
                                 alt={creative.name}
                                 className="w-full h-32 object-cover rounded border"
                               />
@@ -1593,7 +1590,7 @@ export default function OfferDetails() {
                               </div>
                             </div>
                           )}
-                          
+
                           <div className="flex items-center justify-between">
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                               {new Date(creative.uploadedAt).toLocaleDateString('ru-RU')}
@@ -1642,7 +1639,7 @@ export default function OfferDetails() {
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         {new Date(offer.createdAt).toLocaleDateString('ru-RU', {
                           year: 'numeric',
-                          month: 'long', 
+                          month: 'long',
                           day: 'numeric',
                           hour: '2-digit',
                           minute: '2-digit'
@@ -1663,16 +1660,16 @@ export default function OfferDetails() {
           </div>
         </main>
       </div>
-      
+
       {/* Edit Offer Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Редактировать оффер: {offer.name}</DialogTitle>
           </DialogHeader>
-          <EditOfferForm 
-            offer={offer} 
-            onSuccess={() => setIsEditDialogOpen(false)} 
+          <EditOfferForm
+            offer={offer}
+            onSuccess={() => setIsEditDialogOpen(false)}
           />
         </DialogContent>
       </Dialog>
@@ -1685,7 +1682,7 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { language } = useLanguage();
-  
+
   // Schema для редактирования оффера (упрощенная версия)
   const editOfferSchema = z.object({
     name: z.string().min(1, 'Название обязательно'),
@@ -1717,16 +1714,16 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
     resolver: zodResolver(editOfferSchema),
     defaultValues: {
       name: offer.name || '',
-      description: typeof offer.description === 'object' ? 
-        getMultilingualText(offer.description, language, '') : 
+      description: typeof offer.description === 'object' ?
+        getMultilingualText(offer.description, language, '') :
         offer.description || '',
       category: offer.category || '',
       status: offer.status || 'draft',
       payoutType: offer.payoutType || 'cpa',
       currency: offer.currency || 'USD',
       logo: offer.logo || '',
-      kpiConditions: typeof offer.kpiConditions === 'object' ? 
-        getMultilingualText(offer.kpiConditions, language, '') : 
+      kpiConditions: typeof offer.kpiConditions === 'object' ?
+        getMultilingualText(offer.kpiConditions, language, '') :
         offer.kpiConditions || '',
       allowedTrafficSources: offer.trafficSources || [],
       allowedApps: offer.allowedApps || [],
@@ -1751,16 +1748,16 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
       queryClient.invalidateQueries({ queryKey: [`/api/admin/offer-stats/${offer.id}`] });
       toast({
-        title: "Успех",
-        description: "Оффер успешно обновлен",
+        title: 'Успех',
+        description: 'Оффер успешно обновлен',
       });
       onSuccess();
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось обновить оффер",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Не удалось обновить оффер',
+        variant: 'destructive',
       });
     },
   });
@@ -1772,7 +1769,7 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        
+
         {/* Основная информация */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
@@ -1788,7 +1785,7 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="category"
@@ -1859,7 +1856,7 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="payoutType"
@@ -1882,7 +1879,7 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="currency"
@@ -1943,19 +1940,19 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
               <FormItem>
                 <FormLabel>Дневной лимит</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    {...field} 
+                  <Input
+                    type="number"
+                    {...field}
                     value={field.value || ''}
                     onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                    placeholder="Без ограничений" 
+                    placeholder="Без ограничений"
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="monthlyLimit"
@@ -1963,12 +1960,12 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
               <FormItem>
                 <FormLabel>Месячный лимит</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    {...field} 
+                  <Input
+                    type="number"
+                    {...field}
                     value={field.value || ''}
                     onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                    placeholder="Без ограничений" 
+                    placeholder="Без ограничений"
                   />
                 </FormControl>
                 <FormMessage />
@@ -1986,14 +1983,14 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
               <FormLabel>Разрешенные источники трафика</FormLabel>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
                 {[
-                  'facebook_ads', 'google_ads', 'tiktok_ads', 'instagram_ads', 'youtube_ads', 
+                  'facebook_ads', 'google_ads', 'tiktok_ads', 'instagram_ads', 'youtube_ads',
                   'twitter_ads', 'linkedin_ads', 'snapchat_ads', 'pinterest_ads', 'reddit_ads',
                   'mytarget', 'push_traffic', 'pop_traffic', 'email_marketing', 'seo_organic',
                   'mobile_app', 'influencer', 'teaser_networks'
                 ].map((source) => {
                   const sourceLabels: {[key: string]: string} = {
                     'facebook_ads': 'Facebook Ads',
-                    'google_ads': 'Google Ads', 
+                    'google_ads': 'Google Ads',
                     'tiktok_ads': 'TikTok Ads',
                     'instagram_ads': 'Instagram Ads',
                     'youtube_ads': 'YouTube Ads',
@@ -2011,7 +2008,7 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
                     'influencer': 'Инфлюенсер маркетинг',
                     'teaser_networks': 'Тизерные сети'
                   };
-                  
+
                   return (
                     <div key={source} className="flex items-center space-x-2">
                       <Checkbox
@@ -2019,7 +2016,7 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
                         checked={field.value?.includes(source) || false}
                         onCheckedChange={(checked) => {
                           const current = field.value || [];
-                          const updated = checked 
+                          const updated = checked
                             ? [...current, source]
                             : current.filter(s => s !== source);
                           field.onChange(updated);
@@ -2051,7 +2048,7 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
                 ].map((app) => {
                   const appLabels: {[key: string]: string} = {
                     'Mobile apps': 'Мобильные приложения',
-                    'Web apps': 'Веб-приложения', 
+                    'Web apps': 'Веб-приложения',
                     'Desktop apps': 'Desktop приложения',
                     'PWA apps': 'PWA приложения',
                     'WebView apps': 'WebView приложения',
@@ -2060,7 +2057,7 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
                     'Telegram bots': 'Telegram боты',
                     'Browser extensions': 'Браузерные расширения'
                   };
-                  
+
                   return (
                     <div key={app} className="flex items-center space-x-2">
                       <Checkbox
@@ -2068,7 +2065,7 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
                         checked={field.value?.includes(app) || false}
                         onCheckedChange={(checked) => {
                           const current = field.value || [];
-                          const updated = checked 
+                          const updated = checked
                             ? [...current, app]
                             : current.filter(a => a !== app);
                           field.onChange(updated);
@@ -2208,7 +2205,7 @@ function EditOfferForm({ offer, onSuccess }: { offer: any; onSuccess: () => void
             Отмена
           </Button>
           <Button type="submit" disabled={updateOfferMutation.isPending}>
-            {updateOfferMutation.isPending ? "Сохранение..." : "Сохранить изменения"}
+            {updateOfferMutation.isPending ? 'Сохранение...' : 'Сохранить изменения'}
           </Button>
         </div>
       </form>

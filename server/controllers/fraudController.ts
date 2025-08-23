@@ -46,19 +46,19 @@ export class FraudController {
 
       // Apply filters
       const conditions = [];
-      
+
       if (severity) {
         conditions.push(eq(fraudAlerts.severity, severity as string));
       }
-      
+
       if (status) {
         conditions.push(eq(fraudAlerts.status, status as string));
       }
-      
+
       if (fromDate) {
         conditions.push(gte(fraudAlerts.createdAt, new Date(fromDate as string)));
       }
-      
+
       if (toDate) {
         conditions.push(lte(fraudAlerts.createdAt, new Date(toDate as string)));
       }
@@ -254,7 +254,7 @@ export class FraudController {
         .where(gte(trackingClicks.createdAt, startDate));
 
       // Calculate fraud rate
-      const fraudRate = fraudClicks.totalClicks > 0 
+      const fraudRate = fraudClicks.totalClicks > 0
         ? (fraudClicks.fraudulentClicks / fraudClicks.totalClicks * 100).toFixed(2)
         : '0.00';
 

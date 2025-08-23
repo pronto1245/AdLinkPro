@@ -1,19 +1,19 @@
 import { db } from '../db';
 import { trackingClicks, offers, users, statistics } from '@shared/schema';
-import { eq, desc, and, gte, lt, lte, count, sum, sql, like, or, asc } from "drizzle-orm";
+import { eq, desc, and, gte, lt, lte, count, sum, sql, like, or, asc } from 'drizzle-orm';
 
 export class AnalyticsService {
   static async getAnalyticsData(filters: any = {}): Promise<any[]> {
     try {
       console.log('Getting analytics data with filters:', filters);
-      
+
       // Try to get real data from trackingClicks table
       const realData = await this.getRealTrackingData(filters);
       if (realData.length > 0) {
         console.log(`Returning ${realData.length} real analytics records`);
         return realData;
       }
-      
+
       // Fallback to mock data if no real data exists
       console.log('No real data found, returning mock data');
       return this.generateMockData(filters);
@@ -22,7 +22,7 @@ export class AnalyticsService {
       return this.generateMockData(filters);
     }
   }
-  
+
   private static async getRealTrackingData(filters: any): Promise<any[]> {
     try {
       // Build query with proper joins and comprehensive fields
@@ -92,7 +92,7 @@ export class AnalyticsService {
         .from(trackingClicks)
         .leftJoin(offers, eq(trackingClicks.offerId, offers.id))
         .leftJoin(users, eq(trackingClicks.partnerId, users.id));
-      
+
       // Apply filters
       const conditions = [];
       if (filters.dateFrom) {
@@ -130,17 +130,17 @@ export class AnalyticsService {
       if (filters.fraudScore) {
         conditions.push(gte(trackingClicks.fraudScore, parseInt(filters.fraudScore)));
       }
-      
+
       // Apply combined conditions
       if (conditions.length > 0) {
         query = query.where(and(...conditions));
       }
-      
+
       // Apply pagination
       const limit = Math.min(parseInt(filters.limit) || 50, 500);
       const offset = parseInt(filters.offset) || 0;
       query = query.limit(limit).offset(offset);
-      
+
       // Apply sorting
       const sortBy = filters.sortBy || 'createdAt';
       const sortOrder = filters.sortOrder || 'desc';
@@ -149,9 +149,9 @@ export class AnalyticsService {
       } else {
         query = query.orderBy(asc(trackingClicks[sortBy] || trackingClicks.createdAt));
       }
-      
+
       const rawResults = await query;
-      
+
       // Transform to expected format with all available fields
       return rawResults.map(row => ({
         // Core tracking
@@ -159,13 +159,13 @@ export class AnalyticsService {
         timestamp: row.timestamp?.toISOString() || new Date().toISOString(),
         date: row.date || new Date().toISOString().split('T')[0],
         time: row.time || new Date().toISOString().split('T')[1].split('.')[0],
-        
+
         // Campaign data
         campaign: row.subId1 || 'default',
         campaignId: row.clickId,
         campaignGroupId: row.offerId,
         campaignGroup: row.offerName || 'Unknown',
-        
+
         // SubIDs (1-30) - comprehensive mapping
         subid: row.subId1 || '',
         subId1: row.subId1,
@@ -198,7 +198,7 @@ export class AnalyticsService {
         subId28: row.subId28,
         subId29: row.subId29,
         subId30: row.subId30,
-        
+
         // Geographic and device data
         ip: row.ip || 'Unknown',
         geo: row.country || 'Unknown',
@@ -206,13 +206,13 @@ export class AnalyticsService {
         browser: row.browser || 'Unknown',
         device: row.device || 'Unknown',
         os: row.os || 'Unknown',
-        
+
         // Connection data
         connectionType: row.connectionType || 'Unknown',
         mobileCarrier: row.mobileCarrier || 'Unknown',
         operator: row.mobileCarrier || 'Unknown',
         provider: row.mobileCarrier || 'Unknown',
-        
+
         // Offers & Landing
         offer: row.offerName || 'Unknown Offer',
         offerId: row.offerId,
@@ -222,7 +222,7 @@ export class AnalyticsService {
         landingId: row.offerId,
         landingUrl: row.landingUrl,
         timeOnLanding: row.timeOnLanding || 0,
-        
+
         // Traffic & Sources
         partnerNetwork: row.partnerName || 'Unknown Partner',
         networkId: row.partnerId,
@@ -234,14 +234,14 @@ export class AnalyticsService {
         streamId: row.subId1,
         site: 'internal',
         direction: 'inbound',
-        
+
         // Tracking IDs
         clickId: row.clickId,
         visitorCode: row.clickId,
         externalId: row.clickId,
         creativeId: row.subId2 || '',
         adCampaignId: row.subId1 || '',
-        
+
         // Request data
         userAgent: row.userAgent,
         referrer: row.referer,
@@ -250,7 +250,7 @@ export class AnalyticsService {
         xRequestedWith: 'unknown',
         searchEngine: row.referer?.includes('google') ? 'Google' : (row.referer?.includes('bing') ? 'Bing' : undefined),
         keyword: undefined,
-        
+
         // Analytics metrics
         clicks: 1,
         uniqueClicks: row.isUnique ? 1 : 0,
@@ -262,7 +262,7 @@ export class AnalyticsService {
         roi: 0,
         cr: row.status === 'converted' ? 100 : 0,
         epc: 0,
-        
+
         // Fraud and Bot Detection
         isBot: row.isBot || false,
         isFraud: (row.fraudScore || 0) > 70,
@@ -272,30 +272,30 @@ export class AnalyticsService {
         isUnique: row.isUnique || true,
         vpnDetected: row.vpnDetected || false,
         usingProxy: row.vpnDetected || false,
-        
+
         // Status and integration
         status: row.status || 'active',
         postbackReceived: false,
         integrationSource: 'internal',
         conversionData: row.conversionData
       }));
-      
+
     } catch (error) {
       console.error('Error getting real tracking data:', error);
       return [];
     }
   }
-  
+
   private static generateMockData(filters: any): any[] {
     const mockData = [];
     const count = Math.min(parseInt(filters.limit) || 50, 100);
-    
+
     for (let i = 0; i < count; i++) {
       const clicks = Math.floor(Math.random() * 10) + 1;
       const conversions = Math.floor(Math.random() * clicks);
       const revenue = conversions * (Math.random() * 50 + 10);
       const payout = revenue * (0.5 + Math.random() * 0.3);
-      
+
       mockData.push({
         id: `mock_${i}`,
         timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -336,21 +336,21 @@ export class AnalyticsService {
         integrationSource: ['internal', 'api', 'webhook'][Math.floor(Math.random() * 3)]
       });
     }
-    
+
     return mockData;
   }
-  
+
   static async getAnalyticsSummary(filters: any = {}): Promise<any> {
     try {
       console.log('Getting analytics summary with filters:', filters);
-      
+
       // Try to get real summary data
       const realSummary = await this.getRealSummaryData(filters);
       if (realSummary.totalClicks > 0) {
         console.log('Returning real analytics summary');
         return realSummary;
       }
-      
+
       // Fallback to mock summary
       console.log('No real data found, returning mock summary');
       return this.generateMockSummary();
@@ -359,7 +359,7 @@ export class AnalyticsService {
       return this.generateMockSummary();
     }
   }
-  
+
   private static async getRealSummaryData(filters: any): Promise<any> {
     try {
       // Build conditions for filtering
@@ -376,7 +376,7 @@ export class AnalyticsService {
       if (filters.offerId) {
         conditions.push(eq(trackingClicks.offerId, filters.offerId));
       }
-      
+
       // Get aggregated data from tracking clicks
       let summaryQuery = db
         .select({
@@ -389,14 +389,14 @@ export class AnalyticsService {
           vpnClicks: sum(sql`CASE WHEN ${trackingClicks.vpnDetected} = true THEN 1 ELSE 0 END`),
         })
         .from(trackingClicks);
-        
+
       if (conditions.length > 0) {
         summaryQuery = summaryQuery.where(and(...conditions));
       }
-      
+
       const summaryResult = await summaryQuery;
       const summary = summaryResult[0];
-      
+
       // Calculate additional metrics
       const totalClicks = Number(summary.totalClicks) || 0;
       const uniqueClicks = Number(summary.uniqueClicks) || 0;
@@ -405,14 +405,14 @@ export class AnalyticsService {
       const botClicks = Number(summary.botClicks) || 0;
       const fraudClicks = Number(summary.fraudClicks) || 0;
       const vpnClicks = Number(summary.vpnClicks) || 0;
-      
+
       // Calculate conversion rate and other metrics
       const cr = totalClicks > 0 ? (conversions / totalClicks) * 100 : 0;
       const leadRate = totalClicks > 0 ? (leads / totalClicks) * 100 : 0;
       const uniqueRate = totalClicks > 0 ? (uniqueClicks / totalClicks) * 100 : 0;
       const botRate = totalClicks > 0 ? (botClicks / totalClicks) * 100 : 0;
       const fraudRate = totalClicks > 0 ? (fraudClicks / totalClicks) * 100 : 0;
-      
+
       return {
         totalClicks,
         uniqueClicks,
@@ -438,7 +438,7 @@ export class AnalyticsService {
       return { totalClicks: 0 };
     }
   }
-  
+
   private static generateMockSummary(): any {
     const totalClicks = Math.floor(Math.random() * 10000) + 1000;
     const uniqueClicks = Math.floor(totalClicks * (0.7 + Math.random() * 0.2));
@@ -446,7 +446,7 @@ export class AnalyticsService {
     const leads = Math.floor(conversions * 1.5);
     const revenue = conversions * (Math.random() * 50 + 10);
     const payout = revenue * (0.6 + Math.random() * 0.2);
-    
+
     return {
       totalClicks,
       uniqueClicks,
@@ -468,27 +468,27 @@ export class AnalyticsService {
       qualityScore: 93.0,
     };
   }
-  
+
   static async exportAnalyticsData(filters: any = {}): Promise<{ success: boolean, message: string, filename?: string }> {
     try {
       console.log('Exporting analytics data with filters:', filters);
-      
+
       // Get data for export
       const exportFilters = { ...filters, limit: 10000 }; // Higher limit for export
       const data = await this.getAnalyticsData(exportFilters);
-      
+
       if (data.length === 0) {
         return { success: false, message: 'No data found for export' };
       }
-      
+
       // Generate filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('.')[0];
       const filename = `analytics_export_${timestamp}.json`;
-      
+
       // For now, just return success with count
       // In a real implementation, you would write the file to disk or cloud storage
       console.log(`Export would contain ${data.length} records`);
-      
+
       return {
         success: true,
         message: `Successfully exported ${data.length} records`,

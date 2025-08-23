@@ -1,14 +1,14 @@
-import { Languages } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { Languages } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { i18nService } from "@/services/i18n";
+} from '@/components/ui/dropdown-menu';
+import { i18nService } from '@/services/i18n';
 
 export function LanguageToggle() {
   const { t } = useTranslation();
@@ -47,16 +47,16 @@ export function LanguageToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem 
-          onClick={() => changeLanguage("ru")}
+        <DropdownMenuItem
+          onClick={() => changeLanguage('ru')}
           className={currentLanguage === 'ru' ? 'bg-accent' : ''}
         >
           <span className="mr-2">🇷🇺</span>
           {t('language.russian', 'Русский')}
           {currentLanguage === 'ru' && <span className="ml-auto">✓</span>}
         </DropdownMenuItem>
-        <DropdownMenuItem 
-          onClick={() => changeLanguage("en")}
+        <DropdownMenuItem
+          onClick={() => changeLanguage('en')}
           className={currentLanguage === 'en' ? 'bg-accent' : ''}
         >
           <span className="mr-2">🇺🇸</span>

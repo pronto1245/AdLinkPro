@@ -21,16 +21,16 @@ interface Offer {
 
 export default function AdvertiserOffersSimple() {
   const [, setLocation] = useLocation();
-  
+
   const { data: offers = [], isLoading } = useQuery({
     queryKey: ['/api/advertiser/offers'],
   });
 
   const typedOffers = offers as Offer[];
 
-  console.log("AdvertiserOffersSimple - Offers data:", offers);
-  console.log("AdvertiserOffersSimple - Loading:", isLoading);
-  console.log("AdvertiserOffersSimple - Offers count:", typedOffers.length);
+  console.log('AdvertiserOffersSimple - Offers data:', offers);
+  console.log('AdvertiserOffersSimple - Loading:', isLoading);
+  console.log('AdvertiserOffersSimple - Offers count:', typedOffers.length);
 
   return (
     <div className="w-full p-6">
@@ -44,7 +44,7 @@ export default function AdvertiserOffersSimple() {
             </Button>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
             <p className="text-sm">
@@ -77,14 +77,14 @@ export default function AdvertiserOffersSimple() {
                 </TableHeader>
                 <TableBody>
                   {typedOffers.map((offer: Offer) => {
-                    console.log("Rendering simple row:", offer.name, offer.id);
+                    console.log('Rendering simple row:', offer.name, offer.id);
                     return (
                       <TableRow key={offer.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             {offer.logo && (
-                              <img 
-                                src={offer.logo} 
+                              <img
+                                src={offer.logo}
                                 alt={offer.name}
                                 className="w-10 h-10 rounded-lg object-cover"
                               />
@@ -118,15 +118,15 @@ export default function AdvertiserOffersSimple() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="ghost"
                               onClick={() => setLocation(`/advertiser/offers/${offer.id}`)}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="ghost"
                               onClick={() => setLocation(`/advertiser/offers/${offer.id}/edit`)}
                             >

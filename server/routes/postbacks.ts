@@ -11,16 +11,16 @@ router.get('/profiles', authenticateToken, async (req, res) => {
   try {
     console.log('🔍 Storage object keys:', Object.keys(storage));
     console.log('🔍 Storage prototype methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(storage)));
-    
+
     const { id, role } = req.user;
     const userId = id; // Use id field as userId
     const ownerScope = role === 'super_admin' ? 'owner' : role === 'advertiser' ? 'advertiser' : 'partner';
-    
+
     console.log('📋 Calling getPostbackProfiles with:', { userId, ownerScope });
-    
+
     // Проверяем существует ли метод
     console.log('🔍 Method exists:', typeof storage.getPostbackProfiles === 'function');
-    
+
     if (typeof storage.getPostbackProfiles === 'function') {
       const profiles = await storage.getPostbackProfiles(userId, ownerScope);
       res.json(profiles);
@@ -41,7 +41,7 @@ router.post('/profiles', authenticateToken, async (req, res) => {
     const { id, role } = req.user;
     const userId = id;
     const ownerScope = role === 'super_admin' ? 'owner' : role === 'advertiser' ? 'advertiser' : 'partner';
-    
+
     const profileData = insertPostbackProfileSchema.parse({
       ...req.body,
       ownerId: userId,
@@ -57,7 +57,7 @@ router.post('/profiles', authenticateToken, async (req, res) => {
         details: error.errors
       });
     }
-    
+
     console.error('Create postback profile error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -68,7 +68,7 @@ router.put('/profiles/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = insertPostbackProfileSchema.partial().parse(req.body);
-    
+
     const profile = await storage.updatePostbackProfile(id, updateData);
     res.json(profile);
   } catch (_) {
@@ -78,7 +78,7 @@ router.put('/profiles/:id', authenticateToken, async (req, res) => {
         details: error.errors
       });
     }
-    
+
     console.error('Update postback profile error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -100,9 +100,9 @@ router.delete('/profiles/:id', authenticateToken, async (req, res) => {
 router.get('/deliveries', authenticateToken, async (req, res) => {
   try {
     console.log('🔍 Checking storage for getPostbackDeliveries method');
-    
+
     const { profileId, status } = req.query;
-    
+
     if (typeof storage.getPostbackDeliveries === 'function') {
       const deliveries = await storage.getPostbackDeliveries(
         profileId as string,
@@ -124,7 +124,7 @@ router.post('/profiles/:id/test', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { clickid, eventType, revenue } = req.body;
-    
+
     // TODO: Implement postback testing logic
     // For now return mock response
     res.json({

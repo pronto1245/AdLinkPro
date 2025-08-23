@@ -1,13 +1,13 @@
-import type { Express } from "express";
-import { telegramBot } from "../services/telegramBot";
-import { storage } from "../storage";
+import type { Express } from 'express';
+import { telegramBot } from '../services/telegramBot';
+import { storage } from '../storage';
 
 export function addTelegramRoutes(app: Express) {
   // Webhook для получения сообщений от Telegram
   app.post('/api/telegram/webhook', async (req, res) => {
     try {
       console.log('📥 Telegram webhook received:', JSON.stringify(req.body, null, 2));
-      
+
       await telegramBot.handleUpdate(req.body);
       res.status(200).json({ ok: true });
     } catch (error) {
@@ -20,7 +20,7 @@ export function addTelegramRoutes(app: Express) {
   app.post('/api/telegram/test', async (req, res) => {
     try {
       const { userId, type = 'conversion', data } = req.body;
-      
+
       console.log('🧪 Testing Telegram notification:', { userId, type, data });
 
       if (type === 'conversion') {
@@ -67,7 +67,7 @@ export function addTelegramRoutes(app: Express) {
   app.patch('/api/telegram/link', async (req, res) => {
     try {
       const { userId, telegramChatId } = req.body;
-      
+
       if (!userId || !telegramChatId) {
         return res.status(400).json({ error: 'userId and telegramChatId are required' });
       }
@@ -75,7 +75,7 @@ export function addTelegramRoutes(app: Express) {
       console.log('🔗 Linking Telegram Chat ID:', { userId, telegramChatId });
 
       await storage.updateUser(userId, { telegramChatId: parseInt(telegramChatId) });
-      
+
       // Отправляем приветственное сообщение
       await telegramBot.sendMessage(
         parseInt(telegramChatId),
@@ -94,11 +94,11 @@ export function addTelegramRoutes(app: Express) {
   app.delete('/api/telegram/unlink/:userId', async (req, res) => {
     try {
       const { userId } = req.params;
-      
+
       console.log('🔗 Unlinking Telegram for user:', userId);
 
       await storage.updateUser(userId, { telegramChatId: null });
-      
+
       res.json({ success: true, message: 'Telegram unlinked successfully' });
     } catch (error) {
       console.error('❌ Telegram unlink error:', error);

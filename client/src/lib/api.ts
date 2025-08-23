@@ -1,6 +1,6 @@
 // Re-export from new modular API structure for backward compatibility
 export { authApi } from './api/auth';
-export { userApi } from './api/user';  
+export { userApi } from './api/user';
 export { apiClient } from './api/client';
 
 // Legacy API functions for backward compatibility

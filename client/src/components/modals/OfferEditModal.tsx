@@ -6,15 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Check, ChevronsUpDown, Plus, Upload, Image, Globe, DollarSign, Target, Settings, Eye, Trash2, X, Shield, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Upload, Image, Globe, DollarSign, Target, Settings, Eye, Trash2, X, Shield, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ObjectUploader } from '@/components/ObjectUploader';
 
@@ -25,10 +24,10 @@ interface OfferFormData {
   category: string;
   logo: string;
   image: string;
-  
+
   // GEO и устройства
   geoTargeting: string[];
-  
+
   // Ссылки
   targetUrl: string;
   postbackUrl: string;
@@ -46,25 +45,25 @@ interface OfferFormData {
     hasCustomPayout?: boolean;
     isDefault: boolean;
   }>;
-  
+
   // Выплаты
   payoutType: 'cpa' | 'cpl' | 'cps' | 'revshare' | 'hybrid';
   payoutAmount: number;
   currency: string;
-  
+
   // Условия
   trafficSources: string[];
   allowedApplications: string[];
-  
+
   // Кепы и лимиты
   dailyLimit: number;
   monthlyLimit: number;
-  
+
   // Антифрод
   antifraudEnabled: boolean;
   antifraudMethods: string[];
   partnerApprovalType: 'auto' | 'manual' | 'by_request' | 'whitelist_only';
-  
+
   // Дополнительные настройки
   kycRequired: boolean;
   isPrivate: boolean;
@@ -73,24 +72,23 @@ interface OfferFormData {
   requiresApproval: boolean;
   trackingEnabled: boolean;
   saveAsTemplate: boolean;
-  
+
   // Мета данные
   kpi: string;
   status: 'draft' | 'active' | 'paused' | 'on_request';
 }
 
 interface OfferEditModalProps {
-  offer: any;
+  offer: Partial<OfferFormData> | null;
   onClose: () => void;
-  onSave: (offer: any) => void;
+  onSave: (offer: OfferFormData) => void;
 }
 
 const categories = [
-  'gambling', 'dating', 'crypto', 'betting', 'e-commerce', 
+  'gambling', 'dating', 'crypto', 'betting', 'e-commerce',
   'gaming', 'finance', 'health', 'vpn', 'antivirus', 'education',
   'software', 'mobile_apps', 'nutra', 'beauty'
 ];
-
 
 const countries = [
   { code: 'afghanistan', name: '🇦🇫 Афганистан' },
@@ -149,9 +147,9 @@ const countries = [
 ];
 
 const trafficSources = [
-  'Google Ads', 'Facebook Ads', 'TikTok Ads', 'Snapchat Ads', 
-  'Push Notifications', 'Pop-under', 'Banner', 'Native', 
-  'Instagram', 'YouTube Ads', 'UAC', 'SEO', 'Email', 
+  'Google Ads', 'Facebook Ads', 'TikTok Ads', 'Snapchat Ads',
+  'Push Notifications', 'Pop-under', 'Banner', 'Native',
+  'Instagram', 'YouTube Ads', 'UAC', 'SEO', 'Email',
   'WhatsApp', 'Telegram', 'Motivated', 'In-App', 'Cloaking',
   'Display', 'Video', 'Affiliate', 'Direct', 'Contextual'
 ];
@@ -162,7 +160,7 @@ const allowedAppTypes = [
 ];
 
 const deniedTrafficSources = [
-  'Adult Traffic', 'Malware Distribution', 'Click Injection', 
+  'Adult Traffic', 'Malware Distribution', 'Click Injection',
   'Fraudulent Sources', 'Bot Traffic', 'Incentivized Traffic'
 ];
 
@@ -203,21 +201,21 @@ const currencies = [
 
 const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave }) => {
   const { toast } = useToast();
-  
+
   const [formData, setFormData] = useState<OfferFormData>({
     // Основная информация
     name: offer.name || '',
-    description: { 
-      ru: offer.description?.ru || offer.description || '', 
-      en: offer.description?.en || '' 
+    description: {
+      ru: offer.description?.ru || offer.description || '',
+      en: offer.description?.en || ''
     },
     category: offer.category || '',
     logo: offer.logo || '',
     image: offer.image || '',
-    
+
     // GEO и устройства
     geoTargeting: offer.geoTargeting || [],
-    
+
     // Ссылки
     targetUrl: offer.targetUrl || offer.url || '',
     postbackUrl: offer.postbackUrl || '',
@@ -225,35 +223,35 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
     hasGlobalPayoutSetting: offer.hasGlobalPayoutSetting || false,
     globalGeo: offer.globalGeo || '',
     globalPayout: offer.globalPayout || '',
-    landingPages: offer.landingPages || [{ 
-      id: '1', 
-      name: 'Основная', 
-      url: offer.url || '', 
-      geo: '', 
-      payout: '', 
-      hasCustomGeo: false, 
-      hasCustomPayout: false, 
-      isDefault: true 
+    landingPages: offer.landingPages || [{
+      id: '1',
+      name: 'Основная',
+      url: offer.url || '',
+      geo: '',
+      payout: '',
+      hasCustomGeo: false,
+      hasCustomPayout: false,
+      isDefault: true
     }],
-    
+
     // Выплаты
     payoutType: offer.payoutType || 'cpa',
     payoutAmount: offer.payout || offer.payoutAmount || 0,
     currency: offer.currency || 'USD',
-    
+
     // Условия
     trafficSources: offer.trafficSources || [],
     allowedApplications: offer.allowedApplications || [],
-    
+
     // Кепы и лимиты
     dailyLimit: offer.dailyLimit || offer.cap || 0,
     monthlyLimit: offer.monthlyLimit || 0,
-    
+
     // Антифрод
     antifraudEnabled: offer.antifraudEnabled !== undefined ? offer.antifraudEnabled : true,
     antifraudMethods: offer.antifraudMethods || ['ip_check', 'vpn_detection'],
     partnerApprovalType: offer.partnerApprovalType || 'manual',
-    
+
     // Дополнительные настройки
     kycRequired: offer.kycRequired || false,
     isPrivate: offer.isPrivate || false,
@@ -262,7 +260,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
     requiresApproval: offer.requiresApproval || false,
     trackingEnabled: offer.trackingEnabled !== undefined ? offer.trackingEnabled : true,
     saveAsTemplate: false,
-    
+
     // Мета данные
     kpi: offer.kpi || '',
     status: offer.status || 'active'
@@ -302,7 +300,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
   const updateLanding = (id: string, field: string, value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
-      landingPages: prev.landingPages.map(landing => 
+      landingPages: prev.landingPages.map(landing =>
         landing.id === id ? { ...landing, [field]: value } : landing
       )
     }));
@@ -355,27 +353,27 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
   const handleSave = () => {
     if (!formData.name.trim()) {
       toast({
-        title: "Ошибка",
-        description: "Укажите название оффера",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Укажите название оффера',
+        variant: 'destructive'
       });
       return;
     }
 
     if (!formData.targetUrl.trim()) {
       toast({
-        title: "Ошибка", 
-        description: "Укажите целевую URL",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Укажите целевую URL',
+        variant: 'destructive'
       });
       return;
     }
 
     if (formData.geoTargeting.length === 0) {
       toast({
-        title: "Ошибка",
-        description: "Выберите хотя бы одну страну для таргетинга",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Выберите хотя бы одну страну для таргетинга',
+        variant: 'destructive'
       });
       return;
     }
@@ -457,8 +455,8 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Статус оффера</Label>
-                    <Select 
-                      value={formData.status} 
+                    <Select
+                      value={formData.status}
                       onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as any }))}
                     >
                       <SelectTrigger data-testid="select-status">
@@ -480,8 +478,8 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                     <Label className="text-sm font-medium">Описание (RU)</Label>
                     <Textarea
                       value={formData.description.ru}
-                      onChange={(e) => setFormData(prev => ({ 
-                        ...prev, 
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
                         description: { ...prev.description, ru: e.target.value }
                       }))}
                       placeholder="Описание оффера на русском языке..."
@@ -493,8 +491,8 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                     <Label className="text-sm font-medium">Описание (EN)</Label>
                     <Textarea
                       value={formData.description.en}
-                      onChange={(e) => setFormData(prev => ({ 
-                        ...prev, 
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
                         description: { ...prev.description, en: e.target.value }
                       }))}
                       placeholder="Offer description in English..."
@@ -516,9 +514,9 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                         className="w-full justify-between"
                         data-testid="button-select-category"
                       >
-                        {formData.category 
+                        {formData.category
                           ? categories.find(cat => cat === formData.category)
-                          : "Выберите категорию..."}
+                          : 'Выберите категорию...'}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
@@ -539,7 +537,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                             >
                               <Check
                                 className={`mr-2 h-4 w-4 ${
-                                  formData.category === category ? "opacity-100" : "opacity-0"
+                                  formData.category === category ? 'opacity-100' : 'opacity-0'
                                 }`}
                               />
                               {category}
@@ -567,11 +565,11 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                             'Content-Type': 'application/json',
                           },
                         });
-                        
+
                         if (!response.ok) {
                           throw new Error(`Не удалось получить URL: ${response.status}`);
                         }
-                        
+
                         const data = await response.json();
                         return {
                           method: 'PUT' as const,
@@ -589,34 +587,34 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                               const url = new URL(uploadURL);
                               const path = url.pathname;
                               console.log('Parsed path:', path);
-                              
+
                               // Извлекаем ID объекта из пути вида /bucket-name/.private/uploads/uuid
                               const pathParts = path.split('/');
                               const uploadsIndex = pathParts.findIndex(part => part === 'uploads');
-                              
+
                               if (uploadsIndex !== -1 && pathParts[uploadsIndex + 1]) {
                                 const objectId = pathParts[uploadsIndex + 1];
                                 const finalURL = `/objects/uploads/${objectId}`;
                                 console.log('Final logo URL:', finalURL);
                                 setFormData(prev => ({ ...prev, logo: finalURL }));
                                 toast({
-                                  title: "Успех",
-                                  description: "Логотип успешно загружен"
+                                  title: 'Успех',
+                                  description: 'Логотип успешно загружен'
                                 });
                               } else {
                                 console.error('Could not find uploads folder in path:', pathParts);
                                 toast({
-                                  title: "Ошибка",
-                                  description: "Не удалось извлечь ID логотипа из URL",
-                                  variant: "destructive"
+                                  title: 'Ошибка',
+                                  description: 'Не удалось извлечь ID логотипа из URL',
+                                  variant: 'destructive'
                                 });
                               }
                             } catch (error) {
                               console.error('Error parsing logo upload URL:', error);
                               toast({
-                                title: "Ошибка",
-                                description: "Не удалось обработать URL логотипа",
-                                variant: "destructive"
+                                title: 'Ошибка',
+                                description: 'Не удалось обработать URL логотипа',
+                                variant: 'destructive'
                               });
                             }
                           }
@@ -627,16 +625,16 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                       <Upload className="h-4 w-4 mr-2" />
                       Загрузить логотип
                     </ObjectUploader>
-                    
+
                     {formData.logo && (
                       <div className="mt-4 space-y-2">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Image className="h-4 w-4" />
                           Предварительный просмотр:
                         </div>
-                        <img 
-                          src={formData.logo} 
-                          alt="Логотип оффера" 
+                        <img
+                          src={formData.logo}
+                          alt="Логотип оффера"
                           className="w-20 h-20 object-cover rounded-lg border border-border"
                         />
                         <Button
@@ -670,11 +668,11 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                             'Content-Type': 'application/json',
                           },
                         });
-                        
+
                         if (!response.ok) {
                           throw new Error(`Не удалось получить URL: ${response.status}`);
                         }
-                        
+
                         const data = await response.json();
                         return {
                           method: 'PUT' as const,
@@ -692,34 +690,34 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                               const url = new URL(uploadURL);
                               const path = url.pathname;
                               console.log('Parsed path:', path);
-                              
+
                               // Извлекаем ID объекта из пути вида /bucket-name/.private/uploads/uuid
                               const pathParts = path.split('/');
                               const uploadsIndex = pathParts.findIndex(part => part === 'uploads');
-                              
+
                               if (uploadsIndex !== -1 && pathParts[uploadsIndex + 1]) {
                                 const objectId = pathParts[uploadsIndex + 1];
                                 const finalURL = `/objects/uploads/${objectId}`;
                                 console.log('Final image URL:', finalURL);
                                 setFormData(prev => ({ ...prev, image: finalURL }));
                                 toast({
-                                  title: "Успех",
-                                  description: "Изображение успешно загружено"
+                                  title: 'Успех',
+                                  description: 'Изображение успешно загружено'
                                 });
                               } else {
                                 console.error('Could not find uploads folder in path:', pathParts);
                                 toast({
-                                  title: "Ошибка",
-                                  description: "Не удалось извлечь ID изображения из URL",
-                                  variant: "destructive"
+                                  title: 'Ошибка',
+                                  description: 'Не удалось извлечь ID изображения из URL',
+                                  variant: 'destructive'
                                 });
                               }
                             } catch (error) {
                               console.error('Error parsing image upload URL:', error);
                               toast({
-                                title: "Ошибка",
-                                description: "Не удалось обработать URL изображения",
-                                variant: "destructive"
+                                title: 'Ошибка',
+                                description: 'Не удалось обработать URL изображения',
+                                variant: 'destructive'
                               });
                             }
                           }
@@ -730,16 +728,16 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                       <Image className="h-4 w-4 mr-2" />
                       Загрузить изображение
                     </ObjectUploader>
-                    
+
                     {formData.image && (
                       <div className="mt-4 space-y-2">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Image className="h-4 w-4" />
                           Предварительный просмотр:
                         </div>
-                        <img 
-                          src={formData.image} 
-                          alt="Изображение оффера" 
+                        <img
+                          src={formData.image}
+                          alt="Изображение оффера"
                           className="w-32 h-20 object-cover rounded-lg border border-border"
                         />
                         <Button
@@ -795,7 +793,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                       >
                         {formData.geoTargeting.length > 0
                           ? `Выбрано стран: ${formData.geoTargeting.length}`
-                          : "Выберите страны..."}
+                          : 'Выберите страны...'}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
@@ -813,7 +811,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                             >
                               <Check
                                 className={`mr-2 h-4 w-4 ${
-                                  formData.geoTargeting.includes(country.code) ? "opacity-100" : "opacity-0"
+                                  formData.geoTargeting.includes(country.code) ? 'opacity-100' : 'opacity-0'
                                 }`}
                               />
                               {country.name}
@@ -823,7 +821,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                       </Command>
                     </PopoverContent>
                   </Popover>
-                  
+
                   {/* Выбранные страны */}
                   {formData.geoTargeting.length > 0 && (
                     <div className="flex flex-wrap gap-2 p-2 border rounded-md bg-muted/50">
@@ -871,7 +869,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                       <div className="flex items-center space-x-2">
                         <Switch
                           checked={formData.hasGlobalGeoSetting}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setFormData(prev => ({ ...prev, hasGlobalGeoSetting: checked }))
                           }
                           data-testid="switch-global-geo"
@@ -891,7 +889,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                       <div className="flex items-center space-x-2">
                         <Switch
                           checked={formData.hasGlobalPayoutSetting}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setFormData(prev => ({ ...prev, hasGlobalPayoutSetting: checked }))
                           }
                           data-testid="switch-global-payout"
@@ -957,7 +955,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                               <div className="flex items-center space-x-2">
                                 <Switch
                                   checked={landing.hasCustomGeo}
-                                  onCheckedChange={(checked) => 
+                                  onCheckedChange={(checked) =>
                                     updateLanding(landing.id, 'hasCustomGeo', checked)
                                   }
                                   data-testid={`switch-custom-geo-${landing.id}`}
@@ -980,7 +978,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                               <div className="flex items-center space-x-2">
                                 <Switch
                                   checked={landing.hasCustomPayout}
-                                  onCheckedChange={(checked) => 
+                                  onCheckedChange={(checked) =>
                                     updateLanding(landing.id, 'hasCustomPayout', checked)
                                   }
                                   data-testid={`switch-custom-payout-${landing.id}`}
@@ -1051,8 +1049,8 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Модель выплат</Label>
-                    <Select 
-                      value={formData.payoutType} 
+                    <Select
+                      value={formData.payoutType}
                       onValueChange={(value) => setFormData(prev => ({ ...prev, payoutType: value as any }))}
                     >
                       <SelectTrigger data-testid="select-payout-type">
@@ -1080,8 +1078,8 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Валюта</Label>
-                    <Select 
-                      value={formData.currency} 
+                    <Select
+                      value={formData.currency}
                       onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
                     >
                       <SelectTrigger data-testid="select-currency">
@@ -1263,8 +1261,8 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                   <Label className="text-sm font-medium">Активные методы защиты</Label>
                   <div className="grid grid-cols-3 gap-4">
                     {antifraudMethods.map((method) => (
-                      <div 
-                        key={method.value} 
+                      <div
+                        key={method.value}
                         className="flex items-center space-x-3 p-3 border rounded-lg bg-muted/30"
                       >
                         <Switch
@@ -1291,8 +1289,8 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                 {/* Настройки для модерации партнеров */}
                 <div className="space-y-4">
                   <Label className="text-sm font-medium">Тип модерации партнеров</Label>
-                  <Select 
-                    value={formData.partnerApprovalType} 
+                  <Select
+                    value={formData.partnerApprovalType}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, partnerApprovalType: value as any }))}
                   >
                     <SelectTrigger data-testid="select-partner-approval">
@@ -1467,7 +1465,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
                   <h4 className="font-medium text-sm">Шаблоны:</h4>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <Checkbox 
+                      <Checkbox
                         checked={formData.saveAsTemplate}
                         onCheckedChange={(checked) => setFormData(prev => ({ ...prev, saveAsTemplate: checked === true }))}
                         data-testid="checkbox-save-template"
@@ -1485,14 +1483,14 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
         </Tabs>
 
         <div className="flex justify-end pt-4 gap-2 mt-6 border-t">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={onClose}
             data-testid="button-cancel"
           >
             Отмена
           </Button>
-          <Button 
+          <Button
             onClick={handleSave}
             data-testid="button-save"
           >

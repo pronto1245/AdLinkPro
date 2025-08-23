@@ -8,6 +8,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Copy, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+interface Offer {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+interface User {
+  id: string;
+  name: string;
+  role: string;
+  [key: string]: unknown;
+}
+
 export default function TrackingUrlGenerator() {
   const { toast } = useToast();
   const [partnerId, setPartnerId] = useState('');
@@ -21,12 +34,12 @@ export default function TrackingUrlGenerator() {
   const [generatedUrl, setGeneratedUrl] = useState('');
 
   // Fetch offers for dropdown
-  const { data: offers = [] } = useQuery<any[]>({
+  const { data: offers = [] } = useQuery<Offer[]>({
     queryKey: ['/api/admin/offers'],
   });
 
   // Fetch users (partners) for dropdown
-  const { data: users = [] } = useQuery<any[]>({
+  const { data: users = [] } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
   });
 
@@ -63,7 +76,7 @@ export default function TrackingUrlGenerator() {
 
       const data = await response.json();
       setGeneratedUrl(data.trackingUrl);
-      
+
       toast({
         title: 'URL сгенерирован',
         description: data.instructions,
@@ -220,7 +233,7 @@ export default function TrackingUrlGenerator() {
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
-              💡 Замените <code>{"{clickid}"}</code> на макрос вашего трекера для передачи уникального ID клика
+              💡 Замените <code>{'{clickid}'}</code> на макрос вашего трекера для передачи уникального ID клика
             </p>
           </div>
         )}

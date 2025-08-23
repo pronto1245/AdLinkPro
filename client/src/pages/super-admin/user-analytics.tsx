@@ -1,33 +1,33 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useLanguage } from "@/contexts/language-context";
-import { useSidebar } from "@/contexts/sidebar-context";
-import Sidebar from "@/components/layout/sidebar";
-import Header from "@/components/layout/header";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useLanguage } from '@/contexts/language-context';
+import { useSidebar } from '@/contexts/sidebar-context';
+import Sidebar from '@/components/layout/sidebar';
+import Header from '@/components/layout/header';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
   LineChart,
   Line
-} from "recharts";
-import { 
+} from 'recharts';
+import {
   Users,
   TrendingUp,
   UserPlus,
@@ -38,7 +38,7 @@ import {
   Calendar,
   Globe,
   Network
-} from "lucide-react";
+} from 'lucide-react';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
@@ -47,7 +47,7 @@ export default function UserAnalytics() {
   const { isCollapsed } = useSidebar();
   const [period, setPeriod] = useState('30d');
   const [roleFilter, setRoleFilter] = useState('all');
-  
+
   // Get analytics data
   const { data: analytics, isLoading } = useQuery({
     queryKey: ['/api/admin/analytics/users', period, roleFilter],
@@ -55,7 +55,7 @@ export default function UserAnalytics() {
       const params = new URLSearchParams();
       if (period) {params.append('period', period);}
       if (roleFilter !== 'all') {params.append('role', roleFilter);}
-      
+
       const response = await fetch(`/api/admin/analytics/users?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
@@ -141,7 +141,7 @@ export default function UserAnalytics() {
                   Детальная аналитика пользователей, активности и безопасности
                 </p>
               </div>
-              
+
               <div className="flex flex-wrap gap-2">
                 <Select value={period} onValueChange={setPeriod}>
                   <SelectTrigger className="w-[150px]">
@@ -239,17 +239,17 @@ export default function UserAnalytics() {
                       <XAxis dataKey="date" />
                       <YAxis />
                       <Tooltip />
-                      <Line 
-                        type="monotone" 
-                        dataKey="active24h" 
-                        stroke="#8884d8" 
+                      <Line
+                        type="monotone"
+                        dataKey="active24h"
+                        stroke="#8884d8"
                         strokeWidth={2}
                         name="Активные за 24ч"
                       />
-                      <Line 
-                        type="monotone" 
-                        dataKey="active7d" 
-                        stroke="#82ca9d" 
+                      <Line
+                        type="monotone"
+                        dataKey="active7d"
+                        stroke="#82ca9d"
                         strokeWidth={2}
                         name="Активные за 7д"
                       />

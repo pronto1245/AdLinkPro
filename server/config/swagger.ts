@@ -21,7 +21,9 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: process.env.API_URL || 'http://localhost:5000',
+        url: process.env.NODE_ENV === 'production'
+          ? 'https://api.adlinkpro.com'
+          : 'http://localhost:5000',
         description: process.env.NODE_ENV === 'production' ? 'Production server' : 'Development server'
       }
     ],
@@ -61,6 +63,18 @@ const options: swaggerJsdoc.Options = {
             user: { $ref: '#/components/schemas/User' }
           }
         },
+        Event: {
+          type: 'object',
+          required: ['clickId', 'eventType'],
+          properties: {
+            clickId: { type: 'string' },
+            eventType: { type: 'string' },
+            status: { type: 'string' },
+            payout: { type: 'number' },
+            currency: { type: 'string', default: 'USD' },
+            transactionId: { type: 'string' }
+          }
+        },
         Error: {
           type: 'object',
           properties: {
@@ -97,6 +111,18 @@ export function setupSwagger(app: Express): void {
   }));
 
   // JSON endpoint for the OpenAPI spec
+  // Serve swagger documentation
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(specs, {
+      explorer: true,
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'AdLinkPro API Documentation'
+    })
+  );
+
+  // Serve swagger.json
   app.get('/api-docs.json', (_req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.send(specs);

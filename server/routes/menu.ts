@@ -7,7 +7,7 @@ router.get('/data', async (_req, res) => {
       { label: 'Dashboard', to: '/dashboard/partner' },
       { label: 'Offers',    to: '/partner/offers'   },
       { label: 'Finances',  to: '/partner/finances' },
-      { label: 'Postbacks', to: '/partner/postbacks'}
+      { label: 'Postbacks', to: '/partner/postbacks' }
     ]
   });
 });

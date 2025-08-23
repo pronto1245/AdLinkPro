@@ -1,32 +1,32 @@
-import { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useLanguage } from "@/contexts/language-context";
-import { useSidebar } from "@/contexts/sidebar-context";
-import Sidebar from "@/components/layout/sidebar";
-import Header from "@/components/layout/header";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  MoreHorizontal, 
-  Search, 
-  Plus, 
+import { useState, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLanguage } from '@/contexts/language-context';
+import { useSidebar } from '@/contexts/sidebar-context';
+import Sidebar from '@/components/layout/sidebar';
+import Header from '@/components/layout/header';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  MoreHorizontal,
+  Search,
+  Plus,
   Edit,
   Trash2,
   Shield,
@@ -41,152 +41,152 @@ import {
   Webhook,
   Eye,
   RefreshCw
-} from "lucide-react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 // Translations for the roles management page
 const translations = {
   ru: {
-    rolesManagement: "Управление ролями",
-    rolesDescription: "Создание и настройка пользовательских ролей с правами доступа",
-    createRole: "Создать роль",
-    totalRoles: "Всего ролей",
-    globalRoles: "Глобальные роли",
-    advertiserRoles: "Роли рекламодателей",
-    activeRoles: "Активные роли",
-    searchPlaceholder: "Поиск ролей...",
-    allRoles: "Все роли",
-    global: "Глобальные",
-    advertiser: "Рекламодателей",
-    name: "Название",
-    description: "Описание",
-    scope: "Область действия",
-    permissions: "Права доступа",
-    restrictions: "Ограничения",
-    assignedUsers: "Назначенные пользователи",
-    status: "Статус",
-    actions: "Действия",
-    view: "Просмотр",
-    edit: "Редактировать",
-    delete: "Удалить",
-    active: "Активна",
-    inactive: "Неактивна",
-    globalRole: "Глобальная",
-    advertiserRole: "Рекламодателя",
-    ipRestrictions: "IP ограничения",
-    geoRestrictions: "Гео ограничения",
-    timeRestrictions: "Временные ограничения",
-    noRoles: "Роли не найдены",
-    noRolesDescription: "Роли, соответствующие критериям поиска, не найдены.",
-    roleCreated: "Роль создана",
-    roleCreatedDescription: "Новая роль успешно создана",
-    roleUpdated: "Роль обновлена",
-    roleUpdatedDescription: "Роль успешно обновлена",
-    roleDeleted: "Роль удалена",
-    roleDeletedDescription: "Роль успешно удалена",
+    rolesManagement: 'Управление ролями',
+    rolesDescription: 'Создание и настройка пользовательских ролей с правами доступа',
+    createRole: 'Создать роль',
+    totalRoles: 'Всего ролей',
+    globalRoles: 'Глобальные роли',
+    advertiserRoles: 'Роли рекламодателей',
+    activeRoles: 'Активные роли',
+    searchPlaceholder: 'Поиск ролей...',
+    allRoles: 'Все роли',
+    global: 'Глобальные',
+    advertiser: 'Рекламодателей',
+    name: 'Название',
+    description: 'Описание',
+    scope: 'Область действия',
+    permissions: 'Права доступа',
+    restrictions: 'Ограничения',
+    assignedUsers: 'Назначенные пользователи',
+    status: 'Статус',
+    actions: 'Действия',
+    view: 'Просмотр',
+    edit: 'Редактировать',
+    delete: 'Удалить',
+    active: 'Активна',
+    inactive: 'Неактивна',
+    globalRole: 'Глобальная',
+    advertiserRole: 'Рекламодателя',
+    ipRestrictions: 'IP ограничения',
+    geoRestrictions: 'Гео ограничения',
+    timeRestrictions: 'Временные ограничения',
+    noRoles: 'Роли не найдены',
+    noRolesDescription: 'Роли, соответствующие критериям поиска, не найдены.',
+    roleCreated: 'Роль создана',
+    roleCreatedDescription: 'Новая роль успешно создана',
+    roleUpdated: 'Роль обновлена',
+    roleUpdatedDescription: 'Роль успешно обновлена',
+    roleDeleted: 'Роль удалена',
+    roleDeletedDescription: 'Роль успешно удалена',
     permissionCategories: {
-      analytics: "Аналитика",
-      offers: "Офферы",
-      users: "Пользователи",
-      finances: "Финансы",
-      api: "API",
-      security: "Безопасность",
-      system: "Система"
+      analytics: 'Аналитика',
+      offers: 'Офферы',
+      users: 'Пользователи',
+      finances: 'Финансы',
+      api: 'API',
+      security: 'Безопасность',
+      system: 'Система'
     },
     permissionNames: {
-      view_statistics: "Просмотр статистики",
-      manage_offers: "Управление офферами",
-      manage_users: "Управление пользователями",
-      access_finances: "Доступ к финансам",
-      manage_postbacks: "Управление постбеками / API",
-      view_fraud_alerts: "Просмотр фрод-алертов",
-      manage_system: "Управление системой"
+      view_statistics: 'Просмотр статистики',
+      manage_offers: 'Управление офферами',
+      manage_users: 'Управление пользователями',
+      access_finances: 'Доступ к финансам',
+      manage_postbacks: 'Управление постбеками / API',
+      view_fraud_alerts: 'Просмотр фрод-алертов',
+      manage_system: 'Управление системой'
     },
     permissionDescriptions: {
-      view_statistics: "Доступ к просмотру аналитики и отчетов",
-      manage_offers: "Создание, редактирование и удаление офферов",
-      manage_users: "Создание, редактирование и управление пользователями",
-      access_finances: "Просмотр и управление финансовыми операциями",
-      manage_postbacks: "Настройка постбеков и API интеграций",
-      view_fraud_alerts: "Доступ к системе обнаружения мошенничества",
-      manage_system: "Доступ к системным настройкам"
+      view_statistics: 'Доступ к просмотру аналитики и отчетов',
+      manage_offers: 'Создание, редактирование и удаление офферов',
+      manage_users: 'Создание, редактирование и управление пользователями',
+      access_finances: 'Просмотр и управление финансовыми операциями',
+      manage_postbacks: 'Настройка постбеков и API интеграций',
+      view_fraud_alerts: 'Доступ к системе обнаружения мошенничества',
+      manage_system: 'Доступ к системным настройкам'
     }
   },
   en: {
-    rolesManagement: "Roles Management",
-    rolesDescription: "Create and configure user roles with access permissions",
-    createRole: "Create Role",
-    totalRoles: "Total Roles",
-    globalRoles: "Global Roles",
-    advertiserRoles: "Advertiser Roles",
-    activeRoles: "Active Roles",
-    searchPlaceholder: "Search roles...",
-    allRoles: "All Roles",
-    global: "Global",
-    advertiser: "Advertiser",
-    name: "Name",
-    description: "Description",
-    scope: "Scope",
-    permissions: "Permissions",
-    restrictions: "Restrictions",
-    assignedUsers: "Assigned Users",
-    status: "Status",
-    actions: "Actions",
-    view: "View",
-    edit: "Edit",
-    delete: "Delete",
-    active: "Active",
-    inactive: "Inactive",
-    globalRole: "Global",
-    advertiserRole: "Advertiser",
-    ipRestrictions: "IP Restrictions",
-    geoRestrictions: "Geo Restrictions",
-    timeRestrictions: "Time Restrictions",
-    noRoles: "No roles found",
-    noRolesDescription: "No roles matching the search criteria were found.",
-    roleCreated: "Role Created",
-    roleCreatedDescription: "New role successfully created",
-    roleUpdated: "Role Updated",
-    roleUpdatedDescription: "Role successfully updated",
-    roleDeleted: "Role Deleted",
-    roleDeletedDescription: "Role successfully deleted",
+    rolesManagement: 'Roles Management',
+    rolesDescription: 'Create and configure user roles with access permissions',
+    createRole: 'Create Role',
+    totalRoles: 'Total Roles',
+    globalRoles: 'Global Roles',
+    advertiserRoles: 'Advertiser Roles',
+    activeRoles: 'Active Roles',
+    searchPlaceholder: 'Search roles...',
+    allRoles: 'All Roles',
+    global: 'Global',
+    advertiser: 'Advertiser',
+    name: 'Name',
+    description: 'Description',
+    scope: 'Scope',
+    permissions: 'Permissions',
+    restrictions: 'Restrictions',
+    assignedUsers: 'Assigned Users',
+    status: 'Status',
+    actions: 'Actions',
+    view: 'View',
+    edit: 'Edit',
+    delete: 'Delete',
+    active: 'Active',
+    inactive: 'Inactive',
+    globalRole: 'Global',
+    advertiserRole: 'Advertiser',
+    ipRestrictions: 'IP Restrictions',
+    geoRestrictions: 'Geo Restrictions',
+    timeRestrictions: 'Time Restrictions',
+    noRoles: 'No roles found',
+    noRolesDescription: 'No roles matching the search criteria were found.',
+    roleCreated: 'Role Created',
+    roleCreatedDescription: 'New role successfully created',
+    roleUpdated: 'Role Updated',
+    roleUpdatedDescription: 'Role successfully updated',
+    roleDeleted: 'Role Deleted',
+    roleDeletedDescription: 'Role successfully deleted',
     permissionCategories: {
-      analytics: "Analytics",
-      offers: "Offers",
-      users: "Users",
-      finances: "Finances",
-      api: "API",
-      security: "Security",
-      system: "System"
+      analytics: 'Analytics',
+      offers: 'Offers',
+      users: 'Users',
+      finances: 'Finances',
+      api: 'API',
+      security: 'Security',
+      system: 'System'
     },
     permissionNames: {
-      view_statistics: "View Statistics",
-      manage_offers: "Manage Offers",
-      manage_users: "Manage Users",
-      access_finances: "Access Finances",
-      manage_postbacks: "Manage Postbacks / API",
-      view_fraud_alerts: "View Fraud Alerts",
-      manage_system: "Manage System"
+      view_statistics: 'View Statistics',
+      manage_offers: 'Manage Offers',
+      manage_users: 'Manage Users',
+      access_finances: 'Access Finances',
+      manage_postbacks: 'Manage Postbacks / API',
+      view_fraud_alerts: 'View Fraud Alerts',
+      manage_system: 'Manage System'
     },
     permissionDescriptions: {
-      view_statistics: "Access to view analytics and reports",
-      manage_offers: "Create, edit and delete offers",
-      manage_users: "Create, edit and manage users",
-      access_finances: "View and manage financial operations",
-      manage_postbacks: "Configure postbacks and API integrations",
-      view_fraud_alerts: "Access to fraud detection system",
-      manage_system: "Access to system settings"
+      view_statistics: 'Access to view analytics and reports',
+      manage_offers: 'Create, edit and delete offers',
+      manage_users: 'Create, edit and manage users',
+      access_finances: 'View and manage financial operations',
+      manage_postbacks: 'Configure postbacks and API integrations',
+      view_fraud_alerts: 'Access to fraud detection system',
+      manage_system: 'Access to system settings'
     }
   }
 };
@@ -274,14 +274,14 @@ export default function RolesManagement() {
   const { isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
   const tr = translations[language as keyof typeof translations];
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterScope, setFilterScope] = useState('all'); // all, global, advertiser
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [selectedRole, setSelectedRole] = useState<CustomRole | null>(null);
-  
+
   const [roleForm, setRoleForm] = useState({
     name: '',
     description: '',
@@ -303,7 +303,7 @@ export default function RolesManagement() {
       const params = new URLSearchParams();
       if (searchTerm) {params.append('search', searchTerm);}
       if (filterScope !== 'all') {params.append('scope', filterScope);}
-      
+
       const response = await fetch(`/api/admin/roles?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
@@ -418,7 +418,7 @@ export default function RolesManagement() {
 
   const handleUpdateRole = () => {
     if (!selectedRole) {return;}
-    
+
     const formattedData = {
       ...roleForm,
       ipRestrictions: roleForm.ipRestrictions.split(',').map(ip => ip.trim()).filter(Boolean),
@@ -607,15 +607,15 @@ export default function RolesManagement() {
                                 </div>
                               </div>
                             </TableCell>
-                            
+
                             <TableCell>
                               <div className="max-w-xs truncate">
                                 {role.description || 'Описание отсутствует'}
                               </div>
                             </TableCell>
-                            
+
                             <TableCell>
-                              <Badge 
+                              <Badge
                                 variant={role.advertiserId ? 'secondary' : 'default'}
                                 className={role.advertiserId ? 'bg-orange-100 text-orange-800 border-orange-200' : 'bg-blue-100 text-blue-800 border-blue-200'}
                               >
@@ -627,7 +627,7 @@ export default function RolesManagement() {
                                 </div>
                               )}
                             </TableCell>
-                            
+
                             <TableCell>
                               <div className="flex flex-wrap gap-1">
                                 {role.permissions.slice(0, 3).map((permission) => {
@@ -639,11 +639,11 @@ export default function RolesManagement() {
                                     if (perm.includes('api')) {return 'bg-red-100 text-red-800 border-red-200';}
                                     return 'bg-gray-100 text-gray-800 border-gray-200';
                                   };
-                                  
+
                                   return (
-                                    <Badge 
-                                      key={permission} 
-                                      variant="outline" 
+                                    <Badge
+                                      key={permission}
+                                      variant="outline"
                                       className={`text-xs ${getPermissionColor(permission)}`}
                                     >
                                       {availablePermissions.find(p => p.id === permission)?.name.split(' ')[0] || permission}
@@ -657,7 +657,7 @@ export default function RolesManagement() {
                                 )}
                               </div>
                             </TableCell>
-                            
+
                             <TableCell>
                               <div className="flex gap-1">
                                 {role.ipRestrictions?.length > 0 && (
@@ -680,12 +680,12 @@ export default function RolesManagement() {
                                 )}
                               </div>
                             </TableCell>
-                            
+
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <Users className="h-4 w-4 text-muted-foreground" />
-                                <Badge 
-                                  variant="outline" 
+                                <Badge
+                                  variant="outline"
                                   className={`text-xs ${
                                     (role.assignedUsers || 0) > 10 ? 'bg-green-100 text-green-800 border-green-200' :
                                     (role.assignedUsers || 0) > 5 ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
@@ -697,9 +697,9 @@ export default function RolesManagement() {
                                 </Badge>
                               </div>
                             </TableCell>
-                            
+
                             <TableCell>
-                              <Badge 
+                              <Badge
                                 variant={role.isActive ? 'default' : 'destructive'}
                                 className={`text-xs ${
                                   role.isActive ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'
@@ -728,7 +728,7 @@ export default function RolesManagement() {
                                     <Edit className="mr-2 h-4 w-4" />
                                     {tr.edit}
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem 
+                                  <DropdownMenuItem
                                     onClick={() => deleteRoleMutation.mutate(role.id)}
                                     className="text-red-600"
                                   >
@@ -753,28 +753,28 @@ export default function RolesManagement() {
                 <DialogHeader>
                   <DialogTitle>{tr.createRole}</DialogTitle>
                 </DialogHeader>
-                
+
                 <div className="space-y-6">
                   {/* Basic Info */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">Основная информация</h3>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label>Название роли *</Label>
                         <Input
                           value={roleForm.name}
-                          onChange={(e) => setRoleForm({...roleForm, name: e.target.value})}
+                          onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })}
                           placeholder="Менеджер партнёров"
                           required
                         />
                       </div>
                       <div>
                         <Label>Область действия</Label>
-                        <Select 
-                          value={roleForm.advertiserId || 'global'} 
+                        <Select
+                          value={roleForm.advertiserId || 'global'}
                           onValueChange={(value) => setRoleForm({
-                            ...roleForm, 
+                            ...roleForm,
                             advertiserId: value === 'global' ? null : value
                           })}
                         >
@@ -797,7 +797,7 @@ export default function RolesManagement() {
                       <Label>Описание</Label>
                       <Textarea
                         value={roleForm.description}
-                        onChange={(e) => setRoleForm({...roleForm, description: e.target.value})}
+                        onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
                         placeholder="Описание роли и её назначения..."
                         rows={3}
                       />
@@ -807,7 +807,7 @@ export default function RolesManagement() {
                   {/* Permissions */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">Права доступа</h3>
-                    
+
                     <div className="grid gap-6">
                       {Object.entries(groupedPermissions).map(([category, permissions]) => (
                         <div key={category} className="space-y-3">
@@ -845,13 +845,13 @@ export default function RolesManagement() {
                   {/* Restrictions */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">Ограничения доступа</h3>
-                    
+
                     <div className="grid gap-4">
                       <div>
                         <Label>IP ограничения</Label>
                         <Input
                           value={roleForm.ipRestrictions}
-                          onChange={(e) => setRoleForm({...roleForm, ipRestrictions: e.target.value})}
+                          onChange={(e) => setRoleForm({ ...roleForm, ipRestrictions: e.target.value })}
                           placeholder="192.168.1.1, 10.0.0.0/24 (через запятую)"
                         />
                         <p className="text-xs text-muted-foreground mt-1">
@@ -863,7 +863,7 @@ export default function RolesManagement() {
                         <Label>GEO ограничения</Label>
                         <Input
                           value={roleForm.geoRestrictions}
-                          onChange={(e) => setRoleForm({...roleForm, geoRestrictions: e.target.value})}
+                          onChange={(e) => setRoleForm({ ...roleForm, geoRestrictions: e.target.value })}
                           placeholder="RU, BY, KZ (коды стран через запятую)"
                         />
                         <p className="text-xs text-muted-foreground mt-1">
@@ -904,12 +904,12 @@ export default function RolesManagement() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex justify-end gap-2 pt-4">
                   <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
                     Отмена
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleCreateRole}
                     disabled={createRoleMutation.isPending || !roleForm.name || roleForm.permissions.length === 0}
                   >
@@ -928,29 +928,29 @@ export default function RolesManagement() {
                 <DialogHeader>
                   <DialogTitle>Редактировать роль</DialogTitle>
                 </DialogHeader>
-                
+
                 {/* Same content as create dialog but with update logic */}
                 <div className="space-y-6">
                   {/* Basic Info */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">Основная информация</h3>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label>Название роли *</Label>
                         <Input
                           value={roleForm.name}
-                          onChange={(e) => setRoleForm({...roleForm, name: e.target.value})}
+                          onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })}
                           placeholder="Менеджер партнёров"
                           required
                         />
                       </div>
                       <div>
                         <Label>Область действия</Label>
-                        <Select 
-                          value={roleForm.advertiserId || 'global'} 
+                        <Select
+                          value={roleForm.advertiserId || 'global'}
                           onValueChange={(value) => setRoleForm({
-                            ...roleForm, 
+                            ...roleForm,
                             advertiserId: value === 'global' ? null : value
                           })}
                         >
@@ -973,7 +973,7 @@ export default function RolesManagement() {
                       <Label>Описание</Label>
                       <Textarea
                         value={roleForm.description}
-                        onChange={(e) => setRoleForm({...roleForm, description: e.target.value})}
+                        onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
                         placeholder="Описание роли и её назначения..."
                         rows={3}
                       />
@@ -983,7 +983,7 @@ export default function RolesManagement() {
                   {/* Permissions (same as create) */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">Права доступа</h3>
-                    
+
                     <div className="grid gap-6">
                       {Object.entries(groupedPermissions).map(([category, permissions]) => (
                         <div key={category} className="space-y-3">
@@ -1021,13 +1021,13 @@ export default function RolesManagement() {
                   {/* Restrictions (same as create) */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">Ограничения доступа</h3>
-                    
+
                     <div className="grid gap-4">
                       <div>
                         <Label>IP ограничения</Label>
                         <Input
                           value={roleForm.ipRestrictions}
-                          onChange={(e) => setRoleForm({...roleForm, ipRestrictions: e.target.value})}
+                          onChange={(e) => setRoleForm({ ...roleForm, ipRestrictions: e.target.value })}
                           placeholder="192.168.1.1, 10.0.0.0/24 (через запятую)"
                         />
                       </div>
@@ -1036,19 +1036,19 @@ export default function RolesManagement() {
                         <Label>GEO ограничения</Label>
                         <Input
                           value={roleForm.geoRestrictions}
-                          onChange={(e) => setRoleForm({...roleForm, geoRestrictions: e.target.value})}
+                          onChange={(e) => setRoleForm({ ...roleForm, geoRestrictions: e.target.value })}
                           placeholder="RU, BY, KZ (коды стран через запятую)"
                         />
                       </div>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex justify-end gap-2 pt-4">
                   <Button variant="outline" onClick={() => setShowEditDialog(false)}>
                     Отмена
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleUpdateRole}
                     disabled={updateRoleMutation.isPending || !roleForm.name || roleForm.permissions.length === 0}
                   >
@@ -1081,7 +1081,7 @@ export default function RolesManagement() {
                         </Badge>
                       </div>
                     </div>
-                    
+
                     <div>
                       <Label>Описание</Label>
                       <div>{selectedRole.description || 'Описание отсутствует'}</div>

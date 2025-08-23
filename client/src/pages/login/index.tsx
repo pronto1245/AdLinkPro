@@ -35,10 +35,10 @@ export default function LoginPage() {
         const home = HOME_BY_ROLE[user.role] || '/';
         setLocation(home);
       } else {
-        setError("Ошибка авторизации");
+        setError('Ошибка авторизации');
       }
     } catch (err: any) {
-      setError(err.message || "Ошибка входа");
+      setError(err.message || 'Ошибка входа');
     } finally {
       setLoading(false);
     }
@@ -57,19 +57,19 @@ export default function LoginPage() {
       {/* Быстрый вход */}
       <div className="flex gap-2 mb-4">
         <button
-          onClick={() => quickLogin("owner@test.com", "Owner123!")}
+          onClick={() => quickLogin('owner@test.com', 'Owner123!')}
           className="px-4 py-2 bg-blue-600 text-white rounded"
         >
           👑 Владелец
         </button>
         <button
-          onClick={() => quickLogin("advertiser@test.com", "AdvUser456$")}
+          onClick={() => quickLogin('advertiser@test.com', 'AdvUser456$')}
           className="px-4 py-2 bg-green-600 text-white rounded"
         >
           📢 Рекламодатель
         </button>
         <button
-          onClick={() => quickLogin("publisher@test.com", "PubUser789@")}
+          onClick={() => quickLogin('publisher@test.com', 'PubUser789@')}
           className="px-4 py-2 bg-purple-600 text-white rounded"
         >
           🤝 Партнёр

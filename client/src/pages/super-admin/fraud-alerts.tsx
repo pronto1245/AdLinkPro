@@ -13,11 +13,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Shield, 
-  AlertTriangle, 
-  Eye, 
-  Check, 
+import {
+  Shield,
+  AlertTriangle,
+  Eye,
+  Check,
   X,
   Activity,
   Users,
@@ -47,16 +47,16 @@ export default function FraudAlertsManagement() {
 
   // Filter alerts based on search term and filters
   const fraudAlerts = allFraudAlerts?.filter((alert: any) => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       alert.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       alert.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       alert.offer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       alert.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       alert.type?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesSeverity = filterSeverity === 'all' || alert.severity === filterSeverity;
     const matchesStatus = filterStatus === 'all' || (alert.isResolved ? 'resolved' : 'pending') === filterStatus;
-    
+
     return matchesSearch && matchesSeverity && matchesStatus;
   }) || [];
 
@@ -171,8 +171,8 @@ export default function FraudAlertsManagement() {
                           {metric.value}
                         </p>
                         <p className={`text-sm mt-1 ${
-                          metric.changeType === 'increase' 
-                            ? 'text-red-600' 
+                          metric.changeType === 'increase'
+                            ? 'text-red-600'
                             : 'text-green-600'
                         }`}>
                           {metric.change}
@@ -202,7 +202,7 @@ export default function FraudAlertsManagement() {
                       title="Поиск алертов"
                     />
                   </div>
-                  
+
                   <Select value={filterSeverity} onValueChange={setFilterSeverity}>
                     <SelectTrigger className="w-[180px]" data-testid="select-filter-severity" title="Фильтр по важности">
                       <SelectValue placeholder={t('filter_by_severity')} />
@@ -226,8 +226,8 @@ export default function FraudAlertsManagement() {
                     </SelectContent>
                   </Select>
 
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => {
                       setSearchTerm('');
                       setFilterSeverity('all');
@@ -319,8 +319,8 @@ export default function FraudAlertsManagement() {
                             <div className="flex items-center justify-end gap-2">
                               <Dialog>
                                 <DialogTrigger asChild>
-                                  <Button 
-                                    size="sm" 
+                                  <Button
+                                    size="sm"
                                     variant="ghost"
                                     onClick={() => setSelectedAlert(alert)}
                                     data-testid={`button-view-${alert.id}`}
@@ -362,10 +362,10 @@ export default function FraudAlertsManagement() {
                                   )}
                                 </DialogContent>
                               </Dialog>
-                              
+
                               {!alert.isResolved && (
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   variant="outline"
                                   onClick={() => resolveAlertMutation.mutate({
                                     alertId: alert.id,

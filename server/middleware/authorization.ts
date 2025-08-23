@@ -33,11 +33,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 // Apply ownerId filtering to database queries - specialized business logic
 export function applyOwnerIdFilter(query: any, currentUser: any, targetTable: any) {
   if (!currentUser) {return query;}
-  
+
   if (currentUser.role === 'OWNER' || currentUser.role === 'super_admin') {
     return query; // No filtering for owners/super admins
   }
-  
+
   // Filter by owner ID for other users
   return query.where(eq(targetTable.ownerId, currentUser.ownerId || currentUser.id));
 }
@@ -81,16 +81,16 @@ export async function canAccessUserEnhanced(currentUserId: string, targetUserId:
       case 'OWNER':
         // Owner can access their own organization's users
         return targetUser.ownerId === currentUser.id || targetUser.id === currentUser.id;
-      
+
       case 'ADVERTISER':
         // Advertisers can access their own and their partners' data
         return (targetUser.ownerId === currentUser.id) ||
                (currentUser.ownerId === targetUser.ownerId);
-               
+
       case 'PARTNER':
         // Partners can only access their own data
         return false;
-        
+
       default:
         return false;
     }

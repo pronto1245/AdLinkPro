@@ -11,7 +11,7 @@ const translations = {
     // Add English translations as needed
   },
   ru: {
-    // Add Russian translations as needed  
+    // Add Russian translations as needed
   }
 };
 

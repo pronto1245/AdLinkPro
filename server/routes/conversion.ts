@@ -50,23 +50,23 @@ const requireAuth = async (req: any, res: any, next: any) => {
  */
 router.post('/event', requireAuth, async (req, res) => {
   try {
-    const { 
-      clickId, 
-      eventType, 
-      status, 
-      payout, 
+    const {
+      clickId,
+      eventType,
+      status,
+      payout,
       currency = 'USD',
       transactionId,
       subId1,
       subId2,
       subId3,
       subId4,
-      subId5 
+      subId5
     } = req.body;
 
     if (!clickId || !eventType) {
-      return res.status(400).json({ 
-        error: 'ClickId and eventType are required' 
+      return res.status(400).json({
+        error: 'ClickId and eventType are required'
       });
     }
 
@@ -76,8 +76,8 @@ router.post('/event', requireAuth, async (req, res) => {
       .where(eq(trackingClicks.clickId, clickId));
 
     if (!click) {
-      return res.status(404).json({ 
-        error: 'Click not found' 
+      return res.status(404).json({
+        error: 'Click not found'
       });
     }
 
@@ -90,7 +90,7 @@ router.post('/event', requireAuth, async (req, res) => {
     };
 
     await db.update(trackingClicks)
-      .set({ 
+      .set({
         status: status || 'converted',
         conversionData: conversionData
       })
@@ -127,7 +127,7 @@ router.post('/event', requireAuth, async (req, res) => {
     console.log('About to trigger postbacks for event:', postbackEvent);
     const results = await PostbackService.triggerPostbacks(postbackEvent);
     console.log('Postback trigger completed, results:', results.length);
-    
+
     console.log(`Conversion event processed: ${eventType} for click ${clickId}`);
 
     res.json({
@@ -143,7 +143,7 @@ router.post('/event', requireAuth, async (req, res) => {
 
   } catch (error) {
     console.error('Error processing conversion event:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to process conversion event',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
@@ -161,8 +161,8 @@ router.post('/test-conversion', requireAuth, async (req, res) => {
       .limit(1);
 
     if (!recentClick) {
-      return res.status(404).json({ 
-        error: 'No active clicks found to convert' 
+      return res.status(404).json({
+        error: 'No active clicks found to convert'
       });
     }
 
@@ -197,8 +197,8 @@ router.post('/test-conversion', requireAuth, async (req, res) => {
 
   } catch (error) {
     console.error('Error generating test conversion:', error);
-    res.status(500).json({ 
-      error: 'Failed to generate test conversion' 
+    res.status(500).json({
+      error: 'Failed to generate test conversion'
     });
   }
 });
@@ -207,7 +207,7 @@ router.post('/test-conversion', requireAuth, async (req, res) => {
 router.get('/stats', requireAuth, async (req, res) => {
   try {
     const { dateFrom, dateTo } = req.query;
-    
+
     let query = db.select({
       total: sql`COUNT(*)`,
       converted: sql`COUNT(CASE WHEN status = 'converted' THEN 1 END)`,
@@ -231,7 +231,7 @@ router.get('/stats', requireAuth, async (req, res) => {
       stats: {
         totalClicks: parseInt(stats.total) || 0,
         conversions: parseInt(stats.converted) || 0,
-        conversionRate: stats.total ? 
+        conversionRate: stats.total ?
           ((parseInt(stats.converted) / parseInt(stats.total)) * 100).toFixed(2) + '%' : '0%',
         totalPayout: parseFloat(stats.totalPayout) || 0,
         averagePayout: parseFloat(stats.avgPayout) || 0
@@ -240,8 +240,8 @@ router.get('/stats', requireAuth, async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching conversion stats:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch conversion statistics' 
+    res.status(500).json({
+      error: 'Failed to fetch conversion statistics'
     });
   }
 });

@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import { Eye, EyeOff, Shield, AlertTriangle, Loader2, CheckCircle } from "lucide-react";
+import { useState } from 'react';
+import { useLocation } from 'wouter';
+import { Eye, EyeOff, Shield, AlertTriangle, Loader2, CheckCircle } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
-import { useLoginForm } from "@/hooks/useLoginForm";
+import { useLoginForm } from '@/hooks/useLoginForm';
 
 export default function Login() {
   const [, navigate] = useLocation();
@@ -58,7 +58,7 @@ export default function Login() {
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
-                {...form.register("email")}
+                {...form.register('email')}
                 id="email"
                 type="email"
                 placeholder="example@company.com"
@@ -75,9 +75,9 @@ export default function Login() {
               <Label htmlFor="password">Пароль</Label>
               <div className="relative">
                 <Input
-                  {...form.register("password")}
+                  {...form.register('password')}
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="Введите пароль"
                   disabled={loading}
                   className="pr-10"
@@ -100,22 +100,22 @@ export default function Login() {
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="rememberMe"
-                checked={form.watch("rememberMe")}
-                onCheckedChange={(checked) => 
-                  form.setValue("rememberMe", checked as boolean)
+                checked={form.watch('rememberMe')}
+                onCheckedChange={(checked) =>
+                  form.setValue('rememberMe', checked as boolean)
                 }
               />
-              <Label 
-                htmlFor="rememberMe" 
+              <Label
+                htmlFor="rememberMe"
                 className="text-sm font-normal cursor-pointer"
               >
                 Запомнить меня
               </Label>
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200" 
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
               disabled={loading}
             >
               {loading ? (
@@ -124,13 +124,13 @@ export default function Login() {
                   Входим...
                 </>
               ) : (
-                "Войти"
+                'Войти'
               )}
             </Button>
 
             <div className="text-center">
-              <a 
-                href="/forgot-password" 
+              <a
+                href="/forgot-password"
                 className="text-sm text-blue-600 hover:underline"
               >
                 Забыли пароль?
@@ -174,5 +174,5 @@ export default function Login() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

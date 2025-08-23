@@ -9,13 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { 
-  Globe, 
-  CheckCircle2, 
-  AlertCircle, 
-  Loader2, 
-  Copy, 
-  FileText, 
+import {
+  Globe,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Copy,
+  FileText,
   Database,
   RefreshCw,
   Plus
@@ -58,7 +58,7 @@ export default function DomainVerification() {
   const [newDomain, setNewDomain] = useState('');
   const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
   const [instructions, setInstructions] = useState<VerificationInstructions | null>(null);
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -75,8 +75,8 @@ export default function DomainVerification() {
     },
     onSuccess: (data) => {
       toast({
-        title: "Домен добавлен",
-        description: "Домен успешно добавлен. Теперь подтвердите владение им."
+        title: 'Домен добавлен',
+        description: 'Домен успешно добавлен. Теперь подтвердите владение им.'
       });
       setSelectedDomain(data.domain);
       setInstructions(data.instructions);
@@ -84,11 +84,11 @@ export default function DomainVerification() {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/domains'] });
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : "Не удалось добавить домен";
+      const message = error instanceof Error ? error.message : 'Не удалось добавить домен';
       toast({
-        title: "Ошибка",
+        title: 'Ошибка',
         description: message,
-        variant: "destructive"
+        variant: 'destructive'
       });
     }
   });
@@ -101,23 +101,23 @@ export default function DomainVerification() {
     onSuccess: (data, _domainId) => {
       if (data.success) {
         toast({
-          title: "Домен подтверждён!",
+          title: 'Домен подтверждён!',
           description: `Домен успешно подтверждён методом ${data.method === 'dns' ? 'DNS TXT записи' : 'загрузки файла'}`,
         });
       } else {
         toast({
-          title: "Подтверждение не удалось",
-          description: data.message || "Проверьте правильность настройки DNS записи или файла",
-          variant: "destructive"
+          title: 'Подтверждение не удалось',
+          description: data.message || 'Проверьте правильность настройки DNS записи или файла',
+          variant: 'destructive'
         });
       }
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/domains'] });
     },
     onError: () => {
       toast({
-        title: "Ошибка проверки",
-        description: "Не удалось проверить статус домена",
-        variant: "destructive"
+        title: 'Ошибка проверки',
+        description: 'Не удалось проверить статус домена',
+        variant: 'destructive'
       });
     }
   });
@@ -130,9 +130,9 @@ export default function DomainVerification() {
       setSelectedDomain(domain);
     } catch {
       toast({
-        title: "Ошибка",
-        description: "Не удалось получить инструкции",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось получить инструкции',
+        variant: 'destructive'
       });
     }
   };
@@ -140,7 +140,7 @@ export default function DomainVerification() {
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Скопировано",
+      title: 'Скопировано',
       description: `${label} скопировано в буфер обмена`
     });
   };
@@ -148,9 +148,9 @@ export default function DomainVerification() {
   const handleAddDomain = () => {
     if (!newDomain.trim()) {
       toast({
-        title: "Ошибка",
-        description: "Введите название домена",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Введите название домена',
+        variant: 'destructive'
       });
       return;
     }
@@ -159,9 +159,9 @@ export default function DomainVerification() {
     const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
     if (!domainRegex.test(newDomain)) {
       toast({
-        title: "Неверный формат",
-        description: "Введите корректное название домена (например: track.yoursite.com)",
-        variant: "destructive"
+        title: 'Неверный формат',
+        description: 'Введите корректное название домена (например: track.yoursite.com)',
+        variant: 'destructive'
       });
       return;
     }
@@ -208,7 +208,7 @@ export default function DomainVerification() {
               </p>
             </div>
             <div className="flex items-end">
-              <Button 
+              <Button
                 onClick={handleAddDomain}
                 disabled={addDomainMutation.isPending}
                 data-testid="button-add-domain"
@@ -321,7 +321,7 @@ export default function DomainVerification() {
                   Загрузка файла
                 </TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="dns" className="space-y-4">
                 <Alert>
                   <Database className="h-4 w-4" />
@@ -329,7 +329,7 @@ export default function DomainVerification() {
                     {instructions.dns.description}
                   </AlertDescription>
                 </Alert>
-                
+
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -349,7 +349,7 @@ export default function DomainVerification() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label>Имя записи</Label>
                     <div className="flex items-center gap-2 mt-1">
@@ -359,14 +359,14 @@ export default function DomainVerification() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(instructions.dns.record.name, "Имя записи")}
+                        onClick={() => copyToClipboard(instructions.dns.record.name, 'Имя записи')}
                         data-testid="button-copy-dns-name"
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label>Значение записи</Label>
                     <div className="flex items-center gap-2 mt-1">
@@ -376,7 +376,7 @@ export default function DomainVerification() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(instructions.dns.record.value, "Значение записи")}
+                        onClick={() => copyToClipboard(instructions.dns.record.value, 'Значение записи')}
                         data-testid="button-copy-dns-value"
                       >
                         <Copy className="w-4 h-4" />
@@ -384,7 +384,7 @@ export default function DomainVerification() {
                     </div>
                   </div>
                 </div>
-                
+
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
@@ -392,7 +392,7 @@ export default function DomainVerification() {
                   </AlertDescription>
                 </Alert>
               </TabsContent>
-              
+
               <TabsContent value="file" className="space-y-4">
                 <Alert>
                   <FileText className="h-4 w-4" />
@@ -400,7 +400,7 @@ export default function DomainVerification() {
                     {instructions.file.description}
                   </AlertDescription>
                 </Alert>
-                
+
                 <div className="space-y-3">
                   <div>
                     <Label>Путь к файлу</Label>
@@ -411,14 +411,14 @@ export default function DomainVerification() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(instructions.file.file.path, "Путь к файлу")}
+                        onClick={() => copyToClipboard(instructions.file.file.path, 'Путь к файлу')}
                         data-testid="button-copy-file-path"
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label>Содержимое файла</Label>
                     <div className="flex items-center gap-2 mt-1">
@@ -428,7 +428,7 @@ export default function DomainVerification() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(instructions.file.file.content, "Содержимое файла")}
+                        onClick={() => copyToClipboard(instructions.file.file.content, 'Содержимое файла')}
                         data-testid="button-copy-file-content"
                       >
                         <Copy className="w-4 h-4" />
@@ -436,7 +436,7 @@ export default function DomainVerification() {
                     </div>
                   </div>
                 </div>
-                
+
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
@@ -445,7 +445,7 @@ export default function DomainVerification() {
                 </Alert>
               </TabsContent>
             </Tabs>
-            
+
             <div className="mt-6 pt-4 border-t">
               <Button
                 onClick={() => checkVerificationMutation.mutate(selectedDomain.id)}

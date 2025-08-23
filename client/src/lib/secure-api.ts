@@ -28,7 +28,7 @@ export class SecureAPIError extends Error {
 }
 
 export async function secureApi(path: string, init: SecureRequestInit = {}) {
-  console.log("🌐 [SECURE_API] Making request:", {
+  console.log('🌐 [SECURE_API] Making request:', {
     path,
     method: init.method || 'GET',
     skipAuth: init.skipAuth,
@@ -39,13 +39,13 @@ export async function secureApi(path: string, init: SecureRequestInit = {}) {
   const identifier = init.identifier || 'anonymous';
   if (rateLimitTracker.isRateLimited(identifier)) {
     const remainingTime = rateLimitTracker.getRemainingTime(identifier);
-    console.warn("🌐 [SECURE_API] Rate limited:", { identifier, remainingTime });
+    console.warn('🌐 [SECURE_API] Rate limited:', { identifier, remainingTime });
     throw new SecureAPIError(429, 'Too Many Requests', 'RATE_LIMITED', remainingTime);
   }
 
   // Auth token
   const token = !init.skipAuth ? tokenStorage.getToken() : null;
-  console.log("🌐 [SECURE_API] Auth token:", { hasToken: !!token, skipAuth: init.skipAuth });
+  console.log('🌐 [SECURE_API] Auth token:', { hasToken: !!token, skipAuth: init.skipAuth });
 
   // Headers
   const headers: Record<string, string> = {
@@ -59,7 +59,7 @@ export async function secureApi(path: string, init: SecureRequestInit = {}) {
   if (!init.skipCSRF && ['POST', 'PUT', 'PATCH', 'DELETE'].includes((init.method || 'GET').toUpperCase())) {
     csrfManager.getToken() || csrfManager.generateToken();
     Object.assign(headers, csrfManager.getHeaders());
-    console.log("🌐 [SECURE_API] Added CSRF protection");
+    console.log('🌐 [SECURE_API] Added CSRF protection');
   }
 
   // Device fingerprint
@@ -67,14 +67,14 @@ export async function secureApi(path: string, init: SecureRequestInit = {}) {
   headers['X-Device-Fingerprint'] = fingerprint;
 
   try {
-    console.log("🌐 [SECURE_API] Sending fetch request...");
+    console.log('🌐 [SECURE_API] Sending fetch request...');
     const res = await fetch(resolveUrl(path), {
       ...init,
       headers,
       credentials: 'include'
     });
 
-    console.log("🌐 [SECURE_API] Fetch response:", {
+    console.log('🌐 [SECURE_API] Fetch response:', {
       status: res.status,
       ok: res.ok,
       statusText: res.statusText
@@ -82,7 +82,7 @@ export async function secureApi(path: string, init: SecureRequestInit = {}) {
 
     // 429
     if (res.status === 429) {
-      console.warn("🌐 [SECURE_API] Rate limited by server");
+      console.warn('🌐 [SECURE_API] Rate limited by server');
       rateLimitTracker.recordAttempt(identifier);
       const retryAfter = parseInt(res.headers.get('Retry-After') || '0', 10);
       throw new SecureAPIError(429, 'Too Many Requests', 'RATE_LIMITED', retryAfter);
@@ -90,7 +90,7 @@ export async function secureApi(path: string, init: SecureRequestInit = {}) {
 
     // 401
     if (res.status === 401) {
-      console.warn("🌐 [SECURE_API] Authentication failed, clearing tokens");
+      console.warn('🌐 [SECURE_API] Authentication failed, clearing tokens');
       tokenStorage.clearToken();
       csrfManager.clearToken();
       throw new SecureAPIError(401, 'Unauthorized', 'AUTH_FAILED');
@@ -98,7 +98,7 @@ export async function secureApi(path: string, init: SecureRequestInit = {}) {
 
     // CSRF errors
     if (res.status === 403 && res.headers.get('X-CSRF-Error')) {
-      console.warn("🌐 [SECURE_API] CSRF error, regenerating token");
+      console.warn('🌐 [SECURE_API] CSRF error, regenerating token');
       csrfManager.clearToken();
       csrfManager.generateToken();
       throw new SecureAPIError(403, 'CSRF Token Invalid', 'CSRF_ERROR');
@@ -112,14 +112,14 @@ export async function secureApi(path: string, init: SecureRequestInit = {}) {
         const errorData = await res.json();
         errorCode = (errorData && (errorData.code || errorData.error)) || errorCode;
         errorMessage = (errorData && (errorData.message || errorData.error)) || errorMessage;
-        console.error("🌐 [SECURE_API] Server error:", {
+        console.error('🌐 [SECURE_API] Server error:', {
           status: res.status,
           errorCode,
           errorMessage,
           errorData
         });
       } catch {
-        console.error("🌐 [SECURE_API] Server error (no JSON):", {
+        console.error('🌐 [SECURE_API] Server error (no JSON):', {
           status: res.status,
           statusText: res.statusText
         });
@@ -134,11 +134,11 @@ export async function secureApi(path: string, init: SecureRequestInit = {}) {
 
     const ct = res.headers.get('content-type') || '';
     const result = ct.includes('application/json') ? await res.json() : await res.text();
-    console.log("🌐 [SECURE_API] Request successful");
+    console.log('🌐 [SECURE_API] Request successful');
     return result;
 
   } catch (error) {
-    console.error("🌐 [SECURE_API] Request error:", error);
+    console.error('🌐 [SECURE_API] Request error:', error);
     if (error instanceof SecureAPIError) {throw error;}
     throw new SecureAPIError(0, 'Network Error', 'NETWORK_ERROR');
   }
@@ -150,7 +150,7 @@ export const secureAuth = {
     data: { email: string; password: string; rememberMe?: boolean },
     identifier?: string
   ) {
-    console.log("🔐 [SECURE_API] Login called with:", {
+    console.log('🔐 [SECURE_API] Login called with:', {
       email: data.email,
       hasPassword: !!data.password,
       rememberMe: data.rememberMe,
@@ -163,7 +163,7 @@ export const secureAuth = {
       ...(data.rememberMe !== undefined && { rememberMe: data.rememberMe })
     };
 
-    console.log("🔐 [SECURE_API] Making API call to /api/auth/login...");
+    console.log('🔐 [SECURE_API] Making API call to /api/auth/login...');
 
     try {
       const result = await secureApi('/api/auth/login', {
@@ -173,22 +173,22 @@ export const secureAuth = {
         identifier: identifier || cleanData.email
       });
 
-      console.log("🔐 [SECURE_API] API call successful:", {
+      console.log('🔐 [SECURE_API] API call successful:', {
         hasToken: !!(result as any).token,
         hasUser: !!(result as any).user,
         result
       });
 
       if ((result as any).token) {
-        console.log("🔐 [SECURE_API] Storing token...");
+        console.log('🔐 [SECURE_API] Storing token...');
         tokenStorage.setToken((result as any).token);
       } else {
-        console.warn("🔐 [SECURE_API] No token in response:", result);
+        console.warn('🔐 [SECURE_API] No token in response:', result);
       }
 
       return result;
     } catch (error) {
-      console.error("🔐 [SECURE_API] Login error:", error);
+      console.error('🔐 [SECURE_API] Login error:', error);
       throw error;
     }
   },
@@ -232,7 +232,7 @@ export const secureAuth = {
     telegram?: string;
   }, identifier?: string) {
     // (лог оставлю — он был в твоём варианте)
-    console.log("📤 Frontend registration request - Email:", data.email, "Role:", data.role);
+    console.log('📤 Frontend registration request - Email:', data.email, 'Role:', data.role);
 
     const cleanData = {
       name: sanitizeInput.cleanString(data.name),
@@ -253,10 +253,10 @@ export const secureAuth = {
     let endpoint = '/api/auth/register';
     if (data.role === 'PARTNER' || data.role === 'affiliate') {
       endpoint = '/api/auth/register/partner';
-      console.log("📤 Using partner registration API:", endpoint);
+      console.log('📤 Using partner registration API:', endpoint);
     } else if (data.role === 'ADVERTISER' || data.role === 'advertiser') {
       endpoint = '/api/auth/register/advertiser';
-      console.log("📤 Using advertiser registration API:", endpoint);
+      console.log('📤 Using advertiser registration API:', endpoint);
     }
 
     try {
@@ -267,10 +267,10 @@ export const secureAuth = {
         identifier: identifier || sanitizeInput.cleanEmail(data.email)
       });
 
-      console.log("✅ Registration server response:", result);
+      console.log('✅ Registration server response:', result);
       return result;
     } catch (error: any) {
-      console.log("❌ Registration error:", error?.message || error);
+      console.log('❌ Registration error:', error?.message || error);
       throw error;
     }
   },

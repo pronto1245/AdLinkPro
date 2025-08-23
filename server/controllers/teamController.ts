@@ -62,17 +62,17 @@ export class TeamController {
 
       // Apply filters
       const conditions = [];
-      
+
       if (role) {
         conditions.push(eq(users.role, role as string));
       }
-      
+
       if (status === 'active') {
         conditions.push(and(eq(users.isActive, true), eq(users.isBlocked, false)));
       } else if (status === 'inactive') {
         conditions.push(or(eq(users.isActive, false), eq(users.isBlocked, true)));
       }
-      
+
       if (search) {
         conditions.push(
           or(
@@ -154,7 +154,7 @@ export class TeamController {
       }
 
       if (!allowedRoles.includes(role)) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           error: `Cannot create user with role ${role}`,
           allowedRoles
         });
@@ -264,7 +264,7 @@ export class TeamController {
       }
 
       if (!allowedRoles.includes(role)) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           error: `Cannot invite user with role ${role}`,
           allowedRoles
         });
@@ -527,7 +527,7 @@ export class TeamController {
           .limit(1);
 
         const currentSettings = currentUserData?.settings || {};
-        
+
         updateData.settings = {
           ...currentSettings,
           ...(permissions && { permissions }),

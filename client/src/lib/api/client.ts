@@ -23,7 +23,7 @@ interface ApiResponse<T> {
 
 class ApiClient {
   private readonly baseUrl: string;
-  private requestId: number = 0;
+  private requestId = 0;
 
   constructor(baseUrl = API_BASE) {
     this.baseUrl = baseUrl;
@@ -105,12 +105,12 @@ class ApiClient {
 
       // Handle response
       const contentType = response.headers.get('content-type') || '';
-      
+
       if (!response.ok) {
         let errorBody: any = null;
         try {
-          errorBody = contentType.includes('application/json') 
-            ? await response.json() 
+          errorBody = contentType.includes('application/json')
+            ? await response.json()
             : await response.text();
         } catch (parseError) {
           console.warn(`[API_CLIENT:${requestId}] Failed to parse error response:`, parseError);
@@ -122,7 +122,7 @@ class ApiClient {
           body?: any;
           response?: Response;
         };
-        
+
         apiError.status = response.status;
         apiError.url = this.baseUrl + url;
         apiError.body = errorBody;

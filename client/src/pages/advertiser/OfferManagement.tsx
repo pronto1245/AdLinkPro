@@ -119,7 +119,7 @@ const OfferForm: React.FC<{
 }> = ({ offer, onSuccess, onCancel }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [formData, setFormData] = useState({
     name: offer?.name || '',
     description: offer?.description || '',
@@ -670,7 +670,7 @@ export default function OfferManagement() {
       archived: { label: 'Архивирован', variant: 'secondary' as const, color: 'bg-gray-500' },
       rejected: { label: 'Отклонен', variant: 'destructive' as const, color: 'bg-red-500' }
     };
-    
+
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
     return (
       <Badge variant={config.variant} className="flex items-center gap-1">
@@ -744,7 +744,7 @@ export default function OfferManagement() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">

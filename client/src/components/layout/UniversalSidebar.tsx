@@ -5,11 +5,11 @@ import { useAuth } from '@/contexts/auth-context';
 import { useState, useEffect } from 'react';
 import { validateToken, refreshTokenIfNeeded, setupTokenRefresh, getMenuData } from '@/lib/menu';
 import { getDashboardHref, createLogoutHandler, getUserInitials } from '@/lib/navigation-utils';
-import { 
-  BarChart3, 
-  Settings, 
-  Target, 
-  Users, 
+import {
+  BarChart3,
+  Settings,
+  Target,
+  Users,
   Wallet,
   Home,
   Link as LinkIcon,
@@ -34,7 +34,7 @@ import {
 export interface MenuItem {
   title: string;
   href: string;
-  icon: any;
+  icon: React.ComponentType<any>;
   description: string;
   roles?: string[];
   requiresToken?: boolean;
@@ -49,7 +49,7 @@ const menuItems: MenuItem[] = [
     icon: Home,
     description: 'Общий обзор системы',
   },
-  
+
   // Partner/Affiliate specific items
   {
     title: 'Офферы',
@@ -263,7 +263,7 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
           roles: item.roles,
           requiresToken: item.requiresToken
         })) || [];
-        
+
         if (convertedItems.length > 0) {
           setDynamicMenuItems(convertedItems);
         }
@@ -281,10 +281,10 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
     const validateAndRefreshToken = async () => {
       const currentToken = token || localStorage.getItem('token');
       const validation = validateToken(currentToken);
-      
+
       setIsTokenValid(validation.valid);
       setTokenExpiresAt(validation.expiresAt || null);
-      
+
       // Try to refresh token if it's expiring soon or expired
       if (!validation.valid || (validation.expiresAt && validation.expiresAt < Date.now() / 1000 + 300)) {
         const refreshed = await refreshTokenIfNeeded();
@@ -297,13 +297,13 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
     };
 
     validateAndRefreshToken();
-    
+
     // Set up automatic token refresh
     const cleanup = setupTokenRefresh();
-    
+
     // Check token every minute
     const interval = setInterval(validateAndRefreshToken, 60000);
-    
+
     return () => {
       cleanup();
       clearInterval(interval);
@@ -319,12 +319,12 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
     if (item.roles && !item.roles.includes(user?.role || '')) {
       return false;
     }
-    
+
     // If item requires token, check if token is valid
     if (item.requiresToken && !isTokenValid) {
       return false;
     }
-    
+
     return true;
   });
 
@@ -333,29 +333,29 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
   // Get time until token expiry
   const getTokenExpiryInfo = () => {
     if (!tokenExpiresAt) {return null;}
-    
+
     const now = Date.now() / 1000;
     const remaining = tokenExpiresAt - now;
-    
+
     if (remaining <= 0) {return 'Истёк';}
     if (remaining < 300) {return `${Math.floor(remaining / 60)}м`;}
     if (remaining < 3600) {return `${Math.floor(remaining / 60)}м`;}
     if (remaining < 86400) {return `${Math.floor(remaining / 3600)}ч`;}
-    
+
     return `${Math.floor(remaining / 86400)}д`;
   };
 
   return (
-    <div 
+    <div
       className={cn(
-        "bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col transition-all duration-300 ease-in-out",
-        isMobile ? "w-64 shadow-lg" : (collapsed ? "w-16" : "w-64")
+        'bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col transition-all duration-300 ease-in-out',
+        isMobile ? 'w-64 shadow-lg' : (collapsed ? 'w-16' : 'w-64')
       )}
     >
       {/* Header */}
       <div className="border-b border-gray-200 dark:border-gray-800 p-4">
         <div className="flex items-center justify-between">
-          <div className={cn("flex items-center space-x-3", collapsed && "justify-center")}>
+          <div className={cn('flex items-center space-x-3', collapsed && 'justify-center')}>
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
               <Building2 className="w-6 h-6 text-white" />
             </div>
@@ -374,10 +374,10 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
           <button
             onClick={isMobile ? onClose : toggleCollapsed}
             className={cn(
-              "p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
-              collapsed && !isMobile && "mx-auto"
+              'p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors',
+              collapsed && !isMobile && 'mx-auto'
             )}
-            title={isMobile ? "Закрыть меню" : (collapsed ? "Развернуть меню" : "Свернуть меню")}
+            title={isMobile ? 'Закрыть меню' : (collapsed ? 'Развернуть меню' : 'Свернуть меню')}
           >
             {isMobile ? (
               <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -447,7 +447,7 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
         {/* Rest of menu items */}
         {filteredMenuItems.slice(1).map((item) => {
           const Icon = item.icon;
-          const isActive = location === item.href || 
+          const isActive = location === item.href ||
             (item.href !== '/dashboard' && item.href !== '/' && location.startsWith(item.href));
 
           return (
@@ -485,7 +485,7 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
             </Link>
           );
         })}
-        
+
         {/* Logout button */}
         <button
           onClick={handleLogout}

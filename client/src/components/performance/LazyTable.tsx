@@ -1,19 +1,19 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 
-interface LazyTableProps {
-  data: any[];
+interface LazyTableProps<T = Record<string, unknown>> {
+  data: T[];
   columns: Array<{
     key: string;
     header: string;
-    render?: (value: any, row: any) => React.ReactNode;
+    render?: (value: unknown, row: T) => React.ReactNode;
   }>;
   pageSize?: number;
   className?: string;
 }
 
 // Виртуализированная таблица для больших объемов данных
-export function LazyTable({ data, columns, pageSize = 50, className }: LazyTableProps) {
+export function LazyTable<T = Record<string, unknown>>({ data, columns, pageSize = 50, className }: LazyTableProps<T>) {
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: pageSize });
 
   // Мемоизируем видимые строки
@@ -25,7 +25,7 @@ export function LazyTable({ data, columns, pageSize = 50, className }: LazyTable
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
     const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
-    
+
     if (scrollPercentage > 0.8 && visibleRange.end < data.length) {
       setVisibleRange(prev => ({
         start: prev.start,
@@ -49,7 +49,7 @@ export function LazyTable({ data, columns, pageSize = 50, className }: LazyTable
             <TableRow key={`${visibleRange.start + index}`}>
               {columns.map((column) => (
                 <TableCell key={column.key}>
-                  {column.render ? column.render(row[column.key], row) : row[column.key]}
+                  {column.render ? column.render((row as Record<string, unknown>)[column.key], row) : (row as Record<string, unknown>)[column.key]}
                 </TableCell>
               ))}
             </TableRow>

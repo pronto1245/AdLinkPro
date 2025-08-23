@@ -6,14 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Activity, 
-  TrendingUp, 
-  Users, 
-  DollarSign, 
-  MousePointer, 
-  Globe, 
-  Smartphone, 
+import {
+  Activity,
+  TrendingUp,
+  Users,
+  DollarSign,
+  MousePointer,
+  Globe,
+  Smartphone,
   Eye,
   Clock,
   Filter,
@@ -78,12 +78,12 @@ export default function PartnerLiveAnalytics() {
         dateFrom: dateRange.from.toISOString(),
         dateTo: dateRange.to.toISOString(),
         ...Object.fromEntries(
-          Object.entries(filters).filter(([_, value]) => 
+          Object.entries(filters).filter(([_, value]) =>
             value && value.toString().trim()
           )
         )
       });
-      
+
       const token = localStorage.getItem('auth_token');
       const response = await fetch(`/api/live-analytics/partner/live-statistics?${params}`, {
         headers: {
@@ -132,12 +132,12 @@ export default function PartnerLiveAnalytics() {
         dateTo: dateRange.to.toISOString(),
         format,
         ...Object.fromEntries(
-          Object.entries(filters).filter(([_, value]) => 
+          Object.entries(filters).filter(([_, value]) =>
             value && value.toString().trim()
           )
         )
       });
-      
+
       const token = localStorage.getItem('auth_token');
       const response = await fetch(`/api/live-analytics/partner/live-statistics/export?${params}`, {
         headers: {
@@ -146,7 +146,7 @@ export default function PartnerLiveAnalytics() {
         }
       });
       if (!response.ok) {throw new Error('Failed to export data');}
-      
+
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -175,8 +175,8 @@ export default function PartnerLiveAnalytics() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setAutoRefresh(!autoRefresh)}
             className={autoRefresh ? 'bg-green-50 text-green-700 border-green-200' : ''}
             data-testid="toggle-auto-refresh"
@@ -201,26 +201,26 @@ export default function PartnerLiveAnalytics() {
 
       {/* Summary Cards */}
       <ResponsiveGrid cols={{ sm: 2, lg: 4 }}>
-        <ResponsiveCard 
-          title="Клики" 
+        <ResponsiveCard
+          title="Клики"
           value={summary.totalClicks.toLocaleString()}
           icon={<MousePointer className="h-5 w-5 text-blue-600" />}
           trend={{ value: 0, direction: 'up' }}
         />
-        <ResponsiveCard 
-          title="Конверсии" 
+        <ResponsiveCard
+          title="Конверсии"
           value={summary.totalConversions.toLocaleString()}
           icon={<TrendingUp className="h-5 w-5 text-green-600" />}
           trend={{ value: 0, direction: 'up' }}
         />
-        <ResponsiveCard 
-          title="Выплата" 
+        <ResponsiveCard
+          title="Выплата"
           value={`$${summary.totalPayout.toLocaleString()}`}
           icon={<DollarSign className="h-5 w-5 text-purple-600" />}
           trend={{ value: 0, direction: 'up' }}
         />
-        <ResponsiveCard 
-          title="Средний CR" 
+        <ResponsiveCard
+          title="Средний CR"
           value={`${summary.avgCR.toFixed(2)}%`}
           icon={<Activity className="h-5 w-5 text-orange-600" />}
           trend={{ value: 0, direction: 'up' }}
@@ -239,7 +239,7 @@ export default function PartnerLiveAnalytics() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Период</label>
-              <DatePickerWithRange 
+              <DatePickerWithRange
                 value={dateRange}
                 onChange={setDateRange}
               />
@@ -247,7 +247,7 @@ export default function PartnerLiveAnalytics() {
 
             <div>
               <label className="text-sm font-medium mb-2 block">Страна</label>
-              <Input 
+              <Input
                 placeholder="Код страны (RU, US, etc.)"
                 value={filters.country}
                 onChange={(e) => handleFilterChange('country', e.target.value)}
@@ -271,7 +271,7 @@ export default function PartnerLiveAnalytics() {
 
             <div>
               <label className="text-sm font-medium mb-2 block">Источник трафика</label>
-              <Input 
+              <Input
                 placeholder="facebook, google, etc."
                 value={filters.trafficSource}
                 onChange={(e) => handleFilterChange('trafficSource', e.target.value)}
@@ -280,7 +280,7 @@ export default function PartnerLiveAnalytics() {
 
             <div>
               <label className="text-sm font-medium mb-2 block">Sub1</label>
-              <Input 
+              <Input
                 placeholder="Значение Sub1"
                 value={filters.sub1}
                 onChange={(e) => handleFilterChange('sub1', e.target.value)}
@@ -289,7 +289,7 @@ export default function PartnerLiveAnalytics() {
 
             <div>
               <label className="text-sm font-medium mb-2 block">Sub2 (Своими значениями)</label>
-              <Input 
+              <Input
                 placeholder="geo-TR|dev-mobile|src-fb"
                 value={filters.sub2}
                 onChange={(e) => handleFilterChange('sub2', e.target.value)}
@@ -297,8 +297,8 @@ export default function PartnerLiveAnalytics() {
             </div>
 
             <div className="flex items-end">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={resetFilters}
                 className="w-full"
                 data-testid="reset-filters"

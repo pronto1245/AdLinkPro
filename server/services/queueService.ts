@@ -118,7 +118,7 @@ export class QueueService {
     // Set up error handling for all workers
     this.workers.forEach((worker, index) => {
       const queueNames = ['analytics', 'notifications', 'fraud-detection', 'cleanup', 'postbacks'];
-      
+
       worker.on('completed', (job: Job) => {
         console.log(`✅ ${queueNames[index]} job ${job.id} completed`);
       });
@@ -217,9 +217,9 @@ export class QueueService {
       }
 
       // Update fraud statistics
-      await cacheService.setStats('fraud', { 
-        score: fraudScore, 
-        timestamp: new Date() 
+      await cacheService.setStats('fraud', {
+        score: fraudScore,
+        timestamp: new Date()
       }, partnerId);
 
     } catch (error) {
@@ -271,16 +271,16 @@ export class QueueService {
       }
 
       console.log(`📤 Postback sent successfully for conversion ${conversionId}`);
-      
+
       // Log successful postback
       await this.logPostbackDelivery(conversionId, partnerId, 'success', response.status);
 
     } catch (error) {
       console.error(`Postback delivery failed for conversion ${conversionId}:`, error);
-      
+
       // Log failed postback
       await this.logPostbackDelivery(conversionId, partnerId, 'failed', 0, error.message);
-      
+
       // Retry logic
       if (retryCount < 3) {
         await queues.postbacks.add(
@@ -289,13 +289,13 @@ export class QueueService {
           { delay: Math.pow(2, retryCount) * 60000 } // Exponential backoff
         );
       }
-      
+
       throw error;
     }
   }
 
   // Public methods for adding jobs
-  async addAnalyticsJob(data: AnalyticsJobData, priority: number = 0) {
+  async addAnalyticsJob(data: AnalyticsJobData, priority = 0) {
     return queues.analytics.add('process-analytics', data, { priority });
   }
 
@@ -309,7 +309,7 @@ export class QueueService {
   }
 
   async addPostbackJob(data: PostbackJobData) {
-    return queues.postbacks.add('send-postback', data, { 
+    return queues.postbacks.add('send-postback', data, {
       priority: 10,
       attempts: 3,
       backoff: {
@@ -362,24 +362,24 @@ export class QueueService {
   private async calculateFraudScore(data: FraudData): Promise<number> {
     // Implement fraud score calculation algorithm
     let score = 0;
-    
+
     // Basic fraud indicators
     if (data.rapidClicks) {score += 30;}
     if (data.suspiciousUA) {score += 20;}
     if (data.proxyIP) {score += 40;}
     if (data.deviceSpoofing) {score += 35;}
-    
+
     return Math.min(score, 100);
   }
 
   private async identifyFraudIndicators(data: FraudData): Promise<string[]> {
     const indicators: string[] = [];
-    
+
     if (data.rapidClicks) {indicators.push('rapid_clicks');}
     if (data.suspiciousUA) {indicators.push('suspicious_user_agent');}
     if (data.proxyIP) {indicators.push('proxy_ip');}
     if (data.deviceSpoofing) {indicators.push('device_spoofing');}
-    
+
     return indicators;
   }
 
@@ -413,7 +413,7 @@ export class QueueService {
     await queues.cleanup.add(
       'daily-log-cleanup',
       { type: 'logs' },
-      { 
+      {
         repeat: { pattern: '0 2 * * *' }, // Cron: Every day at 2 AM
         jobId: 'daily-log-cleanup'
       }
@@ -423,7 +423,7 @@ export class QueueService {
     await queues.cleanup.add(
       'hourly-cache-cleanup',
       { type: 'cache' },
-      { 
+      {
         repeat: { pattern: '0 * * * *' }, // Cron: Every hour
         jobId: 'hourly-cache-cleanup'
       }
@@ -433,7 +433,7 @@ export class QueueService {
     await queues.cleanup.add(
       'session-cleanup',
       { type: 'sessions' },
-      { 
+      {
         repeat: { pattern: '0 */6 * * *' }, // Cron: Every 6 hours
         jobId: 'session-cleanup'
       }
@@ -445,13 +445,13 @@ export class QueueService {
   // Queue monitoring
   async getQueueStats() {
     const stats = {};
-    
+
     for (const [name, queue] of Object.entries(queues)) {
       const waiting = await queue.getWaiting();
       const active = await queue.getActive();
       const completed = await queue.getCompleted();
       const failed = await queue.getFailed();
-      
+
       stats[name] = {
         waiting: waiting.length,
         active: active.length,
@@ -459,7 +459,7 @@ export class QueueService {
         failed: failed.length,
       };
     }
-    
+
     return stats;
   }
 }

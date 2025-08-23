@@ -24,12 +24,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       console.log('[AUTH] Refreshing user data from server...');
       const userData = await apiMe() as User;
-      
+
       if (userData && userData.id) {
-        console.log('[AUTH] User data refreshed successfully:', { 
-          id: userData.id, 
-          email: userData.email, 
-          role: userData.role 
+        console.log('[AUTH] User data refreshed successfully:', {
+          id: userData.id,
+          email: userData.email,
+          role: userData.role
         });
         setUser(userData);
         return userData;
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('[AUTH] Failed to refresh user data:', error);
       handleError(error, 'User refresh');
-      
+
       // Clear tokens on auth failure
       if ((error as any)?.status === 401) {
         secureStorage.clearToken();
@@ -61,11 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         console.log('[AUTH] Initializing authentication state...');
         const storedToken = secureStorage.getToken();
-        
+
         if (storedToken) {
           console.log('[AUTH] Token found in storage, validating with server...');
           setToken(storedToken);
-          
+
           // Server-side token validation via /api/me
           const userData = await refreshUser();
           if (userData) {
@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('[AUTH] Starting login process for:', username);
       clearError();
-      
+
       const response = await apiLogin(username, password);
 
       // Handle 2FA requirement (kept for compatibility)
@@ -104,12 +104,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Successful login - save user and token
       if (response.token && response.user) {
-        console.log('[AUTH] Login successful, saving user data:', { 
-          id: response.user.id, 
-          email: response.user.email, 
-          role: response.user.role 
+        console.log('[AUTH] Login successful, saving user data:', {
+          id: response.user.id,
+          email: response.user.email,
+          role: response.user.role
         });
-        
+
         setUser(response.user as User);
         setToken(response.token);
         secureStorage.setToken(response.token);
@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     secureStorage.clearToken();
     clearError();
-    
+
     // Notify server about logout (fire and forget)
     secureAuth.logout().catch((error) => {
       console.warn('[AUTH] Server logout notification failed:', error);

@@ -44,10 +44,10 @@ router.get('/data', requireAuth, async (req: Request, res: Response) => {
     }
 
     console.log('Analytics data request from user:', user.id, user.role);
-    
+
     const query = analyticsQuerySchema.parse(req.query);
     console.log('Parsed query:', query);
-    
+
     // Apply role-based filtering
     const filters = { ...query };
     if (user.role === 'affiliate') {
@@ -57,9 +57,9 @@ router.get('/data', requireAuth, async (req: Request, res: Response) => {
       filters.advertiserId = user.ownerId;
     }
     // Super admins can see all data
-    
+
     const data = await AnalyticsService.getAnalyticsData(filters);
-    
+
     res.json({
       success: true,
       data,
@@ -69,9 +69,9 @@ router.get('/data', requireAuth, async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error getting analytics data:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to get analytics data',
-      details: error.message 
+      details: error.message
     });
   }
 });
@@ -85,9 +85,9 @@ router.get('/summary', requireAuth, async (req: Request, res: Response) => {
     }
 
     console.log('Analytics summary request from user:', user.id, user.role);
-    
+
     const query = analyticsQuerySchema.parse(req.query);
-    
+
     // Apply role-based filtering
     const filters = { ...query };
     if (user.role === 'affiliate') {
@@ -95,18 +95,18 @@ router.get('/summary', requireAuth, async (req: Request, res: Response) => {
     } else if (user.role === 'advertiser' && user.ownerId) {
       filters.advertiserId = user.ownerId;
     }
-    
+
     const summary = await AnalyticsService.getAnalyticsSummary(filters);
-    
+
     res.json({
       success: true,
       summary
     });
   } catch (error) {
     console.error('Error getting analytics summary:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to get analytics summary',
-      details: error.message 
+      details: error.message
     });
   }
 });
@@ -120,24 +120,24 @@ router.post('/export', requireAuth, async (req: Request, res: Response) => {
     }
 
     console.log('Analytics export request from user:', user.id, user.role);
-    
+
     const filters = req.body;
-    
+
     // Apply role-based filtering
     if (user.role === 'affiliate') {
       filters.partnerId = user.id;
     } else if (user.role === 'advertiser' && user.ownerId) {
       filters.advertiserId = user.ownerId;
     }
-    
+
     const exportResult = await AnalyticsService.exportAnalyticsData(filters);
-    
+
     res.json(exportResult);
   } catch (error) {
     console.error('Error exporting analytics data:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to export analytics data',
-      details: error.message 
+      details: error.message
     });
   }
 });

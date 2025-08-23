@@ -81,18 +81,18 @@ export default function PartnerProfile() {
     },
     onSuccess: (data) => {
       toast({
-        title: "Профиль обновлён",
-        description: "Ваши данные успешно сохранены.",
-        variant: "default",
+        title: 'Профиль обновлён',
+        description: 'Ваши данные успешно сохранены.',
+        variant: 'default',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/partner/profile'] });
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка сохранения",
-        description: error.message || "Не удалось сохранить изменения.",
-        variant: "destructive",
+        title: 'Ошибка сохранения',
+        description: error.message || 'Не удалось сохранить изменения.',
+        variant: 'destructive',
       });
     }
   });
@@ -101,18 +101,18 @@ export default function PartnerProfile() {
     // Проверяем, что whitespace-only значения не допускаются
     if (formData.firstName.trim() === '' && formData.firstName.length > 0) {
       toast({
-        title: "Неверное значение имени",
-        description: "Имя не может состоять только из пробелов.",
-        variant: "destructive",
+        title: 'Неверное значение имени',
+        description: 'Имя не может состоять только из пробелов.',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     if (formData.lastName.trim() === '' && formData.lastName.length > 0) {
       toast({
-        title: "Неверное значение фамилии", 
-        description: "Фамилия не может состоять только из пробелов.",
-        variant: "destructive",
+        title: 'Неверное значение фамилии',
+        description: 'Фамилия не может состоять только из пробелов.',
+        variant: 'destructive',
       });
       return;
     }
@@ -122,9 +122,9 @@ export default function PartnerProfile() {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
         toast({
-          title: "Неверный формат email",
-          description: "Пожалуйста, введите корректный email адрес.",
-          variant: "destructive",
+          title: 'Неверный формат email',
+          description: 'Пожалуйста, введите корректный email адрес.',
+          variant: 'destructive',
         });
         return;
       }
@@ -135,9 +135,9 @@ export default function PartnerProfile() {
       const phoneRegex = /^[\+]?[\d\s\(\)\-]{7,20}$/;
       if (!phoneRegex.test(formData.phone.trim())) {
         toast({
-          title: "Неверный формат телефона",
-          description: "Пожалуйста, введите корректный номер телефона.",
-          variant: "destructive",
+          title: 'Неверный формат телефона',
+          description: 'Пожалуйста, введите корректный номер телефона.',
+          variant: 'destructive',
         });
         return;
       }
@@ -145,21 +145,21 @@ export default function PartnerProfile() {
 
     // Подготавливаем финальные данные
     const finalFormData = { ...formData };
-    
+
     // Валидация и форматирование Telegram (если заполнен)
     if (formData.telegram.trim()) {
       const telegramValue = formData.telegram.trim().replace(/^@/, '');
       const telegramRegex = /^[a-zA-Z0-9_]+$/;
-      
+
       if (!telegramRegex.test(telegramValue)) {
         toast({
-          title: "Неверный формат Telegram",
-          description: "Telegram никнейм может содержать только буквы, цифры и подчеркивание.",
-          variant: "destructive",
+          title: 'Неверный формат Telegram',
+          description: 'Telegram никнейм может содержать только буквы, цифры и подчеркивание.',
+          variant: 'destructive',
         });
         return;
       }
-      
+
       finalFormData.telegram = '@' + telegramValue;
     }
 
@@ -233,8 +233,8 @@ export default function PartnerProfile() {
                 ID: <span className="font-mono">{profileData.partnerNumber}</span>
               </div>
             )}
-            <Button 
-              onClick={handleSave} 
+            <Button
+              onClick={handleSave}
               disabled={updateProfileMutation.isPending || isProfileLoading}
               className="flex items-center gap-2"
               data-testid="button-save-profile"
@@ -512,7 +512,7 @@ export default function PartnerProfile() {
                   </SelectTrigger>
                   <SelectContent className="max-h-60 overflow-y-auto">
                     <SelectItem value="UTC">UTC+0 (Универсальное время)</SelectItem>
-                    
+
                     {/* Европа */}
                     <SelectItem value="Europe/London">UTC+0 (Лондон, Дублин)</SelectItem>
                     <SelectItem value="Europe/Berlin">UTC+1 (Берлин, Рим, Париж)</SelectItem>
@@ -527,7 +527,7 @@ export default function PartnerProfile() {
                     <SelectItem value="Asia/Vladivostok">UTC+10 (Владивосток)</SelectItem>
                     <SelectItem value="Asia/Magadan">UTC+11 (Магадан)</SelectItem>
                     <SelectItem value="Asia/Kamchatka">UTC+12 (Камчатка)</SelectItem>
-                    
+
                     {/* Америка */}
                     <SelectItem value="America/Los_Angeles">UTC-8 (Лос-Анджелес, Сан-Франциско)</SelectItem>
                     <SelectItem value="America/Denver">UTC-7 (Денвер, Солт-Лейк-Сити)</SelectItem>
@@ -538,7 +538,7 @@ export default function PartnerProfile() {
                     <SelectItem value="America/Sao_Paulo">UTC-3 (Сан-Паулу, Буэнос-Айрес)</SelectItem>
                     <SelectItem value="America/Noronha">UTC-2 (Фернанду-ди-Норонья)</SelectItem>
                     <SelectItem value="America/Scoresbysund">UTC-1 (Азорские острова)</SelectItem>
-                    
+
                     {/* Азия */}
                     <SelectItem value="Asia/Dubai">UTC+4 (Дубай, Баку)</SelectItem>
                     <SelectItem value="Asia/Karachi">UTC+5 (Карачи, Ташкент)</SelectItem>
@@ -556,20 +556,20 @@ export default function PartnerProfile() {
                     <SelectItem value="Pacific/Chatham">UTC+12:45 (Чатем)</SelectItem>
                     <SelectItem value="Pacific/Tongatapu">UTC+13 (Нукуалофа)</SelectItem>
                     <SelectItem value="Pacific/Kiritimati">UTC+14 (Киритимати)</SelectItem>
-                    
+
                     {/* Африка */}
                     <SelectItem value="Africa/Casablanca">UTC+0 (Касабланка)</SelectItem>
                     <SelectItem value="Africa/Lagos">UTC+1 (Лагос, Алжир)</SelectItem>
                     <SelectItem value="Africa/Cairo">UTC+2 (Каир, Йоханнесбург)</SelectItem>
                     <SelectItem value="Africa/Nairobi">UTC+3 (Найроби, Аддис-Абеба)</SelectItem>
-                    
+
                     {/* Океания */}
                     <SelectItem value="Pacific/Honolulu">UTC-10 (Гонолулу)</SelectItem>
                     <SelectItem value="Pacific/Marquesas">UTC-9:30 (Маркизские острова)</SelectItem>
                     <SelectItem value="Pacific/Gambier">UTC-9 (Гамбье)</SelectItem>
                     <SelectItem value="Pacific/Pitcairn">UTC-8 (Питкэрн)</SelectItem>
                     <SelectItem value="Pacific/Easter">UTC-6 (Остров Пасхи)</SelectItem>
-                    
+
                     {/* Атлантика */}
                     <SelectItem value="Atlantic/Cape_Verde">UTC-1 (Кабо-Верде)</SelectItem>
                     <SelectItem value="Atlantic/Azores">UTC-1 (Азорские острова)</SelectItem>

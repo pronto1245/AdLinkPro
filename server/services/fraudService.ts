@@ -1,6 +1,6 @@
-import { db } from "../db";
-import { trackingClicks, fraudAlerts } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { db } from '../db';
+import { trackingClicks, fraudAlerts } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 export interface FraudAnalysisResult {
   fraudScore: number;
@@ -23,7 +23,7 @@ export interface ClickData {
 export class FraudService {
   private static readonly FRAUD_SCORE_THRESHOLD_HIGH = 70;
   private static readonly FRAUD_SCORE_THRESHOLD_MEDIUM = 40;
-  
+
   // Known bot user agents patterns
   private static readonly BOT_PATTERNS = [
     /bot/i, /crawler/i, /spider/i, /scraper/i,
@@ -101,7 +101,7 @@ export class FraudService {
    */
   private static detectBot(userAgent: string): boolean {
     if (!userAgent) {return true;}
-    
+
     return this.BOT_PATTERNS.some(pattern => pattern.test(userAgent));
   }
 
@@ -110,7 +110,7 @@ export class FraudService {
    */
   private static detectVPN(ip: string): boolean {
     if (!ip) {return false;}
-    
+
     // Check for private/local IPs
     if (this.SUSPICIOUS_IP_RANGES.some(range => range.test(ip))) {
       return true;
@@ -121,7 +121,7 @@ export class FraudService {
     // - IP2Location
     // - IPQualityScore
     // - Fraud.net
-    
+
     return false;
   }
 
@@ -149,7 +149,7 @@ export class FraudService {
   private static detectGeoInconsistency(clickData: ClickData): boolean {
     // Simplified: check if country matches IP geolocation
     // In production, use proper IP geolocation services
-    
+
     const suspiciousCountries = ['XX', 'ZZ', '--'];
     return suspiciousCountries.includes(clickData.country);
   }
@@ -209,7 +209,7 @@ export class FraudService {
             // Получаем информацию об оффере для определения рекламодателя
             const { offers } = await import('../../shared/schema');
             const offerInfo = await db.select().from(offers).where(eq(offers.id, click.offerId)).limit(1);
-            
+
             // Уведомляем владельца оффера или рекламодателя
             if (offerInfo.length > 0 && offerInfo[0].advertiserId) {
               await notifyAntifraudAlert(offerInfo[0].advertiserId, {
@@ -236,19 +236,19 @@ export class FraudService {
   static async getFraudStats(filters: any = {}) {
     try {
       const query = db.select().from(trackingClicks);
-      
+
       // Apply date filters if provided
       if (filters.dateFrom && filters.dateTo) {
         // Add date filtering logic here
       }
 
       const clicks = await query;
-      
+
       const totalClicks = clicks.length;
       const fraudClicks = clicks.filter(c => c.fraudScore && c.fraudScore > 50).length;
       const botClicks = clicks.filter(c => c.isBot).length;
       const vpnClicks = clicks.filter(c => c.vpnDetected).length;
-      
+
       return {
         totalClicks,
         fraudClicks,
@@ -281,12 +281,12 @@ export class FraudService {
     // - Forensiq
     // - Anura
     // - Botbox
-    
+
     try {
       // Example integration (disabled by default)
       // const fraudScoreResult = await this.checkFraudScore(clickData.ip);
       // const anuranResult = await this.checkAnura(clickData);
-      
+
       return {
         fraudScore: 0,
         reasons: ['Third-party services not configured']
@@ -310,7 +310,7 @@ export class FraudService {
     // });
     // const data = await response.json();
     // return data.fraud_score;
-    
+
     return 0;
   }
 
@@ -329,7 +329,7 @@ export class FraudService {
     //   })
     // });
     // return await response.json();
-    
+
     return {};
   }
 }

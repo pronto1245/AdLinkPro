@@ -19,7 +19,7 @@ export function QuickEventButtons({ clickid, baseLabel: _baseLabel = 'test' }: Q
   const handleRegEvent = async () => {
     const key = 'reg';
     setLoading(key, true);
-    
+
     try {
       await sendEvent({
         type: 'reg',
@@ -40,7 +40,7 @@ export function QuickEventButtons({ clickid, baseLabel: _baseLabel = 'test' }: Q
   const handlePurchaseEvent = async () => {
     const key = 'purchase';
     setLoading(key, true);
-    
+
     try {
       await sendEvent({
         type: 'purchase',
@@ -63,7 +63,7 @@ export function QuickEventButtons({ clickid, baseLabel: _baseLabel = 'test' }: Q
   const handleAntifraudTest = async (level: 'soft' | 'hard') => {
     const key = `af_${level}`;
     setLoading(key, true);
-    
+
     try {
       await sendEvent({
         type: 'purchase',
@@ -96,7 +96,7 @@ export function QuickEventButtons({ clickid, baseLabel: _baseLabel = 'test' }: Q
       <div className="text-sm font-medium">
         Быстрые события для: <code className="bg-muted px-1 rounded">{clickid}</code>
       </div>
-      
+
       <div className="flex flex-wrap gap-2">
         <Button
           variant="outline"

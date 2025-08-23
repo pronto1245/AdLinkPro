@@ -32,8 +32,8 @@ export class CustomDomainService {
     }
 
     const verificationValue = this.generateVerificationValue();
-    const targetValue = data.type === 'cname' 
-      ? 'affiliate-tracker.replit.app' 
+    const targetValue = data.type === 'cname'
+      ? 'affiliate-tracker.replit.app'
       : '192.168.1.100'; // Пример IP для A записи
 
     const [customDomain] = await db
@@ -69,7 +69,7 @@ export class CustomDomainService {
     error?: string;
   }> {
     console.log(`🔍 Начинаем верификацию домена ID: ${domainId}`);
-    
+
     const [domain] = await db
       .select()
       .from(customDomains)
@@ -85,10 +85,10 @@ export class CustomDomainService {
       // Обновляем статус на "верифицируем"
       await db
         .update(customDomains)
-        .set({ 
+        .set({
           status: 'pending',
           lastChecked: new Date(),
-          errorMessage: null 
+          errorMessage: null
         })
         .where(eq(customDomains.id, domainId));
 
@@ -113,7 +113,7 @@ export class CustomDomainService {
           isVerified = aRecords.includes(expectedIp);
           console.log(`🔍 A-record проверка для ${domain.domain}: ${isVerified ? 'SUCCESS' : 'FAILED'}`);
         }
-        
+
         if (!isVerified) {
           errorMessage = `DNS запись не найдена или неверная для ${domain.type}`;
         }
@@ -125,10 +125,10 @@ export class CustomDomainService {
 
       // Обновляем статус домена
       const newStatus: 'verified' | 'error' = isVerified ? 'verified' : 'error';
-      
+
       await db
         .update(customDomains)
-        .set({ 
+        .set({
           status: newStatus,
           isActive: isVerified,
           lastChecked: new Date(),
@@ -145,11 +145,11 @@ export class CustomDomainService {
       };
     } catch (error: any) {
       console.error(`❌ Ошибка верификации ${domain.domain}:`, error.message);
-      
+
       // Обновляем статус на ошибку
       await db
         .update(customDomains)
-        .set({ 
+        .set({
           status: 'error',
           isActive: false,
           lastChecked: new Date(),
@@ -169,7 +169,7 @@ export class CustomDomainService {
   static async requestSSLCertificate(domain: string, domainId: string): Promise<void> {
     try {
       console.log(`🔒 Запуск процесса выдачи SSL для ${domain}`);
-      
+
       // Обновляем статус на "выдается"
       await db
         .update(customDomains)
@@ -182,13 +182,13 @@ export class CustomDomainService {
 
       // Реальная интеграция с Let's Encrypt с обработкой таймаутов
       const { LetsEncryptService } = await import('./letsencrypt.js');
-      
+
       // Запускаем процесс с агрессивным таймаутом
       const sslPromise = LetsEncryptService.issueCertificate(domain, domainId);
-      const timeoutPromise = new Promise((_, reject) => 
+      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('SSL process timeout after 90 seconds')), 90000)
       );
-      
+
       try {
         await Promise.race([sslPromise, timeoutPromise]);
         console.log(`✅ SSL процесс завершен успешно для ${domain}`);
@@ -196,10 +196,10 @@ export class CustomDomainService {
         console.error(`❌ SSL процесс прерван для ${domain}:`, error.message);
         throw error;
       }
-      
+
     } catch (error: any) {
       console.error(`SSL issuance failed for ${domain}:`, error);
-      
+
       // Обновляем статус на ошибку
       await db
         .update(customDomains)
@@ -211,7 +211,6 @@ export class CustomDomainService {
         .where(eq(customDomains.id, domainId));
     }
   }
-
 
 
   // Принудительная выдача SSL для уже верифицированного домена
@@ -323,7 +322,7 @@ export class CustomDomainService {
     for (const offerId of offerIds) {
       await db
         .update(trackingLinks)
-        .set({ 
+        .set({
           customDomain: domain,
           updatedAt: new Date()
         })

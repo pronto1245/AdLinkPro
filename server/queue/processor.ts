@@ -102,14 +102,14 @@ const mockProfiles: PostbackProfile[] = [
     endpointUrl: 'https://binom.example.com/click.php',
     method: 'GET',
     statusMap: {
-      'reg': { 
-        'approved': 'lead', 
+      'reg': {
+        'approved': 'lead',
         'declined': 'trash',
         'pending': 'lead',
         'initiated': 'lead'
       },
-      'purchase': { 
-        'approved': 'conversion', 
+      'purchase': {
+        'approved': 'conversion',
         'declined': 'trash',
         'pending': 'conversion',
         'initiated': 'conversion'
@@ -150,14 +150,14 @@ export async function processPostbackTask(task: PostbackTask): Promise<DeliveryR
   });
 
   // Get relevant profiles first
-  const profiles = mockProfiles.filter(p => 
+  const profiles = mockProfiles.filter(p =>
     p.enabled && p.advertiserId === task.advertiserId
   ).sort((a, b) => b.priority - a.priority);
 
   // Global antifraud blocking - hard level blocks all profiles
-  if (task.antifraudLevel === "hard") {
+  if (task.antifraudLevel === 'hard') {
     console.log('🚫 Postback blocked by antifraud (hard level) for all profiles');
-    
+
     // Log blocked conversion for each profile that would have processed it
     const blockedResults: DeliveryResult[] = profiles.map(profile => ({
       profileId: profile.id,
@@ -167,7 +167,7 @@ export async function processPostbackTask(task: PostbackTask): Promise<DeliveryR
       finalUrl: profile.endpointUrl,
       error: 'blocked_by_af_hard'
     }));
-    
+
     // Save antifraud block logs
     for (const profile of profiles) {
       if (profile.antifraudPolicy?.logBlocked) {
@@ -182,7 +182,7 @@ export async function processPostbackTask(task: PostbackTask): Promise<DeliveryR
         });
       }
     }
-    
+
     return blockedResults;
   }
 
@@ -192,14 +192,14 @@ export async function processPostbackTask(task: PostbackTask): Promise<DeliveryR
   }
 
   console.log(`📋 Found ${profiles.length} profiles for processing`);
-  
+
   const results: DeliveryResult[] = [];
 
   for (const profile of profiles) {
     console.log(`🔄 Processing profile: ${profile.name} (AF policy: ${JSON.stringify(profile.antifraudPolicy)})`);
-    
+
     // Apply profile-specific antifraud policies
-    if (task.antifraudLevel === "soft" && profile.antifraudPolicy?.softOnlyPending) {
+    if (task.antifraudLevel === 'soft' && profile.antifraudPolicy?.softOnlyPending) {
       if (task.status !== 'pending') {
         console.log(`⚠️ Soft antifraud: skipping non-pending status "${task.status}" for profile ${profile.name}`);
         results.push({
@@ -210,7 +210,7 @@ export async function processPostbackTask(task: PostbackTask): Promise<DeliveryR
           finalUrl: profile.endpointUrl,
           error: 'soft_af_non_pending_blocked'
         });
-        
+
         if (profile.antifraudPolicy.logBlocked) {
           await saveAntifraudBlock({
             profileId: profile.id,
@@ -226,10 +226,10 @@ export async function processPostbackTask(task: PostbackTask): Promise<DeliveryR
         continue;
       }
     }
-    
+
     // Map status
     const mappedStatus = profile.statusMap[task.type]?.[task.status] ?? task.status;
-    
+
     // Apply revenue filter
     if (profile.filterRevenueGt0 && (!task.revenue || Number(task.revenue) <= 0)) {
       console.log('⏭️ Skipped due to zero revenue filter');
@@ -274,9 +274,9 @@ export async function processPostbackTask(task: PostbackTask): Promise<DeliveryR
 
   const successCount = results.filter(r => r.success).length;
   const failedCount = results.filter(r => !r.success).length;
-  
+
   console.log(`📊 Postback processing completed: ${successCount} successful, ${failedCount} failed`);
-  
+
   return results;
 }
 
@@ -291,25 +291,25 @@ async function simulateDeliveryWithRetries(
 ): Promise<DeliveryResult> {
   let attempt = 0;
   let lastError = null;
-  
+
   while (attempt < maxRetries) {
     attempt++;
     const startTime = Date.now();
-    
+
     try {
       console.log(`🌐 Attempt ${attempt}/${maxRetries}: ${profile.method} ${url}`);
-      
+
       // Simulate HTTP request with realistic success/failure rates
       const success = Math.random() > 0.15; // 85% success rate
       const responseTime = Math.floor(Math.random() * 2000) + 100; // 100-2100ms
-      
+
       // Simulate processing time
       await new Promise(resolve => setTimeout(resolve, Math.min(responseTime, 500)));
-      
+
       if (success) {
         const duration = Date.now() - startTime;
         console.log(`✅ Postback delivered to ${profile.name} in ${duration}ms`);
-        
+
         return {
           profileId: profile.id,
           profileName: profile.name,
@@ -322,13 +322,13 @@ async function simulateDeliveryWithRetries(
       } else {
         throw new Error(`HTTP 500: Internal Server Error`);
       }
-      
+
     } catch (error: any) {
       lastError = error;
       const duration = Date.now() - startTime;
-      
+
       console.log(`❌ Attempt ${attempt} failed for ${profile.name}: ${error.message} (${duration}ms)`);
-      
+
       if (attempt < maxRetries) {
         const delayMs = Math.floor(profile.backoffBaseSec * 1000 * (2 ** (attempt - 1)));
         console.log(`⏳ Retrying in ${delayMs}ms...`);
@@ -336,10 +336,10 @@ async function simulateDeliveryWithRetries(
       }
     }
   }
-  
+
   // All attempts failed
   console.log(`💥 All ${maxRetries} attempts failed for ${profile.name}`);
-  
+
   return {
     profileId: profile.id,
     profileName: profile.name,
@@ -406,6 +406,6 @@ async function saveAntifraudBlock(blockData: any): Promise<void> {
     reason: blockData.blockReason,
     clickid: blockData.clickid
   });
-  
+
   updateAntifraudStats(blockData.antifraudLevel, true);
 }

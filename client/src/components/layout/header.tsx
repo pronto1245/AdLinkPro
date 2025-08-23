@@ -16,7 +16,7 @@ interface HeaderProps {
 export default function Header({ title, subtitle, children }: HeaderProps) {
   const { language, setLanguage, t } = useLanguage();
   const { user, logout } = useAuth();
-  
+
   const handleLogout = createLogoutHandler(logout);
 
   return (
@@ -33,11 +33,11 @@ export default function Header({ title, subtitle, children }: HeaderProps) {
             )}
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           {/* Theme Toggle */}
           <ThemeToggle />
-          
+
           {/* Language Switcher */}
           <Select value={language} onValueChange={setLanguage}>
             <SelectTrigger className="w-[120px] text-sm border-0 bg-transparent" data-testid="language-switcher">
@@ -48,13 +48,13 @@ export default function Header({ title, subtitle, children }: HeaderProps) {
               <SelectItem value="ru">🇷🇺 {t('language.russian')}</SelectItem>
             </SelectContent>
           </Select>
-          
+
           {/* Notifications */}
           <Button variant="ghost" size="sm" className="relative text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100" data-testid="button-notifications">
             <Bell className="w-5 h-5" />
             <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
           </Button>
-          
+
           {/* Live Traffic Indicator */}
           <div className="flex items-center space-x-2 px-3 py-2 bg-green-50 rounded-lg">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>

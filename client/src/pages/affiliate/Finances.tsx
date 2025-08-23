@@ -1,20 +1,20 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -22,7 +22,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -31,13 +31,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
-import { useTranslation } from "react-i18next";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 import {
   Wallet,
   CreditCard,
@@ -50,9 +50,9 @@ import {
   TrendingUp,
   ArrowUpRight,
   ArrowDownLeft
-} from "lucide-react";
-import { formatCurrency } from "@/utils/formatting";
-import { apiRequest } from "@/lib/queryClient";
+} from 'lucide-react';
+import { formatCurrency } from '@/utils/formatting';
+import { apiRequest } from '@/lib/queryClient';
 
 export default function Finances() {
   const [withdrawalOpen, setWithdrawalOpen] = useState(false);
@@ -82,7 +82,7 @@ export default function Finances() {
       toast({
         title: t('finances.messages.withdrawalRequested'),
         description: t('finances.messages.withdrawalRequestedDesc'),
-        variant: "default"
+        variant: 'default'
       });
       setWithdrawalOpen(false);
       setWithdrawalAmount('');
@@ -95,7 +95,7 @@ export default function Finances() {
       toast({
         title: t('common.error'),
         description: t('finances.messages.withdrawalError'),
-        variant: "destructive"
+        variant: 'destructive'
       });
     }
   });
@@ -103,18 +103,18 @@ export default function Finances() {
   const handleWithdrawal = () => {
     if (!withdrawalAmount || !withdrawalMethod || !withdrawalDetails) {
       toast({
-        title: "Заполните все поля",
-        description: "Все поля обязательны для заполнения",
-        variant: "destructive"
+        title: 'Заполните все поля',
+        description: 'Все поля обязательны для заполнения',
+        variant: 'destructive'
       });
       return;
     }
 
     if (parseFloat(withdrawalAmount) > (financeData as any)?.balance) {
       toast({
-        title: "Недостаточно средств",
-        description: "Сумма вывода превышает доступный баланс",
-        variant: "destructive"
+        title: 'Недостаточно средств',
+        description: 'Сумма вывода превышает доступный баланс',
+        variant: 'destructive'
       });
       return;
     }
@@ -189,15 +189,15 @@ export default function Finances() {
       document.body.removeChild(a);
 
       toast({
-        title: "Отчёт загружен",
+        title: 'Отчёт загружен',
         description: `Финансовый отчёт в формате ${format.toUpperCase()} успешно загружен`,
-        variant: "default"
+        variant: 'default'
       });
     } catch (_error) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить отчёт",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось загрузить отчёт',
+        variant: 'destructive'
       });
     }
   };
@@ -321,7 +321,7 @@ export default function Finances() {
             </p>
           </CardContent>
         </Card>
-        
+
         {/* В ожидании - оранжевый */}
         <Card className="border-l-4 border-l-orange-500 bg-gradient-to-br from-orange-50 to-white dark:from-orange-900/20 dark:to-background">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -335,7 +335,7 @@ export default function Finances() {
             </p>
           </CardContent>
         </Card>
-        
+
         {/* Общий доход - синий */}
         <Card className="border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-background">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -349,7 +349,7 @@ export default function Finances() {
             </p>
           </CardContent>
         </Card>
-        
+
         {/* Средний EPC - фиолетовый */}
         <Card className="border-l-4 border-l-purple-500 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-background">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

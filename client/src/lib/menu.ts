@@ -59,7 +59,7 @@ export async function getMenuData(): Promise<MenuData> {
   try {
     const token = localStorage.getItem('token');
     const validation = validateToken(token);
-    
+
     if (!validation.valid) {
       throw new Error('Invalid or expired token');
     }
@@ -69,11 +69,11 @@ export async function getMenuData(): Promise<MenuData> {
     return data;
   } catch (error) {
     console.warn('Failed to fetch menu data from API, using fallback:', error);
-    
+
     // Fallback: determine menu items based on token
     const token = localStorage.getItem('token');
     const validation = validateToken(token);
-    
+
     const fallbackRole = validation.user?.role?.toLowerCase() || 'partner';
     const permissions = validation.user?.permissions || [];
 
@@ -98,17 +98,17 @@ export function hasPermission(permission: string, userPermissions: string[] = []
 export function getUserRoleFromToken(): string | null {
   const token = localStorage.getItem('token');
   const validation = validateToken(token);
-  
+
   if (!validation.valid || !validation.user) {
     return null;
   }
 
   const role = validation.user.role?.toLowerCase();
-  
+
   // Map server roles to client roles
   const roleMap: Record<string, string> = {
     'owner': 'owner',
-    'advertiser': 'advertiser', 
+    'advertiser': 'advertiser',
     'partner': 'partner',
     'affiliate': 'affiliate',
     'super_admin': 'super_admin',
@@ -126,7 +126,7 @@ export function getUserRoleFromToken(): string | null {
 export async function refreshTokenIfNeeded(): Promise<boolean> {
   const token = localStorage.getItem('token');
   const validation = validateToken(token);
-  
+
   // If token is valid and not expiring soon (within 5 minutes), no need to refresh
   if (validation.valid && validation.expiresAt) {
     const fiveMinutesFromNow = Date.now() / 1000 + 300;

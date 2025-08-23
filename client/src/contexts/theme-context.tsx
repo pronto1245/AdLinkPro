@@ -13,7 +13,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 // Safe localStorage operations with error handling
 const safeStorage = {
-  getItem: (key: string, fallback: string = 'system'): string => {
+  getItem: (key: string, fallback = 'system'): string => {
     try {
       return localStorage.getItem(key) || fallback;
     } catch (error) {
@@ -21,7 +21,7 @@ const safeStorage = {
       return fallback;
     }
   },
-  
+
   setItem: (key: string, value: string): void => {
     try {
       localStorage.setItem(key, value);
@@ -66,7 +66,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check for saved preference
     const savedTheme = safeStorage.getItem('app-theme', 'system') as Theme;
-    
+
     // Migrate from old keys
     const legacyTheme = safeStorage.getItem('theme', '');
     if (legacyTheme && ['light', 'dark'].includes(legacyTheme)) {
@@ -90,7 +90,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(resolved);
-    
+
     // Save preference
     safeStorage.setItem('app-theme', theme);
   }, [theme]);
@@ -104,7 +104,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       if (theme === 'system') {
         const resolved = resolveTheme('system');
         setResolvedTheme(resolved);
-        
+
         // Apply theme to document
         const root = document.documentElement;
         root.classList.remove('light', 'dark');
@@ -124,7 +124,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-      
+
       if (!prefersReducedMotion.matches) {
         const style = document.createElement('style');
         style.id = 'theme-transitions';
@@ -143,7 +143,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
               backdrop-filter 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
           }
         `;
-        
+
         // Only add if not already present
         if (!document.getElementById('theme-transitions')) {
           document.head.appendChild(style);

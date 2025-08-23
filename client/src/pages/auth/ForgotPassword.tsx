@@ -1,36 +1,36 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, ArrowLeft, CheckCircle, Loader2, AlertTriangle } from "lucide-react";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Mail, ArrowLeft, CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 
-import { secureAuth, SecureAPIError } from "@/lib/secure-api";
-import { resetPasswordSchema, ResetPasswordFormData } from "@/lib/validation";
-import { rateLimitTracker } from "@/lib/security";
+import { secureAuth, SecureAPIError } from '@/lib/secure-api';
+import { resetPasswordSchema, ResetPasswordFormData } from '@/lib/validation';
+import { rateLimitTracker } from '@/lib/security';
 
 export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [submittedEmail, setSubmittedEmail] = useState("");
+  const [submittedEmail, setSubmittedEmail] = useState('');
   const { toast } = useToast();
 
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      email: "",
+      email: '',
     },
   });
 
   async function onSubmit(data: ResetPasswordFormData) {
     setLoading(true);
-    setError("");
+    setError('');
 
     // Check rate limiting
     const isRateLimited = rateLimitTracker.isRateLimited(data.email);
@@ -43,13 +43,13 @@ export default function ForgotPassword() {
 
     try {
       await secureAuth.resetPassword(data, data.email);
-      
+
       setSubmittedEmail(data.email);
       setSuccess(true);
-      
+
       toast({
-        title: "Письмо отправлено",
-        description: "Проверьте почту для дальнейших инструкций",
+        title: 'Письмо отправлено',
+        description: 'Проверьте почту для дальнейших инструкций',
       });
 
     } catch (err: any) {
@@ -57,10 +57,10 @@ export default function ForgotPassword() {
         if (err.code === 'RATE_LIMITED') {
           setError(`Слишком много попыток. Попробуйте через ${Math.ceil(err.retryAfter! / 1000)} секунд.`);
         } else {
-          setError(err.message || "Произошла ошибка при отправке письма");
+          setError(err.message || 'Произошла ошибка при отправке письма');
         }
       } else {
-        setError("Произошла ошибка. Проверьте подключение к интернету.");
+        setError('Произошла ошибка. Проверьте подключение к интернету.');
       }
     } finally {
       setLoading(false);
@@ -87,7 +87,7 @@ export default function ForgotPassword() {
                 Проверьте почту и следуйте указанным в письме инструкциям.
               </p>
             </div>
-            
+
             <div className="text-center text-sm text-muted-foreground space-y-2">
               <p>Не получили письмо?</p>
               <p>• Проверьте папку "Спам"</p>
@@ -96,19 +96,19 @@ export default function ForgotPassword() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <Button 
-                variant="outline" 
-                className="w-full" 
+              <Button
+                variant="outline"
+                className="w-full"
                 onClick={() => {
                   setSuccess(false);
-                  setSubmittedEmail("");
+                  setSubmittedEmail('');
                   form.reset();
                 }}
               >
                 <Mail className="mr-2 h-4 w-4" />
                 Отправить еще раз
               </Button>
-              <Button 
+              <Button
                 className="w-full"
                 onClick={() => window.location.href = '/login'}
               >
@@ -139,7 +139,7 @@ export default function ForgotPassword() {
             <div className="space-y-2">
               <Label htmlFor="email">Email адрес</Label>
               <Input
-                {...form.register("email")}
+                {...form.register('email')}
                 id="email"
                 type="email"
                 placeholder="Введите ваш email"
@@ -175,10 +175,10 @@ export default function ForgotPassword() {
                 )}
               </Button>
 
-              <Button 
-                type="button" 
-                variant="ghost" 
-                className="w-full" 
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
                 onClick={() => window.location.href = '/login'}
                 disabled={loading}
               >

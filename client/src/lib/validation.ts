@@ -19,7 +19,7 @@ export const emailSchema = z
     'Email содержит недопустимые символы'
   );
 
-// Telegram validation schema  
+// Telegram validation schema
 export const telegramSchema = z
   .string()
   .min(5, 'Telegram должен содержать минимум 5 символов')

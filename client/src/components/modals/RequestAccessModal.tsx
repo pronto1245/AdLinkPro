@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -6,14 +6,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Loader2 } from "lucide-react";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { Loader2 } from 'lucide-react';
 
 interface RequestAccessModalProps {
   isOpen: boolean;
@@ -31,8 +31,8 @@ interface RequestAccessModalProps {
 }
 
 export function RequestAccessModal({ isOpen, onClose, offer }: RequestAccessModalProps) {
-  const [requestNote, setRequestNote] = useState("");
-  const [partnerMessage, setPartnerMessage] = useState("");
+  const [requestNote, setRequestNote] = useState('');
+  const [partnerMessage, setPartnerMessage] = useState('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -45,19 +45,21 @@ export function RequestAccessModal({ isOpen, onClose, offer }: RequestAccessModa
     },
     onSuccess: () => {
       toast({
-        title: "Запрос отправлен",
-        description: "Ваш запрос на доступ к офферу был отправлен рекламодателю",
+        title: 'Запрос отправлен',
+        description: 'Ваш запрос на доступ к офферу был отправлен рекламодателю',
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/partner/offers"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/partner/access-requests"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/offers'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/access-requests'] });
       handleClose();
     },
     onError: (error: any) => {
+      const errorMessage = error.message || 'Ошибка при отправке запроса';
+    onError: (error: Error) => {
       const errorMessage = error.message || "Ошибка при отправке запроса";
       toast({
-        title: "Ошибка",
+        title: 'Ошибка',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -65,7 +67,7 @@ export function RequestAccessModal({ isOpen, onClose, offer }: RequestAccessModa
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!offer?.id) {return;}
-    
+
     requestAccessMutation.mutate({
       offerId: offer.id,
       requestNote: requestNote.trim() || undefined,
@@ -74,8 +76,8 @@ export function RequestAccessModal({ isOpen, onClose, offer }: RequestAccessModa
   };
 
   const handleClose = () => {
-    setRequestNote("");
-    setPartnerMessage("");
+    setRequestNote('');
+    setPartnerMessage('');
     onClose();
   };
 

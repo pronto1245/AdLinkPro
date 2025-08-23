@@ -1,18 +1,18 @@
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-import { useTranslation } from "react-i18next";
-import { Link, useLocation } from "wouter";
-import { ContactManagerModal } from "@/components/partner/ContactManagerModal";
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
+import { Link, useLocation } from 'wouter';
+import { ContactManagerModal } from '@/components/partner/ContactManagerModal';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import {
   TrendingUp,
   TrendingDown,
@@ -24,7 +24,7 @@ import {
   RefreshCw,
   CheckCircle,
   Bell,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface MetricCardProps {
   title: string;
@@ -211,7 +211,7 @@ export default function PartnerDashboard() {
     );
   }
 
-  // Используем реальные данные с API  
+  // Используем реальные данные с API
   const { metrics, topOffers } = dashboardData || {
     metrics: {
       totalClicks: 0,
@@ -246,7 +246,7 @@ export default function PartnerDashboard() {
           title={t('dashboard.totalClicks')}
           value={metrics.totalClicks?.toLocaleString() || '0'}
           change={dashboardData?.metrics?.clicksGrowth ? `${dashboardData.metrics.clicksGrowth > 0 ? '+' : ''}${dashboardData.metrics.clicksGrowth.toFixed(1)}%` : undefined}
-          changeType={dashboardData?.metrics?.clicksGrowth > 0 ? "positive" : "negative"}
+          changeType={dashboardData?.metrics?.clicksGrowth > 0 ? 'positive' : 'negative'}
           icon={MousePointer}
           cardType="clicks"
         />
@@ -254,7 +254,7 @@ export default function PartnerDashboard() {
           title={t('dashboard.conversions')}
           value={metrics.conversions?.toLocaleString() || '0'}
           change={dashboardData?.metrics?.conversionsGrowth ? `${dashboardData.metrics.conversionsGrowth > 0 ? '+' : ''}${dashboardData.metrics.conversionsGrowth.toFixed(1)}%` : undefined}
-          changeType={dashboardData?.metrics?.conversionsGrowth > 0 ? "positive" : "negative"}
+          changeType={dashboardData?.metrics?.conversionsGrowth > 0 ? 'positive' : 'negative'}
           icon={Target}
           cardType="conversions"
         />
@@ -262,7 +262,7 @@ export default function PartnerDashboard() {
           title={t('dashboard.revenue')}
           value={`$${metrics.revenue?.toLocaleString() || '0'}`}
           change={dashboardData?.metrics?.revenueGrowth ? `${dashboardData.metrics.revenueGrowth > 0 ? '+' : ''}${dashboardData.metrics.revenueGrowth.toFixed(1)}%` : undefined}
-          changeType={dashboardData?.metrics?.revenueGrowth > 0 ? "positive" : "negative"}
+          changeType={dashboardData?.metrics?.revenueGrowth > 0 ? 'positive' : 'negative'}
           icon={DollarSign}
           cardType="revenue"
         />
@@ -314,8 +314,8 @@ export default function PartnerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="justify-start border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 shadow-md"
               onClick={handleFindOffers}
               title={t('dashboard.goToOffers')}
@@ -323,8 +323,8 @@ export default function PartnerDashboard() {
               <Target className="h-4 w-4 mr-2 text-green-500" />
               {t('dashboard.findNewOffers')}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="justify-start border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 shadow-md"
               onClick={() => window.location.href = '/dash/offers'}
               title={t('dashboard.browseOffersTitle')}
@@ -332,8 +332,8 @@ export default function PartnerDashboard() {
               <Target className="h-4 w-4 mr-2 text-green-500" />
               {t('dashboard.browseOffers')}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="justify-start border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 shadow-md"
               onClick={handleCheckStatistics}
               title={t('dashboard.viewDetailedStats')}
@@ -341,8 +341,8 @@ export default function PartnerDashboard() {
               <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
               {t('dashboard.checkStatistics')}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="justify-start border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 shadow-md"
               onClick={handleContactManager}
               title={t('dashboard.contactManagerTitle')}
@@ -350,8 +350,8 @@ export default function PartnerDashboard() {
               <Users className="h-4 w-4 mr-2 text-purple-500" />
               {t('dashboard.contactManager')}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="justify-start border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20 shadow-md"
               onClick={() => window.location.href = '/dash/finances'}
               title={t('dashboard.viewFinances')}
@@ -368,9 +368,9 @@ export default function PartnerDashboard() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-orange-700 dark:text-orange-300">Последние уведомления</CardTitle>
           {recentNotifications && recentNotifications.length > 0 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => navigate('/affiliate/notifications')}
               className="text-orange-600 hover:text-orange-700 hover:bg-orange-100 dark:hover:bg-orange-950/20"
               title="Посмотреть все уведомления"
@@ -414,9 +414,9 @@ export default function PartnerDashboard() {
       </Card>
 
       {/* Contact Manager Modal */}
-      <ContactManagerModal 
-        isOpen={isContactModalOpen} 
-        onClose={() => setIsContactModalOpen(false)} 
+      <ContactManagerModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
       />
     </div>
   );

@@ -59,7 +59,7 @@ export function buildKeitaroPostbackUrl(
   authToken?: string
 ): string {
   const url = new URL(baseUrl);
-  
+
   // Standard Keitaro parameters
   const params: KeitaroPostbackParams = {
     subid: task.clickid,
@@ -109,7 +109,7 @@ export function validateKeitaroResponse(responseBody: string, responseCode: numb
   // - HTTP 200 with 'OK' for successful postbacks
   // - HTTP 404 for invalid clicks
   // - HTTP 400 for malformed requests
-  
+
   if (responseCode === 200) {
     const body = responseBody.trim().toLowerCase();
     if (body === 'ok' || body === '1' || body === 'success') {
@@ -118,15 +118,15 @@ export function validateKeitaroResponse(responseBody: string, responseCode: numb
       return { success: false, message: `Unexpected response: ${responseBody}` };
     }
   }
-  
+
   if (responseCode === 404) {
     return { success: false, message: 'Click not found in Keitaro' };
   }
-  
+
   if (responseCode === 400) {
     return { success: false, message: 'Invalid postback parameters' };
   }
-  
+
   return { success: false, message: `HTTP ${responseCode}: ${responseBody}` };
 }
 
@@ -147,7 +147,7 @@ export function getKeitaroProfileTemplates() {
     },
     {
       name: 'Keitaro with Bearer Auth',
-      method: 'GET', 
+      method: 'GET',
       endpointUrl: 'https://{{domain}}/api/v1/conversions',
       paramsTemplate: KEITARO_PARAMS_TEMPLATE,
       statusMap: KEITARO_STATUS_MAP,

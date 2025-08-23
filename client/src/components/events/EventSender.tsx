@@ -26,13 +26,13 @@ export function EventSender({ defaultClickId = '', defaultTxId = '' }: EventSend
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.clickid || !formData.txid) {
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
       const payload: SendEventPayload = {
         type: formData.type,
@@ -47,14 +47,14 @@ export function EventSender({ defaultClickId = '', defaultTxId = '' }: EventSend
       };
 
       await sendEvent(payload);
-      
+
       // Reset form on success
       setFormData(prev => ({
         ...prev,
         txid: '',
         value: ''
       }));
-      
+
     } catch {
       // Error is handled by useSendEvent hook
     } finally {
@@ -73,7 +73,7 @@ export function EventSender({ defaultClickId = '', defaultTxId = '' }: EventSend
           Создание conversion события для тестирования системы
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -81,7 +81,7 @@ export function EventSender({ defaultClickId = '', defaultTxId = '' }: EventSend
               <Label htmlFor="type">Тип события</Label>
               <Select
                 value={formData.type}
-                onValueChange={(value: 'reg' | 'purchase') => 
+                onValueChange={(value: 'reg' | 'purchase') =>
                   setFormData(prev => ({ ...prev, type: value }))
                 }
               >
@@ -99,7 +99,7 @@ export function EventSender({ defaultClickId = '', defaultTxId = '' }: EventSend
               <Label htmlFor="antifraud">Антифрод</Label>
               <Select
                 value={formData.antifraudLevel}
-                onValueChange={(value) => 
+                onValueChange={(value) =>
                   setFormData(prev => ({ ...prev, antifraudLevel: value }))
                 }
               >
@@ -157,7 +157,7 @@ export function EventSender({ defaultClickId = '', defaultTxId = '' }: EventSend
               <Label htmlFor="currency">Валюта</Label>
               <Select
                 value={formData.currency}
-                onValueChange={(value) => 
+                onValueChange={(value) =>
                   setFormData(prev => ({ ...prev, currency: value }))
                 }
               >
@@ -174,9 +174,9 @@ export function EventSender({ defaultClickId = '', defaultTxId = '' }: EventSend
             </div>
           </div>
 
-          <Button 
-            type="submit" 
-            className="w-full" 
+          <Button
+            type="submit"
+            className="w-full"
             disabled={isLoading || !formData.clickid || !formData.txid}
             data-testid="button-send-event"
           >

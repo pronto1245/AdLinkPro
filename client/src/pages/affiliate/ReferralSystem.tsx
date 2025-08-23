@@ -7,15 +7,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Copy, 
-  Share2, 
-  DollarSign, 
-  Users, 
-  TrendingUp, 
-  Award, 
-  Link as LinkIcon, 
-  Target, 
+import {
+  Copy,
+  Share2,
+  DollarSign,
+  Users,
+  TrendingUp,
+  Award,
+  Link as LinkIcon,
+  Target,
   Clock,
   CheckCircle
 } from 'lucide-react';
@@ -89,8 +89,8 @@ const ReferralSystem: React.FC = () => {
       navigator.clipboard.writeText(link);
       setCopied(true);
       toast({
-        title: "Ссылка скопирована!",
-        description: "Реферальная ссылка скопирована в буфер обмена",
+        title: 'Ссылка скопирована!',
+        description: 'Реферальная ссылка скопирована в буфер обмена',
       });
       setTimeout(() => setCopied(false), 2000);
     }
@@ -217,8 +217,8 @@ const ReferralSystem: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex space-x-2">
-                <Input 
-                  readOnly 
+                <Input
+                  readOnly
                   value={`${window.location.origin}/register?ref=${stats.referral_code}`}
                   className="font-mono text-sm"
                 />
@@ -243,7 +243,7 @@ const ReferralSystem: React.FC = () => {
                   </Button>
                 )}
               </div>
-              
+
               <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
                 <div className="flex items-start space-x-3">
                   <Target className="h-5 w-5 text-blue-500 mt-0.5" />
@@ -313,7 +313,7 @@ const ReferralSystem: React.FC = () => {
                     <li>• Начинают использовать платформу</li>
                   </ul>
                 </div>
-                
+
                 <div className="space-y-3">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Award className="h-5 w-5 text-blue-500" />
@@ -327,15 +327,15 @@ const ReferralSystem: React.FC = () => {
                   </ul>
                 </div>
               </div>
-              
+
               <div className="border-t pt-4 mt-6">
                 <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
                   <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
                     💡 Пример расчета
                   </h4>
                   <p className="text-sm text-green-800 dark:text-green-200">
-                    Приглашенный рекламодатель выплачивает партнеру $1000. 
-                    Партнер получает $1000, а вы получаете $50 комиссии (5%). 
+                    Приглашенный рекламодатель выплачивает партнеру $1000.
+                    Партнер получает $1000, а вы получаете $50 комиссии (5%).
                     Рекламодатель доплачивает эти $50 из своего бюджета.
                   </p>
                 </div>

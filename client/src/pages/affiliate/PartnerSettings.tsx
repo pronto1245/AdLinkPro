@@ -84,18 +84,18 @@ export default function PartnerSettings() {
     },
     onSuccess: () => {
       toast({
-        title: "Настройки сохранены",
-        description: "Ваши настройки успешно обновлены.",
-        variant: "default",
+        title: 'Настройки сохранены',
+        description: 'Ваши настройки успешно обновлены.',
+        variant: 'default',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/partner/profile'] });
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось сохранить настройки.",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Не удалось сохранить настройки.',
+        variant: 'destructive',
       });
     }
   });
@@ -116,39 +116,39 @@ export default function PartnerSettings() {
     },
     onSuccess: () => {
       toast({
-        title: "Пароль обновлён",
-        description: "Ваш пароль успешно изменён.",
-        variant: "default",
+        title: 'Пароль обновлён',
+        description: 'Ваш пароль успешно изменён.',
+        variant: 'default',
       });
       setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка смены пароля",
-        description: error.message || "Неверный текущий пароль или ошибка сервера.",
-        variant: "destructive",
+        title: 'Ошибка смены пароля',
+        description: error.message || 'Неверный текущий пароль или ошибка сервера.',
+        variant: 'destructive',
       });
     }
   });
 
-  // Мутация для сохранения настроек безопасности 
+  // Мутация для сохранения настроек безопасности
   const updateSecurityMutation = useMutation({
     mutationFn: async (data: any) => {
       return apiRequest('/api/partner/profile', 'PATCH', data);
     },
     onSuccess: () => {
       toast({
-        title: "Настройки безопасности сохранены",
-        description: "Параметры безопасности обновлены.",
-        variant: "default",
+        title: 'Настройки безопасности сохранены',
+        description: 'Параметры безопасности обновлены.',
+        variant: 'default',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/partner/profile'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось сохранить настройки безопасности.",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Не удалось сохранить настройки безопасности.',
+        variant: 'destructive',
       });
     }
   });
@@ -160,17 +160,17 @@ export default function PartnerSettings() {
     },
     onSuccess: () => {
       toast({
-        title: "Настройки уведомлений сохранены",
-        description: "Предпочтения уведомлений обновлены.",
-        variant: "default",
+        title: 'Настройки уведомлений сохранены',
+        description: 'Предпочтения уведомлений обновлены.',
+        variant: 'default',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/partner/profile'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось сохранить настройки уведомлений.",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Не удалось сохранить настройки уведомлений.',
+        variant: 'destructive',
       });
     }
   });
@@ -178,27 +178,27 @@ export default function PartnerSettings() {
   const handlePasswordUpdate = () => {
     if (!passwords.currentPassword || !passwords.newPassword) {
       toast({
-        title: "Заполните все поля",
-        description: "Введите текущий и новый пароль.",
-        variant: "destructive",
+        title: 'Заполните все поля',
+        description: 'Введите текущий и новый пароль.',
+        variant: 'destructive',
       });
       return;
     }
 
     if (passwords.newPassword.length < 6) {
       toast({
-        title: "Слабый пароль",
-        description: "Пароль должен содержать не менее 6 символов.",
-        variant: "destructive",
+        title: 'Слабый пароль',
+        description: 'Пароль должен содержать не менее 6 символов.',
+        variant: 'destructive',
       });
       return;
     }
 
     if (passwords.newPassword !== passwords.confirmPassword) {
       toast({
-        title: "Ошибка",
-        description: "Пароли не совпадают.",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Пароли не совпадают.',
+        variant: 'destructive',
       });
       return;
     }
@@ -281,8 +281,8 @@ export default function PartnerSettings() {
                     </Select>
                   </div>
                 </div>
-                <Button 
-                  onClick={handleSaveSettings} 
+                <Button
+                  onClick={handleSaveSettings}
                   disabled={updatePreferencesMutation.isPending}
                   data-testid="button-save-general"
                   title="Сохранить общие настройки"
@@ -388,8 +388,8 @@ export default function PartnerSettings() {
                     data-testid="switch-push-payments"
                   />
                 </div>
-                <Button 
-                  onClick={handleSaveNotifications} 
+                <Button
+                  onClick={handleSaveNotifications}
                   disabled={updateNotificationsMutation.isPending}
                   data-testid="button-save-notifications"
                   title="Сохранить настройки уведомлений"
@@ -444,8 +444,8 @@ export default function PartnerSettings() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="sessionTimeout">Тайм-аут сессии (часы)</Label>
-                  <Select 
-                    value={security.sessionTimeout} 
+                  <Select
+                    value={security.sessionTimeout}
                     onValueChange={(value) => handleSecurityChange('sessionTimeout', value)}
                   >
                     <SelectTrigger data-testid="select-session-timeout">
@@ -523,8 +523,8 @@ export default function PartnerSettings() {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    onClick={handlePasswordUpdate} 
+                  <Button
+                    onClick={handlePasswordUpdate}
                     disabled={changePasswordMutation.isPending}
                     data-testid="button-update-password"
                     title="Обновить пароль"
@@ -532,8 +532,8 @@ export default function PartnerSettings() {
                     <Key className="h-4 w-4 mr-2" />
                     {changePasswordMutation.isPending ? 'Обновление...' : 'Обновить пароль'}
                   </Button>
-                  <Button 
-                    onClick={handleSaveSecuritySettings} 
+                  <Button
+                    onClick={handleSaveSecuritySettings}
                     disabled={updateSecurityMutation.isPending}
                     variant="outline"
                     data-testid="button-save-security"
@@ -563,19 +563,19 @@ export default function PartnerSettings() {
                     <div className="space-y-2">
                       <h3 className="font-semibold text-destructive">Удаление аккаунта</h3>
                       <p className="text-sm text-muted-foreground">
-                        Удаление аккаунта приведёт к безвозвратной потере всех данных, 
+                        Удаление аккаунта приведёт к безвозвратной потере всех данных,
                         статистики и настроек. Это действие нельзя отменить.
                       </p>
-                      <Button 
-                        variant="destructive" 
-                        size="sm" 
+                      <Button
+                        variant="destructive"
+                        size="sm"
                         data-testid="button-delete-account"
                         title="Удалить аккаунт безвозвратно"
                         onClick={() => {
                           toast({
-                            title: "Функция недоступна",
-                            description: "Для удаления аккаунта свяжитесь с администрацией.",
-                            variant: "default",
+                            title: 'Функция недоступна',
+                            description: 'Для удаления аккаунта свяжитесь с администрацией.',
+                            variant: 'default',
                           });
                         }}
                       >
