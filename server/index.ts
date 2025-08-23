@@ -39,7 +39,14 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Безопасность и лимиты
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "script-src": ["'self'", "'unsafe-inline'"], // Allow inline scripts for development
+    },
+  },
+}));
 app.use(compression());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
 
