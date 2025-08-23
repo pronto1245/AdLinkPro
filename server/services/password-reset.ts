@@ -36,8 +36,6 @@ export class DatabasePasswordResetService implements PasswordResetService {
       const successMessage = "Если аккаунт с этим email существует, на него будет отправлено письмо с инструкциями по восстановлению пароля.";
 
       if (userExists) {
-        const user = userResult.rows[0];
-        
         // Generate secure reset token
         const resetToken = this.generateSecureToken();
         const expiresAt = new Date(Date.now() + this.TOKEN_EXPIRY_HOURS * 60 * 60 * 1000);

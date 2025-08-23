@@ -91,12 +91,6 @@ const categories = [
   'software', 'mobile_apps', 'nutra', 'beauty'
 ];
 
-const _verticals = [
-  'Casino', 'Sports Betting', 'Adult Dating', 'Mainstream Dating',
-  'Forex', 'Binary Options', 'Crypto Trading', 'Insurance',
-  'Nutra', 'Beauty', 'Mobile Apps', 'Software', 'VPN Services',
-  'Antivirus', 'E-commerce', 'Gambling', 'Betting'
-];
 
 const countries = [
   { code: 'afghanistan', name: '🇦🇫 Афганистан' },
