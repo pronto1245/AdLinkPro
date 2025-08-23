@@ -34,8 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedToken = secureStorage.getToken();
         if (storedToken) {
           setToken(storedToken);
-          // For now, we don't validate the token against server since we're using simplified approach
-          // You can add token validation here later if needed
+          // Упрощённо: пока не валидируем токен на сервере.
+          // При необходимости добавишь проверку /api/me позже.
         }
       } catch (error) {
         console.warn('Token initialization failed:', error);
@@ -51,19 +51,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const doLogin = useCallback(async (username: string, password: string): Promise<LoginResponse> => {
     try {
       const response = await apiLogin(username, password);
-      
-      // If 2FA is required, return the response without setting user/token
-      if ('requires2FA' in response && response.requires2FA) {
-        return response;
+
+      // 2FA сейчас не используется. Если когда-нибудь вернёшь —
+      // бэкенд может прислать requires2FA=true; тогда просто обработай это на UI.
+      if ('requires2FA' in response && (response as any).requires2FA) {
+        return response; // не ставим user/token — ждём подтверждения 2FA на UI
       }
-      
-      // If login is successful, set user and token
+
+      // Успешный логин — сохраняем пользователя и токен
       if (response.token && response.user) {
-        setUser(response.user);
+        setUser(response.user as User);
         setToken(response.token);
         secureStorage.setToken(response.token);
       }
-      
+
       return response;
     } catch (error) {
       throw error;
@@ -77,12 +78,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ 
-      user, 
-      token, 
+    () => ({
+      user,
+      token,
       isLoading,
       isAuthenticated: !!token && !!user,
-      login: doLogin, 
+      login: doLogin,
       logout
     }),
     [user, token, isLoading, doLogin, logout]
@@ -93,6 +94,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthCtx);
-  if (!ctx) {throw new Error('useAuth must be used within AuthProvider');}
+  if (!ctx) { throw new Error('useAuth must be used within AuthProvider'); }
   return ctx;
 }

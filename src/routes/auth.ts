@@ -10,24 +10,27 @@ const inMemoryUsers = new Map<string, any>();
 
 router.post('/api/auth/login', async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body || {};
-    console.log('🔐 [AUTH] Login attempt for:', email);
+    const { email, password, username } = req.body || {};
+    const loginIdentifier = email || username;
+    console.log('🔐 [AUTH] Login attempt for:', loginIdentifier);
 
-    if (!email || !password) return res.status(400).json({ error: 'email and password are required' });
+    if ((!email && !username) || !password) {
+      return res.status(400).json({ error: 'Email/username and password are required' });
+    }
 
     let user = null;
     try {
-      user = await findUserByEmail(email);
+      user = await findUserByEmail(loginIdentifier);
       console.log('✅ [AUTH] Database user lookup result:', !!user, user?.id);
     } catch (dbError) {
-      console.log('⚠️ [AUTH] Database connection failed:', dbError.message);
+      console.log('⚠️ [AUTH] Database connection failed:', dbError?.message);
       console.log('🔄 [AUTH] Falling back to hardcoded users...');
     }
 
     if (!user) {
       // Check in-memory registered users first
-      console.log('🔍 [AUTH] Checking in-memory registered users for:', email);
-      const inMemoryUser = inMemoryUsers.get(email.toLowerCase());
+      console.log('🔍 [AUTH] Checking in-memory registered users for:', loginIdentifier);
+      const inMemoryUser = inMemoryUsers.get(loginIdentifier?.toLowerCase());
       
       if (inMemoryUser) {
         console.log('✅ [AUTH] Found user in memory, checking password');
@@ -54,60 +57,63 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
           );
           
           return res.json({ 
+            success: true,
             token,
             user: {
               id: inMemoryUser.id,
               email: inMemoryUser.email,
               role: inMemoryUser.role,
-              username: inMemoryUser.username
+              username: inMemoryUser.username,
+              twoFactorEnabled: false
             }
           });
         }
       }
       
       // FALLBACK: Try hardcoded users when database is unavailable
-      console.log('🔍 [AUTH] Checking hardcoded users for:', email);
+      console.log('🔍 [AUTH] Checking hardcoded users for:', loginIdentifier);
       const hardcodedUsers = [
         {
-          id: 'owner-1',
-          email: "ovner@test.com",
-          password: "Ovner#123",
-          role: "owner",
+          id: 'owner',
+          email: "9791207@gmail.com",
           username: "owner",
+          password: "Affilix123!",
+          role: "OWNER",
           is_active: true
         },
         {
-          id: 'advertiser-1',
-          email: "advertiser@test.com",
-          password: "Advertiser#123",
-          role: "advertiser",
+          id: 'advertiser',
+          email: "advertiser@example.com",
           username: "advertiser",
+          password: "adv123",
+          role: "ADVERTISER",
           is_active: true
         },
         {
-          id: 'partner-1',
-          email: "partner@test.com",
-          password: "Partner#123",
-          role: "partner",
+          id: 'partner',
+          email: "partner@example.com",
           username: "partner",
+          password: "partner123",
+          role: "PARTNER",
           is_active: true
-        },
+        }
       ];
       
       const hardcodedUser = hardcodedUsers.find(u => 
-        u.email.toLowerCase() === email.toLowerCase()
+        u.email.toLowerCase() === loginIdentifier?.toLowerCase() ||
+        u.username.toLowerCase() === loginIdentifier?.toLowerCase()
       );
       
       if (hardcodedUser && hardcodedUser.password === password) {
-        console.log('✅ [AUTH] Hardcoded user found, checking activation status:', hardcodedUser.email);
+        console.log('✅ [AUTH] Hardcoded user found, checking activation status:', hardcodedUser.username);
         
         // Check if account is active
         if (!hardcodedUser.is_active) {
-          console.log('❌ [AUTH] Account is inactive:', hardcodedUser.email);
+          console.log('❌ [AUTH] Account is inactive:', hardcodedUser.username);
           return res.status(403).json({ error: 'Для активации аккаунта с Вами свяжется менеджер в течении 24 часов' });
         }
         
-        console.log('✅ [AUTH] Hardcoded user authentication successful:', hardcodedUser.email);
+        console.log('✅ [AUTH] Hardcoded user authentication successful:', hardcodedUser.username);
         
         const secret = process.env.JWT_SECRET;
         if (!secret) return res.status(500).json({ error: 'JWT_SECRET missing' });
@@ -119,12 +125,14 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
         );
         
         return res.json({ 
+          success: true,
           token,
           user: {
             id: hardcodedUser.id,
             email: hardcodedUser.email,
             role: hardcodedUser.role,
-            username: hardcodedUser.username
+            username: hardcodedUser.username,
+            twoFactorEnabled: false
           }
         });
       }
@@ -152,7 +160,18 @@ router.post('/api/auth/login', async (req: Request, res: Response) => {
       { expiresIn: '7d' }
     );
 
-    return res.json({ token, user: { sub: user.id, email: user.email, role: user.role, username: user.username } });
+    return res.json({ 
+      success: true,
+      token, 
+      user: { 
+        id: user.id,
+        sub: user.id, 
+        email: user.email, 
+        role: user.role, 
+        username: user.username,
+        twoFactorEnabled: user.twoFactorEnabled || false 
+      } 
+    });
   } catch (e) {
     console.error('login error', e);
     return res.status(500).json({ error: 'internal error' });

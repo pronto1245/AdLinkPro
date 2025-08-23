@@ -182,7 +182,7 @@ authRouter.post("/login", async (req, res) => {
           email: user.email,
           role: user.role,
           username: user.username,
-          twoFactorEnabled: user.twoFactorEnabled || false
+          twoFactorEnabled: false // System-wide disabled per user request
         }
       });
     } catch (error) {
