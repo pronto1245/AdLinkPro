@@ -71,7 +71,7 @@ interface MenuItem {
 
 export function TopNavigation() {
   const { user, logout } = useAuth();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const [, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 

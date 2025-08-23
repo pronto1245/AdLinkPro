@@ -91,7 +91,7 @@ const categories = [
   'software', 'mobile_apps', 'nutra', 'beauty'
 ];
 
-const verticals = [
+const _verticals = [
   'Casino', 'Sports Betting', 'Adult Dating', 'Mainstream Dating',
   'Forex', 'Binary Options', 'Crypto Trading', 'Insurance',
   'Nutra', 'Beauty', 'Mobile Apps', 'Software', 'VPN Services',
