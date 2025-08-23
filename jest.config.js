@@ -7,7 +7,8 @@ export default {
     '^.+\\.ts$': ['ts-jest', {
       tsconfig: {
         types: ['node', 'jest']
-      }
+      },
+      useESM: true
     }],
   },
   moduleNameMapper: {
@@ -18,11 +19,6 @@ export default {
     'node_modules/(?!(node-fetch|fetch-blob|data-uri-to-buffer|formdata-polyfill)/)',
   ],
   extensionsToTreatAsEsm: ['.ts'],
-  globals: {
-    'ts-jest': {
-      useESM: true
-    }
-  },
   collectCoverageFrom: [
     'server/**/*.ts',
     '!server/**/*.d.ts',
