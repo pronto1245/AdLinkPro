@@ -12,17 +12,17 @@ router.post('/auth/login', async (req, res) => {
   }
 
   const user = await findUserByEmail(email);
-  if (!user || !user.password_hash) {n
-    return res.status(401).json({ error: "Invalid credentials" });n
-  }n
-n
-  const [{ match }] = await db.execute(n
-    sql`SELECT crypt(${password}, ${user.password_hash}) = ${user.password_hash} as match`n
-  );n
-n
-  if (!match) {n
-    return res.status(401).json({ error: "Invalid credentials" });n
-  }n
+  if (!user || !user.password_hash) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
+
+  const [{ match }] = await db.execute(
+    sql`SELECT crypt(${password}, ${user.password_hash}) = ${user.password_hash} as match`
+  );
+
+  if (!match) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
   if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
   if (!match) return res.status(401).json({ error: 'Invalid credentials' });

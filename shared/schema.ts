@@ -1,7 +1,30 @@
 // schema.ts: Агрегатор для всех модулей
 
-export * from './postback-schema';
-// Добавьте другие модули по мере необходимости
+// Essential Drizzle ORM imports
+import { 
+  pgTable, 
+  pgEnum, 
+  text, 
+  varchar, 
+  uuid, 
+  decimal, 
+  integer, 
+  boolean, 
+  timestamp, 
+  jsonb, 
+  index,
+  serial,
+  bigint,
+  numeric,
+  char,
+  smallint,
+  real,
+  doublePrecision
+} from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import { createInsertSchema } from 'drizzle-zod';
+import { z } from 'zod';
+import { relations } from 'drizzle-orm';
 
 export const offerStatusEnum = pgEnum('offer_status', ['draft', 'pending', 'approved', 'rejected', 'paused', 'archived']);
 export const accessRequestStatusEnum = pgEnum('access_request_status', ['pending', 'approved', 'rejected']);
@@ -2013,8 +2036,9 @@ export const insertTeamInvitationSchema = createInsertSchema(teamInvitations).om
 export type TeamInvitation = typeof teamInvitations.$inferSelect;
 */
 
-export { insertPostbackSchema, insertReceivedOfferSchema } from "./postback-schema";
+// Note: insertPostbackSchema and insertReceivedOfferSchema are already defined above in this file
 
-
-export const postbackDeliveries = {} as any;
+// Create aliases for backward compatibility
+export const postbackProfiles = enhancedPostbackProfiles;
+export const postbackDeliveries = postbackDeliveryLogs;
 
