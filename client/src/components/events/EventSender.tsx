@@ -55,7 +55,7 @@ export function EventSender({ defaultClickId = '', defaultTxId = '' }: EventSend
         value: ''
       }));
       
-    } catch (_) {
+    } catch {
       // Error is handled by useSendEvent hook
     } finally {
       setIsLoading(false);
