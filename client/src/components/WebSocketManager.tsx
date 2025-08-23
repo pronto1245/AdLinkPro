@@ -6,7 +6,7 @@ import { ToastAction } from '@/components/ui/toast';
 
 interface WebSocketMessage {
   type: string;
-  data: any;
+  data: unknown;
   timestamp: string;
 }
 
@@ -25,7 +25,7 @@ interface SystemUpdateData {
   entity: string;
   action: string;
   entityId?: string;
-  data?: any;
+  data?: unknown;
 }
 
 export function WebSocketManager() {
@@ -136,10 +136,10 @@ export function WebSocketManager() {
 
       switch (message.type) {
         case 'notification':
-          handleNotification(message.data);
+          handleNotification(message.data as NotificationData);
           break;
         case 'system_update':
-          handleSystemUpdate(message.data);
+          handleSystemUpdate(message.data as SystemUpdateData);
           break;
         case 'ping':
           // Respond to ping with pong
@@ -261,7 +261,7 @@ export function WebSocketManager() {
 
   // Expose WebSocket status to global scope for debugging
   useEffect(() => {
-    (window as any).__wsStatus = () => ({
+    (window as Window & { __wsStatus?: () => unknown }).__wsStatus = () => ({
       connected: wsRef.current?.readyState === WebSocket.OPEN,
       readyState: wsRef.current?.readyState,
       url: wsRef.current?.url,

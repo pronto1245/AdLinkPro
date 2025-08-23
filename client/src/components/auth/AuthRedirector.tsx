@@ -9,8 +9,10 @@ export default function AuthRedirector({
   fallback: string;
   homeByRole?: Record<string, string>; // Deprecated, use centralized routeByRole
 }) {
-  let user: any = null;
-  try { user = (useAuth() as any)?.user ?? null; } catch {}
+  let user: { role?: string } | null = null;
+  try { user = useAuth()?.user ?? null; } catch {
+    // Failed to get user from auth context
+  }
   if (!user && typeof window !== 'undefined') {
     try { user = JSON.parse(localStorage.getItem('auth:user') || 'null'); } catch {}
   }

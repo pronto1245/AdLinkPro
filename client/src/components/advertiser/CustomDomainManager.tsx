@@ -54,6 +54,7 @@ interface CustomDomain {
 export function CustomDomainManager() {
   const [newDomain, setNewDomain] = useState('');
   const [domainType, setDomainType] = useState<'cname' | 'a_record' | 'txt_record'>('cname');
+  const [selectedDomain, setSelectedDomain] = useState<CustomDomain | null>(null);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -77,7 +78,7 @@ export function CustomDomainManager() {
       setNewDomain('');
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error('Domain add error:', error);
       toast({
         title: "❌ Ошибка добавления домена",
@@ -93,7 +94,8 @@ export function CustomDomainManager() {
       return apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, 'POST');
     },
     onSuccess: (data: unknown, _domainId: string) => {
-      if (data.success) {
+      const result = data as { success: boolean; error?: string };
+      if (result.success) {
         toast({
           title: "Домен верифицирован",
           description: "Ваш кастомный домен успешно верифицирован и активирован!"
@@ -101,7 +103,7 @@ export function CustomDomainManager() {
       } else {
         toast({
           title: "Верификация не пройдена",
-          description: data.error || "Проверьте DNS настройки и повторите попытку",
+          description: result.error || "Проверьте DNS настройки и повторите попытку",
           variant: "destructive"
         });
       }
@@ -121,14 +123,14 @@ export function CustomDomainManager() {
     mutationFn: async (domainId: string) => {
       return apiRequest(`/api/advertiser/profile/domains/${domainId}/ssl`, 'POST');
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data: { message?: string }) => {
       toast({
         title: "SSL сертификат выдается",
         description: data.message || "SSL сертификат выдается. Проверьте статус через несколько минут."
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Ошибка выдачи SSL",
         description: error?.error || "Не удалось запустить выдачу SSL сертификата",

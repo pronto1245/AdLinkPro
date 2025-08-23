@@ -187,7 +187,7 @@ export default function PostbackMetrics({ dateFrom, dateTo, className = '' }: Po
             {metrics.errorFrequency.length > 0 && (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-muted-foreground">Error Types</h4>
-                {metrics.errorFrequency.map((_error) => (
+                {metrics.errorFrequency.map((error) => (
                   <div key={error.errorType} className="flex items-center justify-between">
                     <span className="text-xs">{error.errorType}</span>
                     <div className="flex items-center gap-2">
