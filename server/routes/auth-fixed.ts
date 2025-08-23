@@ -16,6 +16,40 @@ const getConfig = () => ({
 export const authFixedRouter = Router();
 authFixedRouter.use(express.json());
 
+/**
+ * @swagger
+ * /api/auth/fixed/login:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: User login
+ *     description: Authenticate user with email and password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
+ *       401:
+ *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       429:
+ *         description: Too many login attempts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 // Enhanced logging for authentication
 function logAuthAttempt(req: Request, email: string, success: boolean, reason?: string) {
   const ip = req.ip || req.connection.remoteAddress || 'unknown';

@@ -75,12 +75,29 @@ export default [
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/no-inferrable-types': 'error',
       
       // Code quality
       'no-var': 'error',
       'prefer-const': 'error',
       'eqeqeq': ['error', 'always'],
       'curly': ['error', 'all'],
+      
+      // Additional consistency rules
+      'semi': ['error', 'always'],
+      'quotes': ['error', 'single', { allowTemplateLiterals: true }],
+      'object-curly-spacing': ['error', 'always'],
+      'array-bracket-spacing': ['error', 'never'],
+      'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 1 }],
+      'no-trailing-spaces': 'error',
+      'eol-last': ['error', 'always'],
+      
+      // Import rules
+      'no-duplicate-imports': 'error',
+      
+      // Error handling
+      'no-throw-literal': 'error',
+      'prefer-promise-reject-errors': 'error',
     },
   },
   {
