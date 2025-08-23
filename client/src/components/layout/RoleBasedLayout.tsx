@@ -6,7 +6,7 @@ import { Menu } from "lucide-react";
 
 export default function RoleBasedLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { collapsed, sidebarWidth } = useSidebar();
+  const { collapsed: _collapsed, sidebarWidth } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
 
   useEffect(() => {

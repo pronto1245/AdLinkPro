@@ -11,10 +11,8 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Minus, Upload, Image, Globe, DollarSign, Target, Settings, ArrowLeft, Save, Eye, Trash2 } from 'lucide-react';
+import { Plus, Upload, Image, Globe, Target, Settings, ArrowLeft, Save, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ObjectUploader } from '@/components/ObjectUploader';
 import { CreativeUploader } from '@/components/CreativeUploader';
@@ -142,7 +140,7 @@ const categories = [
   'software', 'mobile_apps', 'nutra', 'beauty'
 ];
 
-const verticals = [
+const _verticals = [
   'Casino', 'Sports Betting', 'Adult Dating', 'Mainstream Dating',
   'Forex', 'Binary Options', 'Crypto Trading', 'Insurance',
   'Nutra', 'Beauty', 'Mobile Apps', 'Software', 'VPN Services',
