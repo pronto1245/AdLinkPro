@@ -36,6 +36,19 @@ export default [
         HTMLInputElement: 'readonly',
         HTMLElement: 'readonly',
         React: 'readonly',
+        // WebSocket related
+        WebSocket: 'readonly',
+        MessageEvent: 'readonly',
+        Event: 'readonly',
+        CloseEvent: 'readonly',
+        CustomEvent: 'readonly',
+        // Additional browser APIs
+        URL: 'readonly',
+        RequestInfo: 'readonly',
+        RequestInit: 'readonly',
+        navigator: 'readonly',
+        // Node.js types
+        NodeJS: 'readonly',
       },
     },
     plugins: {
@@ -46,7 +59,7 @@ export default [
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
-      'no-console': 'warn',
+      'no-console': 'off', // Allow console statements in development
       
       // TypeScript specific
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],

@@ -70,7 +70,7 @@ export function useWebSocket(
   }, [onMessage]);
 
   const handleError = useCallback((error: Event) => {
-    console.error('WebSocket error:', _error);
+    console.error('WebSocket error:', error);
     onError?.(error);
   }, [onError]);
 

@@ -219,7 +219,7 @@ export function handleRegistrationError(
   error: any,
   operation: string
 ): void {
-  console.error(`Registration ${operation} error:`, _error);
+  console.error(`Registration ${operation} error:`, error);
   
   if (error.name === 'ValidationError') {
     sendValidationError(req, res, `${operation} validation failed`, error.message);
@@ -228,6 +228,6 @@ export function handleRegistrationError(
   } else if (error.message?.includes('database') || error.code?.startsWith('P')) {
     sendDatabaseError(req, res, error, false);
   } else {
-    sendInternalError(req, res, _error);
+    sendInternalError(req, res, error);
   }
 }

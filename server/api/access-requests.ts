@@ -207,8 +207,8 @@ app.post('/api/access-requests/bulk-action', authenticateToken, requireRole(['ad
         }
         
         results.push(updatedRequest);
-      } catch (_error) {
-        console.error(`Error processing request ${requestId}:`, _error);
+      } catch (_) {
+        console.error(`Error processing request ${requestId}:`, error);
       }
     }
     

@@ -255,7 +255,7 @@ export class I18nService {
       
       console.debug(`Loaded ${language} translations from server`);
     } catch (_error) {
-      console.error(`Failed to load ${language} translations from server:`, _error);
+      console.error(`Failed to load ${language} translations from server:`, error);
       throw error;
     }
   }

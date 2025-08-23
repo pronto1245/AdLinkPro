@@ -321,7 +321,7 @@ export class IPWhitelistService {
         const result = await this.addToWhitelist(entry);
         results.push(result);
       } catch (_error) {
-        console.error(`Failed to whitelist ${entry.ip}:`, _error);
+        console.error(`Failed to whitelist ${entry.ip}:`, error);
       }
     }
     

@@ -43,7 +43,7 @@ export class DNSVerificationService {
         };
       }
     } catch (error: any) {
-      console.error(`DNS verification error for ${domain}:`, _error);
+      console.error(`DNS verification error for ${domain}:`, error);
       return { 
         success: false, 
         method: 'dns', 
@@ -96,7 +96,7 @@ export class DNSVerificationService {
         };
       }
     } catch (error: any) {
-      console.error(`File verification error for ${domain}:`, _error);
+      console.error(`File verification error for ${domain}:`, error);
       return {
         success: false,
         method: 'file',

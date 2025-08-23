@@ -142,7 +142,7 @@ router.get('/click', async (req, res) => {
         
         // Non-blocking fraud analysis
         EnhancedFraudService.triggerAutoFraudDetection(fraudClickData).catch(error => {
-          console.error('Fraud detection failed:', _error);
+          console.error('Fraud detection failed:', error);
         });
       } else {
         console.log(`✅ IP ${ip} is whitelisted, skipping fraud detection`);
@@ -195,7 +195,7 @@ router.get('/click', async (req, res) => {
       
       // Send postbacks to external trackers (non-blocking)
       PostbackService.triggerPostbacks(postbackEvent).catch(error => {
-        console.error('Postback sending failed:', _error);
+        console.error('Postback sending failed:', error);
       });
     } catch (error) {
       console.error('Postback trigger failed:', error);
@@ -254,7 +254,7 @@ router.post('/event', async (req, res) => {
       
       // Send postbacks to external trackers (non-blocking)
       PostbackService.triggerPostbacks(postbackEvent).catch(error => {
-        console.error('Event postback sending failed:', _error);
+        console.error('Event postback sending failed:', error);
       });
     } catch (error) {
       console.error('Event postback trigger failed:', error);
@@ -269,7 +269,7 @@ router.post('/event', async (req, res) => {
       });
     }
     
-    console.error('Event tracking error:', _error);
+    console.error('Event tracking error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

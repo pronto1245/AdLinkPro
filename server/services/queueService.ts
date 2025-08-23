@@ -265,7 +265,7 @@ export class QueueService {
       await this.logPostbackDelivery(conversionId, partnerId, 'success', response.status);
 
     } catch (_error) {
-      console.error(`Postback delivery failed for conversion ${conversionId}:`, _error);
+      console.error(`Postback delivery failed for conversion ${conversionId}:`, error);
       
       // Log failed postback
       await this.logPostbackDelivery(conversionId, partnerId, 'failed', 0, error.message);

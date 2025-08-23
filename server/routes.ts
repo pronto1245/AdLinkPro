@@ -341,7 +341,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(allProfiles);
     } catch (error: any) {
-      console.error('Error getting postback profiles:', _error);
+      console.error('Error getting postback profiles:', error);
       res.status(500).json({ message: 'Failed to get postback profiles' });
     }
   });
@@ -369,7 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(savedProfile);
     } catch (error: any) {
-      console.error('❌ Error creating postback profile:', _error);
+      console.error('❌ Error creating postback profile:', error);
       res.status(500).json({ message: 'Failed to create postback profile' });
     }
   });
@@ -393,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(404).json({ success: false, message: 'Профиль не найден' });
       }
     } catch (error: any) {
-      console.error('❌ Error updating postback profile:', _error);
+      console.error('❌ Error updating postback profile:', error);
       res.status(500).json({ success: false, message: 'Failed to update postback profile' });
     }
   });
@@ -417,7 +417,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(404).json({ success: false, message: 'Профиль не найден или не может быть удален' });
       }
     } catch (error: any) {
-      console.error('❌ Error deleting postback profile:', _error);
+      console.error('❌ Error deleting postback profile:', error);
       res.status(500).json({ success: false, message: 'Failed to delete postback profile' });
     }
   });
@@ -456,7 +456,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(mockDeliveries);
     } catch (error: any) {
-      console.error('Error getting postback deliveries:', _error);
+      console.error('Error getting postback deliveries:', error);
       res.status(500).json({ message: 'Failed to get postback deliveries' });
     }
   });
@@ -529,7 +529,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(testResult);
       
     } catch (error: any) {
-      console.error('Error testing postback:', _error);
+      console.error('Error testing postback:', error);
       res.status(500).json({ 
         success: false, 
         message: 'Внутренняя ошибка сервера' 
@@ -582,7 +582,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
       res.json(mockLogs);
     } catch (error: any) {
-      console.error('Error fetching postback logs:', _error);
+      console.error('Error fetching postback logs:', error);
       res.status(500).json({ error: 'Failed to fetch logs' });
     }
   });
@@ -613,7 +613,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
     } catch (error: any) {
-      console.error('Error updating postback profile:', _error);
+      console.error('Error updating postback profile:', error);
       res.status(500).json({ 
         success: false,
         message: 'Внутренняя ошибка сервера' 
@@ -638,7 +638,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
     } catch (error: any) {
-      console.error('Error deleting postback profile:', _error);
+      console.error('Error deleting postback profile:', error);
       res.status(500).json({ 
         success: false,
         message: 'Внутренняя ошибка сервера' 
@@ -670,7 +670,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
     } catch (error: any) {
-      console.error('Error creating postback profile:', _error);
+      console.error('Error creating postback profile:', error);
       res.status(500).json({ 
         success: false,
         message: 'Внутренняя ошибка сервера' 
@@ -697,7 +697,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allProfiles = [...demoProfiles, ...createdProfiles];
       res.json(allProfiles);
     } catch (error: any) {
-      console.error('Error getting advertiser postback profiles:', _error);
+      console.error('Error getting advertiser postback profiles:', error);
       res.status(500).json({ message: 'Failed to get postback profiles' });
     }
   });
@@ -728,7 +728,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(201).json(newProfile);
     } catch (error: any) {
-      console.error('Error creating advertiser postback profile:', _error);
+      console.error('Error creating advertiser postback profile:', error);
       res.status(500).json({ message: 'Failed to create postback profile' });
     }
   });
@@ -750,7 +750,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(updatedProfile);
     } catch (error: any) {
-      console.error('Error updating advertiser postback profile:', _error);
+      console.error('Error updating advertiser postback profile:', error);
       res.status(500).json({ message: 'Failed to update postback profile' });
     }
   });
@@ -771,7 +771,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(204).send();
     } catch (error: any) {
-      console.error('Error deleting advertiser postback profile:', _error);
+      console.error('Error deleting advertiser postback profile:', error);
       res.status(500).json({ message: 'Failed to delete postback profile' });
     }
   });
@@ -834,7 +834,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(mockLogs);
     } catch (error: any) {
-      console.error('Error getting advertiser postback logs:', _error);
+      console.error('Error getting advertiser postback logs:', error);
       res.status(500).json({ message: 'Failed to get postback logs' });
     }
   });
@@ -894,7 +894,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(testResult);
       
     } catch (error: any) {
-      console.error('Error testing advertiser postback:', _error);
+      console.error('Error testing advertiser postback:', error);
       res.status(500).json({ 
         success: false, 
         message: 'Внутренняя ошибка сервера' 
@@ -2009,7 +2009,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      console.error("Registration error:", _error);
+      console.error("Registration error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -3672,7 +3672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      console.error("Create user error:", _error);
+      console.error("Create user error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -5977,7 +5977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      console.error("Create ticket error:", _error);
+      console.error("Create ticket error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -6359,7 +6359,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           successCount++;
         } catch (_error) {
           failedCount++;
-          console.error(`Failed to block user ${userId}:`, _error);
+          console.error(`Failed to block user ${userId}:`, error);
         }
       }
       
@@ -6391,7 +6391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           successCount++;
         } catch (_error) {
           failedCount++;
-          console.error(`Failed to unblock user ${userId}:`, _error);
+          console.error(`Failed to unblock user ${userId}:`, error);
         }
       }
       
@@ -6428,7 +6428,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           successCount++;
         } catch (_error) {
           failedCount++;
-          console.error(`Failed to delete user ${userId}:`, _error);
+          console.error(`Failed to delete user ${userId}:`, error);
         }
       }
       
@@ -6772,7 +6772,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const offer = await storage.updateOffer(offerId, { status: 'active' });
           updatedOffers.push(offer);
         } catch (_error) {
-          console.error(`Error activating offer ${offerId}:`, _error);
+          console.error(`Error activating offer ${offerId}:`, error);
         }
       }
 
@@ -6801,7 +6801,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const offer = await storage.updateOffer(offerId, { status: 'paused' });
           updatedOffers.push(offer);
         } catch (_error) {
-          console.error(`Error pausing offer ${offerId}:`, _error);
+          console.error(`Error pausing offer ${offerId}:`, error);
         }
       }
 
@@ -6831,7 +6831,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           deletedOffers.push(offerId);
           console.log(`Successfully deleted offer: ${offerId}`);
         } catch (_error) {
-          console.error(`Error deleting offer ${offerId}:`, _error);
+          console.error(`Error deleting offer ${offerId}:`, error);
         }
       }
 
@@ -6967,7 +6967,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const settings = await storage.getSystemSettings();
       res.json(settings);
     } catch (error: any) {
-      console.error("Get system settings error:", _error);
+      console.error("Get system settings error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -6981,7 +6981,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.status(201).json(setting);
     } catch (error: any) {
-      console.error("Create system setting error:", _error);
+      console.error("Create system setting error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -6995,7 +6995,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(setting);
     } catch (error: any) {
-      console.error("Update system setting error:", _error);
+      console.error("Update system setting error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7006,7 +7006,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.deleteSystemSetting(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Delete system setting error:", _error);
+      console.error("Delete system setting error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7027,7 +7027,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(logs);
     } catch (error: any) {
-      console.error("Get audit logs error:", _error);
+      console.error("Get audit logs error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7040,7 +7040,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const postbacks = await storage.getGlobalPostbacks();
       res.json(postbacks);
     } catch (error: any) {
-      console.error("Get global postbacks error:", _error);
+      console.error("Get global postbacks error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7051,7 +7051,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const postback = await storage.createGlobalPostback(req.body);
       res.status(201).json(postback);
     } catch (error: any) {
-      console.error("Create global postback error:", _error);
+      console.error("Create global postback error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7062,7 +7062,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const postback = await storage.updateGlobalPostback(req.params.id, req.body);
       res.json(postback);
     } catch (error: any) {
-      console.error("Update global postback error:", _error);
+      console.error("Update global postback error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7073,7 +7073,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.testGlobalPostback(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Test global postback error:", _error);
+      console.error("Test global postback error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7084,7 +7084,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const logs = await storage.getPostbackLogs();
       res.json(logs);
     } catch (error: any) {
-      console.error("Get postback logs error:", _error);
+      console.error("Get postback logs error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7101,7 +7101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(entries);
     } catch (error: any) {
-      console.error("Get blacklist entries error:", _error);
+      console.error("Get blacklist entries error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7115,7 +7115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.status(201).json(entry);
     } catch (error: any) {
-      console.error("Create blacklist entry error:", _error);
+      console.error("Create blacklist entry error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7126,7 +7126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const entry = await storage.updateBlacklistEntry(req.params.id, req.body);
       res.json(entry);
     } catch (error: any) {
-      console.error("Update blacklist entry error:", _error);
+      console.error("Update blacklist entry error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7137,7 +7137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.deleteBlacklistEntry(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Delete blacklist entry error:", _error);
+      console.error("Delete blacklist entry error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7159,7 +7159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.updateUser(req.params.id, updateData);
       res.json(user);
     } catch (error: any) {
-      console.error("Update user error:", _error);
+      console.error("Update user error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7184,7 +7184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await storage.getUsersWithFilters(filters);
       res.json(result);
     } catch (error: any) {
-      console.error("Get users error:", _error);
+      console.error("Get users error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7198,7 +7198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.blockUser(req.params.id, reason, blockedBy);
       res.json(user);
     } catch (error: any) {
-      console.error("Block user error:", _error);
+      console.error("Block user error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7209,7 +7209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.unblockUser(req.params.id);
       res.json(user);
     } catch (error: any) {
-      console.error("Unblock user error:", _error);
+      console.error("Unblock user error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7220,7 +7220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.forceLogoutUser(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Force logout user error:", _error);
+      console.error("Force logout user error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7239,7 +7239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Delete user error:", _error);
+      console.error("Delete user error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7250,7 +7250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newPassword = await storage.resetUserPassword(req.params.id);
       res.json({ newPassword });
     } catch (error: any) {
-      console.error("Reset user password error:", _error);
+      console.error("Reset user password error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7262,7 +7262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const analytics = await storage.getUserAnalytics(period);
       res.json(analytics);
     } catch (error: any) {
-      console.error("Get user analytics error:", _error);
+      console.error("Get user analytics error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7287,7 +7287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Content-Disposition', `attachment; filename=users.${format}`);
       res.send(data);
     } catch (error: any) {
-      console.error("Export users error:", _error);
+      console.error("Export users error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7305,7 +7305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const results = await storage.bulkBlockUsers(userIds, reason, blockedBy);
       res.json(results);
     } catch (error: any) {
-      console.error("Bulk block users error:", _error);
+      console.error("Bulk block users error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7322,7 +7322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const results = await storage.bulkUnblockUsers(userIds);
       res.json(results);
     } catch (error: any) {
-      console.error("Bulk unblock users error:", _error);
+      console.error("Bulk unblock users error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7340,7 +7340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const results = await storage.bulkDeleteUsers(userIds, hardDelete, deletedBy);
       res.json(results);
     } catch (error: any) {
-      console.error("Bulk delete users error:", _error);
+      console.error("Bulk delete users error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -9210,7 +9210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
     } catch (error: any) {
-      console.error('Postback test error:', _error);
+      console.error('Postback test error:', error);
       res.status(500).json({
         success: false,
         error: error.message,

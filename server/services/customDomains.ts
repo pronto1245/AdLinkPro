@@ -198,7 +198,7 @@ export class CustomDomainService {
       }
       
     } catch (error: any) {
-      console.error(`SSL issuance failed for ${domain}:`, _error);
+      console.error(`SSL issuance failed for ${domain}:`, error);
       
       // Обновляем статус на ошибку
       await db

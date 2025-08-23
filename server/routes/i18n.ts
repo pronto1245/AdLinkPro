@@ -56,7 +56,7 @@ router.post('/reload', (req, res) => {
   try {
     reloadTranslations();
     res.json({ message: 'Translations reloaded successfully' });
-  } catch (_error) {
+  } catch (_) {
     res.status(500).json({ 
       error: 'Failed to reload translations',
       details: error instanceof Error ? error.message : 'Unknown error'

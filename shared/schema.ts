@@ -1683,7 +1683,7 @@ export const insertPostbackProfileSchema = createInsertSchema(postbackProfiles).
 
 // Insert schemas - TEMPORARILY COMMENTED OUT DUE TO DRIZZLE-ZOD SYNTAX ISSUES
 // These need to be fixed with proper omit syntax but are not critical for merge conflict resolution
-/*
+// This comment block has been closed to fix TypeScript compilation error
 
 // Insert schemas
 

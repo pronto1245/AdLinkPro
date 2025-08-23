@@ -260,7 +260,7 @@ export class PostbackService {
       };
 
     } catch (error: any) {
-      console.error('Postback sending failed:', _error);
+      console.error('Postback sending failed:', error);
       // Log failed attempt
       await db.insert(postbackLogs).values({
         postbackId,
@@ -446,7 +446,7 @@ export class PostbackService {
       };
 
     } catch (error: any) {
-      console.error('External tracker postback failed:', _error);
+      console.error('External tracker postback failed:', error);
       return {
         success: false,
         error: error.message,
