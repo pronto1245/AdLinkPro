@@ -174,8 +174,6 @@ ${severityEmoji[data.severity]} <b>FRAUD ALERT!</b>
 
     // Получаем статистику за сегодня
     const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const _endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
     // Здесь должна быть реальная статистика из базы данных
     const stats = {

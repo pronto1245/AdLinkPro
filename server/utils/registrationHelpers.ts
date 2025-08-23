@@ -195,7 +195,7 @@ export function validateRegistrationJWT(token: string): { isValid: boolean; erro
     if (!header.alg || !header.typ) {
       errors.push('JWT header missing required fields (alg, typ)');
     }
-  } catch (_error) {
+  } catch {
     errors.push('JWT header is not valid JSON');
   }
   
@@ -207,7 +207,7 @@ export function validateRegistrationJWT(token: string): { isValid: boolean; erro
     if (!payload.exp) {
       errors.push('JWT payload missing expiration time (exp)');
     }
-  } catch (_error) {
+  } catch {
     errors.push('JWT payload is not valid JSON');
   }
   

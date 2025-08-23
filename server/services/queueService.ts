@@ -3,6 +3,19 @@ import { createClient } from 'redis';
 import { cacheService } from './cacheService';
 import { auditLog } from '../middleware/security';
 
+// Fraud detection data interface
+interface FraudData {
+  rapidClicks?: boolean;
+  suspiciousUA?: boolean;
+  proxyIP?: boolean;
+  deviceSpoofing?: boolean;
+  ipAddress?: string;
+  userAgent?: string;
+  sessionId?: string;
+  userId?: string;
+  timestamp?: number;
+}
+
 // Redis connection for queues
 const redisConnection = {
   host: process.env.REDIS_HOST || 'localhost',
@@ -333,7 +346,7 @@ export class QueueService {
     await cacheService.set(key, current, 300); // 5 minutes
   }
 
-  private async sendEmailNotification(recipient: string, template: string, _data: any) {
+  private async sendEmailNotification(recipient: string, template: string, _data: unknown) {
     // Implement email notification sending
     console.log('Sending email notification:', { recipient, template });
   }
@@ -343,12 +356,12 @@ export class QueueService {
     console.log('Sending push notification:', { recipient, template });
   }
 
-  private async sendSMSNotification(recipient: string, template: string, _data: any) {
+  private async sendSMSNotification(recipient: string, template: string, _data: unknown) {
     // Implement SMS notification sending
     console.log('Sending SMS notification:', { recipient, template });
   }
 
-  private async calculateFraudScore(data: any): Promise<number> {
+  private async calculateFraudScore(data: FraudData): Promise<number> {
     // Implement fraud score calculation algorithm
     let score = 0;
     
@@ -361,7 +374,7 @@ export class QueueService {
     return Math.min(score, 100);
   }
 
-  private async identifyFraudIndicators(data: any): Promise<string[]> {
+  private async identifyFraudIndicators(data: FraudData): Promise<string[]> {
     const indicators: string[] = [];
     
     if (data.rapidClicks) {indicators.push('rapid_clicks');}
@@ -372,7 +385,7 @@ export class QueueService {
     return indicators;
   }
 
-  private async createFraudReport(data: any) {
+  private async createFraudReport(data: FraudData) {
     // Create fraud report in database
     console.log('Creating fraud report:', data);
   }
