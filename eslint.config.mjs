@@ -37,6 +37,8 @@ export default [
         HTMLInputElement: 'readonly',
         HTMLElement: 'readonly',
         HTMLDivElement: 'readonly',
+        HTMLParagraphElement: 'readonly',
+        HTMLHeadingElement: 'readonly',
         KeyboardEvent: 'readonly',
         React: 'readonly',
         // WebSocket related

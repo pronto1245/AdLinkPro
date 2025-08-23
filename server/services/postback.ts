@@ -1,7 +1,7 @@
 import { createHmac, randomBytes } from 'crypto';
-import { eq, and, or, desc, asc, gte, lte } from 'drizzle-orm';
+import { eq, and, desc, asc, gte } from 'drizzle-orm';
 import { db } from '../db';
-import { postbacks, postbackLogs, postbackTemplates, trackingClicks, users, offers } from '../../shared/schema';
+import { postbacks, postbackLogs, postbackTemplates, trackingClicks, users } from '../../shared/schema';
 import { postbackMonitor } from './postbackMonitoring';
 
 // Type imports for fraud service integration
@@ -776,9 +776,6 @@ export class PostbackService {
     .leftJoin(postbacks, eq(postbackLogs.postbackId, postbacks.id))
     .orderBy(desc(postbackLogs.createdAt));
 
-    // Apply filters (simplified for now)
-    const filteredQuery = query;
-
     const limit = filters.limit || 50;
     const offset = filters.offset || 0;
 
@@ -814,10 +811,11 @@ export class PostbackService {
 
 // Initialize retry scheduler (runs every 5 minutes)
 // TEMPORARILY DISABLED due to database timeout issues
-if (false && typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    PostbackService.retryFailedPostbacks().catch(console.error);
-  }, 5 * 60 * 1000); // 5 minutes
-}
+// TODO: Re-enable when database stability issues are resolved
+// if (typeof setInterval !== 'undefined') {
+//   setInterval(() => {
+//     PostbackService.retryFailedPostbacks().catch(console.error);
+//   }, 5 * 60 * 1000); // 5 minutes
+// }
 
 export default PostbackService;
