@@ -1,25 +1,3 @@
-const API = import.meta.env.VITE_API_URL || '';
-
-export async function api(path: string, init?: RequestInit) {
-  const res = await fetch(`${API}${path}`, init);
-  if (!res.ok) throw new Error(`http_${res.status}`);
-  return res.json();
-}
-
-export type LoginResponse = {
-  token: string;
-  user: { sub: number; email: string; role: string; username: string };
-};
-
-export async function login(email: string, password: string): Promise<LoginResponse> {
-  const res = await fetch(`${API}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-  if (!res.ok) throw new Error('login_failed');
-  return res.json();
-
 const API_BASE: string = (import.meta as any).env?.VITE_API_BASE || '';
 
 type HttpInit = RequestInit & { headers?: Record<string, string> };
@@ -50,9 +28,13 @@ function json(path: string, body?: any, init: HttpInit = {}): Promise<any> {
 }
 
 export { api, json, API_BASE };
-export default api;
 
-export async function login(email: string, password: string): Promise<{ token: string }> {
+export type LoginResponse = {
+  token: string;
+  user: { sub: number; email: string; role: string; username: string };
+};
+
+export async function login(email: string, password: string): Promise<LoginResponse> {
   return json('/api/auth/login', { email, password });
 }
 
@@ -68,3 +50,4 @@ export async function getMenu(): Promise<any> {
     return r.json();
   }
 }
+
