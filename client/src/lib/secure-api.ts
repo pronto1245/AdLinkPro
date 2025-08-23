@@ -160,21 +160,19 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
 // Secure authentication functions
 export const secureAuth = {
   async login(
-    data: { email: string; password: string; twoFactorCode?: string; rememberMe?: boolean },
+    data: { email: string; password: string; rememberMe?: boolean },
     identifier?: string
   ) {
     console.log("🔐 [SECURE_API] Login called with:", {
       email: data.email,
       hasPassword: !!data.password,
-      hasTwoFactorCode: !!data.twoFactorCode,
       rememberMe: data.rememberMe,
       identifier
     });
 
     const cleanData = {
-      email: data.email.trim(),
+      email: data.email?.trim() || '',
       password: data.password,
-      ...(data.twoFactorCode && { twoFactorCode: data.twoFactorCode.replace(/\D/g, '') }),
       ...(data.rememberMe !== undefined && { rememberMe: data.rememberMe })
     };
 
@@ -194,7 +192,6 @@ export const secureAuth = {
         result
       });
 
-      // Store token securely if login successful
       if (result.token) {
         console.log("🔐 [SECURE_API] Storing token...");
         tokenStorage.setToken(result.token);
@@ -225,7 +222,6 @@ export const secureAuth = {
       identifier: identifier || cleanData.username
     });
 
-    // Store token securely if login successful (same as regular login method)
     if (result.token) {
       tokenStorage.setToken(result.token);
     }
@@ -233,18 +229,118 @@ export const secureAuth = {
     return result;
   },
 
-  async verify2FA(data: { tempToken: string; code: string }, identifier?: string) {
+  async register(data: {
+    name: string;
+    email: string;
+    username?: string;
+    password: string;
+    phone?: string;
+    company?: string;
+    contactType?: string;
+    contact?: string;
+    role?: string;
+    agreeTerms: boolean;
+    agreePrivacy: boolean;
+    agreeMarketing?: boolean;
+    telegram?: string;
+  }, identifier?: string) {
     const cleanData = {
-      token: sanitizeInput.cleanString(data.tempToken),
-      code: data.code.replace(/\D/g, '') // Only digits
+      name: sanitizeInput.cleanString(data.name),
+      email: sanitizeInput.cleanEmail(data.email),
+      ...(data.username && { username: sanitizeInput.cleanUsername(data.username) }),
+      password: data.password,
+      ...(data.phone && { phone: sanitizeInput.cleanPhone(data.phone) }),
+      ...(data.company && { company: sanitizeInput.cleanString(data.company) }),
+      ...(data.contactType && { contactType: data.contactType }),
+      ...(data.contact && { contact: sanitizeInput.cleanString(data.contact) }),
+      ...(data.telegram && { telegram: sanitizeInput.cleanTelegram(data.telegram) }),
+      ...(data.role && { role: data.role }),
+      agreeTerms: data.agreeTerms,
+      agreePrivacy: data.agreePrivacy,
+      ...(data.agreeMarketing !== undefined && { agreeMarketing: data.agreeMarketing })
     };
 
-    const result = await secureApi('/api/auth/v2/verify-2fa', {
+    let endpoint = '/api/auth/register';
+    if (data.role === 'PARTNER' || data.role === 'affiliate') {
+      endpoint = '/api/auth/register/partner';
+    } else if (data.role === 'ADVERTISER' || data.role === 'advertiser') {
+      endpoint = '/api/auth/register/advertiser';
+    }
+
+    const result = await secureApi(endpoint, {
       method: 'POST',
       body: JSON.stringify(cleanData),
       skipAuth: true,
-      identifier
+      identifier: identifier || sanitizeInput.cleanEmail(data.email)
     });
+
+    return result;
+  },
+
+  async resetPassword(data: { email: string }, identifier?: string) {
+    const cleanData = {
+      email: sanitizeInput.cleanEmail(data.email)
+    };
+
+    return secureApi('/api/auth/v2/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(cleanData),
+      skipAuth: true,
+      identifier: identifier || cleanData.email
+    });
+  },
+
+  async validateResetToken(token: string) {
+    const cleanToken = sanitizeInput.cleanString(token);
+
+    return secureApi('/api/auth/v2/validate-reset-token', {
+      method: 'POST',
+      body: JSON.stringify({ token: cleanToken }),
+      skipAuth: true
+    });
+  },
+
+  async completePasswordReset(token: string, newPassword: string) {
+    const cleanToken = sanitizeInput.cleanString(token);
+
+    return secureApi('/api/auth/v2/complete-password-reset', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        token: cleanToken,
+        newPassword: newPassword
+      }),
+      skipAuth: true
+    });
+  },
+
+  async me() {
+    return secureApi('/api/me');
+  },
+
+  async logout() {
+    try {
+      await secureApi('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // Ignore errors on logout
+    } finally {
+      tokenStorage.clearToken();
+      csrfManager.clearToken();
+    }
+  },
+
+  async refreshToken() {
+    try {
+      const result = await secureApi('/api/auth/refresh', { method: 'POST' });
+      if (result.token) {
+        tokenStorage.setToken(result.token);
+      }
+      return result;
+    } catch {
+      tokenStorage.clearToken();
+      throw new SecureAPIError(401, 'Token refresh failed', 'REFRESH_FAILED');
+    }
+  }
+};
 
     // Store token securely if verification successful
     if (result.token) {
