@@ -10,21 +10,22 @@ import {
 export function validateWithFallback<T>(
   req: Request,
   res: Response,
-  schema: any, _data: any,
+  schema: unknown, _data: unknown,
   fallbackFields: Partial<T>
 ): { success: true; data: T } | { success: false } {
   try {
     // Try primary schema validation
-    const validatedData = schema.parse(data);
-    return { success: true, _data: validatedData };
-  } catch (schemaError: any) {
-    console.log('❌ Schema validation error, attempting fallback:', schemaError.message);
+    const validatedData = (schema as unknown).parse(_data);
+    return { success: true, data: validatedData };
+  } catch (schemaError: unknown) {
+    const message = schemaError instanceof Error ? schemaError.message : 'Unknown error';
+    console.log('❌ Schema validation error, attempting fallback:', message);
     
     // Attempt fallback validation with essential fields
     try {
-      const fallbackData = createFallbackData(data, fallbackFields);
+      const fallbackData = createFallbackData(_data, fallbackFields);
       console.log('✅ Fallback validation successful');
-      return { success: true, _data: fallbackData as T };
+      return { success: true, data: fallbackData as T };
     } catch (fallbackError) {
       console.error('❌ Fallback validation also failed:', fallbackError);
       sendSchemaParsingError(req, res, schemaError, false);
@@ -34,8 +35,8 @@ export function validateWithFallback<T>(
 }
 
 // Create fallback data with safe field extraction
-function createFallbackData(originalData: any, fallbackFields: any): any {
-  const fallbackData: any = {};
+function createFallbackData(originalData: Record<string, unknown>, fallbackFields: Record<string, unknown>): Record<string, unknown> {
+  const fallbackData: Record<string, unknown> = {};
   
   // Copy essential fields with safe extraction
   for (const [key, defaultValue] of Object.entries(fallbackFields)) {
@@ -57,12 +58,12 @@ function createFallbackData(originalData: any, fallbackFields: any): any {
 }
 
 // Registration data transformation utilities
-export function transformRegistrationData(rawData: any): any {
+export function transformRegistrationData(rawData: Record<string, unknown>): Record<string, unknown> {
   const transformedData = { ...rawData };
   
-  // Transform name field to firstName/lastName if needed
+  // Transform name field to firstName/lastName if needed  
   if (rawData.name && !rawData.firstName && !rawData.lastName) {
-    const nameParts = rawData.name.split(' ');
+    const nameParts = String(rawData.name).split(' ');
     transformedData.firstName = nameParts[0] || '';
     transformedData.lastName = nameParts.slice(1).join(' ') || '';
   }
@@ -104,8 +105,9 @@ export async function executeWithFallback<T>(
     const result = await operation();
     console.log(`✅ ${operationName} completed successfully`);
     return { success: true, _data: result };
-  } catch (dbError: any) {
-    console.log(`⚠️ ${operationName} failed, using fallback:`, dbError.message);
+  } catch (dbError: unknown) {
+    const message = dbError instanceof Error ? dbError.message : 'Unknown error';
+    console.log(`⚠️ ${operationName} failed, using fallback:`, message);
     
     // For registration, we might want to allow fallback user creation
     // but log the issue for later processing
@@ -120,7 +122,7 @@ export async function executeWithFallback<T>(
 }
 
 // Enhanced validation for registration endpoints
-export function validateRegistrationData(data: any): { isValid: boolean; errors: string[] } {
+export function validateRegistrationData(data: Record<string, unknown>): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
   
   // Required fields validation
@@ -216,7 +218,7 @@ export function validateRegistrationJWT(token: string): { isValid: boolean; erro
 export function handleRegistrationError(
   req: Request,
   res: Response,
-  error: any,
+  error: unknown,
   operation: string
 ): void {
   console.error(`Registration ${operation} error:`, error);

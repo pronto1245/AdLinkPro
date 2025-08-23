@@ -2,7 +2,6 @@ import { Link, useLocation } from "wouter";
 import { 
   BarChart3, 
   Target, 
-  FileText, 
   Users, 
   DollarSign,
   Settings,
@@ -14,8 +13,7 @@ import {
   User,
   Cog,
   Send,
-  UserPlus,
-  TrendingUp
+  UserPlus
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";

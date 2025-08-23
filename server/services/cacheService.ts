@@ -205,9 +205,9 @@ export class CacheService {
     return this.get(cacheKey);
   }
 
-  async setStats(type: string, _data: any, userId?: string, timeframe: string = '24h') {
+  async setStats(type: string, _data: unknown, userId?: string, timeframe: string = '24h') {
     const cacheKey = `stats:${type}:${userId || 'global'}:${timeframe}`;
-    return this.set(cacheKey, data, CACHE_CONFIG.STATS_TTL);
+    return this.set(cacheKey, _data, CACHE_CONFIG.STATS_TTL);
   }
 
   // Session caching

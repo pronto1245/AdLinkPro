@@ -111,10 +111,10 @@ export const logSuccess = (operation: string, details?: any) => {
 };
 
 // Business logic logger
-export const logBusiness = (event: string, _data: any) => {
+export const logBusiness = (event: string, _data: unknown) => {
   logger.info('Business event', {
     event,
-    data,
+    data: _data,
     timestamp: new Date().toISOString()
   });
 };

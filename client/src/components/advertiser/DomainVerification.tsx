@@ -83,10 +83,11 @@ export default function DomainVerification() {
       setNewDomain('');
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/domains'] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : "Не удалось добавить домен";
       toast({
         title: "Ошибка",
-        description: error.message || "Не удалось добавить домен",
+        description: message,
         variant: "destructive"
       });
     }
@@ -97,7 +98,7 @@ export default function DomainVerification() {
     mutationFn: async (domainId: string) => {
       return apiRequest(`/api/advertiser/domains/${domainId}/check`, 'POST');
     },
-    onSuccess: (data, domainId) => {
+    onSuccess: (data, _domainId) => {
       if (data.success) {
         toast({
           title: "Домен подтверждён!",
@@ -127,7 +128,7 @@ export default function DomainVerification() {
       const data = await apiRequest(`/api/advertiser/domains/${domain.id}/instructions`);
       setInstructions(data.instructions);
       setSelectedDomain(domain);
-    } catch (_error) {
+    } catch {
       toast({
         title: "Ошибка",
         description: "Не удалось получить инструкции",

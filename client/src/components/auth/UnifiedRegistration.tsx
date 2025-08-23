@@ -189,8 +189,8 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
         telegram: sanitizeInput.cleanTelegram(data.telegram),
         password: data.password, // Don't sanitize password
         phone: data.phone ? sanitizeInput.cleanPhone(data.phone) : undefined, // phoneNumber as per requirements
-        company: config.requiresCompany && 'company' in data ? 
-          sanitizeInput.cleanString(data.company) : undefined, // companyName as per requirements
+        company: config.requiresCompany && 'company' in data && data.company ? 
+          sanitizeInput.cleanString(String(data.company)) : undefined, // companyName as per requirements
         contactType: data.contactType,
         contact: data.contact ? sanitizeInput.cleanString(data.contact) : undefined, // contactValue as per requirements
         role: config.role,
@@ -252,8 +252,13 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
         }
       } else {
         // Handle validation errors (passwords do not match, etc.)
-        if (err?.message?.includes('not match') || err?.message?.includes('не совпадают')) {
-          setError('Passwords do not match');
+        if (err && typeof err === 'object' && 'message' in err) {
+          const message = String(err.message);
+          if (message.includes('not match') || message.includes('не совпадают')) {
+            setError('Passwords do not match');
+          } else {
+            setError('Произошла неожиданная ошибка. Пожалуйста, попробуйте позже или обратитесь в службу поддержки.');
+          }
         } else {
           setError('Произошла неожиданная ошибка. Пожалуйста, попробуйте позже или обратитесь в службу поддержки.');
         }

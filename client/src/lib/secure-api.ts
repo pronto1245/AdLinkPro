@@ -10,8 +10,8 @@ interface SecureRequestInit extends RequestInit {
 }
 
 function resolveUrl(path: string) {
-  if (!path) return '';
-  if (/^https?:\/\//i.test(path)) return path;
+  if (!path) {return '';}
+  if (/^https?:\/\//i.test(path)) {return path;}
   return `${API_BASE}${path}`;
 }
 
@@ -27,7 +27,7 @@ export class SecureAPIError extends Error {
   }
 }
 
-async function secureApi(path: string, init: SecureRequestInit = {}) {
+export async function secureApi(path: string, init: SecureRequestInit = {}) {
   console.log("🌐 [SECURE_API] Making request:", {
     path,
     method: init.method || 'GET',
@@ -139,7 +139,7 @@ async function secureApi(path: string, init: SecureRequestInit = {}) {
 
   } catch (error) {
     console.error("🌐 [SECURE_API] Request error:", error);
-    if (error instanceof SecureAPIError) throw error;
+    if (error instanceof SecureAPIError) {throw error;}
     throw new SecureAPIError(0, 'Network Error', 'NETWORK_ERROR');
   }
 }

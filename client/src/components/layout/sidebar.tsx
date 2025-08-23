@@ -8,20 +8,15 @@ import {
   Users, 
   Target, 
   DollarSign, 
-  Shield, 
-  Webhook, 
-  Ban, 
-  History, 
   Settings, 
   BarChart3, 
   HeadphonesIcon,
   ChevronLeft,
-  ChevronRight,
-  Send
+  ChevronRight
 } from 'lucide-react';
 import { useSidebar } from '@/contexts/sidebar-context';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { getDashboardHref, getUserDisplayName, getUserInitials, getRoleDisplayName } from '@/lib/navigation-utils';
+import { getDashboardHref, getRoleDisplayName } from '@/lib/navigation-utils';
 
 interface MenuItem {
   labelKey: string;
@@ -79,7 +74,7 @@ function Sidebar({ className }: SidebarProps) {
   if (!user) {return null;}
 
   const filteredMenuItems = menuItems.filter(item => 
-    item.roles.includes(user.role)
+    item.roles.includes(user.role ?? '')
   );
 
   // Special handling for dashboard item

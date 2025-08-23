@@ -38,7 +38,7 @@ export function useSendEvent() {
       });
       
       return result;
-    } catch (_) {
+    } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
       
       toast({

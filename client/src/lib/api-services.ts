@@ -33,10 +33,10 @@ export const offersApi = {
   },
 
   // Update offer
-  async updateOffer(id: string, _data: any) {
+  async updateOffer(id: string, _data: unknown) {
     return secureApi(`/api/offers/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(data),
+      body: JSON.stringify(_data),
     });
   },
 
@@ -93,10 +93,10 @@ export const usersApi = {
   },
 
   // Update user
-  async updateUser(id: string, _data: any) {
+  async updateUser(id: string, _data: unknown) {
     return secureApi(`/api/users/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(data),
+      body: JSON.stringify(_data),
     });
   },
 

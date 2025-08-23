@@ -32,7 +32,7 @@ function getRoleFromToken(): string | null {
 type Props = {
   path: string;
   roles?: string[];
-  component?: React.ComponentType<any>;
+  component?: React.ComponentType<Record<string, unknown>>;
   children?: React.ReactNode;
 };
 

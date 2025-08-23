@@ -23,7 +23,7 @@ export default function LoginPage() {
   }, []);
 
   async function onSubmit(e?: React.FormEvent) {
-    if (e) e.preventDefault();
+    if (e) {e.preventDefault();}
     setLoading(true);
     setError(null);
     try {
