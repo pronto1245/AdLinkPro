@@ -30,7 +30,7 @@ export function QuickEventButtons({ clickid, baseLabel = 'test' }: QuickEventBut
           antifraudLevel: 'ok'
         }
       });
-    } catch (_error) {
+    } catch {
       // Error handled by hook
     } finally {
       setLoading(key, false);
@@ -53,7 +53,7 @@ export function QuickEventButtons({ clickid, baseLabel = 'test' }: QuickEventBut
           antifraudLevel: 'ok'
         }
       });
-    } catch (_error) {
+    } catch {
       // Error handled by hook
     } finally {
       setLoading(key, false);
@@ -76,7 +76,7 @@ export function QuickEventButtons({ clickid, baseLabel = 'test' }: QuickEventBut
           antifraudLevel: level
         }
       });
-    } catch (_error) {
+    } catch {
       // Error handled by hook
     } finally {
       setLoading(key, false);

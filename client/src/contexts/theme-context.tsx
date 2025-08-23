@@ -16,7 +16,7 @@ const safeStorage = {
   getItem: (key: string, fallback: string = 'system'): string => {
     try {
       return localStorage.getItem(key) || fallback;
-    } catch (_error) {
+    } catch (error) {
       console.warn(`Failed to read from localStorage: ${error}`);
       return fallback;
     }
@@ -25,7 +25,7 @@ const safeStorage = {
   setItem: (key: string, value: string): void => {
     try {
       localStorage.setItem(key, value);
-    } catch (_error) {
+    } catch (error) {
       console.warn(`Failed to write to localStorage: ${error}`);
     }
   },
@@ -33,7 +33,7 @@ const safeStorage = {
   removeItem: (key: string): void => {
     try {
       localStorage.removeItem(key);
-    } catch (_error) {
+    } catch (error) {
       console.warn(`Failed to remove from localStorage: ${error}`);
     }
   }
@@ -44,7 +44,7 @@ const getSystemTheme = (): 'light' | 'dark' => {
   try {
     if (typeof window === 'undefined') {return 'light';}
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  } catch (_error) {
+  } catch (error) {
     console.warn(`Failed to detect system theme: ${error}`);
     return 'light';
   }
@@ -115,7 +115,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try {
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
-    } catch (_error) {
+    } catch (error) {
       console.warn(`Failed to setup system theme listener: ${error}`);
     }
   }, [theme]);
@@ -149,7 +149,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           document.head.appendChild(style);
         }
       }
-    } catch (_error) {
+    } catch (error) {
       console.warn(`Failed to enable theme transitions: ${error}`);
     }
   }, []);

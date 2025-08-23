@@ -68,7 +68,7 @@ export default function TrackingUrlGenerator() {
         title: 'URL сгенерирован',
         description: data.instructions,
       });
-    } catch (_error) {
+    } catch {
       toast({
         title: 'Ошибка',
         description: 'Не удалось сгенерировать URL',

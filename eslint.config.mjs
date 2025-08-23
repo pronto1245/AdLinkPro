@@ -24,6 +24,7 @@ export default [
         exports: 'readonly',
         // Browser globals for client-side code
         window: 'readonly',
+        Window: 'readonly',
         document: 'readonly',
         localStorage: 'readonly',
         sessionStorage: 'readonly',
@@ -35,6 +36,8 @@ export default [
         File: 'readonly',
         HTMLInputElement: 'readonly',
         HTMLElement: 'readonly',
+        HTMLDivElement: 'readonly',
+        KeyboardEvent: 'readonly',
         React: 'readonly',
         // WebSocket related
         WebSocket: 'readonly',
@@ -44,6 +47,8 @@ export default [
         CustomEvent: 'readonly',
         // Additional browser APIs
         URL: 'readonly',
+        URLSearchParams: 'readonly',
+        FormData: 'readonly',
         RequestInfo: 'readonly',
         RequestInit: 'readonly',
         navigator: 'readonly',

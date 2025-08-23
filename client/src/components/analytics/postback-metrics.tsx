@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useTranslation } from 'react-i18next';
-import { RefreshCw, TrendingUp, TrendingDown, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { RefreshCw, TrendingUp, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
 interface PostbackMetrics {
   summary: {
@@ -35,7 +35,6 @@ interface PostbackMetricsProps {
 }
 
 export default function PostbackMetrics({ dateFrom, dateTo, className = '' }: PostbackMetricsProps) {
-  const { t } = useTranslation();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: metrics, refetch, isLoading, error } = useQuery<PostbackMetrics>({
@@ -188,7 +187,7 @@ export default function PostbackMetrics({ dateFrom, dateTo, className = '' }: Po
             {metrics.errorFrequency.length > 0 && (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-muted-foreground">Error Types</h4>
-                {metrics.errorFrequency.map((_error) => (
+                {metrics.errorFrequency.map((error) => (
                   <div key={error.errorType} className="flex items-center justify-between">
                     <span className="text-xs">{error.errorType}</span>
                     <div className="flex items-center gap-2">

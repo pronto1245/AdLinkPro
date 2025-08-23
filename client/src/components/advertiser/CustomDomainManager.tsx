@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { 
   Globe, 
   Plus, 
@@ -52,18 +51,10 @@ interface CustomDomain {
   };
 }
 
-interface DNSInstructions {
-  type: string;
-  record: string;
-  value: string;
-  instructions: string;
-}
-
 export function CustomDomainManager() {
   const [newDomain, setNewDomain] = useState('');
   const [domainType, setDomainType] = useState<'cname' | 'a_record' | 'txt_record'>('cname');
   const [selectedDomain, setSelectedDomain] = useState<CustomDomain | null>(null);
-  const [showInstructions, setShowInstructions] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -87,7 +78,7 @@ export function CustomDomainManager() {
       setNewDomain('');
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error('Domain add error:', error);
       toast({
         title: "❌ Ошибка добавления домена",
@@ -102,8 +93,9 @@ export function CustomDomainManager() {
     mutationFn: async (domainId: string) => {
       return apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, 'POST');
     },
-    onSuccess: (data: any, domainId: string) => {
-      if (data.success) {
+    onSuccess: (data: unknown, _domainId: string) => {
+      const result = data as { success: boolean; error?: string };
+      if (result.success) {
         toast({
           title: "Домен верифицирован",
           description: "Ваш кастомный домен успешно верифицирован и активирован!"
@@ -111,7 +103,7 @@ export function CustomDomainManager() {
       } else {
         toast({
           title: "Верификация не пройдена",
-          description: data.error || "Проверьте DNS настройки и повторите попытку",
+          description: result.error || "Проверьте DNS настройки и повторите попытку",
           variant: "destructive"
         });
       }
@@ -131,14 +123,14 @@ export function CustomDomainManager() {
     mutationFn: async (domainId: string) => {
       return apiRequest(`/api/advertiser/profile/domains/${domainId}/ssl`, 'POST');
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data: { message?: string }) => {
       toast({
         title: "SSL сертификат выдается",
         description: data.message || "SSL сертификат выдается. Проверьте статус через несколько минут."
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Ошибка выдачи SSL",
         description: error?.error || "Не удалось запустить выдачу SSL сертификата",

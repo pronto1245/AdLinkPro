@@ -1,9 +1,9 @@
 import React from 'react';
-type State = { error: any };
+type State = { error: Error | null };
 export default class ErrorBoundary extends React.Component<React.PropsWithChildren, State> {
   state: State = { error: null };
-  static getDerivedStateFromError(error: any) { return { error }; }
-  componentDidCatch(error: any, info: any) { console.error('ErrorBoundary', error, info); }
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: React.ErrorInfo) { console.error('ErrorBoundary', error, info); }
   render() {
     if (this.state.error) {
       return (
@@ -13,6 +13,6 @@ export default class ErrorBoundary extends React.Component<React.PropsWithChildr
         </div>
       );
     }
-    return this.props.children as any;
+    return this.props.children as React.ReactNode;
   }
 }
