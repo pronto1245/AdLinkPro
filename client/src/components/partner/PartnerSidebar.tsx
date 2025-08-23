@@ -32,7 +32,13 @@ interface SidebarItem {
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline';
 }
 
-const getBaseSidebarItems = (t: any): Omit<SidebarItem, 'badge'>[] => [
+interface Notification {
+  id: string;
+  is_read: boolean;
+  [key: string]: unknown;
+}
+
+const getBaseSidebarItems = (t: (key: string) => string): Omit<SidebarItem, 'badge'>[] => [
   {
     title: t('navigation.dashboard'),
     href: '/affiliate',
@@ -205,9 +211,9 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
           {!collapsed && (
             <>
               <span className="flex-1">{t('navigation.notifications')}</span>
-              {notifications.filter((n: any) => !n.is_read).length > 0 && (
+              {notifications.filter((n: Notification) => !n.is_read).length > 0 && (
                 <Badge variant="destructive" className="text-xs">
-                  {notifications.filter((n: any) => !n.is_read).length}
+                  {notifications.filter((n: Notification) => !n.is_read).length}
                 </Badge>
               )}
             </>

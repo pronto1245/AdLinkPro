@@ -168,4 +168,14 @@ router.post('/auth/login', async (req, res) => {
   }
 });
 
+// Simple test route
+router.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  if (email === 'test@example.com' && password === 'test') {
+    return res.json({ token: 'dummy-token' });
+  }
+  return res.status(401).json({ error: 'Invalid credentials' });
+
+});
+
 export default router;

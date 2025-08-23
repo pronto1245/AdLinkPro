@@ -54,6 +54,8 @@ export function RequestAccessModal({ isOpen, onClose, offer }: RequestAccessModa
     },
     onError: (error: any) => {
       const errorMessage = error.message || 'Ошибка при отправке запроса';
+    onError: (error: Error) => {
+      const errorMessage = error.message || "Ошибка при отправке запроса";
       toast({
         title: 'Ошибка',
         description: errorMessage,

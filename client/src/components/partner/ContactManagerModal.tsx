@@ -54,7 +54,7 @@ export function ContactManagerModal({ isOpen, onClose }: ContactManagerModalProp
       resetForm();
       onClose();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Ошибка отправки',
         description: error.message || 'Не удалось отправить обращение. Попробуйте позже.',

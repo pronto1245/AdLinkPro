@@ -47,6 +47,27 @@ interface PostbackLog {
   createdAt: string;
 }
 
+interface Offer {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+interface PostbackFormData {
+  name: string;
+  url: string;
+  method: 'GET' | 'POST';
+  events: string[];
+  isActive: boolean;
+  offerId?: string;
+  signatureKey?: string;
+  ipWhitelist?: string[];
+  retryEnabled: boolean;
+  maxRetries: number;
+  retryDelay: number;
+  timeout: number;
+}
+
 const EVENT_TYPES = [
   { value: 'click', label: 'Клик' },
   { value: 'lead', label: 'Лид (Регистрация)' },
@@ -112,13 +133,13 @@ export default function PostbackManager() {
   });
 
   // Fetch offers for dropdown
-  const { data: offers = [] } = useQuery<any[]>({
+  const { data: offers = [] } = useQuery<Offer[]>({
     queryKey: ['/api/admin/offers'],
   });
 
   // Create/Update postback mutation
   const savePostbackMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: PostbackFormData) => {
       const url = editingPostback ? `/api/postbacks/${editingPostback.id}` : '/api/postbacks';
       const method = editingPostback ? 'PUT' : 'POST';
       return apiRequest(url, method, data);
@@ -132,7 +153,7 @@ export default function PostbackManager() {
         description: 'Изменения сохранены успешно',
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Ошибка',
         description: error.message || 'Не удалось сохранить постбек',
@@ -151,7 +172,7 @@ export default function PostbackManager() {
         description: 'Постбек успешно удалён',
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Ошибка',
         description: error.message || 'Не удалось удалить постбек',
@@ -169,7 +190,7 @@ export default function PostbackManager() {
         description: 'Тестовый постбек отправлен успешно',
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Ошибка теста',
         description: error.message || 'Не удалось отправить тестовый постбек',
@@ -377,7 +398,7 @@ export default function PostbackManager() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="">Все офферы (глобальный)</SelectItem>
-                        {offers.map((offer: any) => (
+                        {offers.map((offer: Offer) => (
                           <SelectItem key={offer.id} value={offer.id}>
                             {offer.name}
                           </SelectItem>
