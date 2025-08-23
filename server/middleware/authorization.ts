@@ -32,7 +32,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 // Apply ownerId filtering to database queries - specialized business logic
 export function applyOwnerIdFilter(query: any, currentUser: any, targetTable: any) {
-  if (!currentUser) return query;
+  if (!currentUser) {return query;}
   
   if (currentUser.role === 'OWNER' || currentUser.role === 'super_admin') {
     return query; // No filtering for owners/super admins
@@ -55,13 +55,13 @@ export async function canAccessUserEnhanced(currentUserId: string, targetUserId:
       .where(eq(users.id, currentUserId))
       .limit(1);
 
-    if (!currentUser) return false;
+    if (!currentUser) {return false;}
 
     // Super admin can access anyone
-    if (currentUser.role === 'super_admin') return true;
+    if (currentUser.role === 'super_admin') {return true;}
 
     // Users can always access their own data
-    if (currentUserId === targetUserId) return true;
+    if (currentUserId === targetUserId) {return true;}
 
     // Get target user info
     const [targetUser] = await db
@@ -74,7 +74,7 @@ export async function canAccessUserEnhanced(currentUserId: string, targetUserId:
       .where(eq(users.id, targetUserId))
       .limit(1);
 
-    if (!targetUser) return false;
+    if (!targetUser) {return false;}
 
     // Role-based access rules specific to AdLinkPro business logic:
     switch (currentUser.role) {

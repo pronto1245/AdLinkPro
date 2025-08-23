@@ -550,7 +550,7 @@ export default function CreateOffer() {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
       navigate('/advertiser/offers');
     },
-    onError: (error) => {
+    onError: (_error) => {
       toast({
         title: 'Ошибка создания',
         description: 'Не удалось создать оффер. Попробуйте снова.',
@@ -647,7 +647,7 @@ export default function CreateOffer() {
   };
 
   const removeLandingPage = (id: string) => {
-    if (formData.landingPages.length <= 1) return;
+    if (formData.landingPages.length <= 1) {return;}
     setFormData(prev => ({
       ...prev,
       landingPages: prev.landingPages.filter(lp => lp.id !== id)

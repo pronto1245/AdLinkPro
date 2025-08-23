@@ -76,7 +76,7 @@ export default function PartnerOffers() {
         title: 'Запрос отправлен',
         message: `Запрос доступа к офферу "${offerName}" отправлен`,
       });
-    } catch (error) {
+    } catch (_error) {
       showNotification({
         type: 'error',
         title: 'Ошибка',

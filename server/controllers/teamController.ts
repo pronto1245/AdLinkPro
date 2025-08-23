@@ -512,11 +512,11 @@ export class TeamController {
         updatedAt: new Date()
       };
 
-      if (firstName !== undefined) updateData.firstName = firstName;
-      if (lastName !== undefined) updateData.lastName = lastName;
-      if (company !== undefined) updateData.company = company;
-      if (phone !== undefined) updateData.phone = phone;
-      if (isActive !== undefined) updateData.isActive = isActive;
+      if (firstName !== undefined) {updateData.firstName = firstName;}
+      if (lastName !== undefined) {updateData.lastName = lastName;}
+      if (company !== undefined) {updateData.company = company;}
+      if (phone !== undefined) {updateData.phone = phone;}
+      if (isActive !== undefined) {updateData.isActive = isActive;}
 
       // Update settings if provided
       if (permissions || restrictions) {

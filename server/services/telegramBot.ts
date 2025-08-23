@@ -118,7 +118,7 @@ export class TelegramBotService {
     source?: string;
   }) {
     const user = await storage.getUserById(data.userId);
-    if (!user?.telegramChatId) return;
+    if (!user?.telegramChatId) {return;}
 
     const message = `
 🎉 <b>НОВАЯ КОНВЕРСИЯ!</b>
@@ -145,7 +145,7 @@ export class TelegramBotService {
     country?: string;
   }) {
     const user = await storage.getUserById(data.userId);
-    if (!user?.telegramChatId) return;
+    if (!user?.telegramChatId) {return;}
 
     const severityEmoji = {
       low: '🟡',
@@ -171,7 +171,7 @@ ${severityEmoji[data.severity]} <b>FRAUD ALERT!</b>
   // Ежедневная статистика
   async sendDailyReport(userId: string) {
     const user = await storage.getUserById(userId);
-    if (!user?.telegramChatId) return;
+    if (!user?.telegramChatId) {return;}
 
     // Получаем статистику за сегодня
     const today = new Date();
@@ -205,7 +205,7 @@ ${severityEmoji[data.severity]} <b>FRAUD ALERT!</b>
 
   // Обработка входящих сообщений
   async handleUpdate(update: TelegramUpdate) {
-    if (!update.message?.text) return;
+    if (!update.message?.text) {return;}
 
     const chatId = update.message.chat.id;
     const text = update.message.text;

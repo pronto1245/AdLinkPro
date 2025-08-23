@@ -160,7 +160,7 @@ const MyOffersDragDrop: React.FC = () => {
 
   const importFromCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {return;}
     const reader = new FileReader();
     reader.onload = async (e) => {
       const text = e.target?.result as string;
@@ -169,7 +169,7 @@ const MyOffersDragDrop: React.FC = () => {
       
       for (const line of lines) {
         const [name, geo, payout, category, cap, status] = line.split(';');
-        if (!name?.trim()) continue;
+        if (!name?.trim()) {continue;}
         
         try {
           await createOfferMutation.mutateAsync({
@@ -276,7 +276,7 @@ const MyOffersDragDrop: React.FC = () => {
   };
 
   const renderABPreview = (links: string[], offer: Offer) => {
-    if (!links?.length) return <span className="text-muted-foreground">—</span>;
+    if (!links?.length) {return <span className="text-muted-foreground">—</span>;}
     
     return (
       <div className="flex flex-col gap-1">
@@ -552,7 +552,7 @@ const MyOffersDragDrop: React.FC = () => {
               <TableBody>
                 {items.map((id) => {
                   const offer = filteredOffers.find((o: Offer) => o.id === id);
-                  if (!offer) return null;
+                  if (!offer) {return null;}
                   
                   return (
                     <SortableItem key={`offer-${id}`} id={id}>

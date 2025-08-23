@@ -11,13 +11,13 @@ export type Status = typeof ORDER[number];
  */
 export function normalize(prev: Status|undefined, next: Status, type: "reg"|"purchase"): Status {
   // If no previous status, accept new status
-  if (!prev) return next;
+  if (!prev) {return next;}
   
   // Registration cannot be refunded or charged back
-  if (type === 'reg' && (next === 'refunded' || next === 'chargeback')) return prev;
+  if (type === 'reg' && (next === 'refunded' || next === 'chargeback')) {return prev;}
   
   // Refunds and chargebacks only apply to approved purchases
-  if (next === 'refunded' || next === 'chargeback') return prev === 'approved' ? next : prev;
+  if (next === 'refunded' || next === 'chargeback') {return prev === 'approved' ? next : prev;}
   
   // Status can only move forward in the order, never backward
   const pi = ORDER.indexOf(prev);
@@ -113,7 +113,7 @@ export function mapExternalStatus(externalStatus: string, source: 'keitaro' | 'a
   };
   
   const sourceMapping = mappings[source];
-  if (!sourceMapping) return 'pending';
+  if (!sourceMapping) {return 'pending';}
   
   const mapped = sourceMapping[externalStatus.toLowerCase()];
   return mapped || 'pending';

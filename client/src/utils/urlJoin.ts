@@ -7,7 +7,7 @@ export function urlJoin(base: string, ...paths: string[]): string {
   let result = base.replace(/\/+$/, '');
   
   for (const path of paths) {
-    if (!path) continue;
+    if (!path) {continue;}
     
     // Clean path - remove leading and trailing slashes, then add one leading slash
     const cleanPath = path.replace(/^\/+|\/+$/g, '');

@@ -9,18 +9,18 @@ interface CreativeUploaderProps {
   maxNumberOfFiles?: number;
   maxFileSize?: number;
   onGetUploadParameters?: () => Promise<{ method: 'PUT'; url: string }>;
-  onComplete?: (result: any) => void;
+  onComplete?: (_result: any) => void;
   uploaded?: boolean;
   buttonClassName?: string;
 }
 
 export function CreativeUploader({ 
-  offerId, 
-  maxNumberOfFiles = 1,
+  offerId: _offerId, 
+  maxNumberOfFiles: _maxNumberOfFiles = 1,
   maxFileSize = 50 * 1024 * 1024,
   onGetUploadParameters,
   onComplete,
-  uploaded = false,
+  uploaded: _uploaded = false,
   buttonClassName 
 }: CreativeUploaderProps) {
   const [uploading, setUploading] = useState(false);
@@ -176,7 +176,7 @@ export function CreativeUploader({
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {return '0 Bytes';}
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));

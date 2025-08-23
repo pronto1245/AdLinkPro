@@ -27,8 +27,7 @@ export class IPWhitelistService {
         riskScore: 0,
         isActive: entry.isActive,
         createdBy: entry.addedBy,
-        expiresAt: entry.expiresAt || null,
-        data: JSON.stringify({
+        expiresAt: entry.expiresAt || null, _data: JSON.stringify({
           type: 'whitelist',
           description: entry.description,
           addedBy: entry.addedBy,
@@ -215,10 +214,10 @@ export class IPWhitelistService {
     try {
       const updateData: any = {};
       
-      if (updates.ip) updateData.value = updates.ip;
-      if (updates.cidr) updateData.cidr = updates.cidr;
-      if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
-      if (updates.expiresAt) updateData.expiresAt = updates.expiresAt;
+      if (updates.ip) {updateData.value = updates.ip;}
+      if (updates.cidr) {updateData.cidr = updates.cidr;}
+      if (updates.isActive !== undefined) {updateData.isActive = updates.isActive;}
+      if (updates.expiresAt) {updateData.expiresAt = updates.expiresAt;}
       
       if (updates.description) {
         updateData.reason = `Whitelisted: ${updates.description}`;
@@ -236,7 +235,7 @@ export class IPWhitelistService {
         .where(eq(fraudBlocks.id, id))
         .returning();
       
-      if (!updated) return null;
+      if (!updated) {return null;}
       
       let data: any = {};
       try {
@@ -321,7 +320,7 @@ export class IPWhitelistService {
       try {
         const result = await this.addToWhitelist(entry);
         results.push(result);
-      } catch (error) {
+      } catch (_error) {
         console.error(`Failed to whitelist ${entry.ip}:`, error);
       }
     }

@@ -206,7 +206,7 @@ export default function Finance() {
     queryFn: async () => {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== 'all') params.set(key, value);
+        if (value && value !== 'all') {params.set(key, value);}
       });
       params.set('advertiserId', user?.id || '');
       
@@ -232,7 +232,7 @@ export default function Finance() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      if (!response.ok) throw new Error('Ошибка загрузки партнёров');
+      if (!response.ok) {throw new Error('Ошибка загрузки партнёров');}
       return response.json();
     },
     enabled: !!user?.id
@@ -247,7 +247,7 @@ export default function Finance() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      if (!response.ok) throw new Error('Ошибка загрузки офферов');
+      if (!response.ok) {throw new Error('Ошибка загрузки офферов');}
       return response.json();
     },
     enabled: !!user?.id
@@ -268,7 +268,7 @@ export default function Finance() {
           advertiserId: user?.id
         })
       });
-      if (!response.ok) throw new Error('Ошибка создания выплаты');
+      if (!response.ok) {throw new Error('Ошибка создания выплаты');}
       return response.json();
     },
     onSuccess: () => {
@@ -308,7 +308,7 @@ export default function Finance() {
         },
         body: JSON.stringify({ status })
       });
-      if (!response.ok) throw new Error('Ошибка изменения статуса');
+      if (!response.ok) {throw new Error('Ошибка изменения статуса');}
       return response.json();
     },
     onSuccess: () => {
@@ -333,13 +333,13 @@ export default function Finance() {
     try {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== 'all') params.set(key, value);
+        if (value && value !== 'all') {params.set(key, value);}
       });
       params.set('format', format);
       params.set('advertiserId', user?.id || '');
 
       const response = await fetch(`/api/advertiser/finance/export?${params}`);
-      if (!response.ok) throw new Error('Ошибка экспорта');
+      if (!response.ok) {throw new Error('Ошибка экспорта');}
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -356,7 +356,7 @@ export default function Finance() {
         title: "Экспорт выполнен",
         description: `Файл ${format.toUpperCase()} успешно скачан`
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Ошибка экспорта",
         description: "Не удалось выполнить экспорт данных",
@@ -369,9 +369,9 @@ export default function Finance() {
   const fetchTransactionDetails = async (transactionId: string) => {
     try {
       const response = await fetch(`/api/advertiser/finance/transactions/${transactionId}/details`);
-      if (!response.ok) throw new Error('Ошибка загрузки деталей');
+      if (!response.ok) {throw new Error('Ошибка загрузки деталей');}
       return response.json();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Ошибка",
         description: "Не удалось загрузить детали транзакции",
@@ -399,7 +399,7 @@ export default function Finance() {
   const validatePayoutForm = () => {
     const errors: string[] = [];
     
-    if (!payoutForm.partnerId) errors.push("Выберите партнёра");
+    if (!payoutForm.partnerId) {errors.push("Выберите партнёра");}
     if (!payoutForm.amount || isNaN(parseFloat(payoutForm.amount)) || parseFloat(payoutForm.amount) <= 0) {
       errors.push("Введите корректную сумму выплаты");
     }

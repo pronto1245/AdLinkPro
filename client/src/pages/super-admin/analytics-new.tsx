@@ -321,10 +321,10 @@ export default function AnalyticsNew() {
     }],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      if (dateFrom) params.append('dateFrom', dateFrom);
-      if (dateTo) params.append('dateTo', dateTo);
-      if (quickFilter && quickFilter !== 'all') params.append('quickFilter', quickFilter);
+      if (searchTerm) {params.append('search', searchTerm);}
+      if (dateFrom) {params.append('dateFrom', dateFrom);}
+      if (dateTo) {params.append('dateTo', dateTo);}
+      if (quickFilter && quickFilter !== 'all') {params.append('quickFilter', quickFilter);}
       params.append('page', currentPage.toString());
       params.append('limit', pageSize.toString());
       params.append('offset', ((currentPage - 1) * pageSize).toString());
@@ -337,7 +337,7 @@ export default function AnalyticsNew() {
       const response = await fetch(`/api/analytics-enhanced/data?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch analytics data');
+      if (!response.ok) {throw new Error('Failed to fetch analytics data');}
       const result = await response.json();
       
       // Handle the new response format from analytics-enhanced
@@ -380,7 +380,7 @@ export default function AnalyticsNew() {
 
   // Country flag component
   const CountryFlag = ({ countryCode }: { countryCode: string }) => {
-    if (!countryCode || countryCode === '-') return <span>-</span>;
+    if (!countryCode || countryCode === '-') {return <span>-</span>;}
     
     const getFlag = (code: string) => {
       const flags: { [key: string]: string } = {
@@ -489,7 +489,7 @@ export default function AnalyticsNew() {
   };
 
   const formatCellValue = (value: any, type: ColumnConfig['type'], columnKey?: string) => {
-    if (value === null || value === undefined) return '-';
+    if (value === null || value === undefined) {return '-';}
     
     // Special handling for country flag - only show flag in countryFlag column
     if (columnKey === 'countryFlag') {
@@ -677,7 +677,7 @@ export default function AnalyticsNew() {
         body: JSON.stringify(exportFilters)
       });
 
-      if (!response.ok) throw new Error('Failed to export analytics data');
+      if (!response.ok) {throw new Error('Failed to export analytics data');}
       
       const result = await response.json();
       

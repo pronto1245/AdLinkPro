@@ -149,7 +149,7 @@ export default function AdvertiserAccessRequests() {
   };
 
   const handleSubmitResponse = () => {
-    if (!selectedRequest) return;
+    if (!selectedRequest) {return;}
     
     respondToRequestMutation.mutate({
       requestId: selectedRequest.id,

@@ -112,7 +112,7 @@ export default function AccessRequests() {
 
   const getStatusBadge = (status: string) => {
     const config = statusConfig[status as keyof typeof statusConfig];
-    if (!config) return null;
+    if (!config) {return null;}
 
     const Icon = config.icon;
     return (

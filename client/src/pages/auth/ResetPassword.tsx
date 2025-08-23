@@ -14,14 +14,14 @@ interface PasswordStrengthIndicatorProps {
 
 function PasswordStrengthIndicator({ password }: PasswordStrengthIndicatorProps) {
   const getStrength = (pwd: string) => {
-    if (!pwd) return { score: 0, text: '', color: '' };
+    if (!pwd) {return { score: 0, text: '', color: '' };}
     
     let score = 0;
-    if (pwd.length >= 8) score++;
-    if (/[A-Z]/.test(pwd)) score++;
-    if (/[a-z]/.test(pwd)) score++;
-    if (/[0-9]/.test(pwd)) score++;
-    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    if (pwd.length >= 8) {score++;}
+    if (/[A-Z]/.test(pwd)) {score++;}
+    if (/[a-z]/.test(pwd)) {score++;}
+    if (/[0-9]/.test(pwd)) {score++;}
+    if (/[^A-Za-z0-9]/.test(pwd)) {score++;}
     
     const indicators = [
       { score: 0, text: 'Очень слабый', color: 'bg-red-500' },
@@ -130,7 +130,7 @@ export default function ResetPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validatePasswords()) return;
+    if (!validatePasswords()) {return;}
     
     setLoading(true);
     

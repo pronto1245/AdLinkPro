@@ -125,8 +125,7 @@ export class PostbackMonitoringService {
       
       await this.notificationService.sendNotification({
         type: 'postback_success_rate_low',
-        userId: 'system',
-        data: {
+        userId: 'system', _data: {
           successRate: Math.round(this.metrics.successRate * 100) / 100,
           threshold: this.thresholds.successRateThreshold,
           periodHours: this.thresholds.periodHours,
@@ -150,8 +149,7 @@ export class PostbackMonitoringService {
       
       await this.notificationService.sendNotification({
         type: 'postback_high_error_rate',
-        userId: 'system',
-        data: {
+        userId: 'system', _data: {
           errorRate: Math.round(errorRate * 100) / 100,
           errorCount: this.metrics.failedPostbacks,
           periodMinutes: this.thresholds.periodHours * 60,
@@ -184,8 +182,7 @@ export class PostbackMonitoringService {
       if (data.retryAttempt >= data.maxRetries) {
         await this.notificationService.sendNotification({
           type: 'postback_failed',
-          userId: 'system',
-          data: {
+          userId: 'system', _data: {
             ...data,
             timestamp: Date.now()
           },

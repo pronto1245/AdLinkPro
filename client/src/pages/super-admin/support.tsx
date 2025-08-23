@@ -67,7 +67,7 @@ export default function Support() {
       const response = await fetch('/api/admin/support/tickets', {
         headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` }
       });
-      if (!response.ok) throw new Error('Ошибка загрузки тикетов поддержки');
+      if (!response.ok) {throw new Error('Ошибка загрузки тикетов поддержки');}
       return response.json();
     },
     refetchInterval: 10000 // Real-time updates every 10 seconds

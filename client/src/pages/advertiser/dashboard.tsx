@@ -20,7 +20,7 @@ export default function AdvertiserDashboard() {
       const response = await fetch('/api/dashboard/metrics', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch metrics');
+      if (!response.ok) {throw new Error('Failed to fetch metrics');}
       return response.json();
     },
   });
@@ -31,7 +31,7 @@ export default function AdvertiserDashboard() {
       const response = await fetch('/api/offers', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch offers');
+      if (!response.ok) {throw new Error('Failed to fetch offers');}
       return response.json();
     },
   });
@@ -42,7 +42,7 @@ export default function AdvertiserDashboard() {
       const response = await fetch('/api/transactions', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch transactions');
+      if (!response.ok) {throw new Error('Failed to fetch transactions');}
       return response.json();
     },
   });

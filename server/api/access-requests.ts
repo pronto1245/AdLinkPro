@@ -177,11 +177,11 @@ app.post('/api/access-requests/bulk-action', authenticateToken, requireRole(['ad
         const requests = await storage.getOfferAccessRequests();
         const request = requests.find(r => r.id === requestId);
         
-        if (!request) continue;
+        if (!request) {continue;}
         
         // Проверяем, что оффер принадлежит рекламодателю
         const offer = await storage.getOffer(request.offerId);
-        if (!offer || offer.advertiserId !== advertiserId) continue;
+        if (!offer || offer.advertiserId !== advertiserId) {continue;}
         
         // Обновляем статус запроса
         const updatedRequest = await storage.updateOfferAccessRequest(requestId, {
@@ -207,7 +207,7 @@ app.post('/api/access-requests/bulk-action', authenticateToken, requireRole(['ad
         }
         
         results.push(updatedRequest);
-      } catch (error) {
+      } catch (_) {
         console.error(`Error processing request ${requestId}:`, error);
       }
     }

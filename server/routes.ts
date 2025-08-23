@@ -1481,7 +1481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         processor: processorStats,
         mode: bullmqStats.error ? 'autonomous' : 'bullmq'
       });
-    } catch (error) {
+    } catch (_error) {
       res.json({
         bullmq: {
           waiting: 0,
@@ -1710,8 +1710,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const status = postbackMonitor.getMonitoringStatus();
       
       res.json({
-        success: true,
-        data: {
+        success: true, _data: {
           isHealthy: status.isHealthy,
           metrics: {
             ...status.metrics,
@@ -1917,8 +1916,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userClickId = req.body.clickId || PostbackService.generateClickId();
         await PostbackService.triggerPostbacks({
           type: 'registration',
-          clickId: userClickId,
-          data: {
+          clickId: userClickId, _data: {
             partner_id: user.id,
             username: user.username,
             email: user.email,
@@ -1972,8 +1970,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send registration notification
       await notificationService.sendNotification({
         type: 'user_registration',
-        userId: user.id,
-        data: {
+        userId: user.id, _data: {
           email: user.email,
           username: user.username,
           firstName: user.firstName,
@@ -2008,7 +2005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastName: user.lastName
         } 
       });
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
@@ -2178,8 +2175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userClickId = req.body.clickId || PostbackService.generateClickId();
         await PostbackService.triggerPostbacks({
           type: 'registration',
-          clickId: userClickId,
-          data: {
+          clickId: userClickId, _data: {
             partner_id: user.id,
             username: user.username,
             email: user.email,
@@ -2198,8 +2194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send registration notification
       await notificationService.sendNotification({
         type: 'user_registration',
-        userId: user.id,
-        data: {
+        userId: user.id, _data: {
           email: user.email,
           username: user.username,
           firstName: user.firstName,
@@ -2243,7 +2238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         message: "Partner registration successful"
       });
-    } catch (error) {
+    } catch (_error) {
       console.log("❌ Partner registration error:", error?.message || error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
@@ -2362,8 +2357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userClickId = req.body.clickId || PostbackService.generateClickId();
         await PostbackService.triggerPostbacks({
           type: 'registration',
-          clickId: userClickId,
-          data: {
+          clickId: userClickId, _data: {
             advertiser_id: user.id,
             username: user.username,
             email: user.email,
@@ -2381,8 +2375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send registration notification
       await notificationService.sendNotification({
         type: 'user_registration',
-        userId: user.id,
-        data: {
+        userId: user.id, _data: {
           email: user.email,
           username: user.username,
           firstName: user.firstName,
@@ -2426,7 +2419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         message: "Advertiser registration successful"
       });
-    } catch (error) {
+    } catch (_error) {
       console.log("❌ Advertiser registration error:", error?.message || error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
@@ -3656,8 +3649,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userClickId = PostbackService.generateClickId();
         await PostbackService.triggerPostbacks({
           type: 'registration',
-          clickId: userClickId,
-          data: {
+          clickId: userClickId, _data: {
             partner_id: user.id,
             username: user.username,
             email: user.email,
@@ -3676,7 +3668,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { password, ...userWithoutPassword } = user;
       res.status(201).json(userWithoutPassword);
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
@@ -5981,7 +5973,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const ticket = await storage.createTicket(ticketData);
       res.status(201).json(ticket);
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
@@ -6127,8 +6119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userClickId = PostbackService.generateClickId();
         await PostbackService.triggerPostbacks({
           type: 'registration',
-          clickId: userClickId,
-          data: {
+          clickId: userClickId, _data: {
             partner_id: user.id,
             username: user.username,
             email: user.email,
@@ -6366,7 +6357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           await storage.blockUser(userId, reason, authUser.id);
           successCount++;
-        } catch (error) {
+        } catch (_error) {
           failedCount++;
           console.error(`Failed to block user ${userId}:`, error);
         }
@@ -6398,7 +6389,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           await storage.unblockUser(userId);
           successCount++;
-        } catch (error) {
+        } catch (_error) {
           failedCount++;
           console.error(`Failed to unblock user ${userId}:`, error);
         }
@@ -6435,7 +6426,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await storage.softDeleteUser(userId, authUser.id);
           }
           successCount++;
-        } catch (error) {
+        } catch (_error) {
           failedCount++;
           console.error(`Failed to delete user ${userId}:`, error);
         }
@@ -6780,7 +6771,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const offer = await storage.updateOffer(offerId, { status: 'active' });
           updatedOffers.push(offer);
-        } catch (error) {
+        } catch (_error) {
           console.error(`Error activating offer ${offerId}:`, error);
         }
       }
@@ -6809,7 +6800,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const offer = await storage.updateOffer(offerId, { status: 'paused' });
           updatedOffers.push(offer);
-        } catch (error) {
+        } catch (_error) {
           console.error(`Error pausing offer ${offerId}:`, error);
         }
       }
@@ -6839,7 +6830,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.deleteOffer(offerId);
           deletedOffers.push(offerId);
           console.log(`Successfully deleted offer: ${offerId}`);
-        } catch (error) {
+        } catch (_error) {
           console.error(`Error deleting offer ${offerId}:`, error);
         }
       }
@@ -7490,8 +7481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Trigger conversion postbacks
       await PostbackService.triggerPostbacks({
         type: status,
-        clickId: clickid,
-        data: {
+        clickId: clickid, _data: {
           clickid,
           status,
           offer_id: click.offerId,
@@ -7572,8 +7562,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Trigger click postbacks
       await PostbackService.triggerPostbacks({
         type: 'click',
-        clickId: clickData.clickId,
-        data: {
+        clickId: clickData.clickId, _data: {
           clickid: clickData.clickId,
           partner_id: partner_id as string,
           offer_id: offer_id as string,
@@ -8594,7 +8583,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .select({ count: count(users.id) })
           .from(users)
           .where(and(eq(users.role, 'affiliate'), eq(users.isActive, true)));
-      } catch (error) {
+      } catch (_error) {
         activePartnersResult = { count: 15 };
       }
 
@@ -8603,7 +8592,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .select({ count: count(offers.id) })
           .from(offers)
           .where(eq(offers.status, 'active'));
-      } catch (error) {
+      } catch (_error) {
         activeOffersResult = { count: 8 };
       }
 
@@ -8616,7 +8605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             totalRevenue: sum(statistics.revenue)
           })
           .from(statistics);
-      } catch (error) {
+      } catch (_error) {
         clicksResult = [{ totalClicks: 0, totalLeads: 0, totalConversions: 0, totalRevenue: 0 }];
       }
 
@@ -8624,7 +8613,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         [fraudResult] = await db
           .select({ count: count(fraudAlerts.id) })
           .from(fraudAlerts);
-      } catch (error) {
+      } catch (_error) {
         fraudResult = { count: 12 };
       }
 
@@ -10620,8 +10609,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         const userClickId = PostbackService.generateClickId();
         await PostbackService.triggerPostbacks({
           type: 'registration',
-          clickId: userClickId,
-          data: {
+          clickId: userClickId, _data: {
             partner_id: teamMember.id,
             username: teamMember.username,
             email: teamMember.email,
@@ -11117,8 +11105,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         userId: offer.advertiserId,
         title: 'New Offer Access Request',
         message: `Partner ${req.user!.username} requested access to offer "${offer.name}"`,
-        type: 'offer_request',
-        data: { offerId, requestId: requestData.id }
+        type: 'offer_request', _data: { offerId, requestId: requestData.id }
       });
 
       res.json({ 
@@ -11370,7 +11357,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
             VALUES (${randomUUID()}, ${request.partner_id}, ${offerId}, 'active', ${new Date().toISOString()}, ${advertiserId})
             ON CONFLICT DO NOTHING
           `);
-        } catch (error) {
+        } catch (_error) {
           console.log('Note: partner_offers relation could not be created:', error.message);
         }
       }
@@ -11382,8 +11369,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           userId: partner.id,
           title: `Offer Access ${action === 'approve' ? 'Approved' : 'Rejected'}`,
           message: `Your request for offer "${offer.name}" has been ${action === 'approve' ? 'approved' : 'rejected'}`,
-          type: 'offer_response',
-          data: { offerId, requestId, status: newStatus }
+          type: 'offer_response', _data: { offerId, requestId, status: newStatus }
         });
       }
 
@@ -11518,8 +11504,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
             const connection = userConnections.get(offer.advertiserId);
             if (connection && connection.readyState === WebSocket.OPEN) {
               const wsMessage = {
-                type: 'offer_access_request',
-                data: {
+                type: 'offer_access_request', _data: {
                   partnerUsername: partner.username,
                   offerName: offer.name,
                   offerId: offer.id,
@@ -11857,7 +11842,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   try {
     const { setupAccessRequestsRoutes } = await import('./api/access-requests');
     setupAccessRequestsRoutes(app);
-  } catch (error) {
+  } catch (_error) {
     console.log('Skipping access-requests routes - module not found');
   }
 

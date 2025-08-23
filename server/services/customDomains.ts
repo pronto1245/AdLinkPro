@@ -192,7 +192,7 @@ export class CustomDomainService {
       try {
         await Promise.race([sslPromise, timeoutPromise]);
         console.log(`✅ SSL процесс завершен успешно для ${domain}`);
-      } catch (error) {
+      } catch (_error) {
         console.error(`❌ SSL процесс прерван для ${domain}:`, error.message);
         throw error;
       }
@@ -259,7 +259,7 @@ export class CustomDomainService {
         message: 'SSL сертификат выдается. Проверьте статус через несколько минут.'
       };
 
-    } catch (error) {
+    } catch (_error) {
       return {
         success: false,
         message: `Ошибка выдачи SSL: ${(error as Error).message}`
@@ -317,7 +317,7 @@ export class CustomDomainService {
 
     const offerIds = advertiserOffers.map(o => o.id);
 
-    if (offerIds.length === 0) return;
+    if (offerIds.length === 0) {return;}
 
     // Обновляем URL в трекинговых ссылках
     for (const offerId of offerIds) {

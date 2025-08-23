@@ -50,7 +50,7 @@ router.post('/profiles', authenticateToken, async (req, res) => {
 
     const profile = await storage.createPostbackProfile(profileData);
     res.status(201).json(profile);
-  } catch (error) {
+  } catch (_) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         error: 'Validation error',
@@ -71,7 +71,7 @@ router.put('/profiles/:id', authenticateToken, async (req, res) => {
     
     const profile = await storage.updatePostbackProfile(id, updateData);
     res.json(profile);
-  } catch (error) {
+  } catch (_) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         error: 'Validation error',

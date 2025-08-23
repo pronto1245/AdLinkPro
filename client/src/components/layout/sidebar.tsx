@@ -76,7 +76,7 @@ function Sidebar({ className }: SidebarProps) {
   const [location] = useLocation();
   const { collapsed: isCollapsed, toggleCollapsed: toggleSidebar } = useSidebar();
 
-  if (!user) return null;
+  if (!user) {return null;}
 
   const filteredMenuItems = menuItems.filter(item => 
     item.roles.includes(user.role)

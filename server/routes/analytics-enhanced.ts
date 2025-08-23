@@ -49,7 +49,7 @@ router.get('/data', requireAuth, async (req: Request, res: Response) => {
     console.log('Parsed query:', query);
     
     // Apply role-based filtering
-    let filters = { ...query };
+    const filters = { ...query };
     if (user.role === 'affiliate') {
       filters.partnerId = user.id;
     } else if (user.role === 'advertiser' && user.ownerId) {
@@ -89,7 +89,7 @@ router.get('/summary', requireAuth, async (req: Request, res: Response) => {
     const query = analyticsQuerySchema.parse(req.query);
     
     // Apply role-based filtering
-    let filters = { ...query };
+    const filters = { ...query };
     if (user.role === 'affiliate') {
       filters.partnerId = user.id;
     } else if (user.role === 'advertiser' && user.ownerId) {

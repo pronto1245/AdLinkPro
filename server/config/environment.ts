@@ -10,7 +10,7 @@ function getEnvNumber(key: string, defaultValue: number): number {
 
 function getEnvBool(key: string, defaultValue: boolean): boolean {
   const value = process.env[key];
-  if (value === undefined) return defaultValue;
+  if (value === undefined) {return defaultValue;}
   return value.toLowerCase() === 'true';
 }
 
@@ -89,7 +89,7 @@ export function validateConfig(): void {
     'GOOGLE_CLOUD_PROJECT_ID','GOOGLE_CLOUD_STORAGE_BUCKET',
     'GOOGLE_APPLICATION_CREDENTIALS'
   ].forEach(k => { 
-    if (!process.env[k]) console.warn(`[ENV] Optional var not set: ${k}`);
+    if (!process.env[k]) {console.warn(`[ENV] Optional var not set: ${k}`);}
   });
   
   console.log('✅ [ENV] Validation complete - starting application');

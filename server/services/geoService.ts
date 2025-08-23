@@ -47,7 +47,7 @@ export class GeoService {
    * Get country flag emoji by country code
    */
   static getCountryFlag(countryCode: string): string {
-    if (!countryCode || countryCode.length !== 2) return '🏳️';
+    if (!countryCode || countryCode.length !== 2) {return '🏳️';}
     
     const codePoints = countryCode
       .toUpperCase()

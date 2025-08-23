@@ -34,7 +34,7 @@ export class QueryCache {
     return cached.data;
   }
 
-  set(key: string, data: any, ttlMs: number = 300000): void { // 5 минут по умолчанию
+  set(key: string, _data: any, ttlMs: number = 300000): void { // 5 минут по умолчанию
     this.cache.set(key, {
       data,
       timestamp: Date.now(),

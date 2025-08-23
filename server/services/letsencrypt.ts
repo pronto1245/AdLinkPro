@@ -26,7 +26,7 @@ export class LetsEncryptService {
       await this.createAccount();
       
       console.log('✅ Let\'s Encrypt ACME клиент инициализирован (Production API)');
-    } catch (error) {
+    } catch (_error) {
       console.error('❌ Ошибка инициализации Let\'s Encrypt:', error instanceof Error ? error.message : String(error));
       throw error;
     }
@@ -39,7 +39,7 @@ export class LetsEncryptService {
     try {
       const fs = await import('fs/promises');
       return await fs.readFile(keyPath);
-    } catch (error) {
+    } catch (_error) {
       // Файл не существует, создаем новый ключ
       const accountKey = await acme.crypto.createPrivateKey();
       
@@ -58,7 +58,7 @@ export class LetsEncryptService {
 
   // Создаем аккаунт Let's Encrypt
   private static async createAccount(): Promise<void> {
-    if (!this.client) throw new Error('ACME клиент не инициализирован');
+    if (!this.client) {throw new Error('ACME клиент не инициализирован');}
 
     try {
       await this.client.createAccount({
@@ -146,7 +146,7 @@ export class LetsEncryptService {
           await Promise.race([validationPromise, timeoutPromise]);
           console.log(`✅ Challenge успешно валидирован для ${domain}`);
           
-        } catch (error) {
+        } catch (_error) {
           console.warn(`⚠️ Таймаут или ошибка валидации для ${domain}, проверяем статус...`);
           
           // Проверяем финальный статус авторизации
@@ -187,7 +187,7 @@ export class LetsEncryptService {
           )
         ]);
         console.log(`✅ Заказ финализирован для ${domain}`);
-      } catch (error) {
+      } catch (_error) {
         console.error(`❌ Ошибка финализации заказа для ${domain}:`, error.message);
         throw error;
       }
@@ -203,7 +203,7 @@ export class LetsEncryptService {
           )
         ]) as string;
         console.log(`✅ Сертификат получен для ${domain}`);
-      } catch (error) {
+      } catch (_error) {
         console.error(`❌ Ошибка получения сертификата для ${domain}:`, error.message);
         throw error;
       }
@@ -233,7 +233,7 @@ export class LetsEncryptService {
         privateKey: certificateKey.toString()
       };
 
-    } catch (error) {
+    } catch (_error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(`❌ Ошибка выдачи SSL сертификата для ${domain}:`, errorMessage);
       
@@ -313,7 +313,7 @@ export class LetsEncryptService {
           
           // Ждем между обновлениями чтобы не превысить rate limits
           await new Promise(resolve => setTimeout(resolve, 5000));
-        } catch (error) {
+        } catch (_error) {
           console.error(`Ошибка обновления сертификата для ${domain.domain}:`, error instanceof Error ? error.message : String(error));
         }
       }

@@ -21,14 +21,9 @@ import {
   real,
   doublePrecision
 } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
+import { sql, relations } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
-import { relations } from 'drizzle-orm';
-import { sql, relations } from "drizzle-orm";
-import { pgTable, pgEnum, text, varchar, integer, decimal, timestamp, boolean, jsonb, uuid, serial, bigint, smallint, index, numeric, char } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
 
 export * from './postback-schema';
 // Добавьте другие модули по мере необходимости
@@ -1612,42 +1607,6 @@ export const userAnalytics = pgTable("user_analytics", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Custom Domains table for white-label tracking
-export const customDomains = pgTable("custom_domains", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  domain: varchar("domain", { length: 255 }).notNull(),
-  advertiserId: varchar("advertiser_id", { length: 255 }).notNull().references(() => users.id),
-  type: domainTypeEnum("type").notNull(),
-  status: domainStatusEnum("status").notNull().default('pending'),
-  verificationValue: varchar("verification_value", { length: 255 }).notNull(),
-  targetValue: varchar("target_value", { length: 255 }),
-  errorMessage: text("error_message"),
-  lastChecked: timestamp("last_checked"),
-  nextCheck: timestamp("next_check"),
-  // SSL Certificate fields
-  sslStatus: varchar("ssl_status", { length: 50 }).default('none'), // none, pending, issued, expired, failed
-  sslCertificate: text("ssl_certificate"),
-  sslPrivateKey: text("ssl_private_key"),
-  sslValidUntil: timestamp("ssl_valid_until"),
-  sslIssuer: varchar("ssl_issuer", { length: 255 }),
-  sslErrorMessage: text("ssl_error_message"),
-  isActive: boolean("is_active").default(false),
-  verifiedAt: timestamp("verified_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-export const customDomainsRelations = relations(customDomains, ({ one }) => ({
-  advertiser: one(users, {
-    fields: [customDomains.advertiserId],
-    references: [users.id],
-  }),
-}));
-
-// Create aliases for backward compatibility first (needed for insert schemas)
-export const postbackProfiles = enhancedPostbackProfiles;
-export const postbackDeliveries = postbackDeliveryLogs;
-
 // Essential insert schemas needed by server routes
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -2129,5 +2088,6 @@ export type TeamInvitation = typeof teamInvitations.$inferSelect;
 
 // Note: insertPostbackSchema and insertReceivedOfferSchema are already exported above
 
+*/
 
 export const postbackDeliveries = {} as any;

@@ -89,7 +89,7 @@ export function authenticateToken(req: AuthenticatedRequest, res: Response, next
     });
     
     next();
-  } catch (error) {
+  } catch (_error) {
     let errorDetails = 'Unknown JWT error';
     
     if (error instanceof jwt.JsonWebTokenError) {

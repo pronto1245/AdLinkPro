@@ -68,7 +68,7 @@ async function ensureUsersTable() {
         two_factor_enabled BOOLEAN NOT NULL DEFAULT false
       );
     `);
-  } catch (error) {
+  } catch (_error) {
     console.log('Database connection failed, continuing without database:', error.message);
   }
 }

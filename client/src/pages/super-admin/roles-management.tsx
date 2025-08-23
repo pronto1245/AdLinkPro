@@ -301,15 +301,15 @@ export default function RolesManagement() {
     queryKey: ['/api/admin/roles', searchTerm, filterScope],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      if (filterScope !== 'all') params.append('scope', filterScope);
+      if (searchTerm) {params.append('search', searchTerm);}
+      if (filterScope !== 'all') {params.append('scope', filterScope);}
       
       const response = await fetch(`/api/admin/roles?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch roles');
+      if (!response.ok) {throw new Error('Failed to fetch roles');}
       return response.json();
     }
   });
@@ -323,7 +323,7 @@ export default function RolesManagement() {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch advertisers');
+      if (!response.ok) {throw new Error('Failed to fetch advertisers');}
       return response.json();
     }
   });
@@ -417,7 +417,7 @@ export default function RolesManagement() {
   };
 
   const handleUpdateRole = () => {
-    if (!selectedRole) return;
+    if (!selectedRole) {return;}
     
     const formattedData = {
       ...roleForm,
@@ -632,11 +632,11 @@ export default function RolesManagement() {
                               <div className="flex flex-wrap gap-1">
                                 {role.permissions.slice(0, 3).map((permission) => {
                                   const getPermissionColor = (perm: string) => {
-                                    if (perm.includes('statistics')) return 'bg-green-100 text-green-800 border-green-200';
-                                    if (perm.includes('offers')) return 'bg-purple-100 text-purple-800 border-purple-200';
-                                    if (perm.includes('users')) return 'bg-blue-100 text-blue-800 border-blue-200';
-                                    if (perm.includes('finance')) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-                                    if (perm.includes('api')) return 'bg-red-100 text-red-800 border-red-200';
+                                    if (perm.includes('statistics')) {return 'bg-green-100 text-green-800 border-green-200';}
+                                    if (perm.includes('offers')) {return 'bg-purple-100 text-purple-800 border-purple-200';}
+                                    if (perm.includes('users')) {return 'bg-blue-100 text-blue-800 border-blue-200';}
+                                    if (perm.includes('finance')) {return 'bg-yellow-100 text-yellow-800 border-yellow-200';}
+                                    if (perm.includes('api')) {return 'bg-red-100 text-red-800 border-red-200';}
                                     return 'bg-gray-100 text-gray-800 border-gray-200';
                                   };
                                   

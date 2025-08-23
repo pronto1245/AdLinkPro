@@ -8,7 +8,7 @@ export interface LoginResponse {
 }
 
 export const normalizeRole = (role?: string): string => {
-  if (!role) return '';
+  if (!role) {return '';}
   
   const roleMapping: Record<string, string> = {
     'partner': 'partner/affiliate',

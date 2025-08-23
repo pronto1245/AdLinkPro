@@ -94,7 +94,7 @@ export default function CreativesAndTools() {
           description: `Креатив "${creative.name}" загружается`,
         });
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Ошибка",
         description: "Не удалось скачать креатив",

@@ -332,15 +332,15 @@ export default function UniversalSidebar({ isMobile = false, onClose }: Universa
 
   // Get time until token expiry
   const getTokenExpiryInfo = () => {
-    if (!tokenExpiresAt) return null;
+    if (!tokenExpiresAt) {return null;}
     
     const now = Date.now() / 1000;
     const remaining = tokenExpiresAt - now;
     
-    if (remaining <= 0) return 'Истёк';
-    if (remaining < 300) return `${Math.floor(remaining / 60)}м`;
-    if (remaining < 3600) return `${Math.floor(remaining / 60)}м`;
-    if (remaining < 86400) return `${Math.floor(remaining / 3600)}ч`;
+    if (remaining <= 0) {return 'Истёк';}
+    if (remaining < 300) {return `${Math.floor(remaining / 60)}м`;}
+    if (remaining < 3600) {return `${Math.floor(remaining / 60)}м`;}
+    if (remaining < 86400) {return `${Math.floor(remaining / 3600)}ч`;}
     
     return `${Math.floor(remaining / 86400)}д`;
   };

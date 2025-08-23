@@ -28,7 +28,7 @@ export function verifyTokenFromFile(): boolean {
     const payload = jwt.verify(token, JWT_SECRET) as any;
     console.log('✅ Token verification successful for:', payload.username || payload.id);
     return true;
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Token verification failed:', error instanceof Error ? error.message : error);
     return false;
   }
@@ -41,7 +41,7 @@ export function getTokenInfoFromFile(): any {
     const token = readFileSync(tokenPath, 'utf8').trim();
     const payload = jwt.verify(token, JWT_SECRET) as any;
     return payload;
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Failed to get token info:', error instanceof Error ? error.message : error);
     return null;
   }

@@ -1191,7 +1191,7 @@ export default function OffersManagement() {
       
       // Сбрасываем выбор после экспорта
       setSelectedOffers([]);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Ошибка",
         description: "Не удалось экспортировать офферы",
@@ -1240,8 +1240,8 @@ export default function OffersManagement() {
   };
 
   const getStatusBadge = (status: string, moderationStatus: string, isBlocked: boolean, isArchived: boolean) => {
-    if (isArchived) return <Badge variant="secondary">{t('archived')}</Badge>;
-    if (isBlocked) return <Badge variant="destructive">{t('blocked')}</Badge>;
+    if (isArchived) {return <Badge variant="secondary">{t('archived')}</Badge>;}
+    if (isBlocked) {return <Badge variant="destructive">{t('blocked')}</Badge>;}
     
     switch (status) {
       case 'active':
@@ -1266,7 +1266,7 @@ export default function OffersManagement() {
     onSuccess: (updatedOffer) => {
       // Update the cache directly instead of invalidating to preserve order
       queryClient.setQueryData(['/api/admin/offers'], (oldOffers: any[]) => {
-        if (!oldOffers) return oldOffers;
+        if (!oldOffers) {return oldOffers;}
         return oldOffers.map(offer => 
           offer.id === updatedOffer.id ? { ...offer, status: updatedOffer.status } : offer
         );
@@ -1288,7 +1288,7 @@ export default function OffersManagement() {
   });
 
   const handleModerationAction = (action: string, comment?: string) => {
-    if (!selectedOffer) return;
+    if (!selectedOffer) {return;}
     moderateOfferMutation.mutate({
       offerId: selectedOffer.id,
       action,
@@ -1297,7 +1297,7 @@ export default function OffersManagement() {
   };
 
   const handleOfferUpdate = (updates: Partial<Offer>) => {
-    if (!editingOffer) return;
+    if (!editingOffer) {return;}
     setEditingOffer({
       ...editingOffer,
       ...updates
@@ -1745,17 +1745,17 @@ export default function OffersManagement() {
                                   
                                   // Цвета для разных типов источников трафика
                                   const getTrafficSourceColor = (source: string) => {
-                                    if (source.includes('facebook') || source.includes('instagram')) return 'bg-blue-100 text-blue-800';
-                                    if (source.includes('google') || source.includes('youtube')) return 'bg-red-100 text-red-800';
-                                    if (source.includes('tiktok')) return 'bg-black text-white';
-                                    if (source.includes('twitter') || source.includes('linkedin')) return 'bg-cyan-100 text-cyan-800';
-                                    if (source.includes('pinterest')) return 'bg-red-100 text-red-800';
-                                    if (source.includes('snapchat')) return 'bg-yellow-100 text-yellow-800';
-                                    if (source.includes('push') || source.includes('pop')) return 'bg-orange-100 text-orange-800';
-                                    if (source.includes('email') || source.includes('sms')) return 'bg-green-100 text-green-800';
-                                    if (source.includes('outbrain') || source.includes('taboola') || source.includes('mgid') || source.includes('revcontent') || source.includes('adnow')) return 'bg-purple-100 text-purple-800';
-                                    if (source.includes('seo') || source.includes('organic')) return 'bg-emerald-100 text-emerald-800';
-                                    if (source.includes('influencer') || source.includes('teaser')) return 'bg-pink-100 text-pink-800';
+                                    if (source.includes('facebook') || source.includes('instagram')) {return 'bg-blue-100 text-blue-800';}
+                                    if (source.includes('google') || source.includes('youtube')) {return 'bg-red-100 text-red-800';}
+                                    if (source.includes('tiktok')) {return 'bg-black text-white';}
+                                    if (source.includes('twitter') || source.includes('linkedin')) {return 'bg-cyan-100 text-cyan-800';}
+                                    if (source.includes('pinterest')) {return 'bg-red-100 text-red-800';}
+                                    if (source.includes('snapchat')) {return 'bg-yellow-100 text-yellow-800';}
+                                    if (source.includes('push') || source.includes('pop')) {return 'bg-orange-100 text-orange-800';}
+                                    if (source.includes('email') || source.includes('sms')) {return 'bg-green-100 text-green-800';}
+                                    if (source.includes('outbrain') || source.includes('taboola') || source.includes('mgid') || source.includes('revcontent') || source.includes('adnow')) {return 'bg-purple-100 text-purple-800';}
+                                    if (source.includes('seo') || source.includes('organic')) {return 'bg-emerald-100 text-emerald-800';}
+                                    if (source.includes('influencer') || source.includes('teaser')) {return 'bg-pink-100 text-pink-800';}
                                     return 'bg-gray-100 text-gray-800';
                                   };
                                   
@@ -2105,18 +2105,18 @@ export default function OffersManagement() {
                             
                             // Цвета для разных типов источников трафика
                             const getTrafficSourceColor = (source: string) => {
-                              if (source.includes('facebook') || source.includes('instagram')) return 'bg-blue-100 text-blue-800 border-blue-200';
-                              if (source.includes('google') || source.includes('youtube')) return 'bg-red-100 text-red-800 border-red-200';
-                              if (source.includes('tiktok')) return 'bg-gray-800 text-white border-gray-900';
-                              if (source.includes('twitter') || source.includes('linkedin')) return 'bg-cyan-100 text-cyan-800 border-cyan-200';
-                              if (source.includes('pinterest')) return 'bg-red-100 text-red-800 border-red-200';
-                              if (source.includes('snapchat')) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-                              if (source.includes('push') || source.includes('pop')) return 'bg-orange-100 text-orange-800 border-orange-200';
-                              if (source.includes('email') || source.includes('sms')) return 'bg-green-100 text-green-800 border-green-200';
-                              if (source.includes('outbrain') || source.includes('taboola') || source.includes('mgid') || source.includes('revcontent') || source.includes('adnow')) return 'bg-purple-100 text-purple-800 border-purple-200';
-                              if (source.includes('seo') || source.includes('organic')) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                              if (source.includes('influencer') || source.includes('teaser')) return 'bg-pink-100 text-pink-800 border-pink-200';
-                              if (source.includes('mytarget') || source.includes('reddit')) return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+                              if (source.includes('facebook') || source.includes('instagram')) {return 'bg-blue-100 text-blue-800 border-blue-200';}
+                              if (source.includes('google') || source.includes('youtube')) {return 'bg-red-100 text-red-800 border-red-200';}
+                              if (source.includes('tiktok')) {return 'bg-gray-800 text-white border-gray-900';}
+                              if (source.includes('twitter') || source.includes('linkedin')) {return 'bg-cyan-100 text-cyan-800 border-cyan-200';}
+                              if (source.includes('pinterest')) {return 'bg-red-100 text-red-800 border-red-200';}
+                              if (source.includes('snapchat')) {return 'bg-yellow-100 text-yellow-800 border-yellow-200';}
+                              if (source.includes('push') || source.includes('pop')) {return 'bg-orange-100 text-orange-800 border-orange-200';}
+                              if (source.includes('email') || source.includes('sms')) {return 'bg-green-100 text-green-800 border-green-200';}
+                              if (source.includes('outbrain') || source.includes('taboola') || source.includes('mgid') || source.includes('revcontent') || source.includes('adnow')) {return 'bg-purple-100 text-purple-800 border-purple-200';}
+                              if (source.includes('seo') || source.includes('organic')) {return 'bg-emerald-100 text-emerald-800 border-emerald-200';}
+                              if (source.includes('influencer') || source.includes('teaser')) {return 'bg-pink-100 text-pink-800 border-pink-200';}
+                              if (source.includes('mytarget') || source.includes('reddit')) {return 'bg-indigo-100 text-indigo-800 border-indigo-200';}
                               return 'bg-gray-100 text-gray-800 border-gray-200';
                             };
                             
@@ -2259,7 +2259,7 @@ export default function OffersManagement() {
       {editingOffer && (
         <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
           setIsEditDialogOpen(open);
-          if (!open) setEditingOffer(null);
+          if (!open) {setEditingOffer(null);}
         }}>
           <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>

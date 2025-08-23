@@ -49,7 +49,7 @@ export default function SystemSettings() {
       const response = await fetch('/api/admin/system-settings', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch settings');
+      if (!response.ok) {throw new Error('Failed to fetch settings');}
       return response.json();
     },
   });
@@ -426,8 +426,7 @@ export default function SystemSettings() {
                     </Button>
                     <Button 
                       onClick={() => updateSettingMutation.mutate({
-                        id: editingSetting.id,
-                        data: { value: editingSetting.value }
+                        id: editingSetting.id, _data: { value: editingSetting.value }
                       })}
                       disabled={updateSettingMutation.isPending}
                     >

@@ -131,8 +131,7 @@ router.post('/sample', async (req, res) => {
 
     res.json({ 
       success: true, 
-      message: `Created ${count} sample tracking records with fraud analysis`,
-      data: sampleData.map(d => ({
+      message: `Created ${count} sample tracking records with fraud analysis`, _data: sampleData.map(d => ({
         clickId: d.clickId,
         ip: d.ip,
         country: d.country,
@@ -229,8 +228,7 @@ router.get('/analytics', async (req, res) => {
     const results = await query;
 
     res.json({
-      success: true,
-      data: results,
+      success: true, _data: results,
       pagination: {
         page: Number(page),
         limit: Number(limit),

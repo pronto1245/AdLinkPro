@@ -596,7 +596,7 @@ export function AffiliatePostbacks() {
               try {
                 const parsed = JSON.parse(e.target.value);
                 setLocalFormData({ ...localFormData, params_template: parsed });
-              } catch (error) {
+              } catch (_error) {
                 // Invalid JSON, don't update
               }
             }}

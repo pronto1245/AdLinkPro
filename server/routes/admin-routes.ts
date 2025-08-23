@@ -215,7 +215,7 @@ router.get('/users',
         message: 'User management endpoint - implementation needed',
         query: req.query 
       });
-    } catch (error) {
+    } catch (_error) {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -233,7 +233,7 @@ router.get('/users/:id',
         message: 'Get user endpoint - implementation needed',
         userId: req.params.id 
       });
-    } catch (error) {
+    } catch (_error) {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -251,7 +251,7 @@ router.put('/users/:id',
         message: 'Update user endpoint - implementation needed',
         userId: req.params.id 
       });
-    } catch (error) {
+    } catch (_error) {
       res.status(500).json({ error: 'Internal server error' });
     }
   }

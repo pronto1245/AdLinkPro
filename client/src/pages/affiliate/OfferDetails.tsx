@@ -168,22 +168,22 @@ const LandingPagesCard = ({
 
     const url = new URL(baseUrl);
     
-    if (landingSubParams.sub1) url.searchParams.set('sub1', landingSubParams.sub1);
-    if (landingSubParams.sub2) url.searchParams.set('sub2', landingSubParams.sub2);
-    if (landingSubParams.sub3) url.searchParams.set('sub3', landingSubParams.sub3);
-    if (landingSubParams.sub4) url.searchParams.set('sub4', landingSubParams.sub4);
-    if (landingSubParams.sub5) url.searchParams.set('sub5', landingSubParams.sub5);
-    if (landingSubParams.sub6) url.searchParams.set('sub6', landingSubParams.sub6);
-    if (landingSubParams.sub7) url.searchParams.set('sub7', landingSubParams.sub7);
-    if (landingSubParams.sub8) url.searchParams.set('sub8', landingSubParams.sub8);
-    if (landingSubParams.sub9) url.searchParams.set('sub9', landingSubParams.sub9);
-    if (landingSubParams.sub10) url.searchParams.set('sub10', landingSubParams.sub10);
-    if (landingSubParams.sub11) url.searchParams.set('sub11', landingSubParams.sub11);
-    if (landingSubParams.sub12) url.searchParams.set('sub12', landingSubParams.sub12);
-    if (landingSubParams.sub13) url.searchParams.set('sub13', landingSubParams.sub13);
-    if (landingSubParams.sub14) url.searchParams.set('sub14', landingSubParams.sub14);
-    if (landingSubParams.sub15) url.searchParams.set('sub15', landingSubParams.sub15);
-    if (landingSubParams.sub16) url.searchParams.set('sub16', landingSubParams.sub16);
+    if (landingSubParams.sub1) {url.searchParams.set('sub1', landingSubParams.sub1);}
+    if (landingSubParams.sub2) {url.searchParams.set('sub2', landingSubParams.sub2);}
+    if (landingSubParams.sub3) {url.searchParams.set('sub3', landingSubParams.sub3);}
+    if (landingSubParams.sub4) {url.searchParams.set('sub4', landingSubParams.sub4);}
+    if (landingSubParams.sub5) {url.searchParams.set('sub5', landingSubParams.sub5);}
+    if (landingSubParams.sub6) {url.searchParams.set('sub6', landingSubParams.sub6);}
+    if (landingSubParams.sub7) {url.searchParams.set('sub7', landingSubParams.sub7);}
+    if (landingSubParams.sub8) {url.searchParams.set('sub8', landingSubParams.sub8);}
+    if (landingSubParams.sub9) {url.searchParams.set('sub9', landingSubParams.sub9);}
+    if (landingSubParams.sub10) {url.searchParams.set('sub10', landingSubParams.sub10);}
+    if (landingSubParams.sub11) {url.searchParams.set('sub11', landingSubParams.sub11);}
+    if (landingSubParams.sub12) {url.searchParams.set('sub12', landingSubParams.sub12);}
+    if (landingSubParams.sub13) {url.searchParams.set('sub13', landingSubParams.sub13);}
+    if (landingSubParams.sub14) {url.searchParams.set('sub14', landingSubParams.sub14);}
+    if (landingSubParams.sub15) {url.searchParams.set('sub15', landingSubParams.sub15);}
+    if (landingSubParams.sub16) {url.searchParams.set('sub16', landingSubParams.sub16);}
     
     return url.toString();
   };
@@ -265,7 +265,7 @@ const LandingPagesCard = ({
                             (() => {
                               const url = new URL(transformedUrls[landing.id]);
                               Object.entries(subParams[landing.id]).forEach(([key, value]) => {
-                                if (value) url.searchParams.set(key, value);
+                                if (value) {url.searchParams.set(key, value);}
                               });
                               return url.toString();
                             })() : 
@@ -519,7 +519,7 @@ export default function OfferDetails() {
         } else {
           throw new Error("Ошибка отправки запроса");
         }
-      } catch (error) {
+      } catch (_error) {
         toast({
           title: "Ошибка",
           description: "Не удалось отправить запрос. Попробуйте еще раз.",

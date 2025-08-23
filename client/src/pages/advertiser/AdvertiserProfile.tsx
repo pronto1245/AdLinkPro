@@ -341,8 +341,7 @@ export default function AdvertiserProfile() {
     mutationFn: async (type: string) => {
       return apiRequest('/api/telegram/test', 'POST', { 
         userId: user?.id, 
-        type: type,
-        data: {
+        type: type, _data: {
           offerName: 'Test Offer',
           partnerName: 'Test Partner', 
           amount: 100,
@@ -400,7 +399,7 @@ export default function AdvertiserProfile() {
         title: "Скопировано",
         description: "API токен скопирован в буфер обмена"
       });
-    } catch (error) {
+    } catch (_error) {
       const textArea = document.createElement('textarea');
       textArea.value = token;
       document.body.appendChild(textArea);

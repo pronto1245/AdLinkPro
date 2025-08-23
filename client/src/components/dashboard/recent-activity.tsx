@@ -59,9 +59,9 @@ export default function RecentActivity({ activities = defaultActivities }: Recen
   const { t } = useLanguage();
 
   const getIconColor = (iconBg: string) => {
-    if (iconBg.includes('green')) return 'text-green-600';
-    if (iconBg.includes('blue')) return 'text-blue-600';
-    if (iconBg.includes('yellow')) return 'text-yellow-600';
+    if (iconBg.includes('green')) {return 'text-green-600';}
+    if (iconBg.includes('blue')) {return 'text-blue-600';}
+    if (iconBg.includes('yellow')) {return 'text-yellow-600';}
     return 'text-gray-600';
   };
 

@@ -17,12 +17,12 @@ import { loginSchema, LoginFormData } from "@/lib/validation";
 
 function roleToPath(role?: string) {
   const r = (role || "").toLowerCase();
-  if (r === "advertiser") return "/advertiser";
-  if (r === "partner") return "/partner";
-  if (r === "owner") return "/owner";
-  if (r === "affiliate") return "/partner"; // affiliate maps to partner route
-  if (r === "staff") return "/dashboard/staff";
-  if (r === "super_admin") return "/dashboard/super-admin";
+  if (r === "advertiser") {return "/advertiser";}
+  if (r === "partner") {return "/partner";}
+  if (r === "owner") {return "/owner";}
+  if (r === "affiliate") {return "/partner";} // affiliate maps to partner route
+  if (r === "staff") {return "/dashboard/staff";}
+  if (r === "super_admin") {return "/dashboard/super-admin";}
   return "/partner"; // default fallback
 }
 

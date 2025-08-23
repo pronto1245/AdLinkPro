@@ -21,7 +21,7 @@ export function logout() {
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
   const data = await apiLogin(email, password);
-  if (data?.token) setToken(data.token);
+  if (data?.token) {setToken(data.token);}
   return data;
 }
 

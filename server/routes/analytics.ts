@@ -13,7 +13,7 @@ router.get('/summary', requireAuth, async (req, res) => {
     }
 
     // Apply role-based filtering
-    let filters = { ...req.query };
+    const filters = { ...req.query };
     if (user.role === 'affiliate') {
       filters.partnerId = user.id;
     } else if (user.role === 'advertiser' && user.ownerId) {

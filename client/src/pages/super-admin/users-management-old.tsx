@@ -140,7 +140,7 @@ export default function UsersManagement() {
   };
 
   const getSortIcon = (field: string) => {
-    if (filters.sortBy !== field) return '↕️';
+    if (filters.sortBy !== field) {return '↕️';}
     return filters.sortOrder === 'asc' ? '↑' : '↓';
   };
   
@@ -159,14 +159,14 @@ export default function UsersManagement() {
     queryFn: async () => {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== 'all') params.append(key, value.toString());
+        if (value && value !== 'all') {params.append(key, value.toString());}
       });
       const response = await fetch(`/api/admin/users?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch users');
+      if (!response.ok) {throw new Error('Failed to fetch users');}
       return response.json();
     }
   });
@@ -1199,7 +1199,7 @@ export default function UsersManagement() {
               {t.cancel || "Отмена"}
             </Button>
             <Button onClick={() => {
-              if (!selectedUser) return;
+              if (!selectedUser) {return;}
               
               editUserMutation.mutate({ 
                 userId: selectedUser.id, 

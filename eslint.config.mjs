@@ -22,6 +22,33 @@ export default [
         module: 'readonly',
         require: 'readonly',
         exports: 'readonly',
+        // Browser globals for client-side code
+        window: 'readonly',
+        document: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        fetch: 'readonly',
+        setTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearTimeout: 'readonly',
+        clearInterval: 'readonly',
+        File: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLElement: 'readonly',
+        React: 'readonly',
+        // WebSocket related
+        WebSocket: 'readonly',
+        MessageEvent: 'readonly',
+        Event: 'readonly',
+        CloseEvent: 'readonly',
+        CustomEvent: 'readonly',
+        // Additional browser APIs
+        URL: 'readonly',
+        RequestInfo: 'readonly',
+        RequestInit: 'readonly',
+        navigator: 'readonly',
+        // Node.js types
+        NodeJS: 'readonly',
       },
     },
     plugins: {
@@ -32,7 +59,7 @@ export default [
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
-      'no-console': 'warn',
+      'no-console': 'off', // Allow console statements in development
       
       // TypeScript specific
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],

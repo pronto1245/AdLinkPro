@@ -1,6 +1,6 @@
 const RAW_BASE = (import.meta.env.VITE_API_URL ?? '').trim()
 const API_BASE = (() => {
-  if (!RAW_BASE) return '/api'
+  if (!RAW_BASE) {return '/api'}
   const base = RAW_BASE.replace(/\/+$/, '')
   return base.endsWith('/api') ? base : `${base}/api`
 })()
@@ -19,7 +19,7 @@ export async function api(path: string, init: RequestInit = {}) {
     ...(init.headers as any),
   }
   const res = await fetch(buildUrl(path), { ...init, headers, credentials: 'include' })
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  if (!res.ok) {throw new Error(`${res.status} ${res.statusText}`)}
   const ct = res.headers.get('content-type') ?? ''
   return ct.includes('application/json') ? res.json() : res.text()
 }

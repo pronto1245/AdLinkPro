@@ -248,8 +248,7 @@ export async function notifyNewReferral(referrer: any, referredUser: any): Promi
       userId: referrer.id,
       type: 'referral_joined',
       title: '🎉 Новый реферал!',
-      message: `Пользователь ${referredUser.username} зарегистрировался по вашей ссылке. Комиссия: 5%`,
-      data: {
+      message: `Пользователь ${referredUser.username} зарегистрировался по вашей ссылке. Комиссия: 5%`, _data: {
         referredUser: referredUser.username,
         referredEmail: referredUser.email,
         commissionRate: '5'
@@ -265,8 +264,7 @@ export async function notifyNewReferral(referrer: any, referredUser: any): Promi
     const notificationService = NotificationService.getInstance();
     await notificationService.sendNotification({
       type: 'new_referral',
-      userId: referrer.id,
-      data: {
+      userId: referrer.id, _data: {
         email: referrer.email,
         referredUser: referredUser.username,
         referredEmail: referredUser.email,
@@ -289,8 +287,7 @@ export async function notifyReferralEarning(referrer: any, earningData: any): Pr
       userId: referrer.id,
       type: 'referral_commission',
       title: '💰 Реферальная комиссия!',
-      message: `Вы получили $${earningData.commissionAmount} комиссии от ${earningData.referredUser}`,
-      data: {
+      message: `Вы получили $${earningData.commissionAmount} комиссии от ${earningData.referredUser}`, _data: {
         commissionAmount: earningData.commissionAmount,
         referredUser: earningData.referredUser,
         originalAmount: earningData.originalAmount
@@ -306,8 +303,7 @@ export async function notifyReferralEarning(referrer: any, earningData: any): Pr
     const notificationService = NotificationService.getInstance();
     await notificationService.sendNotification({
       type: 'referral_earning',
-      userId: referrer.id,
-      data: {
+      userId: referrer.id, _data: {
         email: referrer.email,
         commissionAmount: earningData.commissionAmount,
         referredUser: earningData.referredUser,
@@ -336,8 +332,7 @@ export async function notifyOfferAccessRequest(
       userId: advertiser.id,
       type: 'offer_access_request',
       title: 'Новый запрос доступа к офферу',
-      message: `Партнёр ${partner.username} запросил доступ к офферу "${offer.name}"`,
-      data: { 
+      message: `Партнёр ${partner.username} запросил доступ к офферу "${offer.name}"`, _data: { 
         partnerId: partner.id, 
         partnerUsername: partner.username,
         offerId: offer.id, 
@@ -351,8 +346,7 @@ export async function notifyOfferAccessRequest(
     // Отправляем WebSocket уведомление
     if ((globalThis as any).sendWebSocketNotification) {
       (globalThis as any).sendWebSocketNotification(advertiser.id, {
-        type: 'offer_access_request',
-        data: {
+        type: 'offer_access_request', _data: {
           partnerUsername: partner.username,
           offerName: offer.name,
           requestMessage
@@ -379,8 +373,7 @@ export async function notifyOfferAccessApproved(
       userId: partner.id,
       type: 'offer_access_approved',
       title: 'Запрос доступа одобрен',
-      message: `Ваш запрос доступа к офферу "${offer.name}" одобрен`,
-      data: { 
+      message: `Ваш запрос доступа к офферу "${offer.name}" одобрен`, _data: { 
         advertiserId: advertiser.id,
         advertiserUsername: advertiser.username,
         offerId: offer.id, 
@@ -394,8 +387,7 @@ export async function notifyOfferAccessApproved(
     // Отправляем WebSocket уведомление
     if ((globalThis as any).sendWebSocketNotification) {
       (globalThis as any).sendWebSocketNotification(partner.id, {
-        type: 'offer_access_response',
-        data: {
+        type: 'offer_access_response', _data: {
           status: 'approved',
           offerName: offer.name,
           advertiserUsername: advertiser.username,
@@ -423,8 +415,7 @@ export async function notifyOfferAccessRejected(
       userId: partner.id,
       type: 'offer_access_rejected',
       title: 'Запрос доступа отклонён',
-      message: `Ваш запрос доступа к офферу "${offer.name}" отклонён`,
-      data: { 
+      message: `Ваш запрос доступа к офферу "${offer.name}" отклонён`, _data: { 
         advertiserId: advertiser.id,
         advertiserUsername: advertiser.username,
         offerId: offer.id, 
@@ -438,8 +429,7 @@ export async function notifyOfferAccessRejected(
     // Отправляем WebSocket уведомление
     if ((globalThis as any).sendWebSocketNotification) {
       (globalThis as any).sendWebSocketNotification(partner.id, {
-        type: 'offer_access_response',
-        data: {
+        type: 'offer_access_response', _data: {
           status: 'rejected',
           offerName: offer.name,
           advertiserUsername: advertiser.username,

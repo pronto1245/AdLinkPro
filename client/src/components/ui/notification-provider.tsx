@@ -105,7 +105,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
 
   // WebSocket для real-time уведомлений
   useEffect(() => {
-    if (!user) return;
+    if (!user) {return;}
 
     // Use environment variable or fallback to localhost in development
     const WS_URL = import.meta.env.VITE_WS_URL || (import.meta.env.DEV ? 'ws://localhost:5000/ws' : null);

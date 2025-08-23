@@ -1,6 +1,6 @@
 export async function fetchJSON<T>(url: string, init: RequestInit = {}): Promise<T> {
   const method = (init.method ?? 'GET');
-  if (typeof method !== 'string') throw new Error('Invalid method type');
+  if (typeof method !== 'string') {throw new Error('Invalid method type');}
   
   const res = await fetch(url, { ...init, method });
   

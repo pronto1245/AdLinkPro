@@ -107,7 +107,7 @@ export default function AccessRequests() {
 
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedRequest) return;
+    if (!selectedRequest) {return;}
 
     reviewMutation.mutate({
       offerId: selectedRequest.offer_id,

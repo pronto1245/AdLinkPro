@@ -42,8 +42,8 @@ export default function PostbackMetrics({ dateFrom, dateTo, className = '' }: Po
     queryKey: ['postback-analytics', dateFrom, dateTo],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (dateFrom) params.append('dateFrom', dateFrom);
-      if (dateTo) params.append('dateTo', dateTo);
+      if (dateFrom) {params.append('dateFrom', dateFrom);}
+      if (dateTo) {params.append('dateTo', dateTo);}
       
       const response = await fetch(`/api/analytics/postback-analytics?${params.toString()}`);
       if (!response.ok) {
@@ -65,14 +65,14 @@ export default function PostbackMetrics({ dateFrom, dateTo, className = '' }: Po
   };
 
   const getStatusColor = (rate: number) => {
-    if (rate >= 95) return 'text-green-600';
-    if (rate >= 85) return 'text-yellow-600';
+    if (rate >= 95) {return 'text-green-600';}
+    if (rate >= 85) {return 'text-yellow-600';}
     return 'text-red-600';
   };
 
   const getStatusIcon = (rate: number) => {
-    if (rate >= 95) return <CheckCircle className="h-4 w-4 text-green-600" />;
-    if (rate >= 85) return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+    if (rate >= 95) {return <CheckCircle className="h-4 w-4 text-green-600" />;}
+    if (rate >= 85) {return <AlertTriangle className="h-4 w-4 text-yellow-600" />;}
     return <XCircle className="h-4 w-4 text-red-600" />;
   };
 
@@ -188,7 +188,7 @@ export default function PostbackMetrics({ dateFrom, dateTo, className = '' }: Po
             {metrics.errorFrequency.length > 0 && (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-muted-foreground">Error Types</h4>
-                {metrics.errorFrequency.map((error) => (
+                {metrics.errorFrequency.map((_error) => (
                   <div key={error.errorType} className="flex items-center justify-between">
                     <span className="text-xs">{error.errorType}</span>
                     <div className="flex items-center gap-2">

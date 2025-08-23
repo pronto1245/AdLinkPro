@@ -163,8 +163,7 @@ router.get('/click', async (req, res) => {
     try {
       const postbackEvent: PostbackEvent = {
         type: 'lp_click',
-        clickId: clickid,
-        data: {
+        clickId: clickid, _data: {
           clickid,
           partner_id: partnerId as string,
           offer_id: offerId as string,
@@ -239,8 +238,7 @@ router.post('/event', async (req, res) => {
     try {
       const postbackEvent: PostbackEvent = {
         type: eventData.type as any,
-        clickId: eventData.clickid,
-        data: {
+        clickId: eventData.clickid, _data: {
           clickid: eventData.clickid,
           status: eventData.type,
           partner_id: click.partnerId,
@@ -263,7 +261,7 @@ router.post('/event', async (req, res) => {
     }
 
     res.status(201).json(event);
-  } catch (error) {
+  } catch (_error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         error: 'Validation error',
@@ -339,8 +337,7 @@ router.post('/postback/send', async (req, res) => {
     // Build postback event
     const postbackEvent: PostbackEvent = {
       type: event_type,
-      clickId: clickid,
-      data: {
+      clickId: clickid, _data: {
         clickid,
         status: event_type,
         partner_id: click.partnerId,
@@ -392,8 +389,7 @@ router.post('/postback/test', async (req, res) => {
     // Create test event
     const testEvent: PostbackEvent = {
       type: 'lead',
-      clickId: 'test_click_123',
-      data: {
+      clickId: 'test_click_123', _data: {
         clickid: 'test_click_123',
         status: 'lead',
         partner_id: 'test_partner',

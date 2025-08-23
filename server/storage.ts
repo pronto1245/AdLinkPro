@@ -38,7 +38,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByTelegramChatId(chatId: number): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  updateUser(id: string, data: Partial<InsertUser>): Promise<User>;
+  updateUser(id: string, _data: Partial<InsertUser>): Promise<User>;
   getUsers(role?: string): Promise<User[]>;
   getUsersByOwner(ownerId: string, role?: string): Promise<User[]>;
   getNextPartnerNumber(): Promise<string>;
@@ -86,13 +86,13 @@ export interface IStorage {
   getOffer(id: string): Promise<Offer | undefined>;
   getOffers(advertiserId?: string): Promise<Offer[]>;
   createOffer(offer: InsertOffer): Promise<Offer>;
-  updateOffer(id: string, data: Partial<InsertOffer>): Promise<Offer>;
+  updateOffer(id: string, _data: Partial<InsertOffer>): Promise<Offer>;
   deleteOffer(id: string): Promise<void>;
   
   // Received offers management
   getReceivedOffers(advertiserId: string): Promise<ReceivedOffer[]>;
   createReceivedOffer(receivedOffer: InsertReceivedOffer): Promise<ReceivedOffer>;
-  updateReceivedOffer(id: string, data: Partial<InsertReceivedOffer>): Promise<ReceivedOffer>;
+  updateReceivedOffer(id: string, _data: Partial<InsertReceivedOffer>): Promise<ReceivedOffer>;
   deleteReceivedOffer(id: string): Promise<void>;
   
   // Creative files management
@@ -108,7 +108,7 @@ export interface IStorage {
   // Partner offer management
   getPartnerOffers(partnerId?: string, offerId?: string): Promise<PartnerOffer[]>;
   createPartnerOffer(partnerOffer: InsertPartnerOffer): Promise<PartnerOffer>;
-  updatePartnerOffer(id: string, data: Partial<InsertPartnerOffer>): Promise<PartnerOffer>;
+  updatePartnerOffer(id: string, _data: Partial<InsertPartnerOffer>): Promise<PartnerOffer>;
   getAdvertiserPartners(advertiserId: string): Promise<User[]>;
   
   // Tracking links
@@ -128,22 +128,22 @@ export interface IStorage {
   // Transactions
   getTransactions(userId?: string): Promise<Transaction[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
-  updateTransaction(id: string, data: Partial<InsertTransaction>): Promise<Transaction>;
+  updateTransaction(id: string, _data: Partial<InsertTransaction>): Promise<Transaction>;
   
   // Postbacks
   getPostbacks(userId: string): Promise<Postback[]>;
   createPostback(postback: InsertPostback): Promise<Postback>;
-  updatePostback(id: string, data: Partial<InsertPostback>): Promise<Postback>;
+  updatePostback(id: string, _data: Partial<InsertPostback>): Promise<Postback>;
   
   // Support tickets
   getTickets(userId?: string): Promise<Ticket[]>;
   createTicket(ticket: InsertTicket): Promise<Ticket>;
-  updateTicket(id: string, data: Partial<InsertTicket>): Promise<Ticket>;
+  updateTicket(id: string, _data: Partial<InsertTicket>): Promise<Ticket>;
   
   // Fraud alerts
   getFraudAlerts(): Promise<FraudAlert[]>;
   createFraudAlert(alert: InsertFraudAlert): Promise<FraudAlert>;
-  updateFraudAlert(id: string, data: Partial<InsertFraudAlert>): Promise<FraudAlert>;
+  updateFraudAlert(id: string, _data: Partial<InsertFraudAlert>): Promise<FraudAlert>;
   
   // Admin functions
   getAllUsers(role?: string): Promise<User[]>;
@@ -154,7 +154,7 @@ export interface IStorage {
   // System Settings
   getSystemSettings(): Promise<any[]>;
   createSystemSetting(setting: any): Promise<any>;
-  updateSystemSetting(id: string, data: any): Promise<any>;
+  updateSystemSetting(id: string, _data: any): Promise<any>;
   deleteSystemSetting(id: string): Promise<void>;
   
   // Audit Logs
@@ -213,7 +213,7 @@ export interface IStorage {
   // Global Postbacks
   getGlobalPostbacks(): Promise<any[]>;
   createGlobalPostback(postback: any): Promise<any>;
-  updateGlobalPostback(id: string, data: any): Promise<any>;
+  updateGlobalPostback(id: string, _data: any): Promise<any>;
   testGlobalPostback(id: string): Promise<void>;
   getPostbackLogs(): Promise<any[]>;
 
@@ -231,7 +231,7 @@ export interface IStorage {
     search?: string;
   }): Promise<any[]>;
   createPostbackTemplate(data: any): Promise<any>;
-  updatePostbackTemplate(id: string, data: any): Promise<any>;
+  updatePostbackTemplate(id: string, _data: any): Promise<any>;
   deletePostbackTemplate(id: string): Promise<void>;
   
   // Blacklist Management
@@ -240,7 +240,7 @@ export interface IStorage {
     type?: string;
   }): Promise<any[]>;
   createBlacklistEntry(entry: any): Promise<any>;
-  updateBlacklistEntry(id: string, data: any): Promise<any>;
+  updateBlacklistEntry(id: string, _data: any): Promise<any>;
   deleteBlacklistEntry(id: string): Promise<void>;
   
   // Admin offer management
@@ -259,18 +259,18 @@ export interface IStorage {
   getDomain(id: string): Promise<any>;
   getDomainByName(domain: string): Promise<any>;
   createDomain(domain: any): Promise<any>;
-  updateDomain(id: string, data: any): Promise<any>;
+  updateDomain(id: string, _data: any): Promise<any>;
   deleteDomain(id: string): Promise<void>;
   
   // Custom Domains methods
   getCustomDomains(advertiserId: string): Promise<any[]>;
-  addCustomDomain(advertiserId: string, data: { domain: string; type: string }): Promise<any>;
+  addCustomDomain(advertiserId: string, _data: { domain: string; type: string }): Promise<any>;
   verifyCustomDomain(advertiserId: string, domainId: string): Promise<any>;
   deleteCustomDomain(advertiserId: string, domainId: string): Promise<void>;
   
   // KYC documents
   getKycDocuments(): Promise<any[]>;
-  updateKycDocument(id: string, data: any): Promise<any>;
+  updateKycDocument(id: string, _data: any): Promise<any>;
   
   // Dashboard analytics
   getDashboardMetrics(role: string, userId?: string): Promise<any>;
@@ -279,7 +279,7 @@ export interface IStorage {
   getCustomRoles(filters: { search?: string; scope?: string }): Promise<any[]>;
   getCustomRole(id: string): Promise<any | null>;
   createCustomRole(data: any): Promise<any>;
-  updateCustomRole(id: string, data: any): Promise<any>;
+  updateCustomRole(id: string, _data: any): Promise<any>;
   deleteCustomRole(id: string): Promise<void>;
   assignUserRole(userId: string, roleId: string, assignedBy: string, expiresAt?: string): Promise<any>;
   unassignUserRole(userId: string, roleId: string): Promise<void>;
@@ -297,7 +297,7 @@ export interface IStorage {
   }): Promise<CryptoWallet[]>;
   getCryptoWallet(id: string): Promise<CryptoWallet | undefined>;
   createCryptoWallet(wallet: InsertCryptoWallet): Promise<CryptoWallet>;
-  updateCryptoWallet(id: string, data: Partial<InsertCryptoWallet>): Promise<CryptoWallet>;
+  updateCryptoWallet(id: string, _data: Partial<InsertCryptoWallet>): Promise<CryptoWallet>;
   deleteCryptoWallet(id: string): Promise<void>;
   getCryptoPortfolio(): Promise<any>;
   getCryptoBalance(currency: string): Promise<any>;
@@ -323,18 +323,18 @@ export interface IStorage {
   }): Promise<FraudReport[]>;
   getFraudReport(id: string): Promise<FraudReport | undefined>;
   createFraudReport(report: InsertFraudReport): Promise<FraudReport>;
-  updateFraudReport(id: string, data: Partial<InsertFraudReport>): Promise<FraudReport>;
-  reviewFraudReport(id: string, data: { status: string; reviewedBy: string; reviewNotes?: string; resolution?: string }): Promise<FraudReport>;
+  updateFraudReport(id: string, _data: Partial<InsertFraudReport>): Promise<FraudReport>;
+  reviewFraudReport(id: string, _data: { status: string; reviewedBy: string; reviewNotes?: string; resolution?: string }): Promise<FraudReport>;
   getFraudStats(): Promise<any>;
   getFraudRules(filters: { type?: string; scope?: string; isActive?: boolean }): Promise<FraudRule[]>;
   createFraudRule(rule: InsertFraudRule): Promise<FraudRule>;
-  updateFraudRule(id: string, data: Partial<InsertFraudRule>): Promise<FraudRule>;
+  updateFraudRule(id: string, _data: Partial<InsertFraudRule>): Promise<FraudRule>;
   getIpAnalysis(filters: { page?: number; limit?: number; riskScore?: number }): Promise<IpAnalysis[]>;
   createIpAnalysis(analysis: InsertIpAnalysis): Promise<IpAnalysis>;
-  updateIpAnalysis(id: string, data: Partial<InsertIpAnalysis>): Promise<IpAnalysis>;
+  updateIpAnalysis(id: string, _data: Partial<InsertIpAnalysis>): Promise<IpAnalysis>;
   getFraudBlocks(filters: { type?: string; isActive?: boolean }): Promise<FraudBlock[]>;
   createFraudBlock(block: InsertFraudBlock): Promise<FraudBlock>;
-  updateFraudBlock(id: string, data: Partial<InsertFraudBlock>): Promise<FraudBlock>;
+  updateFraudBlock(id: string, _data: Partial<InsertFraudBlock>): Promise<FraudBlock>;
   createDeviceTracking(tracking: InsertDeviceTracking): Promise<DeviceTracking>;
   getAdminAnalytics(filters?: any): Promise<any>;
   
@@ -530,13 +530,13 @@ export interface IStorage {
   // Postback profiles management
   getPostbackProfiles(ownerId: string, ownerScope?: string): Promise<PostbackProfile[]>;
   createPostbackProfile(profile: InsertPostbackProfile): Promise<PostbackProfile>;
-  updatePostbackProfile(id: string, data: Partial<InsertPostbackProfile>): Promise<PostbackProfile>;
+  updatePostbackProfile(id: string, _data: Partial<InsertPostbackProfile>): Promise<PostbackProfile>;
   deletePostbackProfile(id: string): Promise<void>;
   
   // Postback delivery management
   recordPostbackDelivery(delivery: InsertPostbackDelivery): Promise<PostbackDelivery>;
   getPostbackDeliveries(profileId?: string, status?: string): Promise<PostbackDelivery[]>;
-  updatePostbackDelivery(id: string, data: Partial<InsertPostbackDelivery>): Promise<PostbackDelivery>;
+  updatePostbackDelivery(id: string, _data: Partial<InsertPostbackDelivery>): Promise<PostbackDelivery>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -654,7 +654,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUser(id: string, data: Partial<InsertUser>): Promise<User> {
+  async updateUser(id: string, _data: Partial<InsertUser>): Promise<User> {
     const [user] = await db
       .update(users)
       .set(data)
@@ -728,7 +728,7 @@ export class DatabaseStorage implements IStorage {
 
 
 
-  async updateOffer(id: string, data: Partial<InsertOffer>): Promise<Offer> {
+  async updateOffer(id: string, _data: Partial<InsertOffer>): Promise<Offer> {
     // Don't add updatedAt manually - let database handle it with default
     const updateData = { ...data };
     // Remove any timestamp fields that might cause issues
@@ -759,7 +759,7 @@ export class DatabaseStorage implements IStorage {
     return receivedOffer;
   }
 
-  async updateReceivedOffer(id: string, data: Partial<InsertReceivedOffer>): Promise<ReceivedOffer> {
+  async updateReceivedOffer(id: string, _data: Partial<InsertReceivedOffer>): Promise<ReceivedOffer> {
     const [receivedOffer] = await db
       .update(receivedOffers)
       .set(data)
@@ -852,7 +852,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Одобрить/отклонить запрос на доступ к офферу
-  async updateOfferAccessRequest(id: string, data: Partial<InsertOfferAccessRequest>): Promise<OfferAccessRequest> {
+  async updateOfferAccessRequest(id: string, _data: Partial<InsertOfferAccessRequest>): Promise<OfferAccessRequest> {
     const [request] = await db
       .update(offerAccessRequests)
       .set(data)
@@ -1079,7 +1079,7 @@ export class DatabaseStorage implements IStorage {
     return newPartnerOffer;
   }
 
-  async updatePartnerOffer(id: string, data: Partial<InsertPartnerOffer>): Promise<PartnerOffer> {
+  async updatePartnerOffer(id: string, _data: Partial<InsertPartnerOffer>): Promise<PartnerOffer> {
     const [partnerOffer] = await db
       .update(partnerOffers)
       .set(data)
@@ -1203,7 +1203,7 @@ export class DatabaseStorage implements IStorage {
     return newTransaction;
   }
 
-  async updateTransaction(id: string, data: Partial<InsertTransaction>): Promise<Transaction> {
+  async updateTransaction(id: string, _data: Partial<InsertTransaction>): Promise<Transaction> {
     const [transaction] = await db
       .update(transactions)
       .set(data)
@@ -1293,7 +1293,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // UPDATE POSTBACK PROFILE - MISSING METHOD
-  async updatePostbackProfile(id: string, data: Partial<InsertPostbackProfile>): Promise<PostbackProfile> {
+  async updatePostbackProfile(id: string, _data: Partial<InsertPostbackProfile>): Promise<PostbackProfile> {
     console.log('🚀 updatePostbackProfile called with:', { id, data });
     
     try {
@@ -1335,7 +1335,7 @@ export class DatabaseStorage implements IStorage {
     return newPostback;
   }
 
-  async updatePostback(id: string, data: Partial<InsertPostback>): Promise<Postback> {
+  async updatePostback(id: string, _data: Partial<InsertPostback>): Promise<Postback> {
     const [postback] = await db
       .update(postbacks)
       .set(data)
@@ -1361,7 +1361,7 @@ export class DatabaseStorage implements IStorage {
     return newTicket;
   }
 
-  async updateTicket(id: string, data: Partial<InsertTicket>): Promise<Ticket> {
+  async updateTicket(id: string, _data: Partial<InsertTicket>): Promise<Ticket> {
     const [ticket] = await db
       .update(tickets)
       .set({ ...data, updatedAt: new Date() })
@@ -1382,7 +1382,7 @@ export class DatabaseStorage implements IStorage {
     return newAlert;
   }
 
-  async updateFraudAlert(id: string, data: Partial<InsertFraudAlert>): Promise<FraudAlert> {
+  async updateFraudAlert(id: string, _data: Partial<InsertFraudAlert>): Promise<FraudAlert> {
     const [alert] = await db
       .update(fraudAlerts)
       .set(data)
@@ -1672,7 +1672,7 @@ export class DatabaseStorage implements IStorage {
     return [];
   }
 
-  async updateKycDocument(id: string, data: any): Promise<any> {
+  async updateKycDocument(id: string, _data: any): Promise<any> {
     // Mock implementation - would integrate with actual KYC system
     return { id, ...data };
   }
@@ -1745,7 +1745,7 @@ export class DatabaseStorage implements IStorage {
     return newSetting;
   }
 
-  async updateSystemSetting(id: string, data: any): Promise<any> {
+  async updateSystemSetting(id: string, _data: any): Promise<any> {
     return {
       id,
       ...data,
@@ -1829,7 +1829,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateGlobalPostback(id: string, data: any): Promise<any> {
+  async updateGlobalPostback(id: string, _data: any): Promise<any> {
     return {
       id,
       ...data,
@@ -2010,7 +2010,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateBlacklistEntry(id: string, data: any): Promise<any> {
+  async updateBlacklistEntry(id: string, _data: any): Promise<any> {
     return {
       id,
       ...data,
@@ -2276,7 +2276,7 @@ export class DatabaseStorage implements IStorage {
       try {
         await this.blockUser(userId, reason, blockedBy);
         results.success++;
-      } catch (error) {
+      } catch (_error) {
         results.failed++;
         results.errors.push(`Failed to block user ${userId}: ${error}`);
       }
@@ -2292,7 +2292,7 @@ export class DatabaseStorage implements IStorage {
       try {
         await this.unblockUser(userId);
         results.success++;
-      } catch (error) {
+      } catch (_error) {
         results.failed++;
         results.errors.push(`Failed to unblock user ${userId}: ${error}`);
       }
@@ -2312,7 +2312,7 @@ export class DatabaseStorage implements IStorage {
           await this.softDeleteUser(userId, deletedBy);
         }
         results.success++;
-      } catch (error) {
+      } catch (_error) {
         results.failed++;
         results.errors.push(`Failed to delete user ${userId}: ${error}`);
       }
@@ -2403,7 +2403,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateCustomRole(id: string, data: any): Promise<any> {
+  async updateCustomRole(id: string, _data: any): Promise<any> {
     try {
       const updateData = {
         ...data,
@@ -2496,8 +2496,7 @@ export class DatabaseStorage implements IStorage {
           totalRevenue: 0,
           conversionRate: 0,
           epc: 0
-        },
-        data: [],
+        }, _data: [],
         pagination: {
           page: options.page,
           limit: options.limit,
@@ -2820,7 +2819,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateCryptoWallet(id: string, data: Partial<InsertCryptoWallet>): Promise<CryptoWallet> {
+  async updateCryptoWallet(id: string, _data: Partial<InsertCryptoWallet>): Promise<CryptoWallet> {
     try {
       const [updatedWallet] = await db
         .update(cryptoWallets)
@@ -2857,7 +2856,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async addCustomDomain(advertiserId: string, data: { domain: string; type: string }): Promise<any> {
+  async addCustomDomain(advertiserId: string, _data: { domain: string; type: string }): Promise<any> {
     try {
       // Используем сервис для создания домена с правильной логикой
       const { CustomDomainService } = await import('./services/customDomains');
@@ -3175,7 +3174,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateFraudReport(id: string, data: Partial<InsertFraudReport>): Promise<FraudReport> {
+  async updateFraudReport(id: string, _data: Partial<InsertFraudReport>): Promise<FraudReport> {
     try {
       const [updatedReport] = await db
         .update(fraudReports)
@@ -3189,7 +3188,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async reviewFraudReport(id: string, data: { 
+  async reviewFraudReport(id: string, _data: { 
     status: string; 
     reviewedBy: string; 
     reviewNotes?: string; 
@@ -3475,7 +3474,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateFraudRule(id: string, data: Partial<InsertFraudRule>): Promise<FraudRule> {
+  async updateFraudRule(id: string, _data: Partial<InsertFraudRule>): Promise<FraudRule> {
     try {
       const [updatedRule] = await db
         .update(fraudRules)
@@ -3533,7 +3532,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateIpAnalysis(id: string, data: Partial<InsertIpAnalysis>): Promise<IpAnalysis> {
+  async updateIpAnalysis(id: string, _data: Partial<InsertIpAnalysis>): Promise<IpAnalysis> {
     try {
       const [updatedAnalysis] = await db
         .update(ipAnalysis)
@@ -3582,7 +3581,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateFraudBlock(id: string, data: Partial<InsertFraudBlock>): Promise<FraudBlock> {
+  async updateFraudBlock(id: string, _data: Partial<InsertFraudBlock>): Promise<FraudBlock> {
     try {
       const [updatedBlock] = await db
         .update(fraudBlocks)
@@ -3937,7 +3936,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updatePostbackTemplate(id: string, data: any): Promise<any> {
+  async updatePostbackTemplate(id: string, _data: any): Promise<any> {
     console.log(`DatabaseStorage: updating postback template ${id}:`, data);
     return {
       id,
@@ -4499,7 +4498,7 @@ export class DatabaseStorage implements IStorage {
           .from(partnerOffers)
           .innerJoin(users, eq(partnerOffers.partnerId, users.id))
           .where(eq(partnerOffers.offerId, offerId));
-      } catch (error) {
+      } catch (_error) {
         console.log('No partners found for offer:', offerId);
         partners = [];
       }
@@ -4682,8 +4681,7 @@ export class DatabaseStorage implements IStorage {
     // Отправить уведомление через WebSocket, если функция доступна
     if (typeof (global as any).sendWebSocketNotification === 'function') {
       (global as any).sendWebSocketNotification(notification.userId, {
-        type: 'notification',
-        data: newNotification
+        type: 'notification', _data: newNotification
       });
     }
     
@@ -4998,7 +4996,7 @@ class MemStorage implements IStorage {
     return newUser;
   }
 
-  async updateUser(id: string, data: Partial<InsertUser>): Promise<User> {
+  async updateUser(id: string, _data: Partial<InsertUser>): Promise<User> {
     console.log("MemStorage.updateUser called:", id, data);
     const userIndex = this.users.findIndex(u => u.id === id);
     if (userIndex === -1) {
@@ -5038,7 +5036,7 @@ class MemStorage implements IStorage {
     return template;
   }
 
-  async updatePostbackTemplate(id: string, data: any): Promise<any> {
+  async updatePostbackTemplate(id: string, _data: any): Promise<any> {
     const index = this.postbackTemplates.findIndex(t => t.id === id);
     if (index !== -1) {
       this.postbackTemplates[index] = { 
@@ -5088,7 +5086,7 @@ class MemStorage implements IStorage {
     return postback;
   }
 
-  async updateGlobalPostback(id: string, data: any): Promise<any> {
+  async updateGlobalPostback(id: string, _data: any): Promise<any> {
     console.log(`Updating global postback ${id}:`, data);
     return {
       id,
@@ -5607,7 +5605,7 @@ class MemStorage implements IStorage {
     }
   }
 
-  async updateDomain(id: string, data: any): Promise<any> {
+  async updateDomain(id: string, _data: any): Promise<any> {
     try {
       const updateData: any = {
         ...data,
@@ -5782,7 +5780,7 @@ class MemStorage implements IStorage {
     return newOffer;
   }
 
-  async updateReceivedOffer(id: string, data: Partial<InsertReceivedOffer>): Promise<ReceivedOffer> {
+  async updateReceivedOffer(id: string, _data: Partial<InsertReceivedOffer>): Promise<ReceivedOffer> {
     // Mock update implementation
     const mockOffer: ReceivedOffer = {
       id: id,
@@ -5877,7 +5875,7 @@ class MemStorage implements IStorage {
     return this.offers.filter(offer => offer.advertiserId === advertiserId);
   }
 
-  async updateOffer(id: string, data: Partial<InsertOffer>): Promise<Offer> {
+  async updateOffer(id: string, _data: Partial<InsertOffer>): Promise<Offer> {
     const offerIndex = this.offers.findIndex(offer => offer.id === id);
     if (offerIndex === -1) {
       throw new Error('Offer not found');
@@ -6091,7 +6089,7 @@ class MemStorage implements IStorage {
     return newRequest;
   }
 
-  async updateOfferAccessRequest(id: string, data: any): Promise<any> {
+  async updateOfferAccessRequest(id: string, _data: any): Promise<any> {
     const requestIndex = this.offerAccessRequests.findIndex(req => req.id === id);
     if (requestIndex !== -1) {
       this.offerAccessRequests[requestIndex] = {
@@ -6239,7 +6237,7 @@ class MemStorage implements IStorage {
     return newProfile;
   }
 
-  async updatePostbackProfile(id: string, data: Partial<InsertPostbackProfile>): Promise<PostbackProfile> {
+  async updatePostbackProfile(id: string, _data: Partial<InsertPostbackProfile>): Promise<PostbackProfile> {
     const [updatedProfile] = await db
       .update(postbackProfiles)
       .set({ ...data, updatedAt: new Date() })
@@ -6258,7 +6256,7 @@ class MemStorage implements IStorage {
     return newDelivery;
   }
 
-  async updatePostbackDelivery(id: string, data: Partial<InsertPostbackDelivery>): Promise<PostbackDelivery> {
+  async updatePostbackDelivery(id: string, _data: Partial<InsertPostbackDelivery>): Promise<PostbackDelivery> {
     const [updatedDelivery] = await db
       .update(postbackDeliveries)
       .set(data)
