@@ -39,7 +39,14 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Безопасность и лимиты
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "script-src": ["'self'", "'unsafe-inline'"], // Allow inline scripts for development
+    },
+  },
+}));
 app.use(compression());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
 
@@ -94,8 +101,8 @@ registerRoutes(app).then(() => {
   console.log('✅ Main registration routes loaded');
 }).catch(console.error);
 
-// Serve static files from client dist directory
-const distPath = path.join(__dirname, '..', 'client', 'dist');
+// Serve static files from dist directory
+const distPath = path.join(__dirname, '..', 'dist');
 app.use(express.static(distPath));
 
 app.get('/api/health', (_req, res) => {

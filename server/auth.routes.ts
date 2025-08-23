@@ -53,7 +53,7 @@ function verifyJWTSecret(): string {
 // FIXED: Main login endpoint now uses DATABASE authentication with bcrypt
 authRouter.post("/login", async (req, res) => {
   try {
-    const { email, password, username } = req.body || {};
+    const { email, password, username, rememberMe } = req.body || {};
     
     // Support both email and username login
     const loginIdentifier = email || username;
@@ -117,10 +117,14 @@ authRouter.post("/login", async (req, res) => {
         console.log(`⚠️ [AUTH] Using hardcoded user authentication (database fallback): ${hardcodedUser.email}`);
         
         const secret = verifyJWTSecret();
+        
+        // Use longer expiration if rememberMe is true
+        const tokenExpiration = rememberMe ? "30d" : (config.JWT_EXPIRES_IN || "7d");
+        
         const token = jwt.sign(
           { sub: hardcodedUser.id, role: hardcodedUser.role, email: hardcodedUser.email, username: hardcodedUser.username },
           secret as jwt.Secret,
-          { expiresIn: config.JWT_EXPIRES_IN || "7d" }
+          { expiresIn: tokenExpiration }
         );
         
         logAuthAttempt(req, loginIdentifier, true, 'Hardcoded user fallback');
@@ -166,10 +170,13 @@ authRouter.post("/login", async (req, res) => {
     try {
       const secret = verifyJWTSecret();
       
+      // Use longer expiration if rememberMe is true
+      const tokenExpiration = rememberMe ? "30d" : (config.JWT_EXPIRES_IN || "7d");
+      
       const token = jwt.sign(
         { sub: user.id, role: user.role, email: user.email, username: user.username },
         secret as jwt.Secret,
-        { expiresIn: config.JWT_EXPIRES_IN || "7d" }
+        { expiresIn: tokenExpiration }
       );
       
       console.log(`✅ [AUTH] JWT token generated successfully for user: ${user.email}`);
