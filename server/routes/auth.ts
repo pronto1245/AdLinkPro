@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { findUserByEmail, checkPassword } from '../services/users';
 import { db } from '../db';
 
@@ -12,7 +13,7 @@ const TEST_USERS = {
   'partner': { email: 'partner@example.com', password: 'partner123', role: 'PARTNER' }
 };
 
-router.post('/auth/login', async (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password, username } = req.body || {};
   
   console.log('🔐 [AUTH] Login attempt received:', {
@@ -84,11 +85,9 @@ router.post('/auth/login', async (req, res) => {
       // Verify password with bcrypt
       console.log('🔑 [AUTH] Verifying password with bcrypt...');
       try {
-        const [{ match }] = await db.execute(
-          sql`SELECT crypt(${password}, ${user.password_hash}) = ${user.password_hash} as match`
-        );
+        const isMatch = await bcrypt.compare(password, user.password_hash);
         
-        if (match) {
+        if (isMatch) {
           console.log('✅ [AUTH] Password verification successful for:', user.email);
           
           const token = jwt.sign(
