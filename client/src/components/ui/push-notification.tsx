@@ -18,7 +18,7 @@ interface PushNotificationProps {
 }
 
 export function PushNotification({
-  id,
+  id: _id,
   type,
   title,
   message,

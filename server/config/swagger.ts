@@ -1,8 +1,9 @@
+import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import type { Express } from 'express';
 
-const options: swaggerJsdoc.Options = {
+const options: swaggerJSDoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
@@ -95,14 +96,25 @@ const options: swaggerJsdoc.Options = {
     './server/routes/*.ts',
     './server/routes/*.js',
     './server/api-routes.ts',
+    './server/auth.routes.ts'
     './server/auth.routes.ts',
     './server/index.ts'
   ]
 };
 
-const specs = swaggerJsdoc(options);
+const specs = swaggerJSDoc(options);
 
 export function setupSwagger(app: Express): void {
+  // Swagger page
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+    explorer: true,
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'AdLinkPro API Documentation'
+  }));
+
+  // JSON endpoint for the OpenAPI spec
+
+  // JSON endpoint for the OpenAPI spec
   // Serve swagger documentation
   app.use(
     '/api-docs',
