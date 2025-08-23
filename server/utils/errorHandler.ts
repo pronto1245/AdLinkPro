@@ -76,9 +76,9 @@ export function sendInvalidToken(req: Request, res: Response, details?: unknown)
 }
 
 export function sendInsufficientPermissions(
-  req: Request, 
-  res: Response, 
-  required?: string[], 
+  req: Request,
+  res: Response,
+  required?: string[],
   current?: string
 ): void {
   sendErrorResponse(
@@ -132,7 +132,7 @@ export function sendSchemaParsingError(
     res,
     400,
     ErrorCodes.SCHEMA_PARSING_ERROR,
-    fallbackUsed 
+    fallbackUsed
       ? 'Schema validation failed, using fallback processing'
       : 'Schema validation failed',
     process.env.NODE_ENV !== 'production' ? originalError : undefined
@@ -147,13 +147,13 @@ export function sendDatabaseError(
   fallbackUsed = false
 ): void {
   console.error('Database error:', originalError);
-  
+
   sendErrorResponse(
     req,
     res,
     500,
     ErrorCodes.DATABASE_ERROR,
-    fallbackUsed 
+    fallbackUsed
       ? 'Database operation failed, using fallback'
       : 'Database operation failed',
     process.env.NODE_ENV !== 'production' && originalError instanceof Error ? originalError.message : undefined
@@ -183,7 +183,7 @@ export function sendInternalError(
   originalError: unknown
 ): void {
   console.error('Internal server error:', originalError);
-  
+
   sendErrorResponse(
     req,
     res,
@@ -219,22 +219,22 @@ export function validateJWTFormat(token: string): { isValid: boolean; errors: st
   if (token.length > 8192) {
     errors.push('Token is too long (max 8192 characters)');
   }
-  
+
   if (token.length < 20) {
     errors.push('Token is too short (min 20 characters)');
   }
 
   // Check if each part is base64url encoded
   const base64UrlRegex = /^[A-Za-z0-9_-]+$/;
-  
+
   if (!base64UrlRegex.test(parts[0])) {
     errors.push('Token header is not valid base64url');
   }
-  
+
   if (!base64UrlRegex.test(parts[1])) {
     errors.push('Token payload is not valid base64url');
   }
-  
+
   if (!base64UrlRegex.test(parts[2])) {
     errors.push('Token signature is not valid base64url');
   }

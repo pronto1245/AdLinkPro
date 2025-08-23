@@ -1,39 +1,39 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Eye, EyeOff, Shield, AlertTriangle, Loader2, CheckCircle, UserPlus } from "lucide-react";
+import { useState } from 'react';
+import { useLocation } from 'wouter';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Eye, EyeOff, Shield, AlertTriangle, Loader2, CheckCircle, UserPlus } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useNotifications } from "@/components/NotificationToast";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useNotifications } from '@/components/NotificationToast';
 
-import { secureAuth, SecureAPIError } from "@/lib/secure-api";
+import { secureAuth, SecureAPIError } from '@/lib/secure-api';
 
 // Registration schema
 const registerSchema = z.object({
-  name: z.string().min(2, "Имя должно содержать минимум 2 символа"),
-  email: z.string().email("Введите корректный email"),
-  username: z.string().min(3, "Логин должен содержать минимум 3 символа").optional(),
-  password: z.string().min(6, "Пароль должен содержать минимум 6 символов"),
+  name: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
+  email: z.string().email('Введите корректный email'),
+  username: z.string().min(3, 'Логин должен содержать минимум 3 символа').optional(),
+  password: z.string().min(6, 'Пароль должен содержать минимум 6 символов'),
   confirmPassword: z.string(),
   phone: z.string().optional(),
   company: z.string().optional(),
-  contactType: z.enum(["telegram", "whatsapp", "skype"]).optional(),
+  contactType: z.enum(['telegram', 'whatsapp', 'skype']).optional(),
   contact: z.string().optional(),
-  role: z.enum(["advertiser", "partner"]),
-  agreeTerms: z.boolean().refine(val => val === true, "Необходимо согласиться с условиями"),
-  agreePrivacy: z.boolean().refine(val => val === true, "Необходимо согласиться с политикой конфиденциальности"),
+  role: z.enum(['advertiser', 'partner']),
+  agreeTerms: z.boolean().refine(val => val === true, 'Необходимо согласиться с условиями'),
+  agreePrivacy: z.boolean().refine(val => val === true, 'Необходимо согласиться с политикой конфиденциальности'),
   agreeMarketing: z.boolean().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Пароли не совпадают",
-  path: ["confirmPassword"],
+  message: 'Пароли не совпадают',
+  path: ['confirmPassword'],
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -43,7 +43,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const { showNotification } = useNotifications();
 
   // Get role from URL parameter
@@ -55,15 +55,15 @@ export default function Register() {
   const registerForm = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      username: "",
-      password: "",
-      confirmPassword: "",
-      phone: "",
-      company: "",
-      contactType: "telegram",
-      contact: "",
+      name: '',
+      email: '',
+      username: '',
+      password: '',
+      confirmPassword: '',
+      phone: '',
+      company: '',
+      contactType: 'telegram',
+      contact: '',
       role: defaultRole,
       agreeTerms: false,
       agreePrivacy: false,
@@ -72,10 +72,9 @@ export default function Register() {
   });
 
 
-
   // Handle registration form submission
   async function onRegister(data: RegisterFormData) {
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
@@ -93,22 +92,22 @@ export default function Register() {
       }, 1500);
 
     } catch (err) {
-      let errorMessage = "Ошибка регистрации. Попробуйте позже.";
-      
+      let errorMessage = 'Ошибка регистрации. Попробуйте позже.';
+
       if (err instanceof SecureAPIError) {
         if (err.status === 409) {
-          errorMessage = "Пользователь с таким email уже существует";
+          errorMessage = 'Пользователь с таким email уже существует';
         } else if (err.status === 422) {
-          errorMessage = "Некорректные данные. Проверьте форму.";
+          errorMessage = 'Некорректные данные. Проверьте форму.';
         } else if (err.status === 429) {
           errorMessage = `Слишком много попыток. Попробуйте через ${err.retryAfter || 60} секунд.`;
         } else {
-          errorMessage = err.message || err.statusText || "Ошибка регистрации";
+          errorMessage = err.message || err.statusText || 'Ошибка регистрации';
         }
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
       showNotification({
         type: 'error',
@@ -131,7 +130,7 @@ export default function Register() {
             Регистрация {defaultRole === 'partner' ? 'партнёра' : 'рекламодателя'}
           </CardTitle>
           <p className="text-gray-600 mt-2">
-            {defaultRole === 'partner' 
+            {defaultRole === 'partner'
               ? 'Партнёры продвигают офферы рекламодателей и получают комиссию за результат'
               : 'Рекламодатели создают офферы и работают с партнёрами для продвижения своих продуктов'
             }
@@ -154,7 +153,7 @@ export default function Register() {
               <div>
                 <Label htmlFor="name">Полное имя *</Label>
                 <Input
-                  {...registerForm.register("name")}
+                  {...registerForm.register('name')}
                   id="name"
                   placeholder="Иван Иванов"
                   disabled={loading}
@@ -170,7 +169,7 @@ export default function Register() {
               <div>
                 <Label htmlFor="email">Email *</Label>
                 <Input
-                  {...registerForm.register("email")}
+                  {...registerForm.register('email')}
                   id="email"
                   type="email"
                   placeholder="example@company.com"
@@ -187,7 +186,7 @@ export default function Register() {
               <div>
                 <Label htmlFor="username">Логин (необязательно)</Label>
                 <Input
-                  {...registerForm.register("username")}
+                  {...registerForm.register('username')}
                   id="username"
                   placeholder="myusername"
                   disabled={loading}
@@ -203,7 +202,7 @@ export default function Register() {
               <div>
                 <Label htmlFor="phone">Телефон (необязательно)</Label>
                 <Input
-                  {...registerForm.register("phone")}
+                  {...registerForm.register('phone')}
                   id="phone"
                   type="tel"
                   placeholder="+7 (900) 000-00-00"
@@ -215,7 +214,7 @@ export default function Register() {
               <div className="md:col-span-2">
                 <Label htmlFor="company">Компания (необязательно)</Label>
                 <Input
-                  {...registerForm.register("company")}
+                  {...registerForm.register('company')}
                   id="company"
                   placeholder="ООО Моя Компания"
                   disabled={loading}
@@ -226,8 +225,8 @@ export default function Register() {
               <div>
                 <Label htmlFor="contactType">Способ связи</Label>
                 <Select
-                  value={registerForm.watch("contactType")}
-                  onValueChange={(value) => registerForm.setValue("contactType", value as any)}
+                  value={registerForm.watch('contactType')}
+                  onValueChange={(value) => registerForm.setValue('contactType', value as any)}
                   disabled={loading}
                 >
                   <SelectTrigger>
@@ -244,7 +243,7 @@ export default function Register() {
               <div>
                 <Label htmlFor="contact">Контакт</Label>
                 <Input
-                  {...registerForm.register("contact")}
+                  {...registerForm.register('contact')}
                   id="contact"
                   placeholder="@username или номер"
                   disabled={loading}
@@ -256,9 +255,9 @@ export default function Register() {
                 <Label htmlFor="password">Пароль *</Label>
                 <div className="relative">
                   <Input
-                    {...registerForm.register("password")}
+                    {...registerForm.register('password')}
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Введите пароль"
                     disabled={loading}
                     className="pr-10"
@@ -283,9 +282,9 @@ export default function Register() {
                 <Label htmlFor="confirmPassword">Подтвердите пароль *</Label>
                 <div className="relative">
                   <Input
-                    {...registerForm.register("confirmPassword")}
+                    {...registerForm.register('confirmPassword')}
                     id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
+                    type={showConfirmPassword ? 'text' : 'password'}
                     placeholder="Повторите пароль"
                     disabled={loading}
                     className="pr-10"
@@ -311,16 +310,16 @@ export default function Register() {
               <div className="flex items-start space-x-2">
                 <Checkbox
                   id="agreeTerms"
-                  checked={registerForm.watch("agreeTerms")}
-                  onCheckedChange={(checked) => 
-                    registerForm.setValue("agreeTerms", checked as boolean)
+                  checked={registerForm.watch('agreeTerms')}
+                  onCheckedChange={(checked) =>
+                    registerForm.setValue('agreeTerms', checked as boolean)
                   }
                 />
                 <Label htmlFor="agreeTerms" className="text-sm leading-relaxed">
-                  Я согласен с{" "}
+                  Я согласен с{' '}
                   <a href="/terms" target="_blank" className="text-blue-600 underline">
                     условиями использования
-                  </a>{" "}
+                  </a>{' '}
                   *
                 </Label>
               </div>
@@ -333,16 +332,16 @@ export default function Register() {
               <div className="flex items-start space-x-2">
                 <Checkbox
                   id="agreePrivacy"
-                  checked={registerForm.watch("agreePrivacy")}
-                  onCheckedChange={(checked) => 
-                    registerForm.setValue("agreePrivacy", checked as boolean)
+                  checked={registerForm.watch('agreePrivacy')}
+                  onCheckedChange={(checked) =>
+                    registerForm.setValue('agreePrivacy', checked as boolean)
                   }
                 />
                 <Label htmlFor="agreePrivacy" className="text-sm leading-relaxed">
-                  Я согласен с{" "}
+                  Я согласен с{' '}
                   <a href="/privacy" target="_blank" className="text-blue-600 underline">
                     политикой конфиденциальности
-                  </a>{" "}
+                  </a>{' '}
                   *
                 </Label>
               </div>
@@ -355,9 +354,9 @@ export default function Register() {
               <div className="flex items-start space-x-2">
                 <Checkbox
                   id="agreeMarketing"
-                  checked={registerForm.watch("agreeMarketing")}
-                  onCheckedChange={(checked) => 
-                    registerForm.setValue("agreeMarketing", checked as boolean)
+                  checked={registerForm.watch('agreeMarketing')}
+                  onCheckedChange={(checked) =>
+                    registerForm.setValue('agreeMarketing', checked as boolean)
                   }
                 />
                 <Label htmlFor="agreeMarketing" className="text-sm leading-relaxed">
@@ -367,9 +366,9 @@ export default function Register() {
             </div>
 
             {/* Submit button */}
-            <Button 
-              type="submit" 
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200" 
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
               disabled={loading}
             >
               {loading ? (
@@ -378,7 +377,7 @@ export default function Register() {
                   Создаем аккаунт...
                 </>
               ) : (
-                "Создать аккаунт"
+                'Создать аккаунт'
               )}
             </Button>
           </form>
@@ -386,7 +385,7 @@ export default function Register() {
           {/* Login link */}
           <div className="mt-6 pt-4 border-t border-gray-200 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Уже есть аккаунт?{" "}
+              Уже есть аккаунт?{' '}
               <Button
                 variant="link"
                 className="p-0 h-auto font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"

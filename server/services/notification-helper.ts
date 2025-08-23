@@ -1,9 +1,8 @@
 import { db } from '../db';
 import { userNotifications } from '../../shared/schema';
-import { randomUUID } from 'crypto';
 
 // Типы уведомлений для различных событий платформы
-export type NotificationType = 
+export type NotificationType =
   // Партнеры
   | 'partner_joined' | 'partner_approved' | 'partner_blocked' | 'partner_payout_requested'
   // Офферы
@@ -135,7 +134,7 @@ export async function notifyOfferAccessRequest(advertiserId: string, partnerData
     },
     priority: 'high'
   });
-  
+
   console.log(`✅ Уведомление о запросе доступа отправлено рекламодателю ${advertiserId} от партнера ${partnerData.username} для оффера "${offerData.name}"`);
 }
 

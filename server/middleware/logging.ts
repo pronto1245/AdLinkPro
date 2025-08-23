@@ -19,12 +19,12 @@ const logger = createLogger({
       )
     }),
     // Write to file
-    new transports.File({ 
-      filename: 'logs/error.log', 
+    new transports.File({
+      filename: 'logs/error.log',
       level: 'error',
       format: format.json()
     }),
-    new transports.File({ 
+    new transports.File({
       filename: 'logs/combined.log',
       format: format.json()
     })
@@ -44,7 +44,7 @@ if (process.env.NODE_ENV !== 'production') {
 // Request logging middleware
 export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
-  
+
   // Log request
   logger.info('Request started', {
     method: req.method,
@@ -59,7 +59,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
   const originalSend = res.send;
   res.send = function(body) {
     const duration = Date.now() - start;
-    
+
     logger.info('Request completed', {
       method: req.method,
       url: req.url,
@@ -91,11 +91,11 @@ export const errorLogger = (err: Error, req: Request, res: Response, next: NextF
 
   // Send error response
   if (!res.headersSent) {
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Internal server error',
-      ...(process.env.NODE_ENV === 'development' && { 
+      ...(process.env.NODE_ENV === 'development' && {
         details: err.message,
-        stack: err.stack 
+        stack: err.stack
       })
     });
   }
@@ -122,7 +122,7 @@ export const logBusiness = (event: string, _data: unknown) => {
 // Security event logger
 export const logSecurity = (event: string, severity: 'low' | 'medium' | 'high', details: any) => {
   const level = severity === 'high' ? 'error' : severity === 'medium' ? 'warn' : 'info';
-  
+
   logger[level]('Security event', {
     event,
     severity,
@@ -134,7 +134,7 @@ export const logSecurity = (event: string, severity: 'low' | 'medium' | 'high', 
 // Performance logger
 export const logPerformance = (operation: string, duration: number, details?: any) => {
   const level = duration > 5000 ? 'warn' : 'info'; // Warn if operation takes more than 5 seconds
-  
+
   logger[level]('Performance metric', {
     operation,
     duration: `${duration}ms`,

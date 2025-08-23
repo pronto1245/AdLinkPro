@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { db, queryCache } from '../db';
-import { 
-  users, offers, trackingClicks, conversionData, 
-  transactions 
+import {
+  users, offers, trackingClicks, conversionData,
+  transactions
 } from '@shared/schema';
 import { eq, desc, and, gte, lte, sql, sum, count, avg } from 'drizzle-orm';
 import { auditLog } from '../middleware/security';
@@ -34,7 +34,7 @@ export class AnalyticsController {
 
       // Create cache key
       const cacheKey = `commission_data_${currentUser.id}_${period}_${partnerId || 'all'}_${offerId || 'all'}_${groupBy}`;
-      
+
       // Try to get from cache (5 minutes)
       const cached = queryCache.get(cacheKey);
       if (cached) {
@@ -44,7 +44,7 @@ export class AnalyticsController {
       // Calculate date range
       let startDate = new Date();
       let endDate = new Date();
-      
+
       if (fromDate && toDate) {
         startDate = new Date(fromDate as string);
         endDate = new Date(toDate as string);
@@ -93,7 +93,7 @@ export class AnalyticsController {
       if (partnerId) {
         query = query.where(eq(conversionData.partnerId, partnerId as string));
       }
-      
+
       if (offerId) {
         query = query.where(eq(conversionData.offerId, offerId as string));
       }
@@ -137,7 +137,7 @@ export class AnalyticsController {
       queryCache.set(cacheKey, responseData, 300000);
 
       auditLog(req, 'GET_COMMISSION_DATA', 'analytics');
-      
+
       res.json(responseData);
     } catch (error) {
       console.error('Get commission data error:', error);
@@ -162,7 +162,7 @@ export class AnalyticsController {
 
       // Create cache key
       const cacheKey = `financial_chart_${currentUser.id}_${period}_${metric}_${partnerId || 'all'}_${offerId || 'all'}`;
-      
+
       // Try to get from cache (10 minutes)
       const cached = queryCache.get(cacheKey);
       if (cached) {
@@ -173,7 +173,7 @@ export class AnalyticsController {
       let startDate = new Date();
       let endDate = new Date();
       let groupBy = 'day';
-      
+
       if (fromDate && toDate) {
         startDate = new Date(fromDate as string);
         endDate = new Date(toDate as string);
@@ -207,7 +207,7 @@ export class AnalyticsController {
 
       // Build query based on metric
       let query;
-      
+
       if (metric === 'netflow') {
         // Net flow includes deposits - payouts
         const [depositData] = await db
@@ -222,9 +222,9 @@ export class AnalyticsController {
               lte(transactions.createdAt, endDate)
             )
           );
-        
+
         const netFlow = (depositData?.totalDeposits || 0) - (depositData?.totalPayouts || 0);
-        
+
         const responseData = {
           data: [{
             date: new Date().toISOString(),
@@ -270,7 +270,7 @@ export class AnalyticsController {
       if (partnerId) {
         query = query.where(eq(conversionData.partnerId, partnerId as string));
       }
-      
+
       if (offerId) {
         query = query.where(eq(conversionData.offerId, offerId as string));
       }
@@ -295,7 +295,7 @@ export class AnalyticsController {
       queryCache.set(cacheKey, responseData, 600000);
 
       auditLog(req, 'GET_FINANCIAL_CHART', 'analytics');
-      
+
       res.json(responseData);
     } catch (error) {
       console.error('Get financial chart error:', error);
@@ -313,7 +313,7 @@ export class AnalyticsController {
 
       // Create cache key
       const cacheKey = `analytics_summary_${currentUser.id}_${period}_${partnerId || 'all'}_${offerId || 'all'}`;
-      
+
       // Try to get from cache (15 minutes)
       const cached = queryCache.get(cacheKey);
       if (cached) {
@@ -353,7 +353,7 @@ export class AnalyticsController {
       if (partnerId) {
         conversionQuery = conversionQuery.where(eq(conversionData.partnerId, partnerId as string));
       }
-      
+
       if (offerId) {
         conversionQuery = conversionQuery.where(eq(conversionData.offerId, offerId as string));
       }
@@ -438,7 +438,7 @@ export class AnalyticsController {
       queryCache.set(cacheKey, responseData, 900000);
 
       auditLog(req, 'GET_ANALYTICS_SUMMARY', 'analytics');
-      
+
       res.json(responseData);
     } catch (error) {
       console.error('Get analytics summary error:', error);
@@ -473,9 +473,9 @@ export class AnalyticsController {
   static async clearCache(req: Request, res: Response) {
     try {
       queryCache.clear();
-      
+
       auditLog(req, 'CLEAR_ANALYTICS_CACHE', 'analytics');
-      
+
       res.json({ message: 'Analytics cache cleared successfully' });
     } catch (error) {
       console.error('Clear cache error:', error);

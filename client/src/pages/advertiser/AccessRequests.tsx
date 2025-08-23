@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Table,
   TableBody,
@@ -7,10 +7,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -18,23 +18,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
   Eye,
   User,
   Calendar,
   MessageSquare,
   Loader2
-} from "lucide-react";
-import { formatDistance } from "date-fns";
-import { ru } from "date-fns/locale";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+} from 'lucide-react';
+import { formatDistance } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface AccessRequest {
   id: string;
@@ -56,13 +56,13 @@ export default function AccessRequests() {
   const [selectedRequest, setSelectedRequest] = useState<AccessRequest | null>(null);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewAction, setReviewAction] = useState<'approve' | 'reject'>('approve');
-  const [responseNote, setResponseNote] = useState("");
-  const [advertiserResponse, setAdvertiserResponse] = useState("");
+  const [responseNote, setResponseNote] = useState('');
+  const [advertiserResponse, setAdvertiserResponse] = useState('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: requests = [], isLoading } = useQuery<AccessRequest[]>({
-    queryKey: ["/api/advertiser/access-requests"],
+    queryKey: ['/api/advertiser/access-requests'],
   });
 
   const reviewMutation = useMutation({
@@ -74,7 +74,7 @@ export default function AccessRequests() {
       advertiserResponse?: string;
     }) => {
       await apiRequest(`/api/offers/${data.offerId}/access-requests/${data.requestId}`, {
-        method: "PATCH",
+        method: 'PATCH',
         body: JSON.stringify({
           action: data.action,
           responseNote: data.responseNote,
@@ -84,17 +84,17 @@ export default function AccessRequests() {
     },
     onSuccess: (_, variables) => {
       toast({
-        title: variables.action === 'approve' ? "Запрос одобрен" : "Запрос отклонен",
+        title: variables.action === 'approve' ? 'Запрос одобрен' : 'Запрос отклонен',
         description: `Запрос успешно ${variables.action === 'approve' ? 'одобрен' : 'отклонен'}. Партнер получит уведомление.`,
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/advertiser/access-requests"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/access-requests'] });
       handleCloseReviewModal();
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Ошибка при обработке запроса",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Ошибка при обработке запроса',
+        variant: 'destructive',
       });
     },
   });
@@ -121,8 +121,8 @@ export default function AccessRequests() {
   const handleCloseReviewModal = () => {
     setReviewModalOpen(false);
     setSelectedRequest(null);
-    setResponseNote("");
-    setAdvertiserResponse("");
+    setResponseNote('');
+    setAdvertiserResponse('');
   };
 
   const getStatusBadge = (status: string) => {
@@ -258,9 +258,9 @@ export default function AccessRequests() {
                     <TableCell>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="w-4 h-4" />
-                        {formatDistance(new Date(request.requested_at), new Date(), { 
-                          addSuffix: true, 
-                          locale: ru 
+                        {formatDistance(new Date(request.requested_at), new Date(), {
+                          addSuffix: true,
+                          locale: ru
                         })}
                       </div>
                     </TableCell>
@@ -356,18 +356,18 @@ export default function AccessRequests() {
                     </TableCell>
                     <TableCell>
                       <div className="text-sm text-muted-foreground">
-                        {formatDistance(new Date(request.requested_at), new Date(), { 
-                          addSuffix: true, 
-                          locale: ru 
+                        {formatDistance(new Date(request.requested_at), new Date(), {
+                          addSuffix: true,
+                          locale: ru
                         })}
                       </div>
                     </TableCell>
                     <TableCell>
                       {request.reviewed_at ? (
                         <div className="text-sm text-muted-foreground">
-                          {formatDistance(new Date(request.reviewed_at), new Date(), { 
-                            addSuffix: true, 
-                            locale: ru 
+                          {formatDistance(new Date(request.reviewed_at), new Date(), {
+                            addSuffix: true,
+                            locale: ru
                           })}
                         </div>
                       ) : (
@@ -411,7 +411,7 @@ export default function AccessRequests() {
               {reviewAction === 'approve' ? 'Одобрить запрос' : 'Отклонить запрос'}
             </DialogTitle>
             <DialogDescription>
-              {reviewAction === 'approve' 
+              {reviewAction === 'approve'
                 ? 'Одобрить доступ партнера к офферу со всеми ссылками лендингов'
                 : 'Отклонить запрос партнера на доступ к офферу'
               }
@@ -435,9 +435,9 @@ export default function AccessRequests() {
                   <div>
                     <span className="text-muted-foreground">Запрошено:</span>
                     <div className="font-medium">
-                      {formatDistance(new Date(selectedRequest.requested_at), new Date(), { 
-                        addSuffix: true, 
-                        locale: ru 
+                      {formatDistance(new Date(selectedRequest.requested_at), new Date(), {
+                        addSuffix: true,
+                        locale: ru
                       })}
                     </div>
                   </div>
@@ -468,9 +468,9 @@ export default function AccessRequests() {
                   <Label htmlFor="advertiserResponse">Ответ партнеру</Label>
                   <Textarea
                     id="advertiserResponse"
-                    placeholder={reviewAction === 'approve' 
-                      ? "Добро пожаловать! Доступ к офферу открыт..."
-                      : "К сожалению, мы не можем предоставить доступ по следующим причинам..."
+                    placeholder={reviewAction === 'approve'
+                      ? 'Добро пожаловать! Доступ к офферу открыт...'
+                      : 'К сожалению, мы не можем предоставить доступ по следующим причинам...'
                     }
                     value={advertiserResponse}
                     onChange={(e) => setAdvertiserResponse(e.target.value)}
@@ -503,8 +503,8 @@ export default function AccessRequests() {
                   </Button>
                   <Button
                     type="submit"
-                    className={reviewAction === 'approve' ? 
-                      'bg-green-500 hover:bg-green-600' : 
+                    className={reviewAction === 'approve' ?
+                      'bg-green-500 hover:bg-green-600' :
                       'bg-red-500 hover:bg-red-600'
                     }
                     disabled={reviewMutation.isPending}

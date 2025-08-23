@@ -238,7 +238,7 @@ export default function PostbackManager() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const submitData = {
       ...formData,
       events: formData.events,
@@ -263,7 +263,7 @@ export default function PostbackManager() {
       failed: 'bg-red-100 text-red-800',
       pending: 'bg-yellow-100 text-yellow-800',
     };
-    
+
     const statusLabels = {
       sent: 'Отправлен',
       failed: 'Ошибка',
@@ -289,7 +289,7 @@ export default function PostbackManager() {
             Настройка уведомлений о событиях для партнёров и рекламодателей
           </p>
         </div>
-        
+
         <div className="flex space-x-2">
           <Button
             variant={selectedTab === 'postbacks' ? 'default' : 'outline'}
@@ -326,7 +326,7 @@ export default function PostbackManager() {
                   Добавить Постбек
                 </Button>
               </DialogTrigger>
-              
+
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
@@ -349,12 +349,12 @@ export default function PostbackManager() {
                         data-testid="input-name"
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="method">Метод</Label>
                       <Select
                         value={formData.method}
-                        onValueChange={(value: 'GET' | 'POST') => 
+                        onValueChange={(value: 'GET' | 'POST') =>
                           setFormData(prev => ({ ...prev, method: value }))
                         }
                       >
@@ -448,7 +448,7 @@ export default function PostbackManager() {
                         data-testid="input-signature-key"
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="timeout">Таймаут (сек)</Label>
                       <Input
@@ -483,7 +483,7 @@ export default function PostbackManager() {
                       />
                       <Label>Повторы при ошибках</Label>
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="maxRetries">Макс. повторов</Label>
                       <Input
@@ -497,7 +497,7 @@ export default function PostbackManager() {
                         data-testid="input-max-retries"
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="retryDelay">Задержка (сек)</Label>
                       <Input
@@ -565,7 +565,7 @@ export default function PostbackManager() {
                           {postback.offerName ? `Оффер: ${postback.offerName}` : 'Глобальный постбек'}
                         </CardDescription>
                       </div>
-                      
+
                       <div className="flex space-x-1">
                         <Button
                           size="sm"
@@ -606,7 +606,7 @@ export default function PostbackManager() {
                       </div>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent className="space-y-3">
                     <div>
                       <div className="text-sm font-medium mb-1">URL:</div>
@@ -614,7 +614,7 @@ export default function PostbackManager() {
                         {postback.url}
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="outline">{postback.method}</Badge>
                       {postback.events.map(event => (
@@ -623,7 +623,7 @@ export default function PostbackManager() {
                         </Badge>
                       ))}
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4 text-xs text-gray-500">
                       <div>Таймаут: {postback.timeout}с</div>
                       <div>Повторы: {postback.retryEnabled ? `${postback.maxRetries} раз` : 'Отключены'}</div>

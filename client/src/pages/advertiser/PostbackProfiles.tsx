@@ -87,14 +87,14 @@ interface PostbackDelivery {
   createdAt: string;
 }
 
-function PostbackForm({ 
-  postback, 
-  onSubmit, 
-  onCancel 
-}: { 
-  postback?: PostbackProfile; 
-  onSubmit: (data: any) => void; 
-  onCancel: () => void; 
+function PostbackForm({
+  postback,
+  onSubmit,
+  onCancel
+}: {
+  postback?: PostbackProfile;
+  onSubmit: (data: any) => void;
+  onCancel: () => void;
 }) {
   const [formData, setFormData] = useState({
     name: postback?.name || '',
@@ -105,16 +105,16 @@ function PostbackForm({
     idParam: postback?.idParam || 'clickid' as const,
     enabled: postback?.enabled ?? true,
     priority: postback?.priority || 100,
-    
+
     // Status mapping
-    statusMap: postback?.statusMap || { 
-      reg: 'lead', 
+    statusMap: postback?.statusMap || {
+      reg: 'lead',
       deposit: 'sale',
       open: 'open',
       lp_click: 'click'
     },
-    
-    // Parameters template 
+
+    // Parameters template
     paramsTemplate: postback?.paramsTemplate || {
       clickid: '{{clickid}}',
       status: '{{status}}',
@@ -123,20 +123,20 @@ function PostbackForm({
       sub1: '{{sub1}}',
       sub2: '{{sub2}}'
     },
-    
+
     urlEncode: postback?.urlEncode ?? true,
-    
+
     // HMAC settings
     hmacEnabled: postback?.hmacEnabled || false,
     hmacSecret: postback?.hmacSecret || '',
     hmacPayloadTpl: postback?.hmacPayloadTpl || '',
     hmacParamName: postback?.hmacParamName || 'signature',
-    
+
     // Retry settings
     retries: postback?.retries || 5,
     timeoutMs: postback?.timeoutMs || 4000,
     backoffBaseSec: postback?.backoffBaseSec || 2,
-    
+
     // Filters
     filterRevenueGt0: postback?.filterRevenueGt0 || false,
     filterExcludeBots: postback?.filterExcludeBots ?? true,
@@ -220,8 +220,8 @@ function PostbackForm({
           <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="method">HTTP метод</Label>
-              <Select 
-                value={formData.method} 
+              <Select
+                value={formData.method}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, method: value as 'GET' | 'POST' }))}
               >
                 <SelectTrigger data-testid="select-method">
@@ -235,8 +235,8 @@ function PostbackForm({
             </div>
             <div>
               <Label htmlFor="scopeType">Область применения</Label>
-              <Select 
-                value={formData.scopeType} 
+              <Select
+                value={formData.scopeType}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, scopeType: value as any }))}
               >
                 <SelectTrigger data-testid="select-scope-type">
@@ -252,8 +252,8 @@ function PostbackForm({
             </div>
             <div>
               <Label htmlFor="idParam">ID параметр</Label>
-              <Select 
-                value={formData.idParam} 
+              <Select
+                value={formData.idParam}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, idParam: value as 'subid' | 'clickid' }))}
               >
                 <SelectTrigger data-testid="select-id-param">
@@ -486,31 +486,31 @@ export default function PostbackProfilesPage() {
 
   // Create postback mutation
   const createMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/postback-profiles', { 
-      method: 'POST', 
-      body: JSON.stringify(data) 
+    mutationFn: (data: any) => apiRequest('/api/postback-profiles', {
+      method: 'POST',
+      body: JSON.stringify(data)
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback-profiles'] });
       setShowForm(false);
-      toast({ title: "Профиль постбека создан", description: "Новый профиль постбека успешно создан" });
+      toast({ title: 'Профиль постбека создан', description: 'Новый профиль постбека успешно создан' });
     },
     onError: () => {
-      toast({ title: "Ошибка", description: "Не удалось создать профиль постбека", variant: "destructive" });
+      toast({ title: 'Ошибка', description: 'Не удалось создать профиль постбека', variant: 'destructive' });
     }
   });
 
   // Update postback mutation
   const updateMutation = useMutation({
-    mutationFn: ({ id, ...data }: any) => apiRequest(`/api/postback-profiles/${id}`, { 
-      method: 'PATCH', 
-      body: JSON.stringify(data) 
+    mutationFn: ({ id, ...data }: any) => apiRequest(`/api/postback-profiles/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback-profiles'] });
       setShowForm(false);
       setSelectedPostback(null);
-      toast({ title: "Профиль обновлен", description: "Изменения сохранены" });
+      toast({ title: 'Профиль обновлен', description: 'Изменения сохранены' });
     }
   });
 
@@ -519,7 +519,7 @@ export default function PostbackProfilesPage() {
     mutationFn: (id: string) => apiRequest(`/api/postback-profiles/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback-profiles'] });
-      toast({ title: "Профиль удален", description: "Профиль постбека успешно удален" });
+      toast({ title: 'Профиль удален', description: 'Профиль постбека успешно удален' });
     }
   });
 
@@ -544,7 +544,7 @@ export default function PostbackProfilesPage() {
 
   const getStatusBadge = (responseCode?: number) => {
     if (!responseCode) {return <Badge variant="secondary">Нет ответа</Badge>;}
-    
+
     if (responseCode >= 200 && responseCode < 300) {
       return <Badge variant="default" className="bg-green-500">Успех</Badge>;
     } else if (responseCode >= 400) {
@@ -576,7 +576,7 @@ export default function PostbackProfilesPage() {
             <Eye className="h-4 w-4 mr-2" />
             Логи доставки
           </Button>
-          <Button 
+          <Button
             onClick={() => {
               setSelectedPostback(null);
               setShowForm(true);
@@ -630,11 +630,11 @@ export default function PostbackProfilesPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge 
-                      variant={postback.enabled ? "default" : "secondary"}
+                    <Badge
+                      variant={postback.enabled ? 'default' : 'secondary'}
                       data-testid={`badge-status-${postback.id}`}
                     >
-                      {postback.enabled ? "Активен" : "Отключен"}
+                      {postback.enabled ? 'Активен' : 'Отключен'}
                     </Badge>
                   </TableCell>
                   <TableCell data-testid={`text-priority-${postback.id}`}>
@@ -672,7 +672,7 @@ export default function PostbackProfilesPage() {
                           <Copy className="h-4 w-4 mr-2" />
                           Копировать URL
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           className="text-red-600"
                           onClick={() => handleDelete(postback.id)}
                         >
@@ -692,8 +692,8 @@ export default function PostbackProfilesPage() {
               <p className="text-muted-foreground mb-4" data-testid="text-empty-message">
                 Профили постбеков не настроены
               </p>
-              <Button 
-                onClick={() => setShowForm(true)} 
+              <Button
+                onClick={() => setShowForm(true)}
                 data-testid="button-create-first-postback"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -735,7 +735,7 @@ export default function PostbackProfilesPage() {
               История отправки постбеков и их результаты
             </DialogDescription>
           </DialogHeader>
-          
+
           <Table data-testid="deliveries-table">
             <TableHeader>
               <TableRow>

@@ -33,29 +33,29 @@ export interface AuthenticatedRequest extends Request {
 // Enhanced JWT token extraction and validation
 function extractAndValidateToken(req: Request): { token: string | null; errors: string[] } {
   const authHeader = req.headers['authorization'];
-  
+
   if (!authHeader) {
     return { token: null, errors: ['Authorization header missing'] };
   }
 
   // Support both "Bearer TOKEN" and "TOKEN" formats
   const tokenMatch = authHeader.match(/^(?:Bearer\s+)?(.+)$/);
-  
+
   if (!tokenMatch) {
     return { token: null, errors: ['Invalid authorization header format'] };
   }
 
   const token = tokenMatch[1].trim();
-  
+
   // Enhanced JWT format validation
   const validation = validateJWTFormat(token);
-  
+
   return { token: validation.isValid ? token : null, errors: validation.errors };
 }
 
 // Unified authentication middleware - replaces both auth.ts and authorization.ts versions
 export function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  console.log("🛡️  [AUTH_MIDDLEWARE] Authenticating token...", {
+  console.log('🛡️  [AUTH_MIDDLEWARE] Authenticating token...', {
     path: req.path,
     method: req.method,
     hasAuthHeader: !!req.headers['authorization']
@@ -64,43 +64,43 @@ export function authenticateToken(req: AuthenticatedRequest, res: Response, next
   const { token, errors } = extractAndValidateToken(req);
 
   if (!token) {
-    console.log("🛡️  [AUTH_MIDDLEWARE] Token extraction failed:", errors);
+    console.log('🛡️  [AUTH_MIDDLEWARE] Token extraction failed:', errors);
     auditLog(req, 'AUTH_FAILED', undefined, false, { errors });
     return sendAuthenticationRequired(req, res);
   }
 
   try {
-    console.log("🛡️  [AUTH_MIDDLEWARE] Verifying JWT token...");
+    console.log('🛡️  [AUTH_MIDDLEWARE] Verifying JWT token...');
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-    
+
     // Additional token payload validation
     if (!decoded.sub && !decoded.id) {
-      console.error("🛡️  [AUTH_MIDDLEWARE] Missing user identifier in token");
+      console.error('🛡️  [AUTH_MIDDLEWARE] Missing user identifier in token');
       return sendJWTValidationError(req, res, { reason: 'Missing user identifier in token' });
     }
 
     if (!decoded.role) {
-      console.error("🛡️  [AUTH_MIDDLEWARE] Missing role in token");
+      console.error('🛡️  [AUTH_MIDDLEWARE] Missing role in token');
       return sendJWTValidationError(req, res, { reason: 'Missing role in token' });
     }
 
     req.user = decoded;
-    
-    console.log("🛡️  [AUTH_MIDDLEWARE] Token verified successfully", {
+
+    console.log('🛡️  [AUTH_MIDDLEWARE] Token verified successfully', {
       userId: decoded.sub || decoded.id,
       role: decoded.role
     });
-    
+
     // Log successful authentication
-    auditLog(req, 'AUTH_SUCCESS', decoded.sub || decoded.id, true, { 
-      role: decoded.role, 
-      method: 'JWT' 
+    auditLog(req, 'AUTH_SUCCESS', decoded.sub || decoded.id, true, {
+      role: decoded.role,
+      method: 'JWT'
     });
-    
+
     next();
   } catch (error) {
     let errorDetails = 'Unknown JWT error';
-    
+
     if (error instanceof jwt.JsonWebTokenError) {
       errorDetails = 'Invalid JWT format or signature';
     } else if (error instanceof jwt.TokenExpiredError) {
@@ -109,7 +109,7 @@ export function authenticateToken(req: AuthenticatedRequest, res: Response, next
       errorDetails = 'Token not active yet';
     }
 
-    console.error("🛡️  [AUTH_MIDDLEWARE] Token verification failed:", errorDetails, error);
+    console.error('🛡️  [AUTH_MIDDLEWARE] Token verification failed:', errorDetails, error);
     auditLog(req, 'INVALID_TOKEN', undefined, false, { error: errorDetails });
     return sendInvalidToken(req, res, { reason: errorDetails });
   }
@@ -120,7 +120,7 @@ export function requireRole(...allowedRoles: string[]) {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const user = req.user;
-      
+
       if (!user) {
         return sendAuthenticationRequired(req, res);
       }
@@ -133,7 +133,7 @@ export function requireRole(...allowedRoles: string[]) {
       // Enhanced user verification - check if user still exists and is active
       try {
         const [dbUser] = await db
-          .select({ 
+          .select({
             isActive: users.isActive,
             isBlocked: users.isBlocked,
             role: users.role
@@ -159,9 +159,9 @@ export function requireRole(...allowedRoles: string[]) {
 
         // Verify role hasn't changed
         if (dbUser.role !== user.role) {
-          auditLog(req, 'ROLE_MISMATCH', user.sub || user.id, false, { 
-            tokenRole: user.role, 
-            dbRole: dbUser.role 
+          auditLog(req, 'ROLE_MISMATCH', user.sub || user.id, false, {
+            tokenRole: user.role,
+            dbRole: dbUser.role
           });
           return sendInvalidToken(req, res, { reason: 'Role mismatch - token may be outdated' });
         }
@@ -186,7 +186,7 @@ export function requirePermission(permission: string) {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const user = req.user;
-      
+
       if (!user) {
         return sendAuthenticationRequired(req, res);
       }
@@ -205,9 +205,9 @@ export function requirePermission(permission: string) {
 
         // Check user permissions based on role and settings
         const hasPermission = checkUserPermission(dbUser, permission);
-        
+
         if (!hasPermission) {
-          auditLog(req, 'PERMISSION_DENIED', user.sub || user.id, false, { 
+          auditLog(req, 'PERMISSION_DENIED', user.sub || user.id, false, {
             permission,
             userRole: dbUser.role
           });
@@ -219,14 +219,14 @@ export function requirePermission(permission: string) {
         console.error('Database error during permission check:', dbError);
         // Fallback to basic role-based permission check
         const basicPermission = checkBasicPermission(user.role, permission);
-        
+
         if (!basicPermission) {
           return sendInsufficientPermissions(req, res, [permission], user.role);
         }
 
-        auditLog(req, 'PERMISSION_FALLBACK', user.sub || user.id, true, { 
-          permission, 
-          method: 'role-based-fallback' 
+        auditLog(req, 'PERMISSION_FALLBACK', user.sub || user.id, true, {
+          permission,
+          method: 'role-based-fallback'
         });
         next();
       }
@@ -247,14 +247,14 @@ function checkUserPermission(user: JWTPayload, permission: string): boolean {
 
   // Check if user role has the permission or all permissions (*)
   const userPermissions = rolePermissions[user.role] || [];
-  
+
   if (userPermissions.includes('*') || userPermissions.includes(permission)) {
     return true;
   }
 
   // Check custom permissions in user settings if available
   const customPermissions = user.permissions || {};
-  
+
   if (customPermissions[permission] === true) {
     return true;
   }
@@ -313,7 +313,7 @@ export async function canAccessUser(currentUserId: string, targetUserId: string)
 }
 
 // Middleware to ensure user owns the resource or has permission to access it
-export function requireOwnership(resourceUserIdParam: string = 'userId') {
+export function requireOwnership(resourceUserIdParam = 'userId') {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const currentUser = req.user;
@@ -324,11 +324,11 @@ export function requireOwnership(resourceUserIdParam: string = 'userId') {
       }
 
       const canAccess = await canAccessUser(currentUser.id || currentUser.sub, targetUserId);
-      
+
       if (!canAccess) {
-        auditLog(req, 'OWNERSHIP_VIOLATION', currentUser.id || currentUser.sub, false, { 
-          currentUserId: currentUser.id || currentUser.sub, 
-          targetUserId 
+        auditLog(req, 'OWNERSHIP_VIOLATION', currentUser.id || currentUser.sub, false, {
+          currentUserId: currentUser.id || currentUser.sub,
+          targetUserId
         });
         return sendInsufficientPermissions(req, res, ['owner'], 'none');
       }

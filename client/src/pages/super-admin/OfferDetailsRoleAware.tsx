@@ -1,14 +1,14 @@
-import { useState } from "react";
-import { useParams } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, FileText, Download, Edit, Users, Shield, AlertTriangle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { CreativeUploader } from "@/components/CreativeUploader";
+import { useState } from 'react';
+import { useParams } from 'wouter';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, FileText, Download, Edit, Users, Shield, AlertTriangle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useLocation } from 'wouter';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { CreativeUploader } from '@/components/CreativeUploader';
 import { getCountryFlag, getCountryName } from '@/utils/countries';
 
 interface OfferDetails {
@@ -64,19 +64,18 @@ interface OfferDetails {
 }
 
 
-
 // Функция для получения свойств бейджа категории
 function getCategoryBadgeProps(category: string) {
   const categories: Record<string, { label: string; className: string }> = {
-    gambling: { label: "Гемблинг", className: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300" },
-    dating: { label: "Знакомства", className: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300" },
-    finance: { label: "Финансы", className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" },
-    crypto: { label: "Крипто", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300" },
-    nutra: { label: "Нутра", className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" },
-    software: { label: "ПО", className: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300" },
+    gambling: { label: 'Гемблинг', className: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' },
+    dating: { label: 'Знакомства', className: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300' },
+    finance: { label: 'Финансы', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' },
+    crypto: { label: 'Крипто', className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' },
+    nutra: { label: 'Нутра', className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' },
+    software: { label: 'ПО', className: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300' },
   };
-  
-  return categories[category] || { label: category, className: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300" };
+
+  return categories[category] || { label: category, className: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300' };
 }
 
 export default function SuperAdminOfferDetailsRoleAware() {
@@ -88,57 +87,57 @@ export default function SuperAdminOfferDetailsRoleAware() {
 
   // Тестовые данные для детального оффера (супер-админ видит всю информацию)
   const offerDetails: OfferDetails = {
-    id: offerId || "1",
-    name: "1Win Казино - Premium [СУПЕР-АДМИН ВИД]",
-    description: "Топовое онлайн казино с высокой конверсией. Лицензированная платформа с широким выбором игр, слотов и живых дилеров. Привлекательные бонусы и мгновенные выплаты. Управляется рекламодателем advertiser1.",
-    logo: "https://via.placeholder.com/80x80/9333ea/ffffff?text=1W",
-    category: "gambling",
-    payout: "150",
-    payoutType: "cpa",
-    currency: "USD",
-    status: "active",
-    countries: ["RU", "KZ", "BY", "UA"],
-    creatives: "/creatives/1win-casino-pack.zip",
-    creativesUrl: "https://storage.googleapis.com/replit-objstore-test/creatives/1win-casino-pack.zip",
+    id: offerId || '1',
+    name: '1Win Казино - Premium [СУПЕР-АДМИН ВИД]',
+    description: 'Топовое онлайн казино с высокой конверсией. Лицензированная платформа с широким выбором игр, слотов и живых дилеров. Привлекательные бонусы и мгновенные выплаты. Управляется рекламодателем advertiser1.',
+    logo: 'https://via.placeholder.com/80x80/9333ea/ffffff?text=1W',
+    category: 'gambling',
+    payout: '150',
+    payoutType: 'cpa',
+    currency: 'USD',
+    status: 'active',
+    countries: ['RU', 'KZ', 'BY', 'UA'],
+    creatives: '/creatives/1win-casino-pack.zip',
+    creativesUrl: 'https://storage.googleapis.com/replit-objstore-test/creatives/1win-casino-pack.zip',
     landingPages: [
       {
-        id: "1",
-        name: "Главная страница",
-        url: "https://1win-casino.com/main",
-        type: "main",
+        id: '1',
+        name: 'Главная страница',
+        url: 'https://1win-casino.com/main',
+        type: 'main',
         isDefault: true
       },
       {
-        id: "2", 
-        name: "Страница регистрации",
-        url: "https://1win-casino.com/register",
-        type: "registration",
+        id: '2',
+        name: 'Страница регистрации',
+        url: 'https://1win-casino.com/register',
+        type: 'registration',
         isDefault: false
       },
       {
-        id: "3",
-        name: "Промо-страница",
-        url: "https://1win-casino.com/promo-bonus",
-        type: "promo",
+        id: '3',
+        name: 'Промо-страница',
+        url: 'https://1win-casino.com/promo-bonus',
+        type: 'promo',
         isDefault: false
       }
     ],
     kpiConditions: {
       minDeposit: 50,
       minAge: 18,
-      countries: ["RU", "KZ", "BY", "UA"],
-      allowedTrafficTypes: ["contextual", "social", "email"]
+      countries: ['RU', 'KZ', 'BY', 'UA'],
+      allowedTrafficTypes: ['contextual', 'social', 'email']
     },
     restrictions: {
-      forbidden_sources: ["adult", "fraud", "incentive"],
-      allowed_sources: ["google", "facebook", "telegram", "email"],
+      forbidden_sources: ['adult', 'fraud', 'incentive'],
+      allowed_sources: ['google', 'facebook', 'telegram', 'email'],
       geo_restrictions: []
     },
     trackingLink: `https://track.partner.com/${offerId}/{{subid}}`,
-    createdAt: "2024-01-15T10:30:00Z",
+    createdAt: '2024-01-15T10:30:00Z',
     advertiserInfo: {
-      name: "1Win Gaming",
-      company: "1Win Entertainment Ltd"
+      name: '1Win Gaming',
+      company: '1Win Entertainment Ltd'
     },
     adminStats: {
       totalPartners: 245,
@@ -157,7 +156,7 @@ export default function SuperAdminOfferDetailsRoleAware() {
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Скопировано",
+      title: 'Скопировано',
       description: `${label} скопировано в буфер обмена`,
     });
   };
@@ -186,17 +185,17 @@ export default function SuperAdminOfferDetailsRoleAware() {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       toast({
-        title: "Скачивание началось",
-        description: "ZIP архив с креативами успешно скачивается",
+        title: 'Скачивание началось',
+        description: 'ZIP архив с креативами успешно скачивается',
       });
     } catch (error) {
       console.error('Download error:', error);
       toast({
-        title: "Ошибка скачивания",
-        description: "Не удалось скачать креативы",
-        variant: "destructive",
+        title: 'Ошибка скачивания',
+        description: 'Не удалось скачать креативы',
+        variant: 'destructive',
       });
     }
   };
@@ -222,17 +221,17 @@ export default function SuperAdminOfferDetailsRoleAware() {
     },
     onSuccess: () => {
       toast({
-        title: "Креативы обновлены",
-        description: "ZIP архив с креативами успешно загружен (супер-админ)",
+        title: 'Креативы обновлены',
+        description: 'ZIP архив с креативами успешно загружен (супер-админ)',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/super-admin/offers'] });
     },
     onError: (error) => {
       console.error('Update creatives error:', error);
       toast({
-        title: "Ошибка загрузки",
-        description: "Не удалось загрузить креативы",
-        variant: "destructive",
+        title: 'Ошибка загрузки',
+        description: 'Не удалось загрузить креативы',
+        variant: 'destructive',
       });
     },
   });
@@ -264,9 +263,9 @@ export default function SuperAdminOfferDetailsRoleAware() {
         <CardHeader>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              <img 
-                src={offerDetails.logo} 
-                alt={offerDetails.name} 
+              <img
+                src={offerDetails.logo}
+                alt={offerDetails.name}
                 className="w-16 h-16 rounded-lg object-cover"
               />
               <div>
@@ -438,14 +437,14 @@ export default function SuperAdminOfferDetailsRoleAware() {
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => copyToClipboard(offerDetails.trackingLink, "Трекинговая ссылка")}
+              onClick={() => copyToClipboard(offerDetails.trackingLink, 'Трекинговая ссылка')}
               title="Копировать ссылку"
             >
               <Copy className="w-4 h-4" />
             </Button>
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Партнеры заменят {"{{"}<code>subid</code>{"}"} на свой уникальный идентификатор трафика
+            Партнеры заменят {'{{'}<code>subid</code>{'}'} на свой уникальный идентификатор трафика
           </p>
         </CardContent>
       </Card>

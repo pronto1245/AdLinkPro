@@ -1,43 +1,43 @@
-import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { apiRequest } from "@/lib/queryClient";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { 
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { apiRequest } from '@/lib/queryClient';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle 
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { 
-  Send, 
-  Search, 
-  Filter, 
-  Eye, 
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Send,
+  Search,
+  Filter,
+  Eye,
   Clock,
   CheckCircle,
   XCircle,
@@ -47,7 +47,7 @@ import {
   Globe,
   MoreHorizontal,
   RefreshCw
-} from "lucide-react";
+} from 'lucide-react';
 
 interface AccessRequest {
   id: string;
@@ -59,7 +59,7 @@ interface AccessRequest {
   responseNote?: string;
   createdAt: string;
   updatedAt: string;
-  
+
   offer?: {
     id: string;
     name: string;
@@ -70,7 +70,7 @@ interface AccessRequest {
     logo?: string;
     description?: string;
   };
-  
+
   advertiser?: {
     id: string;
     username: string;
@@ -79,50 +79,50 @@ interface AccessRequest {
 }
 
 export default function AccessRequestsManager() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedRequest, setSelectedRequest] = useState<AccessRequest | null>(null);
   const [showRequestDialog, setShowRequestDialog] = useState(false);
-  const [newRequestOfferId, setNewRequestOfferId] = useState("");
-  const [requestMessage, setRequestMessage] = useState("");
-  
+  const [newRequestOfferId, setNewRequestOfferId] = useState('');
+  const [requestMessage, setRequestMessage] = useState('');
+
   const { toast } = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   // Загрузка запросов доступа партнера
   const { data: requests = [], isLoading, refetch } = useQuery({
-    queryKey: ["/api/partner/access-requests"],
+    queryKey: ['/api/partner/access-requests'],
     staleTime: 2 * 60 * 1000,
   });
 
   // Загрузка доступных офферов для запроса доступа
   const { data: availableOffers = [] } = useQuery({
-    queryKey: ["/api/partner/offers/available"],
+    queryKey: ['/api/partner/offers/available'],
     staleTime: 5 * 60 * 1000,
   });
 
   // Mutation для создания запроса доступа
   const createRequestMutation = useMutation({
     mutationFn: async (data: { offerId: string; message?: string }) => {
-      return await apiRequest("/api/partner/offer-access-request", "POST", data);
+      return await apiRequest('/api/partner/offer-access-request', 'POST', data);
     },
     onSuccess: () => {
       toast({
-        title: "Запрос отправлен",
-        description: "Ваш запрос на доступ к офферу был отправлен рекламодателю",
-        variant: "default",
+        title: 'Запрос отправлен',
+        description: 'Ваш запрос на доступ к офферу был отправлен рекламодателю',
+        variant: 'default',
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/partner/access-requests"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/access-requests'] });
       setShowRequestDialog(false);
-      setNewRequestOfferId("");
-      setRequestMessage("");
+      setNewRequestOfferId('');
+      setRequestMessage('');
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось отправить запрос",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Не удалось отправить запрос',
+        variant: 'destructive',
       });
     },
   });
@@ -130,13 +130,13 @@ export default function AccessRequestsManager() {
   // Фильтрация и поиск запросов
   const filteredRequests = useMemo(() => {
     return (requests as AccessRequest[]).filter((request: AccessRequest) => {
-      const matchesSearch = 
+      const matchesSearch =
         request.offer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         request.advertiser?.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
         request.advertiser?.company?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = statusFilter === "all" || request.status === statusFilter;
-      
+
+      const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
+
       return matchesSearch && matchesStatus;
     });
   }, [requests, searchTerm, statusFilter]);
@@ -145,13 +145,13 @@ export default function AccessRequestsManager() {
   const handleCreateRequest = () => {
     if (!newRequestOfferId) {
       toast({
-        title: "Ошибка",
-        description: "Выберите оффер для запроса доступа",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Выберите оффер для запроса доступа',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     createRequestMutation.mutate({
       offerId: newRequestOfferId,
       message: requestMessage.trim() || undefined
@@ -163,25 +163,25 @@ export default function AccessRequestsManager() {
     switch (status) {
       case 'pending':
         return {
-          className: "bg-yellow-100 text-yellow-800 border-yellow-200",
+          className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
           icon: Clock,
-          label: "Ожидает"
+          label: 'Ожидает'
         };
       case 'approved':
         return {
-          className: "bg-green-100 text-green-800 border-green-200",
+          className: 'bg-green-100 text-green-800 border-green-200',
           icon: CheckCircle,
-          label: "Одобрено"
+          label: 'Одобрено'
         };
       case 'rejected':
         return {
-          className: "bg-red-100 text-red-800 border-red-200",
+          className: 'bg-red-100 text-red-800 border-red-200',
           icon: XCircle,
-          label: "Отклонено"
+          label: 'Отклонено'
         };
       default:
         return {
-          className: "bg-gray-100 text-gray-800 border-gray-200",
+          className: 'bg-gray-100 text-gray-800 border-gray-200',
           icon: Clock,
           label: status
         };
@@ -194,15 +194,15 @@ export default function AccessRequestsManager() {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) {
       return `Сегодня в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
     } else if (diffDays === 1) {
       return `Вчера в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
     } else {
-      return date.toLocaleDateString('ru-RU', { 
-        day: '2-digit', 
-        month: '2-digit', 
+      return date.toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
@@ -231,9 +231,9 @@ export default function AccessRequestsManager() {
             Управление запросами на доступ к офферам рекламодателей
           </p>
         </div>
-        
+
         <div className="flex items-center gap-4">
-          <Button 
+          <Button
             onClick={() => setShowRequestDialog(true)}
             className="bg-blue-600 hover:bg-blue-700"
             data-testid="button-new-request"
@@ -241,9 +241,9 @@ export default function AccessRequestsManager() {
             <Send className="h-4 w-4 mr-2" />
             Новый запрос
           </Button>
-          
-          <Button 
-            variant="outline" 
+
+          <Button
+            variant="outline"
             onClick={() => refetch()}
             data-testid="button-refresh"
             title="Обновить список"
@@ -311,27 +311,27 @@ export default function AccessRequestsManager() {
                 data-testid="input-search-requests"
               />
             </div>
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2" data-testid="button-filter-status">
                   <Filter className="h-4 w-4" />
-                  {statusFilter === "all" ? "Все статусы" : 
-                   statusFilter === "pending" ? "Ожидает" :
-                   statusFilter === "approved" ? "Одобрено" : "Отклонено"}
+                  {statusFilter === 'all' ? 'Все статусы' :
+                   statusFilter === 'pending' ? 'Ожидает' :
+                   statusFilter === 'approved' ? 'Одобрено' : 'Отклонено'}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+                <DropdownMenuItem onClick={() => setStatusFilter('all')}>
                   Все статусы
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("pending")}>
+                <DropdownMenuItem onClick={() => setStatusFilter('pending')}>
                   Ожидает
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("approved")}>
+                <DropdownMenuItem onClick={() => setStatusFilter('approved')}>
                   Одобрено
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("rejected")}>
+                <DropdownMenuItem onClick={() => setStatusFilter('rejected')}>
                   Отклонено
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -369,15 +369,15 @@ export default function AccessRequestsManager() {
                   filteredRequests.map((request: AccessRequest) => {
                     const statusProps = getStatusBadgeProps(request.status);
                     const StatusIcon = statusProps.icon;
-                    
+
                     return (
                       <TableRow key={request.id} className="hover:bg-gray-50/50">
                         {/* Оффер */}
                         <TableCell>
                           <div className="flex items-center gap-3">
                             {request.offer?.logo ? (
-                              <img 
-                                src={request.offer.logo} 
+                              <img
+                                src={request.offer.logo}
                                 alt={request.offer.name}
                                 className="w-10 h-10 rounded object-cover flex-shrink-0"
                               />
@@ -456,7 +456,7 @@ export default function AccessRequestsManager() {
                                 {t('offers.getLink', 'Забрать ссылку')}
                               </Button>
                             )}
-                            
+
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" data-testid={`button-menu-${request.id}`}>
@@ -494,7 +494,7 @@ export default function AccessRequestsManager() {
           <DialogHeader>
             <DialogTitle>Новый запрос доступа</DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium block mb-2">
@@ -514,7 +514,7 @@ export default function AccessRequestsManager() {
                 ))}
               </select>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium block mb-2">
                 Сообщение (необязательно)
@@ -527,9 +527,9 @@ export default function AccessRequestsManager() {
                 data-testid="textarea-request-message"
               />
             </div>
-            
+
             <div className="flex gap-2 pt-2">
-              <Button 
+              <Button
                 onClick={handleCreateRequest}
                 disabled={createRequestMutation.isPending || !newRequestOfferId}
                 className="bg-blue-600 hover:bg-blue-700"
@@ -542,13 +542,13 @@ export default function AccessRequestsManager() {
                 )}
                 Отправить запрос
               </Button>
-              
-              <Button 
-                variant="outline" 
+
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowRequestDialog(false);
-                  setNewRequestOfferId("");
-                  setRequestMessage("");
+                  setNewRequestOfferId('');
+                  setRequestMessage('');
                 }}
                 data-testid="button-cancel-request"
               >
@@ -566,14 +566,14 @@ export default function AccessRequestsManager() {
             <DialogHeader>
               <DialogTitle>Детали запроса</DialogTitle>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               {/* Информация об оффере */}
               <div className="p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3 mb-2">
                   {selectedRequest.offer?.logo ? (
-                    <img 
-                      src={selectedRequest.offer.logo} 
+                    <img
+                      src={selectedRequest.offer.logo}
                       alt={selectedRequest.offer.name}
                       className="w-12 h-12 rounded object-cover"
                     />
@@ -589,14 +589,14 @@ export default function AccessRequestsManager() {
                     </div>
                   </div>
                 </div>
-                
+
                 {selectedRequest.offer?.description && (
                   <p className="text-sm text-gray-600 mt-2">
                     {selectedRequest.offer.description}
                   </p>
                 )}
               </div>
-              
+
               {/* Статус и даты */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -612,7 +612,7 @@ export default function AccessRequestsManager() {
                   <div className="mt-1 text-sm">{formatDate(selectedRequest.createdAt)}</div>
                 </div>
               </div>
-              
+
               {/* Сообщения */}
               {selectedRequest.requestNote && (
                 <div>
@@ -622,7 +622,7 @@ export default function AccessRequestsManager() {
                   </div>
                 </div>
               )}
-              
+
               {selectedRequest.responseNote && (
                 <div>
                   <label className="text-sm font-medium text-gray-700">Ответ рекламодателя</label>

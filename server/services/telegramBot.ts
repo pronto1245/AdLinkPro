@@ -1,4 +1,4 @@
-import { storage } from "../storage";
+import { storage } from '../storage';
 
 interface TelegramMessage {
   chat_id: number;
@@ -34,7 +34,7 @@ export class TelegramBotService {
   constructor() {
     this.token = process.env.TELEGRAM_BOT_TOKEN || '';
     this.baseUrl = `https://api.telegram.org/bot${this.token}`;
-    
+
     if (!this.token) {
       console.error('⚠️ TELEGRAM_BOT_TOKEN not provided');
     } else {
@@ -48,12 +48,12 @@ export class TelegramBotService {
       // Получаем информацию о боте
       const botInfo = await this.getBotInfo();
       console.log('🤖 Bot Info:', botInfo);
-      
+
       // Устанавливаем webhook для получения сообщений
       const webhookUrl = `${process.env.REPLIT_EXTERNAL_URL || 'https://setbet-arbit.ru'}/api/telegram/webhook`;
       await this.setWebhook(webhookUrl);
       console.log('🔗 Webhook установлен:', webhookUrl);
-      
+
     } catch (error) {
       console.error('❌ Ошибка настройки webhook:', error);
     }
@@ -92,7 +92,7 @@ export class TelegramBotService {
       });
 
       const result = await response.json();
-      
+
       if (result.ok) {
         console.log('✅ Telegram сообщение отправлено успешно');
         return true;
@@ -148,7 +148,7 @@ export class TelegramBotService {
 
     const severityEmoji = {
       low: '🟡',
-      medium: '🟠', 
+      medium: '🟠',
       high: '🔴'
     };
 
@@ -215,15 +215,15 @@ ${severityEmoji[data.severity]} <b>FRAUD ALERT!</b>
       case '/start':
         await this.handleStartCommand(chatId, update.message.from);
         break;
-      
+
       case '/help':
         await this.handleHelpCommand(chatId);
         break;
-        
+
       case '/stats':
         await this.handleStatsCommand(chatId, userId);
         break;
-        
+
       case '/report':
         await this.handleReportCommand(chatId, userId);
         break;
@@ -287,9 +287,9 @@ ${severityEmoji[data.severity]} <b>FRAUD ALERT!</b>
   private async handleStatsCommand(chatId: number, _telegramUserId: number) {
     // Попробуем найти пользователя по Telegram Chat ID
     const user = await storage.getUserByTelegramChatId(chatId);
-    
+
     if (!user) {
-      await this.sendMessage(chatId, 
+      await this.sendMessage(chatId,
         '❌ Аккаунт не привязан. Используйте /start для инструкций.'
       );
       return;
@@ -312,9 +312,9 @@ ${severityEmoji[data.severity]} <b>FRAUD ALERT!</b>
 
   private async handleReportCommand(chatId: number, _telegramUserId: number) {
     const user = await storage.getUserByTelegramChatId(chatId);
-    
+
     if (!user) {
-      await this.sendMessage(chatId, 
+      await this.sendMessage(chatId,
         '❌ Аккаунт не привязан. Используйте /start для инструкций.'
       );
       return;
@@ -343,7 +343,7 @@ ${severityEmoji[data.severity]} <b>FRAUD ALERT!</b>
   }
 
   private async handleUnknownCommand(chatId: number) {
-    await this.sendMessage(chatId, 
+    await this.sendMessage(chatId,
       '❓ Неизвестная команда. Используйте /help для списка команд.'
     );
   }

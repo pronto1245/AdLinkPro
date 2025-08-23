@@ -20,15 +20,15 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
-import { 
-  Webhook, 
-  Plus, 
-  Play, 
-  Pause, 
-  TestTube, 
-  Activity, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Webhook,
+  Plus,
+  Play,
+  Pause,
+  TestTube,
+  Activity,
+  CheckCircle,
+  XCircle,
   Clock,
   RotateCcw,
   Settings,
@@ -54,7 +54,7 @@ export default function PostbacksManagement() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [activeTab, setActiveTab] = useState('postbacks');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedPostback, setSelectedPostback] = useState<any>(null);
@@ -100,7 +100,7 @@ export default function PostbacksManagement() {
       toast({
         title: t('error'),
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   });
@@ -132,7 +132,7 @@ export default function PostbacksManagement() {
       toast({
         title: t('error'),
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   });
@@ -248,7 +248,7 @@ export default function PostbacksManagement() {
                               </FormItem>
                             )}
                           />
-                          
+
                           <FormField
                             control={form.control}
                             name="url"
@@ -302,11 +302,11 @@ export default function PostbacksManagement() {
                               <FormItem>
                                 <FormLabel>Retry Attempts</FormLabel>
                                 <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    {...field} 
+                                  <Input
+                                    type="number"
+                                    {...field}
                                     onChange={(e) => field.onChange(parseInt(e.target.value))}
-                                    data-testid="input-retry-attempts" 
+                                    data-testid="input-retry-attempts"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -321,11 +321,11 @@ export default function PostbacksManagement() {
                               <FormItem>
                                 <FormLabel>Timeout (seconds)</FormLabel>
                                 <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    {...field} 
+                                  <Input
+                                    type="number"
+                                    {...field}
                                     onChange={(e) => field.onChange(parseInt(e.target.value))}
-                                    data-testid="input-timeout" 
+                                    data-testid="input-timeout"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -402,7 +402,7 @@ export default function PostbacksManagement() {
                             id: postback.id, _data: { isActive: !postback.isActive }
                           })}
                           data-testid={`button-toggle-postback-${postback.id}`}
-                          title={postback.isActive ? "Приостановить постбэк" : "Активировать постбэк"}
+                          title={postback.isActive ? 'Приостановить постбэк' : 'Активировать постбэк'}
                         >
                           {postback.isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                         </Button>

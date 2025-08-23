@@ -18,28 +18,28 @@ class NavigationThrottle {
    */
   shouldAllowNavigation(url: string): boolean {
     const now = Date.now();
-    
+
     // Remove old entries outside the time window
     this.recentNavigations = this.recentNavigations.filter(
       entry => now - entry.timestamp < this.windowMs
     );
-    
+
     // Check if we're trying to navigate to the same URL repeatedly
     const sameUrlCount = this.recentNavigations.filter(entry => entry.url === url).length;
     if (sameUrlCount >= 2) {
       console.warn(`Navigation to ${url} throttled - already attempted ${sameUrlCount} times`);
       return false;
     }
-    
+
     // Check if we've exceeded the rate limit
     if (this.recentNavigations.length >= this.maxNavigationsPerSecond) {
       console.warn(`Navigation throttled - too many rapid navigations (${this.recentNavigations.length}/${this.maxNavigationsPerSecond})`);
       return false;
     }
-    
+
     // Record this navigation attempt
     this.recentNavigations.push({ url, timestamp: now });
-    
+
     return true;
   }
 
@@ -58,7 +58,7 @@ class NavigationThrottle {
     const recent = this.recentNavigations.filter(
       entry => now - entry.timestamp < this.windowMs
     );
-    
+
     return {
       recentNavigations: recent.length,
       lastNavigation: recent[recent.length - 1]?.url
@@ -76,7 +76,7 @@ const navigationThrottle = new NavigationThrottle();
  * @returns true if navigation was executed, false if throttled
  */
 export function throttledNavigate(
-  setLocation: (url: string) => void, 
+  setLocation: (url: string) => void,
   url: string
 ): boolean {
   if (navigationThrottle.shouldAllowNavigation(url)) {

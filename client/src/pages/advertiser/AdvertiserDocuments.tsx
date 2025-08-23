@@ -89,8 +89,8 @@ export default function AdvertiserDocuments() {
     },
     onSuccess: (_, variables) => {
       toast({
-        title: "Отзыв отправлен",
-        description: "Спасибо за ваш отзыв о документации!"
+        title: 'Отзыв отправлен',
+        description: 'Спасибо за ваш отзыв о документации!'
       });
       // Clear feedback form for this section
       setFeedbackForm(prev => ({
@@ -105,9 +105,9 @@ export default function AdvertiserDocuments() {
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось отправить отзыв",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось отправить отзыв',
+        variant: 'destructive'
       });
     }
   });
@@ -122,15 +122,15 @@ export default function AdvertiserDocuments() {
         window.open(response.url, '_blank');
       }
       toast({
-        title: "Загрузка начата",
-        description: "PDF-версия документации будет загружена"
+        title: 'Загрузка начата',
+        description: 'PDF-версия документации будет загружена'
       });
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить PDF",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось загрузить PDF',
+        variant: 'destructive'
       });
     }
   });
@@ -346,14 +346,14 @@ export default function AdvertiserDocuments() {
     try {
       await navigator.clipboard.writeText(text);
       toast({
-        title: "Скопировано",
-        description: "Код скопирован в буфер обмена"
+        title: 'Скопировано',
+        description: 'Код скопирован в буфер обмена'
       });
     } catch (err) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось скопировать в буфер обмена",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось скопировать в буфер обмена',
+        variant: 'destructive'
       });
     }
   };
@@ -363,9 +363,9 @@ export default function AdvertiserDocuments() {
     const feedback = feedbackForm[sectionId];
     if (!feedback || feedback.rating === 0) {
       toast({
-        title: "Ошибка",
-        description: "Пожалуйста, поставьте оценку",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Пожалуйста, поставьте оценку',
+        variant: 'destructive'
       });
       return;
     }
@@ -416,7 +416,7 @@ export default function AdvertiserDocuments() {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <Button
               onClick={() => downloadPdfMutation.mutate()}
@@ -470,8 +470,8 @@ export default function AdvertiserDocuments() {
                         }
                       }}
                       className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
-                        isActive 
-                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
+                        isActive
+                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
                           : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                       }`}
                       data-testid={`nav-section-${section.id}`}
@@ -484,7 +484,7 @@ export default function AdvertiserDocuments() {
                         </div>
                       )}
                     </button>
-                    
+
                     {/* Subsections */}
                     {isExpanded && section.subsections && (
                       <div className="ml-8 mt-1 space-y-1">
@@ -543,9 +543,9 @@ export default function AdvertiserDocuments() {
           ) : (
             filteredSections.map((section) => {
               if (section.id !== activeSection) {return null;}
-              
+
               const Icon = section.icon || FileText;
-              
+
               return (
                 <div key={section.id} className="space-y-6">
                   {/* Section Header */}
@@ -621,7 +621,7 @@ export default function AdvertiserDocuments() {
                             {subsection.content}
                           </pre>
                         </div>
-                        
+
                         {/* Subsection Examples */}
                         {subsection.examples && subsection.examples.length > 0 && (
                           <div className="mt-6 space-y-4">
@@ -705,14 +705,14 @@ export default function AdvertiserDocuments() {
                             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             data-testid={`helpful-checkbox-${section.id}`}
                           />
-                          <label 
+                          <label
                             htmlFor={`helpful-${section.id}`}
                             className="text-sm text-gray-700 dark:text-gray-300"
                           >
                             Этот раздел был полезен
                           </label>
                         </div>
-                        
+
                         <Button
                           onClick={() => handleSubmitFeedback(section.id)}
                           disabled={feedbackMutation.isPending}

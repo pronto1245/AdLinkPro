@@ -99,13 +99,13 @@ const EditOffer: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const submitData = {
       ...formData,
       dailyLimit: formData.dailyLimit ? parseInt(formData.dailyLimit) : null,
       monthlyLimit: formData.monthlyLimit ? parseInt(formData.monthlyLimit) : null,
     };
-    
+
     updateMutation.mutate(submitData);
   };
 
@@ -131,7 +131,7 @@ const EditOffer: React.FC = () => {
     return (
       <div className="w-full text-center py-8">
         <p className="text-gray-600">Оффер не найден</p>
-        <Button 
+        <Button
           onClick={() => setLocation('/advertiser/offers')}
           className="mt-4"
         >
@@ -146,8 +146,8 @@ const EditOffer: React.FC = () => {
       {/* Заголовок */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => setLocation('/advertiser/offers')}
           >
@@ -160,14 +160,14 @@ const EditOffer: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button 
+          <Button
             variant="outline"
             onClick={() => setLocation('/advertiser/offers')}
           >
             <X className="h-4 w-4 mr-2" />
             Отмена
           </Button>
-          <Button 
+          <Button
             onClick={handleSubmit}
             disabled={updateMutation.isPending}
           >
@@ -196,8 +196,8 @@ const EditOffer: React.FC = () => {
               </div>
               <div>
                 <Label htmlFor="category">Категория</Label>
-                <Select 
-                  value={formData.category} 
+                <Select
+                  value={formData.category}
                   onValueChange={(value) => handleInputChange('category', value)}
                 >
                   <SelectTrigger>
@@ -262,8 +262,8 @@ const EditOffer: React.FC = () => {
               </div>
               <div>
                 <Label htmlFor="currency">Валюта</Label>
-                <Select 
-                  value={formData.currency} 
+                <Select
+                  value={formData.currency}
                   onValueChange={(value) => handleInputChange('currency', value)}
                 >
                   <SelectTrigger>
@@ -278,8 +278,8 @@ const EditOffer: React.FC = () => {
               </div>
               <div>
                 <Label htmlFor="payoutType">Тип выплаты</Label>
-                <Select 
-                  value={formData.payoutType} 
+                <Select
+                  value={formData.payoutType}
                   onValueChange={(value) => handleInputChange('payoutType', value)}
                 >
                   <SelectTrigger>
@@ -354,8 +354,8 @@ const EditOffer: React.FC = () => {
 
             <div>
               <Label htmlFor="partnerApprovalType">Тип одобрения партнеров</Label>
-              <Select 
-                value={formData.partnerApprovalType} 
+              <Select
+                value={formData.partnerApprovalType}
                 onValueChange={(value) => handleInputChange('partnerApprovalType', value)}
               >
                 <SelectTrigger>

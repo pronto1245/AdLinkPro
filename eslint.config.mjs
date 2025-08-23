@@ -39,7 +39,6 @@ export default [
         HTMLDivElement: 'readonly',
         HTMLParagraphElement: 'readonly',
         HTMLHeadingElement: 'readonly',
-
         HTMLOListElement: 'readonly',
         HTMLLIElement: 'readonly',
         HTMLAnchorElement: 'readonly',
@@ -48,6 +47,13 @@ export default [
         HTMLFormElement: 'readonly',
         HTMLTextAreaElement: 'readonly',
         HTMLSelectElement: 'readonly',
+        HTMLUListElement: 'readonly',
+        HTMLTableElement: 'readonly',
+        HTMLTableSectionElement: 'readonly',
+        HTMLTableRowElement: 'readonly',
+        HTMLTableCellElement: 'readonly',
+        HTMLTableCaptionElement: 'readonly',
+        EventListener: 'readonly',
         KeyboardEvent: 'readonly',
         React: 'readonly',
         // WebSocket related
@@ -67,6 +73,9 @@ export default [
         btoa: 'readonly',
         // Node.js types
         NodeJS: 'readonly',
+        Express: 'readonly',
+        // Error types
+        error: 'readonly',
       },
     },
     plugins: {

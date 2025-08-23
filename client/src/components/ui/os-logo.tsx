@@ -10,13 +10,13 @@ interface OsLogoProps {
 const OsLogo: React.FC<OsLogoProps> = ({ os, className, size = 'md' }) => {
   const sizeClasses = {
     sm: 'w-4 h-4',
-    md: 'w-5 h-5', 
+    md: 'w-5 h-5',
     lg: 'w-6 h-6'
   };
-  
+
   const getOsIcon = (osName: string) => {
     const osLower = osName.toLowerCase();
-    
+
     if (osLower.includes('windows')) {
       return (
         <svg className={cn(sizeClasses[size], className)} viewBox="0 0 24 24" fill="currentColor">
@@ -24,7 +24,7 @@ const OsLogo: React.FC<OsLogoProps> = ({ os, className, size = 'md' }) => {
         </svg>
       );
     }
-    
+
     if (osLower.includes('mac') || osLower.includes('ios')) {
       return (
         <svg className={cn(sizeClasses[size], className)} viewBox="0 0 24 24" fill="currentColor">
@@ -32,7 +32,7 @@ const OsLogo: React.FC<OsLogoProps> = ({ os, className, size = 'md' }) => {
         </svg>
       );
     }
-    
+
     if (osLower.includes('linux')) {
       return (
         <svg className={cn(sizeClasses[size], className)} viewBox="0 0 24 24" fill="currentColor">
@@ -40,7 +40,7 @@ const OsLogo: React.FC<OsLogoProps> = ({ os, className, size = 'md' }) => {
         </svg>
       );
     }
-    
+
     if (osLower.includes('android')) {
       return (
         <svg className={cn(sizeClasses[size], className)} viewBox="0 0 24 24" fill="currentColor">
@@ -48,8 +48,8 @@ const OsLogo: React.FC<OsLogoProps> = ({ os, className, size = 'md' }) => {
         </svg>
       );
     }
-    
-    // Default/Unknown OS icon  
+
+    // Default/Unknown OS icon
     return (
       <svg className={cn(sizeClasses[size], className)} viewBox="0 0 24 24" fill="currentColor">
         <path d="M4 6H20V18H4V6ZM20 4H4C2.89 4 2 4.89 2 6V18C2 19.11 2.89 20 4 20H20C21.11 20 22 19.11 22 18V6C22 4.89 21.11 4 20 4ZM12 15L15.5 11.5L17 13L12 18L7 13L8.5 11.5L12 15Z" className="text-gray-500"/>

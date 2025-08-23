@@ -28,9 +28,9 @@ function getRoleFromToken(): UserRole | null {
   if (!role) {
     return null;
   }
-  
+
   // Enhanced role mapping with all supported roles
-  const roleMap: Record<string, UserRole> = { 
+  const roleMap: Record<string, UserRole> = {
     partner: 'partner',
     PARTNER: 'partner',
     affiliate: 'affiliate',
@@ -45,7 +45,7 @@ function getRoleFromToken(): UserRole | null {
     staff: 'staff',
     STAFF: 'staff'
   };
-  
+
   return roleMap[role.trim()] || role.toLowerCase() as UserRole || null;
 }
 
@@ -58,18 +58,18 @@ type Props = {
   fallbackPath?: string; // Custom redirect path
 };
 
-export default function ProtectedRoute({ 
-  path, 
-  roles = [], 
-  component: Component, 
-  children, 
+export default function ProtectedRoute({
+  path,
+  roles = [],
+  component: Component,
+  children,
   requireAuth = true,
-  fallbackPath 
+  fallbackPath
 }: Props) {
   const [match, params] = useRoute(path);
   const { isAuthenticated, isLoading, token, user, refreshUser } = useAuth();
   const { setLoading } = useGlobalState();
-  
+
   if (!match) {
     return null;
   }
@@ -107,7 +107,7 @@ export default function ProtectedRoute({
       if (!token) {
         return;
       }
-      
+
       // Check cache first
       const cachedUser = getCachedUser(token);
       if (cachedUser) {
@@ -140,24 +140,24 @@ export default function ProtectedRoute({
   // Check role-based access
   if (roles.length > 0) {
     const userRole = user?.role || getRoleFromToken();
-    
+
     if (!userRole) {
       console.warn('[PROTECTED_ROUTE] No user role found, denying access to:', path);
       return <Redirect to="/unauthorized" />;
     }
-    
+
     // Enhanced role matching - support both exact match and role hierarchy
     const hasAccess = roles.some(requiredRole => {
       // Direct role match
       if (userRole === requiredRole) {
         return true;
       }
-      
+
       // Role hierarchy check (owner and super_admin have access to everything)
       if (userRole === 'owner' || userRole === 'super_admin') {
         return true;
       }
-      
+
       // Partner/affiliate role compatibility
       if (requiredRole === 'partner' && userRole === 'affiliate') {
         return true;
@@ -165,13 +165,13 @@ export default function ProtectedRoute({
       if (requiredRole === 'affiliate' && userRole === 'partner') {
         return true;
       }
-      
+
       return false;
     });
-    
+
     if (!hasAccess) {
       console.warn('[PROTECTED_ROUTE] Access denied for role:', userRole, 'Required:', roles);
-      
+
       // Enhanced role-based redirection
       const redirectPath = getDefaultDashboardForRole(userRole);
       return <Redirect to={redirectPath} />;
@@ -194,7 +194,7 @@ function getDefaultDashboardForRole(role: UserRole): string {
     partner: '/dashboard/partner',
     affiliate: '/dashboard/partner',
   };
-  
+
   return dashboardMap[role] || '/unauthorized';
 }
 

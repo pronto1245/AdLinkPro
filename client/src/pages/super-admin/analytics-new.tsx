@@ -26,23 +26,23 @@ interface AnalyticsData extends Partial<TrackingClick> {
   campaignId: string;
   campaignGroupId: string;
   campaignGroup: string;
-  
+
   // Geographic display data
   countryFlag: string;
   ipMasked12: string;
   ipMasked123: string;
-  
+
   // Device & Browser display data
   osLogo: string;
   browserLogo: string;
   deviceType: string;
   deviceModel: string;
-  
+
   // Network display
   operator: string;
   provider: string;
   usingProxy: boolean;
-  
+
   // Offers & Landing display
   offer: string;
   offerGroup: string;
@@ -55,20 +55,20 @@ interface AnalyticsData extends Partial<TrackingClick> {
   streamId: string;
   site: string;
   direction: string;
-  
-  // Tracking IDs  
+
+  // Tracking IDs
   visitorCode: string;
   externalId: string;
   creativeId: string;
   adCampaignId: string;
-  
+
   // Request data
   xRequestedWith?: string;
   referrer?: string;
   emptyReferrer: boolean;
   searchEngine?: string;
   keyword?: string;
-  
+
   // Conversion data (analytics specific)
   uniqueForCampaign: boolean;
   uniqueForStream: boolean;
@@ -79,7 +79,7 @@ interface AnalyticsData extends Partial<TrackingClick> {
   registration: boolean;
   clickOnLanding: boolean;
   rejected: boolean;
-  
+
   // Financial data
   revenue: number;
   revenueExpected: number;
@@ -91,7 +91,7 @@ interface AnalyticsData extends Partial<TrackingClick> {
   profit: number;
   profitability: number;
   upsells: number;
-  
+
   // Time data
   year: number;
   month: number;
@@ -101,7 +101,7 @@ interface AnalyticsData extends Partial<TrackingClick> {
   hour: number;
   dayAndHour: string;
   timeLeftLanding: string;
-  
+
   // Previous campaign data
   previousCampaignId?: string;
   previousCampaign?: string;
@@ -137,7 +137,7 @@ const allColumns: ColumnConfig[] = [
   { key: 'lead', label: 'Лид', visible: true, sortable: true, type: 'boolean', width: 60 },
   { key: 'sale', label: 'Продажа', visible: true, sortable: true, type: 'boolean', width: 80 },
   { key: 'revenue', label: 'Доход', visible: true, sortable: true, type: 'currency', width: 100 },
-  
+
   // SubIDs 1-20 (все видимы по умолчанию)
   { key: 'subId1', label: 'Sub ID 1', visible: true, sortable: true, type: 'text', width: 100 },
   { key: 'subId2', label: 'Sub ID 2', visible: true, sortable: true, type: 'text', width: 100 },
@@ -159,7 +159,7 @@ const allColumns: ColumnConfig[] = [
   { key: 'subId18', label: 'Sub ID 18', visible: true, sortable: true, type: 'text', width: 100 },
   { key: 'subId19', label: 'Sub ID 19', visible: true, sortable: true, type: 'text', width: 100 },
   { key: 'subId20', label: 'Sub ID 20', visible: true, sortable: true, type: 'text', width: 100 },
-  
+
   // SubIDs 21-30 (скрыты по умолчанию)
   { key: 'subId21', label: 'Sub ID 21', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'subId22', label: 'Sub ID 22', visible: false, sortable: true, type: 'text', width: 100 },
@@ -171,7 +171,7 @@ const allColumns: ColumnConfig[] = [
   { key: 'subId28', label: 'Sub ID 28', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'subId29', label: 'Sub ID 29', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'subId30', label: 'Sub ID 30', visible: false, sortable: true, type: 'text', width: 100 },
-  
+
   // Groups and IDs
   { key: 'campaignGroup', label: 'Группа кампании', visible: false, sortable: true, type: 'text', width: 120 },
   { key: 'landingGroup', label: 'Группа лендинга', visible: false, sortable: true, type: 'text', width: 120 },
@@ -181,13 +181,13 @@ const allColumns: ColumnConfig[] = [
   { key: 'source', label: 'Источник', visible: true, sortable: true, type: 'text', width: 120 },
   { key: 'stream', label: 'Поток', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'site', label: 'Сайт', visible: false, sortable: true, type: 'text', width: 120 },
-  
+
   // Request data
   { key: 'xRequestedWith', label: 'X-Requested-With', visible: false, sortable: true, type: 'text', width: 150 },
   { key: 'referrer', label: 'Реферер', visible: false, sortable: true, type: 'text', width: 150 },
   { key: 'searchEngine', label: 'Поисковик', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'keyword', label: 'Ключевик', visible: false, sortable: true, type: 'text', width: 120 },
-  
+
   // Tracking IDs
   { key: 'clickId', label: 'Click ID', visible: true, sortable: true, type: 'text', width: 120 },
   { key: 'visitorCode', label: 'Visitor code', visible: false, sortable: true, type: 'text', width: 120 },
@@ -203,9 +203,8 @@ const allColumns: ColumnConfig[] = [
   { key: 'adCampaignId', label: 'Ad Campaign ID', visible: false, sortable: true, type: 'text', width: 140 },
   { key: 'externalId', label: 'External ID', visible: false, sortable: true, type: 'text', width: 120 },
   { key: 'creativeId', label: 'Creative ID', visible: false, sortable: true, type: 'text', width: 120 },
-  
 
-  
+
   // Network and device
   { key: 'operator', label: 'Оператор', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'provider', label: 'Провайдер', visible: false, sortable: true, type: 'text', width: 100 },
@@ -217,14 +216,14 @@ const allColumns: ColumnConfig[] = [
   { key: 'browserVersion', label: 'Версия браузера', visible: false, sortable: true, type: 'text', width: 120 },
   { key: 'deviceModel', label: 'Модель устройства', visible: false, sortable: true, type: 'text', width: 150 },
   { key: 'browserLogo', label: 'Логотип браузера', visible: false, sortable: true, type: 'text', width: 120 },
-  
+
   // IP variants
   { key: 'ipMasked12', label: 'IP 1.2..', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'ipMasked123', label: 'IP 1.2.3.*', visible: false, sortable: true, type: 'text', width: 120 },
-  
+
   // Financial
   { key: 'cost', label: 'Расход', visible: false, sortable: true, type: 'currency', width: 100 },
-  
+
   // Time data
   { key: 'year', label: 'Год', visible: false, sortable: true, type: 'number', width: 80 },
   { key: 'month', label: 'Месяц', visible: false, sortable: true, type: 'number', width: 80 },
@@ -235,7 +234,7 @@ const allColumns: ColumnConfig[] = [
   { key: 'dayAndHour', label: 'День и час', visible: false, sortable: true, type: 'text', width: 100 },
   { key: 'timeLeftLanding', label: 'Время ухода с лендинга', visible: false, sortable: true, type: 'datetime', width: 180 },
   { key: 'direction', label: 'Направление', visible: false, sortable: true, type: 'text', width: 100 },
-  
+
   // Conversion data
   { key: 'uniqueForStream', label: 'Уникальный для потока', visible: false, sortable: true, type: 'boolean', width: 150 },
   { key: 'uniqueGlobally', label: 'Уникальный глобально', visible: false, sortable: true, type: 'boolean', width: 150 },
@@ -247,12 +246,12 @@ const allColumns: ColumnConfig[] = [
   { key: 'revenueDeposit', label: 'Доход (депозит)', visible: false, sortable: true, type: 'currency', width: 120 },
   { key: 'revenueRegistration', label: 'Доход (регистрация)', visible: false, sortable: true, type: 'currency', width: 140 },
   { key: 'rejected', label: 'Отклонен', visible: false, sortable: true, type: 'boolean', width: 80 },
-  
+
   // Previous campaign
   { key: 'previousCampaignId', label: 'ID предыдущей кампании', visible: false, sortable: true, type: 'text', width: 160 },
   { key: 'parentClickSubid', label: 'Subid родит. кликов', visible: false, sortable: true, type: 'text', width: 140 },
   { key: 'previousCampaign', label: 'Предыдущая кампания', visible: false, sortable: true, type: 'text', width: 140 },
-  
+
   // Financial extended
   { key: 'profitability', label: 'Прибыльность', visible: true, sortable: true, type: 'percentage', width: 100 },
   { key: 'profit', label: 'Прибыль', visible: true, sortable: true, type: 'currency', width: 100 },
@@ -271,7 +270,7 @@ export default function AnalyticsNew() {
   const queryClient = useQueryClient();
 
   // Remove duplicate columns by key
-  const uniqueColumns = allColumns.filter((column, index, self) => 
+  const uniqueColumns = allColumns.filter((column, index, self) =>
     index === self.findIndex(c => c.key === column.key)
   );
 
@@ -288,7 +287,7 @@ export default function AnalyticsNew() {
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
-  
+
   // Drag and drop state for column reordering
   const [draggedColumn, setDraggedColumn] = useState<number | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<number | null>(null);
@@ -310,7 +309,7 @@ export default function AnalyticsNew() {
 
   // Fetch analytics data
   const { data: analyticsResponse, isLoading } = useQuery<{data: AnalyticsData[], total: number, totalPages: number}>({
-    queryKey: ['/api/analytics-enhanced/data', { 
+    queryKey: ['/api/analytics-enhanced/data', {
       search: searchTerm,
       dateFrom,
       dateTo,
@@ -328,7 +327,7 @@ export default function AnalyticsNew() {
       params.append('page', currentPage.toString());
       params.append('limit', pageSize.toString());
       params.append('offset', ((currentPage - 1) * pageSize).toString());
-      
+
       if (sortConfig) {
         params.append('sortBy', sortConfig.key);
         params.append('sortOrder', sortConfig.direction);
@@ -339,19 +338,19 @@ export default function AnalyticsNew() {
       });
       if (!response.ok) {throw new Error('Failed to fetch analytics data');}
       const result = await response.json();
-      
+
       // Handle the new response format from analytics-enhanced
       if (result.success && result.data) {
         const total = result.total || result.data.length;
         const totalPages = Math.ceil(total / pageSize);
-        
+
         return {
           data: result.data,
           total: total,
           totalPages: totalPages
         };
       }
-      
+
       // Fallback for other response formats
       return {
         data: Array.isArray(result) ? result : [],
@@ -362,7 +361,7 @@ export default function AnalyticsNew() {
   });
 
   const analyticsData = analyticsResponse?.data || [];
-  
+
   // Update pagination info when data changes
   useEffect(() => {
     if (analyticsResponse) {
@@ -373,7 +372,7 @@ export default function AnalyticsNew() {
 
   // Column visibility toggle
   const toggleColumnVisibility = (key: keyof AnalyticsData) => {
-    setColumns(prev => prev.map(col => 
+    setColumns(prev => prev.map(col =>
       col.key === key ? { ...col, visible: !col.visible } : col
     ));
   };
@@ -381,7 +380,7 @@ export default function AnalyticsNew() {
   // Country flag component
   const CountryFlag = ({ countryCode }: { countryCode: string }) => {
     if (!countryCode || countryCode === '-') {return <span>-</span>;}
-    
+
     const getFlag = (code: string) => {
       const flags: { [key: string]: string } = {
         'RU': '🇷🇺', 'US': '🇺🇸', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷',
@@ -414,72 +413,72 @@ export default function AnalyticsNew() {
   const OsLogoLocal = ({ os }: { os: string }) => {
     const getOsInfo = (osName: string) => {
       const osLower = osName?.toLowerCase() || '';
-      
+
       if (osLower.includes('windows')) {
-        return { 
+        return {
           icon: (
             <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
               <path d="M0 3.4L10.1 2V11.6H0V3.4ZM11.3 1.9L24 0V11.6H11.3V1.9ZM24 12.4V24L11.3 22.1V12.4H24ZM10.1 22.2L0 20.6V12.4H10.1V22.2Z"/>
             </svg>
-          ), 
-          name: 'Windows', 
-          color: 'text-blue-600' 
+          ),
+          name: 'Windows',
+          color: 'text-blue-600'
         };
       } else if (osLower.includes('mac') || osLower.includes('darwin')) {
-        return { 
+        return {
           icon: (
             <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
               <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.19 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/>
             </svg>
-          ), 
-          name: 'macOS', 
-          color: 'text-gray-600' 
+          ),
+          name: 'macOS',
+          color: 'text-gray-600'
         };
       } else if (osLower.includes('linux') || osLower.includes('ubuntu')) {
-        return { 
+        return {
           icon: (
             <svg className="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12.5 2C12.3 2 12.15 2.03 12 2.06C11.85 2.03 11.7 2 11.5 2C10.26 2 9.27 3 9.27 4.22C9.27 4.31 9.28 4.4 9.29 4.5C9.1 4.77 8.95 5.08 8.84 5.42C8.46 6.55 8.46 7.77 8.84 8.9C9.05 9.5 9.37 10.04 9.78 10.5C9.83 10.56 9.88 10.61 9.94 10.66C10.28 11.05 10.69 11.38 11.16 11.63C11.41 11.77 11.69 11.87 11.97 11.95C12.03 11.97 12.1 11.98 12.16 12C12.22 11.98 12.29 11.97 12.35 11.95C12.63 11.87 12.91 11.77 13.16 11.63C13.63 11.38 14.04 11.05 14.38 10.66C14.44 10.61 14.49 10.56 14.54 10.5C14.95 10.04 15.27 9.5 15.48 8.9C15.86 7.77 15.86 6.55 15.48 5.42C15.37 5.08 15.22 4.77 15.03 4.5C15.04 4.4 15.05 4.31 15.05 4.22C15.05 3 14.06 2 12.82 2H12.5Z"/>
             </svg>
-          ), 
-          name: 'Linux', 
-          color: 'text-orange-600' 
+          ),
+          name: 'Linux',
+          color: 'text-orange-600'
         };
       } else if (osLower.includes('android')) {
-        return { 
+        return {
           icon: (
             <svg className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17.6 9.48L16.38 8.26C16.18 8.06 15.86 8.06 15.66 8.26C15.46 8.46 15.46 8.78 15.66 8.98L16.88 10.2C15.93 10.8 14.8 11.15 13.6 11.15C12.4 11.15 11.27 10.8 10.32 10.2L11.54 8.98C11.74 8.78 11.74 8.46 11.54 8.26C11.34 8.06 11.02 8.06 10.82 8.26L9.6 9.48C8.75 10.33 8.25 11.48 8.25 12.75V17.25C8.25 18.77 9.48 20 11 20H16C17.52 20 18.75 18.77 18.75 17.25V12.75C18.75 11.48 18.25 10.33 17.6 9.48Z"/>
             </svg>
-          ), 
-          name: 'Android', 
-          color: 'text-green-600' 
+          ),
+          name: 'Android',
+          color: 'text-green-600'
         };
       } else if (osLower.includes('ios') || osLower.includes('iphone')) {
-        return { 
+        return {
           icon: (
             <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
               <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.19 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/>
             </svg>
-          ), 
-          name: 'iOS', 
-          color: 'text-gray-600' 
+          ),
+          name: 'iOS',
+          color: 'text-gray-600'
         };
       } else {
-        return { 
+        return {
           icon: (
             <svg className="w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="currentColor">
               <path d="M4 6H20V18H4V6ZM20 4H4C2.89 4 2 4.89 2 6V18C2 19.11 2.89 20 4 20H20C21.11 20 22 19.11 22 18V6C22 4.89 21.11 4 20 4Z"/>
             </svg>
-          ), 
-          name: osName || 'Unknown', 
-          color: 'text-gray-400' 
+          ),
+          name: osName || 'Unknown',
+          color: 'text-gray-400'
         };
       }
     };
 
     const osInfo = getOsInfo(os);
-    
+
     return (
       <div className="flex items-center gap-1.5" title={`OS: ${osInfo.name}`}>
         {osInfo.icon}
@@ -490,27 +489,27 @@ export default function AnalyticsNew() {
 
   const formatCellValue = (value: any, type: ColumnConfig['type'], columnKey?: string) => {
     if (value === null || value === undefined) {return '-';}
-    
+
     // Special handling for country flag - only show flag in countryFlag column
     if (columnKey === 'countryFlag') {
       return <CountryFlag countryCode={value} />;
     }
-    
+
     // Special handling for country name - show full country name in country column
     if (columnKey === 'country') {
       const countryNames: { [key: string]: string } = {
-        'RU': 'Россия', 'US': 'США', 'DE': 'Германия', 'UA': 'Украина', 
-        'BY': 'Беларусь', 'KZ': 'Казахстан', 'GB': 'Великобритания', 
+        'RU': 'Россия', 'US': 'США', 'DE': 'Германия', 'UA': 'Украина',
+        'BY': 'Беларусь', 'KZ': 'Казахстан', 'GB': 'Великобритания',
         'FR': 'Франция', 'IT': 'Италия', 'ES': 'Испания'
       };
       return <span className="text-sm font-medium">{countryNames[value] || value}</span>;
     }
-    
+
     // Special handling for OS logo
     if (columnKey === 'osLogo' || columnKey === 'os') {
       return <OsLogoLocal os={value} />;
     }
-    
+
     switch (type) {
       case 'currency':
         return `$${Number(value).toFixed(2)}`;
@@ -571,7 +570,7 @@ export default function AnalyticsNew() {
 
   const handleColumnDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
-    
+
     if (draggedColumn === null || draggedColumn === dropIndex) {
       setDraggedColumn(null);
       setDragOverColumn(null);
@@ -582,15 +581,15 @@ export default function AnalyticsNew() {
     // Simply reorder the columns array based on visible columns order
     const newColumns = [...columns];
     const draggedItem = visibleColumns[draggedColumn];
-    
+
     // Find indexes in the main columns array
     const draggedIndexInMain = newColumns.findIndex(col => col.key === draggedItem.key);
     const dropTargetColumn = visibleColumns[dropIndex];
     const dropIndexInMain = newColumns.findIndex(col => col.key === dropTargetColumn.key);
-    
+
     // Remove dragged item from its current position
     const [removed] = newColumns.splice(draggedIndexInMain, 1);
-    
+
     // Calculate new position after removal
     let newDropIndex = dropIndexInMain;
     if (draggedIndexInMain < dropIndexInMain) {
@@ -598,7 +597,7 @@ export default function AnalyticsNew() {
     } else {
       newDropIndex = dropIndexInMain + 1;
     }
-    
+
     // Insert at new position
     newColumns.splice(newDropIndex, 0, removed);
 
@@ -630,7 +629,7 @@ export default function AnalyticsNew() {
     const delta = 2;
     const range = [];
     const rangeWithDots = [];
-    
+
     for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
       range.push(i);
     }
@@ -656,8 +655,8 @@ export default function AnalyticsNew() {
   const handleExport = async () => {
     try {
       toast({
-        title: "Экспорт данных",
-        description: "Начинается экспорт данных аналитики...",
+        title: 'Экспорт данных',
+        description: 'Начинается экспорт данных аналитики...',
       });
 
       const exportFilters = {
@@ -670,23 +669,23 @@ export default function AnalyticsNew() {
 
       const response = await fetch('/api/analytics-enhanced/export', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(exportFilters)
       });
 
       if (!response.ok) {throw new Error('Failed to export analytics data');}
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         toast({
-          title: "Экспорт завершен",
+          title: 'Экспорт завершен',
           description: result.message,
         });
-        
+
         // For now, still do CSV export client-side
         // In future, this could download from server or provide download link
         const visibleData = analyticsData.map(row => {
@@ -713,12 +712,12 @@ export default function AnalyticsNew() {
         const headers = visibleColumns.map(col => col.label);
         const csvContent = [
           headers.join(','),
-          ...visibleData.map(row => 
+          ...visibleData.map(row =>
             headers.map(header => {
               const value = row[header];
               // Escape quotes and commas
-              return typeof value === 'string' && (value.includes(',') || value.includes('"')) 
-                ? `"${value.replace(/"/g, '""')}"` 
+              return typeof value === 'string' && (value.includes(',') || value.includes('"'))
+                ? `"${value.replace(/"/g, '""')}"`
                 : value;
             }).join(',')
           )
@@ -764,10 +763,10 @@ export default function AnalyticsNew() {
     setDateTo(format(new Date(), 'yyyy-MM-dd'));
     setQuickFilter('all');
     setCurrentPage(1);
-    
+
     // Also invalidate query to refresh data
     queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics'] });
-    
+
     toast({
       title: 'Фильтры сброшены',
       description: 'Все фильтры возвращены к значениям по умолчанию',
@@ -941,12 +940,12 @@ export default function AnalyticsNew() {
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
-                      
+
                       <div className="flex items-center gap-1">
                         {getPageNumbers().map((page, index) => (
                           <Button
                             key={index}
-                            variant={page === currentPage ? "default" : "outline"}
+                            variant={page === currentPage ? 'default' : 'outline'}
                             size="sm"
                             onClick={() => typeof page === 'number' && goToPage(page)}
                             disabled={page === '...'}
@@ -956,7 +955,7 @@ export default function AnalyticsNew() {
                           </Button>
                         ))}
                       </div>
-                      
+
                       <Button
                         variant="outline"
                         size="sm"
@@ -966,7 +965,7 @@ export default function AnalyticsNew() {
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
-                      
+
                       <span className="text-sm text-muted-foreground ml-2">
                         Стр. {currentPage} из {totalPages}
                       </span>
@@ -996,10 +995,10 @@ export default function AnalyticsNew() {
                                 onDrop={(e) => handleColumnDrop(e, columnIndex)}
                                 onDragEnd={handleColumnDragEnd}
                                 className={`text-left p-2 font-medium text-sm whitespace-nowrap cursor-grab active:cursor-grabbing transition-colors duration-200 ${
-                                  draggedColumn === columnIndex 
-                                    ? 'opacity-50 bg-blue-50 dark:bg-blue-900/20' 
-                                    : dragOverColumn === columnIndex 
-                                      ? 'bg-blue-100 dark:bg-blue-800/30 border-l-2 border-blue-500' 
+                                  draggedColumn === columnIndex
+                                    ? 'opacity-50 bg-blue-50 dark:bg-blue-900/20'
+                                    : dragOverColumn === columnIndex
+                                      ? 'bg-blue-100 dark:bg-blue-800/30 border-l-2 border-blue-500'
                                       : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
                                 }`}
                                 style={{ width: column.width }}
@@ -1026,7 +1025,7 @@ export default function AnalyticsNew() {
                         </tbody>
                       </table>
                     </div>
-                    
+
                     {analyticsData.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         Нет данных для отображения

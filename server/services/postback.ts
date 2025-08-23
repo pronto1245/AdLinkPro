@@ -72,7 +72,7 @@ export interface PostbackEvent {
 }
 
 export class PostbackService {
-  
+
   // Generate unique click ID
   static generateClickId(): string {
     const timestamp = Date.now().toString(36);
@@ -83,7 +83,7 @@ export class PostbackService {
   // Replace macros in URL
   static replaceMacros(url: string, macros: PostbackMacros): string {
     let processedUrl = url;
-    
+
     // Standard macros
     Object.entries(macros).forEach(([key, value]) => {
       const macroPattern = new RegExp(`\\{${key}\\}`, 'g');
@@ -102,7 +102,7 @@ export class PostbackService {
   // Validate IP whitelist
   static isIpWhitelisted(ip: string, whitelist: string): boolean {
     if (!whitelist.trim()) {return true;} // No whitelist = allow all
-    
+
     const allowedIps = whitelist.split(',').map(ip => ip.trim());
     return allowedIps.includes(ip) || allowedIps.includes('*');
   }
@@ -118,7 +118,7 @@ export class PostbackService {
         eq(postbackLogs.status, 'sent')  // Fixed: changed from 'success' to 'sent'
       ))
       .limit(1);
-    
+
     return existingLog.length > 0;
   }
 
@@ -142,7 +142,7 @@ export class PostbackService {
     landingUrl?: string;
   }) {
     const clickId = this.generateClickId();
-    
+
     const [click] = await db.insert(trackingClicks).values({
       clickId,
       ...clickData,
@@ -182,12 +182,12 @@ export class PostbackService {
         return { success: true }; // Skip duplicate
       }
 
-      // Replace macros in URL  
+      // Replace macros in URL
       console.log(`Original URL template: ${postback.url}`);
       console.log(`Macros to replace:`, macros);
       const processedUrl = this.replaceMacros(postback.url, macros);
       console.log(`Processed URL: ${processedUrl}`);
-      
+
       // Prepare request options
       const requestOptions: any = {
         method: postback.method || 'GET',
@@ -224,7 +224,7 @@ export class PostbackService {
       // Log the attempt
       const logStatus = response.ok ? 'sent' : 'failed';
       console.log(`Postback ${postbackId} completed with status: ${logStatus} (HTTP ${response.status})`);
-      
+
       await db.insert(postbackLogs).values({
         postbackId,
         clickId,
@@ -306,14 +306,14 @@ export class PostbackService {
       status: event.type,
       offer_id: clickData?.offerId || event.offerId,
       partner_id: clickData?.partnerId || event.partnerId,
-      
+
       // Revenue and payout
       revenue: event.data.revenue || '0.00',
-      payout: event.data.payout || '0.00', 
+      payout: event.data.payout || '0.00',
       amount: event.data.amount || event.data.revenue || '0.00',
       currency: event.data.currency || 'USD',
       txid: event.data.txid || '',
-      
+
       // Sub parameters (all 16)
       sub1: clickData?.subId1 || event.data.sub1 || '',
       sub2: clickData?.subId2 || event.data.sub2 || '',
@@ -331,47 +331,47 @@ export class PostbackService {
       sub14: clickData?.subId14 || event.data.sub14 || '',
       sub15: clickData?.subId15 || event.data.sub15 || '',
       sub16: clickData?.subId16 || event.data.sub16 || '',
-      
+
       // Geo data
       country: clickData?.country || event.data.country || '',
       country_iso: clickData?.country || event.data.country_iso || '',
       geo: clickData?.country || event.data.geo || '',
-      
-      // Device data  
+
+      // Device data
       device: clickData?.device || event.data.device || '',
       device_type: clickData?.device || event.data.device_type || '',
       os: clickData?.os || event.data.os || '',
       browser: clickData?.browser || event.data.browser || '',
-      
+
       // Technical data
       ip: clickData?.ip || event.data.ip || '',
       user_agent: clickData?.userAgent || event.data.user_agent || '',
       referer: clickData?.referer || event.data.referer || '',
-      
+
       // Campaign data
       campaign_id: event.data.campaign_id || '',
       flow_id: event.data.flow_id || '',
       landing_id: event.data.landing_id || '',
       creative_id: event.data.creative_id || '',
-      
+
       // UTM parameters
       utm_source: event.data.utm_source || '',
       utm_medium: event.data.utm_medium || '',
       utm_campaign: event.data.utm_campaign || '',
       utm_term: event.data.utm_term || '',
       utm_content: event.data.utm_content || '',
-      
+
       // Timestamps
       timestamp: Math.floor(Date.now() / 1000).toString(),
       datetime: new Date().toISOString(),
     };
-    
+
     return macros;
   }
 
   // Enhanced postback for external trackers (Keitaro, Binom, etc.)
   static async sendExternalTrackerPostback(
-    trackerUrl: string, 
+    trackerUrl: string,
     event: PostbackEvent,
     clickData: any,
     options: {
@@ -384,11 +384,11 @@ export class PostbackService {
     try {
       // Build comprehensive macros
       const macros = this.buildMacrosFromClick(clickData, event);
-      
+
       // Replace macros in URL
       let processedUrl = this.replaceMacros(trackerUrl, macros);
       console.log(`Sending to external tracker: ${processedUrl}`);
-      
+
       // Prepare request
       const requestOptions: any = {
         method: options.method || 'GET',
@@ -432,7 +432,7 @@ export class PostbackService {
       const response = await fetch(processedUrl, requestOptions);
       const responseTime = Date.now() - startTime;
       const responseBody = await response.text();
-      
+
       console.log(`External tracker response: ${response.status} in ${responseTime}ms`);
 
       return {
@@ -513,14 +513,14 @@ export class PostbackService {
       }
 
       const isFraudulent = riskScore >= 60; // Threshold for blocking
-      
+
       return {
         isFraudulent,
         riskScore,
         reasons,
         blockReason: isFraudulent ? reasons.join(', ') : undefined
       };
-      
+
     } catch (error) {
       console.error('Anti-fraud check error:', error);
       // Return safe defaults if check fails
@@ -539,7 +539,7 @@ export class PostbackService {
   } = {}) {
     try {
       console.log(`Triggering postbacks for event: ${event.type}, clickId: ${event.clickId}`);
-      
+
       // Get click data with all fields
       let clickData = null;
       if (event.clickId) {
@@ -553,10 +553,10 @@ export class PostbackService {
       // Perform anti-fraud checks unless explicitly skipped
       if (!options.skipAntiFraud && clickData) {
         const fraudCheck = await this.performAntiFraudCheck(clickData, event);
-        
+
         if (fraudCheck.isFraudulent) {
           console.log(`🚫 Blocking postback due to fraud detection: ${fraudCheck.blockReason}`);
-          
+
           // Log the blocked postback for monitoring
           await db.insert(postbackLogs).values({
             postbackId: 'fraud-blocked',
@@ -570,17 +570,17 @@ export class PostbackService {
             responseTime: 0,
             sentAt: new Date(),
           });
-          
+
           return [{
             status: 'rejected' as const,
-            reason: { 
-              fraud: true, 
+            reason: {
+              fraud: true,
               riskScore: fraudCheck.riskScore,
-              reasons: fraudCheck.reasons 
+              reasons: fraudCheck.reasons
             }
           }];
         }
-        
+
         if (fraudCheck.riskScore > 30) {
           console.log(`⚠️ High risk postback (Score: ${fraudCheck.riskScore}): ${fraudCheck.reasons.join(', ')}`);
         }
@@ -593,7 +593,7 @@ export class PostbackService {
         .where(eq(postbackTemplates.isActive, true));
 
       console.log(`Found ${relevantPostbacks.length} active postback templates`);
-      
+
       if (relevantPostbacks.length === 0) {
         console.log('No active postback templates found');
         return [];
@@ -631,9 +631,9 @@ export class PostbackService {
         maxRetryDelay: 3600, // 1 hour max
         exponentialBackoff: true
       };
-      
+
       const finalConfig = { ...defaultConfig, ...config };
-      
+
       // Get failed postbacks that need retry
       const failedLogs = await db.select()
         .from(postbackLogs)
@@ -652,11 +652,11 @@ export class PostbackService {
         .filter(({ postback_logs: logs, postback_templates: pb }) => {
           const maxAttempts = pb?.retryAttempts || finalConfig.maxRetryAttempts;
           const canRetry = (logs.retryCount || 0) < maxAttempts;
-          
+
           if (!canRetry) {
             console.log(`Postback ${logs.id} exceeded max retry attempts (${maxAttempts})`);
           }
-          
+
           return canRetry;
         })
         .map(async ({ postback_logs: logs, postback_templates: pb }) => {
@@ -670,8 +670,8 @@ export class PostbackService {
               finalConfig.maxRetryDelay
             );
           }
-          
-          const shouldRetry = !logs.nextRetryAt || 
+
+          const shouldRetry = !logs.nextRetryAt ||
             new Date() >= logs.nextRetryAt;
 
           if (!shouldRetry) {
@@ -684,7 +684,7 @@ export class PostbackService {
 
           // Reconstruct macros from payload
           const macros = logs.payload as PostbackMacros || {};
-          
+
           // Retry the postback
           const result = await this.sendPostback(
             pb.id,
@@ -703,7 +703,7 @@ export class PostbackService {
                 updatedAt: new Date(),
               })
               .where(eq(postbackLogs.id, logs.id));
-              
+
             console.log(`Postback ${logs.id} retry failed, next attempt in ${retryDelay} seconds`);
           } else {
             // Success - update status to sent
@@ -716,7 +716,7 @@ export class PostbackService {
                 updatedAt: new Date(),
               })
               .where(eq(postbackLogs.id, logs.id));
-              
+
             console.log(`Postback ${logs.id} retry succeeded on attempt ${(logs.retryCount || 0) + 1}`);
           }
 
@@ -726,9 +726,9 @@ export class PostbackService {
       const results = await Promise.allSettled(retryPromises);
       const successfulRetries = results.filter(r => r.status === 'fulfilled' && r.value?.success).length;
       const failedRetries = results.filter(r => r.status === 'fulfilled' && !r.value?.success).length;
-      
+
       console.log(`Retry batch completed: ${successfulRetries} successful, ${failedRetries} failed`);
-      
+
       return {
         processed: failedLogs.length,
         successful: successfulRetries,

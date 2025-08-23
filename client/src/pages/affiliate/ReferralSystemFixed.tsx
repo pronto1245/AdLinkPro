@@ -7,15 +7,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Copy, 
-  Share2, 
-  DollarSign, 
-  Users, 
-  TrendingUp, 
-  Award, 
-  Link as LinkIcon, 
-  Target, 
+import {
+  Copy,
+  Share2,
+  DollarSign,
+  Users,
+  TrendingUp,
+  Award,
+  Link as LinkIcon,
+  Target,
   Clock,
   CheckCircle
 } from 'lucide-react';
@@ -51,8 +51,8 @@ const ReferralSystemFixed: React.FC = () => {
       navigator.clipboard.writeText(link);
       setCopied(true);
       toast({
-        title: "Ссылка скопирована!",
-        description: "Реферальная ссылка скопирована в буфер обмена",
+        title: 'Ссылка скопирована!',
+        description: 'Реферальная ссылка скопирована в буфер обмена',
       });
       setTimeout(() => setCopied(false), 2000);
     }
@@ -130,7 +130,7 @@ const ReferralSystemFixed: React.FC = () => {
                   Программа временно приостановлена
                 </CardTitle>
                 <CardDescription className="text-orange-700 dark:text-orange-300">
-                  Ваш рекламодатель временно отключил реферальную программу. 
+                  Ваш рекламодатель временно отключил реферальную программу.
                   Новые приглашения недоступны до возобновления программы.
                 </CardDescription>
               </CardHeader>
@@ -279,7 +279,7 @@ const ReferralSystemFixed: React.FC = () => {
                           {new Date(advertiser.createdAt).toLocaleDateString('ru-RU')}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={advertiser.isActive ? "default" : "secondary"}>
+                          <Badge variant={advertiser.isActive ? 'default' : 'secondary'}>
                             {advertiser.isActive ? 'Активен' : 'Неактивен'}
                           </Badge>
                         </TableCell>
@@ -333,7 +333,7 @@ const ReferralSystemFixed: React.FC = () => {
                           {commission.amount} USD
                         </TableCell>
                         <TableCell>
-                          <Badge variant={commission.status === 'paid' ? "default" : "secondary"}>
+                          <Badge variant={commission.status === 'paid' ? 'default' : 'secondary'}>
                             {commission.status === 'paid' ? 'Выплачено' : 'Ожидает'}
                           </Badge>
                         </TableCell>

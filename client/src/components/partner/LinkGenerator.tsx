@@ -56,14 +56,14 @@ export function LinkGenerator({ offerId, offerName, isApproved = false, accessSt
     );
   }
 
-  // Получаем готовую автоматическую ссылку с сервера  
+  // Получаем готовую автоматическую ссылку с сервера
   const autoTrackingLink = `https://track.platform.com/click?offer=${offerId}&clickid=partner_${Date.now()}&partner_id=PARTNER_ID`;
 
   const handleCopyLink = (url: string) => {
     navigator.clipboard.writeText(url);
     toast({
-      title: "Скопировано",
-      description: "Готовая ссылка с clickid скопирована в буфер обмена"
+      title: 'Скопировано',
+      description: 'Готовая ссылка с clickid скопирована в буфер обмена'
     });
   };
 
@@ -125,7 +125,7 @@ export function LinkGenerator({ offerId, offerName, isApproved = false, accessSt
                   Автоматическая система трекинга
                 </p>
                 <p className="text-blue-700 dark:text-blue-300">
-                  Ваша ссылка уже содержит уникальный clickid для отслеживания конверсий. 
+                  Ваша ссылка уже содержит уникальный clickid для отслеживания конверсий.
                   Никаких дополнительных настроек не требуется - просто используйте готовую ссылку!
                 </p>
               </div>

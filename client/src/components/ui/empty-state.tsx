@@ -46,19 +46,19 @@ export function EmptyState({
       timestamp: new Date().toISOString(),
       details,
     });
-    
+
     if (onRefresh) {
       onRefresh();
     }
   };
 
   return (
-    <Card className={cn("", className)} data-testid="empty-state">
+    <Card className={cn('', className)} data-testid="empty-state">
       <CardContent className="text-center py-8">
         {icon}
         <h3 className="text-lg font-medium mb-2">{title}</h3>
         <p className="text-muted-foreground mb-4">{description}</p>
-        
+
         {/* Primary Actions */}
         <div className="flex flex-col sm:flex-row gap-2 justify-center mb-6">
           {action && (
@@ -67,14 +67,14 @@ export function EmptyState({
               {action.label}
             </Button>
           )}
-          
+
           {onRefresh && (
             <Button onClick={handleRefresh} variant="outline" className="gap-2">
               <RefreshCw className="h-4 w-4" />
               Обновить данные
             </Button>
           )}
-          
+
           {secondaryAction && (
             <Button onClick={secondaryAction.onClick} variant="outline" className="gap-2">
               {secondaryAction.icon}
@@ -92,29 +92,29 @@ export function EmptyState({
                 Отладочная информация
               </span>
             </div>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="text-center">
                 <Badge variant="outline" className="text-xs">
                   Всего: {details.totalItems}
                 </Badge>
               </div>
-              
+
               <div className="text-center">
                 <Badge variant="outline" className="text-xs">
                   Тип: {details.dataType}
                 </Badge>
               </div>
-              
+
               <div className="text-center">
-                <Badge 
-                  variant={details.isArray ? "default" : "destructive"} 
+                <Badge
+                  variant={details.isArray ? 'default' : 'destructive'}
                   className="text-xs"
                 >
-                  {details.isArray ? "Массив" : "Не массив"}
+                  {details.isArray ? 'Массив' : 'Не массив'}
                 </Badge>
               </div>
-              
+
               {details.additionalInfo && (
                 <div className="text-center">
                   <Badge variant="secondary" className="text-xs">

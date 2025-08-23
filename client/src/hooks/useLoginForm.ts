@@ -37,13 +37,13 @@ export function useLoginForm(options: UseLoginFormOptions = {}) {
 
   const handleLogin = useCallback(async (data: LoginFormData) => {
     console.log('[LOGIN_FORM] Starting login process for:', data.email);
-    
+
     clearError();
     setLoading(true);
 
     try {
       const result = await login(data.email, data.password);
-      
+
       if (result.token) {
         toast({
           title: 'Успешный вход',
@@ -62,7 +62,7 @@ export function useLoginForm(options: UseLoginFormOptions = {}) {
           // Get redirect path from URL params or determine by role
           const urlParams = new URLSearchParams(window.location.search);
           const nextPath = urlParams.get('next');
-          
+
           if (nextPath) {
             navigate(decodeURIComponent(nextPath));
           } else {
@@ -79,7 +79,7 @@ export function useLoginForm(options: UseLoginFormOptions = {}) {
     } catch (err) {
       console.error('[LOGIN_FORM] Login error:', err);
       handleError(err, 'Login');
-      
+
       if (options.onError) {
         options.onError(err);
       }
@@ -108,7 +108,7 @@ export function useLoginForm(options: UseLoginFormOptions = {}) {
  */
 function getDefaultPathForRole(role?: string): string {
   if (!role) {return '/dashboard';}
-  
+
   const roleMap: Record<string, string> = {
     'advertiser': '/dashboard/advertiser',
     'partner': '/dashboard/partner',

@@ -1,23 +1,23 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { 
-  Webhook, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Copy, 
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Webhook,
+  Plus,
+  Edit,
+  Trash2,
+  Copy,
   TestTube,
   CheckCircle,
   XCircle,
@@ -27,9 +27,9 @@ import {
   Settings,
   AlertCircle,
   ExternalLink
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface Postback {
   id: string;
@@ -93,7 +93,7 @@ const AVAILABLE_MACROS = [
 ];
 
 export default function PostbackManagement() {
-  const [activeTab, setActiveTab] = useState("postbacks");
+  const [activeTab, setActiveTab] = useState('postbacks');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingPostback, setEditingPostback] = useState<Postback | null>(null);
   const [testingPostback, setTestingPostback] = useState<string | null>(null);
@@ -131,52 +131,52 @@ export default function PostbackManagement() {
       setIsCreateDialogOpen(false);
       setEditingPostback(null);
       toast({
-        title: "Постбек сохранён",
-        description: "Настройки постбека успешно сохранены",
+        title: 'Постбек сохранён',
+        description: 'Настройки постбека успешно сохранены',
       });
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось сохранить постбек",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Не удалось сохранить постбек',
+        variant: 'destructive',
       });
     }
   });
 
   // Delete postback mutation
   const deletePostbackMutation = useMutation({
-    mutationFn: (id: string) => 
+    mutationFn: (id: string) =>
       apiRequest(`/api/affiliate/postbacks/${id}`, {
         method: 'DELETE',
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/affiliate/postbacks'] });
       toast({
-        title: "Постбек удалён",
-        description: "Постбек удалён из системы",
+        title: 'Постбек удалён',
+        description: 'Постбек удалён из системы',
       });
     }
   });
 
   // Test postback mutation
   const testPostbackMutation = useMutation({
-    mutationFn: (id: string) => 
+    mutationFn: (id: string) =>
       apiRequest(`/api/affiliate/postbacks/${id}/test`, {
         method: 'POST',
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/affiliate/postbacks/logs'] });
       toast({
-        title: "Тест отправлен",
-        description: "Тестовый постбек отправлен, проверьте логи",
+        title: 'Тест отправлен',
+        description: 'Тестовый постбек отправлен, проверьте логи',
       });
     },
     onError: () => {
       toast({
-        title: "Ошибка теста",
-        description: "Не удалось отправить тестовый постбек",
-        variant: "destructive",
+        title: 'Ошибка теста',
+        description: 'Не удалось отправить тестовый постбек',
+        variant: 'destructive',
       });
     }
   });
@@ -184,8 +184,8 @@ export default function PostbackManagement() {
   const handleCopyUrl = (url: string) => {
     navigator.clipboard.writeText(url);
     toast({
-      title: "URL скопирован",
-      description: "URL постбека скопирован в буфер обмена",
+      title: 'URL скопирован',
+      description: 'URL постбека скопирован в буфер обмена',
     });
   };
 
@@ -231,7 +231,7 @@ export default function PostbackManagement() {
             Настройка уведомлений о конверсиях для трекеров
           </p>
         </div>
-        
+
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button data-testid="button-create-postback">
@@ -311,7 +311,7 @@ export default function PostbackManagement() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Успешных сегодня</p>
                     <p className="text-2xl font-bold">
-                      {logs.filter(l => l.status === 'sent' && 
+                      {logs.filter(l => l.status === 'sent' &&
                         new Date(l.createdAt).toDateString() === new Date().toDateString()).length}
                     </p>
                   </div>
@@ -326,7 +326,7 @@ export default function PostbackManagement() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Ошибок сегодня</p>
                     <p className="text-2xl font-bold">
-                      {logs.filter(l => l.status === 'failed' && 
+                      {logs.filter(l => l.status === 'failed' &&
                         new Date(l.createdAt).toDateString() === new Date().toDateString()).length}
                     </p>
                   </div>
@@ -404,7 +404,7 @@ export default function PostbackManagement() {
                             )}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={postback.isActive ? "default" : "secondary"}>
+                            <Badge variant={postback.isActive ? 'default' : 'secondary'}>
                               {postback.isActive ? 'Активен' : 'Неактивен'}
                             </Badge>
                           </TableCell>
@@ -422,7 +422,7 @@ export default function PostbackManagement() {
                               >
                                 <Copy className="h-4 w-4" />
                               </Button>
-                              
+
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -433,7 +433,7 @@ export default function PostbackManagement() {
                               >
                                 <TestTube className="h-4 w-4" />
                               </Button>
-                              
+
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -446,7 +446,7 @@ export default function PostbackManagement() {
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              
+
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -516,8 +516,8 @@ export default function PostbackManagement() {
                           </TableCell>
                           <TableCell>
                             {log.responseStatus && (
-                              <Badge 
-                                variant={log.responseStatus < 400 ? "default" : "destructive"}
+                              <Badge
+                                variant={log.responseStatus < 400 ? 'default' : 'destructive'}
                               >
                                 {log.responseStatus}
                               </Badge>
@@ -587,21 +587,21 @@ export default function PostbackManagement() {
                   <div>
                     <h4 className="font-medium mb-2">Keitaro</h4>
                     <code className="text-xs bg-gray-100 p-2 rounded block overflow-x-auto">
-                      https://your-tracker.com/postback?clickid={"{clickid}"}&status={"{status}"}&payout={"{payout}"}
+                      https://your-tracker.com/postback?clickid={'{clickid}'}&status={'{status}'}&payout={'{payout}'}
                     </code>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium mb-2">Binom</h4>
                     <code className="text-xs bg-gray-100 p-2 rounded block overflow-x-auto">
-                      https://your-binom.com/click.php?cnv_id={"{clickid}"}&payout={"{payout}"}
+                      https://your-binom.com/click.php?cnv_id={'{clickid}'}&payout={'{payout}'}
                     </code>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium mb-2">RedTrack</h4>
                     <code className="text-xs bg-gray-100 p-2 rounded block overflow-x-auto">
-                      https://your-redtrack.com/postback?clickid={"{clickid}"}&event_type={"{goal}"}&revenue={"{payout}"}
+                      https://your-redtrack.com/postback?clickid={'{clickid}'}&event_type={'{goal}'}&revenue={'{payout}'}
                     </code>
                   </div>
                 </div>
@@ -625,7 +625,7 @@ export default function PostbackManagement() {
                       <li>• Используйте подпись для проверки подлинности</li>
                     </ul>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium mb-2">Надёжность</h4>
                     <ul className="text-sm text-muted-foreground space-y-1">
@@ -645,13 +645,13 @@ export default function PostbackManagement() {
 }
 
 // Separate component for the postback form
-function PostbackForm({ 
-  postback, 
-  offers, 
-  onSave, 
-  onCancel, 
-  isLoading 
-}: { 
+function PostbackForm({
+  postback,
+  offers,
+  onSave,
+  onCancel,
+  isLoading
+}: {
   postback: Postback | null;
   offers: any[];
   onSave: (data: Partial<Postback>) => void;
@@ -705,7 +705,7 @@ function PostbackForm({
 
         <div>
           <Label htmlFor="method">HTTP метод</Label>
-          <Select value={formData.method} onValueChange={(value: 'GET' | 'POST') => 
+          <Select value={formData.method} onValueChange={(value: 'GET' | 'POST') =>
             setFormData(prev => ({ ...prev, method: value }))
           }>
             <SelectTrigger data-testid="select-postback-method">
@@ -731,14 +731,14 @@ function PostbackForm({
           data-testid="input-postback-url"
         />
         <p className="text-xs text-muted-foreground mt-1">
-          Используйте макросы в фигурных скобках, например {"{clickid}"}
+          Используйте макросы в фигурных скобках, например {'{clickid}'}
         </p>
       </div>
 
       <div>
         <Label htmlFor="offer">Оффер (опционально)</Label>
-        <Select value={formData.offerId || "all"} onValueChange={(value) => 
-          setFormData(prev => ({ ...prev, offerId: value === "all" ? undefined : value }))
+        <Select value={formData.offerId || 'all'} onValueChange={(value) =>
+          setFormData(prev => ({ ...prev, offerId: value === 'all' ? undefined : value }))
         }>
           <SelectTrigger data-testid="select-postback-offer">
             <SelectValue placeholder="Выберите оффер" />
@@ -762,7 +762,7 @@ function PostbackForm({
               <Checkbox
                 id={event.id}
                 checked={formData.events?.includes(event.id)}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   handleEventChange(event.id, checked as boolean)
                 }
                 data-testid={`checkbox-event-${event.id}`}
@@ -821,7 +821,7 @@ function PostbackForm({
           <Checkbox
             id="isActive"
             checked={formData.isActive}
-            onCheckedChange={(checked) => 
+            onCheckedChange={(checked) =>
               setFormData(prev => ({ ...prev, isActive: checked as boolean }))
             }
             data-testid="checkbox-postback-active"
@@ -835,7 +835,7 @@ function PostbackForm({
           <Checkbox
             id="retryEnabled"
             checked={formData.retryEnabled}
-            onCheckedChange={(checked) => 
+            onCheckedChange={(checked) =>
               setFormData(prev => ({ ...prev, retryEnabled: checked as boolean }))
             }
             data-testid="checkbox-postback-retry"

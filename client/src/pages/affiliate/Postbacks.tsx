@@ -12,14 +12,14 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Plus, 
-  Settings, 
-  Play, 
-  Trash2, 
-  Eye, 
-  RefreshCw, 
-  Send, 
+import {
+  Plus,
+  Settings,
+  Play,
+  Trash2,
+  Eye,
+  RefreshCw,
+  Send,
   CheckCircle,
   XCircle,
   Clock,
@@ -103,7 +103,7 @@ const trackerTemplates = {
     },
     statusMap: {
       'lead': '1',
-      'deposit': '2', 
+      'deposit': '2',
       'conversion': '2',
       'approved': '3',
       'hold': '4',
@@ -146,7 +146,7 @@ const trackerTemplates = {
     statusMap: {
       'lead': '1',
       'deposit': '2',
-      'conversion': '2', 
+      'conversion': '2',
       'approved': '3',
       'hold': '4',
       'rejected': '0'
@@ -206,14 +206,14 @@ const defaultProfile: Partial<PostbackProfile> = {
 
 export function AffiliatePostbacks() {
   const { t } = useTranslation();
-  
+
   // DEBUG: Проверяем токены при загрузке
   useEffect(() => {
     console.log('🔍 ОТЛАДКА ТОКЕНОВ ПРИ ЗАГРУЗКЕ:');
     console.log('localStorage.token:', localStorage.getItem('token'));
     console.log('localStorage.auth_token:', localStorage.getItem('auth_token'));
     console.log('Все ключи localStorage:', Object.keys(localStorage));
-    
+
     // Устанавливаем правильный токен если его нет
     const currentToken = localStorage.getItem('token') || localStorage.getItem('auth_token');
     if (!currentToken) {
@@ -236,7 +236,7 @@ export function AffiliatePostbacks() {
           methodValue: JSON.stringify(init.method),
           stack: new Error().stack
         });
-        
+
         if (typeof init.method !== 'string') {
           console.error('❌ BAD METHOD TYPE:', {
             url,
@@ -251,7 +251,7 @@ export function AffiliatePostbacks() {
       }
       return originalFetch.call(this, url, init);
     };
-    
+
     return () => {
       window.fetch = originalFetch;
     };
@@ -309,8 +309,8 @@ export function AffiliatePostbacks() {
     },
     onError: (error) => {
       console.error('Create mutation error:', error);
-      toast({ 
-        title: 'Ошибка создания', 
+      toast({
+        title: 'Ошибка создания',
         description: error.message,
         variant: 'destructive'
       });
@@ -321,17 +321,17 @@ export function AffiliatePostbacks() {
   const updateMutation = useMutation({
     mutationFn: async (profileData: any) => {
       console.log('🔄 Updating profile via apiRequest:', profileData);
-      
+
       if (!profileData || typeof profileData !== 'object') {
         throw new Error('Invalid profile data');
       }
-      
+
       const { id, ...profile } = profileData;
-      
+
       if (!id) {
         throw new Error('Profile ID is required');
       }
-      
+
       const result = await apiRequest(`/api/postback/profiles/${id}`, 'PUT', profile);
       console.log('🔄 Update result:', result);
       return result;
@@ -346,8 +346,8 @@ export function AffiliatePostbacks() {
     },
     onError: (error) => {
       console.error('❌ Update mutation error:', error);
-      toast({ 
-        title: 'Ошибка обновления', 
+      toast({
+        title: 'Ошибка обновления',
         description: error.message,
         variant: 'destructive'
       });
@@ -358,19 +358,19 @@ export function AffiliatePostbacks() {
   const deleteMutation = useMutation({
     mutationFn: async (profileId: string) => {
       console.log('🗑️ DELETE MUTATION - Starting deletion for:', profileId);
-      
+
       if (!profileId) {
         throw new Error('ID профиля не указан');
       }
-      
+
       try {
         const result = await apiRequest(`/api/postback/profiles/${profileId}`, 'DELETE');
         console.log('🗑️ DELETE MUTATION - apiRequest result:', result);
-        
+
         if (!result || !result.success) {
           throw new Error(result?.message || 'Неизвестная ошибка при удалении');
         }
-        
+
         return result;
       } catch (error) {
         console.error('🗑️ DELETE MUTATION - apiRequest error:', error);
@@ -382,11 +382,11 @@ export function AffiliatePostbacks() {
       queryClient.removeQueries({ queryKey: ['/api/postback/profiles'] });
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       queryClient.refetchQueries({ queryKey: ['/api/postback/profiles'] });
-      toast({ 
-        title: 'Успешно удалено', 
-        description: 'Профиль постбека успешно удален из системы' 
+      toast({
+        title: 'Успешно удалено',
+        description: 'Профиль постбека успешно удален из системы'
       });
-      
+
       // Принудительная перезагрузка через небольшую задержку
       setTimeout(() => {
         queryClient.refetchQueries({ queryKey: ['/api/postback/profiles'] });
@@ -394,8 +394,8 @@ export function AffiliatePostbacks() {
     },
     onError: (error: any) => {
       console.error('🗑️ DELETE MUTATION - Error:', error);
-      toast({ 
-        title: t('postbacks.deleteError', 'Ошибка удаления профиля'), 
+      toast({
+        title: t('postbacks.deleteError', 'Ошибка удаления профиля'),
         description: `Не удалось удалить профиль: ${error.message}`,
         variant: 'destructive'
       });
@@ -409,8 +409,8 @@ export function AffiliatePostbacks() {
       return await apiRequest(`/api/postback/test/${profileId}`, 'POST', data);
     },
     onSuccess: (data) => {
-      toast({ 
-        title: data.success ? t('postbacks.testSuccess', 'Тест успешен') : t('postbacks.testFailed', 'Тест неудачен'), 
+      toast({
+        title: data.success ? t('postbacks.testSuccess', 'Тест успешен') : t('postbacks.testFailed', 'Тест неудачен'),
         description: data.message || t('postbacks.postbackSent', 'Постбек отправлен')
       });
       setIsTestModalOpen(false);
@@ -418,8 +418,8 @@ export function AffiliatePostbacks() {
     },
     onError: (error) => {
       console.error('Test mutation error:', error);
-      toast({ 
-        title: t('postbacks.testError', 'Ошибка тестирования'), 
+      toast({
+        title: t('postbacks.testError', 'Ошибка тестирования'),
         description: error.message,
         variant: 'destructive'
       });
@@ -452,7 +452,7 @@ export function AffiliatePostbacks() {
             {Object.entries(trackerTemplates).map(([key, template]) => (
               <Button
                 key={key}
-                variant={selectedTemplate === key ? "default" : "outline"}
+                variant={selectedTemplate === key ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => {
                   setSelectedTemplate(key as keyof typeof trackerTemplates);
@@ -467,10 +467,10 @@ export function AffiliatePostbacks() {
                 data-testid={`template-${key}`}
               >
                 <div className="font-medium text-xs mb-1">
-                  {key === 'keitaro' && '🔥'} 
-                  {key === 'binom' && '⚡'} 
-                  {key === 'redtrack' && '🚀'} 
-                  {key === 'voluum' && '📊'} 
+                  {key === 'keitaro' && '🔥'}
+                  {key === 'binom' && '⚡'}
+                  {key === 'redtrack' && '🚀'}
+                  {key === 'voluum' && '📊'}
                   {key === 'custom' && '⚙️'}
                 </div>
                 <div className="text-xs">{template.name}</div>
@@ -493,7 +493,7 @@ export function AffiliatePostbacks() {
               data-testid="input-profile-name"
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label>{t('postbacks.trackerType', 'Тип трекера')}</Label>
             <Select value={localFormData.tracker_type} onValueChange={(value) => setLocalFormData({ ...localFormData, tracker_type: value as 'keitaro' | 'custom' })}>
@@ -534,7 +534,7 @@ export function AffiliatePostbacks() {
         {/* Endpoint Settings */}
         <div className="space-y-4">
           <h3 className="font-medium">{t('postbacks.endpointSettings', 'Настройки эндпоинта')}</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2 space-y-2">
               <Label>{t('postbacks.endpointUrl', 'URL эндпоинта')}</Label>
@@ -548,8 +548,8 @@ export function AffiliatePostbacks() {
 
             <div className="space-y-2">
               <Label>{t('postbacks.method', 'Метод')}</Label>
-              <Select 
-                value={String(localFormData.method || 'GET')} 
+              <Select
+                value={String(localFormData.method || 'GET')}
                 onValueChange={(value) => {
                   console.log('Method select changed to:', value, typeof value);
                   setLocalFormData({ ...localFormData, method: value as 'GET' | 'POST' });
@@ -621,13 +621,13 @@ export function AffiliatePostbacks() {
           <Button
             onClick={() => {
               console.log('Saving form data:', localFormData);
-              
+
               // Ensure method is a string
               const sanitizedData = {
                 ...localFormData,
                 method: String(localFormData.method || 'GET') as 'GET' | 'POST'
               };
-              
+
               console.log('Sanitized form data:', sanitizedData);
               onSave(sanitizedData);
             }}
@@ -651,7 +651,7 @@ export function AffiliatePostbacks() {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button 
+          <Button
             onClick={() => {
               console.log('🧪 MANUAL TEST CREATE PROFILE');
               const testProfile = {
@@ -703,7 +703,7 @@ export function AffiliatePostbacks() {
                 deletePending: deleteMutation.isPending,
                 testPending: testMutation.isPending
               })}
-              
+
               {profiles?.length > 0 ? profiles.map((profile: PostbackProfile, index: number) => {
                 console.log(`🎨 RENDERING PROFILE #${index}:`, profile);
                 console.log(`🎨 BUTTON STATES FOR ${profile.id}:`, {
@@ -721,7 +721,7 @@ export function AffiliatePostbacks() {
                         <Badge variant="outline">{profile.tracker_type}</Badge>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Badge variant={profile.enabled ? "default" : "secondary"}>
+                        <Badge variant={profile.enabled ? 'default' : 'secondary'}>
                           {profile.enabled ? t('common.active', 'Включен') : t('common.disabled', 'Отключен')}
                         </Badge>
                       </div>
@@ -738,7 +738,7 @@ export function AffiliatePostbacks() {
                       <div>
                         <p className="text-sm font-medium">{t('postbacks.lastDelivery', 'Последняя доставка')}</p>
                         <p className="text-sm text-muted-foreground">
-                          {profile.last_delivery 
+                          {profile.last_delivery
                             ? new Date(profile.last_delivery).toLocaleString('ru-RU')
                             : t('postbacks.never', 'Не было')
                           }
@@ -765,11 +765,11 @@ export function AffiliatePostbacks() {
                           size="sm"
                           onClick={() => {
                             setSelectedProfile(profile);
-                            setTestData({ 
-                              clickid: `test_${Date.now()}`, 
-                              type: 'lead', 
-                              revenue: '100', 
-                              currency: 'USD' 
+                            setTestData({
+                              clickid: `test_${Date.now()}`,
+                              type: 'lead',
+                              revenue: '100',
+                              currency: 'USD'
                             });
                             setIsTestModalOpen(true);
                           }}
@@ -781,7 +781,7 @@ export function AffiliatePostbacks() {
                           <Play className="h-3 w-3 mr-1" />
                           {testMutation.isPending ? 'Тестирование...' : 'Тест'}
                         </Button>
-                        
+
                         {/* ПОЛНОСТЬЮ НОВАЯ КНОПКА РЕДАКТИРОВАНИЯ */}
                         <div
                           onClick={() => {
@@ -823,34 +823,34 @@ export function AffiliatePostbacks() {
                           onClick={async (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            
+
                             console.log('🚨🚨🚨 ПРОСТЕЙШАЯ КНОПКА НАЖАТА!');
                             console.log('🚨 ID профиля:', profile.id);
                             console.log('🚨 Название профиля:', profile.name);
-                            
+
                             const userConfirmed = window.confirm(`Действительно удалить "${profile.name}"?`);
                             console.log('🚨 Подтверждение пользователя:', userConfirmed);
-                            
+
                             if (!userConfirmed) {
                               console.log('🚨 Отменено пользователем');
                               return;
                             }
-                            
+
                             console.log('🚨 Начинаем удаление...');
-                            
+
                             try {
                               // Получаем токен
                               const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
                               console.log('🚨 Токен найден:', token ? 'ДА' : 'НЕТ');
                               console.log('🚨 Длина токена:', token?.length || 0);
-                              
+
                               if (!token) {
                                 alert('Ошибка: токен авторизации не найден!');
                                 return;
                               }
-                              
+
                               console.log('🚨 Отправляем DELETE запрос...');
-                              
+
                               const deleteResponse = await fetch(`/api/postback/profiles/${profile.id}`, {
                                 method: 'DELETE',
                                 headers: {
@@ -858,16 +858,16 @@ export function AffiliatePostbacks() {
                                   'Content-Type': 'application/json'
                                 }
                               });
-                              
+
                               console.log('🚨 Статус ответа:', deleteResponse.status);
                               console.log('🚨 OK:', deleteResponse.ok);
-                              
+
                               if (deleteResponse.ok) {
                                 const jsonResult = await deleteResponse.json();
                                 console.log('🚨 JSON результат:', jsonResult);
-                                
+
                                 alert(`✅ Удаление выполнено: ${jsonResult.message}`);
-                                
+
                                 // Обновляем страницу
                                 console.log('🚨 Перезагружаем страницу...');
                                 window.location.reload();
@@ -876,7 +876,7 @@ export function AffiliatePostbacks() {
                                 console.error('🚨 Ошибка сервера:', errorText);
                                 alert(`❌ Ошибка ${deleteResponse.status}: ${errorText}`);
                               }
-                              
+
                             } catch (error) {
                               console.error('🚨 Исключение при удалении:', error);
                               alert(`❌ Ошибка сети: ${(error as any).message}`);
@@ -987,8 +987,8 @@ export function AffiliatePostbacks() {
                           {delivery.clickid}
                         </TableCell>
                         <TableCell>
-                          <Badge 
-                            variant={delivery.response_code >= 200 && delivery.response_code < 300 ? "default" : "destructive"}
+                          <Badge
+                            variant={delivery.response_code >= 200 && delivery.response_code < 300 ? 'default' : 'destructive'}
                           >
                             {delivery.response_code >= 200 && delivery.response_code < 300 ? (
                               <><CheckCircle className="h-3 w-3 mr-1" />{t('postbacks.success', 'Успех')}</>
@@ -1120,7 +1120,7 @@ export function AffiliatePostbacks() {
               <Button variant="outline" onClick={() => setIsTestModalOpen(false)}>
                 {t('common.cancel', 'Отмена')}
               </Button>
-              <Button 
+              <Button
                 onClick={() => {
                   if (selectedProfile) {
                     testMutation.mutate({

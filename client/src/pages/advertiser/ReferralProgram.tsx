@@ -75,15 +75,15 @@ export default function ReferralProgram() {
 
   // Мутация для переключения программы
   const toggleProgramMutation = useMutation({
-    mutationFn: (enabled: boolean) => 
+    mutationFn: (enabled: boolean) =>
       apiRequest('/api/advertiser/referral-program/toggle', 'POST', { enabled }),
     onSuccess: (data) => {
       setIsEnabled(data.enabled);
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/referral-stats'] });
       toast({
         title: data.enabled ? 'Программа включена' : 'Программа отключена',
-        description: data.enabled 
-          ? 'Партнеры теперь могут приглашать новых партнеров' 
+        description: data.enabled
+          ? 'Партнеры теперь могут приглашать новых партнеров'
           : 'Реферальная программа временно приостановлена'
       });
     },
@@ -155,7 +155,7 @@ export default function ReferralProgram() {
           </div>
           <Separator />
           <div className="text-sm text-muted-foreground">
-            {isEnabled 
+            {isEnabled
               ? '✅ Программа активна — партнеры могут приглашать новых участников'
               : '⏸️ Программа приостановлена — новые приглашения недоступны'
             }
@@ -268,7 +268,7 @@ export default function ReferralProgram() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
+            <Button
               onClick={() => toggleProgramMutation.mutate(true)}
               disabled={toggleProgramMutation.isPending}
               data-testid="button-enable-referral"
@@ -342,8 +342,8 @@ export default function ReferralProgram() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-orange-600">
-                    ${referralStats.commissionStats.totalTransactions > 0 ? 
-                      (parseFloat(referralStats.commissionStats.paidCommissions) / referralStats.commissionStats.totalTransactions).toFixed(2) : 
+                    ${referralStats.commissionStats.totalTransactions > 0 ?
+                      (parseFloat(referralStats.commissionStats.paidCommissions) / referralStats.commissionStats.totalTransactions).toFixed(2) :
                       '0.00'
                     }
                   </div>

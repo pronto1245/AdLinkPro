@@ -57,7 +57,7 @@ export function NotificationToast({
   }, [duration, onClose]);
 
   return (
-    <div 
+    <div
       className={`
         fixed top-4 right-4 z-50 max-w-md p-4 border rounded-lg shadow-lg 
         ${colorMap[type]} 
@@ -67,7 +67,7 @@ export function NotificationToast({
     >
       <div className="flex items-start space-x-3">
         <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${iconColorMap[type]}`} />
-        
+
         <div className="flex-1 space-y-1">
           <h4 className="text-sm font-semibold">
             {title}
@@ -75,7 +75,7 @@ export function NotificationToast({
           <p className="text-sm opacity-90">
             {message}
           </p>
-          
+
           {action && (
             <div className="pt-2">
               <Button

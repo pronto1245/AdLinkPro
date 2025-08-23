@@ -1,5 +1,5 @@
 // Simple random ID generator to replace nanoid for better compatibility
-function generateRandomId(length: number = 32): string {
+function generateRandomId(length = 32): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
@@ -103,7 +103,7 @@ export const sanitizeInput = {
     const cleaned = telegram
       .trim()
       .replace(/[^a-zA-Z0-9_@]/g, '');
-    
+
     // Ensure it starts with @
     return cleaned.startsWith('@') ? cleaned : `@${cleaned}`;
   },
@@ -176,22 +176,22 @@ export class RateLimitTracker {
 export const tokenStorage = {
   setToken: (token: string): void => {
     if (typeof localStorage === 'undefined') {return;}
-    
+
     // Clear any old tokens from different storage approaches
     localStorage.removeItem('auth:secure_token');
     localStorage.removeItem('auth:token');
-    
+
     // Use single consistent key for token storage
     localStorage.setItem('token', token);
   },
 
   getToken: (): string | null => {
     if (typeof localStorage === 'undefined') {return null;}
-    
+
     // Check primary token storage
     const token = localStorage.getItem('token');
     if (token) {return token;}
-    
+
     // Fallback to legacy storage for compatibility
     const authToken = localStorage.getItem('auth:token');
     if (authToken) {
@@ -200,7 +200,7 @@ export const tokenStorage = {
       localStorage.removeItem('auth:token');
       return authToken;
     }
-    
+
     // Check secure token storage and migrate if found
     try {
       const secureTokenStr = localStorage.getItem('auth:secure_token');
@@ -217,13 +217,13 @@ export const tokenStorage = {
       // If secure token is corrupted, clean it up
       localStorage.removeItem('auth:secure_token');
     }
-    
+
     return null;
   },
 
   clearToken: (): void => {
     if (typeof localStorage === 'undefined') {return;}
-    
+
     // Clear all possible token storage locations
     localStorage.removeItem('token');
     localStorage.removeItem('auth:token');

@@ -54,9 +54,9 @@ export function useAuthError(): UseAuthErrorReturn {
         details: errorInput,
         timestamp: new Date()
       };
-      
+
       setErrorState(authError);
-      
+
       // Show toast for user-facing errors
       if (errorInput.status !== 401) { // Don't show toast for auth failures - handled by login form
         toast({
@@ -72,9 +72,9 @@ export function useAuthError(): UseAuthErrorReturn {
         details: errorInput,
         timestamp: new Date()
       };
-      
+
       setErrorState(authError);
-      
+
       toast({
         title: 'Ошибка',
         description: authError.message,
@@ -87,9 +87,9 @@ export function useAuthError(): UseAuthErrorReturn {
         details: errorInput,
         timestamp: new Date()
       };
-      
+
       setErrorState(authError);
-      
+
       toast({
         title: 'Ошибка',
         description: authError.message,

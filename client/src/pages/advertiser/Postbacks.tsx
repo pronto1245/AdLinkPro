@@ -11,15 +11,15 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Plus, 
-  Settings, 
-  Play, 
-  Trash2, 
-  Eye, 
-  Copy, 
-  RefreshCw, 
-  Send, 
+import {
+  Plus,
+  Settings,
+  Play,
+  Trash2,
+  Eye,
+  Copy,
+  RefreshCw,
+  Send,
   AlertTriangle,
   CheckCircle,
   XCircle,
@@ -265,7 +265,7 @@ export function AdvertiserPostbacks() {
               data-testid="input-profile-name"
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label>Тип трекера</Label>
             <Select value={formData.trackerType} onValueChange={(value) => setFormData({ ...formData, trackerType: value as 'keitaro' | 'custom' })}>
@@ -308,7 +308,7 @@ export function AdvertiserPostbacks() {
         {/* Endpoint Settings */}
         <div className="space-y-4">
           <h3 className="font-medium">Настройки эндпоинта</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2 space-y-2">
               <Label>URL эндпоинта</Label>
@@ -638,7 +638,7 @@ export function AdvertiserPostbacks() {
                       <div>
                         <p className="text-sm font-medium">Последняя доставка</p>
                         <p className="text-sm text-muted-foreground">
-                          {profile.lastDelivery 
+                          {profile.lastDelivery
                             ? new Date(profile.lastDelivery).toLocaleString('ru-RU')
                             : 'Не было'
                           }
@@ -756,7 +756,7 @@ export function AdvertiserPostbacks() {
                         </TableCell>
                         <TableCell>
                           {delivery.responseCode ? (
-                            <Badge variant={delivery.responseCode >= 200 && delivery.responseCode < 300 ? "default" : "destructive"}>
+                            <Badge variant={delivery.responseCode >= 200 && delivery.responseCode < 300 ? 'default' : 'destructive'}>
                               {delivery.responseCode}
                             </Badge>
                           ) : delivery.error ? (
@@ -904,9 +904,9 @@ export function AdvertiserPostbacks() {
                 Отмена
               </Button>
               <Button
-                onClick={() => selectedProfile && testMutation.mutate({ 
-                  profileId: selectedProfile.id, 
-                  testData 
+                onClick={() => selectedProfile && testMutation.mutate({
+                  profileId: selectedProfile.id,
+                  testData
                 })}
                 disabled={!testData.clickid || testMutation.isPending}
                 data-testid="button-test-send"

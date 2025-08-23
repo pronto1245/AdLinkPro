@@ -7,27 +7,27 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { RequestAccessModal } from '@/components/modals/RequestAccessModal';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { 
-  Plus, 
-  Search, 
-  MoreVertical, 
-  Edit, 
-  Copy, 
-  Trash2, 
-  BarChart3, 
-  Settings, 
-  Globe, 
-  Smartphone, 
+import {
+  Plus,
+  Search,
+  MoreVertical,
+  Edit,
+  Copy,
+  Trash2,
+  BarChart3,
+  Settings,
+  Globe,
+  Smartphone,
   Monitor,
   Eye,
   PlayCircle,
@@ -64,7 +64,7 @@ interface PartnerOffer {
 
 const OFFER_CATEGORIES = [
   'Finance',
-  'Gaming', 
+  'Gaming',
   'Dating',
   'E-commerce',
   'Health',
@@ -89,12 +89,12 @@ export default function AffiliateOffers() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // Фильтры
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  
+
   // Модальное окно запроса доступа
   const [requestAccessModal, setRequestAccessModal] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<PartnerOffer | null>(null);
@@ -111,7 +111,7 @@ export default function AffiliateOffers() {
                          (typeof offer.description === 'string' ? offer.description.toLowerCase().includes(searchTerm.toLowerCase()) : false);
     const matchesStatus = selectedStatus === 'all' || offer.status === selectedStatus;
     const matchesCategory = selectedCategory === 'all' || offer.category === selectedCategory;
-    
+
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
@@ -122,20 +122,20 @@ export default function AffiliateOffers() {
 
   const getPayoutTypeLabel = (type: string) => {
     const types: Record<string, string> = {
-      cpa: "CPA",
-      cps: "CPS", 
-      cpl: "CPL",
-      cpm: "CPM",
-      cpc: "CPC",
-      revshare: "RevShare",
+      cpa: 'CPA',
+      cps: 'CPS',
+      cpl: 'CPL',
+      cpm: 'CPM',
+      cpc: 'CPC',
+      revshare: 'RevShare',
     };
     return types[type] || type.toUpperCase();
   };
 
-  const copyToClipboard = (text: string, label: string = 'Данные') => {
+  const copyToClipboard = (text: string, label = 'Данные') => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Скопировано",
+      title: 'Скопировано',
       description: `${label} скопированы в буфер обмена`,
     });
   };
@@ -291,8 +291,8 @@ export default function AffiliateOffers() {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             {offer.logo && (
-                              <img 
-                                src={offer.logo} 
+                              <img
+                                src={offer.logo}
                                 alt={offer.name}
                                 className="w-10 h-10 rounded-lg object-cover"
                               />
@@ -395,14 +395,14 @@ export default function AffiliateOffers() {
                                   Просмотр деталей
                                 </Link>
                               </DropdownMenuItem>
-                              
+
                               {offer.partnerApprovalType === 'manual' && !offer.isApproved && !offer.hasAccessRequest && (
                                 <DropdownMenuItem onClick={() => handleRequestAccess(offer)}>
                                   <Send className="h-4 w-4 mr-2 text-orange-600" />
                                   Запросить доступ
                                 </DropdownMenuItem>
                               )}
-                              
+
                               {offer.partnerLink && (
                                 <DropdownMenuItem onClick={() => copyToClipboard(offer.partnerLink, 'Партнерская ссылка')}>
                                   <Copy className="h-4 w-4 mr-2 text-purple-600" />

@@ -35,11 +35,11 @@ export function routeByRole(role: string | null | undefined): string {
 
   // Normalize role string (handle case variations and trim whitespace)
   const normalizedRole = role.toLowerCase().trim();
-  
+
   // Handle role variations and aliases
   const roleMapping: Record<string, UserRole> = {
     'partner': 'partner',
-    'affiliate': 'affiliate', 
+    'affiliate': 'affiliate',
     'advertiser': 'advertiser',
     'owner': 'owner',
     'super_admin': 'super_admin',
@@ -86,7 +86,7 @@ export function getRoleFromRoute(route: string): UserRole | null {
  */
 export function extractRoleFromToken(token: string | null): string | null {
   if (!token) {return null;}
-  
+
   try {
     const payload = JSON.parse(atob((token.split('.')[1] || '').replace(/-/g,'+').replace(/_/g,'/')));
     return String(payload.role || '').trim();

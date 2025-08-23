@@ -92,15 +92,15 @@ export default function AdvertiserPostbackSettings() {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/postback/profiles'] });
       setShowCreateForm(false);
       toast({
-        title: "Успешно",
-        description: "Профиль постбека создан",
+        title: 'Успешно',
+        description: 'Профиль постбека создан',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось создать профиль",
-        variant: "destructive" as const,
+        title: 'Ошибка',
+        description: error.message || 'Не удалось создать профиль',
+        variant: 'destructive' as const,
       });
     },
   });
@@ -126,45 +126,45 @@ export default function AdvertiserPostbackSettings() {
     onSuccess: (response: any) => {
       if (response.success) {
         toast({
-          title: "Тест успешен",
+          title: 'Тест успешен',
           description: `Статус: ${response.response?.status || 'OK'} (${response.response?.time || 0}ms)`,
         });
       } else {
         toast({
-          title: "Ошибка теста",
+          title: 'Ошибка теста',
           description: response.error || `HTTP ${response.response?.status || 'Unknown'}`,
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
     },
     onError: (error: any) => {
       console.error('Test error:', error);
       toast({
-        title: "Ошибка",
-        description: error.message || "Произошла ошибка при тестировании постбека",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Произошла ошибка при тестировании постбека',
+        variant: 'destructive',
       });
     },
   });
 
   // Update profile mutation
   const updateProfileMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string, _data: any }) => 
+    mutationFn: ({ id, data }: { id: string, _data: any }) =>
       apiRequest(`/api/advertiser/postback/profiles/${id}`, 'PUT', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/postback/profiles'] });
       setShowEditForm(false);
       setEditingProfile(null);
       toast({
-        title: "Успешно",
-        description: "Профиль постбека обновлен",
+        title: 'Успешно',
+        description: 'Профиль постбека обновлен',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось обновить профиль",
-        variant: "destructive" as const,
+        title: 'Ошибка',
+        description: error.message || 'Не удалось обновить профиль',
+        variant: 'destructive' as const,
       });
     },
   });
@@ -175,15 +175,15 @@ export default function AdvertiserPostbackSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/postback/profiles'] });
       toast({
-        title: "Успешно",
-        description: "Профиль постбека удален",
+        title: 'Успешно',
+        description: 'Профиль постбека удален',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось удалить профиль",
-        variant: "destructive" as const,
+        title: 'Ошибка',
+        description: error.message || 'Не удалось удалить профиль',
+        variant: 'destructive' as const,
       });
     },
   });
@@ -224,7 +224,7 @@ export default function AdvertiserPostbackSettings() {
 
   const handleUpdateProfile = (formData: FormData) => {
     if (!editingProfile) {return;}
-    
+
     const data = {
       name: formData.get('name'),
       tracker_type: formData.get('tracker_type'),
@@ -235,7 +235,7 @@ export default function AdvertiserPostbackSettings() {
       partners: formData.getAll('partners'),
       enabled: formData.get('enabled') === 'on',
     };
-    
+
     updateProfileMutation.mutate({ id: editingProfile.id, data });
   };
 
@@ -334,11 +334,11 @@ export default function AdvertiserPostbackSettings() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <CardTitle className="text-lg">{profile.name}</CardTitle>
-                        <Badge variant={profile.enabled ? "default" : "secondary"}>
-                          {profile.enabled ? "Активен" : "Отключен"}
+                        <Badge variant={profile.enabled ? 'default' : 'secondary'}>
+                          {profile.enabled ? 'Активен' : 'Отключен'}
                         </Badge>
-                        <Badge 
-                          variant={profile.status === 'active' ? "default" : profile.status === 'error' ? "destructive" : "secondary"}
+                        <Badge
+                          variant={profile.status === 'active' ? 'default' : profile.status === 'error' ? 'destructive' : 'secondary'}
                         >
                           {profile.status === 'active' ? 'Работает' : profile.status === 'error' ? 'Ошибка' : 'Отключен'}
                         </Badge>
@@ -482,8 +482,8 @@ export default function AdvertiserPostbackSettings() {
                             </td>
                             <td className="p-2">
                               {log.response_status && (
-                                <Badge 
-                                  variant={log.response_status < 400 ? "default" : "destructive"}
+                                <Badge
+                                  variant={log.response_status < 400 ? 'default' : 'destructive'}
                                   className="font-mono"
                                 >
                                   {log.response_status}
@@ -524,7 +524,7 @@ export default function AdvertiserPostbackSettings() {
                 <p className="text-xs text-muted-foreground">постбеков за все время</p>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Успешность</CardTitle>
@@ -538,7 +538,7 @@ export default function AdvertiserPostbackSettings() {
                 <p className="text-xs text-muted-foreground">средняя по всем профилям</p>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Время ответа</CardTitle>
@@ -641,7 +641,7 @@ export default function AdvertiserPostbackSettings() {
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            
+
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
@@ -649,11 +649,11 @@ export default function AdvertiserPostbackSettings() {
             }} className="space-y-4">
               <div>
                 <Label htmlFor="edit-name">Название профиля</Label>
-                <Input 
-                  id="edit-name" 
-                  name="name" 
+                <Input
+                  id="edit-name"
+                  name="name"
                   defaultValue={editingProfile.name}
-                  required 
+                  required
                 />
               </div>
 
@@ -675,13 +675,13 @@ export default function AdvertiserPostbackSettings() {
 
               <div>
                 <Label htmlFor="edit-endpoint-url">URL постбека</Label>
-                <Textarea 
-                  id="edit-endpoint-url" 
-                  name="endpoint_url" 
+                <Textarea
+                  id="edit-endpoint-url"
+                  name="endpoint_url"
                   defaultValue={editingProfile.endpoint_url}
                   placeholder="https://your-tracker.com/postback?clickid={clickid}&status={status}&revenue={revenue}"
                   rows={3}
-                  required 
+                  required
                 />
               </div>
 
@@ -703,9 +703,9 @@ export default function AdvertiserPostbackSettings() {
                 <div className="grid grid-cols-2 gap-2">
                   {['lp_click', 'lead', 'deposit', 'conversion'].map(event => (
                     <label key={event} className="flex items-center space-x-2">
-                      <input 
-                        type="checkbox" 
-                        name="events" 
+                      <input
+                        type="checkbox"
+                        name="events"
                         value={event}
                         defaultChecked={editingProfile.events?.includes(event)}
                       />
@@ -720,9 +720,9 @@ export default function AdvertiserPostbackSettings() {
                 <div className="max-h-32 overflow-y-auto border rounded p-2">
                   {offers.map((offer: any) => (
                     <label key={offer.id} className="flex items-center space-x-2 py-1">
-                      <input 
-                        type="checkbox" 
-                        name="offers" 
+                      <input
+                        type="checkbox"
+                        name="offers"
                         value={offer.id}
                         defaultChecked={editingProfile.offers?.includes(offer.id)}
                       />
@@ -733,9 +733,9 @@ export default function AdvertiserPostbackSettings() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <input 
-                  type="checkbox" 
-                  id="edit-enabled" 
+                <input
+                  type="checkbox"
+                  id="edit-enabled"
                   name="enabled"
                   defaultChecked={editingProfile.enabled}
                 />
@@ -743,15 +743,15 @@ export default function AdvertiserPostbackSettings() {
               </div>
 
               <div className="flex space-x-2 pt-4">
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={updateProfileMutation.isPending}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   {updateProfileMutation.isPending ? 'Сохранение...' : 'Сохранить'}
                 </Button>
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   variant="outline"
                   onClick={() => {
                     setShowEditForm(false);
@@ -774,7 +774,7 @@ export default function AdvertiserPostbackSettings() {
               <CardTitle>Создать профиль постбека</CardTitle>
             </CardHeader>
             <CardContent>
-              <form 
+              <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleCreateProfile(new FormData(e.currentTarget));
@@ -784,11 +784,11 @@ export default function AdvertiserPostbackSettings() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="name">Название профиля</Label>
-                    <Input 
-                      id="name" 
-                      name="name" 
+                    <Input
+                      id="name"
+                      name="name"
                       placeholder="Например: Main Analytics Tracker"
-                      required 
+                      required
                     />
                   </div>
 
@@ -811,12 +811,12 @@ export default function AdvertiserPostbackSettings() {
 
                 <div>
                   <Label htmlFor="endpoint_url">URL постбека</Label>
-                  <Textarea 
-                    id="endpoint_url" 
+                  <Textarea
+                    id="endpoint_url"
                     name="endpoint_url"
                     placeholder="https://your-tracker.com/postback?clickid={clickid}&status={status}&revenue={revenue}&offer_id={offer_id}&partner_id={partner_id}"
                     rows={3}
-                    required 
+                    required
                   />
                 </div>
 
@@ -841,15 +841,15 @@ export default function AdvertiserPostbackSettings() {
                 </div>
 
                 <div className="flex justify-end gap-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => setShowCreateForm(false)}
                   >
                     Отмена
                   </Button>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={createProfileMutation.isPending}
                     data-testid="button-save-advertiser-postback"
                   >

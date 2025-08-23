@@ -9,13 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown, 
-  CreditCard, 
-  Wallet, 
-  ArrowUpCircle, 
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  CreditCard,
+  Wallet,
+  ArrowUpCircle,
   ArrowDownCircle,
   Clock,
   AlertCircle,
@@ -93,47 +93,47 @@ export default function AdvertiserFinances() {
 
   const handleCreateInvoice = () => {
     toast({
-      title: "Создание инвойса",
-      description: "Функция создания инвойса в разработке",
+      title: 'Создание инвойса',
+      description: 'Функция создания инвойса в разработке',
     });
   };
 
   const handleSetupBudgets = () => {
     toast({
-      title: "Настройка бюджетов",
-      description: "Функция планирования бюджетов в разработке",
+      title: 'Настройка бюджетов',
+      description: 'Функция планирования бюджетов в разработке',
     });
   };
 
   const handleAddFunds = () => {
     toast({
-      title: "Пополнение баланса",
-      description: "Перейдите на вкладку 'Пополнение' для добавления средств",
+      title: 'Пополнение баланса',
+      description: 'Перейдите на вкладку \'Пополнение\' для добавления средств',
     });
   };
 
   const handleViewPayouts = () => {
     toast({
-      title: "Выплаты партнёрам",
-      description: "Функция просмотра выплат в разработке",
+      title: 'Выплаты партнёрам',
+      description: 'Функция просмотра выплат в разработке',
     });
   };
 
   const handleDeposit = () => {
     if (!depositAmount || !selectedMethod) {
       toast({
-        title: "Ошибка",
-        description: "Укажите сумму и способ пополнения",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Укажите сумму и способ пополнения',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     toast({
-      title: "Запрос на пополнение",
+      title: 'Запрос на пополнение',
       description: `Запрос на пополнение $${depositAmount} через ${selectedMethod} отправлен`,
     });
-    
+
     setDepositAmount('');
     setSelectedMethod('');
   };
@@ -279,7 +279,7 @@ export default function AdvertiserFinances() {
                           <div className="font-medium">
                             {transaction.type === 'deposit' ? '+' : '-'}${transaction.amount.toFixed(2)}
                           </div>
-                          <Badge 
+                          <Badge
                             className={`text-xs ${getStatusColor(transaction.status)}`}
                             data-testid={`status-${transaction.status}`}
                           >
@@ -339,8 +339,8 @@ export default function AdvertiserFinances() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button 
-                    className="w-full" 
+                  <Button
+                    className="w-full"
                     disabled={!depositAmount || !selectedMethod}
                     onClick={handleDeposit}
                     data-testid="button-deposit"

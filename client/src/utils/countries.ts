@@ -202,7 +202,7 @@ const countryNameToCode: Record<string, string> = {
   'перу': 'PE',
   'венесуэла': 'VE',
   'греция': 'GR',
-  
+
   // Английские названия
   'russia': 'RU',
   'united states': 'US',
@@ -261,7 +261,7 @@ const countryNameToCode: Record<string, string> = {
   'colombia': 'CO',
   'peru': 'PE',
   'venezuela': 'VE',
-  
+
   // Дополнительные страны
   'croatia': 'HR',
   'хорватия': 'HR',
@@ -416,7 +416,7 @@ const countryNameToCode: Record<string, string> = {
   'белиз': 'BZ',
   'el salvador': 'SV',
   'сальвадор': 'SV',
-  
+
   // Дополнительные африканские страны
   'angola': 'AO',
   'ангола': 'AO',
@@ -452,35 +452,35 @@ const countryNameToCode: Record<string, string> = {
 
 export function getCountryName(input: string): string {
   if (!input) {return '';}
-  
+
   // Сначала попробуем использовать как код
   if (countries[input.toUpperCase()]) {
     return countries[input.toUpperCase()].name;
   }
-  
+
   // Затем попробуем конвертировать название в код
   const countryCode = getCountryCodeByName(input);
   if (countryCode && countries[countryCode]) {
     return countries[countryCode].name;
   }
-  
+
   return input;
 }
 
 export function getCountryFlag(input: string): string {
   if (!input) {return '🌍';}
-  
+
   // Сначала попробуем использовать как код
   if (countries[input.toUpperCase()]) {
     return countries[input.toUpperCase()].flag;
   }
-  
+
   // Затем попробуем конвертировать название в код
   const countryCode = getCountryCodeByName(input);
   if (countryCode && countries[countryCode]) {
     return countries[countryCode].flag;
   }
-  
+
   return '🌍';
 }
 
@@ -491,40 +491,40 @@ export function getCountryInfo(code: string): Country {
 // Функция для конвертации названия страны в код
 export function getCountryCodeByName(name: string): string {
   if (!name) {return '';}
-  
+
   // Если это уже код (2 буквы в верхнем регистре)
   if (name.length === 2 && name === name.toUpperCase()) {
     return name;
   }
-  
+
   const normalizedName = name.toLowerCase().trim();
-  
+
   // Точное совпадение
   const exactCode = countryNameToCode[normalizedName];
   if (exactCode) {
     return exactCode;
   }
-  
+
   // Пытаемся найти частичное совпадение
   for (const [countryName, countryCode] of Object.entries(countryNameToCode)) {
     if (countryName.includes(normalizedName) || normalizedName.includes(countryName)) {
       return countryCode;
     }
   }
-  
+
   // Специальная обработка для популярных стран
   const specialCases: Record<string, string> = {
     'france': 'FR',
     'франция': 'FR',
-    'turkey': 'TR', 
+    'turkey': 'TR',
     'турция': 'TR'
   };
-  
+
   const specialCode = specialCases[normalizedName];
   if (specialCode) {
     return specialCode;
   }
-  
+
   // Если ничего не найдено, возвращаем как есть в верхнем регистре (максимум 2 символа)
   return name.toUpperCase().substring(0, 2);
 }
@@ -533,7 +533,7 @@ export function formatCountries(countries: any): string {
   if (!countries || !Array.isArray(countries)) {
     return 'Все ГЕО';
   }
-  
+
   // Если это простой массив строк (коды стран)
   if (typeof countries[0] === 'string') {
     return countries.map(countryCode => {
@@ -542,7 +542,7 @@ export function formatCountries(countries: any): string {
       return `${flag} ${countryName}`;
     }).join(', ');
   }
-  
+
   // Если это массив объектов с полями code, flag, name
   return countries.map(country => {
     if (typeof country === 'object' && country.code) {
@@ -590,7 +590,7 @@ export function parseCountries(countries: any): Country[] {
       { code: 'US', name: 'США', flag: '🇺🇸' }
     ];
   }
-  
+
   // Если это простой массив строк (коды или названия стран)
   if (countries.length > 0 && typeof countries[0] === 'string') {
     return countries.map(item => {
@@ -599,7 +599,7 @@ export function parseCountries(countries: any): Country[] {
       return getCountryInfo(code);
     });
   }
-  
+
   // Если это массив объектов с полями code, flag, name
   return countries.map(country => {
     if (typeof country === 'object' && country.code) {

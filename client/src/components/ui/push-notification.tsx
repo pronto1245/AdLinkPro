@@ -18,7 +18,7 @@ interface PushNotificationProps {
 }
 
 export function PushNotification({
-  id,
+  id: _id,
   type,
   title,
   message,
@@ -32,7 +32,7 @@ export function PushNotification({
   useEffect(() => {
     // Анимация появления
     const timer = setTimeout(() => setIsVisible(true), 100);
-    
+
     // Автоматическое скрытие через 7 секунд
     const hideTimer = setTimeout(() => {
       handleClose();
@@ -94,7 +94,7 @@ export function PushNotification({
   };
 
   return (
-    <div 
+    <div
       className={`fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out transform ${
         isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
       }`}
@@ -112,7 +112,7 @@ export function PushNotification({
                   {getBadgeText()}
                 </Badge>
               </div>
-              
+
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">
                 {message}
               </p>
@@ -131,12 +131,12 @@ export function PushNotification({
 
               <div className="flex items-center justify-between mt-3">
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {formatDistanceToNow(new Date(createdAt), { 
-                    addSuffix: true, 
-                    locale: ru 
+                  {formatDistanceToNow(new Date(createdAt), {
+                    addSuffix: true,
+                    locale: ru
                   })}
                 </span>
-                
+
                 <div className="flex gap-1">
                   {onMarkAsRead && (
                     <Button

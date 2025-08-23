@@ -132,7 +132,6 @@ export default function AdvertiserProfile() {
   });
 
 
-
   const { data: webhookSettings, isLoading: webhookLoading } = useQuery<WebhookSettings>({
     queryKey: ['/api/advertiser/profile/webhook']
   });
@@ -141,7 +140,7 @@ export default function AdvertiserProfile() {
     if (user) {
       setFormData({
         firstName: user.firstName || '',
-        lastName: user.lastName || '', 
+        lastName: user.lastName || '',
         email: user.email || '',
         phone: (user as any).phone || '',
         company: user.company || '',
@@ -163,7 +162,7 @@ export default function AdvertiserProfile() {
           }
         }
       });
-      
+
       setNotificationForm({
         email: (user as any).settings?.notifications?.email || false,
         telegram: (user as any).settings?.notifications?.telegram || false,
@@ -171,7 +170,7 @@ export default function AdvertiserProfile() {
       });
 
       setTelegramChatId((user as any).telegramChatId ? String((user as any).telegramChatId) : '');
-      
+
       // Также обновляем formData с Telegram полем
       setFormData(prev => ({
         ...prev,
@@ -198,17 +197,17 @@ export default function AdvertiserProfile() {
     },
     onSuccess: () => {
       toast({
-        title: "Профиль обновлен",
-        description: "Данные профиля успешно сохранены"
+        title: 'Профиль обновлен',
+        description: 'Данные профиля успешно сохранены'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       setIsEditing(false);
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось обновить профиль",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось обновить профиль',
+        variant: 'destructive'
       });
     }
   });
@@ -219,38 +218,38 @@ export default function AdvertiserProfile() {
     },
     onSuccess: () => {
       toast({
-        title: "Пароль изменен",
-        description: "Пароль успешно обновлен"
+        title: 'Пароль изменен',
+        description: 'Пароль успешно обновлен'
       });
       setNewPassword({ current: '', new: '', confirm: '' });
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось изменить пароль",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось изменить пароль',
+        variant: 'destructive'
       });
     }
   });
 
   // Removed 2FA Toggle Mutation - 2FA is disabled
-  
+
   const generateTokenMutation = useMutation({
     mutationFn: async (tokenName: string) => {
       return apiRequest('/api/advertiser/api-tokens', 'POST', { name: tokenName });
     },
     onSuccess: () => {
       toast({
-        title: "Токен создан",
-        description: "Новый API токен успешно создан"
+        title: 'Токен создан',
+        description: 'Новый API токен успешно создан'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/api-tokens'] });
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось создать токен",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось создать токен',
+        variant: 'destructive'
       });
     }
   });
@@ -261,20 +260,19 @@ export default function AdvertiserProfile() {
     },
     onSuccess: () => {
       toast({
-        title: "Токен удален",
-        description: "API токен успешно удален"
+        title: 'Токен удален',
+        description: 'API токен успешно удален'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/api-tokens'] });
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось удалить токен",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось удалить токен',
+        variant: 'destructive'
       });
     }
   });
-
 
 
   const updateWebhookMutation = useMutation({
@@ -283,16 +281,16 @@ export default function AdvertiserProfile() {
     },
     onSuccess: () => {
       toast({
-        title: "Webhook обновлен",
-        description: "Настройки webhook успешно сохранены"
+        title: 'Webhook обновлен',
+        description: 'Настройки webhook успешно сохранены'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/webhook'] });
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось обновить webhook",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось обновить webhook',
+        variant: 'destructive'
       });
     }
   });
@@ -303,16 +301,16 @@ export default function AdvertiserProfile() {
     },
     onSuccess: () => {
       toast({
-        title: "Уведомления обновлены",
-        description: "Настройки уведомлений успешно сохранены"
+        title: 'Уведомления обновлены',
+        description: 'Настройки уведомлений успешно сохранены'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось обновить уведомления",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось обновить уведомления',
+        variant: 'destructive'
       });
     }
   });
@@ -323,27 +321,27 @@ export default function AdvertiserProfile() {
     },
     onSuccess: () => {
       toast({
-        title: "Telegram привязан",
-        description: "Аккаунт Telegram успешно привязан к профилю"
+        title: 'Telegram привязан',
+        description: 'Аккаунт Telegram успешно привязан к профилю'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
     },
     onError: () => {
       toast({
-        title: "Ошибка привязки",
-        description: "Не удалось привязать Telegram аккаунт",
-        variant: "destructive"
+        title: 'Ошибка привязки',
+        description: 'Не удалось привязать Telegram аккаунт',
+        variant: 'destructive'
       });
     }
   });
 
   const testTelegramMutation = useMutation({
     mutationFn: async (type: string) => {
-      return apiRequest('/api/telegram/test', 'POST', { 
-        userId: user?.id, 
+      return apiRequest('/api/telegram/test', 'POST', {
+        userId: user?.id,
         type: type, _data: {
           offerName: 'Test Offer',
-          partnerName: 'Test Partner', 
+          partnerName: 'Test Partner',
           amount: 100,
           currency: 'USD',
           country: 'RU'
@@ -352,15 +350,15 @@ export default function AdvertiserProfile() {
     },
     onSuccess: () => {
       toast({
-        title: "Тест отправлен",
-        description: "Тестовое уведомление отправлено в Telegram"
+        title: 'Тест отправлен',
+        description: 'Тестовое уведомление отправлено в Telegram'
       });
     },
     onError: () => {
       toast({
-        title: "Ошибка отправки",
-        description: "Не удалось отправить тестовое уведомление",
-        variant: "destructive"
+        title: 'Ошибка отправки',
+        description: 'Не удалось отправить тестовое уведомление',
+        variant: 'destructive'
       });
     }
   });
@@ -373,9 +371,9 @@ export default function AdvertiserProfile() {
   const handlePasswordChange = () => {
     if (newPassword.new !== newPassword.confirm) {
       toast({
-        title: "Ошибка",
-        description: "Новые пароли не совпадают",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Новые пароли не совпадают',
+        variant: 'destructive'
       });
       return;
     }
@@ -396,8 +394,8 @@ export default function AdvertiserProfile() {
     try {
       await navigator.clipboard.writeText(token);
       toast({
-        title: "Скопировано",
-        description: "API токен скопирован в буфер обмена"
+        title: 'Скопировано',
+        description: 'API токен скопирован в буфер обмена'
       });
     } catch (_error) {
       const textArea = document.createElement('textarea');
@@ -407,8 +405,8 @@ export default function AdvertiserProfile() {
       document.execCommand('copy');
       document.body.removeChild(textArea);
       toast({
-        title: "Скопировано",
-        description: "API токен скопирован в буфер обмена"
+        title: 'Скопировано',
+        description: 'API токен скопирован в буфер обмена'
       });
     }
   };
@@ -419,7 +417,6 @@ export default function AdvertiserProfile() {
       [tokenId]: !prev[tokenId]
     }));
   };
-
 
 
   const handleWebhookSave = () => {
@@ -466,9 +463,9 @@ export default function AdvertiserProfile() {
   const handleLinkTelegram = () => {
     if (!telegramChatId) {
       toast({
-        title: "Ошибка",
-        description: "Введите Chat ID",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Введите Chat ID',
+        variant: 'destructive'
       });
       return;
     }
@@ -756,15 +753,15 @@ export default function AdvertiserProfile() {
                     <div>
                       <h4 className="font-medium">Найдите бота в Telegram</h4>
                       <p className="text-sm text-muted-foreground">
-                        Перейдите к боту <code className="bg-muted px-1 py-0.5 rounded">@integracia7980_bot</code> или по ссылке: 
-                        <a href="https://t.me/integracia7980_bot" target="_blank" rel="noopener noreferrer" 
+                        Перейдите к боту <code className="bg-muted px-1 py-0.5 rounded">@integracia7980_bot</code> или по ссылке:
+                        <a href="https://t.me/integracia7980_bot" target="_blank" rel="noopener noreferrer"
                            className="text-blue-600 hover:underline ml-1">
                           https://t.me/integracia7980_bot
                         </a>
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start space-x-3">
                     <div className="h-6 w-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
                     <div>
@@ -776,7 +773,7 @@ export default function AdvertiserProfile() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start space-x-3">
                     <div className="h-6 w-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
                     <div>
@@ -786,7 +783,7 @@ export default function AdvertiserProfile() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start space-x-3">
                     <div className="h-6 w-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
                     <div>
@@ -797,7 +794,7 @@ export default function AdvertiserProfile() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mt-4">
                   <h5 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Доступные команды бота:</h5>
                   <div className="grid grid-cols-2 gap-2 text-sm">
@@ -959,7 +956,7 @@ export default function AdvertiserProfile() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold">DNS-подтверждение доменов</h2>
           </div>
-          
+
           <CustomDomainManager />
         </TabsContent>
 
@@ -1105,8 +1102,8 @@ export default function AdvertiserProfile() {
                   Статус: <strong>Отключена</strong>
                 </p>
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 disabled={true}
                 data-testid="button-toggle-2fa"
               >

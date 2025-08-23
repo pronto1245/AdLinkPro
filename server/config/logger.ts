@@ -16,14 +16,14 @@ const logger = winston.createLogger({
   defaultMeta: { service: 'adlinkpro-backend' },
   transports: [
     // Error logs
-    new winston.transports.File({ 
-      filename: path.join(logsDir, 'error.log'), 
+    new winston.transports.File({
+      filename: path.join(logsDir, 'error.log'),
       level: 'error',
       maxsize: 10485760, // 10MB
       maxFiles: 5,
     }),
     // Combined logs
-    new winston.transports.File({ 
+    new winston.transports.File({
       filename: config.LOG_FILE,
       maxsize: 10485760, // 10MB
       maxFiles: 10,
@@ -56,12 +56,12 @@ export const auditLogger = winston.createLogger({
     winston.format.timestamp(),
     winston.format.json()
   ),
-  defaultMeta: { 
+  defaultMeta: {
     service: 'adlinkpro-audit',
     type: 'security_audit'
   },
   transports: [
-    new winston.transports.File({ 
+    new winston.transports.File({
       filename: path.join(logsDir, 'audit.log'),
       maxsize: 10485760,
       maxFiles: 20,
@@ -76,12 +76,12 @@ export const performanceLogger = winston.createLogger({
     winston.format.timestamp(),
     winston.format.json()
   ),
-  defaultMeta: { 
+  defaultMeta: {
     service: 'adlinkpro-performance',
     type: 'performance_metric'
   },
   transports: [
-    new winston.transports.File({ 
+    new winston.transports.File({
       filename: path.join(logsDir, 'performance.log'),
       maxsize: 5242880, // 5MB
       maxFiles: 5,

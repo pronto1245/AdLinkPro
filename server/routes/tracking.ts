@@ -69,7 +69,7 @@ router.get('/click', async (req, res) => {
       offerId: offerId as string,
       site: req.get('host') || '',
       referrer: (referrer as string) || req.get('referer') || '',
-      
+
       // Sub parameters
       sub1: sub1 as string,
       sub2Raw,
@@ -124,10 +124,10 @@ router.get('/click', async (req, res) => {
     try {
       const { EnhancedFraudService } = await import('../services/enhancedFraudService');
       const { IPWhitelistService } = await import('../services/ipWhitelistService');
-      
+
       // Check if IP is whitelisted first
       const isWhitelisted = await IPWhitelistService.isWhitelisted(ip);
-      
+
       if (!isWhitelisted) {
         // Trigger automatic fraud detection
         const fraudClickData = {
@@ -139,7 +139,7 @@ router.get('/click', async (req, res) => {
           referer: clickData.referrer,
           clickId: clickid
         };
-        
+
         // Non-blocking fraud analysis
         EnhancedFraudService.triggerAutoFraudDetection(fraudClickData).catch(error => {
           console.error('Fraud detection failed:', error);
@@ -151,7 +151,7 @@ router.get('/click', async (req, res) => {
       console.error('Fraud detection integration failed:', error);
     }
 
-    // Record 'open' event automatically  
+    // Record 'open' event automatically
     await storage.createEvent({
       clickid,
       advertiserId: clickData.advertiserId,
@@ -192,7 +192,7 @@ router.get('/click', async (req, res) => {
         partnerId: partnerId as string,
         offerId: offerId as string,
       };
-      
+
       // Send postbacks to external trackers (non-blocking)
       PostbackService.triggerPostbacks(postbackEvent).catch(error => {
         console.error('Postback sending failed:', error);
@@ -219,7 +219,7 @@ router.get('/click', async (req, res) => {
 router.post('/event', async (req, res) => {
   try {
     const eventData = insertEventSchema.parse(req.body);
-    
+
     // Validate clickid exists
     const clicks = await storage.getTrackingClicks({ clickId: eventData.clickid });
     const click = clicks[0];
@@ -251,7 +251,7 @@ router.post('/event', async (req, res) => {
         offerId: click.offerId,
         advertiserId: click.advertiserId,
       };
-      
+
       // Send postbacks to external trackers (non-blocking)
       PostbackService.triggerPostbacks(postbackEvent).catch(error => {
         console.error('Event postback sending failed:', error);
@@ -268,7 +268,7 @@ router.post('/event', async (req, res) => {
         details: error.errors
       });
     }
-    
+
     console.error('Event tracking error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -280,13 +280,13 @@ router.get('/click/:clickid', async (req, res) => {
     const { clickid } = req.params;
     const clicks = await storage.getTrackingClicks({ clickId: clickid });
     const click = clicks[0];
-    
+
     if (!click) {
       return res.status(404).json({ error: 'Click not found' });
     }
 
     const events = await storage.getEvents({ clickId: clickid });
-    
+
     res.json({
       click,
       events
@@ -353,7 +353,7 @@ router.post('/postback/send', async (req, res) => {
 
     // Send postbacks
     const results = await PostbackService.triggerPostbacks(postbackEvent);
-    
+
     res.json({
       success: true,
       message: 'Postbacks sent successfully',
@@ -434,11 +434,11 @@ router.get('/:trackingCode', async (req, res) => {
     const { trackingCode } = req.params;
     console.log(`🔥🔥🔥 TRACKING LINK HIT! Code: ${trackingCode} - URL: ${req.url}`);
     console.log(`🔍 Looking for tracking code: ${trackingCode}`);
-    
+
     // Find tracking link
     const trackingLink = await storage.getTrackingLinkByCode(trackingCode);
     console.log(`📊 Found tracking link:`, trackingLink ? `ID: ${trackingLink.id}` : 'NOT FOUND');
-    
+
     if (!trackingLink) {
       console.log(`❌ Tracking link not found for code: ${trackingCode}`);
       return res.status(404).send('Tracking link not found');
@@ -453,11 +453,11 @@ router.get('/:trackingCode', async (req, res) => {
 
     // Generate unique clickId
     const clickId = nanoid(12);
-    
+
     // Get IP and User Agent
     const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip;
     const userAgent = req.headers['user-agent'] || '';
-    
+
     // Create click record
     await storage.createTrackingClick({
       clickId,
@@ -486,7 +486,7 @@ router.get('/:trackingCode', async (req, res) => {
 
     // Build landing URL with parameters
     let landingUrl = offer.landingPageUrl || 'https://example.com';
-    
+
     // Replace macros in landing URL
     landingUrl = landingUrl
       .replace('{client_id}', clickId)

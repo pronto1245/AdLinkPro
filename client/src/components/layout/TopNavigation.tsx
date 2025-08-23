@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { 
-  Bell, 
-  Settings, 
-  HelpCircle, 
-  LogOut, 
-  Mail, 
-  User, 
+import {
+  Bell,
+  Settings,
+  HelpCircle,
+  LogOut,
+  Mail,
+  User,
   DollarSign,
   BarChart3,
   FileText,
@@ -31,13 +31,13 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
@@ -107,7 +107,7 @@ export function TopNavigation() {
     if (!user) {return [];}
 
     const userRole = user.role?.toLowerCase() ?? 'guest';
-    
+
     const baseItems: MenuItem[] = [
       {
         id: 'dashboard',
@@ -153,7 +153,7 @@ export function TopNavigation() {
 
     // Role-specific items
     const roleSpecificItems: MenuItem[] = [];
-    
+
     if (['advertiser', 'owner', 'super_admin'].includes(userRole)) {
       roleSpecificItems.push({
         id: 'reports',
@@ -164,7 +164,7 @@ export function TopNavigation() {
         onClick: () => setLocation(`/${userRole}/reports`),
         requiresToken: true,
       });
-      
+
       roleSpecificItems.push({
         id: 'analytics',
         title: 'Аналитика',
@@ -217,7 +217,7 @@ export function TopNavigation() {
 
   const filteredMenuItems = getMenuItems().filter(item => {
     if (!item.requiresToken) {return true;}
-    
+
     const token = localStorage.getItem('token');
     const validation = validateToken(token);
     return validation.valid;
@@ -259,7 +259,7 @@ export function TopNavigation() {
   const handleNotificationClick = async () => {
     // Refresh token before navigation
     await refreshTokenIfNeeded();
-    
+
     // Navigate to notifications page based on user role
     if (user?.role === 'advertiser') {
       setLocation('/advertiser/notifications');
@@ -291,7 +291,7 @@ export function TopNavigation() {
         return;
       }
     }
-    
+
     if (item.onClick) {
       item.onClick();
     }
@@ -303,7 +303,7 @@ export function TopNavigation() {
   const userInitials = getUserInitials(user);
 
   // Component for rendering menu buttons with tooltips
-  const MenuButton = ({ item, className = "" }: { item: MenuItem; className?: string }) => (
+  const MenuButton = ({ item, className = '' }: { item: MenuItem; className?: string }) => (
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
@@ -315,8 +315,8 @@ export function TopNavigation() {
         >
           <item.icon className="h-5 w-5" />
           {item.id === 'notifications' && unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs font-bold bg-red-500 hover:bg-red-600 animate-pulse"
             >
               {unreadCount > 99 ? '99+' : unreadCount}
@@ -355,7 +355,7 @@ export function TopNavigation() {
                     Быстрый доступ к основным функциям платформы
                   </SheetDescription>
                 </SheetHeader>
-                
+
                 {/* Mobile menu items */}
                 <div className="mt-6 space-y-2">
                   {filteredMenuItems.map((item) => (
@@ -380,7 +380,7 @@ export function TopNavigation() {
                       )}
                     </Button>
                   ))}
-                  
+
                   {/* Mobile logout */}
                   <div className="pt-4 border-t">
                     <Button
@@ -396,7 +396,7 @@ export function TopNavigation() {
                 </div>
               </SheetContent>
             </Sheet>
-            
+
             {/* Logo space */}
             <div className="hidden md:flex items-center">
               {/* Space for logo or title */}
@@ -407,14 +407,14 @@ export function TopNavigation() {
           <div className="flex items-center space-x-4">
             {/* Theme Toggle */}
             <ThemeToggle />
-            
+
             {/* Desktop menu items - hide main menu items on mobile */}
             <div className="hidden md:flex items-center space-x-2">
               {filteredMenuItems.slice(0, 4).map((item) => (
                 <MenuButton key={item.id} item={item} />
               ))}
             </div>
-            
+
             {/* Balance for partners - responsive design */}
             {user.role === 'affiliate' && (
               <div className="hidden lg:flex items-center space-x-3">
@@ -433,7 +433,7 @@ export function TopNavigation() {
                     <p>Текущий баланс вашего аккаунта</p>
                   </TooltipContent>
                 </Tooltip>
-                
+
                 {/* Pending */}
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -470,7 +470,7 @@ export function TopNavigation() {
                 </Tooltip>
               </div>
             )}
-            
+
             {/* Email - hidden on small screens */}
             <div className="hidden lg:flex items-center space-x-2 text-sm text-muted-foreground">
               <Mail className="h-4 w-4" />
@@ -491,8 +491,8 @@ export function TopNavigation() {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {user.firstName && user.lastName 
-                        ? `${user.firstName} ${user.lastName}` 
+                      {user.firstName && user.lastName
+                        ? `${user.firstName} ${user.lastName}`
                         : user.username}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
@@ -504,7 +504,7 @@ export function TopNavigation() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                
+
                 {/* Profile menu items for mobile/desktop */}
                 {filteredMenuItems.slice(0, 2).map((item) => (
                   <DropdownMenuItem key={item.id} onClick={() => handleMenuItemClick(item)}>
@@ -512,7 +512,7 @@ export function TopNavigation() {
                     <span>{item.title}</span>
                   </DropdownMenuItem>
                 ))}
-                
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />

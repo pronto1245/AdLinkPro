@@ -2,16 +2,16 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { 
-  Eye, 
-  EyeOff, 
-  Shield, 
-  AlertTriangle, 
-  Loader2, 
-  CheckCircle, 
-  User, 
-  Building, 
-  Mail, 
+import {
+  Eye,
+  EyeOff,
+  Shield,
+  AlertTriangle,
+  Loader2,
+  CheckCircle,
+  User,
+  Building,
+  Mail,
   Phone,
   UserCheck,
   MessageCircle
@@ -28,17 +28,17 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 
 import { secureAuth, SecureAPIError } from '@/lib/secure-api';
-import { 
-  partnerRegistrationSchema, 
+import {
+  partnerRegistrationSchema,
   advertiserRegistrationSchema,
   PartnerRegistrationFormData,
-  AdvertiserRegistrationFormData 
+  AdvertiserRegistrationFormData
 } from '@/lib/validation';
-import { 
-  passwordStrength, 
-  RateLimitTracker, 
+import {
+  passwordStrength,
+  RateLimitTracker,
   CSRFManager,
-  sanitizeInput 
+  sanitizeInput
 } from '@/lib/security';
 
 // Initialize security managers
@@ -96,24 +96,24 @@ type FormData = PartnerRegistrationFormData | AdvertiserRegistrationFormData;
 export default function UnifiedRegistration({ config }: UnifiedRegistrationProps) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  
+
   // Form and UI state
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
-  const [rateLimitInfo, setRateLimitInfo] = useState<{ 
-    blocked: boolean; 
-    remaining: number 
+  const [rateLimitInfo, setRateLimitInfo] = useState<{
+    blocked: boolean;
+    remaining: number
   }>({ blocked: false, remaining: 0 });
-  const [passwordStrengthInfo, setPasswordStrengthInfo] = useState<{ 
-    score: number; 
-    feedback: string[] 
+  const [passwordStrengthInfo, setPasswordStrengthInfo] = useState<{
+    score: number;
+    feedback: string[]
   }>({ score: 0, feedback: [] });
 
   // Use appropriate schema based on role
   const schema = config.requiresCompany ? advertiserRegistrationSchema : partnerRegistrationSchema;
-  
+
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -166,7 +166,7 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
       const remaining = rateLimitTracker.getRemainingTime(userIdentifier);
       const minutes = Math.ceil(remaining / 60);
       setRateLimitInfo({ blocked: true, remaining });
-      
+
       toast({
         title: 'Превышен лимит попыток',
         description: `Для безопасности временно заблокированы попытки регистрации. Попробуйте через ${minutes} ${minutes === 1 ? 'минуту' : minutes < 5 ? 'минуты' : 'минут'}.`,
@@ -189,7 +189,7 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
         telegram: sanitizeInput.cleanTelegram(data.telegram),
         password: data.password, // Don't sanitize password
         phone: data.phone ? sanitizeInput.cleanPhone(data.phone) : undefined, // phoneNumber as per requirements
-        company: config.requiresCompany && 'company' in data && data.company ? 
+        company: config.requiresCompany && 'company' in data && data.company ?
           sanitizeInput.cleanString(String(data.company)) : undefined, // companyName as per requirements
         contactType: data.contactType,
         contact: data.contact ? sanitizeInput.cleanString(data.contact) : undefined, // contactValue as per requirements
@@ -205,13 +205,13 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
       rateLimitTracker.reset(userIdentifier);
 
       // Add debugging console.log for server response
-      console.log("✅ Registration successful - Server data:", result);
+      console.log('✅ Registration successful - Server data:', result);
 
       // Auto-login user and save token to localStorage as required
       if (result.token) {
         localStorage.setItem('authToken', result.token);
-        console.log("🔐 Token saved to localStorage");
-        
+        console.log('🔐 Token saved to localStorage');
+
         // Set user data if available
         if (result.user) {
           localStorage.setItem('userData', JSON.stringify(result.user));
@@ -225,15 +225,15 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
 
       // Redirect based on role as required
       const redirectPath = result.user?.role === 'affiliate' ? '/dashboard/partner' : '/dashboard/advertiser';
-      console.log("🔄 Redirecting to:", redirectPath);
-      
+      console.log('🔄 Redirecting to:', redirectPath);
+
       setTimeout(() => {
         setLocation(redirectPath);
       }, 2000);
 
     } catch (err) {
-      console.log("❌ Registration error details:", err);
-      
+      console.log('❌ Registration error details:', err);
+
       if (err instanceof SecureAPIError) {
         if (err.code === 'RATE_LIMITED') {
           const minutes = Math.ceil((err.retryAfter || 60) / 60);
@@ -400,8 +400,8 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
                     <span className="text-gray-600">Сила пароля:</span>
                     <span className={strengthLabel.color}>{strengthLabel.label}</span>
                   </div>
-                  <Progress 
-                    value={(passwordStrengthInfo.score / 6) * 100} 
+                  <Progress
+                    value={(passwordStrengthInfo.score / 6) * 100}
                     className="h-2"
                   />
                   {passwordStrengthInfo.feedback.length > 0 && (
@@ -413,7 +413,7 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
                   )}
                 </div>
               )}
-              
+
               {form.formState.errors.password && (
                 <p className="text-sm text-red-600">
                   {form.formState.errors.password.message}
@@ -533,7 +533,7 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
                 <Checkbox
                   id="agreeTerms"
                   checked={form.watch('agreeTerms')}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     form.setValue('agreeTerms', checked as boolean)
                   }
                   disabled={loading}
@@ -556,7 +556,7 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
                 <Checkbox
                   id="agreePrivacy"
                   checked={form.watch('agreePrivacy')}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     form.setValue('agreePrivacy', checked as boolean)
                   }
                   disabled={loading}
@@ -579,7 +579,7 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
                 <Checkbox
                   id="agreeMarketing"
                   checked={form.watch('agreeMarketing')}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     form.setValue('agreeMarketing', checked as boolean)
                   }
                   disabled={loading}
@@ -592,9 +592,9 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
 
             {/* Submit Button */}
             <div className="pt-6">
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full"
                 disabled={loading || rateLimitInfo.blocked}
                 size="lg"
               >
@@ -610,8 +610,8 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
 
               <p className="text-center text-sm text-gray-600 mt-4">
                 Уже есть аккаунт?{' '}
-                <a 
-                  href={config.loginPath} 
+                <a
+                  href={config.loginPath}
                   className="text-blue-600 hover:underline"
                 >
                   Войти в систему

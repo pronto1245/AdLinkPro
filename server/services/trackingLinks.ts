@@ -45,7 +45,7 @@ export class TrackingLinkService {
         eq(customDomains.advertiserId, advertiserId),
         eq(customDomains.status, 'verified')
       ));
-    
+
     return domains.map(d => d.domain);
   }
 
@@ -58,7 +58,7 @@ export class TrackingLinkService {
       })
       .from(users)
       .where(eq(users.id, partnerId));
-    
+
     return partner || null;
   }
 
@@ -70,12 +70,12 @@ export class TrackingLinkService {
     offerId: string;
   }): Promise<string> {
     const { originalUrl, advertiserId, partnerId, offerId } = params;
-    
+
     try {
       // Get partner number for clean partner_id
       const partnerInfo = await this.getPartnerInfo(partnerId);
       const partnerNumber = partnerInfo?.partnerNumber || '0000';
-      
+
       // Check if originalUrl is a valid URL
       if (!originalUrl || typeof originalUrl !== 'string' || originalUrl.length < 4) {
         console.warn('Invalid original URL provided:', originalUrl);
@@ -92,7 +92,7 @@ export class TrackingLinkService {
 
       // Get advertiser's verified custom domains
       const verifiedDomains = await this.getVerifiedCustomDomains(advertiserId);
-      
+
       // Try to parse as URL, if fails, treat as path
       let url: URL;
       try {
@@ -102,22 +102,22 @@ export class TrackingLinkService {
         const customDomain = verifiedDomains.length > 0 ? verifiedDomains[0] : 'example.com';
         url = new URL(`https://${customDomain}${originalUrl.startsWith('/') ? originalUrl : '/' + originalUrl}`);
       }
-      
+
       if (verifiedDomains.length > 0) {
         // Use first verified custom domain
         const customDomain = verifiedDomains[0];
         url.hostname = customDomain;
         url.protocol = 'https:';
       }
-      
+
       // Удаляем все лишние параметры из оригинальной ссылки
       url.search = '';
-      
+
       // Добавляем только clickid и partner_id (clickid = 12 символов)
       const shortClickId = `${partnerNumber}${offerId.slice(0, 4)}${Date.now().toString(36).slice(-4)}`;
       url.searchParams.set('clickid', shortClickId);
       url.searchParams.set('partner_id', `${partnerNumber}${Date.now().toString(36).slice(-4)}`);
-      
+
       return url.toString();
     } catch (error) {
       console.error('Error transforming landing URL:', error);
@@ -151,17 +151,17 @@ export class TrackingLinkService {
 
       // Get advertiser's verified custom domains
       const verifiedDomains = await this.getVerifiedCustomDomains(offer.advertiserId);
-      
+
       // Use first verified custom domain if available, otherwise use platform domain
-      const baseDomain = verifiedDomains.length > 0 
-        ? `https://${verifiedDomains[0]}` 
+      const baseDomain = verifiedDomains.length > 0
+        ? `https://${verifiedDomains[0]}`
         : 'https://trk.platform.com';
 
       // Generate the tracking link with partner's clickid (короткие значения)
       const shortOfferId = offerId.slice(0, 8);
       const shortPartnerId = partnerId.slice(0, 8);
       const trackingLink = `${baseDomain}/click?offer=${shortOfferId}&clickid=${shortPartnerId}`;
-      
+
       return trackingLink;
     } catch (error) {
       console.error('Error generating partner tracking link:', error);
@@ -175,7 +175,7 @@ export class TrackingLinkService {
   // Generate tracking link with custom domain support
   static async generateTrackingLink(params: GenerateTrackingLinkParams): Promise<TrackingLinkResult> {
     const { partnerId, offerId, ...subIds } = params;
-    
+
     // Get offer details and advertiser info
     const [offer] = await db
       .select({
@@ -193,7 +193,7 @@ export class TrackingLinkService {
 
     // Get advertiser's verified custom domains
     const verifiedDomains = await this.getVerifiedCustomDomains(offer.advertiserId);
-    
+
     // Use first verified custom domain if available, otherwise use platform domain
     const customDomain = verifiedDomains.length > 0 ? verifiedDomains[0] : null;
     const baseDomain = customDomain || process.env.PLATFORM_DOMAIN || 'localhost:5000';
@@ -240,7 +240,7 @@ export class TrackingLinkService {
   // Get partner's tracking links
   static async getPartnerTrackingLinks(partnerId: string, offerId?: string) {
     let whereCondition = eq(trackingLinks.partnerId, partnerId);
-    
+
     if (offerId) {
       whereCondition = and(
         eq(trackingLinks.partnerId, partnerId),
@@ -279,7 +279,7 @@ export class TrackingLinkService {
         // Partner details
         partnerUsername: users.username,
         partnerEmail: users.email,
-        // Offer details  
+        // Offer details
         offerName: offers.name,
         offerPayout: offers.payout
       })
@@ -327,7 +327,7 @@ export class TrackingLinkService {
         offerId: trackingLinks.offerId,
         url: trackingLinks.url,
         isActive: trackingLinks.isActive,
-        // Offer details  
+        // Offer details
         targetUrl: offers.landingPages,
         offerName: offers.name,
         advertiserId: offers.advertiserId
