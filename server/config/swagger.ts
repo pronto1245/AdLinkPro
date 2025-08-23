@@ -103,6 +103,14 @@ const options: swaggerJsdoc.Options = {
 const specs = swaggerJsdoc(options);
 
 export function setupSwagger(app: Express): void {
+  // Swagger page
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+    explorer: true,
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'AdLinkPro API Documentation'
+  }));
+
+  // JSON endpoint for the OpenAPI spec
   // Serve swagger documentation
   app.use(
     '/api-docs',
