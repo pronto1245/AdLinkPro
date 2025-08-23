@@ -97,7 +97,7 @@ export default function DomainVerification() {
     mutationFn: async (domainId: string) => {
       return apiRequest(`/api/advertiser/domains/${domainId}/check`, 'POST');
     },
-    onSuccess: (data, domainId) => {
+    onSuccess: (data, _domainId) => {
       if (data.success) {
         toast({
           title: "Домен подтверждён!",

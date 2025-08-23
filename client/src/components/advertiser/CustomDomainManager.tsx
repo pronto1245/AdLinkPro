@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { 
   Globe, 
   Plus, 
@@ -52,18 +51,9 @@ interface CustomDomain {
   };
 }
 
-interface DNSInstructions {
-  type: string;
-  record: string;
-  value: string;
-  instructions: string;
-}
-
 export function CustomDomainManager() {
   const [newDomain, setNewDomain] = useState('');
   const [domainType, setDomainType] = useState<'cname' | 'a_record' | 'txt_record'>('cname');
-  const [selectedDomain, setSelectedDomain] = useState<CustomDomain | null>(null);
-  const [showInstructions, setShowInstructions] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -102,7 +92,7 @@ export function CustomDomainManager() {
     mutationFn: async (domainId: string) => {
       return apiRequest(`/api/advertiser/profile/domains/${domainId}/verify`, 'POST');
     },
-    onSuccess: (data: any, domainId: string) => {
+    onSuccess: (data: unknown, _domainId: string) => {
       if (data.success) {
         toast({
           title: "Домен верифицирован",

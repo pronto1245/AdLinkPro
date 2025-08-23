@@ -53,7 +53,7 @@ const StaffDash = lazy(() => import('@/pages/staff/StaffDashboard'));
 const SidebarDemo = lazy(() => import('@/pages/SidebarDemo'));
 
 // Helpers
-const withLayout = (C: React.ComponentType<any>) => function Wrapped() {
+const withLayout = (C: React.ComponentType) => function Wrapped() {
   return (
     <RoleBasedLayout>
       <C />

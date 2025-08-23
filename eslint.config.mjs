@@ -44,6 +44,8 @@ export default [
         CustomEvent: 'readonly',
         // Additional browser APIs
         URL: 'readonly',
+        URLSearchParams: 'readonly',
+        FormData: 'readonly',
         RequestInfo: 'readonly',
         RequestInit: 'readonly',
         navigator: 'readonly',
