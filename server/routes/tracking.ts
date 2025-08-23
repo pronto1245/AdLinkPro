@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { storage } from '../storage';
 import { nanoid } from 'nanoid';
-import { insertClickSchema, insertEventSchema } from '@shared/postback-schema';
+import { insertClickSchema, insertEventSchema } from '@shared/schema';
 import { z } from 'zod';
 import { PostbackService, type PostbackEvent } from '../services/postback.js';
 
