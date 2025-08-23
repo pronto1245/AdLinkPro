@@ -16,11 +16,16 @@ import { adminRoutes } from './routes/admin-routes';
 import { invitationRoutes } from './routes/invitations';
 import { registerRoutes } from './routes'; // Import the main routes that contain registration endpoints
 import { requestLogger, errorLogger } from './middleware/logging';
+import { setupSwagger } from './config/swagger';
+import { errorHandler, notFoundHandler, setupGlobalErrorHandlers } from './middleware/errorHandler';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// Setup global error handlers
+setupGlobalErrorHandlers();
 
 // CORS и JSON — строго до роутов
 const allowed = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map(s => s.trim()).filter(Boolean);
@@ -43,12 +48,34 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      "script-src": ["'self'", "'unsafe-inline'"], // Allow inline scripts for development
+      "default-src": ["'self'"],
+      "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdnjs.cloudflare.com"],
+      "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      "font-src": ["'self'", "https://fonts.gstatic.com"],
+      "img-src": ["'self'", "data:", "https:"],
+      "connect-src": ["'self'", "wss:", "ws:"],
+      "frame-ancestors": ["'none'"],
     },
   },
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  }
 }));
 app.use(compression());
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
+
+// Enhanced rate limiting with different limits for different endpoints
+import { rateLimiter, loginRateLimiter } from './middleware/security';
+
+// General API rate limiting - 100 requests per minute as specified
+app.use('/api', rateLimiter(60 * 1000, 100)); // 100 requests per minute
+
+// Stricter rate limiting for authentication endpoints
+app.use('/api/auth', rateLimiter(60 * 1000, 20)); // 20 login attempts per minute
+
+// Very strict rate limiting for sensitive operations
+app.use('/api/admin', rateLimiter(60 * 1000, 50)); // 50 requests per minute for admin
 
 // Create logs directory if it doesn't exist
 const logsDir = path.join(process.cwd(), 'logs');
@@ -58,6 +85,9 @@ if (!fs.existsSync(logsDir)) {
 
 // Add request logging
 app.use(requestLogger);
+
+// Setup API documentation
+setupSwagger(app);
 
 // DB
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -105,6 +135,34 @@ registerRoutes(app).then(() => {
 const distPath = path.join(__dirname, '..', 'dist');
 app.use(express.static(distPath));
 
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     tags: [System]
+ *     summary: Health check endpoint
+ *     description: Check if the server is running and healthy
+ *     responses:
+ *       200:
+ *         description: Server is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *                 where:
+ *                   type: string
+ *                   example: "server/index.ts"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                 version:
+ *                   type: string
+ *                   example: "1.0.0"
+ */
 app.get('/api/health', (_req, res) => {
   res.json({ 
     ok: true, 
@@ -114,6 +172,29 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /api/me:
+ *   get:
+ *     tags: [Authentication]
+ *     summary: Get current user
+ *     description: Get information about the currently authenticated user
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 app.get('/api/me', (req, res) => {
   try {
     const h = String(req.headers['authorization'] || '');
@@ -129,6 +210,12 @@ app.get('/api/me', (req, res) => {
 
 // Add error handling middleware
 app.use(errorLogger);
+
+// Handle 404 routes
+app.use('/api', notFoundHandler);
+
+// Centralized error handling
+app.use(errorHandler);
 
 // Serve React app for all non-API routes
 app.get('*', (req, res) => {
