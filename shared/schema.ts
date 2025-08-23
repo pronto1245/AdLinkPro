@@ -1,5 +1,10 @@
 // schema.ts: Агрегатор для всех модулей
 
+import { sql, relations } from "drizzle-orm";
+import { pgTable, pgEnum, text, varchar, integer, decimal, timestamp, boolean, jsonb, uuid, serial, bigint, smallint, index, numeric, char } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
 export * from './postback-schema';
 // Добавьте другие модули по мере необходимости
 
@@ -1124,6 +1129,9 @@ export const enhancedPostbackProfiles = pgTable("enhanced_postback_profiles", {
   ix_pb_enabled: index("ix_pb_enabled").on(t.enabled),
 }));
 
+// Alias for backward compatibility
+export const postbackProfiles = enhancedPostbackProfiles;
+
 
 
 // Advanced analytics and statistics aggregation
@@ -2013,7 +2021,7 @@ export const insertTeamInvitationSchema = createInsertSchema(teamInvitations).om
 export type TeamInvitation = typeof teamInvitations.$inferSelect;
 */
 
-export { insertPostbackSchema, insertReceivedOfferSchema } from "./postback-schema";
+// Note: insertPostbackSchema and insertReceivedOfferSchema are already exported above
 
 
 export const postbackDeliveries = {} as any;
