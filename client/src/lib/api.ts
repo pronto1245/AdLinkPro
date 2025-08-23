@@ -34,7 +34,6 @@ export async function getMenu(): Promise<any> {
 }
 
 // Export additional API functions that might be used by frontend
-export { login, me, getMenu };
 export type LoginResponse = {
   success?: boolean;
   token?: string;

@@ -96,7 +96,6 @@ const options: swaggerJSDoc.Options = {
     './server/routes/*.ts',
     './server/routes/*.js',
     './server/api-routes.ts',
-    './server/auth.routes.ts'
     './server/auth.routes.ts',
     './server/index.ts'
   ]
