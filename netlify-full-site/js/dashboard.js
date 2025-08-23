@@ -330,7 +330,23 @@ window.addEventListener('beforeunload', function() {
     stopRealTimeUpdates();
 });
 
+// Fetch dashboard data (if needed by external code)
+function fetchDashboard() {
+    // Initialize dashboard data loading
+    initDashboard();
+    
+    // This function can be extended to fetch data from API if needed
+    console.log('Dashboard data fetched and initialized');
+    
+    // Return a promise for consistency with async operations
+    return Promise.resolve({
+        success: true,
+        message: 'Dashboard initialized successfully'
+    });
+}
+
 // Export functions
 window.initDashboard = initDashboard;
+window.fetchDashboard = fetchDashboard;
 window.exportData = exportData;
 window.downloadCSV = downloadCSV;
