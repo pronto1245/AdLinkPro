@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useRoute } from 'wouter';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { secureAuth, SecureAPIError } from '@/lib/secure-api';
 
 interface PasswordStrengthIndicatorProps {
@@ -15,14 +15,14 @@ interface PasswordStrengthIndicatorProps {
 function PasswordStrengthIndicator({ password }: PasswordStrengthIndicatorProps) {
   const getStrength = (pwd: string) => {
     if (!pwd) {return { score: 0, text: '', color: '' };}
-    
+
     let score = 0;
     if (pwd.length >= 8) {score++;}
     if (/[A-Z]/.test(pwd)) {score++;}
     if (/[a-z]/.test(pwd)) {score++;}
     if (/[0-9]/.test(pwd)) {score++;}
     if (/[^A-Za-z0-9]/.test(pwd)) {score++;}
-    
+
     const indicators = [
       { score: 0, text: 'Очень слабый', color: 'bg-red-500' },
       { score: 1, text: 'Слабый', color: 'bg-red-400' },
@@ -31,12 +31,12 @@ function PasswordStrengthIndicator({ password }: PasswordStrengthIndicatorProps)
       { score: 4, text: 'Отличный', color: 'bg-green-500' },
       { score: 5, text: 'Превосходный', color: 'bg-green-600' }
     ];
-    
+
     return indicators[score] || indicators[0];
   };
-  
+
   const strength = getStrength(password);
-  
+
   return (
     <div className="mt-2">
       <div className="flex justify-between text-sm mb-1">
@@ -46,7 +46,7 @@ function PasswordStrengthIndicator({ password }: PasswordStrengthIndicatorProps)
         </span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
+        <div
           className={`h-2 rounded-full transition-all duration-300 ${strength.color}`}
           style={{ width: `${(strength.score / 5) * 100}%` }}
         />
@@ -58,7 +58,7 @@ function PasswordStrengthIndicator({ password }: PasswordStrengthIndicatorProps)
 export default function ResetPassword() {
   const [location, setLocation] = useLocation();
   const [, params] = useRoute('/auth/reset-password');
-  
+
   const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -74,7 +74,7 @@ export default function ResetPassword() {
     // Get token from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const urlToken = urlParams.get('token');
-    
+
     if (urlToken) {
       setToken(urlToken);
       validateToken(urlToken);
@@ -129,19 +129,19 @@ export default function ResetPassword() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validatePasswords()) {return;}
-    
+
     setLoading(true);
-    
+
     try {
       const response = await secureAuth.completePasswordReset(token, newPassword);
-      
+
       if (response.success) {
         setSuccess(true);
         toast({
-          title: "Пароль изменен",
-          description: "Ваш пароль успешно изменен. Теперь вы можете войти с новым паролем.",
+          title: 'Пароль изменен',
+          description: 'Ваш пароль успешно изменен. Теперь вы можете войти с новым паролем.',
         });
       } else {
         setErrors({ general: response.message || 'Не удалось сбросить пароль' });
@@ -192,16 +192,16 @@ export default function ResetPassword() {
               <p>• Ссылка уже была использована</p>
               <p>• Неверная ссылка</p>
             </div>
-            
+
             <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="flex-1"
                 onClick={() => setLocation('/auth/forgot-password')}
               >
                 Запросить новую ссылку
               </Button>
-              <Button 
+              <Button
                 className="flex-1"
                 onClick={() => setLocation('/auth/login')}
               >
@@ -231,8 +231,8 @@ export default function ResetPassword() {
             <div className="text-center text-muted-foreground">
               <p>Теперь вы можете войти в систему с новым паролем.</p>
             </div>
-            
-            <Button 
+
+            <Button
               className="w-full"
               onClick={() => setLocation('/auth/login')}
             >

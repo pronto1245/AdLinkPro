@@ -20,15 +20,15 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
-import { 
-  Shield, 
-  Plus, 
-  Search, 
-  Trash2, 
-  Globe, 
-  Smartphone, 
-  MousePointer, 
-  User, 
+import {
+  Shield,
+  Plus,
+  Search,
+  Trash2,
+  Globe,
+  Smartphone,
+  MousePointer,
+  User,
   Calendar as CalendarIcon,
   AlertTriangle,
   CheckCircle,
@@ -50,7 +50,7 @@ export default function BlacklistManagement() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -62,7 +62,7 @@ export default function BlacklistManagement() {
       const params = new URLSearchParams();
       if (searchTerm) {params.append('search', searchTerm);}
       if (typeFilter !== 'all') {params.append('type', typeFilter);}
-      
+
       const response = await fetch(`/api/admin/blacklist?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -88,7 +88,7 @@ export default function BlacklistManagement() {
       toast({
         title: t('error'),
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   });
@@ -240,10 +240,10 @@ export default function BlacklistManagement() {
                             <FormItem>
                               <FormLabel>Value</FormLabel>
                               <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 192.168.1.1 or click_id_123" 
-                                  data-testid="input-blacklist-value" 
+                                <Input
+                                  {...field}
+                                  placeholder="e.g., 192.168.1.1 or click_id_123"
+                                  data-testid="input-blacklist-value"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -258,10 +258,10 @@ export default function BlacklistManagement() {
                             <FormItem>
                               <FormLabel>Reason (Optional)</FormLabel>
                               <FormControl>
-                                <Textarea 
-                                  {...field} 
-                                  placeholder="Why is this being blacklisted?" 
-                                  data-testid="input-blacklist-reason" 
+                                <Textarea
+                                  {...field}
+                                  placeholder="Why is this being blacklisted?"
+                                  data-testid="input-blacklist-reason"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -284,7 +284,7 @@ export default function BlacklistManagement() {
                                       data-testid="button-select-expiry"
                                     >
                                       {field.value ? (
-                                        format(field.value, "PPP")
+                                        format(field.value, 'PPP')
                                       ) : (
                                         <span>No expiration</span>
                                       )}
@@ -448,7 +448,7 @@ export default function BlacklistManagement() {
                     No blacklist entries
                   </h3>
                   <p className="text-gray-500">
-                    {typeFilter === 'all' 
+                    {typeFilter === 'all'
                       ? 'No entries have been added to the blacklist yet.'
                       : `No ${typeFilter} entries found in the blacklist.`
                     }

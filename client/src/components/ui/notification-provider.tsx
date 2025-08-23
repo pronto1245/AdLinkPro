@@ -44,15 +44,15 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     mutationFn: async (id: string) => {
       // CRITICAL FIX: Используем правильный ключ токена
       const token = localStorage.getItem('auth_token');
-      console.log('🔍 NotificationProvider markAsRead - token check:', { 
-        token: token ? token.substring(0, 20) + '...' : 'NO_TOKEN' 
+      console.log('🔍 NotificationProvider markAsRead - token check:', {
+        token: token ? token.substring(0, 20) + '...' : 'NO_TOKEN'
       });
-      
+
       if (!token || token === 'null' || token === 'undefined') {
         console.error('❌ No valid token in NotificationProvider');
         throw new Error('Authentication required');
       }
-      
+
       const response = await fetch(`/api/notifications/${id}/read`, {
         method: 'PUT',
         headers: {
@@ -60,15 +60,15 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
           'Content-Type': 'application/json',
         },
       });
-      
+
       console.log('📡 NotificationProvider response:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ NotificationProvider request failed:', response.status, errorText);
         throw new Error('Failed to mark notification as read');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -109,14 +109,14 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
 
     // Use environment variable or fallback to localhost in development
     const WS_URL = import.meta.env.VITE_WS_URL || (import.meta.env.DEV ? 'ws://localhost:5000/ws' : null);
-    
+
     if (!WS_URL) {
       console.log('WebSocket disabled: VITE_WS_URL not configured for production');
       return;
     }
 
     const ws = new WebSocket(WS_URL);
-    
+
     ws.onopen = () => {
       console.log('WebSocket connected');
       // Аутентификация
@@ -129,11 +129,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     ws.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
-        
+
         if (message.type === 'notification') {
           // Новое уведомление пришло через WebSocket
           console.log('New notification received:', message.data);
-          
+
           // Обновляем кеш уведомлений
           queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
         } else if (message.type === 'auth_success') {
@@ -169,11 +169,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   return (
     <NotificationContext.Provider value={contextValue}>
       {children}
-      
+
       {/* Push Notifications Container */}
       {showPushNotifications && (
         <PushNotificationContainer
-          notifications={notifications.filter(n => 
+          notifications={notifications.filter(n =>
             !n.is_read && displayedNotifications.includes(n.id)
           )}
           onMarkAsRead={markAsRead}

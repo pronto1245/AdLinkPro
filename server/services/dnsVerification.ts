@@ -22,32 +22,32 @@ export class DNSVerificationService {
     try {
       console.log(`Verifying DNS TXT record for domain: ${domain}`);
       console.log(`Expected verification code: ${expectedCode}`);
-      
+
       const records = await resolveTxtAsync(domain);
       console.log(`DNS TXT records found:`, records);
-      
+
       // Check if any TXT record contains our verification code
-      const isVerified = records.some(recordArray => 
+      const isVerified = records.some(recordArray =>
         recordArray.some(record => record.includes(expectedCode))
       );
-      
+
       if (isVerified) {
         console.log(`✅ Domain ${domain} verified successfully via DNS TXT record`);
         return { success: true, method: 'dns' };
       } else {
         console.log(`❌ Verification code not found in DNS TXT records for ${domain}`);
-        return { 
-          success: false, 
-          method: 'dns', 
-          error: 'Verification code not found in DNS TXT records' 
+        return {
+          success: false,
+          method: 'dns',
+          error: 'Verification code not found in DNS TXT records'
         };
       }
     } catch (error: any) {
       console.error(`DNS verification error for ${domain}:`, error);
-      return { 
-        success: false, 
-        method: 'dns', 
-        error: `DNS lookup failed: ${error?.message || 'Unknown error'}` 
+      return {
+        success: false,
+        method: 'dns',
+        error: `DNS lookup failed: ${error?.message || 'Unknown error'}`
       };
     }
   }
@@ -56,13 +56,13 @@ export class DNSVerificationService {
   static async verifyFileMethod(domain: string, expectedCode: string): Promise<DomainVerificationResult> {
     try {
       console.log(`Verifying file method for domain: ${domain}`);
-      
+
       const verificationUrl = `https://${domain}/trk-verification.txt`;
       console.log(`Fetching verification file from: ${verificationUrl}`);
-      
+
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
-      
+
       const response = await fetch(verificationUrl, {
         method: 'GET',
         signal: controller.signal,
@@ -70,9 +70,9 @@ export class DNSVerificationService {
           'User-Agent': 'Affiliate-Platform-Verifier/1.0'
         }
       });
-      
+
       clearTimeout(timeout);
-      
+
       if (!response.ok) {
         return {
           success: false,
@@ -80,10 +80,10 @@ export class DNSVerificationService {
           error: `HTTP ${response.status}: ${response.statusText}`
         };
       }
-      
+
       const content = await response.text();
       console.log(`File content received:`, content);
-      
+
       if (content.trim().includes(expectedCode)) {
         console.log(`✅ Domain ${domain} verified successfully via file method`);
         return { success: true, method: 'file' };
@@ -108,17 +108,17 @@ export class DNSVerificationService {
   // Try both verification methods
   static async verifyDomain(domain: string, expectedCode: string): Promise<DomainVerificationResult> {
     console.log(`Starting domain verification for: ${domain}`);
-    
+
     // First try DNS TXT record method
     const dnsResult = await this.verifyDNSTxtRecord(domain, expectedCode);
     if (dnsResult.success) {
       return dnsResult;
     }
-    
+
     // If DNS fails, try file method as fallback
     console.log(`DNS verification failed, trying file method...`);
     const fileResult = await this.verifyFileMethod(domain, expectedCode);
-    
+
     return fileResult;
   }
 

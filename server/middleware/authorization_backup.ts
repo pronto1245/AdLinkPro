@@ -31,18 +31,18 @@ export function requireRole(...allowedRoles: string[]) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = (req as any).user;
-      
+
       if (!user) {
         return res.status(401).json({ error: 'Authentication required' });
       }
 
       // Check if user role is in allowed roles
       if (!allowedRoles.includes(user.role)) {
-        auditLog(req, 'UNAUTHORIZED_ACCESS', undefined, false, { 
-          userRole: user.role, 
-          requiredRoles: allowedRoles 
+        auditLog(req, 'UNAUTHORIZED_ACCESS', undefined, false, {
+          userRole: user.role,
+          requiredRoles: allowedRoles
         });
-        return res.status(403).json({ 
+        return res.status(403).json({
           error: 'Insufficient permissions',
           required: allowedRoles,
           current: user.role
@@ -51,7 +51,7 @@ export function requireRole(...allowedRoles: string[]) {
 
       // Additional check - verify user is still active
       const [dbUser] = await db
-        .select({ 
+        .select({
           isActive: users.isActive,
           isBlocked: users.isBlocked,
           role: users.role
@@ -67,7 +67,7 @@ export function requireRole(...allowedRoles: string[]) {
 
       // Update user object with current role from DB
       (req as any).user.role = dbUser.role;
-      
+
       next();
     } catch (error) {
       console.error('Role check error:', error);
@@ -81,7 +81,7 @@ export function requirePermission(permission: string) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = (req as any).user;
-      
+
       if (!user) {
         return res.status(401).json({ error: 'Authentication required' });
       }
@@ -106,13 +106,13 @@ export function requirePermission(permission: string) {
 
       // Check if user has the required permission
       const hasPermission = checkUserPermission(dbUser, permission);
-      
+
       if (!hasPermission) {
-        auditLog(req, 'PERMISSION_DENIED', undefined, false, { 
-          permission, 
-          userRole: dbUser.role 
+        auditLog(req, 'PERMISSION_DENIED', undefined, false, {
+          permission,
+          userRole: dbUser.role
         });
-        return res.status(403).json({ 
+        return res.status(403).json({
           error: 'Permission denied',
           required: permission
         });
@@ -120,7 +120,7 @@ export function requirePermission(permission: string) {
 
       // Add user data to request for downstream use
       (req as any).user = { ...user, ...dbUser };
-      
+
       next();
     } catch (error) {
       console.error('Permission check error:', error);
@@ -189,7 +189,7 @@ function checkUserPermission(user: any, permission: string): boolean {
   // Default permissions by role
   const rolePermissions: Record<string, string[]> = {
     'super_admin': [
-      'manageUsers', 'manageOffers', 'manageFinances', 'viewAnalytics', 
+      'manageUsers', 'manageOffers', 'manageFinances', 'viewAnalytics',
       'manageAntifraud', 'managePostbacks', 'manageTeam', 'systemSettings'
     ],
     'advertiser': [
@@ -200,7 +200,7 @@ function checkUserPermission(user: any, permission: string): boolean {
       'viewOffers', 'viewAnalytics', 'viewFinances'
     ],
     'staff': [
-      'viewOffers', 'viewAnalytics'  
+      'viewOffers', 'viewAnalytics'
     ]
   };
 
@@ -223,7 +223,7 @@ function checkUserPermission(user: any, permission: string): boolean {
 }
 
 // Middleware to ensure user owns the resource or has permission to access it
-export function requireOwnership(resourceUserIdParam: string = 'userId') {
+export function requireOwnership(resourceUserIdParam = 'userId') {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const currentUser = (req as any).user;
@@ -234,11 +234,11 @@ export function requireOwnership(resourceUserIdParam: string = 'userId') {
       }
 
       const canAccess = await canAccessUser(currentUser.id, targetUserId);
-      
+
       if (!canAccess) {
-        auditLog(req, 'OWNERSHIP_VIOLATION', undefined, false, { 
-          currentUserId: currentUser.id, 
-          targetUserId 
+        auditLog(req, 'OWNERSHIP_VIOLATION', undefined, false, {
+          currentUserId: currentUser.id,
+          targetUserId
         });
         return res.status(403).json({ error: 'Access denied - insufficient ownership permissions' });
       }

@@ -7,13 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Upload, 
-  Trash2, 
-  BarChartBig, 
-  Edit3, 
-  Pencil, 
-  Flag, 
+import {
+  Upload,
+  Trash2,
+  BarChartBig,
+  Edit3,
+  Pencil,
+  Flag,
   FileDown,
   GripVertical,
   Search,
@@ -86,55 +86,55 @@ const MyOffersDragDrop: React.FC = () => {
 
   const createOfferMutation = useMutation({
     mutationFn: (payload: Partial<Offer>) => apiRequest('/api/advertiser/offers', 'POST', payload),
-    onSuccess: () => { 
+    onSuccess: () => {
       toast({
-        title: "Успех",
-        description: "Оффер добавлен"
-      }); 
+        title: 'Успех',
+        description: 'Оффер добавлен'
+      });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: "Ошибка создания оффера: " + error.message,
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Ошибка создания оффера: ' + error.message,
+        variant: 'destructive'
       });
     }
   });
 
   const updateOfferMutation = useMutation({
-    mutationFn: (payload: Partial<Offer> & { id: string }) => 
+    mutationFn: (payload: Partial<Offer> & { id: string }) =>
       apiRequest(`/api/advertiser/offers/${payload.id}`, 'PUT', payload),
-    onSuccess: () => { 
+    onSuccess: () => {
       toast({
-        title: "Успех",
-        description: "Оффер обновлён"
-      }); 
+        title: 'Успех',
+        description: 'Оффер обновлён'
+      });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: "Ошибка обновления оффера: " + error.message,
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Ошибка обновления оффера: ' + error.message,
+        variant: 'destructive'
       });
     }
   });
 
   const deleteOfferMutation = useMutation({
     mutationFn: (id: string) => apiRequest(`/api/advertiser/offers/${id}`, 'DELETE'),
-    onSuccess: () => { 
+    onSuccess: () => {
       toast({
-        title: "Успех",
-        description: "Оффер удален"
-      }); 
+        title: 'Успех',
+        description: 'Оффер удален'
+      });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: "Ошибка удаления оффера: " + error.message,
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Ошибка удаления оффера: ' + error.message,
+        variant: 'destructive'
       });
     }
   });
@@ -152,8 +152,8 @@ const MyOffersDragDrop: React.FC = () => {
       const newItems = arrayMove(items, oldIndex, newIndex);
       setItems(newItems);
       toast({
-        title: "Информация",
-        description: "Порядок офферов изменён"
+        title: 'Информация',
+        description: 'Порядок офферов изменён'
       });
     }
   };
@@ -166,11 +166,11 @@ const MyOffersDragDrop: React.FC = () => {
       const text = e.target?.result as string;
       const lines = text.split('\n').filter(line => line.trim());
       let imported = 0;
-      
+
       for (const line of lines) {
         const [name, geo, payout, category, cap, status] = line.split(';');
         if (!name?.trim()) {continue;}
-        
+
         try {
           await createOfferMutation.mutateAsync({
             name: name.trim(),
@@ -179,8 +179,8 @@ const MyOffersDragDrop: React.FC = () => {
             category: category?.trim() || '',
             cap: cap?.trim() || '',
             status: status?.trim() || 'active',
-            hold: '', 
-            abtestLinks: [], 
+            hold: '',
+            abtestLinks: [],
             partners: []
           });
           imported++;
@@ -189,7 +189,7 @@ const MyOffersDragDrop: React.FC = () => {
         }
       }
       toast({
-        title: "Успех",
+        title: 'Успех',
         description: `Импорт завершён. Добавлено: ${imported} офферов`
       });
     };
@@ -197,7 +197,7 @@ const MyOffersDragDrop: React.FC = () => {
   };
 
   const exportToCSV = () => {
-    const csvContent = offers.map((offer: Offer) => 
+    const csvContent = offers.map((offer: Offer) =>
       [
         offer.name || '',
         (offer.countries || []).join(','),
@@ -218,17 +218,17 @@ const MyOffersDragDrop: React.FC = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast({
-      title: "Успех",
-      description: "Экспорт завершён"
+      title: 'Успех',
+      description: 'Экспорт завершён'
     });
   };
 
   const bulkStatusUpdate = (newStatus: string) => {
     if (selectedOffers.length === 0) {
       toast({
-        title: "Ошибка",
-        description: "Выберите офферы для изменения статуса",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Выберите офферы для изменения статуса',
+        variant: 'destructive'
       });
       return;
     }
@@ -243,7 +243,7 @@ const MyOffersDragDrop: React.FC = () => {
 
     Promise.all(updates).then(() => {
       toast({
-        title: "Успех",
+        title: 'Успех',
         description: `Статус изменён для ${selectedOffers.length} офферов`
       });
       setSelectedOffers([]);
@@ -253,9 +253,9 @@ const MyOffersDragDrop: React.FC = () => {
   const bulkDeleteOffers = () => {
     if (selectedOffers.length === 0) {
       toast({
-        title: "Ошибка", 
-        description: "Выберите офферы для удаления",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Выберите офферы для удаления',
+        variant: 'destructive'
       });
       return;
     }
@@ -265,10 +265,10 @@ const MyOffersDragDrop: React.FC = () => {
     }
 
     const deletions = selectedOffers.map(id => deleteOfferMutation.mutateAsync(id));
-    
+
     Promise.all(deletions).then(() => {
       toast({
-        title: "Успех",
+        title: 'Успех',
         description: `Удалено ${selectedOffers.length} офферов`
       });
       setSelectedOffers([]);
@@ -277,15 +277,15 @@ const MyOffersDragDrop: React.FC = () => {
 
   const renderABPreview = (links: string[], offer: Offer) => {
     if (!links?.length) {return <span className="text-muted-foreground">—</span>;}
-    
+
     return (
       <div className="flex flex-col gap-1">
         {links.slice(0, 2).map((link, i) => (
-          <a 
-            key={`abtest-${offer.id}-${i}`} 
-            href={link} 
-            target="_blank" 
-            rel="noreferrer" 
+          <a
+            key={`abtest-${offer.id}-${i}`}
+            href={link}
+            target="_blank"
+            rel="noreferrer"
             className="text-blue-600 dark:text-blue-400 underline text-xs hover:text-blue-800 dark:hover:text-blue-300"
           >
             Лендинг {i + 1}
@@ -310,7 +310,7 @@ const MyOffersDragDrop: React.FC = () => {
 
   const showDashboard = (offerId: string) => {
     toast({
-      title: "Информация",
+      title: 'Информация',
       description: `Открываю дашборд для оффера: ${offerId}`
     });
     // Здесь будет переход к странице статистики оффера
@@ -321,7 +321,7 @@ const MyOffersDragDrop: React.FC = () => {
   const filteredOffers = offers.filter((offer: Offer) => {
     const statusMatch = filterStatus === 'all' || offer.status === filterStatus;
     const categoryMatch = filterCategory === 'all-categories' || !filterCategory || offer.category?.includes(filterCategory);
-    const searchMatch = !searchQuery || 
+    const searchMatch = !searchQuery ||
       offer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       offer.category?.toLowerCase().includes(searchQuery.toLowerCase());
     return statusMatch && categoryMatch && searchMatch;
@@ -355,14 +355,14 @@ const MyOffersDragDrop: React.FC = () => {
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Среднее CR</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {offers.length > 0 
+              {offers.length > 0
                 ? (offers.reduce((sum: number, o: Offer) => sum + (parseFloat(o.cr || '0')), 0) / offers.length).toFixed(2)
                 : '0.00'
               }%
@@ -370,7 +370,7 @@ const MyOffersDragDrop: React.FC = () => {
             <p className="text-xs text-muted-foreground">Конверсия</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Общий доход</CardTitle>
@@ -382,7 +382,7 @@ const MyOffersDragDrop: React.FC = () => {
             <p className="text-xs text-muted-foreground">За весь период</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Партнёров</CardTitle>
@@ -401,15 +401,15 @@ const MyOffersDragDrop: React.FC = () => {
         <div className="flex gap-2 items-center">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input 
-              placeholder="Поиск офферов..." 
+            <Input
+              placeholder="Поиск офферов..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 w-64"
               data-testid="input-search-offers"
             />
           </div>
-          
+
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger className="w-40">
               <Filter className="h-4 w-4 mr-2" />
@@ -422,7 +422,7 @@ const MyOffersDragDrop: React.FC = () => {
               <SelectItem value="archived">Архив</SelectItem>
             </SelectContent>
           </Select>
-          
+
           <Select value={filterCategory} onValueChange={setFilterCategory}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Категория" />
@@ -437,28 +437,28 @@ const MyOffersDragDrop: React.FC = () => {
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             onClick={exportToCSV}
             data-testid="button-export-csv"
           >
             <FileDown className="h-4 w-4 mr-2" />
             Экспорт
           </Button>
-          
+
           <div className="relative">
-            <Input 
-              type="file" 
-              accept=".csv" 
-              onChange={importFromCSV} 
+            <Input
+              type="file"
+              accept=".csv"
+              onChange={importFromCSV}
               className="hidden"
               id="csv-import"
             />
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               variant="outline"
               onClick={() => document.getElementById('csv-import')?.click()}
               data-testid="button-import-csv"
@@ -476,37 +476,37 @@ const MyOffersDragDrop: React.FC = () => {
           <span className="text-sm font-medium">
             Выбрано: {selectedOffers.length}
           </span>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             onClick={() => bulkStatusUpdate('active')}
             data-testid="button-bulk-activate"
           >
             Активировать
           </Button>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             onClick={() => bulkStatusUpdate('paused')}
             data-testid="button-bulk-pause"
           >
             Приостановить
           </Button>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             onClick={() => bulkStatusUpdate('archived')}
             data-testid="button-bulk-archive"
           >
             Архивировать
           </Button>
-          <Button 
-            size="sm" 
-            onClick={bulkDeleteOffers} 
+          <Button
+            size="sm"
+            onClick={bulkDeleteOffers}
             variant="destructive"
             data-testid="button-bulk-delete"
           >
             Удалить
           </Button>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant="outline"
             onClick={() => setSelectedOffers([])}
             data-testid="button-clear-selection"
@@ -553,7 +553,7 @@ const MyOffersDragDrop: React.FC = () => {
                 {items.map((id) => {
                   const offer = filteredOffers.find((o: Offer) => o.id === id);
                   if (!offer) {return null;}
-                  
+
                   return (
                     <SortableItem key={`offer-${id}`} id={id}>
                         <TableCell>
@@ -577,8 +577,8 @@ const MyOffersDragDrop: React.FC = () => {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             {offer.logo && (
-                              <img 
-                                src={offer.logo} 
+                              <img
+                                src={offer.logo}
                                 alt={offer.name}
                                 className="w-8 h-8 rounded object-cover"
                               />
@@ -619,7 +619,7 @@ const MyOffersDragDrop: React.FC = () => {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Badge 
+                          <Badge
                             variant={parseFloat(formatCR(offer.cr)) > 5 ? 'default' : 'secondary'}
                             className={parseFloat(formatCR(offer.cr)) > 5 ? 'bg-green-100 text-green-800' : ''}
                           >
@@ -627,7 +627,7 @@ const MyOffersDragDrop: React.FC = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge 
+                          <Badge
                             variant={
                               offer.status === 'active' ? 'default' :
                               offer.status === 'paused' ? 'secondary' :
@@ -655,8 +655,8 @@ const MyOffersDragDrop: React.FC = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-1 justify-end">
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="ghost"
                               onClick={() => setEditingOffer(offer)}
                               data-testid={`button-edit-${offer.id}`}
@@ -664,8 +664,8 @@ const MyOffersDragDrop: React.FC = () => {
                             >
                               <Edit3 className="w-4 h-4" />
                             </Button>
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="ghost"
                               onClick={() => showDashboard(offer.id)}
                               data-testid={`button-dashboard-${offer.id}`}
@@ -673,8 +673,8 @@ const MyOffersDragDrop: React.FC = () => {
                             >
                               <BarChartBig className="w-4 h-4" />
                             </Button>
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="ghost"
                               onClick={() => deleteOfferMutation.mutate(offer.id)}
                               data-testid={`button-delete-${offer.id}`}
@@ -701,8 +701,8 @@ const MyOffersDragDrop: React.FC = () => {
               {searchQuery || filterStatus !== 'all' || filterCategory ? (
                 <>
                   <p>Офферы не найдены по заданным критериям.</p>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="mt-2"
                     onClick={() => {
                       setSearchQuery('');

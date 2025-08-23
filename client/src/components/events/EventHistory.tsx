@@ -86,7 +86,7 @@ export function EventHistory({ events = [], isLoading = false }: EventHistoryPro
           Последние отправленные события
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent>
         {events.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
@@ -105,7 +105,7 @@ export function EventHistory({ events = [], isLoading = false }: EventHistoryPro
                         {event.status}
                       </Badge>
                     </div>
-                    
+
                     {event.antifraudLevel && (
                       <div className="flex items-center gap-1">
                         <Shield className="h-4 w-4" />
@@ -115,7 +115,7 @@ export function EventHistory({ events = [], isLoading = false }: EventHistoryPro
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
                     <div>
                       <span className="font-medium">Click ID:</span>
@@ -130,7 +130,7 @@ export function EventHistory({ events = [], isLoading = false }: EventHistoryPro
                       </code>
                     </div>
                   </div>
-                  
+
                   {event.value && (
                     <div className="text-sm">
                       <span className="font-medium">Сумма:</span>
@@ -139,7 +139,7 @@ export function EventHistory({ events = [], isLoading = false }: EventHistoryPro
                       </span>
                     </div>
                   )}
-                  
+
                   <div className="text-xs text-muted-foreground">
                     {new Date(event.createdAt).toLocaleString('ru-RU')}
                   </div>

@@ -5,21 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/auth-context';
 
-import { 
-  Plus, 
-  Save, 
+import {
+  Plus,
+  Save,
   X,
   Globe,
   Smartphone,
@@ -44,12 +44,12 @@ interface ReceivedOffer {
 }
 
 const categories = [
-  'gambling', 'finance', 'dating', 'health', 'entertainment', 
+  'gambling', 'finance', 'dating', 'health', 'entertainment',
   'e-commerce', 'education', 'travel', 'games', 'crypto'
 ];
 
 const geoOptions = [
-  'russia', 'ukraine', 'belarus', 'kazakhstan', 'usa', 'canada', 
+  'russia', 'ukraine', 'belarus', 'kazakhstan', 'usa', 'canada',
   'germany', 'france', 'uk', 'brazil', 'india', 'china'
 ];
 
@@ -58,7 +58,7 @@ const deviceOptions = [
 ];
 
 const supplierSources = [
-  'PropellerAds', 'RichAds', 'TacoLoco', 'AdCombo', 'Mobidea', 
+  'PropellerAds', 'RichAds', 'TacoLoco', 'AdCombo', 'Mobidea',
   'CrakRevenue', 'ClickDealer', 'MaxBounty', 'Другой источник'
 ];
 
@@ -69,7 +69,7 @@ export default function ReceivedOffers() {
   const [selectedGeo, setSelectedGeo] = useState<string[]>([]);
   const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
   const [customSupplierSource, setCustomSupplierSource] = useState('');
-  
+
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -105,17 +105,17 @@ export default function ReceivedOffers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/received-offers'] });
       toast({
-        title: "Успешно",
-        description: "Полученный оффер добавлен и активирован"
+        title: 'Успешно',
+        description: 'Полученный оффер добавлен и активирован'
       });
       resetForm();
       setShowAddForm(false);
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось создать оффер",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: error.message || 'Не удалось создать оффер',
+        variant: 'destructive'
       });
     }
   });
@@ -139,20 +139,20 @@ export default function ReceivedOffers() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name || !formData.category || selectedGeo.length === 0 || 
+
+    if (!formData.name || !formData.category || selectedGeo.length === 0 ||
         selectedDevices.length === 0 || !formData.supplierRate || !formData.partnerRate ||
         !formData.targetUrl || !formData.postbackUrl) {
       toast({
-        title: "Ошибка валидации",
-        description: "Заполните все обязательные поля",
-        variant: "destructive"
+        title: 'Ошибка валидации',
+        description: 'Заполните все обязательные поля',
+        variant: 'destructive'
       });
       return;
     }
 
-    const supplierSource = formData.supplierSource === 'Другой источник' 
-      ? customSupplierSource 
+    const supplierSource = formData.supplierSource === 'Другой источник'
+      ? customSupplierSource
       : formData.supplierSource;
 
     createOfferMutation.mutate({
@@ -201,7 +201,7 @@ export default function ReceivedOffers() {
             Управление офферами от поставщиков
           </p>
         </div>
-        <Button 
+        <Button
           onClick={() => setShowAddForm(true)}
           data-testid="button-add-received-offer"
         >
@@ -216,9 +216,9 @@ export default function ReceivedOffers() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle>Добавление оффера от поставщика</CardTitle>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   setShowAddForm(false);
                   resetForm();
@@ -237,7 +237,7 @@ export default function ReceivedOffers() {
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Введите название оффера"
                     data-testid="input-offer-name"
                   />
@@ -246,9 +246,9 @@ export default function ReceivedOffers() {
                 {/* Категория */}
                 <div className="space-y-2">
                   <Label htmlFor="category">Категория *</Label>
-                  <Select 
-                    value={formData.category} 
-                    onValueChange={(value) => setFormData({...formData, category: value})}
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => setFormData({ ...formData, category: value })}
                   >
                     <SelectTrigger data-testid="select-category">
                       <SelectValue placeholder="Выберите категорию" />
@@ -264,10 +264,10 @@ export default function ReceivedOffers() {
                 {/* Тип выплаты */}
                 <div className="space-y-2">
                   <Label htmlFor="payoutType">Тип выплаты *</Label>
-                  <Select 
-                    value={formData.payoutType} 
-                    onValueChange={(value: 'cpa' | 'revshare' | 'cpl') => 
-                      setFormData({...formData, payoutType: value})}
+                  <Select
+                    value={formData.payoutType}
+                    onValueChange={(value: 'cpa' | 'revshare' | 'cpl') =>
+                      setFormData({ ...formData, payoutType: value })}
                   >
                     <SelectTrigger data-testid="select-payout-type">
                       <SelectValue />
@@ -283,9 +283,9 @@ export default function ReceivedOffers() {
                 {/* Источник поставщика */}
                 <div className="space-y-2">
                   <Label htmlFor="supplierSource">Источник поставщика</Label>
-                  <Select 
-                    value={formData.supplierSource} 
-                    onValueChange={(value) => setFormData({...formData, supplierSource: value})}
+                  <Select
+                    value={formData.supplierSource}
+                    onValueChange={(value) => setFormData({ ...formData, supplierSource: value })}
                   >
                     <SelectTrigger data-testid="select-supplier-source">
                       <SelectValue placeholder="Выберите источник" />
@@ -315,7 +315,7 @@ export default function ReceivedOffers() {
                     type="number"
                     step="0.01"
                     value={formData.supplierRate}
-                    onChange={(e) => setFormData({...formData, supplierRate: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, supplierRate: e.target.value })}
                     placeholder="0.00"
                     data-testid="input-supplier-rate"
                   />
@@ -329,7 +329,7 @@ export default function ReceivedOffers() {
                     type="number"
                     step="0.01"
                     value={formData.partnerRate}
-                    onChange={(e) => setFormData({...formData, partnerRate: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, partnerRate: e.target.value })}
                     placeholder="0.00"
                     data-testid="input-partner-rate"
                   />
@@ -342,7 +342,7 @@ export default function ReceivedOffers() {
                     id="targetUrl"
                     type="url"
                     value={formData.targetUrl}
-                    onChange={(e) => setFormData({...formData, targetUrl: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, targetUrl: e.target.value })}
                     placeholder="https://example.com/offer"
                     data-testid="input-target-url"
                   />
@@ -355,7 +355,7 @@ export default function ReceivedOffers() {
                     id="postbackUrl"
                     type="url"
                     value={formData.postbackUrl}
-                    onChange={(e) => setFormData({...formData, postbackUrl: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, postbackUrl: e.target.value })}
                     placeholder="https://example.com/postback"
                     data-testid="input-postback-url"
                   />
@@ -428,7 +428,7 @@ export default function ReceivedOffers() {
                 <Textarea
                   id="conditions"
                   value={formData.conditions}
-                  onChange={(e) => setFormData({...formData, conditions: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, conditions: e.target.value })}
                   placeholder="Описание условий работы с оффером, ограничений, требований к трафику..."
                   rows={4}
                   data-testid="textarea-conditions"
@@ -437,9 +437,9 @@ export default function ReceivedOffers() {
 
               {/* Кнопка сохранения */}
               <div className="flex justify-end space-x-3">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => {
                     setShowAddForm(false);
                     resetForm();
@@ -447,7 +447,7 @@ export default function ReceivedOffers() {
                 >
                   Отмена
                 </Button>
-                <Button 
+                <Button
                   type="submit"
                   disabled={createOfferMutation.isPending}
                   data-testid="button-save-activate"
@@ -482,26 +482,26 @@ export default function ReceivedOffers() {
                 <div key={offer.id} className="border rounded-lg p-4">
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="font-semibold text-lg">{offer.name}</h3>
-                    <Badge 
+                    <Badge
                       variant={offer.status === 'active' ? 'default' : 'secondary'}
                     >
                       {offer.status === 'active' ? 'Активен' : 'Неактивен'}
                     </Badge>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
                     <div>
                       <span className="text-sm text-gray-500">Категория:</span>
                       <p className="font-medium">{offer.category}</p>
                     </div>
-                    
+
                     <div>
                       <span className="text-sm text-gray-500">Тип выплаты:</span>
                       <Badge className={getPayoutTypeColor(offer.payoutType)}>
                         {offer.payoutType.toUpperCase()}
                       </Badge>
                     </div>
-                    
+
                     <div>
                       <span className="text-sm text-gray-500">Расход:</span>
                       <p className="font-medium text-red-600">
@@ -509,7 +509,7 @@ export default function ReceivedOffers() {
                         {offer.supplierRate}
                       </p>
                     </div>
-                    
+
                     <div>
                       <span className="text-sm text-gray-500">Доход:</span>
                       <p className="font-medium text-green-600">
@@ -518,7 +518,7 @@ export default function ReceivedOffers() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-2 mb-3">
                     {offer.geo.map(geo => (
                       <Badge key={geo} variant="outline" className="flex items-center gap-1">
@@ -527,7 +527,7 @@ export default function ReceivedOffers() {
                       </Badge>
                     ))}
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-2">
                     {offer.devices.map(device => (
                       <Badge key={device} variant="outline" className="flex items-center gap-1">

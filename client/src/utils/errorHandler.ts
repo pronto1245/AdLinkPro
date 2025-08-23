@@ -1,6 +1,6 @@
 export function setupGlobalErrorHandling() {
   window.addEventListener('unhandledrejection', (e: Event & { reason?: unknown; detail?: unknown }) => {
-    const st = (e as { reason?: { status?: number }; detail?: { status?: number } })?.reason?.status ?? 
+    const st = (e as { reason?: { status?: number }; detail?: { status?: number } })?.reason?.status ??
                (e as { reason?: { status?: number }; detail?: { status?: number } })?.detail?.status;
     if (st === 401 || st === 403) {
       try {

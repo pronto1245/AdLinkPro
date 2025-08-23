@@ -21,7 +21,7 @@ router.get('/summary', requireAuth, async (req, res) => {
     }
 
     const summary = await AnalyticsService.getAnalyticsSummary(filters);
-    
+
     // Transform to expected dashboard format
     const dashboardSummary = {
       clicks: summary.totalClicks || 0,

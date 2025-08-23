@@ -2,7 +2,7 @@ import { fetchJSON } from '@/lib/fetchJSON';
 import { useToast } from '@/hooks/use-toast';
 
 export type SendEventPayload = {
-  type: "reg" | "purchase";
+  type: 'reg' | 'purchase';
   clickid: string;
   txid: string;
   value?: number;
@@ -17,9 +17,9 @@ export type EventResponse = {
 };
 
 export async function sendEvent(payload: SendEventPayload): Promise<EventResponse> {
-  return fetchJSON<EventResponse>("/api/v3/event", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  return fetchJSON<EventResponse>('/api/v3/event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
 }
@@ -30,23 +30,23 @@ export function useSendEvent() {
   const handleSendEvent = async (payload: SendEventPayload) => {
     try {
       const result = await sendEvent(payload);
-      
+
       toast({
-        title: "Событие отправлено",
+        title: 'Событие отправлено',
         description: `Conversion ID: ${result.id} (${result.status})`,
-        variant: "default"
+        variant: 'default'
       });
-      
+
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
-      
+
       toast({
-        title: "Ошибка отправки события",
+        title: 'Ошибка отправки события',
         description: errorMessage,
-        variant: "destructive"
+        variant: 'destructive'
       });
-      
+
       throw error;
     }
   };

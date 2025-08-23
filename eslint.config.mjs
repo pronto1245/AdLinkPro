@@ -56,6 +56,7 @@ export default [
         Event: 'readonly',
         CloseEvent: 'readonly',
         CustomEvent: 'readonly',
+        EventListener: 'readonly',
         // Additional browser APIs
         URL: 'readonly',
         URLSearchParams: 'readonly',
@@ -67,6 +68,8 @@ export default [
         btoa: 'readonly',
         // Node.js types
         NodeJS: 'readonly',
+        // Express types
+        Express: 'readonly',
       },
     },
     plugins: {

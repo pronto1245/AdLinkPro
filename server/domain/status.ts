@@ -9,16 +9,16 @@ export type Status = typeof ORDER[number];
  * @param type - Conversion type (reg or purchase)
  * @returns Normalized status
  */
-export function normalize(prev: Status|undefined, next: Status, type: "reg"|"purchase"): Status {
+export function normalize(prev: Status|undefined, next: Status, type: 'reg'|'purchase'): Status {
   // If no previous status, accept new status
   if (!prev) {return next;}
-  
+
   // Registration cannot be refunded or charged back
   if (type === 'reg' && (next === 'refunded' || next === 'chargeback')) {return prev;}
-  
+
   // Refunds and chargebacks only apply to approved purchases
   if (next === 'refunded' || next === 'chargeback') {return prev === 'approved' ? next : prev;}
-  
+
   // Status can only move forward in the order, never backward
   const pi = ORDER.indexOf(prev);
   const ni = ORDER.indexOf(next);
@@ -32,7 +32,7 @@ export function getStatusDescription(status: Status, lang: 'en' | 'ru' = 'en'): 
   const descriptions = {
     en: {
       initiated: 'Initiated',
-      pending: 'Pending Review', 
+      pending: 'Pending Review',
       approved: 'Approved',
       declined: 'Declined',
       refunded: 'Refunded',
@@ -41,20 +41,20 @@ export function getStatusDescription(status: Status, lang: 'en' | 'ru' = 'en'): 
     ru: {
       initiated: 'Инициирован',
       pending: 'На рассмотрении',
-      approved: 'Одобрен', 
+      approved: 'Одобрен',
       declined: 'Отклонен',
       refunded: 'Возврат',
       chargeback: 'Чарджбек'
     }
   };
-  
+
   return descriptions[lang][status];
 }
 
 /**
  * Determines if status transition is valid
  */
-export function isValidTransition(from: Status, to: Status, type: "reg"|"purchase"): boolean {
+export function isValidTransition(from: Status, to: Status, type: 'reg'|'purchase'): boolean {
   const normalized = normalize(from, to, type);
   return normalized === to;
 }
@@ -62,26 +62,26 @@ export function isValidTransition(from: Status, to: Status, type: "reg"|"purchas
 /**
  * Gets allowed next statuses for current status
  */
-export function getAllowedNextStatuses(current: Status, type: "reg"|"purchase"): Status[] {
+export function getAllowedNextStatuses(current: Status, type: 'reg'|'purchase'): Status[] {
   const currentIndex = ORDER.indexOf(current);
   const allowed: Status[] = [];
-  
+
   for (let i = currentIndex; i < ORDER.length; i++) {
     const status = ORDER[i];
-    
+
     // Skip refunded/chargeback for registration
     if (type === 'reg' && (status === 'refunded' || status === 'chargeback')) {
       continue;
     }
-    
+
     // Refunded/chargeback only allowed from approved
     if ((status === 'refunded' || status === 'chargeback') && current !== 'approved') {
       continue;
     }
-    
+
     allowed.push(status);
   }
-  
+
   return allowed;
 }
 
@@ -98,7 +98,7 @@ export function mapExternalStatus(externalStatus: string, source: 'keitaro' | 'a
     },
     affiliate: {
       'approved': 'approved',
-      'declined': 'declined', 
+      'declined': 'declined',
       'pending': 'pending',
       'hold': 'pending'
     },
@@ -111,10 +111,10 @@ export function mapExternalStatus(externalStatus: string, source: 'keitaro' | 'a
       'reversed': 'chargeback'
     }
   };
-  
+
   const sourceMapping = mappings[source];
   if (!sourceMapping) {return 'pending';}
-  
+
   const mapped = sourceMapping[externalStatus.toLowerCase()];
   return mapped || 'pending';
 }

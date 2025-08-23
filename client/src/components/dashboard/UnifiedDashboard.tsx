@@ -8,13 +8,13 @@ import { useTheme } from '@/contexts/theme-context';
 import { useTranslation } from 'react-i18next';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { NotificationToast } from '@/components/ui/notification-toast';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
-  DollarSign, 
-  MousePointer, 
-  Target, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Users,
+  DollarSign,
+  MousePointer,
+  Target,
   Activity,
   RefreshCw,
   Bell
@@ -60,7 +60,7 @@ export default function UnifiedDashboard({ config }: UnifiedDashboardProps) {
       onMessage: (message) => {
         if (message.type === 'dashboard_update') {
           queryClient.invalidateQueries({ queryKey: [config.apiEndpoint] });
-          
+
           // Show notification for significant changes
           if (message.data.change > 10) {
             setNotifications(prev => [
@@ -89,11 +89,11 @@ export default function UnifiedDashboard({ config }: UnifiedDashboardProps) {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch dashboard data: ${response.statusText}`);
       }
-      
+
       return response.json();
     },
     refetchInterval: config.realTimeUpdates ? 30000 : 60000, // Auto-refresh
@@ -115,7 +115,7 @@ export default function UnifiedDashboard({ config }: UnifiedDashboardProps) {
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
     refetch();
-    
+
     toast({
       title: 'Dashboard Refreshed',
       description: 'Data has been updated',
@@ -317,7 +317,7 @@ export default function UnifiedDashboard({ config }: UnifiedDashboardProps) {
           {/* Real-time status indicator */}
           {config.realTimeUpdates && (
             <div className="flex items-center space-x-2">
-              <div 
+              <div
                 className={`w-2 h-2 rounded-full ${
                   isConnected ? 'bg-green-500' : 'bg-red-500'
                 }`}
@@ -327,7 +327,7 @@ export default function UnifiedDashboard({ config }: UnifiedDashboardProps) {
               </span>
             </div>
           )}
-          
+
           {/* Notification bell */}
           <Button
             variant="outline"
@@ -359,8 +359,8 @@ export default function UnifiedDashboard({ config }: UnifiedDashboardProps) {
       {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {metricCards.map((metric, index) => (
-          <Card 
-            key={index} 
+          <Card
+            key={index}
             className="transition-all duration-300 hover:transform hover:-translate-y-1 hover:shadow-lg"
           >
             <CardContent className="p-6">
@@ -414,10 +414,10 @@ export default function UnifiedDashboard({ config }: UnifiedDashboardProps) {
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#8884d8" 
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#8884d8"
                   strokeWidth={2}
                 />
               </LineChart>

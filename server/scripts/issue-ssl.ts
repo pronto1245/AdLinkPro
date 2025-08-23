@@ -12,27 +12,27 @@ import { eq } from 'drizzle-orm';
 async function issueCertificateForDomain(domain: string) {
   try {
     console.log(`🚀 Начинаем выдачу SSL сертификата для домена: ${domain}`);
-    
+
     // Находим домен в базе
     const [domainRecord] = await db
       .select()
       .from(customDomains)
       .where(eq(customDomains.domain, domain))
       .limit(1);
-    
+
     if (!domainRecord) {
       throw new Error(`Домен ${domain} не найден в базе данных`);
     }
-    
+
     if (domainRecord.status !== 'verified') {
       throw new Error(`Домен ${domain} не верифицирован. Статус: ${domainRecord.status}`);
     }
-    
+
     console.log(`✅ Домен найден в базе. ID: ${domainRecord.id}`);
-    
+
     // Выдаем SSL сертификат
     const result = await LetsEncryptService.issueCertificate(domain, domainRecord.id);
-    
+
     if (result.success) {
       console.log(`🎉 SSL сертификат успешно выдан для ${domain}!`);
       console.log(`📋 Сертификат действителен до: ${new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()}`);
@@ -40,7 +40,7 @@ async function issueCertificateForDomain(domain: string) {
       console.error(`❌ Ошибка выдачи SSL: ${result.error}`);
       process.exit(1);
     }
-    
+
   } catch (_) {
     console.error('❌ Критическая ошибка:', error instanceof Error ? error.message : String(error));
     process.exit(1);

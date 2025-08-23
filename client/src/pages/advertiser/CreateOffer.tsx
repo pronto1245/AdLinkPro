@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Upload, Image, Globe, Target, Settings, ArrowLeft, Save, Trash2 } from 'lucide-react';
@@ -27,10 +27,10 @@ interface OfferFormData {
   description: { ru: string; en: string };
   category: string;
   logo: string;
-  
+
   // GEO и устройства
   geoTargeting: string[];
-  
+
   // Ссылки
   targetUrl: string;
   postbackUrl: string;
@@ -48,36 +48,36 @@ interface OfferFormData {
     hasCustomPayout?: boolean;
     isDefault: boolean;
   }>;
-  
+
   // Выплаты
   payoutType: 'cpa' | 'cpl' | 'cps' | 'revshare' | 'hybrid';
   payoutAmount: number;
   currency: string;
-  
+
   // Условия
   trafficSources: string[];
   allowedApplications: string[];
-  
+
   // Кепы и лимиты
   dailyLimit: number;
   monthlyLimit: number;
-  
+
   // Антифрод
   antifraudEnabled: boolean;
   antifraudMethods: string[]; // Выбранные методы антифрод защиты
   partnerApprovalType: 'auto' | 'manual' | 'by_request' | 'whitelist_only';
-  
+
   // Дополнительные настройки
   kycRequired: boolean;
   isPrivate: boolean;
-  
+
   // Мета данные
   kpi: string;
-  
+
   // Креативы
   creatives?: string;
   creativesUrl?: string;
-  
+
   // Статус
   status: 'draft' | 'active' | 'paused' | 'on_request';
 }
@@ -88,10 +88,10 @@ const initialFormData: OfferFormData = {
   description: { ru: '', en: '' },
   category: '',
   logo: '',
-  
+
   // GEO и устройства
   geoTargeting: [],
-  
+
   // Ссылки
   targetUrl: '',
   postbackUrl: '',
@@ -100,42 +100,42 @@ const initialFormData: OfferFormData = {
   globalGeo: '',
   globalPayout: '',
   landingPages: [{ id: '1', name: 'Основная', url: '', geo: '', payout: '', hasCustomGeo: false, hasCustomPayout: false, isDefault: true }],
-  
+
   // Выплаты
   payoutType: 'cpa',
   payoutAmount: 0,
   currency: 'USD',
-  
+
   // Условия
   trafficSources: [],
   allowedApplications: [],
-  
+
   // Кепы и лимиты
   dailyLimit: 0,
   monthlyLimit: 0,
-  
+
   // Антифрод
   antifraudEnabled: true,
   antifraudMethods: ['ip_check', 'vpn_detection'], // По умолчанию включены базовые методы
   partnerApprovalType: 'manual',
-  
+
   // Дополнительные настройки
   kycRequired: false,
   isPrivate: false,
-  
+
   // Мета данные
   kpi: '',
-  
+
   // Креативы
   creatives: '',
   creativesUrl: '',
-  
+
   // Статус
   status: 'active'
 };
 
 const categories = [
-  'gambling', 'dating', 'crypto', 'betting', 'e-commerce', 
+  'gambling', 'dating', 'crypto', 'betting', 'e-commerce',
   'gaming', 'finance', 'health', 'vpn', 'antivirus', 'education',
   'software', 'mobile_apps', 'nutra', 'beauty'
 ];
@@ -236,10 +236,10 @@ const countries = [
 ];
 
 const allowedTrafficSources = [
-  'Push', 'Popunder', 'Google Ads', 'Facebook Ads', 'TikTok Ads', 
-  'Instagram', 'YouTube Ads', 'Native', 'UAC', 'SEO', 'Email', 
-  'WhatsApp', 'Telegram', 'Motivated', 'In-App', 'Cloaking', 
-  'Bot', 'Farm', 'Doros', 'APK', 'VK', 'Discord', 'Phishing', 
+  'Push', 'Popunder', 'Google Ads', 'Facebook Ads', 'TikTok Ads',
+  'Instagram', 'YouTube Ads', 'Native', 'UAC', 'SEO', 'Email',
+  'WhatsApp', 'Telegram', 'Motivated', 'In-App', 'Cloaking',
+  'Bot', 'Farm', 'Doros', 'APK', 'VK', 'Discord', 'Phishing',
   'Autoredirect', 'Proxy/VPN', 'Twitter/X'
 ];
 
@@ -272,48 +272,48 @@ const osTypes = [
 
 // Методы антифрод защиты с описаниями для полной интеграции
 const antifraudMethods = [
-  { 
-    value: 'ip_check', 
+  {
+    value: 'ip_check',
     label: 'Проверка IP адресов',
     description: 'Анализ подозрительных IP и геолокации'
   },
-  { 
-    value: 'vpn_detection', 
+  {
+    value: 'vpn_detection',
     label: 'Детекция VPN/Proxy',
     description: 'Обнаружение VPN, прокси и анонимайзеров'
   },
-  { 
-    value: 'bot_protection', 
+  {
+    value: 'bot_protection',
     label: 'Защита от ботов',
     description: 'Идентификация автоматизированного трафика'
   },
-  { 
-    value: 'device_fingerprint', 
+  {
+    value: 'device_fingerprint',
     label: 'Отпечаток устройства',
     description: 'Уникальная идентификация устройств'
   },
-  { 
-    value: 'behavioral_analysis', 
+  {
+    value: 'behavioral_analysis',
     label: 'Поведенческий анализ',
     description: 'Анализ паттернов поведения пользователей'
   },
-  { 
-    value: 'click_spam_protection', 
+  {
+    value: 'click_spam_protection',
     label: 'Защита от кликспама',
     description: 'Предотвращение массовых фиктивных кликов'
   },
-  { 
-    value: 'time_analysis', 
+  {
+    value: 'time_analysis',
     label: 'Временной анализ',
     description: 'Контроль времени между событиями'
   },
-  { 
-    value: 'referrer_validation', 
+  {
+    value: 'referrer_validation',
     label: 'Проверка источников',
     description: 'Валидация источников переходов'
   },
-  { 
-    value: 'conversion_validation', 
+  {
+    value: 'conversion_validation',
     label: 'Проверка конверсий',
     description: 'Валидация качества конверсий'
   }
@@ -337,13 +337,13 @@ const languages = [
 ];
 
 // Компонент выбора страны с поиском
-function CountrySelect({ value, onChange, placeholder = "Выберите страну" }: {
+function CountrySelect({ value, onChange, placeholder = 'Выберите страну' }: {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
 }) {
   const [open, setOpen] = useState(false);
-  
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -384,7 +384,7 @@ function CountrySelect({ value, onChange, placeholder = "Выберите стр
                 </div>
                 <Check
                   className={`ml-auto h-4 w-4 ${
-                    value === country.code ? "opacity-100" : "opacity-0"
+                    value === country.code ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
               </CommandItem>
@@ -413,7 +413,7 @@ export default function CreateOffer() {
     }
     return null;
   };
-  
+
   const [formData, setFormData] = useState<OfferFormData>(initialFormData);
   const [activeTab, setActiveTab] = useState('basic');
   const [newTag, setNewTag] = useState('');
@@ -426,7 +426,7 @@ export default function CreateOffer() {
       console.log('🔄 Получение upload URL для креативов...');
       const token = localStorage.getItem('auth_token');
       console.log('🔑 Токен присутствует:', !!token);
-      
+
       const response = await fetch('/api/objects/upload', {
         method: 'POST',
         headers: {
@@ -434,19 +434,19 @@ export default function CreateOffer() {
           'Content-Type': 'application/json',
         },
       });
-      
+
       console.log('📡 Статус ответа API:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ Ошибка API:', errorText);
         throw new Error(`Не удалось получить URL: ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log('✅ Upload URL успешно получен');
       console.log('🔗 URL начинается с:', data.uploadURL?.substring(0, 50) + '...');
-      
+
       return {
         method: 'PUT' as const,
         url: data.uploadURL,
@@ -454,9 +454,9 @@ export default function CreateOffer() {
     } catch (error) {
       console.error('💥 Ошибка получения upload URL:', error);
       toast({
-        title: "Ошибка загрузки",
-        description: "Не удалось получить URL для загрузки креативов",
-        variant: "destructive",
+        title: 'Ошибка загрузки',
+        description: 'Не удалось получить URL для загрузки креативов',
+        variant: 'destructive',
       });
       throw error;
     }
@@ -467,20 +467,20 @@ export default function CreateOffer() {
     if (result.successful && result.successful.length > 0) {
       const uploadedFile = result.successful[0];
       console.log('📁 Данные загруженного файла:', uploadedFile);
-      
+
       // Uppy хранит URL загрузки в uploadURL
       const creativeUrl = uploadedFile.uploadURL || uploadedFile.url;
       console.log('🔗 URL креативов:', creativeUrl);
-      
+
       setFormData(prev => ({
         ...prev,
         creatives: creativeUrl,
         creativesUrl: creativeUrl
       }));
       setCreativesUploaded(true);
-      
+
       console.log('✅ Креативы успешно сохранены в форму');
-      
+
       toast({
         title: 'Креативы загружены',
         description: 'ZIP архив с креативами успешно загружен',
@@ -504,16 +504,16 @@ export default function CreateOffer() {
         description: data.description,
         category: data.category,
         logo: data.logo,
-        countries: data.hasGlobalGeoSetting 
+        countries: data.hasGlobalGeoSetting
           ? data.landingPages.map(lp => lp.geo).filter(geo => geo && geo.trim() !== '')
           : data.globalGeo ? [data.globalGeo] : [],
         landingPageUrl: data.landingPages.find(lp => lp.isDefault)?.url || data.landingPages[0]?.url || '',
         landingPages: data.landingPages,
-        payout: data.hasGlobalPayoutSetting 
+        payout: data.hasGlobalPayoutSetting
           ? (data.landingPages.find(lp => lp.isDefault)?.payout || data.landingPages[0]?.payout || '0')
           : (data.globalPayout || '0'),
         // Создаём payoutByGeo только если есть индивидуальные выплаты по странам
-        payoutByGeo: data.hasGlobalPayoutSetting 
+        payoutByGeo: data.hasGlobalPayoutSetting
           ? data.landingPages.reduce((acc, lp) => {
               if (lp.geo && lp.payout && lp.geo.trim() !== '' && lp.payout !== '') {
                 acc[lp.geo.toLowerCase()] = parseFloat(lp.payout) || 0;
@@ -565,7 +565,7 @@ export default function CreateOffer() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Валидация основных полей
     if (!formData.name?.trim()) {
       toast({
@@ -597,10 +597,10 @@ export default function CreateOffer() {
     }
 
     // Проверяем выплаты в landing pages
-    const hasValidPayout = formData.hasGlobalPayoutSetting 
+    const hasValidPayout = formData.hasGlobalPayoutSetting
       ? formData.landingPages.some(lp => parseFloat(lp.payout || '0') > 0)
       : parseFloat(formData.globalPayout || '0') > 0;
-    
+
     if (!hasValidPayout) {
       toast({
         title: 'Укажите размер выплаты',
@@ -611,10 +611,10 @@ export default function CreateOffer() {
     }
 
     // Проверяем гео в landing pages
-    const hasValidGeo = formData.hasGlobalGeoSetting 
+    const hasValidGeo = formData.hasGlobalGeoSetting
       ? formData.landingPages.some(lp => lp.geo && lp.geo.trim() !== '')
       : formData.globalGeo && formData.globalGeo.trim() !== '';
-    
+
     if (!hasValidGeo) {
       toast({
         title: 'Выберите гео',
@@ -711,7 +711,7 @@ export default function CreateOffer() {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -735,16 +735,16 @@ export default function CreateOffer() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger 
-                value="basic" 
+              <TabsTrigger
+                value="basic"
                 className="flex items-center gap-2 data-[state=active]:bg-blue-100 dark:data-[state=active]:bg-blue-900 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950"
                 title="Основная информация об оффере"
               >
                 <Settings className="h-4 w-4 text-blue-600" />
                 Основное
               </TabsTrigger>
-              <TabsTrigger 
-                value="links" 
+              <TabsTrigger
+                value="links"
                 className="flex items-center gap-2 data-[state=active]:bg-purple-100 dark:data-[state=active]:bg-purple-900 data-[state=active]:text-purple-700 dark:data-[state=active]:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950"
                 title="Ссылки и лендинги"
               >
@@ -752,8 +752,8 @@ export default function CreateOffer() {
                 Ссылки
               </TabsTrigger>
 
-              <TabsTrigger 
-                value="targeting" 
+              <TabsTrigger
+                value="targeting"
                 className="flex items-center gap-2 data-[state=active]:bg-orange-100 dark:data-[state=active]:bg-orange-900 data-[state=active]:text-orange-700 dark:data-[state=active]:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950"
                 title="Источники трафика"
               >
@@ -761,8 +761,8 @@ export default function CreateOffer() {
                 Источники
               </TabsTrigger>
 
-              <TabsTrigger 
-                value="antifraud" 
+              <TabsTrigger
+                value="antifraud"
                 className="flex items-center gap-2 data-[state=active]:bg-red-100 dark:data-[state=active]:bg-red-900 data-[state=active]:text-red-700 dark:data-[state=active]:text-red-300 hover:bg-red-50 dark:hover:bg-red-950"
                 title="Настройки антифрода"
               >
@@ -789,7 +789,7 @@ export default function CreateOffer() {
                         data-testid="input-offer-name"
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="category">Категория *</Label>
                       <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
@@ -806,7 +806,6 @@ export default function CreateOffer() {
                   </div>
 
 
-
                   <div>
                     <Label>Описание оффера</Label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
@@ -815,8 +814,8 @@ export default function CreateOffer() {
                         <Textarea
                           id="description-ru"
                           value={formData.description.ru}
-                          onChange={(e) => setFormData(prev => ({ 
-                            ...prev, 
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
                             description: { ...prev.description, ru: e.target.value }
                           }))}
                           placeholder="Подробное описание оффера на русском языке"
@@ -829,8 +828,8 @@ export default function CreateOffer() {
                         <Textarea
                           id="description-en"
                           value={formData.description.en}
-                          onChange={(e) => setFormData(prev => ({ 
-                            ...prev, 
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
                             description: { ...prev.description, en: e.target.value }
                           }))}
                           placeholder="Detailed offer description in English"
@@ -852,7 +851,7 @@ export default function CreateOffer() {
                             const token = localStorage.getItem('auth_token');
                             const response = await fetch('/api/objects/upload', {
                               method: 'POST',
-                              headers: { 
+                              headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${token}`
                               }
@@ -873,8 +872,8 @@ export default function CreateOffer() {
                                   const finalURL = `/objects/uploads/${objectPath}`;
                                   setFormData(prev => ({ ...prev, logo: finalURL }));
                                   toast({
-                                    title: "Успех",
-                                    description: "Логотип успешно загружен"
+                                    title: 'Успех',
+                                    description: 'Логотип успешно загружен'
                                   });
                                 }
                               }
@@ -885,20 +884,20 @@ export default function CreateOffer() {
                           <Upload className="h-4 w-4 mr-2" />
                           Загрузить логотип
                         </ObjectUploader>
-                        
+
                         {formData.logo && (
                           <div className="mt-4 space-y-2">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Image className="h-4 w-4" />
                               Предварительный просмотр:
                             </div>
-                            <img 
-                              src={formData.logo} 
-                              alt="Логотип оффера" 
+                            <img
+                              src={formData.logo}
+                              alt="Логотип оффера"
                               className="w-20 h-20 object-cover rounded-lg border border-border"
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
-                                target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yNS4zMzMzIDMzLjMzMzNIMzBWNDBIMjUuMzMzM1YzMy4zMzMzWk01MCA0MC4wMDAxSDU0LjY2NjdWMzMuMzMzNEg1MFY0MC4wMDAxWk0zNi42NjY3IDI2LjY2NjdWMzMuMzMzM0g0My4zMzMzVjI2LjY2NjdIMzYuNjY2N1pNMzEuMzMzMyAyNi42NjY3SDI1LjMzMzNWMjAuNjY2N0gyNS4zMzMzVjI2LjY2NjdIMzEuMzMzM1pNNTQuNjY2NyAyNi42NjY3SDQ4LjY2NjdWMjAuNjY2N0g1NC42NjY3VjI2LjY2NjdaTTI0LjY2NjcgNTIuNjY2N0g1NVY1OC42NjY3SDI0LjY2NjdWNTIuNjY2N1oiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+";
+                                target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yNS4zMzMzIDMzLjMzMzNIMzBWNDBIMjUuMzMzM1YzMy4zMzMzWk01MCA0MC4wMDAxSDU0LjY2NjdWMzMuMzMzNEg1MFY0MC4wMDAxWk0zNi42NjY3IDI2LjY2NjdWMzMuMzMzM0g0My4zMzMzVjI2LjY2NjdIMzYuNjY2N1pNMzEuMzMzMyAyNi42NjY3SDI1LjMzMzNWMjAuNjY2N0gyNS4zMzMzVjI2LjY2NjdIMzEuMzMzM1pNNTQuNjY2NyAyNi42NjY3SDQ4LjY2NjdWMjAuNjY2N0g1NC42NjY3VjI2LjY2NjdaTTI0LjY2NjcgNTIuNjY2N0g1NVY1OC42NjY3SDI0LjY2NjdWNTIuNjY2N1oiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+';
                               }}
                             />
                             <Button
@@ -1020,8 +1019,8 @@ export default function CreateOffer() {
                             className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                             data-testid={`checkbox-app-${appType.replace(/\s+/g, '-').toLowerCase()}`}
                           />
-                          <Label 
-                            htmlFor={`app-${appType.replace(/\s+/g, '-').toLowerCase()}`} 
+                          <Label
+                            htmlFor={`app-${appType.replace(/\s+/g, '-').toLowerCase()}`}
                             className="text-sm font-medium cursor-pointer hover:text-blue-600 transition-colors"
                           >
                             {appType}
@@ -1044,7 +1043,6 @@ export default function CreateOffer() {
                 </CardContent>
               </Card>
             </TabsContent>
-
 
 
             {/* Ссылки */}
@@ -1094,8 +1092,8 @@ export default function CreateOffer() {
                                 <input
                                   type="checkbox"
                                   checked={formData.hasGlobalGeoSetting || false}
-                                  onChange={(e) => setFormData(prev => ({ 
-                                    ...prev, 
+                                  onChange={(e) => setFormData(prev => ({
+                                    ...prev,
                                     hasGlobalGeoSetting: e.target.checked,
                                     landingPages: prev.landingPages.map(lp => ({
                                       ...lp,
@@ -1112,8 +1110,8 @@ export default function CreateOffer() {
                                     if (formData.hasGlobalGeoSetting) {
                                       updateLandingPage(landing.id, 'geo', value);
                                     } else {
-                                      setFormData(prev => ({ 
-                                        ...prev, 
+                                      setFormData(prev => ({
+                                        ...prev,
                                         globalGeo: value,
                                         landingPages: prev.landingPages.map(lp => ({
                                           ...lp,
@@ -1130,8 +1128,8 @@ export default function CreateOffer() {
                                 <input
                                   type="checkbox"
                                   checked={formData.hasGlobalPayoutSetting || false}
-                                  onChange={(e) => setFormData(prev => ({ 
-                                    ...prev, 
+                                  onChange={(e) => setFormData(prev => ({
+                                    ...prev,
                                     hasGlobalPayoutSetting: e.target.checked,
                                     landingPages: prev.landingPages.map(lp => ({
                                       ...lp,
@@ -1149,10 +1147,10 @@ export default function CreateOffer() {
                                       if (formData.hasGlobalPayoutSetting) {
                                         updateLandingPage(landing.id, 'payout', e.target.value);
                                       } else {
-                                        // ВАЖНО: применяем глобальную выплату только к новым лендингам, 
+                                        // ВАЖНО: применяем глобальную выплату только к новым лендингам,
                                         // но НЕ перезаписываем уже существующие индивидуальные выплаты
-                                        setFormData(prev => ({ 
-                                          ...prev, 
+                                        setFormData(prev => ({
+                                          ...prev,
                                           globalPayout: e.target.value
                                           // НЕ применяем глобальную выплату ко всем лендингам автоматически
                                         }));
@@ -1160,8 +1158,8 @@ export default function CreateOffer() {
                                     }}
                                     className="flex-1 text-sm"
                                   />
-                                  <Select 
-                                    value={formData.currency} 
+                                  <Select
+                                    value={formData.currency}
                                     onValueChange={(value: string) => setFormData(prev => ({ ...prev, currency: value }))}
                                   >
                                     <SelectTrigger className="w-20 text-sm">
@@ -1172,7 +1170,7 @@ export default function CreateOffer() {
                                       <SelectItem value="USD">USD</SelectItem>
                                       <SelectItem value="EUR">EUR</SelectItem>
                                       <SelectItem value="RUB">RUB</SelectItem>
-                                      
+
                                       {/* Остальные валюты по алфавиту */}
                                       <SelectItem value="AED">AED</SelectItem>
                                       <SelectItem value="AFN">AFN</SelectItem>
@@ -1348,10 +1346,10 @@ export default function CreateOffer() {
                             </div>
                             <div className="col-span-1 flex justify-center">
                               {formData.landingPages.length > 1 && (
-                                <Button 
-                                  type="button" 
-                                  variant="outline" 
-                                  size="sm" 
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() => removeLandingPage(landing.id)}
                                   title="Удалить лендинг"
                                   className="h-8 w-8 p-0"
@@ -1371,9 +1369,6 @@ export default function CreateOffer() {
                         Целевые ссылки оффера, куда будут направляться пользователи
                       </p>
                     </div>
-
-
-
 
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1427,7 +1422,6 @@ export default function CreateOffer() {
             </TabsContent>
 
 
-
             {/* Антифрод */}
             <TabsContent value="antifraud" className="space-y-6">
               <Card>
@@ -1470,8 +1464,8 @@ export default function CreateOffer() {
                               data-testid={`checkbox-antifraud-${method.value}`}
                             />
                             <div className="flex-1">
-                              <Label 
-                                htmlFor={`antifraud-${method.value}`} 
+                              <Label
+                                htmlFor={`antifraud-${method.value}`}
                                 className="text-sm font-medium cursor-pointer hover:text-blue-600 transition-colors"
                               >
                                 {method.label}
@@ -1498,9 +1492,9 @@ export default function CreateOffer() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="partnerApprovalType" className="font-medium">Тип подтверждения партнеров</Label>
-                      <Select 
-                        value={formData.partnerApprovalType} 
-                        onValueChange={(value: 'auto' | 'manual' | 'by_request' | 'whitelist_only') => 
+                      <Select
+                        value={formData.partnerApprovalType}
+                        onValueChange={(value: 'auto' | 'manual' | 'by_request' | 'whitelist_only') =>
                           setFormData(prev => ({ ...prev, partnerApprovalType: value }))
                         }
                       >
@@ -1555,17 +1549,17 @@ export default function CreateOffer() {
 
           {/* Кнопки управления */}
           <div className="flex justify-between items-center pt-6 border-t">
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               variant="outline"
               onClick={() => setFormData(initialFormData)}
             >
               Сбросить
             </Button>
-            
+
             <div className="flex gap-3">
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 onClick={() => {
                   setFormData(prev => ({ ...prev, status: 'draft' }));
@@ -1576,8 +1570,8 @@ export default function CreateOffer() {
                 <Save className="h-4 w-4 mr-2" />
                 Сохранить как черновик
               </Button>
-              
-              <Button 
+
+              <Button
                 type="button"
                 onClick={() => {
                   setFormData(prev => ({ ...prev, status: 'active' }));

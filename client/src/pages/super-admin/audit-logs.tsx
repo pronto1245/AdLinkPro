@@ -12,13 +12,13 @@ import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import Sidebar from '@/components/layout/sidebar';
 import Header from '@/components/layout/header';
-import { 
-  Search, 
-  Calendar as CalendarIcon, 
-  Activity, 
-  Users, 
-  Target, 
-  DollarSign, 
+import {
+  Search,
+  Calendar as CalendarIcon,
+  Activity,
+  Users,
+  Target,
+  DollarSign,
   Shield,
   Eye,
   Edit,
@@ -33,7 +33,7 @@ import { format, addDays } from 'date-fns';
 export default function AuditLogs() {
   const { token } = useAuth();
   const { t } = useLanguage();
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState<string>('all');
   const [resourceFilter, setResourceFilter] = useState<string>('all');
@@ -57,7 +57,7 @@ export default function AuditLogs() {
       if (userFilter !== 'all') {params.append('userId', userFilter);}
       if (dateRange.from) {params.append('startDate', dateRange.from.toISOString());}
       if (dateRange.to) {params.append('endDate', dateRange.to.toISOString());}
-      
+
       const response = await fetch(`/api/admin/audit-logs?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -140,16 +140,16 @@ export default function AuditLogs() {
   };
 
   const exportLogs = () => {
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + "Timestamp,User,Action,Resource Type,Resource ID,IP Address,Description\n"
-      + auditLogs.map((log: any) => 
+    const csvContent = 'data:text/csv;charset=utf-8,'
+      + 'Timestamp,User,Action,Resource Type,Resource ID,IP Address,Description\n'
+      + auditLogs.map((log: any) =>
           `${new Date(log.timestamp).toLocaleString()},${log.userName || log.userId},${log.action},${log.resourceType},${log.resourceId || ''},${log.ipAddress || ''},${log.description || ''}`
-        ).join("\n");
-    
+        ).join('\n');
+
     const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `audit_logs_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `audit_logs_${format(new Date(), 'yyyy-MM-dd')}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -260,11 +260,11 @@ export default function AuditLogs() {
                         {dateRange?.from ? (
                           dateRange.to ? (
                             <>
-                              {format(dateRange.from, "LLL dd, y")} -{" "}
-                              {format(dateRange.to, "LLL dd, y")}
+                              {format(dateRange.from, 'LLL dd, y')} -{' '}
+                              {format(dateRange.to, 'LLL dd, y')}
                             </>
                           ) : (
-                            format(dateRange.from, "LLL dd, y")
+                            format(dateRange.from, 'LLL dd, y')
                           )
                         ) : (
                           <span>Pick a date range</span>

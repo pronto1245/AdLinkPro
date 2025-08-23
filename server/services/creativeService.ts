@@ -1,10 +1,10 @@
-import { db } from "../db";
-import { creativeFiles, creativeSets, creativeSetFiles } from "../../shared/schema";
-import { offers } from "../../shared/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
-import archiver from "archiver";
-import { Response } from "express";
-import { randomUUID } from "crypto";
+import { db } from '../db';
+import { creativeFiles, creativeSets, creativeSetFiles } from '../../shared/schema';
+import { offers } from '../../shared/schema';
+import { eq, and, desc, sql } from 'drizzle-orm';
+import archiver from 'archiver';
+import { Response } from 'express';
+import { randomUUID } from 'crypto';
 
 export class CreativeService {
   // Получить все креативы для оффера
@@ -81,7 +81,7 @@ export class CreativeService {
   }
 
   // Добавить файл в набор
-  async addFileToSet(setId: string, fileId: string, displayOrder: number = 0) {
+  async addFileToSet(setId: string, fileId: string, displayOrder = 0) {
     const [relation] = await db
       .insert(creativeSetFiles)
       .values({
@@ -98,9 +98,9 @@ export class CreativeService {
   // Создать ZIP архив с креативами для скачивания
   async createCreativeArchive(offerId: string, res: Response) {
     const creatives = await this.getOfferCreatives(offerId);
-    
+
     if (creatives.length === 0) {
-      throw new Error("Креативы не найдены");
+      throw new Error('Креативы не найдены');
     }
 
     // Получаем информацию об оффере
@@ -110,7 +110,7 @@ export class CreativeService {
       .where(eq(offers.id, offerId));
 
     if (!offer) {
-      throw new Error("Оффер не найден");
+      throw new Error('Оффер не найден');
     }
 
     // Устанавливаем заголовки для ZIP
@@ -125,7 +125,7 @@ export class CreativeService {
     archive.on('error', (err: any) => {
       console.error('Archive error:', err);
       if (!res.headersSent) {
-        res.status(500).json({ error: "Ошибка при создании архива" });
+        res.status(500).json({ error: 'Ошибка при создании архива' });
       }
     });
 
@@ -218,7 +218,7 @@ Generated: ${new Date().toISOString()}
   async incrementDownloadCount(offerId: string) {
     await db
       .update(creativeSets)
-      .set({ 
+      .set({
         downloadCount: sql`${creativeSets.downloadCount} + 1`,
         updatedAt: new Date()
       })

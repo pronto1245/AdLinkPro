@@ -53,7 +53,7 @@ export default function Support() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [activeTab, setActiveTab] = useState('tickets');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
@@ -189,7 +189,7 @@ export default function Support() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -215,7 +215,7 @@ export default function Support() {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={form.control}
                           name="priority"
@@ -241,7 +241,7 @@ export default function Support() {
                           )}
                         />
                       </div>
-                      
+
                       <FormField
                         control={form.control}
                         name="description"
@@ -249,8 +249,8 @@ export default function Support() {
                           <FormItem>
                             <FormLabel>Description</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                {...field} 
+                              <Textarea
+                                {...field}
                                 placeholder="Detailed description of the issue"
                                 rows={4}
                                 data-testid="textarea-description"
@@ -260,7 +260,7 @@ export default function Support() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <div className="flex justify-end gap-2">
                         <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                           Cancel
@@ -303,7 +303,7 @@ export default function Support() {
                           title="Поиск тикетов поддержки"
                         />
                       </div>
-                      
+
                       <Select value={filterStatus} onValueChange={setFilterStatus}>
                         <SelectTrigger className="w-[140px]" data-testid="select-filter-status" title="Фильтр по статусу тикета">
                           <SelectValue placeholder="All Status" />
@@ -317,7 +317,7 @@ export default function Support() {
                           ))}
                         </SelectContent>
                       </Select>
-                      
+
                       <Select value={filterPriority} onValueChange={setFilterPriority}>
                         <SelectTrigger className="w-[140px]" data-testid="select-filter-priority" title="Фильтр по приоритету">
                           <SelectValue placeholder="All Priority" />
@@ -353,7 +353,7 @@ export default function Support() {
                                 {getPriorityBadge(ticket.priority).label}
                               </Badge>
                             </div>
-                            
+
                             <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                               <div className="flex items-center gap-1">
                                 <User className="w-4 h-4" />
@@ -368,12 +368,12 @@ export default function Support() {
                                 {ticket.responses} responses
                               </div>
                             </div>
-                            
+
                             <p className="text-gray-700 dark:text-gray-300 text-sm">
                               {ticket.description}
                             </p>
                           </div>
-                          
+
                           <Button variant="outline" size="sm" data-testid={`button-view-ticket-${ticket.id}`}>
                             View
                             <ArrowRight className="w-4 h-4 ml-1" />

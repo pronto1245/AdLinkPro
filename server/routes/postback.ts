@@ -71,7 +71,7 @@ router.get('/profiles', async (req, res) => {
       owner_id: profile.owner_id.toString(),
       scope_id: profile.scope_id?.toString()
     })));
-    
+
   } catch (error) {
     console.error('Get profiles error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -87,7 +87,7 @@ router.post('/profiles', async (req, res) => {
     }
 
     const data = postbackProfileSchema.parse(req.body);
-    
+
     const result = await db.insert(postbackProfiles).values({
       owner_id: BigInt(userId),
       name: data.name,
@@ -125,7 +125,7 @@ router.post('/profiles', async (req, res) => {
       owner_id: result[0].owner_id.toString(),
       scope_id: result[0].scope_id?.toString()
     });
-    
+
   } catch (error) {
     console.error('Create profile error:', error);
     if (error instanceof z.ZodError) {
@@ -140,13 +140,13 @@ router.put('/profiles/:id', async (req, res) => {
   try {
     const userId = req.user?.id;
     const profileId = req.params.id;
-    
+
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     const data = postbackProfileSchema.parse(req.body);
-    
+
     const result = await db.update(postbackProfiles)
       .set({
         name: data.name,
@@ -196,7 +196,7 @@ router.put('/profiles/:id', async (req, res) => {
       owner_id: result[0].owner_id.toString(),
       scope_id: result[0].scope_id?.toString()
     });
-    
+
   } catch (error) {
     console.error('Update profile error:', error);
     if (error instanceof z.ZodError) {
@@ -211,7 +211,7 @@ router.delete('/profiles/:id', async (req, res) => {
   try {
     const userId = req.user?.id;
     const profileId = req.params.id;
-    
+
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -230,7 +230,7 @@ router.delete('/profiles/:id', async (req, res) => {
     }
 
     res.json({ success: true });
-    
+
   } catch (error) {
     console.error('Delete profile error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -242,7 +242,7 @@ router.post('/profiles/:id/test', async (req, res) => {
   try {
     const userId = req.user?.id;
     const profileId = req.params.id;
-    
+
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -270,11 +270,11 @@ router.post('/profiles/:id/test', async (req, res) => {
     }
 
     const prof = profile[0];
-    
+
     // Build test parameters
     const mappedStatus = prof.status_map[testData.type as keyof typeof prof.status_map] || testData.type;
     const params: Record<string, string> = {};
-    
+
     for (const [key, template] of Object.entries(prof.params_template as Record<string, string>)) {
       params[key] = template
         .replace(/\{\{clickid\}\}/g, testData.clickid)
@@ -287,7 +287,7 @@ router.post('/profiles/:id/test', async (req, res) => {
     // Build test URL/body
     let testUrl = prof.endpoint_url;
     let testBody = '';
-    
+
     if (prof.method === 'GET') {
       const url = new URL(prof.endpoint_url);
       for (const [key, value] of Object.entries(params)) {
@@ -316,7 +316,7 @@ router.post('/profiles/:id/test', async (req, res) => {
     };
 
     res.json(testResult);
-    
+
   } catch (error) {
     console.error('Test profile error:', error);
     if (error instanceof z.ZodError) {
@@ -363,7 +363,7 @@ router.get('/deliveries', async (req, res) => {
       profile_id: delivery.profile_id.toString(),
       event_id: delivery.event_id?.toString()
     })));
-    
+
   } catch (error) {
     console.error('Get deliveries error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -395,7 +395,7 @@ router.get('/affiliate/profiles', async (req, res) => {
       owner_id: profile.owner_id.toString(),
       scope_id: profile.scope_id?.toString()
     })));
-    
+
   } catch (error) {
     console.error('Get affiliate profiles error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -413,7 +413,7 @@ router.post('/affiliate/profiles', async (req, res) => {
     const data = postbackProfileSchema
       .omit({ scope_type: true, scope_id: true })
       .parse(req.body);
-    
+
     const result = await db.insert(postbackProfiles).values({
       owner_id: BigInt(userId),
       name: data.name,
@@ -451,7 +451,7 @@ router.post('/affiliate/profiles', async (req, res) => {
       owner_id: result[0].owner_id.toString(),
       scope_id: result[0].scope_id?.toString()
     });
-    
+
   } catch (error) {
     console.error('Create affiliate profile error:', error);
     if (error instanceof z.ZodError) {
@@ -495,7 +495,7 @@ router.get('/affiliate/deliveries', async (req, res) => {
       profile_id: delivery.profile_id.toString(),
       event_id: delivery.event_id?.toString()
     })));
-    
+
   } catch (error) {
     console.error('Get affiliate deliveries error:', error);
     res.status(500).json({ error: 'Internal server error' });

@@ -60,7 +60,7 @@ export const offersApi = {
     const params = new URLSearchParams();
     if (dateFrom) {params.append('from', dateFrom);}
     if (dateTo) {params.append('to', dateTo);}
-    
+
     const query = params.toString();
     return secureApi(`/api/offers/${offerId}/stats${query ? `?${query}` : ''}`);
   },
@@ -116,7 +116,7 @@ export const usersApi = {
   },
 };
 
-// Profile API service  
+// Profile API service
 export const profileApi = {
   // Get current user profile
   async getProfile() {

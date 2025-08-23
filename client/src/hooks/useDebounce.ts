@@ -28,11 +28,11 @@ export function useDebounceCallback<T extends (...args: any[]) => any>(
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
-    
+
     const newTimeoutId = setTimeout(() => {
       callback(...args);
     }, delay);
-    
+
     setTimeoutId(newTimeoutId);
   }) as T;
 

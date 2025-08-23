@@ -76,26 +76,26 @@ export function WebSocketManager() {
     switch (data.entity) {
       case 'offer':
         // Invalidate offer-related queries
-        window.dispatchEvent(new CustomEvent('invalidateQuery', { 
-          detail: { queryKey: ['offers'] } 
+        window.dispatchEvent(new CustomEvent('invalidateQuery', {
+          detail: { queryKey: ['offers'] }
         }));
         break;
       case 'statistics':
         // Update dashboard data
-        window.dispatchEvent(new CustomEvent('invalidateQuery', { 
-          detail: { queryKey: ['dashboard-stats'] } 
+        window.dispatchEvent(new CustomEvent('invalidateQuery', {
+          detail: { queryKey: ['dashboard-stats'] }
         }));
         break;
       case 'payout':
         // Update financial data
-        window.dispatchEvent(new CustomEvent('invalidateQuery', { 
-          detail: { queryKey: ['finances'] } 
+        window.dispatchEvent(new CustomEvent('invalidateQuery', {
+          detail: { queryKey: ['finances'] }
         }));
         break;
       case 'postback':
         // Update postback delivery status
-        window.dispatchEvent(new CustomEvent('invalidateQuery', { 
-          detail: { queryKey: ['postback-logs'] } 
+        window.dispatchEvent(new CustomEvent('invalidateQuery', {
+          detail: { queryKey: ['postback-logs'] }
         }));
         break;
     }
@@ -131,7 +131,7 @@ export function WebSocketManager() {
   const handleMessage = useCallback((event: MessageEvent) => {
     try {
       const message: WebSocketMessage = JSON.parse(event.data);
-      
+
       console.debug('WebSocket message received:', message);
 
       switch (message.type) {
@@ -173,14 +173,14 @@ export function WebSocketManager() {
       const url = new URL(WS_URL);
       if (token) {url.searchParams.set('token', token);}
       if (user?.id) {url.searchParams.set('userId', user.id);}
-      
+
       const ws = new WebSocket(url.toString());
       wsRef.current = ws;
 
       ws.onopen = () => {
         console.debug('WebSocket connected');
         reconnectAttemptsRef.current = 0;
-        
+
         // Send initial authentication
         ws.send(JSON.stringify({
           type: 'auth', _data: {
@@ -215,7 +215,7 @@ export function WebSocketManager() {
         if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
           console.debug(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxReconnectAttempts})`);
-          
+
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, reconnectDelay * reconnectAttemptsRef.current);
@@ -238,12 +238,12 @@ export function WebSocketManager() {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
-    
+
     if (wsRef.current) {
       wsRef.current.close(1000, 'Component unmounting');
       wsRef.current = null;
     }
-    
+
     reconnectAttemptsRef.current = 0;
   }, []);
 

@@ -7,12 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/auth-context';
 import { Link } from 'wouter';
-import { 
-  HeadphonesIcon, 
-  MessageSquare, 
-  Users, 
-  AlertCircle, 
-  Clock, 
+import {
+  HeadphonesIcon,
+  MessageSquare,
+  Users,
+  AlertCircle,
+  Clock,
   CheckCircle,
   FileText,
   Search,
@@ -78,10 +78,10 @@ export default function StaffDashboard() {
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
-      
+
       <main className="flex-1 lg:ml-64 overflow-y-auto">
-        <Header 
-          title="Staff Dashboard" 
+        <Header
+          title="Staff Dashboard"
           subtitle="Support and assistance tools"
         />
 

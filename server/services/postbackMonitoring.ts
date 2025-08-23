@@ -57,7 +57,7 @@ export class PostbackMonitoringService {
   // Update metrics after postback attempt
   recordPostbackAttempt(success: boolean, responseTime: number, errorType?: string): void {
     this.metrics.totalPostbacks++;
-    
+
     if (success) {
       this.metrics.successfulPostbacks++;
     } else {
@@ -69,9 +69,9 @@ export class PostbackMonitoringService {
 
     // Update success rate
     this.metrics.successRate = (this.metrics.successfulPostbacks / this.metrics.totalPostbacks) * 100;
-    
+
     // Update average response time (simple moving average)
-    this.metrics.averageResponseTime = 
+    this.metrics.averageResponseTime =
       (this.metrics.averageResponseTime + responseTime) / 2;
 
     // Check for alert conditions
@@ -83,9 +83,9 @@ export class PostbackMonitoringService {
     const now = Date.now();
 
     // Check success rate
-    if (this.metrics.successRate < this.thresholds.successRateThreshold && 
+    if (this.metrics.successRate < this.thresholds.successRateThreshold &&
         this.metrics.totalPostbacks >= 10) { // Only alert if we have enough samples
-      
+
       if (!this.isInCooldown('low_success_rate', now)) {
         this.triggerLowSuccessRateAlert();
         this.lastAlertTime['low_success_rate'] = now;
@@ -94,7 +94,7 @@ export class PostbackMonitoringService {
 
     // Check error rate
     const errorRate = (this.metrics.failedPostbacks / this.metrics.totalPostbacks) * 100;
-    if (errorRate > this.thresholds.errorRateThreshold && 
+    if (errorRate > this.thresholds.errorRateThreshold &&
         this.metrics.totalPostbacks >= 10) {
 
       if (!this.isInCooldown('high_error_rate', now)) {
@@ -122,7 +122,7 @@ export class PostbackMonitoringService {
   private async triggerLowSuccessRateAlert(): Promise<void> {
     try {
       const mostCommonError = this.getMostCommonError();
-      
+
       await this.notificationService.sendNotification({
         type: 'postback_success_rate_low',
         userId: 'system', _data: {
@@ -135,18 +135,18 @@ export class PostbackMonitoringService {
         },
         timestamp: new Date()
       });
-      
+
       console.log(`🚨 Low success rate alert triggered: ${this.metrics.successRate}%`);
     } catch (error) {
       console.error('Failed to send low success rate alert:', error);
     }
   }
 
-  // Trigger high error rate alert  
+  // Trigger high error rate alert
   private async triggerHighErrorRateAlert(errorRate: number): Promise<void> {
     try {
       const primaryErrorType = this.getMostCommonError();
-      
+
       await this.notificationService.sendNotification({
         type: 'postback_high_error_rate',
         userId: 'system', _data: {
@@ -159,7 +159,7 @@ export class PostbackMonitoringService {
         },
         timestamp: new Date()
       });
-      
+
       console.log(`🚨 High error rate alert triggered: ${errorRate}%`);
     } catch (error) {
       console.error('Failed to send high error rate alert:', error);
@@ -188,7 +188,7 @@ export class PostbackMonitoringService {
           },
           timestamp: new Date()
         });
-        
+
         console.log(`🚨 Postback failure alert sent for ${data.clickId}`);
       }
     } catch (error) {
@@ -201,14 +201,14 @@ export class PostbackMonitoringService {
     const errorTypes = this.metrics.errorTypes;
     let maxCount = 0;
     let mostCommonError = 'Unknown';
-    
+
     for (const [errorType, count] of Object.entries(errorTypes)) {
       if (count > maxCount) {
         maxCount = count;
         mostCommonError = errorType;
       }
     }
-    
+
     return mostCommonError;
   }
 
@@ -243,7 +243,7 @@ export class PostbackMonitoringService {
     thresholds: AlertThresholds;
     lastAlerts: { [key: string]: number };
   } {
-    const isHealthy = 
+    const isHealthy =
       this.metrics.successRate >= this.thresholds.successRateThreshold &&
       this.metrics.averageResponseTime <= this.thresholds.responseTimeThreshold;
 

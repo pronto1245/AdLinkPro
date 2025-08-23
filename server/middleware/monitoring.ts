@@ -5,7 +5,7 @@ import logger, { auditLogger, performanceLogger } from '../config/logger';
 export function requestLogger(req: Request, res: Response, next: NextFunction) {
   const startTime = Date.now();
   const { method, url, ip, headers } = req;
-  
+
   // Log request start
   logger.info('Request started', {
     method,
@@ -19,7 +19,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
   const originalEnd = res.end;
   res.end = function(chunk: any, encoding: any) {
     const responseTime = Date.now() - startTime;
-    
+
     // Log response
     logger.info('Request completed', {
       method,

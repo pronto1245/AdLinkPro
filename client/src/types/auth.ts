@@ -20,9 +20,9 @@ export interface User {
   [key: string]: any;
 }
 
-export type UserRole = 
+export type UserRole =
   | 'owner'
-  | 'super_admin' 
+  | 'super_admin'
   | 'staff'
   | 'advertiser'
   | 'partner'

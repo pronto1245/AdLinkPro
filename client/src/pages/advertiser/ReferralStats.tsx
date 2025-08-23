@@ -5,12 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Users, 
-  DollarSign, 
-  TrendingUp, 
-  Clock, 
-  Copy, 
+import {
+  Users,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  Copy,
   CheckCircle,
   UserCheck,
   Activity,
@@ -53,28 +53,28 @@ const ReferralStats = () => {
       // Получаем реферальный код текущего пользователя
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const referralCode = user.referralCode;
-      
+
       if (!referralCode) {
         toast({
-          title: "Ошибка",
-          description: "Реферальный код не найден",
-          variant: "destructive"
+          title: 'Ошибка',
+          description: 'Реферальный код не найден',
+          variant: 'destructive'
         });
         return;
       }
 
       const referralUrl = `${window.location.origin}/register?ref=${referralCode}`;
       await navigator.clipboard.writeText(referralUrl);
-      
+
       toast({
-        title: "Ссылка скопирована!",
-        description: "Реферальная ссылка скопирована в буфер обмена",
+        title: 'Ссылка скопирована!',
+        description: 'Реферальная ссылка скопирована в буфер обмена',
       });
     } catch (_error) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось скопировать ссылку",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось скопировать ссылку',
+        variant: 'destructive'
       });
     }
   };
@@ -262,7 +262,7 @@ const ReferralStats = () => {
                     <li>• Комиссия списывается с вашего бюджета</li>
                   </ul>
                 </div>
-                
+
                 <div className="space-y-3">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Award className="h-5 w-5 text-blue-500" />
@@ -276,15 +276,15 @@ const ReferralStats = () => {
                   </ul>
                 </div>
               </div>
-              
+
               <div className="border-t pt-4">
                 <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
                   <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
                     💡 Совет
                   </h4>
                   <p className="text-sm text-blue-800 dark:text-blue-200">
-                    Учитывайте дополнительные расходы на реферальные комиссии при планировании 
-                    бюджета на выплаты партнерам. За каждые $100 выплаты приглашенному партнеру 
+                    Учитывайте дополнительные расходы на реферальные комиссии при планировании
+                    бюджета на выплаты партнерам. За каждые $100 выплаты приглашенному партнеру
                     вы доплачиваете $5 рефереру.
                   </p>
                 </div>

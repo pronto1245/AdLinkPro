@@ -14,17 +14,17 @@ export default function AuthRedirector({
     // Failed to get user from auth context
   }
   if (!user && typeof window !== 'undefined') {
-    try { 
-      user = JSON.parse(localStorage.getItem('auth:user') || 'null'); 
+    try {
+      user = JSON.parse(localStorage.getItem('auth:user') || 'null');
     } catch {
       // Ignore parsing errors and keep user as null
     }
   }
-  
+
   if (user?.role) {
     const dashboardRoute = routeByRole(user.role);
     return <Redirect to={dashboardRoute} />;
   }
-  
+
   return <Redirect to={fallback} />;
 }

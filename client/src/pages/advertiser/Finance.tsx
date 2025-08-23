@@ -1,23 +1,23 @@
-import { useState, useMemo } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/auth-context";
-import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/auth-context';
+import { useToast } from '@/hooks/use-toast';
+import { queryClient } from '@/lib/queryClient';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { 
-  DollarSign, 
-  TrendingUp, 
-  Users, 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  DollarSign,
+  TrendingUp,
+  Users,
   CreditCard,
   Wallet,
   Download,
@@ -36,7 +36,7 @@ import {
   Clock,
   Send,
   Target
-} from "lucide-react";
+} from 'lucide-react';
 
 // Типы данных
 interface FinancialSummary {
@@ -117,7 +117,7 @@ const MetricCard = ({ title, value, icon: Icon, type, trend, alert }: MetricCard
   };
 
   return (
-    <Card className={alert ? "border-red-200 dark:border-red-800" : ""}>
+    <Card className={alert ? 'border-red-200 dark:border-red-800' : ''}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
@@ -186,7 +186,7 @@ export default function Finance() {
       params.set('dateFrom', filters.dateFrom);
       params.set('dateTo', filters.dateTo);
       params.set('advertiserId', user?.id || '');
-      
+
       const response = await fetch(`/api/advertiser/financial-overview?${params}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -209,7 +209,7 @@ export default function Finance() {
         if (value && value !== 'all') {params.set(key, value);}
       });
       params.set('advertiserId', user?.id || '');
-      
+
       const response = await fetch(`/api/advertiser/transactions?${params}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -258,7 +258,7 @@ export default function Finance() {
     mutationFn: async (payoutData: PayoutForm) => {
       const response = await fetch('/api/advertiser/finance/payouts', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
@@ -284,15 +284,15 @@ export default function Finance() {
         paymentMethod: 'bank'
       });
       toast({
-        title: "Выплата создана",
-        description: "Выплата партнёру поставлена в очередь на обработку"
+        title: 'Выплата создана',
+        description: 'Выплата партнёру поставлена в очередь на обработку'
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Ошибка создания выплаты",
+        title: 'Ошибка создания выплаты',
         description: error.message,
-        variant: "destructive"
+        variant: 'destructive'
       });
     }
   });
@@ -302,7 +302,7 @@ export default function Finance() {
     mutationFn: async ({ transactionId, status }: { transactionId: string; status: string }) => {
       const response = await fetch(`/api/advertiser/finance/transactions/${transactionId}/status`, {
         method: 'PATCH',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
@@ -315,15 +315,15 @@ export default function Finance() {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/finance/transactions'] });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/finance/summary'] });
       toast({
-        title: "Статус изменён",
-        description: "Статус транзакции обновлён"
+        title: 'Статус изменён',
+        description: 'Статус транзакции обновлён'
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Ошибка",
+        title: 'Ошибка',
         description: error.message,
-        variant: "destructive"
+        variant: 'destructive'
       });
     }
   });
@@ -353,14 +353,14 @@ export default function Finance() {
       document.body.removeChild(a);
 
       toast({
-        title: "Экспорт выполнен",
+        title: 'Экспорт выполнен',
         description: `Файл ${format.toUpperCase()} успешно скачан`
       });
     } catch (_error) {
       toast({
-        title: "Ошибка экспорта",
-        description: "Не удалось выполнить экспорт данных",
-        variant: "destructive"
+        title: 'Ошибка экспорта',
+        description: 'Не удалось выполнить экспорт данных',
+        variant: 'destructive'
       });
     }
   };
@@ -373,9 +373,9 @@ export default function Finance() {
       return response.json();
     } catch (_error) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить детали транзакции",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось загрузить детали транзакции',
+        variant: 'destructive'
       });
     }
   };
@@ -398,15 +398,15 @@ export default function Finance() {
   // Функции валидации
   const validatePayoutForm = () => {
     const errors: string[] = [];
-    
-    if (!payoutForm.partnerId) {errors.push("Выберите партнёра");}
+
+    if (!payoutForm.partnerId) {errors.push('Выберите партнёра');}
     if (!payoutForm.amount || isNaN(parseFloat(payoutForm.amount)) || parseFloat(payoutForm.amount) <= 0) {
-      errors.push("Введите корректную сумму выплаты");
+      errors.push('Введите корректную сумму выплаты');
     }
     if (summary.balance < parseFloat(payoutForm.amount || '0')) {
-      errors.push("Недостаточно средств на балансе");
+      errors.push('Недостаточно средств на балансе');
     }
-    
+
     return errors;
   };
 
@@ -414,13 +414,13 @@ export default function Finance() {
     const validationErrors = validatePayoutForm();
     if (validationErrors.length > 0) {
       toast({
-        title: "Ошибка валидации",
-        description: validationErrors.join(", "),
-        variant: "destructive"
+        title: 'Ошибка валидации',
+        description: validationErrors.join(', '),
+        variant: 'destructive'
       });
       return;
     }
-    
+
     createPayoutMutation.mutate(payoutForm);
   };
 
@@ -442,10 +442,10 @@ export default function Finance() {
               Управление финансами, выплаты партнёрам и транзакции
             </p>
           </div>
-          
+
           <div className="flex gap-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 refetchSummary();
                 refetchTransactions();
@@ -455,7 +455,7 @@ export default function Finance() {
               <RefreshCw className="h-4 w-4 mr-2" />
               Обновить
             </Button>
-            
+
             <Dialog open={isPayoutDialogOpen} onOpenChange={setIsPayoutDialogOpen}>
               <DialogTrigger asChild>
                 <Button data-testid="button-create-payout">
@@ -467,14 +467,14 @@ export default function Finance() {
                 <DialogHeader>
                   <DialogTitle>Выплата партнёру</DialogTitle>
                 </DialogHeader>
-                
+
                 <div className="space-y-4">
                   {/* Партнёр */}
                   <div className="space-y-2">
                     <Label htmlFor="partnerId">Партнёр *</Label>
-                    <Select 
+                    <Select
                       value={payoutForm.partnerId}
-                      onValueChange={(value) => setPayoutForm({...payoutForm, partnerId: value})}
+                      onValueChange={(value) => setPayoutForm({ ...payoutForm, partnerId: value })}
                     >
                       <SelectTrigger data-testid="select-partner">
                         <SelectValue placeholder="Выберите партнёра" />
@@ -488,7 +488,7 @@ export default function Finance() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   {/* Сумма и валюта */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -499,17 +499,17 @@ export default function Finance() {
                         step="0.01"
                         min="0"
                         value={payoutForm.amount}
-                        onChange={(e) => setPayoutForm({...payoutForm, amount: e.target.value})}
+                        onChange={(e) => setPayoutForm({ ...payoutForm, amount: e.target.value })}
                         placeholder="0.00"
                         data-testid="input-amount"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="currency">Валюта</Label>
-                      <Select 
+                      <Select
                         value={payoutForm.currency}
-                        onValueChange={(value) => setPayoutForm({...payoutForm, currency: value})}
+                        onValueChange={(value) => setPayoutForm({ ...payoutForm, currency: value })}
                       >
                         <SelectTrigger data-testid="select-currency">
                           <SelectValue />
@@ -523,7 +523,7 @@ export default function Finance() {
                       </Select>
                     </div>
                   </div>
-                  
+
                   {/* Период */}
                   <div className="space-y-2">
                     <Label htmlFor="period">Период</Label>
@@ -531,17 +531,17 @@ export default function Finance() {
                       id="period"
                       type="month"
                       value={payoutForm.period}
-                      onChange={(e) => setPayoutForm({...payoutForm, period: e.target.value})}
+                      onChange={(e) => setPayoutForm({ ...payoutForm, period: e.target.value })}
                       data-testid="input-period"
                     />
                   </div>
-                  
+
                   {/* Способ оплаты */}
                   <div className="space-y-2">
                     <Label>Способ выплаты</Label>
-                    <Select 
+                    <Select
                       value={payoutForm.paymentMethod}
-                      onValueChange={(value) => setPayoutForm({...payoutForm, paymentMethod: value})}
+                      onValueChange={(value) => setPayoutForm({ ...payoutForm, paymentMethod: value })}
                     >
                       <SelectTrigger data-testid="select-payment-method">
                         <SelectValue />
@@ -554,19 +554,19 @@ export default function Finance() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   {/* Комментарий */}
                   <div className="space-y-2">
                     <Label htmlFor="comment">Комментарий</Label>
                     <Textarea
                       id="comment"
                       value={payoutForm.comment}
-                      onChange={(e) => setPayoutForm({...payoutForm, comment: e.target.value})}
+                      onChange={(e) => setPayoutForm({ ...payoutForm, comment: e.target.value })}
                       placeholder="Комментарий к выплате (опционально)"
                       data-testid="textarea-comment"
                     />
                   </div>
-                  
+
                   {/* Информация о балансе */}
                   <div className="p-4 bg-muted rounded-lg">
                     <div className="flex justify-between items-center">
@@ -580,19 +580,19 @@ export default function Finance() {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Кнопки */}
                   <div className="flex justify-end gap-3">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       onClick={() => setIsPayoutDialogOpen(false)}
                       data-testid="button-cancel-payout"
                     >
                       Отмена
                     </Button>
-                    <Button 
-                      type="button" 
+                    <Button
+                      type="button"
                       onClick={handleCreatePayout}
                       disabled={createPayoutMutation.isPending}
                       data-testid="button-submit-payout"
@@ -681,7 +681,7 @@ export default function Finance() {
                   <Input
                     placeholder="Транзакция, партнёр, оффер..."
                     value={filters.search}
-                    onChange={(e) => setFilters({...filters, search: e.target.value})}
+                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                     className="pl-10"
                     data-testid="input-search-transactions"
                   />
@@ -695,7 +695,7 @@ export default function Finance() {
                   <Input
                     type="date"
                     value={filters.dateFrom}
-                    onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
+                    onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
                     data-testid="input-date-from"
                   />
                 </div>
@@ -704,7 +704,7 @@ export default function Finance() {
                   <Input
                     type="date"
                     value={filters.dateTo}
-                    onChange={(e) => setFilters({...filters, dateTo: e.target.value})}
+                    onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
                     data-testid="input-date-to"
                   />
                 </div>
@@ -713,7 +713,7 @@ export default function Finance() {
               {/* Оффер */}
               <div className="space-y-2">
                 <Label>Оффер</Label>
-                <Select value={filters.offerId} onValueChange={(value) => setFilters({...filters, offerId: value})}>
+                <Select value={filters.offerId} onValueChange={(value) => setFilters({ ...filters, offerId: value })}>
                   <SelectTrigger data-testid="select-offer-filter">
                     <SelectValue placeholder="Все офферы" />
                   </SelectTrigger>
@@ -731,7 +731,7 @@ export default function Finance() {
               {/* Партнёр */}
               <div className="space-y-2">
                 <Label>Партнёр</Label>
-                <Select value={filters.partnerId} onValueChange={(value) => setFilters({...filters, partnerId: value})}>
+                <Select value={filters.partnerId} onValueChange={(value) => setFilters({ ...filters, partnerId: value })}>
                   <SelectTrigger data-testid="select-partner-filter">
                     <SelectValue placeholder="Все партнёры" />
                   </SelectTrigger>
@@ -749,7 +749,7 @@ export default function Finance() {
               {/* Тип транзакции */}
               <div className="space-y-2">
                 <Label>Тип</Label>
-                <Select value={filters.type} onValueChange={(value) => setFilters({...filters, type: value})}>
+                <Select value={filters.type} onValueChange={(value) => setFilters({ ...filters, type: value })}>
                   <SelectTrigger data-testid="select-type-filter">
                     <SelectValue placeholder="Все типы" />
                   </SelectTrigger>
@@ -767,7 +767,7 @@ export default function Finance() {
               {/* Статус */}
               <div className="space-y-2">
                 <Label>Статус</Label>
-                <Select value={filters.status} onValueChange={(value) => setFilters({...filters, status: value})}>
+                <Select value={filters.status} onValueChange={(value) => setFilters({ ...filters, status: value })}>
                   <SelectTrigger data-testid="select-status-filter">
                     <SelectValue placeholder="Все статусы" />
                   </SelectTrigger>
@@ -789,7 +789,7 @@ export default function Finance() {
                     type="number"
                     placeholder="0"
                     value={filters.minAmount}
-                    onChange={(e) => setFilters({...filters, minAmount: e.target.value})}
+                    onChange={(e) => setFilters({ ...filters, minAmount: e.target.value })}
                     data-testid="input-min-amount"
                   />
                 </div>
@@ -799,33 +799,33 @@ export default function Finance() {
                     type="number"
                     placeholder="∞"
                     value={filters.maxAmount}
-                    onChange={(e) => setFilters({...filters, maxAmount: e.target.value})}
+                    onChange={(e) => setFilters({ ...filters, maxAmount: e.target.value })}
                     data-testid="input-max-amount"
                   />
                 </div>
               </div>
             </div>
-            
+
             <div className="flex justify-between items-center mt-4 pt-4 border-t">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={resetFilters}
                 data-testid="button-reset-filters"
               >
                 Сбросить фильтры
               </Button>
-              
+
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => handleExport('csv')}
                   data-testid="button-export-csv"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   CSV
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => handleExport('xlsx')}
                   data-testid="button-export-xlsx"
                 >
@@ -886,7 +886,7 @@ export default function Finance() {
                             {transaction.type === 'refund' && <ArrowDownRight className="h-4 w-4 text-blue-500" />}
                             {transaction.type === 'bonus' && <Plus className="h-4 w-4 text-purple-500" />}
                             <span className="capitalize">
-                              {transaction.type === 'payout' ? 'Выплата' : 
+                              {transaction.type === 'payout' ? 'Выплата' :
                                transaction.type === 'commission' ? 'Комиссия' :
                                transaction.type === 'refund' ? 'Возврат' :
                                transaction.type === 'bonus' ? 'Бонус' : transaction.type}
@@ -929,8 +929,8 @@ export default function Finance() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="ghost"
                               size="sm"
                               onClick={() => setSelectedTransaction(transaction)}
                               title="Посмотреть детализацию"
@@ -939,8 +939,8 @@ export default function Finance() {
                               <Eye className="h-4 w-4" />
                             </Button>
                             {transaction.status === 'pending' && (
-                              <Button 
-                                variant="ghost" 
+                              <Button
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => updateTransactionMutation.mutate({
                                   transactionId: transaction.id,

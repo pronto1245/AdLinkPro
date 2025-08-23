@@ -219,16 +219,16 @@ export default function TeamManagement() {
     },
     onSuccess: (data) => {
       toast({
-        title: "Приглашение отправлено",
+        title: 'Приглашение отправлено',
         description: `Email-приглашение отправлено на ${data.email}`,
       });
       refetchMembers();
     },
     onError: (error: Error) => {
       toast({
-        title: "Ошибка отправки приглашения",
+        title: 'Ошибка отправки приглашения',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -251,15 +251,15 @@ export default function TeamManagement() {
       setIsAddMemberOpen(false);
       resetForm();
       toast({
-        title: "Сотрудник добавлен",
-        description: "Новый сотрудник успешно добавлен в команду"
+        title: 'Сотрудник добавлен',
+        description: 'Новый сотрудник успешно добавлен в команду'
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Ошибка добавления",
+        title: 'Ошибка добавления',
         description: error.message,
-        variant: "destructive"
+        variant: 'destructive'
       });
     }
   });
@@ -282,8 +282,8 @@ export default function TeamManagement() {
       setEditingMember(null);
       resetForm();
       toast({
-        title: "Данные обновлены",
-        description: "Информация о сотруднике успешно обновлена"
+        title: 'Данные обновлены',
+        description: 'Информация о сотруднике успешно обновлена'
       });
     }
   });
@@ -302,8 +302,8 @@ export default function TeamManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/team/members'] });
       toast({
-        title: "Сотрудник удалён",
-        description: "Сотрудник успешно удалён из команды"
+        title: 'Сотрудник удалён',
+        description: 'Сотрудник успешно удалён из команды'
       });
     }
   });
@@ -312,9 +312,9 @@ export default function TeamManagement() {
   const handleInviteMember = () => {
     if (!memberForm.email || !memberForm.role) {
       toast({
-        title: "Ошибка валидации",
-        description: "Email и роль обязательны для заполнения",
-        variant: "destructive"
+        title: 'Ошибка валидации',
+        description: 'Email и роль обязательны для заполнения',
+        variant: 'destructive'
       });
       return;
     }
@@ -327,7 +327,7 @@ export default function TeamManagement() {
 
   const handleBulkActions = (action: 'activate' | 'block' | 'delete', memberIds: string[]) => {
     // Массовые операции с участниками команды
-    const confirmMessage = action === 'delete' 
+    const confirmMessage = action === 'delete'
       ? `Удалить ${memberIds.length} участников?`
       : `${action === 'block' ? 'Заблокировать' : 'Активировать'} ${memberIds.length} участников?`;
 
@@ -337,7 +337,7 @@ export default function TeamManagement() {
         if (action === 'delete') {
           deleteMemberMutation.mutate(id);
         } else {
-          updateMemberMutation.mutate({ 
+          updateMemberMutation.mutate({
             id, _data: { status: action === 'block' ? 'blocked' : 'active' }
           });
         }
@@ -377,7 +377,7 @@ export default function TeamManagement() {
           row.createdAt
         ].join(','))
       ].join('\n');
-      
+
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -387,7 +387,7 @@ export default function TeamManagement() {
     }
 
     toast({
-      title: "Экспорт завершен",
+      title: 'Экспорт завершен',
       description: `Данные команды экспортированы в формате ${format.toUpperCase()}`
     });
   };
@@ -428,14 +428,14 @@ export default function TeamManagement() {
 
   // Фильтрация команды
   const filteredMembers = teamMembers.filter((member: TeamMember) => {
-    const matchesSearch = 
+    const matchesSearch =
       member.username.toLowerCase().includes(filters.search.toLowerCase()) ||
       member.email.toLowerCase().includes(filters.search.toLowerCase()) ||
       `${member.firstName} ${member.lastName}`.toLowerCase().includes(filters.search.toLowerCase());
-    
+
     const matchesRole = filters.role === 'all' || member.role === filters.role;
     const matchesStatus = filters.status === 'all' || member.status === filters.status;
-    
+
     return matchesSearch && matchesRole && matchesStatus;
   });
 
@@ -452,14 +452,14 @@ export default function TeamManagement() {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button 
+          <Button
             onClick={() => setIsAddMemberOpen(true)}
             data-testid="button-add-member"
           >
             <Plus className="h-4 w-4 mr-2" />
             Добавить сотрудника
           </Button>
-          <Button 
+          <Button
             variant="outline"
             onClick={() => handleExportTeamData('csv')}
             data-testid="button-export-team"
@@ -511,8 +511,8 @@ export default function TeamManagement() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-purple-700 dark:text-purple-300">🔒 С ограничениями</p>
                 <p className="text-3xl font-bold text-purple-800 dark:text-purple-200">
-                  {teamMembers.filter((m: TeamMember) => 
-                    m.restrictions.ipWhitelist.length > 0 || 
+                  {teamMembers.filter((m: TeamMember) =>
+                    m.restrictions.ipWhitelist.length > 0 ||
                     m.restrictions.geoRestrictions.length > 0 ||
                     m.restrictions.timeRestrictions.enabled
                   ).length}
@@ -869,13 +869,13 @@ export default function TeamManagement() {
                         ipAddress: log.ipAddress,
                         result: log.result
                       }));
-                      
+
                       const headers = ['Время', 'Пользователь', 'Действие', 'Ресурс', 'IP адрес', 'Результат'];
                       const csvContent = [
                         headers.join(','),
                         ...csvData.map((row: any) => Object.values(row).join(','))
                       ].join('\n');
-                      
+
                       const blob = new Blob([csvContent], { type: 'text/csv' });
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement('a');
@@ -1069,7 +1069,7 @@ export default function TeamManagement() {
                     <Switch
                       id="manageOffers"
                       checked={memberForm.permissions.manageOffers}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         setMemberForm(prev => ({
                           ...prev,
                           permissions: { ...prev.permissions, manageOffers: checked }
@@ -1083,7 +1083,7 @@ export default function TeamManagement() {
                     <Switch
                       id="managePartners"
                       checked={memberForm.permissions.managePartners}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         setMemberForm(prev => ({
                           ...prev,
                           permissions: { ...prev.permissions, managePartners: checked }
@@ -1097,7 +1097,7 @@ export default function TeamManagement() {
                     <Switch
                       id="viewStatistics"
                       checked={memberForm.permissions.viewStatistics}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         setMemberForm(prev => ({
                           ...prev,
                           permissions: { ...prev.permissions, viewStatistics: checked }
@@ -1111,7 +1111,7 @@ export default function TeamManagement() {
                     <Switch
                       id="financialOperations"
                       checked={memberForm.permissions.financialOperations}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         setMemberForm(prev => ({
                           ...prev,
                           permissions: { ...prev.permissions, financialOperations: checked }
@@ -1125,7 +1125,7 @@ export default function TeamManagement() {
                     <Switch
                       id="postbacksApi"
                       checked={memberForm.permissions.postbacksApi}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         setMemberForm(prev => ({
                           ...prev,
                           permissions: { ...prev.permissions, postbacksApi: checked }
@@ -1141,13 +1141,13 @@ export default function TeamManagement() {
             {/* Ограничения */}
             <div className="space-y-4">
               <h3 className="font-medium">Ограничения доступа</h3>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="ipWhitelist">IP белый список (через запятую)</Label>
                 <Textarea
                   id="ipWhitelist"
                   value={memberForm.restrictions.ipWhitelist.join(', ')}
-                  onChange={(e) => 
+                  onChange={(e) =>
                     setMemberForm(prev => ({
                       ...prev,
                       restrictions: {
@@ -1166,7 +1166,7 @@ export default function TeamManagement() {
                 <Input
                   id="geoRestrictions"
                   value={memberForm.restrictions.geoRestrictions.join(', ')}
-                  onChange={(e) => 
+                  onChange={(e) =>
                     setMemberForm(prev => ({
                       ...prev,
                       restrictions: {
@@ -1185,7 +1185,7 @@ export default function TeamManagement() {
                   <Label>Временные ограничения</Label>
                   <Switch
                     checked={memberForm.restrictions.timeRestrictions.enabled}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setMemberForm(prev => ({
                         ...prev,
                         restrictions: {
@@ -1197,7 +1197,7 @@ export default function TeamManagement() {
                     data-testid="switch-time-restrictions"
                   />
                 </div>
-                
+
                 {memberForm.restrictions.timeRestrictions.enabled && (
                   <div className="grid grid-cols-2 gap-4 pl-4">
                     <div className="space-y-2">
@@ -1206,7 +1206,7 @@ export default function TeamManagement() {
                         id="startTime"
                         type="time"
                         value={memberForm.restrictions.timeRestrictions.startTime}
-                        onChange={(e) => 
+                        onChange={(e) =>
                           setMemberForm(prev => ({
                             ...prev,
                             restrictions: {
@@ -1224,7 +1224,7 @@ export default function TeamManagement() {
                         id="endTime"
                         type="time"
                         value={memberForm.restrictions.timeRestrictions.endTime}
-                        onChange={(e) => 
+                        onChange={(e) =>
                           setMemberForm(prev => ({
                             ...prev,
                             restrictions: {
@@ -1249,13 +1249,13 @@ export default function TeamManagement() {
                 <Switch
                   id="telegramNotifications"
                   checked={memberForm.telegramNotifications}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     setMemberForm(prev => ({ ...prev, telegramNotifications: checked }))
                   }
                   data-testid="switch-telegram-notifications"
                 />
               </div>
-              
+
               {memberForm.telegramNotifications && (
                 <div className="space-y-2">
                   <Label htmlFor="telegramUserId">Telegram User ID</Label>
@@ -1272,8 +1272,8 @@ export default function TeamManagement() {
 
             {/* Кнопки */}
             <div className="flex justify-end gap-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setIsAddMemberOpen(false);
                   setEditingMember(null);
@@ -1299,8 +1299,8 @@ export default function TeamManagement() {
                 {(createMemberMutation.isPending || updateMemberMutation.isPending || inviteMemberMutation.isPending) && (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                 )}
-                {editingMember 
-                  ? 'Сохранить' 
+                {editingMember
+                  ? 'Сохранить'
                   : (memberForm.username ? 'Добавить' : 'Пригласить')
                 }
               </Button>

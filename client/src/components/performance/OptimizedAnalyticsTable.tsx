@@ -12,14 +12,14 @@ interface OptimizedAnalyticsTableProps {
 }
 
 // Мемоизированный компонент таблицы аналитики
-const OptimizedAnalyticsTable = memo(({ 
-  currentPage, 
-  onNavigateToPartner, 
-  onNavigateToGeo, 
+const OptimizedAnalyticsTable = memo(({
+  currentPage,
+  onNavigateToPartner,
+  onNavigateToGeo,
   onNavigateToFraud,
-  offerId 
+  offerId
 }: OptimizedAnalyticsTableProps) => {
-  
+
   // Генерируем данные только для текущей страницы (мемоизировано)
   const analyticsData = useMemo(() => {
     return Array.from({ length: 10 }, (_, index) => {

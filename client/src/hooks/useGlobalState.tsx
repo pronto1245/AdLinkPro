@@ -21,7 +21,7 @@ interface GlobalState {
   };
 }
 
-type GlobalAction = 
+type GlobalAction =
   | { type: 'SET_LOADING'; key: string; loading: boolean }
   | { type: 'SET_ERROR'; key: string; error: string | null }
   | { type: 'CLEAR_ERRORS' }
@@ -112,7 +112,7 @@ export function GlobalStateProvider({ children }: { children: ReactNode }) {
 
   const setError = useCallback((key: string, error: string | null) => {
     dispatch({ type: 'SET_ERROR', key, error });
-    
+
     // Show toast for critical errors
     if (error && ['auth', 'network'].includes(key)) {
       toast({
@@ -187,7 +187,7 @@ export function useGlobalState() {
  */
 export function useLoadingState(key: string) {
   const { setLoading, isLoading } = useGlobalState();
-  
+
   return {
     loading: isLoading(key),
     setLoading: (loading: boolean) => setLoading(key, loading),
@@ -199,7 +199,7 @@ export function useLoadingState(key: string) {
  */
 export function useErrorState(key: string) {
   const { setError, getError, hasError } = useGlobalState();
-  
+
   return {
     error: getError(key),
     hasError: hasError(key),

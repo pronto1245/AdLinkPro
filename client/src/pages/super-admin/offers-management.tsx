@@ -67,7 +67,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
   const language = i18n.language;
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const form = useForm<CreateOfferFormData>({
     resolver: zodResolver(createOfferSchema),
     defaultValues: {
@@ -127,7 +127,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
       toast({
         title: t('error'),
         description: error.message || t('failed_to_create_offer'),
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -135,7 +135,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
   const categories = [
     'gambling', 'finance', 'nutra', 'dating', 'sweepstakes', 'crypto', 'e-commerce', 'mobile', 'games', 'software'
   ];
-
 
 
   const trafficSources = [
@@ -187,7 +186,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="status"
@@ -290,9 +289,9 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                   {field.value && (
                     <div className="flex items-center gap-3">
                       <img src={field.value} alt={t('logo')} className="h-16 w-16 object-cover rounded border" />
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         size="sm"
                         onClick={() => field.onChange('')}
                         title={t('remove_logo')}
@@ -309,12 +308,11 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
         />
 
 
-
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label className="text-base font-medium">{t('landing_pages')}</Label>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
               size="sm"
               onClick={() => {
@@ -328,7 +326,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
               Добавить страницу
             </Button>
           </div>
-          
+
           <div className="space-y-3">
             {form.watch('landingPages').map((_, index) => (
               <div key={index} className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
@@ -346,7 +344,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name={`landingPages.${index}.url`}
@@ -361,7 +359,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                     )}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                   <FormField
                     control={form.control}
@@ -370,14 +368,14 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       <FormItem>
                         <FormLabel className="text-sm">{t('payout_amount')}</FormLabel>
                         <FormControl>
-                          <Input 
-                            {...field} 
-                            type="number" 
+                          <Input
+                            {...field}
+                            type="number"
                             step="0.01"
                             value={field.value || ''}
                             onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                             onWheel={(e) => e.currentTarget.blur()}
-                            placeholder="0.00" 
+                            placeholder="0.00"
                             data-testid={`input-landing-payout-${index}`}
                             className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
@@ -386,7 +384,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name={`landingPages.${index}.currency`}
@@ -410,7 +408,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name={`landingPages.${index}.geo`}
@@ -424,12 +422,12 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                       </FormItem>
                     )}
                   />
-                  
+
                   <div className="flex justify-end">
                     {form.watch('landingPages').length > 1 && (
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         size="sm"
                         onClick={() => {
                           const current = form.getValues('landingPages');
@@ -478,7 +476,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="currency"
@@ -504,7 +502,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
         </div>
 
 
-
         <div className="space-y-4">
           <Label className="text-base font-medium">{t('kpi_conditions')}</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -515,8 +512,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 <FormItem>
                   <FormLabel>KPI условия (Русский)</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      {...field} 
+                    <Textarea
+                      {...field}
                       placeholder="Условия KPI на русском языке"
                       rows={2}
                       data-testid="textarea-kpi-conditions-ru"
@@ -533,8 +530,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 <FormItem>
                   <FormLabel>KPI Conditions (English)</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      {...field} 
+                    <Textarea
+                      {...field}
                       placeholder="KPI conditions in English"
                       rows={2}
                       data-testid="textarea-kpi-conditions-en"
@@ -557,8 +554,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 <FormItem>
                   <FormLabel>Цели (Русский)</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      {...field} 
+                    <Textarea
+                      {...field}
                       placeholder="Цели оффера на русском языке"
                       rows={2}
                       data-testid="textarea-goals-ru"
@@ -575,8 +572,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                 <FormItem>
                   <FormLabel>Goals (English)</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      {...field} 
+                    <Textarea
+                      {...field}
                       placeholder="Offer goals in English"
                       rows={2}
                       data-testid="textarea-goals-en"
@@ -588,7 +585,6 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
             />
           </div>
         </div>
-
 
 
         <div className="space-y-4">
@@ -625,7 +621,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
               <FormItem>
                 <FormControl>
                   <div className="space-y-3">
-                    <Select 
+                    <Select
                       onValueChange={(value) => {
                         const current = (field.value as string[]) || [];
                         if (!current.includes(value)) {
@@ -650,9 +646,9 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                         <SelectItem value="Firefox extensions">{t('firefox_extensions')}</SelectItem>
                       </SelectContent>
                     </Select>
-                    
+
                     <div className="flex gap-2">
-                      <Input 
+                      <Input
                         placeholder={t('custom_app_placeholder')}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -688,7 +684,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
                         {t('add')}
                       </Button>
                     </div>
-                    
+
                     {field.value && (field.value as string[]).length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {(field.value as string[]).map((app: string, index: number) => (
@@ -726,13 +722,13 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
               <FormItem>
                 <FormLabel>{t('daily_limit')}</FormLabel>
                 <FormControl>
-                  <Input 
-                    {...field} 
+                  <Input
+                    {...field}
                     type="number"
                     value={field.value || ''}
                     onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                     onWheel={(e) => e.currentTarget.blur()}
-                    placeholder={t('unlimited')} 
+                    placeholder={t('unlimited')}
                     data-testid="input-daily-limit"
                     className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -741,7 +737,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="monthlyLimit"
@@ -749,13 +745,13 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
               <FormItem>
                 <FormLabel>{t('monthly_limit')}</FormLabel>
                 <FormControl>
-                  <Input 
-                    {...field} 
+                  <Input
+                    {...field}
                     type="number"
                     value={field.value || ''}
                     onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                     onWheel={(e) => e.currentTarget.blur()}
-                    placeholder={t('unlimited')} 
+                    placeholder={t('unlimited')}
                     data-testid="input-monthly-limit"
                     className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -785,7 +781,7 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="autoApprovePartners"
@@ -810,8 +806,8 @@ function CreateOfferForm({ onSuccess }: CreateOfferFormProps) {
           <Button type="button" variant="outline" onClick={onSuccess}>
             {t('cancel')}
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={createOfferMutation.isPending}
             data-testid="button-submit-offer"
           >
@@ -894,29 +890,29 @@ export default function OffersManagement() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const { isCollapsed } = useSidebar();
-  
+
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
-  
+
   // Copy URL state
   const [copiedUrls, setCopiedUrls] = useState<{[key: string]: boolean}>({});
-  
+
   // Copy URL function
   const copyToClipboard = async (text: string, id: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedUrls(prev => ({ ...prev, [id]: true }));
       toast({
-        title: "URL скопирован",
-        description: "URL успешно скопирован в буфер обмена",
+        title: 'URL скопирован',
+        description: 'URL успешно скопирован в буфер обмена',
       });
       setTimeout(() => {
         setCopiedUrls(prev => ({ ...prev, [id]: false }));
       }, 2000);
     } catch (err) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось скопировать URL",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось скопировать URL',
+        variant: 'destructive'
       });
     }
   };
@@ -950,23 +946,22 @@ export default function OffersManagement() {
     .filter((offer: Offer) => {
       const matchesGeneralSearch = !searchTerm || (
         offer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (typeof offer.description === 'object' ? 
+        (typeof offer.description === 'object' ?
           getMultilingualText(offer.description, language, '').toLowerCase().includes(searchTerm.toLowerCase()) :
           offer.description?.toLowerCase().includes(searchTerm.toLowerCase())
         ) ||
         offer.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      const matchesOfferNameSearch = !offerNameSearch || offerNameSearch === 'all' || 
+      const matchesOfferNameSearch = !offerNameSearch || offerNameSearch === 'all' ||
         offer.name === offerNameSearch;
       const matchesStatus = statusFilter === 'all' || offer.status === statusFilter;
       const matchesCategory = categoryFilter === 'all' || offer.category === categoryFilter;
       const matchesAdvertiser = advertiserFilter === 'all' || offer.advertiserId === advertiserFilter;
-      
+
       return matchesGeneralSearch && matchesOfferNameSearch && matchesStatus && matchesCategory && matchesAdvertiser;
     });
 
   const isLoading = !allOffers.length;
-
 
 
   // Fetch offer logs
@@ -1002,7 +997,7 @@ export default function OffersManagement() {
       toast({
         title: t('error'),
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   });
@@ -1026,7 +1021,7 @@ export default function OffersManagement() {
       toast({
         title: 'Ошибка',
         description: error.message || 'Не удалось активировать офферы',
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   });
@@ -1049,7 +1044,7 @@ export default function OffersManagement() {
       toast({
         title: 'Ошибка',
         description: error.message || 'Не удалось остановить офферы',
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   });
@@ -1072,7 +1067,7 @@ export default function OffersManagement() {
       toast({
         title: 'Ошибка',
         description: error.message || 'Не удалось удалить офферы',
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   });
@@ -1118,7 +1113,7 @@ export default function OffersManagement() {
       toast({
         title: t('error'),
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   });
@@ -1132,15 +1127,15 @@ export default function OffersManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
       toast({
-        title: "Успех",
-        description: "Оффер успешно удален",
+        title: 'Успех',
+        description: 'Оффер успешно удален',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось удалить оффер",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Не удалось удалить оффер',
+        variant: 'destructive',
       });
     },
   });
@@ -1148,16 +1143,16 @@ export default function OffersManagement() {
   // Экспорт офферов
   const handleExportOffers = () => {
     try {
-      const offersToExport = selectedOffers.length > 0 
+      const offersToExport = selectedOffers.length > 0
         ? offers.filter((offer: any) => selectedOffers.includes(offer.id))
         : offers;
-        
+
       const dataToExport = offersToExport.map(offer => ({
         id: offer.id,
         name: offer.name,
         category: offer.category,
-        description: typeof offer.description === 'object' ? 
-          getMultilingualText(offer.description, language, '') : 
+        description: typeof offer.description === 'object' ?
+          getMultilingualText(offer.description, language, '') :
           offer.description,
         status: offer.status,
         payoutType: offer.payoutType,
@@ -1174,7 +1169,7 @@ export default function OffersManagement() {
 
       const dataStr = JSON.stringify(dataToExport, null, 2);
       const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      
+
       const url = URL.createObjectURL(dataBlob);
       const link = document.createElement('a');
       link.href = url;
@@ -1185,21 +1180,20 @@ export default function OffersManagement() {
       URL.revokeObjectURL(url);
 
       toast({
-        title: "Успех",
+        title: 'Успех',
         description: `Экспортировано ${dataToExport.length} офферов`,
       });
-      
+
       // Сбрасываем выбор после экспорта
       setSelectedOffers([]);
     } catch (_error) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось экспортировать офферы",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Не удалось экспортировать офферы',
+        variant: 'destructive',
       });
     }
   };
-
 
 
   const isAllSelected = offers.length > 0 && selectedOffers.length === offers.length;
@@ -1210,7 +1204,7 @@ export default function OffersManagement() {
     try {
       const text = await file.text();
       const importedOffers = JSON.parse(text);
-      
+
       if (!Array.isArray(importedOffers)) {
         throw new Error('Файл должен содержать массив офферов');
       }
@@ -1224,7 +1218,7 @@ export default function OffersManagement() {
         queryClient.invalidateQueries({ queryKey: ['/api/admin/offers'] });
         setIsImportDialogOpen(false);
         toast({
-          title: "Успех",
+          title: 'Успех',
           description: `Импортировано ${importedOffers.length} офферов`,
         });
       } else {
@@ -1232,9 +1226,9 @@ export default function OffersManagement() {
       }
     } catch (error: any) {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось импортировать офферы",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Не удалось импортировать офферы',
+        variant: 'destructive',
       });
     }
   };
@@ -1242,7 +1236,7 @@ export default function OffersManagement() {
   const getStatusBadge = (status: string, moderationStatus: string, isBlocked: boolean, isArchived: boolean) => {
     if (isArchived) {return <Badge variant="secondary">{t('archived')}</Badge>;}
     if (isBlocked) {return <Badge variant="destructive">{t('blocked')}</Badge>;}
-    
+
     switch (status) {
       case 'active':
         return <Badge className="bg-green-500 hover:bg-green-600 text-white">{t('active')}</Badge>;
@@ -1267,7 +1261,7 @@ export default function OffersManagement() {
       // Update the cache directly instead of invalidating to preserve order
       queryClient.setQueryData(['/api/admin/offers'], (oldOffers: any[]) => {
         if (!oldOffers) {return oldOffers;}
-        return oldOffers.map(offer => 
+        return oldOffers.map(offer =>
           offer.id === updatedOffer.id ? { ...offer, status: updatedOffer.status } : offer
         );
       });
@@ -1282,7 +1276,7 @@ export default function OffersManagement() {
       toast({
         title: t('error'),
         description: t('failed_to_change_status'),
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   });
@@ -1370,7 +1364,7 @@ export default function OffersManagement() {
                 data-testid="input-search-offers"
               />
             </div>
-            
+
             <Select value={offerNameSearch} onValueChange={setOfferNameSearch}>
               <SelectTrigger data-testid="select-offer-name" title={t('offer_name_filter_tooltip')}>
                 <SelectValue placeholder={t('all_offers')} />
@@ -1397,7 +1391,6 @@ export default function OffersManagement() {
                 <SelectItem value="draft">{t('draft')}</SelectItem>
               </SelectContent>
             </Select>
-
 
 
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -1526,7 +1519,7 @@ export default function OffersManagement() {
               </div>
             </div>
           )}
-          
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -1536,7 +1529,7 @@ export default function OffersManagement() {
                       checked={isAllSelected}
                       onCheckedChange={handleSelectAll}
                       data-testid="checkbox-select-all"
-                      className={isIndeterminate ? "data-[state=checked]:bg-blue-600" : ""}
+                      className={isIndeterminate ? 'data-[state=checked]:bg-blue-600' : ''}
                       ref={(el) => {
                         if (el) {
                           (el as any).indeterminate = isIndeterminate;
@@ -1568,8 +1561,8 @@ export default function OffersManagement() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         {offer.logo && (
-                          <img 
-                            src={offer.logo} 
+                          <img
+                            src={offer.logo}
                             alt={offer.name}
                             className="w-8 h-8 rounded object-cover"
                             onError={(e) => {
@@ -1578,7 +1571,7 @@ export default function OffersManagement() {
                           />
                         )}
                         <div>
-                          <div 
+                          <div
                             className="font-medium cursor-pointer hover:text-blue-600 hover:underline transition-colors"
                             onClick={() => setLocation(`/admin/OfferDetails/${offer.id}`)}
                             data-testid={`link-offer-name-${offer.id}`}
@@ -1650,7 +1643,7 @@ export default function OffersManagement() {
                             {offer.landingPages?.map((landing, index) => {
                               const countryFlags: {[key: string]: string} = {
                                 'us': '🇺🇸',
-                                'gb': '🇬🇧', 
+                                'gb': '🇬🇧',
                                 'uk': '🇬🇧',
                                 'it': '🇮🇹',
                                 'de': '🇩🇪',
@@ -1742,7 +1735,7 @@ export default function OffersManagement() {
                                     'other': 'Other'
                                   };
                                   const sourceLabel = trafficSourceLabels[source] || source;
-                                  
+
                                   // Цвета для разных типов источников трафика
                                   const getTrafficSourceColor = (source: string) => {
                                     if (source.includes('facebook') || source.includes('instagram')) {return 'bg-blue-100 text-blue-800';}
@@ -1758,9 +1751,9 @@ export default function OffersManagement() {
                                     if (source.includes('influencer') || source.includes('teaser')) {return 'bg-pink-100 text-pink-800';}
                                     return 'bg-gray-100 text-gray-800';
                                   };
-                                  
+
                                   const colorClass = getTrafficSourceColor(source);
-                                  
+
                                   return (
                                     <Badge key={rowIndex * 2 + index} className={`text-xs whitespace-nowrap ${colorClass} border-0`}>
                                       {sourceLabel}
@@ -1821,7 +1814,7 @@ export default function OffersManagement() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div 
+                      <div
                         className="cursor-pointer"
                         onClick={() => {
                           setStatusChangeOffer(offer);
@@ -1894,7 +1887,7 @@ export default function OffersManagement() {
               <DialogTitle>{selectedOffer.name}</DialogTitle>
               <DialogDescription>{selectedOffer.description}</DialogDescription>
             </DialogHeader>
-            
+
             <Tabs defaultValue="details" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="details">{t('details')}</TabsTrigger>
@@ -1902,21 +1895,21 @@ export default function OffersManagement() {
                 <TabsTrigger value="creatives">{t('creatives')}</TabsTrigger>
                 <TabsTrigger value="history">{t('history')}</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="details" className="space-y-4">
                 {selectedOffer.logo && (
                   <div>
                     <Label>{t('logo')}</Label>
                     <div className="mt-2">
-                      <img 
-                        src={selectedOffer.logo} 
+                      <img
+                        src={selectedOffer.logo}
                         alt={selectedOffer.name}
                         className="w-16 h-16 rounded object-cover border"
                       />
                     </div>
                   </div>
                 )}
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>{t('category')}</Label>
@@ -1971,7 +1964,7 @@ export default function OffersManagement() {
                   <div>
                     <Label>{t('countries')}</Label>
                     <div className="font-medium">
-                      {Array.isArray(selectedOffer.countries) && selectedOffer.countries.length > 0 
+                      {Array.isArray(selectedOffer.countries) && selectedOffer.countries.length > 0
                         ? selectedOffer.countries.join(', ')
                         : t('all_countries')}
                     </div>
@@ -1985,7 +1978,7 @@ export default function OffersManagement() {
                       {selectedOffer.landingPages.map((landing, index) => {
                         const countryFlags: {[key: string]: string} = {
                           'us': '🇺🇸',
-                          'gb': '🇬🇧', 
+                          'gb': '🇬🇧',
                           'uk': '🇬🇧',
                           'it': '🇮🇹',
                           'de': '🇩🇪',
@@ -2018,7 +2011,7 @@ export default function OffersManagement() {
                           'MXN': '$'
                         };
                         const currencySymbol = currencySymbols[landing.currency] || landing.currency;
-                        
+
                         return (
                           <div key={index} className="border rounded p-3">
                             <div className="flex justify-between items-start">
@@ -2029,8 +2022,8 @@ export default function OffersManagement() {
                                 </div>
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                   <span className="break-all">{landing.url}</span>
-                                  <Button 
-                                    variant="ghost" 
+                                  <Button
+                                    variant="ghost"
                                     size="sm"
                                     className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
                                     onClick={() => copyToClipboard(landing.url, `modal-landing-${index}`)}
@@ -2055,12 +2048,12 @@ export default function OffersManagement() {
                     </div>
                   </div>
                 )}
-                
+
                 <div>
                   <Label>{t('landing_page')}</Label>
                   <div className="font-medium break-all">{selectedOffer.landingPageUrl || 'Не указано'}</div>
                 </div>
-                
+
                 {selectedOffer.trafficSources && selectedOffer.trafficSources.length > 0 && (
                   <div>
                     <Label>Разрешенные источники трафика</Label>
@@ -2102,7 +2095,7 @@ export default function OffersManagement() {
                               'other': 'Другое'
                             };
                             const sourceLabel = trafficSourceLabels[source] || source;
-                            
+
                             // Цвета для разных типов источников трафика
                             const getTrafficSourceColor = (source: string) => {
                               if (source.includes('facebook') || source.includes('instagram')) {return 'bg-blue-100 text-blue-800 border-blue-200';}
@@ -2119,9 +2112,9 @@ export default function OffersManagement() {
                               if (source.includes('mytarget') || source.includes('reddit')) {return 'bg-indigo-100 text-indigo-800 border-indigo-200';}
                               return 'bg-gray-100 text-gray-800 border-gray-200';
                             };
-                            
+
                             const colorClass = getTrafficSourceColor(source);
-                            
+
                             return (
                               <Badge key={rowIndex * 2 + index} className={`${colorClass} border`}>
                                 {sourceLabel}
@@ -2133,7 +2126,7 @@ export default function OffersManagement() {
                     </div>
                   </div>
                 )}
-                
+
                 {selectedOffer.allowedApps && Array.isArray(selectedOffer.allowedApps) && selectedOffer.allowedApps.length > 0 && (
                   <div>
                     <Label>Разрешенные приложения</Label>
@@ -2169,13 +2162,13 @@ export default function OffersManagement() {
                     </div>
                   </div>
                 )}
-                
+
                 <div>
                   <Label>{t('restrictions')}</Label>
                   <div className="font-medium">{selectedOffer.restrictions || t('no_restrictions')}</div>
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="analytics" className="space-y-4">
                 {offerStats ? (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -2216,11 +2209,11 @@ export default function OffersManagement() {
                   <div className="text-center py-8">{t('no_data')}</div>
                 )}
               </TabsContent>
-              
+
               <TabsContent value="creatives" className="space-y-4">
                 <div className="text-center py-8">{t('no_creatives_available')}</div>
               </TabsContent>
-              
+
               <TabsContent value="history" className="space-y-4">
                 {Array.isArray(offerLogs) && offerLogs.length > 0 ? (
                   <div className="space-y-2">
@@ -2279,10 +2272,10 @@ export default function OffersManagement() {
                     placeholder="Введите название оффера"
                   />
                 </div>
-                
+
                 <div>
                   <Label>Категория</Label>
-                  <Select 
+                  <Select
                     defaultValue={editingOffer.category}
                     onValueChange={(value) => handleOfferUpdate({ category: value })}
                   >
@@ -2318,7 +2311,7 @@ export default function OffersManagement() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <Label>Статус</Label>
-                  <Select 
+                  <Select
                     defaultValue={editingOffer.status}
                     onValueChange={(value) => handleOfferUpdate({ status: value })}
                   >
@@ -2336,7 +2329,7 @@ export default function OffersManagement() {
 
                 <div>
                   <Label>Тип выплаты</Label>
-                  <Select 
+                  <Select
                     defaultValue={editingOffer.payoutType}
                     onValueChange={(value) => handleOfferUpdate({ payoutType: value })}
                   >
@@ -2354,7 +2347,7 @@ export default function OffersManagement() {
 
                 <div>
                   <Label>Валюта</Label>
-                  <Select 
+                  <Select
                     defaultValue={editingOffer.currency}
                     onValueChange={(value) => handleOfferUpdate({ currency: value })}
                   >
@@ -2399,7 +2392,7 @@ export default function OffersManagement() {
                     placeholder="Без ограничений"
                   />
                 </div>
-                
+
                 <div>
                   <Label>Месячный лимит</Label>
                   <Input
@@ -2423,7 +2416,7 @@ export default function OffersManagement() {
                         checked={editingOffer.trafficSources?.includes(source) || false}
                         onChange={(e) => {
                           const current = editingOffer.trafficSources || [];
-                          const updated = e.target.checked 
+                          const updated = e.target.checked
                             ? [...current, source]
                             : current.filter(s => s !== source);
                           handleOfferUpdate({ trafficSources: updated });
@@ -2448,7 +2441,7 @@ export default function OffersManagement() {
                         checked={editingOffer.allowedApps?.includes(app) || false}
                         onChange={(e) => {
                           const current = editingOffer.allowedApps || [];
-                          const updated = e.target.checked 
+                          const updated = e.target.checked
                             ? [...current, app]
                             : current.filter(a => a !== app);
                           handleOfferUpdate({ allowedApps: updated });
@@ -2489,9 +2482,9 @@ export default function OffersManagement() {
                             }}
                           />
                           {lp.url && (
-                            <Button 
+                            <Button
                               type="button"
-                              variant="ghost" 
+                              variant="ghost"
                               size="sm"
                               className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
                               onClick={() => copyToClipboard(lp.url, `edit-landing-${index}`)}
@@ -2560,7 +2553,7 @@ export default function OffersManagement() {
                     rows={2}
                   />
                 </div>
-                
+
                 <div>
                   <Label>Комментарий модерации</Label>
                   <Textarea
@@ -2642,13 +2635,13 @@ export default function OffersManagement() {
               </div>
 
               <div className="flex justify-end gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setIsEditDialogOpen(false)}
                 >
                   Отмена
                 </Button>
-                <Button 
+                <Button
                   onClick={() => {
                     if (editingOffer) {
                       updateOfferMutation.mutate(editingOffer);
@@ -2674,7 +2667,7 @@ export default function OffersManagement() {
                 {t('select_new_status_for')} "{statusChangeOffer.name}"
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <Button
@@ -2689,7 +2682,7 @@ export default function OffersManagement() {
                     {t('active')}
                   </div>
                 </Button>
-                
+
                 <Button
                   variant={statusChangeOffer.status === 'paused' ? 'default' : 'outline'}
                   className={statusChangeOffer.status === 'paused' ? 'bg-red-500 hover:bg-red-600' : 'border-red-500 text-red-600 hover:bg-red-50'}
@@ -2702,10 +2695,10 @@ export default function OffersManagement() {
                     {t('paused')}
                   </div>
                 </Button>
-                
+
                 <Button
                   variant={statusChangeOffer.status === 'pending' ? 'default' : 'outline'}
-                  className={statusChangeOffer.status === 'pending' ? 'bg-yellow-500 hover:bg-yellow-600' : 'border-yellow-500 text-yellow-600 hover:bg-yellow-50'}  
+                  className={statusChangeOffer.status === 'pending' ? 'bg-yellow-500 hover:bg-yellow-600' : 'border-yellow-500 text-yellow-600 hover:bg-yellow-50'}
                   onClick={() => changeStatusMutation.mutate({ offerId: statusChangeOffer.id, status: 'pending' })}
                   disabled={changeStatusMutation.isPending}
                   data-testid="button-status-pending"
@@ -2715,7 +2708,7 @@ export default function OffersManagement() {
                     {t('pending')}
                   </div>
                 </Button>
-                
+
                 <Button
                   variant={statusChangeOffer.status === 'draft' ? 'default' : 'outline'}
                   onClick={() => changeStatusMutation.mutate({ offerId: statusChangeOffer.id, status: 'draft' })}
@@ -2728,7 +2721,7 @@ export default function OffersManagement() {
                   </div>
                 </Button>
               </div>
-              
+
               <div className="text-sm text-muted-foreground">
                 {t('current_status')}: <strong>{t(statusChangeOffer.status)}</strong>
               </div>
@@ -2747,7 +2740,7 @@ export default function OffersManagement() {
                 {selectedOffer.name}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div className="flex gap-2">
                 <Button
@@ -2770,7 +2763,7 @@ export default function OffersManagement() {
                   {t('reject')}
                 </Button>
               </div>
-              
+
               <div className="flex gap-2">
                 <Button
                   variant="outline"

@@ -47,19 +47,19 @@ export function NotificationToast({ notification, onClose }: NotificationToastPr
   useEffect(() => {
     // Показать уведомление с анимацией
     const showTimer = setTimeout(() => setIsVisible(true), 100);
-    
+
     // Автоматически скрыть через заданное время
     if (notification.duration && notification.duration > 0) {
       const hideTimer = setTimeout(() => {
         handleClose();
       }, notification.duration);
-      
+
       return () => {
         clearTimeout(showTimer);
         clearTimeout(hideTimer);
       };
     }
-    
+
     return () => clearTimeout(showTimer);
   }, [notification.duration]);
 
@@ -75,8 +75,8 @@ export function NotificationToast({ notification, onClose }: NotificationToastPr
       className={`
         fixed bottom-4 right-4 z-50 max-w-sm w-full
         transform transition-all duration-300 ease-out
-        ${isVisible && !isLeaving 
-          ? 'translate-x-0 opacity-100' 
+        ${isVisible && !isLeaving
+          ? 'translate-x-0 opacity-100'
           : 'translate-x-full opacity-0'
         }
       `}
@@ -90,11 +90,11 @@ export function NotificationToast({ notification, onClose }: NotificationToastPr
           <div className="flex-shrink-0">
             <Icon className={`h-5 w-5 ${iconColors[notification.type]}`} />
           </div>
-          
+
           <div className="ml-3 flex-1">
             <h4 className="font-semibold text-sm">{notification.title}</h4>
             <p className="text-sm mt-1 opacity-90">{notification.message}</p>
-            
+
             {notification.action && (
               <button
                 onClick={notification.action.onClick}
@@ -104,7 +104,7 @@ export function NotificationToast({ notification, onClose }: NotificationToastPr
               </button>
             )}
           </div>
-          
+
           <button
             onClick={handleClose}
             className="flex-shrink-0 ml-2 p-1 hover:bg-black/10 rounded"
@@ -138,7 +138,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       id,
       duration: notification.duration ?? 5000, // 5 секунд по умолчанию
     };
-    
+
     setNotifications(prev => [...prev, newNotification]);
   };
 
@@ -158,7 +158,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       clearAll
     }}>
       {children}
-      
+
       {/* Рендер уведомлений */}
       <div className="fixed bottom-4 right-4 z-50 space-y-2">
         {notifications.map((notification, index) => (

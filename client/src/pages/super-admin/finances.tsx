@@ -13,9 +13,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Plus, TrendingUp, TrendingDown, DollarSign, Users, CreditCard, Download, 
-  Eye, CheckCircle, XCircle, Clock, Send, FileText, Filter, BarChart3, 
+import {
+  Plus, TrendingUp, TrendingDown, DollarSign, Users, CreditCard, Download,
+  Eye, CheckCircle, XCircle, Clock, Send, FileText, Filter, BarChart3,
   Wallet, ArrowUpRight, ArrowDownRight, RefreshCw, Search, AlertCircle,
   Bitcoin, Banknote, Smartphone, Building, Globe, Copy, Edit, Trash2
 } from 'lucide-react';
@@ -69,7 +69,7 @@ export default function FinancesManagement() {
   const { token } = useAuth();
   const { isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
-  
+
   const [selectedTab, setSelectedTab] = useState<'dashboard' | 'transactions' | 'payouts' | 'deposits' | 'commission' | 'reports' | 'crypto'>('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -106,12 +106,12 @@ export default function FinancesManagement() {
   });
 
   const { data: transactions = [] } = useQuery<Transaction[]>({
-    queryKey: ['/api/admin/finances', { 
-      status: filterStatus, 
-      type: filterType, 
-      currency: filterCurrency, 
+    queryKey: ['/api/admin/finances', {
+      status: filterStatus,
+      type: filterType,
+      currency: filterCurrency,
       method: filterMethod,
-      search: searchTerm 
+      search: searchTerm
     }],
     queryFn: async () => {
       const response = await fetch('/api/admin/finances', {
@@ -125,11 +125,11 @@ export default function FinancesManagement() {
   });
 
   const { data: payoutRequests = [] } = useQuery<PayoutRequest[]>({
-    queryKey: ['/api/admin/payout-requests', { 
-      status: filterStatus, 
-      currency: filterCurrency, 
+    queryKey: ['/api/admin/payout-requests', {
+      status: filterStatus,
+      currency: filterCurrency,
       method: filterMethod,
-      search: searchTerm 
+      search: searchTerm
     }],
     queryFn: async () => {
       const response = await fetch('/api/admin/payout-requests', {
@@ -143,12 +143,12 @@ export default function FinancesManagement() {
   });
 
   const { data: deposits = [] } = useQuery<any[]>({
-    queryKey: ['/api/admin/deposits', { 
-      status: filterStatus, 
-      currency: filterCurrency, 
+    queryKey: ['/api/admin/deposits', {
+      status: filterStatus,
+      currency: filterCurrency,
       method: filterMethod,
       search: searchTerm,
-      period: dateFilter 
+      period: dateFilter
     }],
     queryFn: async () => {
       const response = await fetch('/api/admin/deposits', {
@@ -226,11 +226,11 @@ export default function FinancesManagement() {
     },
     onSuccess: () => {
       // Инвалидация всех финансовых данных при обновлении транзакции
-      queryClient.invalidateQueries({ 
+      queryClient.invalidateQueries({
         predicate: (query) => {
           const key = query.queryKey[0] as string;
-          return key?.includes('/api/admin/financial') || 
-                 key?.includes('/api/admin/finances') || 
+          return key?.includes('/api/admin/financial') ||
+                 key?.includes('/api/admin/finances') ||
                  key?.includes('/api/admin/payout-requests') ||
                  key?.includes('/api/admin/deposits') ||
                  key?.includes('/api/admin/commission-data');
@@ -291,30 +291,30 @@ export default function FinancesManagement() {
 
   // Filter functions
   const filteredTransactions = transactions.filter((transaction) => {
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       transaction.user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesStatus = filterStatus === 'all' || transaction.status === filterStatus;
     const matchesType = filterType === 'all' || transaction.type === filterType;
     const matchesCurrency = filterCurrency === 'all' || transaction.currency === filterCurrency;
     const matchesMethod = filterMethod === 'all' || transaction.paymentMethod === filterMethod;
-    
+
     return matchesSearch && matchesStatus && matchesType && matchesCurrency && matchesMethod;
   });
 
   const filteredPayouts = payoutRequests.filter((payout) => {
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       payout.user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payout.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payout.walletAddress.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesStatus = filterStatus === 'all' || payout.status === filterStatus;
     const matchesCurrency = filterCurrency === 'all' || payout.currency === filterCurrency;
     const matchesMethod = filterMethod === 'all' || payout.paymentMethod === filterMethod;
-    
+
     return matchesSearch && matchesStatus && matchesCurrency && matchesMethod;
   });
 
@@ -389,7 +389,7 @@ export default function FinancesManagement() {
     }
 
     // Создаем CSV файл
-    const headers = type === 'transactions' 
+    const headers = type === 'transactions'
       ? ['ID', 'Тип', 'Пользователь', 'Сумма', 'Валюта', 'Статус', 'Дата']
       : type === 'payouts'
       ? ['ID', 'Пользователь', 'Сумма', 'Валюта', 'Кошелёк', 'Статус', 'Дата']
@@ -453,7 +453,7 @@ export default function FinancesManagement() {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div 
+      <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
           isCollapsed ? 'ml-16' : 'ml-64'
         }`}
@@ -471,7 +471,7 @@ export default function FinancesManagement() {
                   Управление финансами платформы и выплатами
                 </p>
               </div>
-              
+
               <div className="flex space-x-2">
                 <Button
                   variant="outline"
@@ -482,7 +482,7 @@ export default function FinancesManagement() {
                   <Download className="w-4 h-4 mr-2" />
                   Экспорт
                 </Button>
-                
+
                 <Select value={dateFilter} onValueChange={setDateFilter}>
                   <SelectTrigger className="w-32" title="Период">
                     <SelectValue />
@@ -652,17 +652,17 @@ export default function FinancesManagement() {
                       <XAxis dataKey="date" />
                       <YAxis />
                       <Tooltip />
-                      <Line 
-                        type="monotone" 
-                        dataKey="income" 
-                        stroke="#10B981" 
+                      <Line
+                        type="monotone"
+                        dataKey="income"
+                        stroke="#10B981"
                         strokeWidth={2}
                         name="Доходы"
                       />
-                      <Line 
-                        type="monotone" 
-                        dataKey="expenses" 
-                        stroke="#EF4444" 
+                      <Line
+                        type="monotone"
+                        dataKey="expenses"
+                        stroke="#EF4444"
                         strokeWidth={2}
                         name="Расходы"
                       />
@@ -803,8 +803,8 @@ export default function FinancesManagement() {
                     </SelectContent>
                   </Select>
 
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => {
                       setSearchTerm('');
                       setFilterStatus('all');
@@ -914,8 +914,8 @@ export default function FinancesManagement() {
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    onClick={() => updateTransactionMutation.mutate({ 
-                                      transactionId: transaction.id, 
+                                    onClick={() => updateTransactionMutation.mutate({
+                                      transactionId: transaction.id,
                                       status: 'completed',
                                       note: 'Approved by admin'
                                     })}
@@ -927,8 +927,8 @@ export default function FinancesManagement() {
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    onClick={() => updateTransactionMutation.mutate({ 
-                                      transactionId: transaction.id, 
+                                    onClick={() => updateTransactionMutation.mutate({
+                                      transactionId: transaction.id,
                                       status: 'failed',
                                       note: 'Rejected by admin'
                                     })}
@@ -977,8 +977,8 @@ export default function FinancesManagement() {
                   <Button
                     onClick={() => {
                       selectedPayouts.forEach(payoutId => {
-                        processPayoutMutation.mutate({ 
-                          payoutId, 
+                        processPayoutMutation.mutate({
+                          payoutId,
                           action: 'approve',
                           note: 'Bulk approval by admin'
                         });
@@ -1056,8 +1056,8 @@ export default function FinancesManagement() {
                     </SelectContent>
                   </Select>
 
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => {
                       setSearchTerm('');
                       setFilterStatus('all');
@@ -1129,8 +1129,8 @@ export default function FinancesManagement() {
                               </div>
                               <div>
                                 <div className="font-medium">
-                                  {payout.user.firstName && payout.user.lastName 
-                                    ? `${payout.user.firstName} ${payout.user.lastName}` 
+                                  {payout.user.firstName && payout.user.lastName
+                                    ? `${payout.user.firstName} ${payout.user.lastName}`
                                     : payout.user.username}
                                 </div>
                                 <div className="text-sm text-gray-500">{payout.user.email}</div>
@@ -1180,8 +1180,8 @@ export default function FinancesManagement() {
                                     variant="ghost"
                                     onClick={() => {
                                       setSelectedPayout(payout);
-                                      processPayoutMutation.mutate({ 
-                                        payoutId: payout.id, 
+                                      processPayoutMutation.mutate({
+                                        payoutId: payout.id,
                                         action: 'approve',
                                         note: 'Approved by admin'
                                       });
@@ -1196,8 +1196,8 @@ export default function FinancesManagement() {
                                     variant="ghost"
                                     onClick={() => {
                                       setSelectedPayout(payout);
-                                      processPayoutMutation.mutate({ 
-                                        payoutId: payout.id, 
+                                      processPayoutMutation.mutate({
+                                        payoutId: payout.id,
                                         action: 'reject',
                                         note: 'Rejected by admin'
                                       });
@@ -1215,8 +1215,8 @@ export default function FinancesManagement() {
                                   variant="ghost"
                                   onClick={() => {
                                     setSelectedPayout(payout);
-                                    processPayoutMutation.mutate({ 
-                                      payoutId: payout.id, 
+                                    processPayoutMutation.mutate({
+                                      payoutId: payout.id,
                                       action: 'complete',
                                       note: 'Payment completed by admin'
                                     });
@@ -1300,7 +1300,7 @@ export default function FinancesManagement() {
                     <Button variant="outline" onClick={() => setIsInvoiceDialogOpen(false)}>
                       Отмена
                     </Button>
-                    <Button 
+                    <Button
                       onClick={() => {
                         // Get form data - in real implementation, get from form
                         const invoiceData = {
@@ -1597,7 +1597,7 @@ export default function FinancesManagement() {
                     </CardDescription>
                   </div>
                   <div className="flex space-x-2">
-                    <Button 
+                    <Button
                       variant="outline"
                       onClick={() => setDepositDialogOpen(true)}
                       data-testid="button-deposit-crypto"
@@ -1606,7 +1606,7 @@ export default function FinancesManagement() {
                       <ArrowDownRight className="w-4 h-4 mr-2" />
                       Пополнить
                     </Button>
-                    <Button 
+                    <Button
                       variant="outline"
                       onClick={() => setWithdrawDialogOpen(true)}
                       data-testid="button-withdraw-crypto"
@@ -1615,7 +1615,7 @@ export default function FinancesManagement() {
                       <ArrowUpRight className="w-4 h-4 mr-2" />
                       Вывести
                     </Button>
-                    <Button 
+                    <Button
                       className="bg-blue-600 hover:bg-blue-700"
                       data-testid="button-create-wallet"
                       title="Создать кошелёк"
@@ -1641,7 +1641,7 @@ export default function FinancesManagement() {
                         <SelectItem value="USDC">USD Coin (USDC)</SelectItem>
                       </SelectContent>
                     </Select>
-                    
+
                     <Select>
                       <SelectTrigger className="w-48">
                         <SelectValue placeholder="Тип кошелька" />
@@ -1651,7 +1651,7 @@ export default function FinancesManagement() {
                         <SelectItem value="user">Пользовательский</SelectItem>
                       </SelectContent>
                     </Select>
-                    
+
                     <Select>
                       <SelectTrigger className="w-48">
                         <SelectValue placeholder="Статус" />
@@ -1717,7 +1717,7 @@ export default function FinancesManagement() {
                               {parseFloat(wallet.lockedBalance).toFixed(8)}
                             </TableCell>
                             <TableCell>
-                              <Badge 
+                              <Badge
                                 variant={
                                   wallet.status === 'active' ? 'default' :
                                   wallet.status === 'suspended' ? 'destructive' : 'secondary'
@@ -1781,7 +1781,7 @@ export default function FinancesManagement() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button 
+                  <Button
                     onClick={() => {
                       exportData('transactions');
                       toast({
@@ -1810,7 +1810,7 @@ export default function FinancesManagement() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button 
+                  <Button
                     onClick={() => {
                       exportData('payouts');
                       toast({
@@ -1839,7 +1839,7 @@ export default function FinancesManagement() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button 
+                  <Button
                     onClick={() => {
                       exportData('commission');
                       toast({
@@ -1875,8 +1875,8 @@ export default function FinancesManagement() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-green-100 text-green-800">Активен</Badge>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => {
                           toast({
@@ -1899,8 +1899,8 @@ export default function FinancesManagement() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-gray-100 text-gray-800">Неактивен</Badge>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => {
                           toast({
@@ -1923,8 +1923,8 @@ export default function FinancesManagement() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-green-100 text-green-800">Активен</Badge>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => {
                           toast({
@@ -1995,7 +1995,7 @@ export default function FinancesManagement() {
               <Button variant="outline" onClick={() => setDepositDialogOpen(false)}>
                 Отмена
               </Button>
-              <Button 
+              <Button
                 onClick={async () => {
                   try {
                     const response = await fetch('/api/admin/crypto-deposit', {
@@ -2010,23 +2010,23 @@ export default function FinancesManagement() {
                         Authorization: `Bearer ${token}`
                       }
                     });
-                    
+
                     if (!response.ok) {throw new Error('Failed to deposit');}
-                    
+
                     toast({
-                      title: "Пополнение оформлено",
+                      title: 'Пополнение оформлено',
                       description: `Внесено ${depositAmount} BTC`,
                     });
-                    
+
                     setDepositDialogOpen(false);
                     setDepositAmount('');
                     setWalletAddress('');
                     queryClient.invalidateQueries({ queryKey: ['/api/admin/crypto-portfolio'] });
                   } catch (_error) {
                     toast({
-                      title: "Ошибка пополнения",
-                      description: "Не удалось внести средства",
-                      variant: "destructive",
+                      title: 'Ошибка пополнения',
+                      description: 'Не удалось внести средства',
+                      variant: 'destructive',
                     });
                   }
                 }}
@@ -2086,7 +2086,7 @@ export default function FinancesManagement() {
               <Button variant="outline" onClick={() => setWithdrawDialogOpen(false)}>
                 Отмена
               </Button>
-              <Button 
+              <Button
                 onClick={async () => {
                   try {
                     const response = await fetch('/api/admin/crypto-withdraw', {
@@ -2101,23 +2101,23 @@ export default function FinancesManagement() {
                         Authorization: `Bearer ${token}`
                       }
                     });
-                    
+
                     if (!response.ok) {throw new Error('Failed to withdraw');}
-                    
+
                     toast({
-                      title: "Вывод оформлен",
+                      title: 'Вывод оформлен',
                       description: `Выведено ${withdrawAmount} BTC`,
                     });
-                    
+
                     setWithdrawDialogOpen(false);
                     setWithdrawAmount('');
                     setWalletAddress('');
                     queryClient.invalidateQueries({ queryKey: ['/api/admin/crypto-portfolio'] });
                   } catch (_error) {
                     toast({
-                      title: "Ошибка вывода",
-                      description: "Не удалось вывести средства",
-                      variant: "destructive",
+                      title: 'Ошибка вывода',
+                      description: 'Не удалось вывести средства',
+                      variant: 'destructive',
                     });
                   }
                 }}

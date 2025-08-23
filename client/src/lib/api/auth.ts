@@ -48,15 +48,15 @@ export const authApi = {
    */
   async register(data: RegisterRequest): Promise<{ success: boolean; message: string; user?: User; token?: string }> {
     console.log('[AUTH_API] Registration attempt for:', data.email, 'Role:', data.role);
-    
+
     const endpoint = data.role === 'PARTNER' || data.role === 'affiliate'
       ? '/api/auth/register/partner'
       : data.role === 'ADVERTISER' || data.role === 'advertiser'
       ? '/api/auth/register/advertiser'
       : '/api/auth/register';
-      
+
     console.log('[AUTH_API] Using registration endpoint:', endpoint);
-    
+
     return apiClient.post(endpoint, data);
   },
 

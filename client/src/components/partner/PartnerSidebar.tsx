@@ -1,8 +1,8 @@
-import { Link, useLocation } from "wouter";
-import { 
-  BarChart3, 
-  Target, 
-  Users, 
+import { Link, useLocation } from 'wouter';
+import {
+  BarChart3,
+  Target,
+  Users,
   DollarSign,
   Settings,
   Bell,
@@ -14,22 +14,22 @@ import {
   Cog,
   Send,
   UserPlus
-} from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { useAuth } from "@/contexts/auth-context";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { useQuery } from "@tanstack/react-query";
+} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { useAuth } from '@/contexts/auth-context';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useQuery } from '@tanstack/react-query';
 
 interface SidebarItem {
   title: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string | number;
-  badgeVariant?: "default" | "secondary" | "destructive" | "outline";
+  badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline';
 }
 
 interface Notification {
@@ -41,52 +41,52 @@ interface Notification {
 const getBaseSidebarItems = (t: (key: string) => string): Omit<SidebarItem, 'badge'>[] => [
   {
     title: t('navigation.dashboard'),
-    href: "/affiliate",
+    href: '/affiliate',
     icon: Home,
   },
   {
     title: t('navigation.statistics'),
-    href: "/affiliate/statistics",
+    href: '/affiliate/statistics',
     icon: BarChart3,
   },
   {
     title: t('navigation.offers'),
-    href: "/affiliate/offers",
+    href: '/affiliate/offers',
     icon: Target,
   },
   {
     title: t('navigation.accessRequests'),
-    href: "/affiliate/access-requests",
+    href: '/affiliate/access-requests',
     icon: Send,
   },
   {
     title: t('navigation.team'),
-    href: "/affiliate/team",
+    href: '/affiliate/team',
     icon: Users,
   },
   {
     title: 'Рефералы',
-    href: "/affiliate/referrals",
+    href: '/affiliate/referrals',
     icon: UserPlus,
   },
   {
     title: t('navigation.finances'),
-    href: "/affiliate/finances",
+    href: '/affiliate/finances',
     icon: DollarSign,
   },
   {
     title: t('navigation.postbacks'),
-    href: "/affiliate/postbacks",
+    href: '/affiliate/postbacks',
     icon: Settings,
   },
   {
     title: t('navigation.profile'),
-    href: "/affiliate/profile",
+    href: '/affiliate/profile',
     icon: User,
   },
   {
     title: t('navigation.settings'),
-    href: "/affiliate/settings",
+    href: '/affiliate/settings',
     icon: Cog,
   },
 ];
@@ -116,11 +116,11 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
   // Create sidebar items with real data
   const baseSidebarItems = getBaseSidebarItems(t);
   const sidebarItems: SidebarItem[] = baseSidebarItems.map(item => {
-    if (item.href === "/affiliate/offers") {
+    if (item.href === '/affiliate/offers') {
       return {
         ...item,
         badge: offers.length > 0 ? offers.length : undefined,
-        badgeVariant: "secondary" as const
+        badgeVariant: 'secondary' as const
       };
     }
     return item;
@@ -132,8 +132,8 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
 
   return (
     <div className={cn(
-      "flex flex-col h-screen bg-card border-r transition-all duration-300",
-      collapsed ? "w-16" : "w-64",
+      'flex flex-col h-screen bg-card border-r transition-all duration-300',
+      collapsed ? 'w-16' : 'w-64',
       className
     )}>
       {/* Header */}
@@ -166,18 +166,18 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
         {sidebarItems.map((item) => {
-          const isActive = location === item.href || 
-            (item.href !== "/affiliate" && location.startsWith(item.href));
-          
+          const isActive = location === item.href ||
+            (item.href !== '/affiliate' && location.startsWith(item.href));
+
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                'flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-black dark:text-white"
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-black dark:text-white'
               )}
               title={collapsed ? item.title : undefined}
             >
@@ -186,7 +186,7 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
                 <>
                   <span className="flex-1">{item.title}</span>
                   {item.badge && (
-                    <Badge variant={item.badgeVariant || "default"} className="text-xs">
+                    <Badge variant={item.badgeVariant || 'default'} className="text-xs">
                       {item.badge}
                     </Badge>
                   )}
@@ -202,8 +202,8 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
         <Link
           href="/affiliate/notifications"
           className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-black dark:text-white",
-            location === "/affiliate/notifications" && "bg-primary text-primary-foreground"
+            'flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-black dark:text-white',
+            location === '/affiliate/notifications' && 'bg-primary text-primary-foreground'
           )}
           title={collapsed ? t('navigation.notifications') : undefined}
         >
@@ -219,22 +219,22 @@ export function PartnerSidebar({ className }: PartnerSidebarProps) {
             </>
           )}
         </Link>
-        
+
         {/* Theme toggle */}
         <div className={cn(
-          "flex items-center gap-3 px-3 py-2",
-          collapsed && "justify-center"
+          'flex items-center gap-3 px-3 py-2',
+          collapsed && 'justify-center'
         )}>
           {!collapsed && <span className="font-medium text-black dark:text-white">{t('common.theme')}</span>}
           <ThemeToggle />
         </div>
-        
+
         <Button
           variant="ghost"
           onClick={handleLogout}
           className={cn(
-            "w-full justify-start gap-3 text-black dark:text-white hover:text-destructive hover:bg-destructive/10",
-            collapsed && "px-3"
+            'w-full justify-start gap-3 text-black dark:text-white hover:text-destructive hover:bg-destructive/10',
+            collapsed && 'px-3'
           )}
           title={collapsed ? t('navigation.logout') : undefined}
         >

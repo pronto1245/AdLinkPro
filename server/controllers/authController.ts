@@ -13,7 +13,7 @@ export class AuthController {
   static async me(req: AuthenticatedRequest, res: Response) {
     try {
       const userId = req.user?.id || req.user?.sub;
-      
+
       if (!userId) {
         return res.status(401).json({ error: 'Not authenticated' });
       }
@@ -46,7 +46,7 @@ export class AuthController {
       }
 
       auditLog(req, 'GET_PROFILE', 'users');
-      
+
       res.json({ user });
     } catch (error) {
       console.error('Get profile error:', error);
@@ -108,7 +108,7 @@ export class AuthController {
       }
 
       auditLog(req, 'UPDATE_PROFILE', 'users');
-      
+
       res.json({ user: updatedUser });
     } catch (error) {
       console.error('Update profile error:', error);
@@ -170,7 +170,7 @@ export class AuthController {
         .where(eq(users.id, userId));
 
       auditLog(req, 'CHANGE_PASSWORD', 'users');
-      
+
       res.json({ message: 'Password changed successfully' });
     } catch (error) {
       console.error('Change password error:', error);

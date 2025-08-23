@@ -58,14 +58,14 @@ interface PostbackProfile {
   };
 }
 
-function PostbackForm({ 
-  postback, 
-  onSubmit, 
-  onCancel 
-}: { 
-  postback?: PostbackProfile; 
-  onSubmit: (data: any) => void; 
-  onCancel: () => void; 
+function PostbackForm({
+  postback,
+  onSubmit,
+  onCancel
+}: {
+  postback?: PostbackProfile;
+  onSubmit: (data: any) => void;
+  onCancel: () => void;
 }) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
@@ -133,8 +133,8 @@ function PostbackForm({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="method">{t('postbacks.method', 'HTTP метод')}</Label>
-              <Select 
-                value={formData.method} 
+              <Select
+                value={formData.method}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, method: value as 'GET' | 'POST' }))}
               >
                 <SelectTrigger data-testid="select-method">
@@ -148,8 +148,8 @@ function PostbackForm({
             </div>
             <div>
               <Label htmlFor="tracker_type">{t('postbacks.trackerType', 'Тип трекера')}</Label>
-              <Select 
-                value={formData.tracker_type} 
+              <Select
+                value={formData.tracker_type}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, tracker_type: value }))}
               >
                 <SelectTrigger data-testid="select-tracker-type">
@@ -220,7 +220,7 @@ export default function PostbacksNewPage() {
       toast({ title: t('postbacks.postbackSaved', 'Профиль постбека создан'), description: t('postbacks.createSuccessDesc', 'Новый профиль постбека успешно создан') });
     },
     onError: () => {
-      toast({ title: t('postbacks.error', 'Ошибка'), description: t('postbacks.createErrorDesc', 'Не удалось создать профиль постбека'), variant: "destructive" });
+      toast({ title: t('postbacks.error', 'Ошибка'), description: t('postbacks.createErrorDesc', 'Не удалось создать профиль постбека'), variant: 'destructive' });
     }
   });
 
@@ -243,10 +243,10 @@ export default function PostbacksNewPage() {
       toast({ title: t('postbacks.postbackDeleted', 'Профиль удален'), description: t('postbacks.deleteSuccessDesc', 'Профиль постбека успешно удален') });
     },
     onError: (_error) => {
-      toast({ 
-        title: "Ошибка удаления", 
-        description: `Не удалось удалить профиль: ${error.message}`, 
-        variant: "destructive" 
+      toast({
+        title: 'Ошибка удаления',
+        description: `Не удалось удалить профиль: ${error.message}`,
+        variant: 'destructive'
       });
     }
   });
@@ -284,8 +284,8 @@ export default function PostbacksNewPage() {
             {t('postbacks.subtitle')}
           </p>
         </div>
-        <Button 
-          onClick={() => setShowForm(true)} 
+        <Button
+          onClick={() => setShowForm(true)}
           data-testid="button-create-postback"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -303,8 +303,8 @@ export default function PostbacksNewPage() {
                   <Badge variant="outline" data-testid={`badge-tracker-type-${postback.id}`}>
                     {postback.tracker_type}
                   </Badge>
-                  <Badge 
-                    variant={postback.enabled ? "default" : "secondary"}
+                  <Badge
+                    variant={postback.enabled ? 'default' : 'secondary'}
                     data-testid={`badge-status-${postback.id}`}
                   >
                     {postback.enabled ? t('common.active', 'Включен') : t('common.disabled', 'Отключен')}
@@ -346,7 +346,7 @@ export default function PostbacksNewPage() {
                 <div>
                   <p className="text-sm font-medium">Последняя доставка</p>
                   <p className="text-sm text-muted-foreground">
-                    {postback.last_delivery 
+                    {postback.last_delivery
                       ? new Date(postback.last_delivery).toLocaleString('ru-RU')
                       : 'Не было'
                     }

@@ -34,17 +34,17 @@ export async function sendEmail(params: EmailParams): Promise<{ ok: boolean; ski
       from: params.from,
       subject: params.subject,
     };
-    
+
     if (params.text) {sendData.text = params.text;}
     if (params.html) {sendData.html = params.html;}
-    
+
     // Ensure at least text or html is provided
     if (!sendData.text && !sendData.html) {
       sendData.text = params.subject; // Fallback to subject as text
     }
 
     await sgMail.send(sendData);
-    
+
     console.log('Email sent successfully to:', params.to);
     return { ok: true };
   } catch (error) {

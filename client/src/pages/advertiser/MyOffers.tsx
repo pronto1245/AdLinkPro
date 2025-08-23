@@ -10,22 +10,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Table, 
-  TableHeader, 
-  TableRow, 
-  TableHead, 
-  TableBody, 
-  TableCell 
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell
 } from '@/components/ui/table';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select';
-import { 
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -33,7 +33,7 @@ import {
   DialogTrigger,
   DialogDescription
 } from '@/components/ui/dialog';
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -45,12 +45,12 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip';
-import { 
-  Plus, 
-  Search, 
-  Eye, 
-  Edit, 
-  Archive, 
+import {
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Archive,
   MoreHorizontal,
   Users,
   TrendingUp,
@@ -151,14 +151,14 @@ export default function MyOffers() {
       // Обновляем кеш после успешного изменения
       queryClient.setQueryData(['/api/advertiser/offers'], (oldData: any) => {
         if (!oldData) {return oldData;}
-        
-        return oldData.map((offer: Offer) => 
-          offer.id === variables.offerId 
+
+        return oldData.map((offer: Offer) =>
+          offer.id === variables.offerId
             ? { ...offer, status: variables.status }
             : offer
         );
       });
-      
+
       // Показываем уведомление об успехе
       console.log('Статус оффера успешно изменен:', variables.status);
     },
@@ -172,7 +172,7 @@ export default function MyOffers() {
   const handleStatusChange = (offerId: string, newStatus: string) => {
     updateOfferStatusMutation.mutate({ offerId, status: newStatus });
   };
-  
+
   // State для фильтров и поиска
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -184,8 +184,8 @@ export default function MyOffers() {
 
   // Загрузка офферов
   const { data: offers = [], isLoading, refetch } = useQuery<Offer[]>({
-    queryKey: ['/api/advertiser/offers', { 
-      search: searchTerm, 
+    queryKey: ['/api/advertiser/offers', {
+      search: searchTerm,
       category: categoryFilter,
       status: statusFilter,
       dateFrom,
@@ -210,7 +210,7 @@ export default function MyOffers() {
     if (offer.landingPages && Array.isArray(offer.landingPages)) {
       const uniqueGeos = new Set<string>();
       const geoPayouts: Record<string, { payout: string; currency: string }> = {};
-      
+
       offer.landingPages.forEach((page: any) => {
         if (page.geo && (page.payout || page.payout === 0)) {
           uniqueGeos.add(page.geo);
@@ -242,15 +242,15 @@ export default function MyOffers() {
   // Clean up blob URLs and filter valid logos
   React.useEffect(() => {
     if (offers && offers.length > 0) {
-      console.log('Offers data with logos:', offers.map(offer => ({ 
-        id: offer.id, 
-        name: offer.name, 
+      console.log('Offers data with logos:', offers.map(offer => ({
+        id: offer.id,
+        name: offer.name,
         logo: offer.logo,
         logoType: typeof offer.logo,
         isValidLogo: offer.logo && (offer.logo.startsWith('/') || offer.logo.startsWith('data:')),
         isBlob: offer.logo && offer.logo.startsWith('blob:')
       })));
-      
+
       // Clean up invalid blob URLs from database
       offers.forEach(async (offer) => {
         if (offer.logo && offer.logo.startsWith('blob:')) {
@@ -425,13 +425,13 @@ export default function MyOffers() {
               Управляйте своими офферами и отслеживайте партнеров
             </p>
           </div>
-          
+
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => refetch()}>
               <TrendingUp className="h-4 w-4 mr-2" />
               Обновить
             </Button>
-            
+
             <Link href="/advertiser/offers/new">
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -497,7 +497,7 @@ export default function MyOffers() {
                 onChange={(e) => setDateFrom(e.target.value)}
                 placeholder="Дата от"
               />
-              
+
               <Input
                 type="date"
                 value={dateTo}
@@ -698,7 +698,7 @@ export default function MyOffers() {
                             )}
                           </Button>
                         </TableCell>
-                        
+
                         <TableCell>
                           <div className="flex items-center gap-3">
                             {/* Логотип оффера */}
@@ -737,7 +737,7 @@ export default function MyOffers() {
                                 </div>
                               )}
                             </div>
-                            
+
                             {/* Информация об оффере */}
                             <div className="flex-1 min-w-0">
                               <div className="font-medium truncate" title={offer.name}>
@@ -746,20 +746,20 @@ export default function MyOffers() {
                               <div className="text-sm text-muted-foreground">
                                 {offer.category && (
                                   <span className="capitalize">
-                                    {typeof offer.category === 'string' ? offer.category : 
-                                     typeof offer.category === 'object' ? (offer.category.ru || offer.category.en || 'Категория') : 
+                                    {typeof offer.category === 'string' ? offer.category :
+                                     typeof offer.category === 'object' ? (offer.category.ru || offer.category.en || 'Категория') :
                                      'Категория'}
                                   </span>
                                 )}
                                 {offer.description && (() => {
-                                  const desc = typeof offer.description === 'string' ? offer.description : 
+                                  const desc = typeof offer.description === 'string' ? offer.description :
                                               typeof offer.description === 'object' ? (offer.description.ru || offer.description.en || '') : '';
                                   const shouldTruncate = desc.length > 10;
                                   const displayText = shouldTruncate ? desc.substring(0, 10) + '...' : desc;
-                                  
+
                                   return shouldTruncate ? (
-                                    <span 
-                                      className="ml-2 text-xs opacity-70 cursor-help" 
+                                    <span
+                                      className="ml-2 text-xs opacity-70 cursor-help"
                                       title={desc}
                                     >
                                       • {displayText}
@@ -774,10 +774,10 @@ export default function MyOffers() {
                             </div>
                           </div>
                         </TableCell>
-                        
+
                         <TableCell>
-                          <Select 
-                            value={offer.status} 
+                          <Select
+                            value={offer.status}
                             onValueChange={(newStatus) => handleStatusChange(offer.id, newStatus)}
                           >
                             <SelectTrigger className="w-[140px] h-8">
@@ -820,14 +820,14 @@ export default function MyOffers() {
                             </SelectContent>
                           </Select>
                         </TableCell>
-                        
+
                         <TableCell>
                           <div className="space-y-2">
                             {/* Первая строка: Тип выплаты с цветом */}
                             <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPayoutTypeColor(offer.payoutType || 'cpa')}`}>
                               {offer.payoutType?.toUpperCase() || 'CPA'}
                             </div>
-                            
+
                             {/* Вторая строка: Гео с Tooltip */}
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -868,16 +868,16 @@ export default function MyOffers() {
                             </Tooltip>
                           </div>
                         </TableCell>
-                        
+
                         <TableCell>
                           <div className="space-y-2">
                             {/* Первая строка: Категория */}
                             <Badge variant="outline" className="capitalize">
-                              {typeof offer.category === 'string' ? offer.category : 
-                               typeof offer.category === 'object' ? (offer.category.ru || offer.category.en || 'Категория') : 
+                              {typeof offer.category === 'string' ? offer.category :
+                               typeof offer.category === 'object' ? (offer.category.ru || offer.category.en || 'Категория') :
                                'Категория'}
                             </Badge>
-                            
+
                             {/* Вторая строка: Сумма выплаты с Tooltip */}
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -926,30 +926,30 @@ export default function MyOffers() {
                             </Tooltip>
                           </div>
                         </TableCell>
-                        
+
                         <TableCell className="text-right">
                           {formatNumber(offer.clicks)}
                         </TableCell>
-                        
+
                         <TableCell className="text-right">
                           {formatNumber(offer.leads)}
                         </TableCell>
-                        
+
                         <TableCell className="text-right">
                           {offer.conversionRate ? `${offer.conversionRate.toFixed(1)}%` : '0%'}
                         </TableCell>
-                        
+
                         <TableCell className="text-right font-medium">
                           {formatCurrency(offer.revenue, offer.currency)}
                         </TableCell>
-                        
+
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center gap-1">
                             <Users className="h-4 w-4 text-muted-foreground" />
                             <span>{offer.partnersCount || 0}</span>
                           </div>
                         </TableCell>
-                        
+
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -978,7 +978,7 @@ export default function MyOffers() {
                           </DropdownMenu>
                         </TableCell>
                       </TableRow>
-                      
+
                       {/* Развернутая таблица партнеров */}
                       {expandedOffers.has(offer.id) && (
                         <TableRow>
@@ -992,7 +992,7 @@ export default function MyOffers() {
                                   {offerPartners.length} партнеров
                                 </Badge>
                               </div>
-                              
+
                               <Table>
                                 <TableHeader>
                                   <TableRow>
@@ -1090,7 +1090,7 @@ export default function MyOffers() {
                 Подробная статистика по дням и действиям
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               {/* Сводная информация */}
               <div className="grid grid-cols-4 gap-4">
@@ -1107,7 +1107,7 @@ export default function MyOffers() {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center">
@@ -1121,7 +1121,7 @@ export default function MyOffers() {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center">
@@ -1135,7 +1135,7 @@ export default function MyOffers() {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center">
@@ -1199,7 +1199,7 @@ export default function MyOffers() {
                   <Download className="h-4 w-4 mr-2" />
                   Выгрузить данные
                 </Button>
-                
+
                 <div className="flex gap-2">
                   <Button variant="outline">
                     <Edit className="h-4 w-4 mr-2" />

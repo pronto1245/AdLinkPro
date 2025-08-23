@@ -131,7 +131,7 @@ export class CacheService {
   }
 
   // Offer caching
-  async getActiveOffers(category?: string, limit: number = 50) {
+  async getActiveOffers(category?: string, limit = 50) {
     const cacheKey = `offers:active:${category || 'all'}:${limit}`;
     let offers = await this.get(cacheKey);
 
@@ -200,12 +200,12 @@ export class CacheService {
   }
 
   // Statistics caching
-  async getStats(type: string, userId?: string, timeframe: string = '24h') {
+  async getStats(type: string, userId?: string, timeframe = '24h') {
     const cacheKey = `stats:${type}:${userId || 'global'}:${timeframe}`;
     return this.get(cacheKey);
   }
 
-  async setStats(type: string, _data: unknown, userId?: string, timeframe: string = '24h') {
+  async setStats(type: string, _data: unknown, userId?: string, timeframe = '24h') {
     const cacheKey = `stats:${type}:${userId || 'global'}:${timeframe}`;
     return this.set(cacheKey, _data, CACHE_CONFIG.STATS_TTL);
   }
@@ -260,14 +260,14 @@ export class CacheService {
     if (!this.redis) {return true;} // Allow if cache unavailable
 
     const key = `rate_limit:${identifier}`;
-    
+
     try {
       const current = await this.redis.incr(key);
-      
+
       if (current === 1) {
         await this.redis.expire(key, windowSeconds);
       }
-      
+
       return current <= maxRequests;
     } catch (error) {
       console.error('Rate limit check error:', error);
@@ -285,7 +285,7 @@ export class CacheService {
       const start = Date.now();
       await this.redis.ping();
       const latency = Date.now() - start;
-      
+
       return { redis: true, latency };
     } catch (_error) {
       return { redis: false, latency: -1 };
@@ -300,7 +300,7 @@ export const cacheService = new CacheService();
 export function cacheMiddleware(ttlSeconds: number = CACHE_CONFIG.DEFAULT_TTL) {
   return async (req: any, res: any, next: any) => {
     const cacheKey = `route:${req.method}:${req.originalUrl}`;
-    
+
     // Try to get from cache
     const cached = await cacheService.get(cacheKey);
     if (cached) {
@@ -310,7 +310,7 @@ export function cacheMiddleware(ttlSeconds: number = CACHE_CONFIG.DEFAULT_TTL) {
 
     // Store original json method
     const originalJson = res.json.bind(res);
-    
+
     // Override json method to cache response
     res.json = function(data: any) {
       cacheService.set(cacheKey, data, ttlSeconds);

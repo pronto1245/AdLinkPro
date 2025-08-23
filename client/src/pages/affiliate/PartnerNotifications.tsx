@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Bell, Check, X, Clock, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/auth-context";
-import { apiRequest } from "@/lib/queryClient";
-import { formatDistanceToNow } from "date-fns";
-import { ru } from "date-fns/locale";
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Bell, Check, X, Clock, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/auth-context';
+import { apiRequest } from '@/lib/queryClient';
+import { formatDistanceToNow } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 interface Notification {
   id: string;
@@ -35,13 +35,13 @@ export default function PartnerNotifications() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  
+
   // CRITICAL DEBUG: Проверяем токен в компоненте
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
-    console.log('🔍 PartnerNotifications component - token check:', { 
+    console.log('🔍 PartnerNotifications component - token check:', {
       token: token ? token.substring(0, 20) + '...' : 'NO_TOKEN',
-      user: user?.username 
+      user: user?.username
     });
   }, [user]);
 
@@ -54,8 +54,8 @@ export default function PartnerNotifications() {
   // Функция для получения токена
   const getAuthToken = () => {
     const token = localStorage.getItem('auth_token');
-    console.log('🔍 Getting auth token:', { 
-      hasToken: !!token, 
+    console.log('🔍 Getting auth token:', {
+      hasToken: !!token,
       isNull: token === 'null',
       isEmpty: token === '',
       tokenStart: token ? token.substring(0, 20) : 'NO_TOKEN'
@@ -68,15 +68,15 @@ export default function PartnerNotifications() {
     mutationKey: ['markAsRead'],
     mutationFn: async (notificationId: string) => {
       console.log('🚀 Starting markAsRead mutation for:', notificationId);
-      
+
       const authToken = getAuthToken();
       if (!authToken) {
         console.error('❌ No valid auth token found');
         throw new Error('Authentication required - please re-login');
       }
-      
+
       console.log('✅ Valid token found, making request...');
-      
+
       try {
         const response = await fetch(`/api/notifications/${notificationId}/read`, {
           method: 'PUT',
@@ -85,19 +85,19 @@ export default function PartnerNotifications() {
             'Authorization': `Bearer ${authToken}`,
           },
         });
-        
+
         console.log('📡 Response received:', {
           status: response.status,
           statusText: response.statusText,
           ok: response.ok
         });
-        
+
         if (!response.ok) {
           const errorText = await response.text();
           console.error('❌ Request failed:', { status: response.status, error: errorText });
           throw new Error(`Failed to mark as read: ${response.status} ${response.statusText}`);
         }
-        
+
         const result = await response.json();
         console.log('✅ Mark as read successful:', result);
         return result;
@@ -113,9 +113,9 @@ export default function PartnerNotifications() {
     },
     onError: (_error) => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось отметить уведомление как прочитанное",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Не удалось отметить уведомление как прочитанное',
+        variant: 'destructive',
       });
     },
   });
@@ -128,7 +128,7 @@ export default function PartnerNotifications() {
       if (!token || token === 'null' || token === 'undefined') {
         throw new Error('No valid token found');
       }
-      
+
       const response = await fetch(`/api/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: {
@@ -136,27 +136,27 @@ export default function PartnerNotifications() {
           'Authorization': `Bearer ${token}`,
         },
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
-      // Также обновляем дашборд для синхронизации  
+      // Также обновляем дашборд для синхронизации
       queryClient.invalidateQueries({ queryKey: ['/api/partner/dashboard'] });
       toast({
-        title: "Успех",
-        description: "Уведомление удалено",
+        title: 'Успех',
+        description: 'Уведомление удалено',
       });
     },
     onError: (_error) => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось удалить уведомление",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Не удалось удалить уведомление',
+        variant: 'destructive',
       });
     },
   });
@@ -169,15 +169,15 @@ export default function PartnerNotifications() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       toast({
-        title: "Успех",
-        description: "Все уведомления отмечены как прочитанные",
+        title: 'Успех',
+        description: 'Все уведомления отмечены как прочитанные',
       });
     },
     onError: (_error) => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось отметить уведомления как прочитанные",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Не удалось отметить уведомления как прочитанные',
+        variant: 'destructive',
       });
     },
   });
@@ -282,8 +282,8 @@ export default function PartnerNotifications() {
                 <div
                   key={notification.id}
                   className={`p-4 rounded-lg border transition-colors ${
-                    notification.is_read 
-                      ? 'bg-gray-50 border-gray-200' 
+                    notification.is_read
+                      ? 'bg-gray-50 border-gray-200'
                       : 'bg-blue-50 border-blue-200'
                   }`}
                 >
@@ -311,14 +311,14 @@ export default function PartnerNotifications() {
                           </div>
                         )}
                         <p className="text-xs text-gray-500 mt-2">
-                          {formatDistanceToNow(new Date(notification.created_at), { 
-                            addSuffix: true, 
-                            locale: ru 
+                          {formatDistanceToNow(new Date(notification.created_at), {
+                            addSuffix: true,
+                            locale: ru
                           })}
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 ml-4">
                       {!notification.is_read && (
                         <Button

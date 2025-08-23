@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { useLocation } from "wouter";
-import { logout } from "@/lib/auth";
+import { useEffect } from 'react';
+import { useLocation } from 'wouter';
+import { logout } from '@/lib/auth';
 
 const LogoutPage = () => {
   const [, setLocation] = useLocation();
@@ -8,9 +8,9 @@ const LogoutPage = () => {
   useEffect(() => {
     // Clear all authentication data
     logout();
-    
+
     // Redirect to login page
-    setLocation("/login");
+    setLocation('/login');
   }, [setLocation]);
 
   return (

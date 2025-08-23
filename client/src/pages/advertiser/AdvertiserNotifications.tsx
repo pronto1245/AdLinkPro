@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Bell, Check, X, Clock, AlertCircle, CheckCircle2, XCircle, Trash2, CheckCheck } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/auth-context";
-import { apiRequest } from "@/lib/queryClient";
-import { formatDistanceToNow } from "date-fns";
-import { ru } from "date-fns/locale";
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Bell, Check, X, Clock, AlertCircle, CheckCircle2, XCircle, Trash2, CheckCheck } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/auth-context';
+import { apiRequest } from '@/lib/queryClient';
+import { formatDistanceToNow } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 interface Notification {
   id: string;
@@ -38,7 +38,7 @@ export default function AdvertiserNotifications() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  
+
   // Получение уведомлений
   const { data: notifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: ['/api/notifications'],
@@ -77,17 +77,17 @@ export default function AdvertiserNotifications() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       toast({
-        title: "✅ Успешно",
-        description: "Уведомление отмечено как прочитанное",
-        variant: "default"
+        title: '✅ Успешно',
+        description: 'Уведомление отмечено как прочитанное',
+        variant: 'default'
       });
     },
     onError: (error: any) => {
       console.error('❌ Ошибка отметки как прочитанное:', error);
       toast({
-        title: "❌ Ошибка",
-        description: error.message || "Не удалось отметить уведомление",
-        variant: "destructive"
+        title: '❌ Ошибка',
+        description: error.message || 'Не удалось отметить уведомление',
+        variant: 'destructive'
       });
     }
   });
@@ -118,17 +118,17 @@ export default function AdvertiserNotifications() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       toast({
-        title: "✅ Удалено",
-        description: "Уведомление успешно удалено",
-        variant: "default"
+        title: '✅ Удалено',
+        description: 'Уведомление успешно удалено',
+        variant: 'default'
       });
     },
     onError: (error: any) => {
       console.error('❌ Ошибка удаления:', error);
       toast({
-        title: "❌ Ошибка",
-        description: error.message || "Не удалось удалить уведомление",
-        variant: "destructive"
+        title: '❌ Ошибка',
+        description: error.message || 'Не удалось удалить уведомление',
+        variant: 'destructive'
       });
     }
   });
@@ -159,16 +159,16 @@ export default function AdvertiserNotifications() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       toast({
-        title: "✅ Выполнено",
-        description: "Все уведомления отмечены как прочитанные",
-        variant: "default"
+        title: '✅ Выполнено',
+        description: 'Все уведомления отмечены как прочитанные',
+        variant: 'default'
       });
     }
   });
 
   // Получение иконки по типу уведомления
   const getNotificationIcon = (type: string) => {
-    const iconClass = "h-4 w-4";
+    const iconClass = 'h-4 w-4';
     switch (type) {
       case 'offer_request_approved':
         return <CheckCircle2 className={`${iconClass} text-green-500`} />;
@@ -190,7 +190,7 @@ export default function AdvertiserNotifications() {
   };
 
   // Получение цвета бейджа по типу
-  const getBadgeVariant = (type: string): "default" | "secondary" | "destructive" | "outline" => {
+  const getBadgeVariant = (type: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (type) {
       case 'offer_request_approved':
       case 'payment':
@@ -304,11 +304,11 @@ export default function AdvertiserNotifications() {
               </TableHeader>
               <TableBody>
                 {notifications.map((notification) => (
-                  <TableRow 
+                  <TableRow
                     key={notification.id}
                     className={`transition-colors ${
-                      !notification.is_read 
-                        ? 'bg-blue-50/80 dark:bg-blue-950/30 border-l-4 border-l-blue-500' 
+                      !notification.is_read
+                        ? 'bg-blue-50/80 dark:bg-blue-950/30 border-l-4 border-l-blue-500'
                         : 'bg-gray-50/30 dark:bg-gray-800/20 hover:bg-gray-50/50 dark:hover:bg-gray-800/30'
                     }`}
                   >
@@ -321,8 +321,8 @@ export default function AdvertiserNotifications() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge 
-                        variant={getBadgeVariant(notification.type)} 
+                      <Badge
+                        variant={getBadgeVariant(notification.type)}
                         className={`text-xs ${!notification.is_read ? 'ring-2 ring-blue-200' : ''}`}
                       >
                         {getTypeText(notification.type)}

@@ -28,12 +28,12 @@ const OfferImageDisplay = ({ offer }: { offer: any }) => {
   const [logoError, setLogoError] = useState(false);
 
   // Приоритет: 1) image 2) logo 3) placeholder с инициалами
-  
+
   // Если есть image и нет ошибки загрузки
   if (offer.image && !imageError) {
     return (
-      <img 
-        src={offer.image} 
+      <img
+        src={offer.image}
         alt={offer.name}
         className="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
         onLoad={() => console.log('Offer image loaded successfully:', offer.image)}
@@ -48,8 +48,8 @@ const OfferImageDisplay = ({ offer }: { offer: any }) => {
   // Если нет image или он не загрузился, но есть logo
   if (offer.logo && !logoError) {
     return (
-      <img 
-        src={offer.logo} 
+      <img
+        src={offer.logo}
         alt={offer.name}
         className="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
         onLoad={() => console.log('Logo loaded successfully:', offer.logo)}
@@ -78,8 +78,8 @@ function DraggableRow({ offer, index, children }: any) {
   };
   return (
     <TableRow ref={setNodeRef} style={style} {...attributes} className={isDragging ? 'bg-muted/50' : ''}>
-      <TableCell 
-        {...listeners} 
+      <TableCell
+        {...listeners}
         className="cursor-grab active:cursor-grabbing hover:bg-muted/50 p-2"
         title="Перетащите для изменения порядка"
       >
@@ -112,7 +112,7 @@ const AdvertiserOffers = () => {
   React.useEffect(() => {
     if (offers && offers.length > 0) {
       // Сортируем по дате создания (новые сверху) при первой загрузке
-      const sorted = [...offers].sort((a: any, b: any) => 
+      const sorted = [...offers].sort((a: any, b: any) =>
         new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
       );
       setLocalOffers(sorted);
@@ -128,16 +128,16 @@ const AdvertiserOffers = () => {
     },
     onSuccess: () => {
       toast({
-        title: "Успех",
-        description: "Оффер сохранён",
+        title: 'Успех',
+        description: 'Оффер сохранён',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Ошибка при сохранении",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Ошибка при сохранении',
+        variant: 'destructive',
       });
     },
   });
@@ -146,8 +146,8 @@ const AdvertiserOffers = () => {
     mutationFn: (offerId: string) => apiRequest(`/api/advertiser/offers/${offerId}`, 'DELETE'),
     onSuccess: () => {
       toast({
-        title: "Успех",
-        description: "Оффер удалён",
+        title: 'Успех',
+        description: 'Оффер удалён',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
       setConfirmDelete(null);
@@ -155,9 +155,9 @@ const AdvertiserOffers = () => {
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Ошибка при удалении",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Ошибка при удалении',
+        variant: 'destructive',
       });
     },
   });
@@ -169,7 +169,7 @@ const AdvertiserOffers = () => {
     },
     onSuccess: () => {
       toast({
-        title: "Успех",
+        title: 'Успех',
         description: `Удалено ${selectedOffers.length} офферов`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
@@ -178,9 +178,9 @@ const AdvertiserOffers = () => {
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Ошибка при массовом удалении",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Ошибка при массовом удалении',
+        variant: 'destructive',
       });
     },
   });
@@ -190,8 +190,8 @@ const AdvertiserOffers = () => {
       apiRequest(`/api/advertiser/offers/bulk-update`, 'POST', { ids, status }),
     onSuccess: () => {
       toast({
-        title: "Успех",
-        description: "Статус обновлён",
+        title: 'Успех',
+        description: 'Статус обновлён',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/offers'] });
       setSelectedOffers([]);
@@ -210,7 +210,7 @@ const AdvertiserOffers = () => {
   // Обработчик drag and drop
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
-    
+
     if (!over || active.id === over.id) {
       return;
     }
@@ -220,17 +220,17 @@ const AdvertiserOffers = () => {
 
     if (oldIndex !== -1 && newIndex !== -1) {
       const newOrder = arrayMove(localOffers, oldIndex, newIndex);
-      
+
       // Обновляем локальное состояние немедленно
       setLocalOffers(newOrder);
-      
+
       console.log('Reordered offers:', newOrder.map(o => ({ id: o.id, name: o.name })));
-      
+
       toast({
-        title: "Порядок изменён",
+        title: 'Порядок изменён',
         description: `Оффер перемещён`,
       });
-      
+
       // TODO: Здесь можно добавить сохранение порядка на сервер
       // apiRequest('/api/advertiser/offers/reorder', 'POST', { order: newOrder.map(o => o.id) });
     }
@@ -266,9 +266,9 @@ const AdvertiserOffers = () => {
           window.open(offer.landingPages[0].url, '_blank');
         } else {
           toast({
-            title: "Предупреждение",
-            description: "Нет доступной ссылки для предпросмотра",
-            variant: "destructive",
+            title: 'Предупреждение',
+            description: 'Нет доступной ссылки для предпросмотра',
+            variant: 'destructive',
           });
         }
         break;
@@ -303,7 +303,7 @@ const AdvertiserOffers = () => {
             Управление офферами и отслеживание статистики
           </p>
         </div>
-        <Button 
+        <Button
           onClick={() => navigate('/advertiser/offers/new')}
           className="bg-blue-600 hover:bg-blue-700 text-white"
           title="Создать новый оффер"
@@ -330,33 +330,33 @@ const AdvertiserOffers = () => {
 
       {selectedOffers.length > 0 && (
         <div className="flex gap-2">
-          <Button 
-            onClick={() => handleBulkStatusChange('active')} 
+          <Button
+            onClick={() => handleBulkStatusChange('active')}
             size="sm"
             className="bg-green-600 hover:bg-green-700 text-white"
             title="Активировать выбранные офферы"
           >
             <Play className="w-4 h-4 mr-1 text-white" /> Активировать
           </Button>
-          <Button 
-            onClick={() => handleBulkStatusChange('archived')} 
+          <Button
+            onClick={() => handleBulkStatusChange('archived')}
             size="sm"
             className="bg-gray-600 hover:bg-gray-700 text-white"
             title="Архивировать выбранные офферы"
           >
             <Archive className="w-4 h-4 mr-1 text-white" /> Архивировать
           </Button>
-          <Button 
-            onClick={() => handleBulkStatusChange('paused')} 
+          <Button
+            onClick={() => handleBulkStatusChange('paused')}
             size="sm"
             className="bg-yellow-600 hover:bg-yellow-700 text-white"
             title="Приостановить выбранные офферы"
           >
             <Pause className="w-4 h-4 mr-1 text-white" /> Приостановить
           </Button>
-          <Button 
-            onClick={() => setConfirmBulkDelete(true)} 
-            size="sm" 
+          <Button
+            onClick={() => setConfirmBulkDelete(true)}
+            size="sm"
             variant="destructive"
             className="bg-red-600 hover:bg-red-700 text-white"
             title={`Удалить выбранные офферы (${selectedOffers.length})`}
@@ -374,15 +374,15 @@ const AdvertiserOffers = () => {
                 <GripVertical className="w-4 h-4 text-muted-foreground" />
               </TableHead>
               <TableHead>
-                <Checkbox 
-                  checked={selectedOffers.length === filtered.length && filtered.length > 0} 
+                <Checkbox
+                  checked={selectedOffers.length === filtered.length && filtered.length > 0}
                   onCheckedChange={(checked) => {
                     if (checked) {
                       setSelectedOffers(filtered.map((o: any) => o.id));
                     } else {
                       setSelectedOffers([]);
                     }
-                  }} 
+                  }}
                 />
               </TableHead>
               <TableHead>Название</TableHead>
@@ -400,12 +400,12 @@ const AdvertiserOffers = () => {
                 <DraggableRow key={offer.id} offer={offer} index={index}>
                   <>
                     <TableCell>
-                      <Checkbox 
-                        checked={selectedOffers.includes(offer.id)} 
+                      <Checkbox
+                        checked={selectedOffers.includes(offer.id)}
                         onCheckedChange={(checked) => {
                           if (checked) {setSelectedOffers(prev => [...prev, offer.id]);}
                           else {setSelectedOffers(prev => prev.filter(id => id !== offer.id));}
-                        }} 
+                        }}
                       />
                     </TableCell>
                     <TableCell className="font-medium">
@@ -423,7 +423,7 @@ const AdvertiserOffers = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <GeoDisplay 
+                      <GeoDisplay
                         countries={offer.countries}
                         geoTargeting={offer.geoTargeting}
                         payout={offer.payout}
@@ -440,7 +440,7 @@ const AdvertiserOffers = () => {
                     <TableCell>{formatCR(offer.cr)}%</TableCell>
                     <TableCell>${offer.payout} {offer.currency}</TableCell>
                     <TableCell>
-                      <Badge 
+                      <Badge
                         variant={
                           offer.status === 'active' ? 'default' :
                           offer.status === 'paused' ? 'secondary' :
@@ -465,28 +465,28 @@ const AdvertiserOffers = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => setEditOffer(offer)} 
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setEditOffer(offer)}
                           title="Редактировать оффер"
                           className="hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
                         >
                           <Edit className="w-4 h-4 text-blue-500" />
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => handleAction(offer, 'preview')} 
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleAction(offer, 'preview')}
                           title="Предпросмотр оффера"
                           className="hover:bg-purple-100 hover:text-purple-600 dark:hover:bg-purple-900/20 dark:hover:text-purple-400"
                         >
                           <Eye className="w-4 h-4 text-purple-500" />
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => setConfirmDelete(offer)} 
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setConfirmDelete(offer)}
                           title="Удалить оффер"
                           className="hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                         >
@@ -527,7 +527,7 @@ const AdvertiserOffers = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Отмена</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={() => confirmDelete && deleteMutation.mutate(confirmDelete.id)}
               className="bg-red-600 hover:bg-red-700"
               disabled={deleteMutation.isPending}
@@ -551,7 +551,7 @@ const AdvertiserOffers = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Отмена</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={() => bulkDeleteMutation.mutate(selectedOffers)}
               className="bg-red-600 hover:bg-red-700"
               disabled={bulkDeleteMutation.isPending}

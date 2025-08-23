@@ -60,15 +60,15 @@ export default function PostbackSettings() {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       setShowCreateForm(false);
       toast({
-        title: "Успешно",
-        description: "Профиль постбека создан",
+        title: 'Успешно',
+        description: 'Профиль постбека создан',
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось создать профиль",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Не удалось создать профиль',
+        variant: 'destructive',
       });
     },
   });
@@ -78,15 +78,15 @@ export default function PostbackSettings() {
     mutationFn: (data: any) => apiRequest('/api/track/postback/test', 'POST', data),
     onSuccess: (data) => {
       toast({
-        title: "Тест успешен",
+        title: 'Тест успешен',
         description: `Статус: ${data.response?.status || 'OK'}`,
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Тест не прошел",
-        description: error.message || "Ошибка при тестировании",
-        variant: "destructive",
+        title: 'Тест не прошел',
+        description: error.message || 'Ошибка при тестировании',
+        variant: 'destructive',
       });
     },
   });
@@ -201,11 +201,11 @@ export default function PostbackSettings() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <CardTitle className="text-lg">{profile.name}</CardTitle>
-                        <Badge variant={profile.enabled ? "default" : "secondary"}>
-                          {profile.enabled ? "Активен" : "Отключен"}
+                        <Badge variant={profile.enabled ? 'default' : 'secondary'}>
+                          {profile.enabled ? 'Активен' : 'Отключен'}
                         </Badge>
-                        <Badge 
-                          variant={profile.status === 'active' ? "success" : profile.status === 'error' ? "destructive" : "secondary"}
+                        <Badge
+                          variant={profile.status === 'active' ? 'success' : profile.status === 'error' ? 'destructive' : 'secondary'}
                         >
                           {profile.status === 'active' ? 'Работает' : profile.status === 'error' ? 'Ошибка' : 'Отключен'}
                         </Badge>
@@ -323,8 +323,8 @@ export default function PostbackSettings() {
                             </td>
                             <td className="p-2">
                               {log.response_status && (
-                                <Badge 
-                                  variant={log.response_status < 400 ? "success" : "destructive"}
+                                <Badge
+                                  variant={log.response_status < 400 ? 'success' : 'destructive'}
                                   className="font-mono"
                                 >
                                   {log.response_status}
@@ -421,7 +421,7 @@ export default function PostbackSettings() {
               <CardTitle>Создать профиль постбека</CardTitle>
             </CardHeader>
             <CardContent>
-              <form 
+              <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleCreateProfile(new FormData(e.currentTarget));
@@ -430,11 +430,11 @@ export default function PostbackSettings() {
               >
                 <div>
                   <Label htmlFor="name">Название профиля</Label>
-                  <Input 
-                    id="name" 
-                    name="name" 
+                  <Input
+                    id="name"
+                    name="name"
                     placeholder="Например: Keitaro Main"
-                    required 
+                    required
                   />
                 </div>
 
@@ -456,12 +456,12 @@ export default function PostbackSettings() {
 
                 <div>
                   <Label htmlFor="endpoint_url">URL постбека</Label>
-                  <Textarea 
-                    id="endpoint_url" 
+                  <Textarea
+                    id="endpoint_url"
                     name="endpoint_url"
                     placeholder="https://your-tracker.com/postback?clickid={clickid}&status={status}&revenue={revenue}"
                     rows={3}
-                    required 
+                    required
                   />
                 </div>
 
@@ -484,15 +484,15 @@ export default function PostbackSettings() {
                 </div>
 
                 <div className="flex justify-end gap-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => setShowCreateForm(false)}
                   >
                     Отмена
                   </Button>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={createProfileMutation.isPending}
                     data-testid="button-save-postback"
                   >
