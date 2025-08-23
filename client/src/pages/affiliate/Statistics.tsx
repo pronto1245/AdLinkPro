@@ -194,14 +194,14 @@ export default function Statistics() {
   };
 
   const getOfferName = (offerId: string) => {
-    if (!offers) return offerId;
+    if (!offers) {return offerId;}
     const offer = offers.find((o: any) => o.id === offerId);
     return offer ? offer.name : offerId;
   };
 
   // Получаем данные клика для отображения SubID
   const getClickDetails = (clickId: string) => {
-    if (!analyticsData?.data) return null;
+    if (!analyticsData?.data) {return null;}
     return analyticsData.data.find((item: any) => item.clickId === clickId);
   };
 

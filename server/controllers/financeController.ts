@@ -265,7 +265,7 @@ export class FinanceController {
         updatedAt: new Date()
       };
 
-      if (notes) updateData.notes = notes;
+      if (notes) {updateData.notes = notes;}
       if (rejectionReason && status === 'rejected') {
         updateData.rejectionReason = rejectionReason;
       }
@@ -363,7 +363,7 @@ export class FinanceController {
         updatedAt: new Date()
       };
 
-      if (notes) updateData.notes = notes;
+      if (notes) {updateData.notes = notes;}
       if (reason && action === 'reject') {
         updateData.rejectionReason = reason;
       }
@@ -534,7 +534,7 @@ export class FinanceController {
       const { period = '30d' } = req.query;
 
       // Calculate date range
-      let fromDate = new Date();
+      const fromDate = new Date();
       switch (period) {
         case '7d':
           fromDate.setDate(fromDate.getDate() - 7);

@@ -150,7 +150,7 @@ export default function MyOffers() {
     onSuccess: (data, variables) => {
       // Обновляем кеш после успешного изменения
       queryClient.setQueryData(['/api/advertiser/offers'], (oldData: any) => {
-        if (!oldData) return oldData;
+        if (!oldData) {return oldData;}
         
         return oldData.map((offer: Offer) => 
           offer.id === variables.offerId 
@@ -281,7 +281,7 @@ export default function MyOffers() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      if (!response.ok) throw new Error('Failed to update offer');
+      if (!response.ok) {throw new Error('Failed to update offer');}
       return response.json();
     },
     onSuccess: () => {
@@ -296,7 +296,7 @@ export default function MyOffers() {
     queryFn: async () => {
       const offerId = Array.from(expandedOffers)[0];
       const response = await fetch(`/api/advertiser/offers/${offerId}/partners`);
-      if (!response.ok) throw new Error('Failed to load partners');
+      if (!response.ok) {throw new Error('Failed to load partners');}
       return response.json();
     }
   });
@@ -307,7 +307,7 @@ export default function MyOffers() {
     enabled: !!selectedPartner,
     queryFn: async () => {
       const response = await fetch(`/api/advertiser/partner/${selectedPartner}/stats`);
-      if (!response.ok) throw new Error('Failed to load partner stats');
+      if (!response.ok) {throw new Error('Failed to load partner stats');}
       return response.json();
     }
   });
@@ -400,13 +400,13 @@ export default function MyOffers() {
 
   // Функция форматирования числа
   const formatNumber = (num: number | undefined) => {
-    if (!num) return '0';
+    if (!num) {return '0';}
     return new Intl.NumberFormat('ru-RU').format(num);
   };
 
   // Функция форматирования валюты
   const formatCurrency = (amount: number | string | undefined, currency = 'USD') => {
-    if (!amount) return '$0.00';
+    if (!amount) {return '$0.00';}
     const num = typeof amount === 'string' ? parseFloat(amount) : amount;
     return new Intl.NumberFormat('en-US', {
       style: 'currency',

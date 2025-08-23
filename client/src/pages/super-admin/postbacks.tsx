@@ -101,14 +101,14 @@ export default function PostbacksPage() {
     queryKey: ['/api/admin/postback-templates', postbackFilters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (postbackFilters.level !== 'all') params.append('level', postbackFilters.level);
-      if (postbackFilters.status !== 'all') params.append('status', postbackFilters.status);
-      if (postbackFilters.search) params.append('search', postbackFilters.search);
+      if (postbackFilters.level !== 'all') {params.append('level', postbackFilters.level);}
+      if (postbackFilters.status !== 'all') {params.append('status', postbackFilters.status);}
+      if (postbackFilters.search) {params.append('search', postbackFilters.search);}
       
       const response = await fetch(`/api/admin/postback-templates?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch postback templates');
+      if (!response.ok) {throw new Error('Failed to fetch postback templates');}
       return response.json();
     },
   });
@@ -118,16 +118,16 @@ export default function PostbacksPage() {
     queryKey: ['/api/admin/postback-logs', logFilters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (logFilters.status !== 'all') params.append('status', logFilters.status);
-      if (logFilters.offerId !== 'all') params.append('offerId', logFilters.offerId);
-      if (logFilters.dateFrom) params.append('dateFrom', logFilters.dateFrom);
-      if (logFilters.dateTo) params.append('dateTo', logFilters.dateTo);
-      if (logFilters.search) params.append('search', logFilters.search);
+      if (logFilters.status !== 'all') {params.append('status', logFilters.status);}
+      if (logFilters.offerId !== 'all') {params.append('offerId', logFilters.offerId);}
+      if (logFilters.dateFrom) {params.append('dateFrom', logFilters.dateFrom);}
+      if (logFilters.dateTo) {params.append('dateTo', logFilters.dateTo);}
+      if (logFilters.search) {params.append('search', logFilters.search);}
       
       const response = await fetch(`/api/admin/postback-logs?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch postback logs');
+      if (!response.ok) {throw new Error('Failed to fetch postback logs');}
       return response.json();
     },
   });
@@ -139,7 +139,7 @@ export default function PostbacksPage() {
       const response = await fetch('/api/admin/offers', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch offers');
+      if (!response.ok) {throw new Error('Failed to fetch offers');}
       return response.json();
     },
   });

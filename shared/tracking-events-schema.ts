@@ -240,7 +240,7 @@ export const conversionEventSchema = z.object({
 
 // Sub2 parsing utilities
 export function parseSub2(sub2Raw: string): Record<string, string> {
-  if (!sub2Raw) return {};
+  if (!sub2Raw) {return {};}
   
   const pairs: Record<string, string> = {};
   const pairStrings = sub2Raw.split('|');

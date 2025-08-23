@@ -91,7 +91,7 @@ export default function PartnerLiveAnalytics() {
           'Content-Type': 'application/json'
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch partner statistics');
+      if (!response.ok) {throw new Error('Failed to fetch partner statistics');}
       return response.json();
     },
     refetchInterval: autoRefresh ? 30000 : false, // Auto-refresh every 30 seconds
@@ -145,7 +145,7 @@ export default function PartnerLiveAnalytics() {
           'Content-Type': 'application/json'
         }
       });
-      if (!response.ok) throw new Error('Failed to export data');
+      if (!response.ok) {throw new Error('Failed to export data');}
       
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);

@@ -66,7 +66,7 @@ export default function PostbacksManagement() {
       const response = await fetch('/api/admin/global-postbacks', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch postbacks');
+      if (!response.ok) {throw new Error('Failed to fetch postbacks');}
       return response.json();
     },
   });
@@ -78,7 +78,7 @@ export default function PostbacksManagement() {
       const response = await fetch('/api/admin/postback-logs', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch postback logs');
+      if (!response.ok) {throw new Error('Failed to fetch postback logs');}
       return response.json();
     },
   });

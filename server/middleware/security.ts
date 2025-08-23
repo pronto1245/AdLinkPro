@@ -91,19 +91,19 @@ function calculateRiskScore(req: Request, action: string, success: boolean): num
   let score = 0;
   
   // Base score for failed attempts
-  if (!success) score += 2;
+  if (!success) {score += 2;}
   
   // High-risk actions
   const highRiskActions = ['INVALID_TOKEN', 'UNAUTHORIZED_ACCESS', 'PERMISSION_DENIED', 'OWNERSHIP_VIOLATION'];
-  if (highRiskActions.includes(action)) score += 3;
+  if (highRiskActions.includes(action)) {score += 3;}
   
   // Suspicious user agents
   const userAgent = req.get('User-Agent') || '';
-  if (userAgent.toLowerCase().includes('bot') || userAgent.length < 20) score += 2;
+  if (userAgent.toLowerCase().includes('bot') || userAgent.length < 20) {score += 2;}
   
   // Missing or suspicious origins
   const origin = req.get('Origin');
-  if (!origin && req.method === 'POST') score += 1;
+  if (!origin && req.method === 'POST') {score += 1;}
   
   // Rate limiting violations
   const ip = getClientIP(req);
@@ -111,10 +111,10 @@ function calculateRiskScore(req: Request, action: string, success: boolean): num
     log => log.ip === ip && 
            Date.now() - log.timestamp.getTime() < 60000 // Last minute
   );
-  if (recentAttempts.length > 10) score += 3;
+  if (recentAttempts.length > 10) {score += 3;}
   
   // Known suspicious IPs
-  if (ipBlacklist.has(ip)) score += 5;
+  if (ipBlacklist.has(ip)) {score += 5;}
   
   return Math.min(score, 10); // Cap at 10
 }
@@ -284,7 +284,7 @@ export const recordFailedLogin = (req: Request) => {
   const now = Date.now();
   const key = `${clientIP}_login`;
   
-  let entry = loginAttempts.get(key) || { count: 0, lastAttempt: now, blocked: false };
+  const entry = loginAttempts.get(key) || { count: 0, lastAttempt: now, blocked: false };
   
   entry.count++;
   entry.lastAttempt = now;

@@ -105,7 +105,7 @@ export function TopNavigation() {
 
   // Define menu items based on user role
   const getMenuItems = (): MenuItem[] => {
-    if (!user) return [];
+    if (!user) {return [];}
 
     const userRole = user.role.toLowerCase();
     
@@ -217,7 +217,7 @@ export function TopNavigation() {
   };
 
   const filteredMenuItems = getMenuItems().filter(item => {
-    if (!item.requiresToken) return true;
+    if (!item.requiresToken) {return true;}
     
     const token = localStorage.getItem('token');
     const validation = validateToken(token);
@@ -299,7 +299,7 @@ export function TopNavigation() {
     setIsMobileMenuOpen(false);
   };
 
-  if (!user) return null;
+  if (!user) {return null;}
 
   const userInitials = getUserInitials(user);
 

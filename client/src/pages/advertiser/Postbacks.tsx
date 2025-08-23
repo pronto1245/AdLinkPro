@@ -133,7 +133,7 @@ export function AdvertiserPostbacks() {
       const response = await fetch('/api/postback/profiles', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!response.ok) throw new Error('Failed to fetch profiles');
+      if (!response.ok) {throw new Error('Failed to fetch profiles');}
       return response.json();
     }
   });
@@ -146,7 +146,7 @@ export function AdvertiserPostbacks() {
       const response = await fetch('/api/postback/deliveries', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!response.ok) throw new Error('Failed to fetch deliveries');
+      if (!response.ok) {throw new Error('Failed to fetch deliveries');}
       return response.json();
     }
   });
@@ -163,7 +163,7 @@ export function AdvertiserPostbacks() {
         },
         body: JSON.stringify(profile)
       });
-      if (!response.ok) throw new Error('Failed to create profile');
+      if (!response.ok) {throw new Error('Failed to create profile');}
       return response.json();
     },
     onSuccess: () => {
@@ -185,7 +185,7 @@ export function AdvertiserPostbacks() {
         },
         body: JSON.stringify(profile)
       });
-      if (!response.ok) throw new Error('Failed to update profile');
+      if (!response.ok) {throw new Error('Failed to update profile');}
       return response.json();
     },
     onSuccess: () => {
@@ -204,7 +204,7 @@ export function AdvertiserPostbacks() {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!response.ok) throw new Error('Failed to delete profile');
+      if (!response.ok) {throw new Error('Failed to delete profile');}
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
@@ -224,7 +224,7 @@ export function AdvertiserPostbacks() {
         },
         body: JSON.stringify(data)
       });
-      if (!response.ok) throw new Error('Failed to test postback');
+      if (!response.ok) {throw new Error('Failed to test postback');}
       return response.json();
     }
   });

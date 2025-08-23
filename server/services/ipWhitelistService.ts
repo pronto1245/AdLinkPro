@@ -215,10 +215,10 @@ export class IPWhitelistService {
     try {
       const updateData: any = {};
       
-      if (updates.ip) updateData.value = updates.ip;
-      if (updates.cidr) updateData.cidr = updates.cidr;
-      if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
-      if (updates.expiresAt) updateData.expiresAt = updates.expiresAt;
+      if (updates.ip) {updateData.value = updates.ip;}
+      if (updates.cidr) {updateData.cidr = updates.cidr;}
+      if (updates.isActive !== undefined) {updateData.isActive = updates.isActive;}
+      if (updates.expiresAt) {updateData.expiresAt = updates.expiresAt;}
       
       if (updates.description) {
         updateData.reason = `Whitelisted: ${updates.description}`;
@@ -236,7 +236,7 @@ export class IPWhitelistService {
         .where(eq(fraudBlocks.id, id))
         .returning();
       
-      if (!updated) return null;
+      if (!updated) {return null;}
       
       let data: any = {};
       try {

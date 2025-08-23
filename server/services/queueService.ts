@@ -353,10 +353,10 @@ export class QueueService {
     let score = 0;
     
     // Basic fraud indicators
-    if (data.rapidClicks) score += 30;
-    if (data.suspiciousUA) score += 20;
-    if (data.proxyIP) score += 40;
-    if (data.deviceSpoofing) score += 35;
+    if (data.rapidClicks) {score += 30;}
+    if (data.suspiciousUA) {score += 20;}
+    if (data.proxyIP) {score += 40;}
+    if (data.deviceSpoofing) {score += 35;}
     
     return Math.min(score, 100);
   }
@@ -364,10 +364,10 @@ export class QueueService {
   private async identifyFraudIndicators(data: any): Promise<string[]> {
     const indicators: string[] = [];
     
-    if (data.rapidClicks) indicators.push('rapid_clicks');
-    if (data.suspiciousUA) indicators.push('suspicious_user_agent');
-    if (data.proxyIP) indicators.push('proxy_ip');
-    if (data.deviceSpoofing) indicators.push('device_spoofing');
+    if (data.rapidClicks) {indicators.push('rapid_clicks');}
+    if (data.suspiciousUA) {indicators.push('suspicious_user_agent');}
+    if (data.proxyIP) {indicators.push('proxy_ip');}
+    if (data.deviceSpoofing) {indicators.push('device_spoofing');}
     
     return indicators;
   }

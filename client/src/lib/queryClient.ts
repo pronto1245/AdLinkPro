@@ -118,14 +118,14 @@ export const queryClient = new QueryClient({
       gcTime: 5 * 60 * 1000, // 5 минут в кеше (более быстрое обновление)
       retry: (failureCount, error: any) => {
         // Не повторяем при 4xx ошибках
-        if (error?.message?.includes('4')) return false;
+        if (error?.message?.includes('4')) {return false;}
         return failureCount < 2;
       },
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
     mutations: {
       retry: (failureCount, error: any) => {
-        if (error?.message?.includes('4')) return false;
+        if (error?.message?.includes('4')) {return false;}
         return failureCount < 1;
       },
     },

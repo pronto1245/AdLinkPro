@@ -1,8 +1,6 @@
-import { sql, relations } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, integer, decimal, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { users, offers } from "./schema";
 
 // Comprehensive tracking clicks with all parameters
 export const trackingClicks = pgTable("tracking_clicks", {
@@ -191,22 +189,31 @@ export const hourlyStatistics = pgTable("hourly_statistics", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Schemas and types
-export const insertTrackingClickSchema = createInsertSchema(trackingClicks).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+// Schemas and types - TODO: Fix drizzle-zod compatibility
+// Temporary basic schemas
+export const insertTrackingClickSchema = z.object({
+  clickId: z.string().optional(),
+  advertiserId: z.string().optional(),
+  offerId: z.string().optional(),
+  partnerId: z.string().optional(),
+  ipAddress: z.string().optional(),
+  userAgent: z.string().optional(),
+  country: z.string().optional(),
 });
 
-export const insertDailyStatisticsSchema = createInsertSchema(dailyStatistics).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+export const insertDailyStatisticsSchema = z.object({
+  advertiserId: z.string().optional(),
+  offerId: z.string().optional(),
+  partnerId: z.string().optional(),
+  clicks: z.number().default(0),
+  conversions: z.number().default(0),
 });
 
-export const insertHourlyStatisticsSchema = createInsertSchema(hourlyStatistics).omit({
-  id: true,
-  createdAt: true,
+export const insertHourlyStatisticsSchema = z.object({
+  advertiserId: z.string().optional(),
+  offerId: z.string().optional(),
+  partnerId: z.string().optional(),
+  clicks: z.number().default(0),
 });
 
 export type TrackingClick = typeof trackingClicks.$inferSelect;

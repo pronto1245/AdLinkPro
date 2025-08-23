@@ -51,17 +51,17 @@ export default function AuditLogs() {
     queryKey: ['/api/admin/audit-logs', searchTerm, actionFilter, resourceFilter, userFilter, dateRange],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      if (actionFilter !== 'all') params.append('action', actionFilter);
-      if (resourceFilter !== 'all') params.append('resourceType', resourceFilter);
-      if (userFilter !== 'all') params.append('userId', userFilter);
-      if (dateRange.from) params.append('startDate', dateRange.from.toISOString());
-      if (dateRange.to) params.append('endDate', dateRange.to.toISOString());
+      if (searchTerm) {params.append('search', searchTerm);}
+      if (actionFilter !== 'all') {params.append('action', actionFilter);}
+      if (resourceFilter !== 'all') {params.append('resourceType', resourceFilter);}
+      if (userFilter !== 'all') {params.append('userId', userFilter);}
+      if (dateRange.from) {params.append('startDate', dateRange.from.toISOString());}
+      if (dateRange.to) {params.append('endDate', dateRange.to.toISOString());}
       
       const response = await fetch(`/api/admin/audit-logs?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch audit logs');
+      if (!response.ok) {throw new Error('Failed to fetch audit logs');}
       return response.json();
     },
   });
@@ -73,7 +73,7 @@ export default function AuditLogs() {
       const response = await fetch('/api/admin/users', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch users');
+      if (!response.ok) {throw new Error('Failed to fetch users');}
       return response.json();
     },
   });

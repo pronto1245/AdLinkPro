@@ -58,7 +58,7 @@ export class LetsEncryptService {
 
   // Создаем аккаунт Let's Encrypt
   private static async createAccount(): Promise<void> {
-    if (!this.client) throw new Error('ACME клиент не инициализирован');
+    if (!this.client) {throw new Error('ACME клиент не инициализирован');}
 
     try {
       await this.client.createAccount({

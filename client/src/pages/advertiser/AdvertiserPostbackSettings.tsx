@@ -223,7 +223,7 @@ export default function AdvertiserPostbackSettings() {
   };
 
   const handleUpdateProfile = (formData: FormData) => {
-    if (!editingProfile) return;
+    if (!editingProfile) {return;}
     
     const data = {
       name: formData.get('name'),

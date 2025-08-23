@@ -30,7 +30,7 @@ export default function StaffDashboard() {
       const response = await fetch('/api/staff/metrics', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch staff metrics');
+      if (!response.ok) {throw new Error('Failed to fetch staff metrics');}
       return response.json();
     },
     enabled: !!token
@@ -43,7 +43,7 @@ export default function StaffDashboard() {
       const response = await fetch('/api/staff/tickets', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch tickets');
+      if (!response.ok) {throw new Error('Failed to fetch tickets');}
       return response.json();
     },
     enabled: !!token

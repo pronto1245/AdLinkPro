@@ -189,7 +189,7 @@ export default function OfferDetails() {
 
   // Format traffic sources with colors
   const formatTrafficSources = (sources: any) => {
-    if (!sources || !Array.isArray(sources)) return [];
+    if (!sources || !Array.isArray(sources)) {return [];}
     
     const sourceColors: { [key: string]: string } = {
       'Facebook': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
@@ -218,7 +218,7 @@ export default function OfferDetails() {
 
   // Format applications with colors
   const formatApplications = (apps: any) => {
-    if (!apps || !Array.isArray(apps)) return [];
+    if (!apps || !Array.isArray(apps)) {return [];}
     
     const appNames: { [key: string]: string } = {
       'web': 'Веб-сайты',
@@ -251,7 +251,7 @@ export default function OfferDetails() {
   // Функции для работы с креативами
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0) {return;}
 
     setIsUploading(true);
     
@@ -308,7 +308,7 @@ export default function OfferDetails() {
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {return '0 Bytes';}
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));

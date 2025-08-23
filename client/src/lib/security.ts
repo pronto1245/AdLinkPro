@@ -158,7 +158,7 @@ export class RateLimitTracker {
 
   getRemainingTime(identifier: string): number {
     const entry = this.attempts.get(identifier);
-    if (!entry) return 0;
+    if (!entry) {return 0;}
 
     const remaining = (entry.lastAttempt + this.windowMs) - Date.now();
     return Math.max(0, Math.ceil(remaining / 1000));
@@ -175,7 +175,7 @@ export class RateLimitTracker {
  */
 export const tokenStorage = {
   setToken: (token: string): void => {
-    if (typeof localStorage === 'undefined') return;
+    if (typeof localStorage === 'undefined') {return;}
     
     // Clear any old tokens from different storage approaches
     localStorage.removeItem('auth:secure_token');
@@ -186,11 +186,11 @@ export const tokenStorage = {
   },
 
   getToken: (): string | null => {
-    if (typeof localStorage === 'undefined') return null;
+    if (typeof localStorage === 'undefined') {return null;}
     
     // Check primary token storage
     const token = localStorage.getItem('token');
-    if (token) return token;
+    if (token) {return token;}
     
     // Fallback to legacy storage for compatibility
     const authToken = localStorage.getItem('auth:token');
@@ -222,7 +222,7 @@ export const tokenStorage = {
   },
 
   clearToken: (): void => {
-    if (typeof localStorage === 'undefined') return;
+    if (typeof localStorage === 'undefined') {return;}
     
     // Clear all possible token storage locations
     localStorage.removeItem('token');
@@ -244,22 +244,22 @@ export const passwordStrength = {
     const feedback: string[] = [];
     let score = 0;
 
-    if (password.length >= 8) score++;
-    else feedback.push('Используйте минимум 8 символов');
+    if (password.length >= 8) {score++;}
+    else {feedback.push('Используйте минимум 8 символов');}
 
-    if (/[A-Z]/.test(password)) score++;
-    else feedback.push('Добавьте заглавные буквы');
+    if (/[A-Z]/.test(password)) {score++;}
+    else {feedback.push('Добавьте заглавные буквы');}
 
-    if (/[a-z]/.test(password)) score++;
-    else feedback.push('Добавьте строчные буквы');
+    if (/[a-z]/.test(password)) {score++;}
+    else {feedback.push('Добавьте строчные буквы');}
 
-    if (/[0-9]/.test(password)) score++;
-    else feedback.push('Добавьте цифры');
+    if (/[0-9]/.test(password)) {score++;}
+    else {feedback.push('Добавьте цифры');}
 
-    if (/[^A-Za-z0-9]/.test(password)) score++;
-    else feedback.push('Добавьте специальные символы');
+    if (/[^A-Za-z0-9]/.test(password)) {score++;}
+    else {feedback.push('Добавьте специальные символы');}
 
-    if (password.length >= 12) score++;
+    if (password.length >= 12) {score++;}
 
     // Check for common patterns
     if (/(.)\1{2,}/.test(password)) {
@@ -276,8 +276,8 @@ export const passwordStrength = {
   },
 
   getStrengthLabel: (score: number): { label: string; color: string } => {
-    if (score <= 2) return { label: 'Weak', color: 'text-red-500' };
-    if (score <= 4) return { label: 'Medium', color: 'text-yellow-500' };
+    if (score <= 2) {return { label: 'Weak', color: 'text-red-500' };}
+    if (score <= 4) {return { label: 'Medium', color: 'text-yellow-500' };}
     return { label: 'Strong', color: 'text-green-500' };
   }
 };
@@ -320,7 +320,7 @@ export const deviceFingerprint = {
   },
 
   get: (): string | null => {
-    if (typeof localStorage === 'undefined') return null;
+    if (typeof localStorage === 'undefined') {return null;}
     return localStorage.getItem('device_fingerprint');
   }
 };

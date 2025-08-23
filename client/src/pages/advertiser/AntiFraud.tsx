@@ -183,7 +183,7 @@ export default function AntiFraud() {
     queryFn: async () => {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== 'all') params.append(key, value);
+        if (value && value !== 'all') {params.append(key, value);}
       });
       const response = await apiRequest(`/api/advertiser/antifraud/events?${params}`);
       return response as FraudEvent[];
@@ -262,7 +262,7 @@ export default function AntiFraud() {
 
   // Обработчики событий
   const handleSettingsUpdate = (field: string, value: any) => {
-    if (!settings) return;
+    if (!settings) {return;}
     
     const newSettings = { ...settings };
     const fields = field.split('.');
@@ -334,7 +334,7 @@ export default function AntiFraud() {
     return matchesSearch && matchesFraudType && matchesAction && matchesStatus && matchesCountry;
   }) : [];
 
-  if (!user) return <div>Загрузка...</div>;
+  if (!user) {return <div>Загрузка...</div>;}
 
   return (
     <div className="space-y-6">

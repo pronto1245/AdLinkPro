@@ -179,7 +179,7 @@ export default function TeamManagement() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      if (!response.ok) throw new Error('Ошибка загрузки команды');
+      if (!response.ok) {throw new Error('Ошибка загрузки команды');}
       return response.json();
     },
     enabled: !!user?.id
@@ -194,7 +194,7 @@ export default function TeamManagement() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      if (!response.ok) throw new Error('Ошибка загрузки логов');
+      if (!response.ok) {throw new Error('Ошибка загрузки логов');}
       return response.json();
     },
     enabled: !!user?.id
@@ -243,7 +243,7 @@ export default function TeamManagement() {
         },
         body: JSON.stringify(memberData)
       });
-      if (!response.ok) throw new Error('Ошибка создания сотрудника');
+      if (!response.ok) {throw new Error('Ошибка создания сотрудника');}
       return response.json();
     },
     onSuccess: () => {
@@ -274,7 +274,7 @@ export default function TeamManagement() {
         },
         body: JSON.stringify(data)
       });
-      if (!response.ok) throw new Error('Ошибка обновления сотрудника');
+      if (!response.ok) {throw new Error('Ошибка обновления сотрудника');}
       return response.json();
     },
     onSuccess: () => {
@@ -296,7 +296,7 @@ export default function TeamManagement() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      if (!response.ok) throw new Error('Ошибка удаления сотрудника');
+      if (!response.ok) {throw new Error('Ошибка удаления сотрудника');}
       return response.json();
     },
     onSuccess: () => {
@@ -440,7 +440,7 @@ export default function TeamManagement() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  if (!user) return <div>Загрузка...</div>;
+  if (!user) {return <div>Загрузка...</div>;}
 
   return (
     <div className="space-y-6">

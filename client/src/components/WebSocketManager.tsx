@@ -167,12 +167,12 @@ export function WebSocketManager() {
       return;
     }
 
-    if (!token || wsRef.current) return;
+    if (!token || wsRef.current) {return;}
 
     try {
       const url = new URL(WS_URL);
-      if (token) url.searchParams.set('token', token);
-      if (user?.id) url.searchParams.set('userId', user.id);
+      if (token) {url.searchParams.set('token', token);}
+      if (user?.id) {url.searchParams.set('userId', user.id);}
       
       const ws = new WebSocket(url.toString());
       wsRef.current = ws;

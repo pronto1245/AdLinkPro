@@ -144,7 +144,7 @@ export default function PartnerProfile() {
     }
 
     // Подготавливаем финальные данные
-    let finalFormData = { ...formData };
+    const finalFormData = { ...formData };
     
     // Валидация и форматирование Telegram (если заполнен)
     if (formData.telegram.trim()) {

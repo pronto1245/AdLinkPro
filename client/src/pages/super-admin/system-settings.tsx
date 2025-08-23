@@ -49,7 +49,7 @@ export default function SystemSettings() {
       const response = await fetch('/api/admin/system-settings', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch settings');
+      if (!response.ok) {throw new Error('Failed to fetch settings');}
       return response.json();
     },
   });

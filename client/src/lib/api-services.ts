@@ -10,10 +10,10 @@ export const offersApi = {
     search?: string;
   }) {
     const query = new URLSearchParams();
-    if (params?.page) query.append('page', params.page.toString());
-    if (params?.limit) query.append('limit', params.limit.toString());
-    if (params?.status) query.append('status', params.status);
-    if (params?.search) query.append('search', params.search);
+    if (params?.page) {query.append('page', params.page.toString());}
+    if (params?.limit) {query.append('limit', params.limit.toString());}
+    if (params?.status) {query.append('status', params.status);}
+    if (params?.search) {query.append('search', params.search);}
 
     const queryString = query.toString();
     return secureApi(`/api/offers${queryString ? `?${queryString}` : ''}`);
@@ -58,8 +58,8 @@ export const offersApi = {
   // Get offer statistics
   async getOfferStats(offerId: string, dateFrom?: string, dateTo?: string) {
     const params = new URLSearchParams();
-    if (dateFrom) params.append('from', dateFrom);
-    if (dateTo) params.append('to', dateTo);
+    if (dateFrom) {params.append('from', dateFrom);}
+    if (dateTo) {params.append('to', dateTo);}
     
     const query = params.toString();
     return secureApi(`/api/offers/${offerId}/stats${query ? `?${query}` : ''}`);
@@ -77,11 +77,11 @@ export const usersApi = {
     search?: string;
   }) {
     const query = new URLSearchParams();
-    if (params?.page) query.append('page', params.page.toString());
-    if (params?.limit) query.append('limit', params.limit.toString());
-    if (params?.role) query.append('role', params.role);
-    if (params?.status) query.append('status', params.status);
-    if (params?.search) query.append('search', params.search);
+    if (params?.page) {query.append('page', params.page.toString());}
+    if (params?.limit) {query.append('limit', params.limit.toString());}
+    if (params?.role) {query.append('role', params.role);}
+    if (params?.status) {query.append('status', params.status);}
+    if (params?.search) {query.append('search', params.search);}
 
     const queryString = query.toString();
     return secureApi(`/api/users${queryString ? `?${queryString}` : ''}`);

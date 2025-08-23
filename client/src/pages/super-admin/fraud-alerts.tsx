@@ -40,7 +40,7 @@ export default function FraudAlertsManagement() {
       const response = await fetch('/api/admin/fraud-alerts', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch fraud alerts');
+      if (!response.ok) {throw new Error('Failed to fetch fraud alerts');}
       return response.json();
     },
   });
@@ -66,7 +66,7 @@ export default function FraudAlertsManagement() {
       const response = await fetch('/api/admin/fraud-metrics', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch fraud metrics');
+      if (!response.ok) {throw new Error('Failed to fetch fraud metrics');}
       return response.json();
     },
   });
@@ -81,7 +81,7 @@ export default function FraudAlertsManagement() {
         },
         body: JSON.stringify({ isResolved }),
       });
-      if (!response.ok) throw new Error('Failed to update fraud alert');
+      if (!response.ok) {throw new Error('Failed to update fraud alert');}
       return response.json();
     },
     onSuccess: () => {

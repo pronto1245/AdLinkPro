@@ -44,12 +44,12 @@ export default function TrackingUrlGenerator() {
 
     try {
       const params = new URLSearchParams();
-      if (sub1) params.append('sub1', sub1);
-      if (sub2) params.append('sub2', sub2);
-      if (sub3) params.append('sub3', sub3);
-      if (sub4) params.append('sub4', sub4);
-      if (sub5) params.append('sub5', sub5);
-      if (landingUrl) params.append('landing_url', landingUrl);
+      if (sub1) {params.append('sub1', sub1);}
+      if (sub2) {params.append('sub2', sub2);}
+      if (sub3) {params.append('sub3', sub3);}
+      if (sub4) {params.append('sub4', sub4);}
+      if (sub5) {params.append('sub5', sub5);}
+      if (landingUrl) {params.append('landing_url', landingUrl);}
 
       const response = await fetch(`/api/tracking-url/${partnerId}/${offerId}?${params}`, {
         headers: {

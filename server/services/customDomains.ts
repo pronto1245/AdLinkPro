@@ -317,7 +317,7 @@ export class CustomDomainService {
 
     const offerIds = advertiserOffers.map(o => o.id);
 
-    if (offerIds.length === 0) return;
+    if (offerIds.length === 0) {return;}
 
     // Обновляем URL в трекинговых ссылках
     for (const offerId of offerIds) {

@@ -66,7 +66,7 @@ function getPayoutTypeBadgeProps(payoutType: string, t: any) {
 
 // Функция для форматирования CR
 function formatCR(cr: number | undefined): string {
-  if (cr === undefined || cr === null) return "0.00";
+  if (cr === undefined || cr === null) {return "0.00";}
   return Math.ceil(cr * 100) / 100 + "";
 }
 

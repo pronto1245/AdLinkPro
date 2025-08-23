@@ -199,7 +199,7 @@ export class FraudController {
       const { period = '30d' } = req.query;
 
       // Calculate date range
-      let startDate = new Date();
+      const startDate = new Date();
       switch (period) {
         case '7d':
           startDate.setDate(startDate.getDate() - 7);

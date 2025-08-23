@@ -42,7 +42,7 @@ const safeStorage = {
 // Get system theme preference
 const getSystemTheme = (): 'light' | 'dark' => {
   try {
-    if (typeof window === 'undefined') return 'light';
+    if (typeof window === 'undefined') {return 'light';}
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   } catch (error) {
     console.warn(`Failed to detect system theme: ${error}`);
@@ -97,7 +97,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Listen for system theme changes
   useEffect(() => {
-    if (theme !== 'system') return;
+    if (theme !== 'system') {return;}
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => {

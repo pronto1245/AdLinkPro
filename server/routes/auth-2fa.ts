@@ -9,7 +9,7 @@ const router = Router();
 
 router.post('/generate', async (req, res) => {
   const { email } = req.body;
-  if (!email) return res.status(400).json({ error: 'Email is required' });
+  if (!email) {return res.status(400).json({ error: 'Email is required' });}
 
   const secret = speakeasy.generateSecret({ name: `Affilix (${email})` });
 
@@ -25,11 +25,11 @@ router.post('/generate', async (req, res) => {
 
 router.post('/verify', async (req, res) => {
   const { email, token } = req.body;
-  if (!email || !token) return res.status(400).json({ error: 'Email and token required' });
+  if (!email || !token) {return res.status(400).json({ error: 'Email and token required' });}
 
   const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
   const secret = user[0]?.twofa_secret;
-  if (!secret) return res.status(400).json({ error: '2FA not configured' });
+  if (!secret) {return res.status(400).json({ error: '2FA not configured' });}
 
   const verified = speakeasy.totp.verify({
     secret,
@@ -37,7 +37,7 @@ router.post('/verify', async (req, res) => {
     token,
   });
 
-  if (!verified) return res.status(401).json({ error: 'Invalid 2FA token' });
+  if (!verified) {return res.status(401).json({ error: 'Invalid 2FA token' });}
 
   res.json({ success: true });
 });

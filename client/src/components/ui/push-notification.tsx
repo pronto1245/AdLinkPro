@@ -214,7 +214,7 @@ export function PushNotificationContainer({
     <>
       {visibleNotifications.map((notificationId, index) => {
         const notification = notifications.find(n => n.id === notificationId);
-        if (!notification) return null;
+        if (!notification) {return null;}
 
         return (
           <div

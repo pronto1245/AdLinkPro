@@ -543,7 +543,7 @@ export default function PostbackProfilesPage() {
   };
 
   const getStatusBadge = (responseCode?: number) => {
-    if (!responseCode) return <Badge variant="secondary">Нет ответа</Badge>;
+    if (!responseCode) {return <Badge variant="secondary">Нет ответа</Badge>;}
     
     if (responseCode >= 200 && responseCode < 300) {
       return <Badge variant="default" className="bg-green-500">Успех</Badge>;

@@ -13,7 +13,7 @@ export interface User {
  * Determine the correct dashboard href based on user role
  */
 export function getDashboardHref(user?: User | null): string {
-  if (!user?.role) return '/dashboard';
+  if (!user?.role) {return '/dashboard';}
   
   const roleMap: Record<string, string> = {
     'partner': '/dashboard/partner',
@@ -33,7 +33,7 @@ export function getDashboardHref(user?: User | null): string {
 export function createLogoutHandler(logout: () => void, onComplete?: () => void) {
   return () => {
     logout();
-    if (onComplete) onComplete();
+    if (onComplete) {onComplete();}
   };
 }
 
@@ -41,11 +41,11 @@ export function createLogoutHandler(logout: () => void, onComplete?: () => void)
  * Get user display name with fallback
  */
 export function getUserDisplayName(user?: User | null): string {
-  if (!user) return 'Пользователь';
+  if (!user) {return 'Пользователь';}
   
-  if (user.name) return user.name;
-  if (user.username) return user.username;
-  if (user.email) return user.email.split('@')[0];
+  if (user.name) {return user.name;}
+  if (user.username) {return user.username;}
+  if (user.email) {return user.email.split('@')[0];}
   
   return 'Пользователь';
 }
@@ -54,7 +54,7 @@ export function getUserDisplayName(user?: User | null): string {
  * Get user initials for avatar display
  */
 export function getUserInitials(user?: User | null): string {
-  if (!user) return 'U';
+  if (!user) {return 'U';}
   
   if (user.name) {
     const parts = user.name.split(' ');
@@ -79,7 +79,7 @@ export function getUserInitials(user?: User | null): string {
  * Get role display name in Russian
  */
 export function getRoleDisplayName(role?: string): string {
-  if (!role) return 'Пользователь';
+  if (!role) {return 'Пользователь';}
   
   const roleMap: Record<string, string> = {
     'super_admin': 'Супер админ',

@@ -48,56 +48,56 @@ const MetricCard = ({ title, value, change, changeType, icon: Icon, cardType }: 
   };
 
   const getChangeIcon = () => {
-    if (changeType === 'positive') return <TrendingUp className="h-3 w-3" />;
-    if (changeType === 'negative') return <TrendingDown className="h-3 w-3" />;
+    if (changeType === 'positive') {return <TrendingUp className="h-3 w-3" />;}
+    if (changeType === 'negative') {return <TrendingDown className="h-3 w-3" />;}
     return null;
   };
 
   const getCardStyle = () => {
-    if (cardType === 'clicks') return 'border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/20 dark:to-background';
-    if (cardType === 'conversions') return 'border-l-4 border-l-green-500 bg-gradient-to-r from-green-50 to-white dark:from-green-950/20 dark:to-background';
-    if (cardType === 'revenue') return 'border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-50 to-white dark:from-amber-950/20 dark:to-background';
-    if (cardType === 'cr') return 'border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50 to-white dark:from-purple-950/20 dark:to-background';
-    if (cardType === 'uniqueClicks') return 'border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-50 to-white dark:from-indigo-950/20 dark:to-background';
-    if (cardType === 'activeOffers') return 'border-l-4 border-l-pink-500 bg-gradient-to-r from-pink-50 to-white dark:from-pink-950/20 dark:to-background';
-    if (cardType === 'status') return 'border-l-4 border-l-emerald-500 bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-950/20 dark:to-background';
-    if (cardType === 'epc') return 'border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-50 to-white dark:from-indigo-950/20 dark:to-background';
+    if (cardType === 'clicks') {return 'border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/20 dark:to-background';}
+    if (cardType === 'conversions') {return 'border-l-4 border-l-green-500 bg-gradient-to-r from-green-50 to-white dark:from-green-950/20 dark:to-background';}
+    if (cardType === 'revenue') {return 'border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-50 to-white dark:from-amber-950/20 dark:to-background';}
+    if (cardType === 'cr') {return 'border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50 to-white dark:from-purple-950/20 dark:to-background';}
+    if (cardType === 'uniqueClicks') {return 'border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-50 to-white dark:from-indigo-950/20 dark:to-background';}
+    if (cardType === 'activeOffers') {return 'border-l-4 border-l-pink-500 bg-gradient-to-r from-pink-50 to-white dark:from-pink-950/20 dark:to-background';}
+    if (cardType === 'status') {return 'border-l-4 border-l-emerald-500 bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-950/20 dark:to-background';}
+    if (cardType === 'epc') {return 'border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-50 to-white dark:from-indigo-950/20 dark:to-background';}
     return 'border-l-4 border-l-slate-500 bg-gradient-to-r from-slate-50 to-white dark:from-slate-950/20 dark:to-background';
   };
 
   const getTitleColor = () => {
-    if (cardType === 'clicks') return 'text-blue-700 dark:text-blue-300';
-    if (cardType === 'conversions') return 'text-green-700 dark:text-green-300';
-    if (cardType === 'revenue') return 'text-amber-700 dark:text-amber-300';
-    if (cardType === 'cr') return 'text-purple-700 dark:text-purple-300';
-    if (cardType === 'uniqueClicks') return 'text-indigo-700 dark:text-indigo-300';
-    if (cardType === 'activeOffers') return 'text-pink-700 dark:text-pink-300';
-    if (cardType === 'status') return 'text-emerald-700 dark:text-emerald-300';
-    if (cardType === 'epc') return 'text-indigo-700 dark:text-indigo-300';
+    if (cardType === 'clicks') {return 'text-blue-700 dark:text-blue-300';}
+    if (cardType === 'conversions') {return 'text-green-700 dark:text-green-300';}
+    if (cardType === 'revenue') {return 'text-amber-700 dark:text-amber-300';}
+    if (cardType === 'cr') {return 'text-purple-700 dark:text-purple-300';}
+    if (cardType === 'uniqueClicks') {return 'text-indigo-700 dark:text-indigo-300';}
+    if (cardType === 'activeOffers') {return 'text-pink-700 dark:text-pink-300';}
+    if (cardType === 'status') {return 'text-emerald-700 dark:text-emerald-300';}
+    if (cardType === 'epc') {return 'text-indigo-700 dark:text-indigo-300';}
     return 'text-slate-700 dark:text-slate-300';
   };
 
   const getValueColor = () => {
-    if (cardType === 'clicks') return 'text-blue-600 dark:text-blue-400';
-    if (cardType === 'conversions') return 'text-green-600 dark:text-green-400';
-    if (cardType === 'revenue') return 'text-amber-600 dark:text-amber-400';
-    if (cardType === 'cr') return 'text-purple-600 dark:text-purple-400';
-    if (cardType === 'uniqueClicks') return 'text-indigo-600 dark:text-indigo-400';
-    if (cardType === 'activeOffers') return 'text-pink-600 dark:text-pink-400';
-    if (cardType === 'status') return 'text-emerald-600 dark:text-emerald-400';
-    if (cardType === 'epc') return 'text-indigo-600 dark:text-indigo-400';
+    if (cardType === 'clicks') {return 'text-blue-600 dark:text-blue-400';}
+    if (cardType === 'conversions') {return 'text-green-600 dark:text-green-400';}
+    if (cardType === 'revenue') {return 'text-amber-600 dark:text-amber-400';}
+    if (cardType === 'cr') {return 'text-purple-600 dark:text-purple-400';}
+    if (cardType === 'uniqueClicks') {return 'text-indigo-600 dark:text-indigo-400';}
+    if (cardType === 'activeOffers') {return 'text-pink-600 dark:text-pink-400';}
+    if (cardType === 'status') {return 'text-emerald-600 dark:text-emerald-400';}
+    if (cardType === 'epc') {return 'text-indigo-600 dark:text-indigo-400';}
     return 'text-slate-600 dark:text-slate-400';
   };
 
   const getIconColor = () => {
-    if (cardType === 'clicks') return 'text-blue-500';
-    if (cardType === 'conversions') return 'text-green-500';
-    if (cardType === 'revenue') return 'text-amber-500';
-    if (cardType === 'cr') return 'text-purple-500';
-    if (cardType === 'uniqueClicks') return 'text-indigo-500';
-    if (cardType === 'activeOffers') return 'text-pink-500';
-    if (cardType === 'status') return 'text-emerald-500';
-    if (cardType === 'epc') return 'text-indigo-500';
+    if (cardType === 'clicks') {return 'text-blue-500';}
+    if (cardType === 'conversions') {return 'text-green-500';}
+    if (cardType === 'revenue') {return 'text-amber-500';}
+    if (cardType === 'cr') {return 'text-purple-500';}
+    if (cardType === 'uniqueClicks') {return 'text-indigo-500';}
+    if (cardType === 'activeOffers') {return 'text-pink-500';}
+    if (cardType === 'status') {return 'text-emerald-500';}
+    if (cardType === 'epc') {return 'text-indigo-500';}
     return 'text-slate-500';
   };
 

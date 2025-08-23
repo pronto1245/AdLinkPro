@@ -66,7 +66,7 @@ const withLayout = (C: React.ComponentType<any>) => function Wrapped() {
 function Router() {
   const { i18n } = useTranslation();
   React.useEffect(() => {
-    if (i18n.language !== 'ru') i18n.changeLanguage('ru');
+    if (i18n.language !== 'ru') {i18n.changeLanguage('ru');}
   }, [i18n]);
 
   return (

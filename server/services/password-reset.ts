@@ -30,7 +30,7 @@ export class DatabasePasswordResetService implements PasswordResetService {
         [normalizedEmail]
       );
 
-      let userExists = userResult.rows.length > 0;
+      const userExists = userResult.rows.length > 0;
       
       // Always return success to prevent email enumeration
       const successMessage = "Если аккаунт с этим email существует, на него будет отправлено письмо с инструкциями по восстановлению пароля.";

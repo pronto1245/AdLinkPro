@@ -119,8 +119,8 @@ export function useWebSocket(
 
     try {
       const wsUrl = new URL(WS_URL);
-      if (token) wsUrl.searchParams.set('token', token);
-      if (userId) wsUrl.searchParams.set('userId', userId);
+      if (token) {wsUrl.searchParams.set('token', token);}
+      if (userId) {wsUrl.searchParams.set('userId', userId);}
       
       const ws = new WebSocket(wsUrl.toString());
       wsRef.current = ws;

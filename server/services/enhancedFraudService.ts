@@ -254,7 +254,7 @@ export class EnhancedFraudService extends FraudService {
    * Check for suspicious user agent patterns
    */
   private static isSuspiciousUserAgent(userAgent: string): boolean {
-    if (!userAgent) return true;
+    if (!userAgent) {return true;}
     
     const suspiciousPatterns = [
       /curl/i,

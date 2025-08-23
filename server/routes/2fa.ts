@@ -37,7 +37,7 @@ twoFARouter.post("/verify", (req, res) => {
 
     // Generate actual JWT token
     const secret = process.env.JWT_SECRET;
-    if (!secret) return res.status(500).json({ error: "JWT_SECRET missing" });
+    if (!secret) {return res.status(500).json({ error: "JWT_SECRET missing" });}
 
     const authToken = jwt.sign(
       { sub: user.sub, role: user.role, email: user.email, username: user.username },

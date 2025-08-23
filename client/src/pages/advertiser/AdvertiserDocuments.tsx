@@ -542,7 +542,7 @@ export default function AdvertiserDocuments() {
             </Card>
           ) : (
             filteredSections.map((section) => {
-              if (section.id !== activeSection) return null;
+              if (section.id !== activeSection) {return null;}
               
               const Icon = section.icon || FileText;
               

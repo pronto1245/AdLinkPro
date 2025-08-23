@@ -64,7 +64,7 @@ export function RequestAccessModal({ isOpen, onClose, offer }: RequestAccessModa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!offer?.id) return;
+    if (!offer?.id) {return;}
     
     requestAccessMutation.mutate({
       offerId: offer.id,

@@ -142,13 +142,13 @@ export async function canAccessUser(currentUserId: string, targetUserId: string)
       .where(eq(users.id, currentUserId))
       .limit(1);
 
-    if (!currentUser) return false;
+    if (!currentUser) {return false;}
 
     // Super admin can access anyone
-    if (currentUser.role === 'super_admin') return true;
+    if (currentUser.role === 'super_admin') {return true;}
 
     // Users can always access their own data
-    if (currentUserId === targetUserId) return true;
+    if (currentUserId === targetUserId) {return true;}
 
     // Get target user info
     const [targetUser] = await db
@@ -161,7 +161,7 @@ export async function canAccessUser(currentUserId: string, targetUserId: string)
       .where(eq(users.id, targetUserId))
       .limit(1);
 
-    if (!targetUser) return false;
+    if (!targetUser) {return false;}
 
     // Advertiser can access their created users (staff/affiliates)
     if (currentUser.role === 'advertiser' && targetUser.ownerId === currentUserId) {

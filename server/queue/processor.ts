@@ -376,8 +376,8 @@ let softBlocks = 0;
 export function updateAntifraudStats(level: string, blocked: boolean) {
   if (blocked) {
     antifraudBlocks++;
-    if (level === 'hard') hardBlocks++;
-    if (level === 'soft') softBlocks++;
+    if (level === 'hard') {hardBlocks++;}
+    if (level === 'soft') {softBlocks++;}
   }
 }
 

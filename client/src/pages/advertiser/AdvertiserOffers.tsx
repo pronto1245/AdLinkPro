@@ -202,8 +202,8 @@ const AdvertiserOffers = () => {
   const filtered = localOffers
     .filter((o: any) => o.name.toLowerCase().includes(search.toLowerCase()))
     .filter((o: any) => {
-      if (selectedStatus === 'archived') return o.status === 'archived';
-      if (selectedStatus === 'all') return true;
+      if (selectedStatus === 'archived') {return o.status === 'archived';}
+      if (selectedStatus === 'all') {return true;}
       return o.status === selectedStatus;
     });
 
@@ -403,8 +403,8 @@ const AdvertiserOffers = () => {
                       <Checkbox 
                         checked={selectedOffers.includes(offer.id)} 
                         onCheckedChange={(checked) => {
-                          if (checked) setSelectedOffers(prev => [...prev, offer.id]);
-                          else setSelectedOffers(prev => prev.filter(id => id !== offer.id));
+                          if (checked) {setSelectedOffers(prev => [...prev, offer.id]);}
+                          else {setSelectedOffers(prev => prev.filter(id => id !== offer.id));}
                         }} 
                       />
                     </TableCell>

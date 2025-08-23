@@ -652,7 +652,7 @@ export default function OfferManagement() {
   };
 
   const handleBulkAction = (action: string) => {
-    if (selectedOffers.length === 0) return;
+    if (selectedOffers.length === 0) {return;}
     bulkMutation.mutate({ action, offerIds: selectedOffers });
   };
 
@@ -681,11 +681,11 @@ export default function OfferManagement() {
   };
 
   const filteredOffers = offers?.filter(offer => {
-    if (searchTerm && !offer.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    if (filters.status !== 'all' && offer.status !== filters.status) return false;
-    if (filters.category !== 'all' && offer.category !== filters.category) return false;
-    if (filters.payoutType !== 'all' && offer.payoutType !== filters.payoutType) return false;
-    if (filters.country !== 'all' && !offer.countries.includes(filters.country)) return false;
+    if (searchTerm && !offer.name.toLowerCase().includes(searchTerm.toLowerCase())) {return false;}
+    if (filters.status !== 'all' && offer.status !== filters.status) {return false;}
+    if (filters.category !== 'all' && offer.category !== filters.category) {return false;}
+    if (filters.payoutType !== 'all' && offer.payoutType !== filters.payoutType) {return false;}
+    if (filters.country !== 'all' && !offer.countries.includes(filters.country)) {return false;}
     return true;
   }) || [];
 

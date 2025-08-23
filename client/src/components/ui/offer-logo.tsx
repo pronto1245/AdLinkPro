@@ -30,7 +30,7 @@ export function OfferLogo({
   
   // Получаем первые две буквы из названия оффера
   const getInitials = (offerName: string): string => {
-    if (!offerName) return "??";
+    if (!offerName) {return "??";}
     
     // Удаляем спецсимволы и разбиваем на слова
     const words = offerName
@@ -39,7 +39,7 @@ export function OfferLogo({
       .split(/\s+/)
       .filter(word => word.length > 0);
     
-    if (words.length === 0) return "??";
+    if (words.length === 0) {return "??";}
     
     if (words.length === 1) {
       // Если одно слово, берем первые две буквы

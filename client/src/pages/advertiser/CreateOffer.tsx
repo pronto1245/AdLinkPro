@@ -647,7 +647,7 @@ export default function CreateOffer() {
   };
 
   const removeLandingPage = (id: string) => {
-    if (formData.landingPages.length <= 1) return;
+    if (formData.landingPages.length <= 1) {return;}
     setFormData(prev => ({
       ...prev,
       landingPages: prev.landingPages.filter(lp => lp.id !== id)
