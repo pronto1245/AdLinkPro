@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { db, queryCache } from '../db';
 import {
+  users, offers, trackingClicks, conversionData,
+  transactions
   users, offers, partnerOffers, trackingClicks, conversionData,
   analyticsData, statistics, transactions
 import { 
