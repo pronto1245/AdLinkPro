@@ -22,7 +22,7 @@ export class DatabasePasswordResetService implements PasswordResetService {
 
   async requestPasswordReset(email: string): Promise<{ success: boolean; message: string }> {
     const normalizedEmail = email.toLowerCase().trim();
-    
+
     try {
       // Check if user exists in database
       const userResult = await this.pool.query(
@@ -31,9 +31,9 @@ export class DatabasePasswordResetService implements PasswordResetService {
       );
 
       const userExists = userResult.rows.length > 0;
-      
+
       // Always return success to prevent email enumeration
-      const successMessage = "Если аккаунт с этим email существует, на него будет отправлено письмо с инструкциями по восстановлению пароля.";
+      const successMessage = 'Если аккаунт с этим email существует, на него будет отправлено письмо с инструкциями по восстановлению пароля.';
 
       if (userExists) {
         // Generate secure reset token
@@ -73,7 +73,7 @@ export class DatabasePasswordResetService implements PasswordResetService {
     } catch (error) {
       console.error('[PASSWORD_RESET] Error requesting password reset:', error);
       // Return success to prevent information leakage
-      const successMessage = "Если аккаунт с этим email существует, на него будет отправлено письмо с инструкциями по восстановлению пароля.";
+      const successMessage = 'Если аккаунт с этим email существует, на него будет отправлено письмо с инструкциями по восстановлению пароля.';
       return { success: true, message: successMessage };
     }
   }
@@ -91,9 +91,9 @@ export class DatabasePasswordResetService implements PasswordResetService {
         return { valid: false };
       }
 
-      return { 
-        valid: true, 
-        email: result.rows[0].email 
+      return {
+        valid: true,
+        email: result.rows[0].email
       };
 
     } catch (error) {
@@ -106,11 +106,11 @@ export class DatabasePasswordResetService implements PasswordResetService {
     try {
       // Validate token and get email
       const tokenValidation = await this.validateResetToken(token);
-      
+
       if (!tokenValidation.valid || !tokenValidation.email) {
-        return { 
-          success: false, 
-          message: "Недействительный или истекший токен для восстановления пароля." 
+        return {
+          success: false,
+          message: 'Недействительный или истекший токен для восстановления пароля.'
         };
       }
 
@@ -128,9 +128,9 @@ export class DatabasePasswordResetService implements PasswordResetService {
 
       if (updateResult.rowCount === 0) {
         console.error(`[PASSWORD_RESET] User not found for email: ${email}`);
-        return { 
-          success: false, 
-          message: "Пользователь не найден." 
+        return {
+          success: false,
+          message: 'Пользователь не найден.'
         };
       }
 
@@ -141,17 +141,17 @@ export class DatabasePasswordResetService implements PasswordResetService {
       );
 
       console.log(`[PASSWORD_RESET] Password successfully reset for user: ${email}`);
-      
-      return { 
-        success: true, 
-        message: "Пароль успешно изменен." 
+
+      return {
+        success: true,
+        message: 'Пароль успешно изменен.'
       };
 
     } catch (error) {
       console.error('[PASSWORD_RESET] Error resetting password:', error);
-      return { 
-        success: false, 
-        message: "Произошла ошибка при сбросе пароля." 
+      return {
+        success: false,
+        message: 'Произошла ошибка при сбросе пароля.'
       };
     }
   }
@@ -168,7 +168,7 @@ export class DatabasePasswordResetService implements PasswordResetService {
 
   private async sendPasswordResetEmail(email: string, resetLink: string): Promise<{ success: boolean; skipped?: boolean }> {
     const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@adlinkpro.com';
-    
+
     const emailData = {
       email: email,
       resetLink: resetLink,
@@ -184,9 +184,9 @@ export class DatabasePasswordResetService implements PasswordResetService {
     };
 
     const result = await sendEmail(emailParams);
-    return { 
+    return {
       success: result.ok,
-      skipped: result.skipped 
+      skipped: result.skipped
     };
   }
 
@@ -210,59 +210,59 @@ export class DatabasePasswordResetService implements PasswordResetService {
 export class InMemoryPasswordResetService implements PasswordResetService {
   private tokens = new Map<string, { email: string; expiresAt: number }>();
   private readonly TOKEN_EXPIRY_HOURS = 2;
-  
+
   constructor(private users: Array<{ email: string; password: string; [key: string]: any }>) {
     this.startCleanupTask();
   }
 
   async requestPasswordReset(email: string): Promise<{ success: boolean; message: string }> {
     const normalizedEmail = email.toLowerCase().trim();
-    const successMessage = "Если аккаунт с этим email существует, на него будет отправлено письмо с инструкциями по восстановлению пароля.";
-    
+    const successMessage = 'Если аккаунт с этим email существует, на него будет отправлено письмо с инструкциями по восстановлению пароля.';
+
     const userExists = this.users.some(u => u.email.toLowerCase() === normalizedEmail);
-    
+
     if (userExists) {
       const resetToken = this.generateSecureToken();
       const expiresAt = Date.now() + this.TOKEN_EXPIRY_HOURS * 60 * 60 * 1000;
-      
+
       this.tokens.set(resetToken, { email: normalizedEmail, expiresAt });
-      
+
       const resetLink = this.generateResetLink(resetToken);
       console.log(`[PASSWORD_RESET] In-memory token generated for ${normalizedEmail}: ${resetToken}`);
       console.log(`[PASSWORD_RESET] Reset link: ${resetLink}`);
     }
-    
+
     return { success: true, message: successMessage };
   }
 
   async validateResetToken(token: string): Promise<{ valid: boolean; email?: string }> {
     const tokenData = this.tokens.get(token);
-    
+
     if (!tokenData || tokenData.expiresAt < Date.now()) {
       return { valid: false };
     }
-    
+
     return { valid: true, email: tokenData.email };
   }
 
   async resetPassword(token: string, newPassword: string): Promise<{ success: boolean; message: string }> {
     const tokenValidation = await this.validateResetToken(token);
-    
+
     if (!tokenValidation.valid || !tokenValidation.email) {
-      return { success: false, message: "Недействительный или истекший токен." };
+      return { success: false, message: 'Недействительный или истекший токен.' };
     }
-    
+
     const user = this.users.find(u => u.email.toLowerCase() === tokenValidation.email);
     if (!user) {
-      return { success: false, message: "Пользователь не найден." };
+      return { success: false, message: 'Пользователь не найден.' };
     }
-    
+
     user.password = newPassword;
     this.tokens.delete(token);
-    
+
     console.log(`[PASSWORD_RESET] In-memory password reset completed for: ${tokenValidation.email}`);
-    
-    return { success: true, message: "Пароль успешно изменен." };
+
+    return { success: true, message: 'Пароль успешно изменен.' };
   }
 
   private generateSecureToken(): string {
@@ -278,14 +278,14 @@ export class InMemoryPasswordResetService implements PasswordResetService {
     setInterval(() => {
       const now = Date.now();
       let cleanedCount = 0;
-      
+
       for (const [token, data] of this.tokens.entries()) {
         if (data.expiresAt < now) {
           this.tokens.delete(token);
           cleanedCount++;
         }
       }
-      
+
       if (cleanedCount > 0) {
         console.log(`[PASSWORD_RESET] Cleaned up ${cleanedCount} expired in-memory tokens`);
       }

@@ -1,31 +1,31 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { 
-  Users, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  UserCheck, 
-  UserX, 
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Users,
+  Plus,
+  Edit,
+  Trash2,
+  UserCheck,
+  UserX,
   Shield,
   BarChart3,
   MousePointer,
   Eye,
   DollarSign
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface TeamMember {
   id: string;
@@ -57,7 +57,7 @@ const ROLE_PERMISSIONS = {
     defaultPermissions: ['view_offers', 'generate_links', 'view_statistics']
   },
   analyst: {
-    name: 'Аналитик', 
+    name: 'Аналитик',
     color: 'bg-green-100 text-green-800',
     icon: <BarChart3 className="h-4 w-4" />,
     permissions: ['view_offers', 'view_statistics', 'view_creatives'],
@@ -65,7 +65,7 @@ const ROLE_PERMISSIONS = {
   },
   manager: {
     name: 'Менеджер',
-    color: 'bg-purple-100 text-purple-800', 
+    color: 'bg-purple-100 text-purple-800',
     icon: <Shield className="h-4 w-4" />,
     permissions: ['view_offers', 'generate_links', 'view_statistics', 'view_creatives', 'manage_team'],
     defaultPermissions: ['view_offers', 'generate_links', 'view_statistics', 'view_creatives', 'manage_team']
@@ -103,7 +103,7 @@ export default function TeamManagement() {
 
   // Create team member mutation
   const createMemberMutation = useMutation({
-    mutationFn: (data: CreateTeamMemberData) => 
+    mutationFn: (data: CreateTeamMemberData) =>
       apiRequest('/api/affiliate/team', 'POST', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/affiliate/team'] });
@@ -117,59 +117,59 @@ export default function TeamManagement() {
         subIdPrefix: ''
       });
       toast({
-        title: "Участник добавлен",
-        description: "Новый участник команды успешно добавлен",
+        title: 'Участник добавлен',
+        description: 'Новый участник команды успешно добавлен',
       });
     },
     onError: (error: any) => {
       console.error('Create member error:', error);
-      const errorMessage = error?.message || error?.error || "Не удалось добавить участника команды";
+      const errorMessage = error?.message || error?.error || 'Не удалось добавить участника команды';
       toast({
-        title: "Ошибка",
+        title: 'Ошибка',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   });
 
   // Update team member mutation
   const updateMemberMutation = useMutation({
-    mutationFn: ({ id, ...data }: Partial<TeamMember> & { id: string }) => 
+    mutationFn: ({ id, ...data }: Partial<TeamMember> & { id: string }) =>
       apiRequest(`/api/affiliate/team/${id}`, 'PATCH', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/affiliate/team'] });
       setEditingMember(null);
       toast({
-        title: "Участник обновлён",
-        description: "Информация об участнике команды обновлена",
+        title: 'Участник обновлён',
+        description: 'Информация об участнике команды обновлена',
       });
     },
     onError: (error: any) => {
       console.error('Update member error:', error);
       toast({
-        title: "Ошибка",
-        description: error?.message || "Не удалось обновить участника команды",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error?.message || 'Не удалось обновить участника команды',
+        variant: 'destructive',
       });
     }
   });
 
   // Delete team member mutation
   const deleteMemberMutation = useMutation({
-    mutationFn: (id: string) => 
+    mutationFn: (id: string) =>
       apiRequest(`/api/affiliate/team/${id}`, 'DELETE'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/affiliate/team'] });
       toast({
-        title: "Участник удалён",
-        description: "Участник команды удалён из системы",
+        title: 'Участник удалён',
+        description: 'Участник команды удалён из системы',
       });
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось удалить участника команды",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Не удалось удалить участника команды',
+        variant: 'destructive',
       });
     }
   });
@@ -191,7 +191,6 @@ export default function TeamManagement() {
         : prev.permissions.filter(p => p !== permissionId)
     }));
   };
-
 
 
   const handleDeleteMember = (member: TeamMember) => {
@@ -221,7 +220,7 @@ export default function TeamManagement() {
             Добавляйте байеров, аналитиков и менеджеров для работы с офферами
           </p>
         </div>
-        
+
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button data-testid="button-add-team-member">
@@ -245,7 +244,7 @@ export default function TeamManagement() {
                   data-testid="input-team-member-email"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="username">Имя пользователя</Label>
                 <Input
@@ -256,7 +255,7 @@ export default function TeamManagement() {
                   data-testid="input-team-member-username"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="password">Пароль</Label>
                 <Input
@@ -310,13 +309,13 @@ export default function TeamManagement() {
                       <Checkbox
                         id={permission.id}
                         checked={createData.permissions.includes(permission.id)}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           handlePermissionChange(permission.id, checked as boolean)
                         }
                         data-testid={`checkbox-permission-${permission.id}`}
                       />
                       <div className="grid gap-1.5 leading-none">
-                        <label 
+                        <label
                           htmlFor={permission.id}
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
@@ -478,7 +477,7 @@ export default function TeamManagement() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={member.isActive ? "default" : "secondary"}>
+                        <Badge variant={member.isActive ? 'default' : 'secondary'}>
                           {member.isActive ? 'Активен' : 'Неактивен'}
                         </Badge>
                       </TableCell>
@@ -496,7 +495,7 @@ export default function TeamManagement() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          
+
                           <Button
                             variant="outline"
                             size="sm"
@@ -528,21 +527,21 @@ export default function TeamManagement() {
             <div className="space-y-4">
               <div>
                 <Label>Email</Label>
-                <Input 
-                  value={editingMember.email} 
-                  disabled 
+                <Input
+                  value={editingMember.email}
+                  disabled
                   className="bg-gray-50"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Email нельзя изменить
                 </p>
               </div>
-              
+
               <div>
                 <Label>Имя пользователя</Label>
-                <Input 
-                  value={editingMember.username} 
-                  disabled 
+                <Input
+                  value={editingMember.username}
+                  disabled
                   className="bg-gray-50"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
@@ -552,8 +551,8 @@ export default function TeamManagement() {
 
               <div>
                 <Label htmlFor="editRole">Роль</Label>
-                <Select 
-                  value={editingMember.role} 
+                <Select
+                  value={editingMember.role}
                   onValueChange={(role: 'buyer' | 'analyst' | 'manager') => {
                     const defaultPermissions = ROLE_PERMISSIONS[role].defaultPermissions;
                     setEditingMember(prev => prev ? {
@@ -595,12 +594,12 @@ export default function TeamManagement() {
 
               <div>
                 <Label htmlFor="editIsActive">Статус</Label>
-                <Select 
-                  value={editingMember.isActive ? "active" : "inactive"} 
+                <Select
+                  value={editingMember.isActive ? 'active' : 'inactive'}
                   onValueChange={(value) => {
                     setEditingMember(prev => prev ? {
                       ...prev,
-                      isActive: value === "active"
+                      isActive: value === 'active'
                     } : null);
                   }}
                 >
@@ -643,7 +642,7 @@ export default function TeamManagement() {
                         data-testid={`checkbox-edit-permission-${permission.id}`}
                       />
                       <div className="grid gap-1.5 leading-none">
-                        <label 
+                        <label
                           htmlFor={`edit-${permission.id}`}
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
@@ -659,14 +658,14 @@ export default function TeamManagement() {
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setEditingMember(null)}
                   data-testid="button-cancel-edit"
                 >
                   Отмена
                 </Button>
-                <Button 
+                <Button
                   onClick={() => {
                     if (editingMember) {
                       updateMemberMutation.mutate({

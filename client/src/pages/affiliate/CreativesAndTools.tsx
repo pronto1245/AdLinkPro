@@ -1,27 +1,27 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { 
-  Download, 
-  Eye, 
-  Copy, 
-  Filter, 
-  Search, 
-  Image as ImageIcon, 
-  FileText, 
-  Video, 
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Download,
+  Eye,
+  Copy,
+  Filter,
+  Search,
+  Image as ImageIcon,
+  FileText,
+  Video,
   Globe,
   ExternalLink
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Creative {
   id: string;
@@ -43,9 +43,9 @@ interface Creative {
 
 export default function CreativesAndTools() {
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [offerFilter, setOfferFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [offerFilter, setOfferFilter] = useState<string>('all');
   const [selectedCreative, setSelectedCreative] = useState<Creative | null>(null);
   const { toast } = useToast();
 
@@ -63,17 +63,17 @@ export default function CreativesAndTools() {
     const matchesSearch = creative.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          creative.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          creative.offerName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter === "all" || creative.type === typeFilter;
-    const matchesOffer = offerFilter === "all" || creative.offerId === offerFilter;
-    
+    const matchesType = typeFilter === 'all' || creative.type === typeFilter;
+    const matchesOffer = offerFilter === 'all' || creative.offerId === offerFilter;
+
     return matchesSearch && matchesType && matchesOffer && creative.isActive;
   });
 
   const handleCopyLink = (url: string) => {
     navigator.clipboard.writeText(url);
     toast({
-      title: "Ссылка скопирована",
-      description: "Ссылка на креатив скопирована в буфер обмена",
+      title: 'Ссылка скопирована',
+      description: 'Ссылка на креатив скопирована в буфер обмена',
     });
   };
 
@@ -85,20 +85,20 @@ export default function CreativesAndTools() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      
+
       if (response.ok) {
         // Track download
         window.open(creative.url, '_blank');
         toast({
-          title: "Скачивание началось",
+          title: 'Скачивание началось',
           description: `Креатив "${creative.name}" загружается`,
         });
       }
     } catch (_error) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось скачать креатив",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: 'Не удалось скачать креатив',
+        variant: 'destructive',
       });
     }
   };
@@ -167,7 +167,7 @@ export default function CreativesAndTools() {
                 />
               </div>
             </div>
-            
+
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-[180px]" data-testid="select-type-filter">
                 <SelectValue placeholder="Тип креатива" />
@@ -337,8 +337,8 @@ export default function CreativesAndTools() {
                                 </DialogHeader>
                                 <div className="mt-4">
                                   {(creative.type === 'banner' || creative.format?.includes('image')) && (
-                                    <img 
-                                      src={creative.previewUrl} 
+                                    <img
+                                      src={creative.previewUrl}
                                       alt={creative.name}
                                       className="max-w-full h-auto"
                                     />
@@ -361,7 +361,7 @@ export default function CreativesAndTools() {
                               </DialogContent>
                             </Dialog>
                           )}
-                          
+
                           <Button
                             variant="outline"
                             size="sm"
@@ -371,7 +371,7 @@ export default function CreativesAndTools() {
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
-                          
+
                           <Button
                             variant="outline"
                             size="sm"
@@ -381,7 +381,7 @@ export default function CreativesAndTools() {
                           >
                             <Download className="h-4 w-4" />
                           </Button>
-                          
+
                           {(creative.type === 'landing' || creative.type === 'prelanding') && (
                             <Button
                               variant="outline"

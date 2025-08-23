@@ -12,7 +12,7 @@ interface LanguageContextType {
 
 export function useLanguage(): LanguageContextType {
   const { i18n, t } = useTranslation();
-  
+
   return {
     language: (i18n.language as Language) || 'ru',
     setLanguage: (lang: Language) => i18n.changeLanguage(lang),

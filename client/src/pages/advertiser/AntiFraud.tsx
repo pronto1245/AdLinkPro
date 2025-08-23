@@ -205,16 +205,16 @@ export default function AntiFraud() {
     },
     onSuccess: () => {
       toast({
-        title: "Настройки сохранены",
-        description: "Настройки антифрод системы успешно обновлены"
+        title: 'Настройки сохранены',
+        description: 'Настройки антифрод системы успешно обновлены'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/antifraud/settings'] });
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось сохранить настройки",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось сохранить настройки',
+        variant: 'destructive'
       });
     }
   });
@@ -225,17 +225,17 @@ export default function AntiFraud() {
     },
     onSuccess: () => {
       toast({
-        title: "Событие обновлено",
-        description: "Статус события успешно изменен"
+        title: 'Событие обновлено',
+        description: 'Статус события успешно изменен'
       });
       refetchEvents();
       refetchDashboard();
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось обновить событие",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось обновить событие',
+        variant: 'destructive'
       });
     }
   });
@@ -246,16 +246,16 @@ export default function AntiFraud() {
     },
     onSuccess: () => {
       toast({
-        title: "Партнер заблокирован",
-        description: "Партнер успешно заблокирован из-за фродовой активности"
+        title: 'Партнер заблокирован',
+        description: 'Партнер успешно заблокирован из-за фродовой активности'
       });
       refetchEvents();
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось заблокировать партнера",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Не удалось заблокировать партнера',
+        variant: 'destructive'
       });
     }
   });
@@ -263,16 +263,16 @@ export default function AntiFraud() {
   // Обработчики событий
   const handleSettingsUpdate = (field: string, value: any) => {
     if (!settings) {return;}
-    
+
     const newSettings = { ...settings };
     const fields = field.split('.');
     let current = newSettings;
-    
+
     for (let i = 0; i < fields.length - 1; i++) {
       current = (current as any)[fields[i]];
     }
     (current as any)[fields[fields.length - 1]] = value;
-    
+
     updateSettingsMutation.mutate(newSettings);
   };
 
@@ -313,24 +313,24 @@ export default function AntiFraud() {
     }
 
     toast({
-      title: "Экспорт завершен",
+      title: 'Экспорт завершен',
       description: `Данные антифрод системы экспортированы в формате ${format.toUpperCase()}`
     });
   };
 
   // Фильтрация событий
   const filteredEvents = Array.isArray(events) ? events.filter(event => {
-    const matchesSearch = 
+    const matchesSearch =
       event.partnerName.toLowerCase().includes(filters.search.toLowerCase()) ||
       event.offerName.toLowerCase().includes(filters.search.toLowerCase()) ||
       event.subId.toLowerCase().includes(filters.search.toLowerCase()) ||
       event.ip.includes(filters.search);
-    
+
     const matchesFraudType = filters.fraudType === 'all' || event.fraudType === filters.fraudType;
     const matchesAction = filters.action === 'all' || event.action === filters.action;
     const matchesStatus = filters.status === 'all' || event.status === filters.status;
     const matchesCountry = filters.country === 'all' || event.country === filters.country;
-    
+
     return matchesSearch && matchesFraudType && matchesAction && matchesStatus && matchesCountry;
   }) : [];
 
@@ -361,7 +361,7 @@ export default function AntiFraud() {
               <SelectItem value="30d">30 дней</SelectItem>
             </SelectContent>
           </Select>
-          <Button 
+          <Button
             variant="outline"
             onClick={() => {
               refetchDashboard();
@@ -378,26 +378,26 @@ export default function AntiFraud() {
       {/* Основной контент */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 p-1">
-          <TabsTrigger 
-            value="dashboard" 
+          <TabsTrigger
+            value="dashboard"
             className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-cyan-100 dark:hover:bg-cyan-900"
           >
             🎯 Дашборд
           </TabsTrigger>
-          <TabsTrigger 
-            value="events" 
+          <TabsTrigger
+            value="events"
             className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-orange-100 dark:hover:bg-orange-900"
           >
             ⚡ События
           </TabsTrigger>
-          <TabsTrigger 
-            value="settings" 
+          <TabsTrigger
+            value="settings"
             className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-purple-100 dark:hover:bg-purple-900"
           >
             ⚙️ Настройки
           </TabsTrigger>
-          <TabsTrigger 
-            value="reports" 
+          <TabsTrigger
+            value="reports"
             className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-emerald-100 dark:hover:bg-emerald-900"
           >
             📊 Отчеты
@@ -468,7 +468,7 @@ export default function AntiFraud() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
-                  {dashboardLoading ? '...' : 
+                  {dashboardLoading ? '...' :
                     `${(100 - (dashboard?.fraudRate || 0)).toFixed(2)}%`}
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -680,7 +680,7 @@ export default function AntiFraud() {
                 </div>
 
                 <div className="flex items-end">
-                  <Button 
+                  <Button
                     onClick={() => exportData('csv')}
                     variant="outline"
                     data-testid="button-export-events"

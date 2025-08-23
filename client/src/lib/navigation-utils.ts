@@ -14,7 +14,7 @@ export interface User {
  */
 export function getDashboardHref(user?: User | null): string {
   if (!user?.role) {return '/dashboard';}
-  
+
   const roleMap: Record<string, string> = {
     'partner': '/dashboard/partner',
     'affiliate': '/dashboard/affiliate',
@@ -23,7 +23,7 @@ export function getDashboardHref(user?: User | null): string {
     'super_admin': '/dashboard/super-admin',
     'staff': '/dashboard/staff',
   };
-  
+
   return roleMap[user.role] || '/dashboard';
 }
 
@@ -42,11 +42,11 @@ export function createLogoutHandler(logout: () => void, onComplete?: () => void)
  */
 export function getUserDisplayName(user?: User | null): string {
   if (!user) {return 'Пользователь';}
-  
+
   if (user.name) {return user.name;}
   if (user.username) {return user.username;}
   if (user.email) {return user.email.split('@')[0];}
-  
+
   return 'Пользователь';
 }
 
@@ -55,7 +55,7 @@ export function getUserDisplayName(user?: User | null): string {
  */
 export function getUserInitials(user?: User | null): string {
   if (!user) {return 'U';}
-  
+
   if (user.name) {
     const parts = user.name.split(' ');
     if (parts.length >= 2) {
@@ -63,15 +63,15 @@ export function getUserInitials(user?: User | null): string {
     }
     return parts[0][0].toUpperCase();
   }
-  
+
   if (user.username) {
     return user.username.substring(0, 2).toUpperCase();
   }
-  
+
   if (user.email) {
     return user.email[0].toUpperCase();
   }
-  
+
   return 'U';
 }
 
@@ -80,7 +80,7 @@ export function getUserInitials(user?: User | null): string {
  */
 export function getRoleDisplayName(role?: string): string {
   if (!role) {return 'Пользователь';}
-  
+
   const roleMap: Record<string, string> = {
     'super_admin': 'Супер админ',
     'owner': 'Владелец',
@@ -89,6 +89,6 @@ export function getRoleDisplayName(role?: string): string {
     'partner': 'Партнёр',
     'staff': 'Персонал',
   };
-  
+
   return roleMap[role] || role;
 }

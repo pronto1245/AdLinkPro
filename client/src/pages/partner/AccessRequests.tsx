@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -11,12 +11,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Clock,
+  CheckCircle,
+  XCircle,
   User,
   Calendar,
   MessageSquare,
@@ -24,7 +24,7 @@ import {
   Send,
   Building2,
   AlertCircle
-} from "lucide-react";
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
@@ -70,7 +70,7 @@ export default function AccessRequests() {
   const [selectedRequest, setSelectedRequest] = useState<AccessRequest | null>(null);
   const [detailsModal, setDetailsModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -84,8 +84,8 @@ export default function AccessRequests() {
     },
     onSuccess: () => {
       toast({
-        title: "Запрос отменён",
-        description: "Ваш запрос на доступ успешно отменён",
+        title: 'Запрос отменён',
+        description: 'Ваш запрос на доступ успешно отменён',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/partner/access-requests'] });
       setCancelModal(false);
@@ -93,9 +93,9 @@ export default function AccessRequests() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось отменить запрос",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Не удалось отменить запрос',
+        variant: 'destructive',
       });
     }
   });
@@ -164,7 +164,7 @@ export default function AccessRequests() {
             <div className="space-y-4">
               {requests.map((request) => {
                 const expired = isExpired(request.expires_at);
-                
+
                 return (
                   <Card key={request.id} className="hover:shadow-lg transition-shadow">
                     <CardContent className="p-6">
@@ -180,7 +180,7 @@ export default function AccessRequests() {
                               </Badge>
                             )}
                           </div>
-                          
+
                           <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                             <div className="flex items-center gap-1">
                               <Building2 className="w-3 h-3" />
@@ -189,15 +189,15 @@ export default function AccessRequests() {
                             <div className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
                               <span>
-                                Отправлено {formatDistanceToNow(new Date(request.requested_at), { 
-                                  addSuffix: true, 
-                                  locale: ru 
+                                Отправлено {formatDistanceToNow(new Date(request.requested_at), {
+                                  addSuffix: true,
+                                  locale: ru
                                 })}
                               </span>
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="flex gap-2">
                           <Button
                             variant="outline"
@@ -207,7 +207,7 @@ export default function AccessRequests() {
                           >
                             Подробнее
                           </Button>
-                          
+
                           {request.status === 'pending' && !expired && (
                             <Button
                               variant="outline"
@@ -241,9 +241,9 @@ export default function AccessRequests() {
 
                       {request.reviewed_at && (
                         <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                          Обработано {formatDistanceToNow(new Date(request.reviewed_at), { 
-                            addSuffix: true, 
-                            locale: ru 
+                          Обработано {formatDistanceToNow(new Date(request.reviewed_at), {
+                            addSuffix: true,
+                            locale: ru
                           })}
                         </div>
                       )}

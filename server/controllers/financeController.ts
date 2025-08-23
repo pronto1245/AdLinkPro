@@ -51,19 +51,19 @@ export class FinanceController {
 
       // Apply filters
       const conditions = [];
-      
+
       if (status) {
         conditions.push(eq(deposits.status, status as string));
       }
-      
+
       if (userId) {
         conditions.push(eq(deposits.userId, userId as string));
       }
-      
+
       if (fromDate) {
         conditions.push(gte(deposits.createdAt, new Date(fromDate as string)));
       }
-      
+
       if (toDate) {
         conditions.push(lte(deposits.createdAt, new Date(toDate as string)));
       }
@@ -157,19 +157,19 @@ export class FinanceController {
 
       // Apply filters
       const conditions = [];
-      
+
       if (status) {
         conditions.push(eq(payouts.status, status as string));
       }
-      
+
       if (userId) {
         conditions.push(eq(payouts.userId, userId as string));
       }
-      
+
       if (fromDate) {
         conditions.push(gte(payouts.createdAt, new Date(fromDate as string)));
       }
-      
+
       if (toDate) {
         conditions.push(lte(payouts.createdAt, new Date(toDate as string)));
       }
@@ -237,7 +237,7 @@ export class FinanceController {
       // Determine table and get current transaction
       const isDeposit = transactionType === 'deposit';
       const table = isDeposit ? deposits : payouts;
-      
+
       const [currentTransaction] = await db
         .select()
         .from(table)
@@ -251,7 +251,7 @@ export class FinanceController {
       // Check if status transition is valid
       const allowedStatuses = validStatusTransitions[currentTransaction.status] || [];
       if (!allowedStatuses.includes(status)) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: `Invalid status transition from ${currentTransaction.status} to ${status}`,
           allowedStatuses
         });
@@ -349,13 +349,13 @@ export class FinanceController {
       }
 
       if (payout.status !== 'pending') {
-        return res.status(400).json({ 
-          error: `Cannot ${action} payout with status ${payout.status}` 
+        return res.status(400).json({
+          error: `Cannot ${action} payout with status ${payout.status}`
         });
       }
 
       const newStatus = action === 'approve' ? 'approved' : 'rejected';
-      
+
       const updateData: any = {
         status: newStatus,
         processedAt: new Date(),
@@ -482,8 +482,8 @@ export class FinanceController {
       }
 
       if (invoice.status !== 'pending') {
-        return res.status(400).json({ 
-          error: `Cannot mark invoice with status ${invoice.status} as paid` 
+        return res.status(400).json({
+          error: `Cannot mark invoice with status ${invoice.status} as paid`
         });
       }
 

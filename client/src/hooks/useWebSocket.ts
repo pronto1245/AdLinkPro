@@ -93,7 +93,7 @@ export function useWebSocket(
     if (reconnect && event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
       reconnectAttemptsRef.current++;
       console.debug(`Attempting WebSocket reconnection... (${reconnectAttemptsRef.current}/${maxReconnectAttempts})`);
-      
+
       reconnectTimeoutRef.current = setTimeout(() => {
         connect();
       }, reconnectDelay * reconnectAttemptsRef.current);
@@ -121,10 +121,10 @@ export function useWebSocket(
       const wsUrl = new URL(WS_URL);
       if (token) {wsUrl.searchParams.set('token', token);}
       if (userId) {wsUrl.searchParams.set('userId', userId);}
-      
+
       const ws = new WebSocket(wsUrl.toString());
       wsRef.current = ws;
-      
+
       setConnectionState(WebSocket.CONNECTING);
 
       ws.onopen = handleOpen;

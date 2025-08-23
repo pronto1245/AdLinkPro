@@ -9,15 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { 
-  Globe, 
-  Plus, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle, 
-  RefreshCw, 
-  Trash2, 
-  Copy, 
+import {
+  Globe,
+  Plus,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  RefreshCw,
+  Trash2,
+  Copy,
   Info,
   Shield,
   Zap
@@ -55,7 +55,7 @@ export function CustomDomainManager() {
   const [newDomain, setNewDomain] = useState('');
   const [domainType, setDomainType] = useState<'cname' | 'a_record' | 'txt_record'>('cname');
   const [, setSelectedDomain] = useState<CustomDomain | null>(null);
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -72,7 +72,7 @@ export function CustomDomainManager() {
     },
     onSuccess: (data) => {
       toast({
-        title: "✅ Домен успешно добавлен",
+        title: '✅ Домен успешно добавлен',
         description: `Домен ${data.domain} добавлен и ожидает верификации. Перейдите к инструкциям DNS для настройки.`
       });
       setNewDomain('');
@@ -81,9 +81,9 @@ export function CustomDomainManager() {
     onError: (error: Error) => {
       console.error('Domain add error:', error);
       toast({
-        title: "❌ Ошибка добавления домена",
-        description: error?.message || "Не удалось добавить домен. Проверьте правильность ввода и попробуйте снова.",
-        variant: "destructive"
+        title: '❌ Ошибка добавления домена',
+        description: error?.message || 'Не удалось добавить домен. Проверьте правильность ввода и попробуйте снова.',
+        variant: 'destructive'
       });
     }
   });
@@ -97,23 +97,23 @@ export function CustomDomainManager() {
       const result = data as { success: boolean; error?: string };
       if (result.success) {
         toast({
-          title: "Домен верифицирован",
-          description: "Ваш кастомный домен успешно верифицирован и активирован!"
+          title: 'Домен верифицирован',
+          description: 'Ваш кастомный домен успешно верифицирован и активирован!'
         });
       } else {
         toast({
-          title: "Верификация не пройдена",
-          description: result.error || "Проверьте DNS настройки и повторите попытку",
-          variant: "destructive"
+          title: 'Верификация не пройдена',
+          description: result.error || 'Проверьте DNS настройки и повторите попытку',
+          variant: 'destructive'
         });
       }
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     },
     onError: () => {
       toast({
-        title: "Ошибка верификации",
-        description: "Произошла ошибка при проверке домена",
-        variant: "destructive"
+        title: 'Ошибка верификации',
+        description: 'Произошла ошибка при проверке домена',
+        variant: 'destructive'
       });
     }
   });
@@ -125,16 +125,16 @@ export function CustomDomainManager() {
     },
     onSuccess: (data: { message?: string }) => {
       toast({
-        title: "SSL сертификат выдается",
-        description: data.message || "SSL сертификат выдается. Проверьте статус через несколько минут."
+        title: 'SSL сертификат выдается',
+        description: data.message || 'SSL сертификат выдается. Проверьте статус через несколько минут.'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     },
     onError: (error: Error) => {
       toast({
-        title: "Ошибка выдачи SSL",
-        description: error.message || "Не удалось запустить выдачу SSL сертификата",
-        variant: "destructive"
+        title: 'Ошибка выдачи SSL',
+        description: error.message || 'Не удалось запустить выдачу SSL сертификата',
+        variant: 'destructive'
       });
     }
   });
@@ -146,8 +146,8 @@ export function CustomDomainManager() {
     },
     onSuccess: () => {
       toast({
-        title: "Домен удален",
-        description: "Кастомный домен успешно удален"
+        title: 'Домен удален',
+        description: 'Кастомный домен успешно удален'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     }
@@ -157,16 +157,16 @@ export function CustomDomainManager() {
   // const { data: instructions } = useQuery({
   //   queryKey: ['/api/advertiser/domains', selectedDomain?.id, 'instructions'],
   //   enabled: !!selectedDomain,
-  //   queryFn: () => 
+  //   queryFn: () =>
   //     apiRequest(`/api/advertiser/domains/${selectedDomain?.id}/instructions`)
   // });
 
   const handleAddDomain = () => {
     if (!newDomain.trim()) {
       toast({
-        title: "Ошибка",
-        description: "Введите доменное имя",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Введите доменное имя',
+        variant: 'destructive'
       });
       return;
     }
@@ -175,9 +175,9 @@ export function CustomDomainManager() {
     const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/;
     if (!domainRegex.test(newDomain.trim())) {
       toast({
-        title: "Ошибка",
-        description: "Введите корректное доменное имя",
-        variant: "destructive"
+        title: 'Ошибка',
+        description: 'Введите корректное доменное имя',
+        variant: 'destructive'
       });
       return;
     }
@@ -191,8 +191,8 @@ export function CustomDomainManager() {
   const handleCopyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Скопировано",
-      description: "Значение скопировано в буфер обмена"
+      title: 'Скопировано',
+      description: 'Значение скопировано в буфер обмена'
     });
   };
 
@@ -286,7 +286,7 @@ export function CustomDomainManager() {
               </Select>
             </div>
             <div className="flex items-end">
-              <Button 
+              <Button
                 onClick={handleAddDomain}
                 disabled={addDomainMutation.isPending}
                 data-testid="button-add-domain"
@@ -404,7 +404,7 @@ export function CustomDomainManager() {
                           )}
                         </Button>
                       )}
-                      
+
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline" onClick={() => setSelectedDomain(domain)}>
@@ -434,10 +434,10 @@ export function CustomDomainManager() {
                                   <Label className="text-sm font-semibold">Имя/Host</Label>
                                   <div className="flex items-center gap-2 mt-1">
                                     <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm break-all">
-                                      {domain.type === 'cname' 
-                                        ? domain.domain.split('.')[0] 
-                                        : domain.domain.includes('.') 
-                                          ? domain.domain 
+                                      {domain.type === 'cname'
+                                        ? domain.domain.split('.')[0]
+                                        : domain.domain.includes('.')
+                                          ? domain.domain
                                           : '@'
                                       }
                                     </code>
@@ -445,10 +445,10 @@ export function CustomDomainManager() {
                                       size="sm"
                                       variant="ghost"
                                       onClick={() => handleCopyToClipboard(
-                                        domain.type === 'cname' 
-                                          ? domain.domain.split('.')[0] 
-                                          : domain.domain.includes('.') 
-                                            ? domain.domain 
+                                        domain.type === 'cname'
+                                          ? domain.domain.split('.')[0]
+                                          : domain.domain.includes('.')
+                                            ? domain.domain
                                             : '@'
                                       )}
                                       title="Скопировать хост"
@@ -461,7 +461,7 @@ export function CustomDomainManager() {
                                   <Label className="text-sm font-semibold">Значение</Label>
                                   <div className="flex items-center gap-2 mt-1">
                                     <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm break-all">
-                                      {domain.type === 'cname' 
+                                      {domain.type === 'cname'
                                         ? (domain.targetValue || 'affiliate-tracker.replit.app')
                                         : domain.verificationValue
                                       }
@@ -470,7 +470,7 @@ export function CustomDomainManager() {
                                       size="sm"
                                       variant="ghost"
                                       onClick={() => handleCopyToClipboard(
-                                        domain.type === 'cname' 
+                                        domain.type === 'cname'
                                           ? (domain.targetValue || 'affiliate-tracker.replit.app')
                                           : domain.verificationValue
                                       )}
@@ -481,12 +481,12 @@ export function CustomDomainManager() {
                                   </div>
                                 </div>
                               </div>
-                              
+
                               <div className="space-y-3">
                                 <Alert>
                                   <Info className="h-4 w-4" />
                                   <AlertDescription>
-                                    {domain.type === 'cname' 
+                                    {domain.type === 'cname'
                                       ? `Добавьте CNAME запись в DNS настройках вашего домена. Это позволит использовать ваш собственный домен для трекинговых ссылок с белым лейблом.`
                                       : `Добавьте TXT запись в DNS настройках вашего домена для верификации. После добавления записи нажмите "Проверить домен".`
                                     }
@@ -514,13 +514,13 @@ export function CustomDomainManager() {
                                     <li>Добавьте новую {domain.type === 'cname' ? 'CNAME' : 'TXT'} запись:</li>
                                     <li className="ml-4">
                                       • Тип: <strong>{domain.type === 'cname' ? 'CNAME' : 'TXT'}</strong><br/>
-                                      • Имя/Host: <strong>{domain.type === 'cname' 
-                                        ? domain.domain.split('.')[0] 
-                                        : domain.domain.includes('.') 
-                                          ? domain.domain 
+                                      • Имя/Host: <strong>{domain.type === 'cname'
+                                        ? domain.domain.split('.')[0]
+                                        : domain.domain.includes('.')
+                                          ? domain.domain
                                           : '@'
                                       }</strong><br/>
-                                      • Значение: <strong>{domain.type === 'cname' 
+                                      • Значение: <strong>{domain.type === 'cname'
                                         ? (domain.targetValue || 'affiliate-tracker.replit.app')
                                         : domain.verificationValue
                                       }</strong>
@@ -529,21 +529,21 @@ export function CustomDomainManager() {
                                     <li>Вернитесь сюда и нажмите "Проверить домен" для верификации</li>
                                   </ol>
                                 </div>
-                                
+
                                 {domain.type === 'cname' && (
                                   <div className="p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
                                     <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                                      <strong>Важно:</strong> CNAME запись должна указывать на {domain.targetValue || 'affiliate-tracker.replit.app'}, 
+                                      <strong>Важно:</strong> CNAME запись должна указывать на {domain.targetValue || 'affiliate-tracker.replit.app'},
                                       а имя записи должно быть {domain.domain.split('.')[0]} (первая часть вашего домена)
                                     </p>
                                   </div>
                                 )}
-                                
+
                                 {domain.type === 'a_record' && (
                                   <div className="p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
                                     <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                                      <strong>Важно для корневого домена:</strong> Добавьте TXT запись для верификации. 
-                                      Имя записи должно быть точно {domain.domain} (или @ для корневого домена), 
+                                      <strong>Важно для корневого домена:</strong> Добавьте TXT запись для верификации.
+                                      Имя записи должно быть точно {domain.domain} (или @ для корневого домена),
                                       значение: {domain.verificationValue}
                                     </p>
                                   </div>

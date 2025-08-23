@@ -73,9 +73,9 @@ export default function UsersManagement() {
     },
   });
 
-  const createUserSchema = insertUserSchema.omit({ 
-    id: true, 
-    createdAt: true, 
+  const createUserSchema = insertUserSchema.omit({
+    id: true,
+    createdAt: true,
     updatedAt: true,
     lastLoginAt: true,
     registrationIp: true,
@@ -397,7 +397,7 @@ export default function UsersManagement() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Badge 
+                            <Badge
                               variant={user.kycStatus === 'approved' ? 'default' : user.kycStatus === 'rejected' ? 'destructive' : 'secondary'}
                               data-testid={`kyc-status-${user.id}`}
                             >
@@ -429,9 +429,9 @@ export default function UsersManagement() {
                               <Button size="sm" variant="ghost" data-testid={`button-edit-${user.id}`} title="Редактировать пользователя">
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
+                              <Button
+                                size="sm"
+                                variant="ghost"
                                 onClick={() => deleteUserMutation.mutate(user.id)}
                                 disabled={deleteUserMutation.isPending}
                                 data-testid={`button-delete-${user.id}`}

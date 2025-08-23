@@ -38,7 +38,6 @@ export function PartnerTopNavigation() {
   };
 
 
-
   const handleSettings = () => {
     // Navigate to settings page
     window.location.href = '/affiliate/settings';
@@ -51,8 +50,8 @@ export function PartnerTopNavigation() {
 
   if (!user) {return null;}
 
-  const userInitials = user.firstName && user.lastName 
-    ? `${user.firstName[0]}${user.lastName[0]}` 
+  const userInitials = user.firstName && user.lastName
+    ? `${user.firstName[0]}${user.lastName[0]}`
     : user.username?.[0]?.toUpperCase() ?? '?';
 
   return (
@@ -116,9 +115,9 @@ export function PartnerTopNavigation() {
           {/* User Profile Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className="relative h-8 w-8 rounded-full" 
+              <Button
+                variant="ghost"
+                className="relative h-8 w-8 rounded-full"
                 data-testid="button-user-menu"
                 title={t('common.profile')}
               >
@@ -134,8 +133,8 @@ export function PartnerTopNavigation() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {user.firstName && user.lastName 
-                      ? `${user.firstName} ${user.lastName}` 
+                    {user.firstName && user.lastName
+                      ? `${user.firstName} ${user.lastName}`
                       : user.username}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
@@ -144,7 +143,7 @@ export function PartnerTopNavigation() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              
+
               <DropdownMenuItem onClick={handleProfile} data-testid="menu-profile">
                 <User className="mr-2 h-4 w-4" />
                 <span>{t('common.profile', 'Профиль')}</span>
@@ -156,9 +155,9 @@ export function PartnerTopNavigation() {
               </DropdownMenuItem>
 
               <DropdownMenuSeparator />
-              
-              <DropdownMenuItem 
-                onClick={handleLogout} 
+
+              <DropdownMenuItem
+                onClick={handleLogout}
                 className="text-destructive focus:text-destructive"
                 data-testid="menu-logout"
               >

@@ -1,5 +1,5 @@
 /**
- * Registration Form Hook  
+ * Registration Form Hook
  * Reusable logic for registration forms
  */
 
@@ -10,17 +10,17 @@ import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthError } from '@/hooks/useAuthError';
 import { secureAuth } from '@/lib/secure-api';
-import { 
-  partnerRegistrationSchema, 
+import {
+  partnerRegistrationSchema,
   advertiserRegistrationSchema,
   PartnerRegistrationFormData,
-  AdvertiserRegistrationFormData 
+  AdvertiserRegistrationFormData
 } from '@/lib/validation';
-import { 
-  passwordStrength, 
-  RateLimitTracker, 
+import {
+  passwordStrength,
+  RateLimitTracker,
   CSRFManager,
-  sanitizeInput 
+  sanitizeInput
 } from '@/lib/security';
 
 const rateLimitTracker = new RateLimitTracker();
@@ -39,20 +39,20 @@ export function useRegistrationForm(options: UseRegistrationFormOptions) {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { handleError, error, clearError, isRateLimited, retryAfter } = useAuthError();
-  
+
   // Form and UI state
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordStrengthInfo, setPasswordStrengthInfo] = useState<{ 
-    score: number; 
-    feedback: string[] 
+  const [passwordStrengthInfo, setPasswordStrengthInfo] = useState<{
+    score: number;
+    feedback: string[]
   }>({ score: 0, feedback: [] });
 
   // Use appropriate schema based on role
   const schema = options.role === 'ADVERTISER' ? advertiserRegistrationSchema : partnerRegistrationSchema;
   const requiresCompany = options.role === 'ADVERTISER';
-  
+
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -96,7 +96,7 @@ export function useRegistrationForm(options: UseRegistrationFormOptions) {
     if (rateLimitTracker.isRateLimited(userIdentifier)) {
       const remaining = rateLimitTracker.getRemainingTime(userIdentifier);
       const minutes = Math.ceil(remaining / 60);
-      
+
       const errorMessage = `Превышен лимит попыток регистрации. Попробуйте через ${minutes} ${minutes === 1 ? 'минуту' : minutes < 5 ? 'минуты' : 'минут'}.`;
       handleError(errorMessage, 'Registration rate limit');
       return;
@@ -116,7 +116,7 @@ export function useRegistrationForm(options: UseRegistrationFormOptions) {
         telegram: sanitizeInput.cleanTelegram(data.telegram),
         password: data.password, // Don't sanitize password
         phone: data.phone ? sanitizeInput.cleanPhone(data.phone) : undefined,
-        company: requiresCompany && 'company' in data && data.company ? 
+        company: requiresCompany && 'company' in data && data.company ?
           sanitizeInput.cleanString(String(data.company)) : undefined,
         contactType: data.contactType,
         contact: data.contact ? sanitizeInput.cleanString(data.contact) : undefined,
@@ -149,12 +149,12 @@ export function useRegistrationForm(options: UseRegistrationFormOptions) {
         navigate(options.redirectTo);
       } else {
         // Determine redirect path based on role and result
-        const redirectPath = result.user?.role === 'affiliate' || options.role === 'PARTNER' 
-          ? '/dashboard/partner' 
+        const redirectPath = result.user?.role === 'affiliate' || options.role === 'PARTNER'
+          ? '/dashboard/partner'
           : '/dashboard/advertiser';
-        
+
         console.log('[REGISTRATION_FORM] Redirecting to:', redirectPath);
-        
+
         setTimeout(() => {
           navigate(redirectPath);
         }, 2000);
@@ -163,7 +163,7 @@ export function useRegistrationForm(options: UseRegistrationFormOptions) {
     } catch (err) {
       console.error('[REGISTRATION_FORM] Registration error:', err);
       handleError(err, 'Registration');
-      
+
       if (options.onError) {
         options.onError(err);
       }

@@ -111,10 +111,10 @@ export default function AdvertiserDashboard() {
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
-      
+
       <main className="flex-1 lg:ml-64 overflow-y-auto">
-        <Header 
-          title="dashboard" 
+        <Header
+          title="dashboard"
           subtitle="welcome"
         />
 
@@ -129,7 +129,7 @@ export default function AdvertiserDashboard() {
           {/* Charts and Quick Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <RevenueChart />
-            
+
             {/* Quick Actions */}
             <Card>
               <CardHeader>
@@ -248,7 +248,7 @@ export default function AdvertiserDashboard() {
                       >
                         <div className="flex items-center space-x-3">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            transaction.type === 'deposit' ? 'bg-green-100' : 
+                            transaction.type === 'deposit' ? 'bg-green-100' :
                             transaction.type === 'withdrawal' ? 'bg-red-100' : 'bg-blue-100'
                           }`}>
                             <i className={`fas ${

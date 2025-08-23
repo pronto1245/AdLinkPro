@@ -14,15 +14,15 @@ function loadTranslations() {
   try {
     const enPath = path.join(localesDir, 'en.json');
     const ruPath = path.join(localesDir, 'ru.json');
-    
+
     if (fs.existsSync(enPath)) {
       translations.set('en', JSON.parse(fs.readFileSync(enPath, 'utf8')));
     }
-    
+
     if (fs.existsSync(ruPath)) {
       translations.set('ru', JSON.parse(fs.readFileSync(ruPath, 'utf8')));
     }
-    
+
     console.log('Server-side translations loaded:', Array.from(translations.keys()));
   } catch (_) {
     console.error('Failed to load server translations:', error instanceof Error ? error.message : String(error));
@@ -37,17 +37,17 @@ function getNestedValue(obj: any, path: string): string | undefined {
 }
 
 // Translate function
-export function translate(key: string, language: string = 'ru', defaultValue?: string): string {
+export function translate(key: string, language = 'ru', defaultValue?: string): string {
   const translation = translations.get(language);
   if (!translation) {
     return defaultValue || key;
   }
-  
+
   const value = getNestedValue(translation, key);
   if (value !== undefined) {
     return value;
   }
-  
+
   // Fallback to default language (Russian)
   if (language !== 'ru') {
     const fallbackTranslation = translations.get('ru');
@@ -58,7 +58,7 @@ export function translate(key: string, language: string = 'ru', defaultValue?: s
       }
     }
   }
-  
+
   return defaultValue || key;
 }
 
@@ -67,23 +67,23 @@ export function i18nMiddleware(req: any, res: any, next: any) {
   // Detect language from Accept-Language header, query param, or default to Russian
   const acceptLanguage = req.headers['accept-language'] || '';
   const queryLang = req.query.lang;
-  
+
   let language = 'ru'; // Default to Russian
-  
+
   if (queryLang && ['en', 'ru'].includes(queryLang)) {
     language = queryLang;
   } else if (acceptLanguage.includes('en')) {
     language = 'en';
   }
-  
+
   // Add translation function to request object
   req.t = (key: string, defaultValue?: string) => translate(key, language, defaultValue);
   req.language = language;
-  
+
   // Add to response locals for template engines
   res.locals.t = req.t;
   res.locals.language = language;
-  
+
   next();
 }
 

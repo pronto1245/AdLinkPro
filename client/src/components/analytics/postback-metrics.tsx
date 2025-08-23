@@ -43,7 +43,7 @@ export default function PostbackMetrics({ dateFrom, dateTo, className = '' }: Po
       const params = new URLSearchParams();
       if (dateFrom) {params.append('dateFrom', dateFrom);}
       if (dateTo) {params.append('dateTo', dateTo);}
-      
+
       const response = await fetch(`/api/analytics/postback-analytics?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch postback analytics');
@@ -114,9 +114,9 @@ export default function PostbackMetrics({ dateFrom, dateTo, className = '' }: Po
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">Postback Analytics</CardTitle>
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleRefresh}
           disabled={isRefreshing}
         >

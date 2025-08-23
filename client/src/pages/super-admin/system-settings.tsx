@@ -36,7 +36,7 @@ export default function SystemSettings() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -71,7 +71,7 @@ export default function SystemSettings() {
       toast({
         title: t('error'),
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   });
@@ -92,7 +92,7 @@ export default function SystemSettings() {
       toast({
         title: t('error'),
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   });
@@ -133,7 +133,7 @@ export default function SystemSettings() {
 
   const filteredSettings = settings.filter((setting: any) => {
     const matchesCategory = selectedCategory === 'all' || setting.category === selectedCategory;
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       setting.key.toLowerCase().includes(searchTerm.toLowerCase()) ||
       setting.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       setting.value?.toString().toLowerCase().includes(searchTerm.toLowerCase());
@@ -189,7 +189,7 @@ export default function SystemSettings() {
                   </TabsTrigger>
                 ))}
               </TabsList>
-              
+
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="flex items-center gap-2" data-testid="button-create-setting" title="Создать новую настройку">
@@ -216,7 +216,7 @@ export default function SystemSettings() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="category"
@@ -382,7 +382,7 @@ export default function SystemSettings() {
                       No settings found
                     </h3>
                     <p className="text-gray-500">
-                      {selectedCategory === 'all' 
+                      {selectedCategory === 'all'
                         ? 'No system settings have been configured yet.'
                         : `No settings found in the ${selectedCategory} category.`
                       }
@@ -407,7 +407,7 @@ export default function SystemSettings() {
                       {editingSetting.key}
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="text-sm font-medium">Value</label>
                     <Textarea
@@ -424,7 +424,7 @@ export default function SystemSettings() {
                     <Button variant="outline" onClick={() => setEditingSetting(null)}>
                       Cancel
                     </Button>
-                    <Button 
+                    <Button
                       onClick={() => updateSettingMutation.mutate({
                         id: editingSetting.id, _data: { value: editingSetting.value }
                       })}

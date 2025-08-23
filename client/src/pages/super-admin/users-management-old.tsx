@@ -1,37 +1,37 @@
-import { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useLanguage } from "@/contexts/language-context";
-import { useSidebar } from "@/contexts/sidebar-context";
-import { format } from "date-fns";
-import { ru, enUS } from "date-fns/locale";
-import Sidebar from "@/components/layout/sidebar";
-import Header from "@/components/layout/header";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  MoreHorizontal, 
-  Search, 
-  Filter, 
-  Download, 
-  Plus, 
-  Ban, 
+import { useState, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLanguage } from '@/contexts/language-context';
+import { useSidebar } from '@/contexts/sidebar-context';
+import { format } from 'date-fns';
+import { ru, enUS } from 'date-fns/locale';
+import Sidebar from '@/components/layout/sidebar';
+import Header from '@/components/layout/header';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  MoreHorizontal,
+  Search,
+  Filter,
+  Download,
+  Plus,
+  Ban,
   ShieldCheck,
   LogOut,
   RefreshCw,
@@ -44,18 +44,18 @@ import {
   Globe,
   Activity,
   Save
-} from "lucide-react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 interface User {
   id: string;
@@ -104,7 +104,7 @@ export default function UsersManagement() {
   const { toast } = useToast();
   const { isCollapsed } = useSidebar();
   const queryClient = useQueryClient();
-  
+
   const [filters, setFilters] = useState<UserFilters>({
     search: '',
     role: 'all',
@@ -143,7 +143,7 @@ export default function UsersManagement() {
     if (filters.sortBy !== field) {return '↕️';}
     return filters.sortOrder === 'asc' ? '↑' : '↓';
   };
-  
+
   // Edit form state
   const [editForm, setEditForm] = useState({
     firstName: '',
@@ -178,8 +178,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Пользователь заблокирован",
-        description: "Пользователь успешно заблокирован"
+        title: 'Пользователь заблокирован',
+        description: 'Пользователь успешно заблокирован'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setShowBlockDialog(false);
@@ -194,8 +194,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Пользователь разблокирован",
-        description: "Пользователь успешно разблокирован"
+        title: 'Пользователь разблокирован',
+        description: 'Пользователь успешно разблокирован'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     }
@@ -208,8 +208,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Сессии завершены",
-        description: "Все сессии пользователя успешно завершены"
+        title: 'Сессии завершены',
+        description: 'Все сессии пользователя успешно завершены'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     }
@@ -222,8 +222,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Пароль сброшен",
-        description: "Новый пароль отправлен на email пользователя"
+        title: 'Пароль сброшен',
+        description: 'Новый пароль отправлен на email пользователя'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     }
@@ -236,8 +236,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Пользователь удален",
-        description: "Пользователь успешно удален из системы"
+        title: 'Пользователь удален',
+        description: 'Пользователь успешно удален из системы'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     }
@@ -250,8 +250,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Пользователь создан",
-        description: "Новый пользователь успешно создан"
+        title: 'Пользователь создан',
+        description: 'Новый пользователь успешно создан'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setShowCreateDialog(false);
@@ -265,8 +265,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Пользователь обновлен",
-        description: "Данные пользователя успешно обновлены"
+        title: 'Пользователь обновлен',
+        description: 'Данные пользователя успешно обновлены'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setShowEditDialog(false);
@@ -280,8 +280,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Массовая операция выполнена",
-        description: "Операция успешно применена к выбранным пользователям"
+        title: 'Массовая операция выполнена',
+        description: 'Операция успешно применена к выбранным пользователям'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setShowBulkDialog(false);
@@ -322,8 +322,8 @@ export default function UsersManagement() {
     },
     onSuccess: () => {
       toast({
-        title: "Пользователь обновлен", 
-        description: "Пользователь успешно обновлен"
+        title: 'Пользователь обновлен',
+        description: 'Пользователь успешно обновлен'
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setShowEditDialog(false);
@@ -337,7 +337,7 @@ export default function UsersManagement() {
     },
     onSuccess: (data: any) => {
       toast({
-        title: "Пароль сброшен",
+        title: 'Пароль сброшен',
         description: `Новый пароль: ${data.newPassword}`
       });
     }
@@ -359,7 +359,7 @@ export default function UsersManagement() {
     },
     onSuccess: (data: any) => {
       toast({
-        title: "Массовая операция завершена",
+        title: 'Массовая операция завершена',
         description: `Успешно: ${data.success}, Ошибок: ${data.failed}`
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
@@ -395,7 +395,7 @@ export default function UsersManagement() {
         Заблокирован
       </Badge>;
     }
-    
+
     return <Badge variant="default" className="bg-green-500">
       Активен
     </Badge>;
@@ -403,21 +403,21 @@ export default function UsersManagement() {
 
   const getRoleBadge = (role: string) => {
     const roleColors: Record<string, string> = {
-      super_admin: "bg-purple-500",
-      advertiser: "bg-blue-500", 
-      affiliate: "bg-green-500",
-      staff: "bg-orange-500"
+      super_admin: 'bg-purple-500',
+      advertiser: 'bg-blue-500',
+      affiliate: 'bg-green-500',
+      staff: 'bg-orange-500'
     };
-    
+
     const roleNames: Record<string, string> = {
-      super_admin: "Супер-админ",
-      advertiser: "Рекламодатель",
-      affiliate: "Партнер",
-      staff: "Сотрудник"
+      super_admin: 'Супер-админ',
+      advertiser: 'Рекламодатель',
+      affiliate: 'Партнер',
+      staff: 'Сотрудник'
     };
-    
+
     return (
-      <Badge className={roleColors[role] || "bg-gray-500"}>
+      <Badge className={roleColors[role] || 'bg-gray-500'}>
         <Shield className="w-3 h-3 mr-1" />
         {roleNames[role] || role}
       </Badge>
@@ -454,15 +454,15 @@ export default function UsersManagement() {
             <Plus className="mr-2 h-4 w-4" />
             Добавить пользователя
           </Button>
-          
+
           {selectedUsers.length > 0 && (
             <Button variant="outline" onClick={() => setShowBulkDialog(true)}>
               Массовые операции ({selectedUsers.length})
             </Button>
           )}
-          
-          <Button 
-            variant="outline" 
+
+          <Button
+            variant="outline"
             onClick={() => {
               const params = new URLSearchParams(filters as any);
               window.open(`/api/admin/users/export?${params.toString()}&format=csv`, '_blank');
@@ -686,8 +686,8 @@ export default function UsersManagement() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     className="rounded"
                     checked={selectedUsers.length === usersData?.data?.length && usersData?.data?.length > 0}
                     onChange={(e) => {
@@ -699,55 +699,55 @@ export default function UsersManagement() {
                     }}
                   />
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => handleSort('id')}
                 >
                   ID {getSortIcon('id')}
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => handleSort('userType')}
                 >
                   Тип {getSortIcon('userType')}
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => handleSort('username')}
                 >
                   Название аккаунта / Имя {getSortIcon('username')}
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => handleSort('email')}
                 >
                   Email / Telegram {getSortIcon('email')}
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => handleSort('role')}
                 >
                   Роль {getSortIcon('role')}
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => handleSort('status')}
                 >
                   Статус {getSortIcon('status')}
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => handleSort('createdAt')}
                 >
                   Дата регистрации {getSortIcon('createdAt')}
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => handleSort('lastLoginAt')}
                 >
                   Последний вход (IP) {getSortIcon('lastLoginAt')}
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => handleSort('advertiserName')}
                 >
@@ -776,8 +776,8 @@ export default function UsersManagement() {
                 usersData?.data?.map((user: User) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         className="rounded"
                         checked={selectedUsers.includes(user.id)}
                         onChange={(e) => {
@@ -789,12 +789,12 @@ export default function UsersManagement() {
                         }}
                       />
                     </TableCell>
-                    
+
                     {/* ID пользователя */}
                     <TableCell className="font-mono text-xs">
                       {user.id.substring(0, 8)}...
                     </TableCell>
-                    
+
                     {/* Тип пользователя */}
                     <TableCell>
                       <Badge variant={
@@ -809,12 +809,12 @@ export default function UsersManagement() {
                          user.userType === 'admin' ? 'Админ' : user.userType || 'Партнёр'}
                       </Badge>
                     </TableCell>
-                    
+
                     {/* Название аккаунта / Имя */}
                     <TableCell className="font-medium">
                       {user.company || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username}
                     </TableCell>
-                    
+
                     {/* Email / Telegram */}
                     <TableCell>
                       <div className="space-y-1">
@@ -826,7 +826,7 @@ export default function UsersManagement() {
                         )}
                       </div>
                     </TableCell>
-                    
+
                     {/* Роль */}
                     <TableCell>
                       <Badge variant={
@@ -841,12 +841,12 @@ export default function UsersManagement() {
                          user.role === 'staff' ? 'Сотрудник' : user.role}
                       </Badge>
                     </TableCell>
-                    
+
                     {/* Статус */}
                     <TableCell>
                       <div className="space-y-1">
                         <Badge variant={user.isActive ? 'default' : 'destructive'}>
-                          {user.isBlocked ? 'Заблокирован' : 
+                          {user.isBlocked ? 'Заблокирован' :
                            user.isActive ? 'Активен' : 'Неактивен'}
                         </Badge>
                         {user.kycStatus && (
@@ -857,22 +857,22 @@ export default function UsersManagement() {
                         )}
                       </div>
                     </TableCell>
-                    
+
                     {/* Дата регистрации */}
                     <TableCell>
-                      {format(new Date(user.createdAt), 'dd.MM.yyyy', { 
-                        locale: language === 'ru' ? ru : enUS 
+                      {format(new Date(user.createdAt), 'dd.MM.yyyy', {
+                        locale: language === 'ru' ? ru : enUS
                       })}
                     </TableCell>
-                    
+
                     {/* Последний вход (IP) */}
                     <TableCell>
                       <div className="space-y-1">
                         <div className="text-sm">
-                          {user.lastLoginAt ? 
-                            format(new Date(user.lastLoginAt), 'dd.MM.yyyy HH:mm', { 
-                              locale: language === 'ru' ? ru : enUS 
-                            }) : 
+                          {user.lastLoginAt ?
+                            format(new Date(user.lastLoginAt), 'dd.MM.yyyy HH:mm', {
+                              locale: language === 'ru' ? ru : enUS
+                            }) :
                             'Никогда'
                           }
                         </div>
@@ -883,7 +883,7 @@ export default function UsersManagement() {
                         )}
                       </div>
                     </TableCell>
-                    
+
                     {/* Привязанный рекламодатель */}
                     <TableCell>
                       {user.advertiserName ? (
@@ -944,7 +944,7 @@ export default function UsersManagement() {
                             <RefreshCw className="mr-2 h-4 w-4" />
                             Сбросить пароль
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => deleteUserMutation.mutate(user.id)}
                             className="text-red-600"
                           >
@@ -983,8 +983,8 @@ export default function UsersManagement() {
               <Button variant="outline" onClick={() => setShowBlockDialog(false)}>
                 Отмена
               </Button>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={confirmBlockUser}
                 disabled={!blockReason.trim() || blockUserMutation.isPending}
               >
@@ -993,7 +993,7 @@ export default function UsersManagement() {
                 ) : (
                   <Ban className="mr-2 h-4 w-4" />
                 )}
-                {t.block || "Заблокировать"}
+                {t.block || 'Заблокировать'}
               </Button>
             </div>
           </div>
@@ -1004,32 +1004,32 @@ export default function UsersManagement() {
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{t.createUser || "Создать пользователя"}</DialogTitle>
+            <DialogTitle>{t.createUser || 'Создать пользователя'}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>{t.username || "Имя пользователя"}</Label>
+                <Label>{t.username || 'Имя пользователя'}</Label>
                 <Input id="username" placeholder="john_doe" />
               </div>
               <div>
-                <Label>{t.email || "Email"}</Label>
+                <Label>{t.email || 'Email'}</Label>
                 <Input id="email" type="email" placeholder="user@example.com" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>{t.firstName || "Имя"}</Label>
+                <Label>{t.firstName || 'Имя'}</Label>
                 <Input id="firstName" placeholder="Иван" />
               </div>
               <div>
-                <Label>{t.lastName || "Фамилия"}</Label>
+                <Label>{t.lastName || 'Фамилия'}</Label>
                 <Input id="lastName" placeholder="Иванов" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>{t.role || "Роль"}</Label>
+                <Label>{t.role || 'Роль'}</Label>
                 <Select>
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите роль" />
@@ -1042,18 +1042,18 @@ export default function UsersManagement() {
                 </Select>
               </div>
               <div>
-                <Label>{t.country || "Страна"}</Label>
+                <Label>{t.country || 'Страна'}</Label>
                 <Input id="country" placeholder="RU" />
               </div>
             </div>
             <div>
-              <Label>{t.password || "Пароль"}</Label>
+              <Label>{t.password || 'Пароль'}</Label>
               <Input id="password" type="password" placeholder="••••••••" />
             </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-              {t.cancel || "Отмена"}
+              {t.cancel || 'Отмена'}
             </Button>
             <Button onClick={() => {
               const formData = {
@@ -1072,7 +1072,7 @@ export default function UsersManagement() {
               ) : (
                 <Plus className="mr-2 h-4 w-4" />
               )}
-              {t.create || "Создать"}
+              {t.create || 'Создать'}
             </Button>
           </div>
         </DialogContent>
@@ -1082,7 +1082,7 @@ export default function UsersManagement() {
       <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{t.userProfile || "Профиль пользователя"}</DialogTitle>
+            <DialogTitle>{t.userProfile || 'Профиль пользователя'}</DialogTitle>
           </DialogHeader>
           {selectedUser && (
             <div className="space-y-4">
@@ -1092,37 +1092,37 @@ export default function UsersManagement() {
                   <p className="text-sm">{selectedUser.id}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">{t.username || "Имя пользователя"}</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.username || 'Имя пользователя'}</Label>
                   <p className="text-sm">{selectedUser.username}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">{t.email || "Email"}</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.email || 'Email'}</Label>
                   <p className="text-sm">{selectedUser.email}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">{t.role || "Роль"}</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.role || 'Роль'}</Label>
                   <div className="mt-1">{getRoleBadge(selectedUser.role)}</div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">{t.status || "Статус"}</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.status || 'Статус'}</Label>
                   <div className="mt-1">{getStatusBadge(selectedUser)}</div>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">{t.country || "Страна"}</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.country || 'Страна'}</Label>
                   <p className="text-sm">{selectedUser.country || 'Не указано'}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">{t.registered || "Зарегистрирован"}</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.registered || 'Зарегистрирован'}</Label>
                   <p className="text-sm">{formatDate(selectedUser.createdAt)}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">{t.lastActivity || "Последняя активность"}</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">{t.lastActivity || 'Последняя активность'}</Label>
                   <p className="text-sm">{selectedUser.lastLoginAt ? formatDate(selectedUser.lastLoginAt) : 'Никогда'}</p>
                 </div>
               </div>
@@ -1135,34 +1135,34 @@ export default function UsersManagement() {
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{t.editUser || "Редактировать пользователя"}</DialogTitle>
+            <DialogTitle>{t.editUser || 'Редактировать пользователя'}</DialogTitle>
           </DialogHeader>
           {selectedUser && (
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>{t.firstName || "Имя"}</Label>
-                  <Input 
+                  <Label>{t.firstName || 'Имя'}</Label>
+                  <Input
                     value={editForm.firstName}
-                    onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
-                    placeholder="Иван" 
+                    onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
+                    placeholder="Иван"
                   />
                 </div>
                 <div>
-                  <Label>{t.lastName || "Фамилия"}</Label>
-                  <Input 
+                  <Label>{t.lastName || 'Фамилия'}</Label>
+                  <Input
                     value={editForm.lastName}
-                    onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
-                    placeholder="Иванов" 
+                    onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
+                    placeholder="Иванов"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>{t.role || "Роль"}</Label>
-                  <Select 
-                    value={editForm.role} 
-                    onValueChange={(value) => setEditForm({...editForm, role: value})}
+                  <Label>{t.role || 'Роль'}</Label>
+                  <Select
+                    value={editForm.role}
+                    onValueChange={(value) => setEditForm({ ...editForm, role: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -1175,35 +1175,35 @@ export default function UsersManagement() {
                   </Select>
                 </div>
                 <div>
-                  <Label>{t.country || "Страна"}</Label>
-                  <Input 
+                  <Label>{t.country || 'Страна'}</Label>
+                  <Input
                     value={editForm.country}
-                    onChange={(e) => setEditForm({...editForm, country: e.target.value})}
-                    placeholder="RU" 
+                    onChange={(e) => setEditForm({ ...editForm, country: e.target.value })}
+                    placeholder="RU"
                   />
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={editForm.isActive}
-                  onChange={(e) => setEditForm({...editForm, isActive: e.target.checked})}
+                  onChange={(e) => setEditForm({ ...editForm, isActive: e.target.checked })}
                   className="rounded"
                 />
-                <Label>{t.activeUser || "Активный пользователь"}</Label>
+                <Label>{t.activeUser || 'Активный пользователь'}</Label>
               </div>
             </div>
           )}
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>
-              {t.cancel || "Отмена"}
+              {t.cancel || 'Отмена'}
             </Button>
             <Button onClick={() => {
               if (!selectedUser) {return;}
-              
-              editUserMutation.mutate({ 
-                userId: selectedUser.id, 
-                userData: editForm 
+
+              editUserMutation.mutate({
+                userId: selectedUser.id,
+                userData: editForm
               });
             }}>
               {editUserMutation.isPending ? (
@@ -1211,7 +1211,7 @@ export default function UsersManagement() {
               ) : (
                 <Save className="mr-2 h-4 w-4" />
               )}
-              {t.save || "Сохранить"}
+              {t.save || 'Сохранить'}
             </Button>
           </div>
         </DialogContent>
@@ -1221,15 +1221,15 @@ export default function UsersManagement() {
       <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t.bulkActions || "Массовые операции"}</DialogTitle>
+            <DialogTitle>{t.bulkActions || 'Массовые операции'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Выбрано пользователей: {selectedUsers.length}
             </p>
-            
+
             <div>
-              <Label>{t.selectAction || "Выберите действие"}</Label>
+              <Label>{t.selectAction || 'Выберите действие'}</Label>
               <Select value={bulkAction} onValueChange={(value: any) => setBulkAction(value)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -1244,7 +1244,7 @@ export default function UsersManagement() {
 
             {bulkAction === 'block' && (
               <div>
-                <Label>{t.reason || "Причина"}</Label>
+                <Label>{t.reason || 'Причина'}</Label>
                 <Textarea
                   placeholder="Укажите причину..."
                   value={blockReason}
@@ -1255,9 +1255,9 @@ export default function UsersManagement() {
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowBulkDialog(false)}>
-                {t.cancel || "Отмена"}
+                {t.cancel || 'Отмена'}
               </Button>
-              <Button 
+              <Button
                 variant="destructive"
                 onClick={() => {
                   bulkOperationMutation.mutate({
@@ -1271,7 +1271,7 @@ export default function UsersManagement() {
                 {bulkOperationMutation.isPending ? (
                   <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                 ) : null}
-                {t.execute || "Выполнить"}
+                {t.execute || 'Выполнить'}
               </Button>
             </div>
           </div>

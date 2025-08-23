@@ -1,22 +1,22 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -24,21 +24,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+} from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/components/ui/tabs";
+} from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   BarChart3,
   Download,
@@ -58,14 +58,14 @@ import {
   Smartphone,
   ChevronLeft,
   ChevronRight
-} from "lucide-react";
-import { formatCurrency, formatCR } from "@/utils/formatting";
-import { useToast } from "@/hooks/use-toast";
+} from 'lucide-react';
+import { formatCurrency, formatCR } from '@/utils/formatting';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Statistics() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  
+
   const [activeTab, setActiveTab] = useState('overview');
   const [filters, setFilters] = useState({
     dateFrom: '',
@@ -92,29 +92,29 @@ export default function Statistics() {
         ...(filters.dateFrom && { startDate: filters.dateFrom }),
         ...(filters.dateTo && { endDate: filters.dateTo })
       });
-      
+
       const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
       console.log('Making request with token:', token ? token.substring(0, 20) + '...' : 'null');
-      
+
       if (!token) {
         console.log('No token found, redirecting to login');
         window.location.href = '/login';
         return;
       }
-      
+
       const response = await fetch(`/api/partner/analytics?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
-      
+
       console.log('Response status:', response.status);
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.log('Error response:', errorData);
-        
+
         if (response.status === 401 || response.status === 403) {
           // Auth error - redirect to login
           console.log('Auth error, redirecting to login');
@@ -122,10 +122,10 @@ export default function Statistics() {
           window.location.href = '/login';
           return;
         }
-        
+
         throw new Error(errorData.error || 'Failed to fetch analytics data');
       }
-      
+
       return response.json();
     }
   });
@@ -175,7 +175,7 @@ export default function Statistics() {
     setCurrentPage(1);
   };
 
-  const copyToClipboard = async (text: string, label: string = '') => {
+  const copyToClipboard = async (text: string, label = '') => {
     try {
       await navigator.clipboard.writeText(text);
       toast({
@@ -187,7 +187,7 @@ export default function Statistics() {
       toast({
         title: t('common.error'),
         description: t('statistics.messages.copyError'),
-        variant: "destructive",
+        variant: 'destructive',
         duration: 2000
       });
     }
@@ -246,7 +246,7 @@ export default function Statistics() {
   const getPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -254,12 +254,12 @@ export default function Statistics() {
     } else {
       const startPage = Math.max(1, currentPage - 2);
       const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-      
+
       for (let i = startPage; i <= endPage; i++) {
         pages.push(i);
       }
     }
-    
+
     return pages;
   };
 
@@ -269,7 +269,7 @@ export default function Statistics() {
       <div className="text-sm text-muted-foreground">
         {t('statistics.pagination.showing')} {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalItems)} {t('statistics.pagination.of')} {totalItems} {t('statistics.pagination.records')}
       </div>
-      
+
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
@@ -280,12 +280,12 @@ export default function Statistics() {
           <ChevronLeft className="h-4 w-4" />
           {t('statistics.pagination.previous')}
         </Button>
-        
+
         <div className="flex items-center gap-1">
           {getPageNumbers().map((page) => (
             <Button
               key={page}
-              variant={currentPage === page ? "default" : "outline"}
+              variant={currentPage === page ? 'default' : 'outline'}
               size="sm"
               onClick={() => handlePageClick(page)}
               className="w-8 h-8 p-0"
@@ -294,7 +294,7 @@ export default function Statistics() {
             </Button>
           ))}
         </div>
-        
+
         <Button
           variant="outline"
           size="sm"
@@ -449,7 +449,7 @@ export default function Statistics() {
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.totalClicks.toLocaleString()}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('statistics.columns.conversions')}</CardTitle>
@@ -459,7 +459,7 @@ export default function Statistics() {
             <div className="text-2xl font-bold text-green-600">{stats.totalConversions}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('statistics.columns.revenue')}</CardTitle>
@@ -471,7 +471,7 @@ export default function Statistics() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('statistics.columns.cr')}</CardTitle>
@@ -483,7 +483,7 @@ export default function Statistics() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('statistics.columns.epc')}</CardTitle>
@@ -574,7 +574,7 @@ export default function Statistics() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge 
+                        <Badge
                           variant={item.status === 'conversion' ? 'default' : 'secondary'}
                           className={item.status === 'conversion' ? 'bg-green-100 text-green-800' : ''}
                         >
@@ -853,7 +853,7 @@ export default function Statistics() {
                       </TableCell>
                       <TableCell>{item.device}</TableCell>
                       <TableCell>
-                        <Badge 
+                        <Badge
                           variant={item.status === 'conversion' ? 'default' : 'secondary'}
                           className={item.status === 'conversion' ? 'bg-green-100 text-green-800' : ''}
                         >
@@ -902,7 +902,7 @@ export default function Statistics() {
                 const subKey = `sub_${i + 1}`;
                 const clickDetails = getClickDetails(selectedRowId);
                 const subValue = clickDetails?.[subKey as keyof typeof clickDetails] || '-';
-                
+
                 return (
                   <div key={subKey} className="flex items-center justify-between p-2 border rounded">
                     <span className="font-medium text-sm">Sub{i + 1}:</span>

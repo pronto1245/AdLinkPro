@@ -63,7 +63,7 @@ export default function TrackingUrlGenerator() {
 
       const data = await response.json();
       setGeneratedUrl(data.trackingUrl);
-      
+
       toast({
         title: 'URL сгенерирован',
         description: data.instructions,
@@ -220,7 +220,7 @@ export default function TrackingUrlGenerator() {
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
-              💡 Замените <code>{"{clickid}"}</code> на макрос вашего трекера для передачи уникального ID клика
+              💡 Замените <code>{'{clickid}'}</code> на макрос вашего трекера для передачи уникального ID клика
             </p>
           </div>
         )}

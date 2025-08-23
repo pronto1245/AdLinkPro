@@ -13,9 +13,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Globe, Plus, Edit, Trash2, Eye, RotateCcw, Send, AlertCircle, CheckCircle, 
-  Clock, XCircle, Filter, Search, Download, Settings, Target, Link, 
+import {
+  Globe, Plus, Edit, Trash2, Eye, RotateCcw, Send, AlertCircle, CheckCircle,
+  Clock, XCircle, Filter, Search, Download, Settings, Target, Link,
   Activity, BarChart3, Wifi, WifiOff, RefreshCw, Copy, ExternalLink,
   Server, Database, FileText, Calendar, Hash, Save
 } from 'lucide-react';
@@ -104,7 +104,7 @@ export default function PostbacksPage() {
       if (postbackFilters.level !== 'all') {params.append('level', postbackFilters.level);}
       if (postbackFilters.status !== 'all') {params.append('status', postbackFilters.status);}
       if (postbackFilters.search) {params.append('search', postbackFilters.search);}
-      
+
       const response = await fetch(`/api/admin/postback-templates?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -123,7 +123,7 @@ export default function PostbacksPage() {
       if (logFilters.dateFrom) {params.append('dateFrom', logFilters.dateFrom);}
       if (logFilters.dateTo) {params.append('dateTo', logFilters.dateTo);}
       if (logFilters.search) {params.append('search', logFilters.search);}
-      
+
       const response = await fetch(`/api/admin/postback-logs?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -150,13 +150,13 @@ export default function PostbacksPage() {
       return apiRequest('/api/admin/postback-templates', 'POST', data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ predicate: (query) => 
+      queryClient.invalidateQueries({ predicate: (query) =>
         query.queryKey[0] === '/api/admin/postback-templates'
       });
       setAddPostbackDialogOpen(false);
       toast({
-        title: "Постбек создан",
-        description: "Новый постбек успешно добавлен в систему",
+        title: 'Постбек создан',
+        description: 'Новый постбек успешно добавлен в систему',
       });
     }
   });
@@ -167,13 +167,13 @@ export default function PostbacksPage() {
       return apiRequest(`/api/admin/postback-templates/${id}`, 'PATCH', data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ predicate: (query) => 
+      queryClient.invalidateQueries({ predicate: (query) =>
         query.queryKey[0] === '/api/admin/postback-templates'
       });
       setEditPostbackDialogOpen(false);
       toast({
-        title: "Постбек обновлён",
-        description: "Настройки постбека успешно сохранены",
+        title: 'Постбек обновлён',
+        description: 'Настройки постбека успешно сохранены',
       });
     }
   });
@@ -184,13 +184,13 @@ export default function PostbacksPage() {
       return apiRequest(`/api/admin/postback-templates/${id}`, 'DELETE');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ predicate: (query) => 
+      queryClient.invalidateQueries({ predicate: (query) =>
         query.queryKey[0] === '/api/admin/postback-templates'
       });
       toast({
-        title: "Постбек удалён",
-        description: "Постбек успешно удалён из системы",
-        variant: "destructive",
+        title: 'Постбек удалён',
+        description: 'Постбек успешно удалён из системы',
+        variant: 'destructive',
       });
     }
   });
@@ -203,8 +203,8 @@ export default function PostbacksPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/postback-logs'] });
       toast({
-        title: "Постбек отправлен",
-        description: "Постбек поставлен в очередь на повторную отправку",
+        title: 'Постбек отправлен',
+        description: 'Постбек поставлен в очередь на повторную отправку',
       });
     }
   });
@@ -229,8 +229,8 @@ export default function PostbacksPage() {
         {status === 'failed' && <XCircle className="w-3 h-3 mr-1" />}
         {status === 'pending' && <Clock className="w-3 h-3 mr-1" />}
         {status === 'retry' && <RotateCcw className="w-3 h-3 mr-1" />}
-        {status === 'success' ? 'Успешно' : 
-         status === 'failed' ? 'Ошибка' : 
+        {status === 'success' ? 'Успешно' :
+         status === 'failed' ? 'Ошибка' :
          status === 'pending' ? 'Ожидание' : 'Повтор'}
       </Badge>
     );
@@ -249,8 +249,8 @@ export default function PostbacksPage() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Скопировано",
-      description: "URL скопирован в буфер обмена",
+      title: 'Скопировано',
+      description: 'URL скопирован в буфер обмена',
     });
   };
 
@@ -315,8 +315,8 @@ export default function PostbacksPage() {
                     </Button>
                   </div>
                   <div className="flex gap-2">
-                    <Select 
-                      value={postbackFilters.level} 
+                    <Select
+                      value={postbackFilters.level}
                       onValueChange={(value) => setPostbackFilters(prev => ({ ...prev, level: value }))}
                     >
                       <SelectTrigger className="w-40" data-testid="level-filter-select">
@@ -328,8 +328,8 @@ export default function PostbacksPage() {
                         <SelectItem value="offer">Оффер</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Select 
-                      value={postbackFilters.status} 
+                    <Select
+                      value={postbackFilters.status}
                       onValueChange={(value) => setPostbackFilters(prev => ({ ...prev, status: value }))}
                     >
                       <SelectTrigger className="w-40" data-testid="status-filter-select">
@@ -344,7 +344,7 @@ export default function PostbacksPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button 
+                  <Button
                     onClick={() => setAddPostbackDialogOpen(true)}
                     className="bg-blue-600 hover:bg-blue-700"
                     data-testid="add-postback-btn"
@@ -394,7 +394,7 @@ export default function PostbacksPage() {
                               <div className="flex flex-col items-center gap-2">
                                 <Settings className="w-8 h-8 text-gray-400" />
                                 <p className="text-gray-500">Постбеки не найдены</p>
-                                <Button 
+                                <Button
                                   onClick={() => setAddPostbackDialogOpen(true)}
                                   variant="outline"
                                   size="sm"
@@ -424,9 +424,9 @@ export default function PostbacksPage() {
                                 <div className="flex flex-wrap gap-1">
                                   {postback.events.map((event) => (
                                     <Badge key={event} variant="outline" className="text-xs">
-                                      {event === 'lead' ? 'Лид' : 
-                                       event === 'sale' ? 'Продажа' : 
-                                       event === 'rejected' ? 'Отказ' : 
+                                      {event === 'lead' ? 'Лид' :
+                                       event === 'sale' ? 'Продажа' :
+                                       event === 'rejected' ? 'Отказ' :
                                        event === 'hold' ? 'Холд' : event}
                                     </Badge>
                                   ))}
@@ -449,7 +449,7 @@ export default function PostbacksPage() {
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <Badge 
+                                <Badge
                                   variant={postback.isActive ? 'default' : 'secondary'}
                                   className={postback.isActive ? 'text-green-700 bg-green-50 border-green-200' : 'text-gray-700 bg-gray-50 border-gray-200'}
                                 >
@@ -520,8 +520,8 @@ export default function PostbacksPage() {
                     </Button>
                   </div>
                   <div className="flex gap-2">
-                    <Select 
-                      value={logFilters.status} 
+                    <Select
+                      value={logFilters.status}
                       onValueChange={(value) => setLogFilters(prev => ({ ...prev, status: value }))}
                     >
                       <SelectTrigger className="w-40" data-testid="log-status-filter-select">
@@ -535,8 +535,8 @@ export default function PostbacksPage() {
                         <SelectItem value="retry">Повтор</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Select 
-                      value={logFilters.offerId} 
+                    <Select
+                      value={logFilters.offerId}
                       onValueChange={(value) => setLogFilters(prev => ({ ...prev, offerId: value }))}
                     >
                       <SelectTrigger className="w-48" data-testid="offer-filter-select">
@@ -632,7 +632,7 @@ export default function PostbacksPage() {
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   {log.responseCode && (
-                                    <Badge 
+                                    <Badge
                                       variant={log.responseCode < 300 ? 'default' : 'destructive'}
                                       className="text-xs"
                                     >
@@ -714,7 +714,7 @@ export default function PostbacksPage() {
                     <p className="text-xs text-gray-500 mt-2">+12% за сутки</p>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -727,7 +727,7 @@ export default function PostbacksPage() {
                     <p className="text-xs text-gray-500 mt-2">+1.2% за неделю</p>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -740,7 +740,7 @@ export default function PostbacksPage() {
                     <p className="text-xs text-gray-500 mt-2">-15ms за сутки</p>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -810,7 +810,7 @@ export default function PostbacksPage() {
                   Создайте новый постбек для отправки уведомлений о конверсиях
                 </DialogDescription>
               </DialogHeader>
-              <PostbackForm 
+              <PostbackForm
                 onSubmit={(data) => createPostbackMutation.mutate(data)}
                 offers={offers}
                 isLoading={createPostbackMutation.isPending}
@@ -828,7 +828,7 @@ export default function PostbacksPage() {
                 </DialogDescription>
               </DialogHeader>
               {selectedPostback && (
-                <PostbackForm 
+                <PostbackForm
                   postback={selectedPostback}
                   onSubmit={(data) => updatePostbackMutation.mutate({ id: selectedPostback.id, data })}
                   offers={offers}
@@ -859,12 +859,12 @@ export default function PostbacksPage() {
 }
 
 // Postback Form Component
-function PostbackForm({ 
-  postback, 
-  onSubmit, 
-  offers, 
-  isLoading 
-}: { 
+function PostbackForm({
+  postback,
+  onSubmit,
+  offers,
+  isLoading
+}: {
   postback?: PostbackTemplate;
   onSubmit: (data: any) => void;
   offers: any[];
@@ -889,7 +889,7 @@ function PostbackForm({
   ];
 
   const availableParameters = [
-    '{click_id}', '{status}', '{payout}', '{offer_id}', '{geo}', 
+    '{click_id}', '{status}', '{payout}', '{offer_id}', '{geo}',
     '{device}', '{sub1}', '{sub2}', '{sub3}', '{sub4}', '{sub5}', '{time}'
   ];
 
@@ -914,8 +914,8 @@ function PostbackForm({
         </div>
         <div className="space-y-2">
           <Label htmlFor="postback-level">Уровень</Label>
-          <Select 
-            value={formData.level} 
+          <Select
+            value={formData.level}
             onValueChange={(value: 'global' | 'offer') => setFormData(prev => ({ ...prev, level: value }))}
           >
             <SelectTrigger id="postback-level" data-testid="postback-level-select">
@@ -932,8 +932,8 @@ function PostbackForm({
       {formData.level === 'offer' && (
         <div className="space-y-2">
           <Label htmlFor="postback-offer">Оффер</Label>
-          <Select 
-            value={formData.offerId} 
+          <Select
+            value={formData.offerId}
             onValueChange={(value) => setFormData(prev => ({ ...prev, offerId: value }))}
           >
             <SelectTrigger id="postback-offer" data-testid="postback-offer-select">
@@ -975,14 +975,14 @@ function PostbackForm({
                 checked={formData.events.includes(event.value)}
                 onCheckedChange={(checked) => {
                   if (checked) {
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      events: [...prev.events, event.value] 
+                    setFormData(prev => ({
+                      ...prev,
+                      events: [...prev.events, event.value]
                     }));
                   } else {
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      events: prev.events.filter(e => e !== event.value) 
+                    setFormData(prev => ({
+                      ...prev,
+                      events: prev.events.filter(e => e !== event.value)
                     }));
                   }
                 }}
@@ -1088,9 +1088,9 @@ function LogDetails({ log }: { log: PostbackLog }) {
         <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
           <div className="flex items-center justify-between">
             <code className="text-sm break-all">{log.url}</code>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => copyToClipboard(log.url)}
               title="Копировать URL"
             >
@@ -1106,7 +1106,7 @@ function LogDetails({ log }: { log: PostbackLog }) {
           <div>
             <Label className="text-sm font-medium text-gray-600">Код ответа</Label>
             <div className="mt-2">
-              <Badge 
+              <Badge
                 variant={log.responseCode < 300 ? 'default' : 'destructive'}
                 className="text-sm"
               >

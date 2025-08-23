@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, FileText, X, Check } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Upload, FileText, X, Check } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface UploadResult {
   successful: Array<{
@@ -23,11 +23,11 @@ interface CreativeUploaderProps {
   buttonClassName?: string;
 }
 
-export function CreativeUploader({ 
+export function CreativeUploader({
   maxFileSize = 50 * 1024 * 1024,
   onGetUploadParameters,
   onComplete,
-  buttonClassName 
+  buttonClassName
 }: CreativeUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -39,15 +39,15 @@ export function CreativeUploader({
     const file = event.target.files?.[0];
     console.log('🔍 Файл выбран:', file ? file.name : 'none');
     console.log('🔍 Размер файла:', file ? file.size : 0);
-    
+
     if (file) {
       // Проверяем, что это ZIP файл
       if (!file.name.toLowerCase().endsWith('.zip')) {
         console.log('❌ Не ZIP файл');
         toast({
-          title: "Неверный формат файла",
-          description: "Пожалуйста, выберите ZIP архив с креативами",
-          variant: "destructive",
+          title: 'Неверный формат файла',
+          description: 'Пожалуйста, выберите ZIP архив с креативами',
+          variant: 'destructive',
         });
         return;
       }
@@ -56,9 +56,9 @@ export function CreativeUploader({
       if (file.size > maxFileSize) {
         console.log('❌ Файл слишком большой');
         toast({
-          title: "Файл слишком большой",
+          title: 'Файл слишком большой',
           description: `Максимальный размер файла ${formatFileSize(maxFileSize)}`,
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
@@ -67,7 +67,7 @@ export function CreativeUploader({
       setSelectedFile(file);
       setUploadComplete(false);
       setUploadProgress(0);
-      
+
       // Автоматически начинаем загрузку
       setTimeout(() => handleUpload(), 100);
     }
@@ -82,10 +82,10 @@ export function CreativeUploader({
     console.log('🚀 Начало загрузки файла:', selectedFile.name);
     setUploading(true);
     setUploadProgress(10);
-    
+
     try {
       let uploadURL: string;
-      
+
       if (onGetUploadParameters) {
         console.log('📡 Получение upload URL через кастомный метод...');
         setUploadProgress(20);
@@ -99,7 +99,7 @@ export function CreativeUploader({
         // Используем стандартный метод (для OfferDetails)
         const token = localStorage.getItem('auth_token');
         console.log('🔑 Токен присутствует:', token ? 'да' : 'нет');
-        
+
         const uploadResponse = await fetch('/api/objects/upload', {
           method: 'POST',
           headers: {
@@ -109,7 +109,7 @@ export function CreativeUploader({
         });
 
         console.log('Upload URL response status:', uploadResponse.status);
-        
+
         if (!uploadResponse.ok) {
           const errorText = await uploadResponse.text();
           console.error('Upload URL error:', errorText);
@@ -143,7 +143,7 @@ export function CreativeUploader({
       setUploadComplete(true);
 
       toast({
-        title: "✅ Креативы загружены",
+        title: '✅ Креативы загружены',
         description: `Файл "${selectedFile.name}" успешно загружен`,
       });
 
@@ -159,7 +159,7 @@ export function CreativeUploader({
 
       // Вызываем callback с результатом
       onComplete?.(result);
-      
+
       // Через 2 секунды убираем файл из интерфейса
       setTimeout(() => {
         setSelectedFile(null);
@@ -171,9 +171,9 @@ export function CreativeUploader({
       console.error('❌ Ошибка загрузки:', error);
       setUploadProgress(0);
       toast({
-        title: "❌ Ошибка загрузки",
-        description: "Не удалось загрузить креативы. Попробуйте еще раз.",
-        variant: "destructive",
+        title: '❌ Ошибка загрузки',
+        description: 'Не удалось загрузить креативы. Попробуйте еще раз.',
+        variant: 'destructive',
       });
       setSelectedFile(null);
     } finally {
@@ -216,8 +216,8 @@ export function CreativeUploader({
                 className="hidden"
                 data-testid="input-file-creative"
               />
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 onClick={() => document.getElementById('creative-upload')?.click()}
                 className={`bg-blue-600 hover:bg-blue-700 text-white transition-colors ${buttonClassName || ''}`}
                 data-testid="button-upload-creative"
@@ -264,7 +264,7 @@ export function CreativeUploader({
 
             {uploading && (
               <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2">
-                <div 
+                <div
                   className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out"
                   style={{ width: `${uploadProgress}%` }}
                 />

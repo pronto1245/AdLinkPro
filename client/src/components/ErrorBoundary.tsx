@@ -7,9 +7,9 @@ export default class ErrorBoundary extends React.Component<React.PropsWithChildr
   render() {
     if (this.state.error) {
       return (
-        <div style={{padding:24,fontFamily:'sans-serif'}}>
+        <div style={{ padding:24,fontFamily:'sans-serif' }}>
           <h1>Ошибка приложения</h1>
-          <pre style={{whiteSpace:'pre-wrap'}}>{String(this.state.error?.stack || this.state.error)}</pre>
+          <pre style={{ whiteSpace:'pre-wrap' }}>{String(this.state.error?.stack || this.state.error)}</pre>
         </div>
       );
     }

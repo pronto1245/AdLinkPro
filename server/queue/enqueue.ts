@@ -1,6 +1,6 @@
 // Enhanced queue system with BullMQ integration
-import { Queue } from "bullmq";
-import { config } from "../config/environment.js";
+import { Queue } from 'bullmq';
+import { config } from '../config/environment.js';
 import { Status } from '../domain/status';
 
 export type PostbackTask = {
@@ -11,12 +11,12 @@ export type PostbackTask = {
   offerId?: string | null;
   flowId?: string | null;
   clickid: string;
-  type: "reg" | "purchase";
+  type: 'reg' | 'purchase';
   txid: string;
   status: Status;            // наш статус (approved/declined/...)
   revenue?: string | null;
   currency?: string | null;
-  antifraudLevel?: "ok" | "soft" | "hard" | null;
+  antifraudLevel?: 'ok' | 'soft' | 'hard' | null;
   details?: any;
 };
 
@@ -36,7 +36,7 @@ export interface ConversionRow {
   details: any;
   createdAt?: Date;
   updatedAt?: Date;
-  antifraudLevel?: "ok" | "soft" | "hard" | null;
+  antifraudLevel?: 'ok' | 'soft' | 'hard' | null;
 }
 
 // Redis availability tracking
@@ -58,14 +58,14 @@ async function checkRedisAvailability(): Promise<boolean> {
 // Initialize BullMQ queue only if Redis is available
 async function initializeQueue(): Promise<Queue<PostbackTask> | null> {
   if (pbQueue) {return pbQueue;}
-  
+
   const isRedisAvailable = await checkRedisAvailability();
-  
+
   if (isRedisAvailable) {
     console.log('✅ Redis is available, initializing BullMQ queue');
     redisAvailable = true;
-    pbQueue = new Queue<PostbackTask>("postbacks", { 
-      connection: { 
+    pbQueue = new Queue<PostbackTask>('postbacks', {
+      connection: {
         url: config.REDIS_URL,
         maxRetriesPerRequest: 3,
         retryDelayOnFailover: 100,
@@ -104,7 +104,7 @@ export async function enqueuePostbacks(conversion: ConversionRow): Promise<void>
 
     // Filter postbacks based on status and type
     const shouldSendPostback = shouldTriggerPostback(conversion);
-    
+
     if (!shouldSendPostback) {
       console.log('⏭️ Skipping postback - status/type does not trigger delivery');
       return;
@@ -124,16 +124,16 @@ export async function enqueuePostbacks(conversion: ConversionRow): Promise<void>
       status: conversion.conversionStatus,
       revenue: conversion.revenue,
       currency: conversion.currency,
-      antifraudLevel: conversion.antifraudLevel ?? "ok",
+      antifraudLevel: conversion.antifraudLevel ?? 'ok',
       details: conversion.details
     };
 
     // Try to initialize and use BullMQ queue
     const queue = await initializeQueue();
-    
+
     if (queue) {
       try {
-        const job = await queue.add("deliver", task, {
+        const job = await queue.add('deliver', task, {
           jobId: `postback_${conversion.id}_${Date.now()}`,
           removeOnComplete: 5000,
           removeOnFail: 5000,
@@ -144,10 +144,10 @@ export async function enqueuePostbacks(conversion: ConversionRow): Promise<void>
           },
           delay: getPostbackDelay(conversion.conversionStatus)
         });
-        
+
         console.log('✅ Postback task enqueued with BullMQ ID:', job.id);
         return;
-        
+
       } catch (redisError) {
         console.log('🔄 BullMQ connection lost, falling back to direct processing');
         redisAvailable = false;
@@ -156,7 +156,7 @@ export async function enqueuePostbacks(conversion: ConversionRow): Promise<void>
     } else {
       console.log('🔄 Using autonomous processing (Redis unavailable)');
     }
-    
+
     // Fallback: Use autonomous processor
     const { processPostbackTask, updateStats } = await import('./processor.js');
     const processorTask: PostbackTask = {
@@ -172,15 +172,15 @@ export async function enqueuePostbacks(conversion: ConversionRow): Promise<void>
       status: conversion.conversionStatus,
       revenue: conversion.revenue,
       currency: conversion.currency,
-      antifraudLevel: conversion.antifraudLevel ?? "ok",
+      antifraudLevel: conversion.antifraudLevel ?? 'ok',
       details: conversion.details
     };
-    
+
     const results = await processPostbackTask(processorTask);
     updateStats(results);
-    
+
     console.log('✅ Autonomous postback processing completed');
-    
+
   } catch (error) {
     console.error('❌ Failed to process postbacks:', error);
     throw error;
@@ -193,11 +193,11 @@ export async function enqueuePostbacks(conversion: ConversionRow): Promise<void>
 function shouldTriggerPostback(conversion: ConversionRow): boolean {
   // Only send postbacks for meaningful status changes
   const triggerStatuses: Status[] = ['approved', 'declined', 'refunded', 'chargeback'];
-  
+
   if (!triggerStatuses.includes(conversion.conversionStatus)) {
     return false;
   }
-  
+
   // Always send for final statuses
   return true;
 }
@@ -212,9 +212,9 @@ async function simulatePostbackDelivery(conversion: ConversionRow): Promise<void
   // 3. Send HTTP requests to tracker endpoints
   // 4. Handle retries and failure cases
   // 5. Update delivery status in database
-  
+
   const postbackUrl = buildPostbackUrl(conversion);
-  
+
   console.log('🔗 Simulated postback delivery:', {
     url: postbackUrl,
     method: 'GET',
@@ -224,7 +224,7 @@ async function simulatePostbackDelivery(conversion: ConversionRow): Promise<void
       revenue: conversion.revenue
     }
   });
-  
+
   // Simulate HTTP request delay
   await new Promise(resolve => setTimeout(resolve, 100));
 }
@@ -235,7 +235,7 @@ async function simulatePostbackDelivery(conversion: ConversionRow): Promise<void
 function buildPostbackUrl(conversion: ConversionRow): string {
   // Template postback URL (in production, this comes from postback profiles)
   const template = 'https://tracker.example.com/postback?subid={clickid}&status={status}&payout={revenue}';
-  
+
   return template
     .replace('{clickid}', conversion.clickid)
     .replace('{status}', mapStatusForTracker(conversion.conversionStatus, conversion.type))
@@ -250,11 +250,11 @@ function mapStatusForTracker(status: Status, type: 'reg' | 'purchase'): string {
   if (type === 'reg') {
     return status === 'approved' ? 'lead' : 'trash';
   }
-  
+
   if (type === 'purchase') {
     return status === 'approved' ? 'sale' : 'trash';
   }
-  
+
   return 'trash';
 }
 
@@ -266,12 +266,12 @@ function getPostbackDelay(status: Status): number {
   if (status === 'approved' || status === 'declined') {
     return 0;
   }
-  
+
   // Slight delay for refunds/chargebacks to allow for processing
   if (status === 'refunded' || status === 'chargeback') {
     return 30000; // 30 seconds
   }
-  
+
   // Default delay for other statuses
   return 5000; // 5 seconds
 }
@@ -282,7 +282,7 @@ function getPostbackDelay(status: Status): number {
 export async function getQueueStats() {
   try {
     const queue = await initializeQueue();
-    
+
     if (!queue) {
       return {
         waiting: 0,
@@ -293,12 +293,12 @@ export async function getQueueStats() {
         error: 'Redis unavailable'
       };
     }
-    
+
     const waiting = await queue.getWaiting();
     const active = await queue.getActive();
     const completed = await queue.getCompleted();
     const failed = await queue.getFailed();
-    
+
     return {
       waiting: waiting.length,
       active: active.length,

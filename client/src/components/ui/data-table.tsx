@@ -5,9 +5,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 
 interface Column<T> {
   key: keyof T;
@@ -28,11 +28,11 @@ export function DataTable<T extends Record<string, any>>({
   data,
   columns,
   searchable = false,
-  searchPlaceholder = "Search...",
+  searchPlaceholder = 'Search...',
   onRowClick,
-  emptyMessage = "No data available",
+  emptyMessage = 'No data available',
 }: DataTableProps<T>) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   const filteredData = searchable
     ? data.filter((row) =>
@@ -55,7 +55,7 @@ export function DataTable<T extends Record<string, any>>({
           />
         </div>
       )}
-      
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -72,7 +72,7 @@ export function DataTable<T extends Record<string, any>>({
               filteredData.map((row, index) => (
                 <TableRow
                   key={index}
-                  className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""}
+                  className={onRowClick ? 'cursor-pointer hover:bg-muted/50' : ''}
                   onClick={() => onRowClick?.(row)}
                   data-testid={`table-row-${index}`}
                 >
@@ -80,7 +80,7 @@ export function DataTable<T extends Record<string, any>>({
                     <TableCell key={String(column.key)} data-testid={`table-cell-${String(column.key)}-${index}`}>
                       {column.render
                         ? column.render(row[column.key], row)
-                        : String(row[column.key] ?? "")}
+                        : String(row[column.key] ?? '')}
                     </TableCell>
                   ))}
                 </TableRow>

@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import { useParams } from "wouter";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, Lock, FileText, Download, Link, Settings } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { OfferLogo } from "@/components/ui/offer-logo";
+import { useState, useEffect } from 'react';
+import { useParams } from 'wouter';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { Copy, Globe, MapPin, DollarSign, Target, Calendar, Building2, ExternalLink, ArrowLeft, Lock, FileText, Download, Link, Settings } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useLocation } from 'wouter';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { OfferLogo } from '@/components/ui/offer-logo';
 import { getCountryFlag, getCountryName } from '@/utils/countries';
 
-import { transformLandingUrl } from "@/lib/queryClient";
+import { transformLandingUrl } from '@/lib/queryClient';
 
 interface OfferDetails {
   id: string;
@@ -55,19 +55,18 @@ interface OfferDetails {
 }
 
 
-
 // Функция для получения свойств бейджа категории
 function getCategoryBadgeProps(category: string) {
   const categories: Record<string, { label: string; className: string }> = {
-    gambling: { label: "Гемблинг", className: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300" },
-    dating: { label: "Знакомства", className: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300" },
-    finance: { label: "Финансы", className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" },
-    crypto: { label: "Крипто", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300" },
-    nutra: { label: "Нутра", className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" },
-    software: { label: "ПО", className: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300" },
+    gambling: { label: 'Гемблинг', className: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' },
+    dating: { label: 'Знакомства', className: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300' },
+    finance: { label: 'Финансы', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' },
+    crypto: { label: 'Крипто', className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' },
+    nutra: { label: 'Нутра', className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' },
+    software: { label: 'ПО', className: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300' },
   };
-  
-  return categories[category] || { label: category, className: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300" };
+
+  return categories[category] || { label: category, className: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300' };
 }
 
 const countryNames: Record<string, string> = {
@@ -102,11 +101,11 @@ const countryNames: Record<string, string> = {
 };
 
 // Component for displaying landing pages with custom domain transformation
-const LandingPagesCard = ({ 
-  landingPages, 
-  offerId, 
-  onCopyUrl 
-}: { 
+const LandingPagesCard = ({
+  landingPages,
+  offerId,
+  onCopyUrl
+}: {
   landingPages: any[];
   offerId: string;
   onCopyUrl: (url: string, type: string) => void;
@@ -161,13 +160,13 @@ const LandingPagesCard = ({
   const getUrlWithSubParams = async (landing: any) => {
     const baseUrl = await getTransformedUrl(landing);
     const landingSubParams = subParams[landing.id];
-    
+
     if (!landingSubParams) {
       return baseUrl;
     }
 
     const url = new URL(baseUrl);
-    
+
     if (landingSubParams.sub1) {url.searchParams.set('sub1', landingSubParams.sub1);}
     if (landingSubParams.sub2) {url.searchParams.set('sub2', landingSubParams.sub2);}
     if (landingSubParams.sub3) {url.searchParams.set('sub3', landingSubParams.sub3);}
@@ -184,13 +183,13 @@ const LandingPagesCard = ({
     if (landingSubParams.sub14) {url.searchParams.set('sub14', landingSubParams.sub14);}
     if (landingSubParams.sub15) {url.searchParams.set('sub15', landingSubParams.sub15);}
     if (landingSubParams.sub16) {url.searchParams.set('sub16', landingSubParams.sub16);}
-    
+
     return url.toString();
   };
 
   const handleCopyUrl = async (landing: any) => {
     const url = await getUrlWithSubParams(landing);
-    onCopyUrl(url, "URL лендинга с параметрами");
+    onCopyUrl(url, 'URL лендинга с параметрами');
   };
 
   const handleOpenUrl = async (landing: any) => {
@@ -220,7 +219,7 @@ const LandingPagesCard = ({
       if (!subParams[landing.id]) {
         setSubParams(prev => ({
           ...prev,
-          [landing.id]: { 
+          [landing.id]: {
             sub1: '', sub2: '', sub3: '', sub4: '', sub5: '', sub6: '', sub7: '', sub8: '',
             sub9: '', sub10: '', sub11: '', sub12: '', sub13: '', sub14: '', sub15: '', sub16: ''
           }
@@ -261,14 +260,14 @@ const LandingPagesCard = ({
                     <div className="space-y-1">
                       {transformedUrls[landing.id] ? (
                         <code className="text-sm text-green-600 dark:text-green-400 block font-medium break-all overflow-hidden">
-                          {subParams[landing.id] && Object.values(subParams[landing.id]).some(val => val) ? 
+                          {subParams[landing.id] && Object.values(subParams[landing.id]).some(val => val) ?
                             (() => {
                               const url = new URL(transformedUrls[landing.id]);
                               Object.entries(subParams[landing.id]).forEach(([key, value]) => {
                                 if (value) {url.searchParams.set(key, value);}
                               });
                               return url.toString();
-                            })() : 
+                            })() :
                             transformedUrls[landing.id]
                           }
                         </code>
@@ -317,14 +316,14 @@ const LandingPagesCard = ({
                   </div>
                 </div>
               </div>
-              
+
               {/* Выпадающая секция с sub-параметрами */}
               {expandedLanding === landing.id && (
                 <div className="border-t bg-gray-50 dark:bg-gray-900/50 p-4">
                   <h5 className="font-medium text-sm mb-3 text-gray-700 dark:text-gray-300">
                     Дополнительные параметры трекинга (sub1-sub16)
                   </h5>
-                  
+
                   {/* Основные параметры */}
                   <div className="mb-4">
                     <h6 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
@@ -377,7 +376,7 @@ const LandingPagesCard = ({
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Дополнительные параметры */}
                   <div className="mb-4">
                     <h6 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
@@ -399,7 +398,7 @@ const LandingPagesCard = ({
                       ))}
                     </div>
                   </div>
-                  
+
                   {/* Расширенные параметры */}
                   <div>
                     <h6 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
@@ -421,7 +420,7 @@ const LandingPagesCard = ({
                       ))}
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
                     <span>💡</span>
                     <span>Параметры автоматически добавляются в ссылку при заполнении. Поддерживается до 16 sub-параметров.</span>
@@ -454,7 +453,7 @@ export default function OfferDetails() {
 
   // Загрузка статуса запроса доступа для текущего оффера
   const { data: accessRequests = [] } = useQuery<any[]>({
-    queryKey: ["/api/partner/access-requests"],
+    queryKey: ['/api/partner/access-requests'],
     staleTime: 2 * 60 * 1000,
   });
 
@@ -463,12 +462,12 @@ export default function OfferDetails() {
     const reqOfferId = req.offerId || req.offer_id;
     return reqOfferId === offerId;
   });
-  
+
   // КРИТИЧНО: Доступ только после одобрения запроса рекламодателем
   const requestStatus = currentRequest?.status || 'none';
   const isApproved = requestStatus === 'approved';
 
-  // Отладка статуса  
+  // Отладка статуса
   console.log('OfferDetails Debug:', {
     offerId,
     accessRequests: accessRequests.length,
@@ -483,10 +482,10 @@ export default function OfferDetails() {
     allMatchingRequests: accessRequests.filter((req: any) => {
       const reqOfferId = req.offerId || req.offer_id;
       return reqOfferId === offerId;
-    }).map((req: any) => ({ 
-      id: req.id, 
-      offerId: req.offerId || req.offer_id, 
-      status: req.status 
+    }).map((req: any) => ({
+      id: req.id,
+      offerId: req.offerId || req.offer_id,
+      status: req.status
     }))
   });
 
@@ -494,36 +493,36 @@ export default function OfferDetails() {
     if (offerId && requestStatus === 'none' && !requestLoading) {
       setRequestLoading(true);
       try {
-        const response = await fetch("/api/partner/offer-access-request", {
-          method: "POST",
+        const response = await fetch('/api/partner/offer-access-request', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify({
             offerId,
-            message: "Запрос доступа к офферу"
+            message: 'Запрос доступа к офферу'
           })
         });
 
         if (response.ok) {
           toast({
-            title: "Запрос отправлен",
-            description: "Ваш запрос на доступ к офферу отправлен рекламодателю",
+            title: 'Запрос отправлен',
+            description: 'Ваш запрос на доступ к офферу отправлен рекламодателю',
           });
-          
+
           // Обновляем кеш запросов доступа без перезагрузки страницы
-          await queryClient.invalidateQueries({ queryKey: ["/api/partner/access-requests"] });
+          await queryClient.invalidateQueries({ queryKey: ['/api/partner/access-requests'] });
           await queryClient.invalidateQueries({ queryKey: [`/api/partner/offers/${offerId}`] });
-          await queryClient.invalidateQueries({ queryKey: ["/api/partner/offers"] });
+          await queryClient.invalidateQueries({ queryKey: ['/api/partner/offers'] });
         } else {
-          throw new Error("Ошибка отправки запроса");
+          throw new Error('Ошибка отправки запроса');
         }
       } catch (_error) {
         toast({
-          title: "Ошибка",
-          description: "Не удалось отправить запрос. Попробуйте еще раз.",
-          variant: "destructive"
+          title: 'Ошибка',
+          description: 'Не удалось отправить запрос. Попробуйте еще раз.',
+          variant: 'destructive'
         });
       } finally {
         setRequestLoading(false);
@@ -536,10 +535,10 @@ export default function OfferDetails() {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
-            onClick={() => navigate("/affiliate/offers")}
+            onClick={() => navigate('/affiliate/offers')}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -558,10 +557,10 @@ export default function OfferDetails() {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
-            onClick={() => navigate("/affiliate/offers")}
+            onClick={() => navigate('/affiliate/offers')}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -579,7 +578,7 @@ export default function OfferDetails() {
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Скопировано",
+      title: 'Скопировано',
       description: `${label} скопировано в буфер обмена`,
     });
   };
@@ -590,12 +589,12 @@ export default function OfferDetails() {
       const token = localStorage.getItem('auth_token');
       console.log('Download request - token available:', !!token);
       console.log('Making request to:', `/api/partner/offers/${offerId}/creatives/download`);
-      
+
       if (!token) {
         toast({
-          title: "Ошибка авторизации",
-          description: "Токен не найден. Пожалуйста, войдите в систему заново",
-          variant: "destructive",
+          title: 'Ошибка авторизации',
+          description: 'Токен не найден. Пожалуйста, войдите в систему заново',
+          variant: 'destructive',
         });
         return;
       }
@@ -611,9 +610,9 @@ export default function OfferDetails() {
       if (!response.ok) {
         if (response.status === 403) {
           toast({
-            title: "Доступ запрещен",
-            description: "У вас нет доступа к креативам этого оффера",
-            variant: "destructive",
+            title: 'Доступ запрещен',
+            description: 'У вас нет доступа к креативам этого оффера',
+            variant: 'destructive',
           });
           return;
         }
@@ -630,23 +629,23 @@ export default function OfferDetails() {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       toast({
-        title: "Архив скачан",
-        description: "ZIP-архив с креативами готов к использованию",
+        title: 'Архив скачан',
+        description: 'ZIP-архив с креативами готов к использованию',
       });
     } catch (error) {
       console.error('Download error:', error);
       toast({
-        title: "Ошибка скачивания",
-        description: "Не удалось скачать креативы",
-        variant: "destructive",
+        title: 'Ошибка скачивания',
+        description: 'Не удалось скачать креативы',
+        variant: 'destructive',
       });
     }
   };
 
   const categoryProps = getCategoryBadgeProps(offer?.category || 'other');
-  
+
   // Дополняем страны Арменией если её нет в списке
   const countryNames: Record<string, string> = {
     'armenia': '🇦🇲 Армения',
@@ -655,7 +654,7 @@ export default function OfferDetails() {
     'BR': '🇧🇷 Бразилия', 'MX': '🇲🇽 Мексика', 'IN': '🇮🇳 Индия', 'JP': '🇯🇵 Япония', 'KR': '🇰🇷 Южная Корея',
     'KZ': '🇰🇿 Казахстан', 'BY': '🇧🇾 Беларусь', 'UA': '🇺🇦 Украина', 'PL': '🇵🇱 Польша', 'TR': '🇹🇷 Турция'
   };
-  
+
   // Получаем статус оффера
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -675,10 +674,10 @@ export default function OfferDetails() {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
-            onClick={() => navigate("/affiliate/offers")}
+            onClick={() => navigate('/affiliate/offers')}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -700,10 +699,10 @@ export default function OfferDetails() {
     <div className="space-y-6">
       {/* Заголовок с кнопкой назад */}
       <div className="flex items-center gap-4">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="sm"
-          onClick={() => navigate("/affiliate/offers")}
+          onClick={() => navigate('/affiliate/offers')}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -716,7 +715,7 @@ export default function OfferDetails() {
       <Card>
         <CardHeader>
           <div className="flex items-start gap-4">
-            <OfferLogo 
+            <OfferLogo
               name={offer?.name || 'Оффер'}
               logo={offer?.logo}
               size="xl"
@@ -731,7 +730,7 @@ export default function OfferDetails() {
                 {getStatusBadge(offer?.status || 'draft')}
               </div>
               <p className="text-black dark:text-white">
-                {typeof offer?.description === 'object' 
+                {typeof offer?.description === 'object'
                   ? (offer.description?.ru || offer.description?.en || 'Описание не указано')
                   : (offer?.description || 'Описание не указано')
                 }
@@ -788,9 +787,6 @@ export default function OfferDetails() {
       </Card>
 
 
-
-
-
       {/* Гео-таргетинг */}
       <Card>
         <CardHeader>
@@ -837,7 +833,7 @@ export default function OfferDetails() {
               <h4 className="font-medium mb-3">KPI условия</h4>
               <div className="p-4 bg-amber-50 rounded-lg border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
                 <div className="text-sm whitespace-pre-wrap">
-                  {typeof offer.kpiConditions === 'object' 
+                  {typeof offer.kpiConditions === 'object'
                     ? (offer.kpiConditions.ru || offer.kpiConditions.en || 'KPI условия не указаны')
                     : (offer.kpiConditions || 'KPI условия не указаны')
                   }
@@ -890,8 +886,8 @@ export default function OfferDetails() {
 
       {/* Готовые трекинговые ссылки - условно для одобренных или кнопка запроса */}
       {isApproved ? (
-        <LandingPagesCard 
-          landingPages={offer.landingPages || []} 
+        <LandingPagesCard
+          landingPages={offer.landingPages || []}
           offerId={offer.id}
           onCopyUrl={copyToClipboard}
         />
@@ -910,23 +906,23 @@ export default function OfferDetails() {
                 {requestStatus === 'pending' ? 'Запрос отправлен' : 'Требуется доступ'}
               </h3>
               <p className="text-muted-foreground">
-                {requestStatus === 'pending' 
+                {requestStatus === 'pending'
                   ? 'Ваш запрос на доступ к готовым трекинговым ссылкам рассматривается рекламодателем'
                   : 'Для получения готовых трекинговых ссылок с кастомными доменами необходимо запросить доступ у рекламодателя'
                 }
               </p>
             </div>
             {requestStatus === 'none' && (
-              <Button 
+              <Button
                 onClick={handleRequestAccess}
                 disabled={requestLoading}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-8"
               >
-                {requestLoading ? "Отправка запроса..." : "Запросить доступ"}
+                {requestLoading ? 'Отправка запроса...' : 'Запросить доступ'}
               </Button>
             )}
             {requestStatus === 'pending' && (
-              <Button 
+              <Button
                 variant="outline"
                 className="border-yellow-500 text-yellow-600 hover:bg-yellow-50 px-8"
                 disabled

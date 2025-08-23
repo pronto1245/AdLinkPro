@@ -13,11 +13,11 @@ export function EventTesting() {
         <TestTube className="h-6 w-6" />
         <h1 className="text-3xl font-bold">Тестирование событий</h1>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Event Sender Form */}
         <div>
-          <EventSender 
+          <EventSender
             defaultClickId="test_click_123"
             defaultTxId="tx_test_456"
           />
@@ -52,9 +52,9 @@ export function EventTesting() {
                   <li><code>purchase</code> — покупка/депозит</li>
                 </ul>
               </div>
-              
+
               <Separator />
-              
+
               <div>
                 <strong>Антифрод уровни:</strong>
                 <ul className="list-disc list-inside mt-1 space-y-1">
@@ -63,13 +63,13 @@ export function EventTesting() {
                   <li><code>hard</code> — блокируются все профили</li>
                 </ul>
               </div>
-              
+
               <Separator />
-              
+
               <div>
                 <strong>Результат:</strong>
                 <p className="mt-1">
-                  После отправки события создается conversion и запускается 
+                  После отправки события создается conversion и запускается
                   система постбеков с применением антифрод политик.
                 </p>
               </div>

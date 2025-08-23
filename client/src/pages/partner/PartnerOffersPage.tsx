@@ -8,13 +8,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNotifications } from '@/components/NotificationToast';
 import { offersApi } from '@/lib/api-services';
-import { 
-  Search, 
-  Filter, 
-  Target, 
-  DollarSign, 
-  TrendingUp, 
-  Eye, 
+import {
+  Search,
+  Filter,
+  Target,
+  DollarSign,
+  TrendingUp,
+  Eye,
   ExternalLink,
   Grid,
   List,
@@ -42,11 +42,11 @@ export default function PartnerOffers() {
   const { showNotification } = useNotifications();
 
   // Fetch offers
-  const { 
-    data: offersData, 
-    isLoading, 
-    error, 
-    refetch 
+  const {
+    data: offersData,
+    isLoading,
+    error,
+    refetch
   } = useQuery({
     queryKey: ['offers', 'partner', { search, status, page }],
     queryFn: () => offersApi.getOffers({
@@ -259,10 +259,10 @@ export default function PartnerOffers() {
                       </p>
                     </div>
                     <Badge variant={
-                      offer.status === 'active' ? 'default' : 
+                      offer.status === 'active' ? 'default' :
                       offer.status === 'paused' ? 'secondary' : 'outline'
                     }>
-                      {offer.status === 'active' ? 'Активный' : 
+                      {offer.status === 'active' ? 'Активный' :
                        offer.status === 'paused' ? 'Пауза' : 'Завершен'}
                     </Badge>
                   </div>
@@ -302,16 +302,16 @@ export default function PartnerOffers() {
                   )}
 
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="flex-1"
                     >
                       <Eye className="h-4 w-4 mr-2" />
                       Подробнее
                     </Button>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="flex-1"
                       onClick={() => handleRequestAccess(offer.id, offer.name)}
                       disabled={offer.status !== 'active'}

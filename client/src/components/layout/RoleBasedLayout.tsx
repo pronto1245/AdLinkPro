@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
-import UniversalSidebar from "./UniversalSidebar";
-import { cn } from "@/lib/utils";
-import { useSidebar } from "@/contexts/sidebar-context";
-import { Menu } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import UniversalSidebar from './UniversalSidebar';
+import { cn } from '@/lib/utils';
+import { useSidebar } from '@/contexts/sidebar-context';
+import { Menu } from 'lucide-react';
 
 export default function RoleBasedLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -13,7 +13,7 @@ export default function RoleBasedLayout({ children }: { children: React.ReactNod
     const updateScreenSize = () => {
       const newIsLargeScreen = window.innerWidth >= 1024;
       setIsLargeScreen(newIsLargeScreen);
-      
+
       // Close mobile menu when switching to large screen
       if (newIsLargeScreen && mobileMenuOpen) {
         setMobileMenuOpen(false);
@@ -22,7 +22,7 @@ export default function RoleBasedLayout({ children }: { children: React.ReactNod
 
     updateScreenSize();
     window.addEventListener('resize', updateScreenSize);
-    
+
     return () => window.removeEventListener('resize', updateScreenSize);
   }, [mobileMenuOpen]);
 
@@ -41,24 +41,24 @@ export default function RoleBasedLayout({ children }: { children: React.ReactNod
       {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div 
-            className="fixed inset-0 bg-black/50 transition-opacity" 
+          <div
+            className="fixed inset-0 bg-black/50 transition-opacity"
             onClick={handleCloseMobileMenu}
           />
           <div className="relative">
-            <UniversalSidebar 
-              isMobile={true} 
-              onClose={handleCloseMobileMenu} 
+            <UniversalSidebar
+              isMobile={true}
+              onClose={handleCloseMobileMenu}
             />
           </div>
         </div>
       )}
 
       {/* Main Content Area */}
-      <div 
+      <div
         className={cn(
-          "flex-1 flex flex-col transition-all duration-300 ease-in-out",
-          isLargeScreen ? "ml-0" : "ml-0"
+          'flex-1 flex flex-col transition-all duration-300 ease-in-out',
+          isLargeScreen ? 'ml-0' : 'ml-0'
         )}
         style={{
           marginLeft: isLargeScreen ? `${sidebarWidth}px` : '0px'

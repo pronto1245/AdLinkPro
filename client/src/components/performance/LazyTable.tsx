@@ -25,7 +25,7 @@ export function LazyTable({ data, columns, pageSize = 50, className }: LazyTable
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
     const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
-    
+
     if (scrollPercentage > 0.8 && visibleRange.end < data.length) {
       setVisibleRange(prev => ({
         start: prev.start,

@@ -59,7 +59,7 @@ export class I18nService {
           lng: this.config.defaultLanguage,
           fallbackLng: this.config.fallbackLanguage,
           supportedLngs: this.config.supportedLanguages,
-          
+
           debug: process.env.NODE_ENV === 'development',
 
           interpolation: {
@@ -107,7 +107,7 @@ export class I18nService {
     try {
       await i18n.changeLanguage(language);
       localStorage.setItem(this.config.storageKey, language);
-      
+
       // Trigger custom event for language change
       window.dispatchEvent(new CustomEvent('languageChanged', {
         detail: { language, previousLanguage: this.getCurrentLanguage() }
@@ -166,10 +166,10 @@ export class I18nService {
   }
 
   // Format currency according to current language
-  formatCurrency(value: number, currency: string = 'USD'): string {
+  formatCurrency(value: number, currency = 'USD'): string {
     const language = this.getCurrentLanguage();
     const config = this.getLanguageConfig(language);
-    
+
     return new Intl.NumberFormat(language, {
       style: 'currency',
       currency: currency,
@@ -181,7 +181,7 @@ export class I18nService {
   formatDate(date: Date | string | number, options: Intl.DateTimeFormatOptions = {}): string {
     const language = this.getCurrentLanguage();
     const dateObj = new Date(date);
-    
+
     return new Intl.DateTimeFormat(language, {
       year: 'numeric',
       month: '2-digit',
@@ -218,16 +218,16 @@ export class I18nService {
   getMissingTranslations(namespace: string = this.config.namespace): string[] {
     const currentLang = this.getCurrentLanguage();
     const fallbackLang = this.config.fallbackLanguage;
-    
+
     const currentTranslations = i18n.getResourceBundle(currentLang, namespace) || {};
     const fallbackTranslations = i18n.getResourceBundle(fallbackLang, namespace) || {};
-    
+
     const missing: string[] = [];
-    
+
     const checkMissing = (obj: any, fallbackObj: any, prefix = '') => {
       Object.keys(fallbackObj).forEach(key => {
         const fullKey = prefix ? `${prefix}.${key}` : key;
-        
+
         if (typeof fallbackObj[key] === 'object' && fallbackObj[key] !== null) {
           checkMissing(obj[key] || {}, fallbackObj[key], fullKey);
         } else if (!(key in obj) || obj[key] === '') {
@@ -235,7 +235,7 @@ export class I18nService {
         }
       });
     };
-    
+
     checkMissing(currentTranslations, fallbackTranslations);
     return missing;
   }
@@ -247,12 +247,12 @@ export class I18nService {
       if (!response.ok) {
         throw new Error(`Failed to load translations: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
-      
+
       // Add the loaded translations to i18n
       i18n.addResourceBundle(language, this.config.namespace, data.translations, true, true);
-      
+
       console.debug(`Loaded ${language} translations from server`);
     } catch (_error) {
       console.error(`Failed to load ${language} translations from server:`, error);
@@ -267,7 +267,7 @@ export class I18nService {
       if (!response.ok) {
         throw new Error(`Failed to load languages: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       return data.languages || [];
     } catch (error) {
@@ -286,11 +286,11 @@ export class I18nService {
     try {
       // Try to load fresh translations from server
       await this.loadTranslationsFromServer(language);
-      
+
       // Change language
       await i18n.changeLanguage(language);
       localStorage.setItem(this.config.storageKey, language);
-      
+
       // Trigger custom event for language change
       window.dispatchEvent(new CustomEvent('languageChanged', {
         detail: { language, previousLanguage: this.getCurrentLanguage() }
@@ -319,28 +319,28 @@ export class I18nService {
 export const i18nService = I18nService.getInstance();
 
 // Export commonly used functions for convenience
-export const t = (key: string, defaultValue?: string, options?: any) => 
+export const t = (key: string, defaultValue?: string, options?: any) =>
   i18nService.translate(key, defaultValue, options);
 
-export const formatCurrency = (value: number, currency?: string) => 
+export const formatCurrency = (value: number, currency?: string) =>
   i18nService.formatCurrency(value, currency);
 
-export const formatDate = (date: Date | string | number, options?: Intl.DateTimeFormatOptions) => 
+export const formatDate = (date: Date | string | number, options?: Intl.DateTimeFormatOptions) =>
   i18nService.formatDate(date, options);
 
-export const formatRelativeTime = (date: Date | string | number) => 
+export const formatRelativeTime = (date: Date | string | number) =>
   i18nService.formatRelativeTime(date);
 
-export const changeLanguage = (language: string) => 
+export const changeLanguage = (language: string) =>
   i18nService.changeLanguage(language);
 
-export const changeLanguageWithServerSync = (language: string) => 
+export const changeLanguageWithServerSync = (language: string) =>
   i18nService.changeLanguageWithServerSync(language);
 
-export const loadTranslationsFromServer = (language: string) => 
+export const loadTranslationsFromServer = (language: string) =>
   i18nService.loadTranslationsFromServer(language);
 
-export const getCurrentLanguage = () => 
+export const getCurrentLanguage = () =>
   i18nService.getCurrentLanguage();
 
 export default i18nService;

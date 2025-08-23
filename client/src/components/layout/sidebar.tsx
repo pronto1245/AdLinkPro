@@ -3,13 +3,13 @@ import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Target, 
-  DollarSign, 
-  Settings, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  Users,
+  Target,
+  DollarSign,
+  Settings,
+  BarChart3,
   HeadphonesIcon,
   ChevronLeft,
   ChevronRight
@@ -29,34 +29,34 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   // Dashboard items for all roles
   { labelKey: 'sidebar.dashboard', href: '', icon: LayoutDashboard, roles: ['super_admin', 'owner', 'advertiser', 'partner', 'affiliate', 'staff'] },
-  
+
   // Super Admin specific items
   { labelKey: 'sidebar.users', href: '/dashboard/super-admin/users', icon: Users, roles: ['super_admin'], badge: 3 },
   { labelKey: 'sidebar.offers', href: '/dashboard/super-admin/offers', icon: Target, roles: ['super_admin'] },
   { labelKey: 'sidebar.analytics', href: '/dashboard/super-admin/analytics', icon: BarChart3, roles: ['super_admin'] },
-  
+
   // Owner specific items
   { labelKey: 'sidebar.users', href: '/dashboard/owner/users', icon: Users, roles: ['owner'] },
   { labelKey: 'sidebar.settings', href: '/dashboard/owner/settings', icon: Settings, roles: ['owner'] },
-  
+
   // Advertiser specific items
   { labelKey: 'sidebar.offers', href: '/dashboard/advertiser/offers', icon: Target, roles: ['advertiser'] },
   { labelKey: 'sidebar.analytics', href: '/dashboard/advertiser/analytics', icon: BarChart3, roles: ['advertiser'] },
   { labelKey: 'sidebar.partners', href: '/dashboard/advertiser/partners', icon: Users, roles: ['advertiser'] },
   { labelKey: 'sidebar.finances', href: '/dashboard/advertiser/finances', icon: DollarSign, roles: ['advertiser'] },
-  
+
   // Partner specific items
   { labelKey: 'sidebar.offers', href: '/dashboard/partner/offers', icon: Target, roles: ['partner'] },
   { labelKey: 'sidebar.analytics', href: '/dashboard/partner/statistics', icon: BarChart3, roles: ['partner'] },
   { labelKey: 'sidebar.finances', href: '/dashboard/partner/finances', icon: DollarSign, roles: ['partner'] },
   { labelKey: 'sidebar.profile', href: '/dashboard/partner/profile', icon: Settings, roles: ['partner'] },
-  
-  // Affiliate specific items  
+
+  // Affiliate specific items
   { labelKey: 'sidebar.offers', href: '/dashboard/affiliate/offers', icon: Target, roles: ['affiliate'] },
   { labelKey: 'sidebar.analytics', href: '/dashboard/affiliate/statistics', icon: BarChart3, roles: ['affiliate'] },
   { labelKey: 'sidebar.finances', href: '/dashboard/affiliate/finances', icon: DollarSign, roles: ['affiliate'] },
   { labelKey: 'sidebar.profile', href: '/dashboard/affiliate/profile', icon: Settings, roles: ['affiliate'] },
-  
+
   // Staff specific items
   { labelKey: 'sidebar.support', href: '/dashboard/staff', icon: HeadphonesIcon, roles: ['staff'] },
 ];
@@ -73,7 +73,7 @@ function Sidebar({ className }: SidebarProps) {
 
   if (!user) {return null;}
 
-  const filteredMenuItems = menuItems.filter(item => 
+  const filteredMenuItems = menuItems.filter(item =>
     item.roles.includes(user.role ?? '')
   );
 
@@ -86,15 +86,15 @@ function Sidebar({ className }: SidebarProps) {
 
   return (
     <aside className={cn(
-      "fixed inset-y-0 left-0 z-[60] bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-600 transform transition-all duration-300 lg:translate-x-0",
-      isCollapsed ? "w-16" : "w-64",
+      'fixed inset-y-0 left-0 z-[60] bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-600 transform transition-all duration-300 lg:translate-x-0',
+      isCollapsed ? 'w-16' : 'w-64',
       className
     )}>
       <div className="flex flex-col h-full">
         {/* Header with Toggle */}
         <div className={cn(
-          "flex items-center border-b border-slate-200 dark:border-gray-600",
-          isCollapsed ? "px-4 py-4 justify-center" : "px-6 py-4 justify-between"
+          'flex items-center border-b border-slate-200 dark:border-gray-600',
+          isCollapsed ? 'px-4 py-4 justify-center' : 'px-6 py-4 justify-between'
         )}>
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
@@ -123,25 +123,25 @@ function Sidebar({ className }: SidebarProps) {
           {filteredMenuItems.map((item) => {
             const IconComponent = item.icon;
             const href = item.labelKey === 'sidebar.dashboard' ? dashboardHref : item.href;
-            
+
             return (
               <Link
                 key={item.href || 'dashboard'}
                 href={href}
                 className={cn(
-                  "flex items-center px-3 py-2 text-sm font-medium rounded-lg group transition-colors relative",
+                  'flex items-center px-3 py-2 text-sm font-medium rounded-lg group transition-colors relative',
                   location === href
-                    ? "text-white bg-blue-600 dark:bg-blue-700"
-                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-700",
-                  isCollapsed ? "justify-center" : ""
+                    ? 'text-white bg-blue-600 dark:bg-blue-700'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-700',
+                  isCollapsed ? 'justify-center' : ''
                 )}
                 data-testid={`nav-${item.labelKey.split('.')[1]}`}
                 title={isCollapsed ? t(item.labelKey) : undefined}
               >
                 <IconComponent className={cn(
-                  "w-5 h-5",
-                  isCollapsed ? "" : "mr-3",
-                  location === href ? "text-white" : "text-slate-400 dark:text-slate-500"
+                  'w-5 h-5',
+                  isCollapsed ? '' : 'mr-3',
+                  location === href ? 'text-white' : 'text-slate-400 dark:text-slate-500'
                 )} />
                 {!isCollapsed && (
                   <>
@@ -162,12 +162,12 @@ function Sidebar({ className }: SidebarProps) {
             );
           })}
         </nav>
-        
+
         {/* Footer with theme toggle */}
         <div className="p-3 border-t border-slate-200 dark:border-gray-600">
           <div className={cn(
-            "flex items-center",
-            isCollapsed ? "justify-center" : "justify-between"
+            'flex items-center',
+            isCollapsed ? 'justify-center' : 'justify-between'
           )}>
             {!isCollapsed && (
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Тема</span>

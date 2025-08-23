@@ -1,14 +1,14 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { MessageCircle, Clock, AlertCircle, HelpCircle, DollarSign, Target } from "lucide-react";
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { MessageCircle, Clock, AlertCircle, HelpCircle, DollarSign, Target } from 'lucide-react';
 
 interface ContactManagerModalProps {
   isOpen: boolean;
@@ -16,28 +16,28 @@ interface ContactManagerModalProps {
 }
 
 const urgencyLevels = [
-  { value: "low", label: "Низкий", icon: MessageCircle, color: "text-blue-500" },
-  { value: "medium", label: "Средний", icon: Clock, color: "text-yellow-500" },
-  { value: "high", label: "Высокий", icon: AlertCircle, color: "text-orange-500" },
-  { value: "critical", label: "Критический", icon: AlertCircle, color: "text-red-500" }
+  { value: 'low', label: 'Низкий', icon: MessageCircle, color: 'text-blue-500' },
+  { value: 'medium', label: 'Средний', icon: Clock, color: 'text-yellow-500' },
+  { value: 'high', label: 'Высокий', icon: AlertCircle, color: 'text-orange-500' },
+  { value: 'critical', label: 'Критический', icon: AlertCircle, color: 'text-red-500' }
 ];
 
 const categories = [
-  { value: "technical", label: "Техническая поддержка", icon: HelpCircle },
-  { value: "financial", label: "Финансовые вопросы", icon: DollarSign },
-  { value: "offers", label: "Вопросы по офферам", icon: Target },
-  { value: "general", label: "Общие вопросы", icon: MessageCircle }
+  { value: 'technical', label: 'Техническая поддержка', icon: HelpCircle },
+  { value: 'financial', label: 'Финансовые вопросы', icon: DollarSign },
+  { value: 'offers', label: 'Вопросы по офферам', icon: Target },
+  { value: 'general', label: 'Общие вопросы', icon: MessageCircle }
 ];
 
 export function ContactManagerModal({ isOpen, onClose }: ContactManagerModalProps) {
   const [formData, setFormData] = useState({
-    subject: "",
-    message: "",
-    category: "",
-    urgency: "medium",
-    contactMethod: "email"
+    subject: '',
+    message: '',
+    category: '',
+    urgency: 'medium',
+    contactMethod: 'email'
   });
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -47,7 +47,7 @@ export function ContactManagerModal({ isOpen, onClose }: ContactManagerModalProp
     },
     onSuccess: (response) => {
       toast({
-        title: "Обращение отправлено",
+        title: 'Обращение отправлено',
         description: `Ваше обращение #${response.ticketNumber} получено. Менеджер свяжется с вами в течение 24 часов.`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/partner/support/tickets'] });
@@ -56,31 +56,31 @@ export function ContactManagerModal({ isOpen, onClose }: ContactManagerModalProp
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка отправки",
-        description: error.message || "Не удалось отправить обращение. Попробуйте позже.",
-        variant: "destructive",
+        title: 'Ошибка отправки',
+        description: error.message || 'Не удалось отправить обращение. Попробуйте позже.',
+        variant: 'destructive',
       });
     }
   });
 
   const resetForm = () => {
     setFormData({
-      subject: "",
-      message: "",
-      category: "",
-      urgency: "medium",
-      contactMethod: "email"
+      subject: '',
+      message: '',
+      category: '',
+      urgency: 'medium',
+      contactMethod: 'email'
     });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.subject.trim() || !formData.message.trim() || !formData.category) {
       toast({
-        title: "Заполните все поля",
-        description: "Пожалуйста, укажите тему, категорию и опишите ваш вопрос.",
-        variant: "destructive",
+        title: 'Заполните все поля',
+        description: 'Пожалуйста, укажите тему, категорию и опишите ваш вопрос.',
+        variant: 'destructive',
       });
       return;
     }
@@ -110,7 +110,7 @@ export function ContactManagerModal({ isOpen, onClose }: ContactManagerModalProp
           {/* Category Selection */}
           <div className="space-y-2">
             <Label htmlFor="category">Категория обращения *</Label>
-            <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
+            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Выберите категорию" />
               </SelectTrigger>
@@ -133,7 +133,7 @@ export function ContactManagerModal({ isOpen, onClose }: ContactManagerModalProp
           {/* Urgency Level */}
           <div className="space-y-2">
             <Label htmlFor="urgency">Уровень срочности</Label>
-            <Select value={formData.urgency} onValueChange={(value) => setFormData({...formData, urgency: value})}>
+            <Select value={formData.urgency} onValueChange={(value) => setFormData({ ...formData, urgency: value })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -160,7 +160,7 @@ export function ContactManagerModal({ isOpen, onClose }: ContactManagerModalProp
               id="subject"
               placeholder="Кратко опишите суть вопроса"
               value={formData.subject}
-              onChange={(e) => setFormData({...formData, subject: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
               maxLength={100}
             />
             <div className="text-xs text-muted-foreground text-right">
@@ -175,7 +175,7 @@ export function ContactManagerModal({ isOpen, onClose }: ContactManagerModalProp
               id="message"
               placeholder="Опишите ваш вопрос подробно. Укажите ID офферов, суммы, даты и другие важные детали."
               value={formData.message}
-              onChange={(e) => setFormData({...formData, message: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               rows={6}
               maxLength={1000}
             />
@@ -187,7 +187,7 @@ export function ContactManagerModal({ isOpen, onClose }: ContactManagerModalProp
           {/* Contact Method */}
           <div className="space-y-2">
             <Label htmlFor="contactMethod">Предпочтительный способ связи</Label>
-            <Select value={formData.contactMethod} onValueChange={(value) => setFormData({...formData, contactMethod: value})}>
+            <Select value={formData.contactMethod} onValueChange={(value) => setFormData({ ...formData, contactMethod: value })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -233,7 +233,7 @@ export function ContactManagerModal({ isOpen, onClose }: ContactManagerModalProp
               disabled={createTicketMutation.isPending}
               className="sm:w-auto bg-blue-600 hover:bg-blue-700"
             >
-              {createTicketMutation.isPending ? "Отправляем..." : "Отправить обращение"}
+              {createTicketMutation.isPending ? 'Отправляем...' : 'Отправить обращение'}
             </Button>
           </div>
         </form>

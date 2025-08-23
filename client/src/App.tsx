@@ -68,10 +68,10 @@ function Router() {
   }, [i18n]);
 
   return (
-    <Suspense fallback={<div style={{padding:24}}>Загрузка…</div>}>
+    <Suspense fallback={<div style={{ padding:24 }}>Загрузка…</div>}>
       <Switch>
-        <Route path="/debug" component={() => <div style={{padding:24,color:"#fff"}}>DEBUG OK</div>} />
-        
+        <Route path="/debug" component={() => <div style={{ padding:24,color:'#fff' }}>DEBUG OK</div>} />
+
         {/* Root redirect to login */}
         <Route path="/" component={() => <Redirect to="/login" />} />
 

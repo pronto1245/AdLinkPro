@@ -1,7 +1,6 @@
 import { sendEmail } from './email';
 import { db } from '../db';
-import { userNotifications } from '../../shared/schema';
-import type { User } from '../../shared/schema';
+import { userNotifications, type User } from '../../shared/schema';
 
 export interface NotificationEvent {
   type: 'user_registration' | 'user_blocked' | 'new_device_login' | 'fraud_detected' | 'payment_received' | 'new_referral' | 'referral_earning' | 'postback_failed' | 'postback_success_rate_low' | 'postback_high_error_rate';
@@ -38,7 +37,7 @@ export class NotificationService {
 
   private async sendEmailNotification(event: NotificationEvent): Promise<void> {
     const emailConfig = this.getEmailConfig(event);
-    
+
     if (emailConfig) {
       await sendEmail(emailConfig);
     }
@@ -242,7 +241,7 @@ export class NotificationService {
 export async function notifyNewReferral(referrer: any, referredUser: any): Promise<void> {
   try {
     console.log('🔗 Sending new referral notification to:', referrer.username);
-    
+
     // Сохраняем уведомление в базу данных
     await db.insert(userNotifications).values({
       userId: referrer.id,
@@ -257,9 +256,9 @@ export async function notifyNewReferral(referrer: any, referredUser: any): Promi
       status: 'sent',
       isRead: false
     });
-    
+
     console.log('✅ Referral notification saved to database');
-    
+
     // Отправляем email уведомление (если настроен SendGrid)
     const notificationService = NotificationService.getInstance();
     await notificationService.sendNotification({
@@ -272,7 +271,7 @@ export async function notifyNewReferral(referrer: any, referredUser: any): Promi
       },
       timestamp: new Date()
     });
-    
+
   } catch (error) {
     console.error('❌ Error sending referral notification:', error);
   }
@@ -281,7 +280,7 @@ export async function notifyNewReferral(referrer: any, referredUser: any): Promi
 export async function notifyReferralEarning(referrer: any, earningData: any): Promise<void> {
   try {
     console.log('💰 Sending referral earning notification to:', referrer.username);
-    
+
     // Сохраняем уведомление в базу данных
     await db.insert(userNotifications).values({
       userId: referrer.id,
@@ -296,9 +295,9 @@ export async function notifyReferralEarning(referrer: any, earningData: any): Pr
       status: 'sent',
       isRead: false
     });
-    
+
     console.log('✅ Earning notification saved to database');
-    
+
     // Отправляем email уведомление
     const notificationService = NotificationService.getInstance();
     await notificationService.sendNotification({
@@ -311,7 +310,7 @@ export async function notifyReferralEarning(referrer: any, earningData: any): Pr
       },
       timestamp: new Date()
     });
-    
+
   } catch (error) {
     console.error('❌ Error sending earning notification:', error);
   }
@@ -322,9 +321,9 @@ export const notificationService = NotificationService.getInstance();
 
 // Уведомление рекламодателю о новом запросе доступа к офферу
 export async function notifyOfferAccessRequest(
-  advertiser: User, 
-  partner: User, 
-  offer: any, 
+  advertiser: User,
+  partner: User,
+  offer: any,
   requestMessage?: string
 ) {
   try {
@@ -332,12 +331,12 @@ export async function notifyOfferAccessRequest(
       userId: advertiser.id,
       type: 'offer_access_request',
       title: 'Новый запрос доступа к офферу',
-      message: `Партнёр ${partner.username} запросил доступ к офферу "${offer.name}"`, _data: { 
-        partnerId: partner.id, 
+      message: `Партнёр ${partner.username} запросил доступ к офферу "${offer.name}"`, _data: {
+        partnerId: partner.id,
         partnerUsername: partner.username,
-        offerId: offer.id, 
+        offerId: offer.id,
         offerName: offer.name,
-        requestMessage 
+        requestMessage
       },
       channel: 'system',
       status: 'sent'
@@ -363,9 +362,9 @@ export async function notifyOfferAccessRequest(
 
 // Уведомление партнёру об одобрении запроса доступа
 export async function notifyOfferAccessApproved(
-  partner: User, 
-  advertiser: User, 
-  offer: any, 
+  partner: User,
+  advertiser: User,
+  offer: any,
   responseMessage?: string
 ) {
   try {
@@ -373,12 +372,12 @@ export async function notifyOfferAccessApproved(
       userId: partner.id,
       type: 'offer_access_approved',
       title: 'Запрос доступа одобрен',
-      message: `Ваш запрос доступа к офферу "${offer.name}" одобрен`, _data: { 
+      message: `Ваш запрос доступа к офферу "${offer.name}" одобрен`, _data: {
         advertiserId: advertiser.id,
         advertiserUsername: advertiser.username,
-        offerId: offer.id, 
+        offerId: offer.id,
         offerName: offer.name,
-        responseMessage 
+        responseMessage
       },
       channel: 'system',
       status: 'sent'
@@ -405,9 +404,9 @@ export async function notifyOfferAccessApproved(
 
 // Уведомление партнёру об отклонении запроса доступа
 export async function notifyOfferAccessRejected(
-  partner: User, 
-  advertiser: User, 
-  offer: any, 
+  partner: User,
+  advertiser: User,
+  offer: any,
   responseMessage?: string
 ) {
   try {
@@ -415,12 +414,12 @@ export async function notifyOfferAccessRejected(
       userId: partner.id,
       type: 'offer_access_rejected',
       title: 'Запрос доступа отклонён',
-      message: `Ваш запрос доступа к офферу "${offer.name}" отклонён`, _data: { 
+      message: `Ваш запрос доступа к офферу "${offer.name}" отклонён`, _data: {
         advertiserId: advertiser.id,
         advertiserUsername: advertiser.username,
-        offerId: offer.id, 
+        offerId: offer.id,
         offerName: offer.name,
-        responseMessage 
+        responseMessage
       },
       channel: 'system',
       status: 'sent'

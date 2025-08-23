@@ -1,44 +1,44 @@
-import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { 
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle 
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { OfferLogo } from "@/components/ui/offer-logo";
-import { 
-  Check, 
-  X, 
-  Search, 
-  Filter, 
-  Eye, 
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { OfferLogo } from '@/components/ui/offer-logo';
+import {
+  Check,
+  X,
+  Search,
+  Filter,
+  Eye,
   MessageSquare,
   Clock,
   UserCheck,
@@ -48,7 +48,7 @@ import {
   CheckCircle,
   XCircle,
   MoreHorizontal
-} from "lucide-react";
+} from 'lucide-react';
 
 interface OfferAccessRequest {
   id: string;
@@ -61,7 +61,7 @@ interface OfferAccessRequest {
   createdAt: string;
   approvedAt?: string | null;
   updatedAt: string;
-  
+
   // Обогащенные данные из API
   partnerName: string;
   partnerUsername: string;
@@ -73,55 +73,55 @@ interface OfferAccessRequest {
 }
 
 export default function AdvertiserAccessRequests() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedRequest, setSelectedRequest] = useState<OfferAccessRequest | null>(null);
   const [showResponseDialog, setShowResponseDialog] = useState(false);
-  const [responseMessage, setResponseMessage] = useState("");
+  const [responseMessage, setResponseMessage] = useState('');
   const [responseAction, setResponseAction] = useState<'approve' | 'reject'>('approve');
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Загрузка запросов доступа
   const { data: requests = [], isLoading } = useQuery({
-    queryKey: ["/api/advertiser/access-requests"],
+    queryKey: ['/api/advertiser/access-requests'],
     staleTime: 0, // Always fetch fresh
   });
-  
+
   // Отладка данных с сервера
-  console.log("Access requests data:", requests);
+  console.log('Access requests data:', requests);
 
   // Mutation для ответа на запрос доступа
   const respondToRequestMutation = useMutation({
-    mutationFn: async (data: { 
-      requestId: string; 
-      action: 'approve' | 'reject'; 
-      message?: string 
+    mutationFn: async (data: {
+      requestId: string;
+      action: 'approve' | 'reject';
+      message?: string
     }) => {
-      return await apiRequest(`/api/advertiser/access-requests/${data.requestId}/respond`, "POST", {
+      return await apiRequest(`/api/advertiser/access-requests/${data.requestId}/respond`, 'POST', {
         action: data.action,
         message: data.message
       });
     },
     onSuccess: (data, variables) => {
       toast({
-        title: variables.action === 'approve' ? "Запрос одобрен" : "Запрос отклонен",
-        description: variables.action === 'approve' 
-          ? "Партнер получил доступ к офферу" 
-          : "Запрос был отклонен",
-        variant: "default",
+        title: variables.action === 'approve' ? 'Запрос одобрен' : 'Запрос отклонен',
+        description: variables.action === 'approve'
+          ? 'Партнер получил доступ к офферу'
+          : 'Запрос был отклонен',
+        variant: 'default',
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/advertiser/access-requests"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertiser/access-requests'] });
       setShowResponseDialog(false);
       setSelectedRequest(null);
-      setResponseMessage("");
+      setResponseMessage('');
     },
     onError: (error: any) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось обработать запрос",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Не удалось обработать запрос',
+        variant: 'destructive',
       });
     },
   });
@@ -129,14 +129,14 @@ export default function AdvertiserAccessRequests() {
   // Фильтрация и поиск запросов
   const filteredRequests = useMemo(() => {
     return (requests as OfferAccessRequest[]).filter((request: OfferAccessRequest) => {
-      const matchesSearch = 
+      const matchesSearch =
         request.offerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         request.partnerUsername.toLowerCase().includes(searchTerm.toLowerCase()) ||
         request.partnerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
         request.partnerName.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = statusFilter === "all" || request.status === statusFilter;
-      
+
+      const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
+
       return matchesSearch && matchesStatus;
     });
   }, [requests, searchTerm, statusFilter]);
@@ -150,7 +150,7 @@ export default function AdvertiserAccessRequests() {
 
   const handleSubmitResponse = () => {
     if (!selectedRequest) {return;}
-    
+
     respondToRequestMutation.mutate({
       requestId: selectedRequest.id,
       action: responseAction,
@@ -163,25 +163,25 @@ export default function AdvertiserAccessRequests() {
     switch (status) {
       case 'pending':
         return {
-          className: "bg-yellow-100 text-yellow-800 border-yellow-200",
+          className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
           icon: Clock,
-          label: "Ожидает"
+          label: 'Ожидает'
         };
       case 'approved':
         return {
-          className: "bg-green-100 text-green-800 border-green-200",
+          className: 'bg-green-100 text-green-800 border-green-200',
           icon: CheckCircle,
-          label: "Одобрено"
+          label: 'Одобрено'
         };
       case 'rejected':
         return {
-          className: "bg-red-100 text-red-800 border-red-200",
+          className: 'bg-red-100 text-red-800 border-red-200',
           icon: XCircle,
-          label: "Отклонено"
+          label: 'Отклонено'
         };
       default:
         return {
-          className: "bg-gray-100 text-gray-800 border-gray-200",
+          className: 'bg-gray-100 text-gray-800 border-gray-200',
           icon: Clock,
           label: status
         };
@@ -194,15 +194,15 @@ export default function AdvertiserAccessRequests() {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) {
       return `Сегодня в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
     } else if (diffDays === 1) {
       return `Вчера в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
     } else {
-      return date.toLocaleDateString('ru-RU', { 
-        day: '2-digit', 
-        month: '2-digit', 
+      return date.toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
@@ -231,7 +231,7 @@ export default function AdvertiserAccessRequests() {
             Управление запросами партнеров на доступ к офферам
           </p>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="text-center">
@@ -274,27 +274,27 @@ export default function AdvertiserAccessRequests() {
                 data-testid="input-search-requests"
               />
             </div>
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2" data-testid="button-filter-status">
                   <Filter className="h-4 w-4" />
-                  {statusFilter === "all" ? "Все статусы" : 
-                   statusFilter === "pending" ? "Ожидают" :
-                   statusFilter === "approved" ? "Одобрено" : "Отклонено"}
+                  {statusFilter === 'all' ? 'Все статусы' :
+                   statusFilter === 'pending' ? 'Ожидают' :
+                   statusFilter === 'approved' ? 'Одобрено' : 'Отклонено'}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+                <DropdownMenuItem onClick={() => setStatusFilter('all')}>
                   Все статусы
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("pending")}>
+                <DropdownMenuItem onClick={() => setStatusFilter('pending')}>
                   Ожидают
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("approved")}>
+                <DropdownMenuItem onClick={() => setStatusFilter('approved')}>
                   Одобрено
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("rejected")}>
+                <DropdownMenuItem onClick={() => setStatusFilter('rejected')}>
                   Отклонено
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -332,13 +332,13 @@ export default function AdvertiserAccessRequests() {
                   filteredRequests.map((request: OfferAccessRequest) => {
                     const statusProps = getStatusBadgeProps(request.status);
                     const StatusIcon = statusProps.icon;
-                    
+
                     return (
                       <TableRow key={request.id} className="hover:bg-gray-50/50">
                         {/* Оффер */}
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <OfferLogo 
+                            <OfferLogo
                               name={request.offerName}
                               logo={request.offerLogo}
                               size="md"
@@ -429,7 +429,7 @@ export default function AdvertiserAccessRequests() {
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
                                     {request.status === 'approved' ? (
-                                      <DropdownMenuItem 
+                                      <DropdownMenuItem
                                         onClick={() => handleResponseClick(request, 'reject')}
                                         className="text-red-600 focus:text-red-600"
                                       >
@@ -437,7 +437,7 @@ export default function AdvertiserAccessRequests() {
                                         Отозвать доступ
                                       </DropdownMenuItem>
                                     ) : request.status === 'rejected' ? (
-                                      <DropdownMenuItem 
+                                      <DropdownMenuItem
                                         onClick={() => handleResponseClick(request, 'approve')}
                                         className="text-green-600 focus:text-green-600"
                                       >
@@ -469,7 +469,7 @@ export default function AdvertiserAccessRequests() {
               {responseAction === 'approve' ? 'Одобрить запрос' : 'Отклонить запрос'}
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {selectedRequest && (
               <div className="p-4 bg-gray-50 rounded-lg">
@@ -484,7 +484,7 @@ export default function AdvertiserAccessRequests() {
                     </div>
                   </div>
                 </div>
-                
+
                 {selectedRequest.message && (
                   <div className="mt-2">
                     <div className="text-sm font-medium text-gray-700 mb-1">Сообщение партнера:</div>
@@ -493,7 +493,7 @@ export default function AdvertiserAccessRequests() {
                 )}
               </div>
             )}
-            
+
             <div>
               <label className="text-sm font-medium block mb-2">
                 Ответное сообщение (необязательно)
@@ -501,22 +501,22 @@ export default function AdvertiserAccessRequests() {
               <Textarea
                 value={responseMessage}
                 onChange={(e) => setResponseMessage(e.target.value)}
-                placeholder={responseAction === 'approve' 
-                  ? "Добро пожаловать! Желаем успешного трафика..." 
-                  : "К сожалению, ваш запрос не может быть одобрен..."
+                placeholder={responseAction === 'approve'
+                  ? 'Добро пожаловать! Желаем успешного трафика...'
+                  : 'К сожалению, ваш запрос не может быть одобрен...'
                 }
                 rows={3}
                 data-testid="textarea-response-message"
               />
             </div>
-            
+
             <div className="flex gap-2 pt-2">
-              <Button 
+              <Button
                 onClick={handleSubmitResponse}
                 disabled={respondToRequestMutation.isPending}
-                className={responseAction === 'approve' ? 
-                  "bg-green-600 hover:bg-green-700" : 
-                  "bg-red-600 hover:bg-red-700"
+                className={responseAction === 'approve' ?
+                  'bg-green-600 hover:bg-green-700' :
+                  'bg-red-600 hover:bg-red-700'
                 }
                 data-testid="button-submit-response"
               >
@@ -529,12 +529,12 @@ export default function AdvertiserAccessRequests() {
                 )}
                 {responseAction === 'approve' ? 'Одобрить' : 'Отклонить'}
               </Button>
-              
-              <Button 
-                variant="outline" 
+
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowResponseDialog(false);
-                  setResponseMessage("");
+                  setResponseMessage('');
                 }}
                 data-testid="button-cancel-response"
               >

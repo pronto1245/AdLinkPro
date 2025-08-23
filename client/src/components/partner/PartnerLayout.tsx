@@ -1,5 +1,5 @@
-import { PartnerSidebar } from "./PartnerSidebar";
-import { PartnerTopNavigation } from "./PartnerTopNavigation";
+import { PartnerSidebar } from './PartnerSidebar';
+import { PartnerTopNavigation } from './PartnerTopNavigation';
 
 interface PartnerLayoutProps {
   children: React.ReactNode;

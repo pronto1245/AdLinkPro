@@ -13,7 +13,7 @@ interface OfferEditModalProps {
 
 const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave }) => {
   const [formData, setFormData] = useState(offer || {});
-  
+
   useEffect(() => {
     setFormData(offer || {});
   }, [offer]);
@@ -36,13 +36,13 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
         <DialogHeader>
           <DialogTitle>{isNew ? 'Создать оффер' : 'Редактировать оффер'}</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">Название</label>
-              <Input 
-                value={formData.name || ''} 
+              <Input
+                value={formData.name || ''}
                 onChange={(e) => updateField('name', e.target.value)}
                 placeholder="Введите название оффера"
               />
@@ -68,23 +68,23 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
               </Select>
             </div>
           </div>
-          
+
           <div>
             <label className="text-sm font-medium">Описание</label>
-            <Textarea 
-              value={formData.description?.ru || ''} 
+            <Textarea
+              value={formData.description?.ru || ''}
               onChange={(e) => updateField('description', { ru: e.target.value, en: formData.description?.en || '' })}
               placeholder="Описание оффера на русском языке"
               rows={3}
             />
           </div>
-          
+
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium">Выплата</label>
-              <Input 
+              <Input
                 type="number"
-                value={formData.payout || ''} 
+                value={formData.payout || ''}
                 onChange={(e) => updateField('payout', e.target.value)}
                 placeholder="0.00"
               />
@@ -116,11 +116,11 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
               </Select>
             </div>
           </div>
-          
+
           <div>
             <label className="text-sm font-medium">Лендинг URL</label>
-            <Input 
-              value={formData.landingPages?.[0]?.url || ''} 
+            <Input
+              value={formData.landingPages?.[0]?.url || ''}
               onChange={(e) => {
                 const landingPages = formData.landingPages || [{ id: '1', name: 'Основная', isDefault: true }];
                 landingPages[0] = { ...landingPages[0], url: e.target.value };
@@ -145,7 +145,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
             </Select>
           </div>
         </div>
-        
+
         <div className="flex justify-end gap-2 pt-4">
           <Button variant="outline" onClick={onClose}>
             Отмена

@@ -10,7 +10,7 @@ export async function sendPostbackToKeitaro(url: string, params: Record<string, 
     console.warn('[TRACKER] KEITARO_TOKEN not set — skipping postback (noop)');
     return { ok: true, skipped: true };
   }
-  
+
   try {
     // Реальный запрос к Keitaro
     const response = await fetch(url, {
@@ -21,7 +21,7 @@ export async function sendPostbackToKeitaro(url: string, params: Record<string, 
       },
       body: JSON.stringify(params)
     });
-    
+
     return { ok: response.ok, _data: await response.json().catch(() => ({})) };
   } catch (error) {
     console.error('[TRACKER] Keitaro error:', error);
@@ -34,7 +34,7 @@ export async function sendPostbackToVoluum(url: string, _params: Record<string, 
     console.warn('[TRACKER] VOLUUM_TOKEN not set — skipping postback (noop)');
     return { ok: true, skipped: true };
   }
-  
+
   try {
     // Реальный запрос к Voluum
     const response = await fetch(url, {
@@ -43,7 +43,7 @@ export async function sendPostbackToVoluum(url: string, _params: Record<string, 
         'Authorization': `Bearer ${process.env.VOLUUM_TOKEN}`
       }
     });
-    
+
     return { ok: response.ok, _data: await response.text().catch(() => '') };
   } catch (error) {
     console.error('[TRACKER] Voluum error:', error);
@@ -56,7 +56,7 @@ export async function sendPostbackToBinom(url: string, _params: Record<string, u
     console.warn('[TRACKER] BINOM_TOKEN not set — skipping postback (noop)');
     return { ok: true, skipped: true };
   }
-  
+
   try {
     // Реальный запрос к Binom
     const response = await fetch(url, {
@@ -65,7 +65,7 @@ export async function sendPostbackToBinom(url: string, _params: Record<string, u
         'Authorization': `Bearer ${process.env.BINOM_TOKEN}`
       }
     });
-    
+
     return { ok: response.ok, _data: await response.text().catch(() => '') };
   } catch (error) {
     console.error('[TRACKER] Binom error:', error);
@@ -78,7 +78,7 @@ export async function sendPostbackToRedtrack(url: string, params: Record<string,
     console.warn('[TRACKER] REDTRACK_TOKEN not set — skipping postback (noop)');
     return { ok: true, skipped: true };
   }
-  
+
   try {
     // Реальный запрос к RedTrack
     const response = await fetch(url, {
@@ -89,7 +89,7 @@ export async function sendPostbackToRedtrack(url: string, params: Record<string,
       },
       body: JSON.stringify(params)
     });
-    
+
     return { ok: response.ok, _data: await response.json().catch(() => ({})) };
   } catch (error) {
     console.error('[TRACKER] RedTrack error:', error);
@@ -103,7 +103,7 @@ export async function sendPostback(url: string, _params: Record<string, unknown>
     console.warn('[POSTBACK] endpoint not configured');
     return { ok: true, skipped: true };
   }
-  
+
   try {
     const response = await fetch(url, {
       method: 'GET', // По умолчанию GET для большинства трекеров
@@ -111,7 +111,7 @@ export async function sendPostback(url: string, _params: Record<string, unknown>
         'User-Agent': 'ArbiConnect-Postback/1.0'
       }
     });
-    
+
     return { ok: response.ok, _data: await response.text().catch(() => '') };
   } catch (error) {
     console.error('[POSTBACK] Generic postback error:', error);

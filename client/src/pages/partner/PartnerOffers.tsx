@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   Table,
   TableBody,
@@ -8,29 +8,29 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { 
-  Search, 
-  Eye, 
-  Copy, 
-  ExternalLink, 
+} from '@/components/ui/dropdown-menu';
+import {
+  Search,
+  Eye,
+  Copy,
+  ExternalLink,
   Lock,
   CheckCircle,
   Clock,
@@ -41,12 +41,12 @@ import {
   MousePointer,
   Target,
   Info
-} from "lucide-react";
-import { formatCountries } from "@/utils/countries";
-import { formatCR } from "@/utils/formatting";
-import { getCategoryBadgeProps } from "@/utils/categories";
-import { RequestAccessModal } from "@/components/modals/RequestAccessModal";
-import { useToast } from "@/hooks/use-toast";
+} from 'lucide-react';
+import { formatCountries } from '@/utils/countries';
+import { formatCR } from '@/utils/formatting';
+import { getCategoryBadgeProps } from '@/utils/categories';
+import { RequestAccessModal } from '@/components/modals/RequestAccessModal';
+import { useToast } from '@/hooks/use-toast';
 
 interface PartnerOffer {
   id: string;
@@ -73,9 +73,9 @@ interface PartnerOffer {
 }
 
 export default function PartnerOffers() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterCategory, setFilterCategory] = useState("all-categories");
-  const [filterAccess, setFilterAccess] = useState("all");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all-categories');
+  const [filterAccess, setFilterAccess] = useState('all');
   const [selectedOffer, setSelectedOffer] = useState<PartnerOffer | null>(null);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const { toast } = useToast();
@@ -83,18 +83,18 @@ export default function PartnerOffers() {
   const queryClient = useQueryClient();
 
   const { data: offers = [], isLoading } = useQuery<PartnerOffer[]>({
-    queryKey: ["/api/partner/offers"],
+    queryKey: ['/api/partner/offers'],
   });
 
   const filteredOffers = offers.filter((offer) => {
-    const searchMatch = !searchQuery || 
+    const searchMatch = !searchQuery ||
       offer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       offer.advertiser_name?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const categoryMatch = filterCategory === 'all-categories' || 
+
+    const categoryMatch = filterCategory === 'all-categories' ||
       offer.category?.toLowerCase().includes(filterCategory.toLowerCase());
-    
-    const accessMatch = filterAccess === 'all' || 
+
+    const accessMatch = filterAccess === 'all' ||
       (filterAccess === 'approved' && offer.hasFullAccess) ||
       (filterAccess === 'pending' && offer.accessStatus === 'pending') ||
       (filterAccess === 'available' && offer.accessStatus === 'available') ||
@@ -277,8 +277,8 @@ export default function PartnerOffers() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           {offer.logo ? (
-                            <img 
-                              src={offer.logo} 
+                            <img
+                              src={offer.logo}
                               alt={offer.name}
                               className="w-10 h-10 rounded object-cover flex-shrink-0"
                               onError={(e) => {
@@ -305,8 +305,8 @@ export default function PartnerOffers() {
 
                       {/* Колонка Категория */}
                       <TableCell>
-                        <Badge 
-                          className={categoryProps?.className || "bg-gray-100 text-gray-800"}
+                        <Badge
+                          className={categoryProps?.className || 'bg-gray-100 text-gray-800'}
                           data-testid={`badge-category-${offer.id}`}
                         >
                           {categoryProps?.icon && <categoryProps.icon className="w-3 h-3 mr-1 flex-shrink-0" />}
@@ -448,7 +448,7 @@ export default function PartnerOffers() {
         <Card>
           <CardContent className="text-center py-8">
             <div className="text-muted-foreground">
-              {searchQuery || filterCategory !== 'all-categories' || filterAccess !== 'all' 
+              {searchQuery || filterCategory !== 'all-categories' || filterAccess !== 'all'
                 ? 'Офферы не найдены по заданным фильтрам'
                 : 'Доступные офферы не найдены'
               }

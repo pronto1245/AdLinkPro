@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -13,18 +13,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Clock,
+  CheckCircle,
+  XCircle,
   User,
   Mail,
   Calendar,
   MessageSquare,
   Loader2
-} from "lucide-react";
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
@@ -102,7 +102,7 @@ export function AccessRequestsManager({ offerId, offerName }: AccessRequestsMana
     },
     onSuccess: (_, variables) => {
       toast({
-        title: "Запрос обработан",
+        title: 'Запрос обработан',
         description: `Запрос успешно ${variables.action === 'approve' ? 'одобрен' : 'отклонён'}`,
       });
       queryClient.invalidateQueries({ queryKey: [`/api/offers/${offerId}/access-requests`] });
@@ -112,9 +112,9 @@ export function AccessRequestsManager({ offerId, offerName }: AccessRequestsMana
     },
     onError: (error: Error) => {
       toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось обработать запрос",
-        variant: "destructive",
+        title: 'Ошибка',
+        description: error.message || 'Не удалось обработать запрос',
+        variant: 'destructive',
       });
     }
   });
@@ -127,7 +127,7 @@ export function AccessRequestsManager({ offerId, offerName }: AccessRequestsMana
 
   const handleSubmitReview = () => {
     if (!selectedRequest || !reviewData.action) {return;}
-    
+
     reviewMutation.mutate({
       requestId: selectedRequest.id,
       action: reviewData.action,
@@ -200,14 +200,14 @@ export function AccessRequestsManager({ offerId, offerName }: AccessRequestsMana
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Calendar className="w-3 h-3" />
                     <span>
-                      Запрошено {formatDistanceToNow(new Date(request.requested_at), { 
-                        addSuffix: true, 
-                        locale: ru 
+                      Запрошено {formatDistanceToNow(new Date(request.requested_at), {
+                        addSuffix: true,
+                        locale: ru
                       })}
                     </span>
                   </div>
                 </div>
-                
+
                 {request.status === 'pending' && (
                   <div className="flex gap-2">
                     <Button
@@ -262,9 +262,9 @@ export function AccessRequestsManager({ offerId, offerName }: AccessRequestsMana
                   <p className="text-sm mt-1">{request.response_note}</p>
                   {request.reviewed_at && (
                     <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">
-                      Обработано {formatDistanceToNow(new Date(request.reviewed_at), { 
-                        addSuffix: true, 
-                        locale: ru 
+                      Обработано {formatDistanceToNow(new Date(request.reviewed_at), {
+                        addSuffix: true,
+                        locale: ru
                       })}
                     </p>
                   )}
@@ -303,9 +303,9 @@ export function AccessRequestsManager({ offerId, offerName }: AccessRequestsMana
                 id="advertiserResponse"
                 data-testid="textarea-advertiser-response"
                 placeholder={
-                  reviewData.action === 'approve' 
-                    ? "Дополнительные инструкции или комментарии для партнёра..."
-                    : "Объясните причину отклонения запроса..."
+                  reviewData.action === 'approve'
+                    ? 'Дополнительные инструкции или комментарии для партнёра...'
+                    : 'Объясните причину отклонения запроса...'
                 }
                 value={reviewData.advertiserResponse}
                 onChange={(e) => setReviewData(prev => ({ ...prev, advertiserResponse: e.target.value }))}
@@ -340,7 +340,7 @@ export function AccessRequestsManager({ offerId, offerName }: AccessRequestsMana
             <Button
               onClick={handleSubmitReview}
               disabled={
-                reviewMutation.isPending || 
+                reviewMutation.isPending ||
                 (reviewData.action === 'reject' && !reviewData.advertiserResponse.trim())
               }
               className={reviewData.action === 'approve' ? 'bg-green-600 hover:bg-green-700' : ''}

@@ -1,6 +1,6 @@
-import { db } from "../db";
-import { fraudBlocks } from "@shared/schema";
-import { eq, and, or, like } from "drizzle-orm";
+import { db } from '../db';
+import { fraudBlocks } from '@shared/schema';
+import { eq, and, or, like } from 'drizzle-orm';
 
 interface WhitelistEntry {
   id?: string;
@@ -34,9 +34,9 @@ export class IPWhitelistService {
           addedAt: new Date().toISOString()
         })
       };
-      
+
       const [result] = await db.insert(fraudBlocks).values(whitelistData).returning();
-      
+
       console.log(`✅ Added IP to whitelist: ${entry.ip}`);
       return {
         id: result.id,
@@ -48,13 +48,13 @@ export class IPWhitelistService {
         isActive: entry.isActive,
         createdAt: result.createdAt
       };
-      
+
     } catch (error) {
       console.error('Error adding to whitelist:', error);
       throw new Error('Failed to add IP to whitelist');
     }
   }
-  
+
   /**
    * Remove IP from whitelist
    */
@@ -67,15 +67,15 @@ export class IPWhitelistService {
           eq(fraudBlocks.type, 'whitelist'),
           eq(fraudBlocks.value, ip)
         ));
-      
+
       console.log(`✅ Removed IP from whitelist: ${ip}`);
-      
+
     } catch (error) {
       console.error('Error removing from whitelist:', error);
       throw new Error('Failed to remove IP from whitelist');
     }
   }
-  
+
   /**
    * Check if IP is whitelisted
    */
@@ -91,7 +91,7 @@ export class IPWhitelistService {
           eq(fraudBlocks.isActive, true)
         ))
         .limit(1);
-      
+
       if (exactMatch) {
         // Check if not expired
         if (!exactMatch.expiresAt || exactMatch.expiresAt > new Date()) {
@@ -102,7 +102,7 @@ export class IPWhitelistService {
           return false;
         }
       }
-      
+
       // Check CIDR ranges (simplified implementation)
       const [cidrMatches] = await db
         .select()
@@ -111,7 +111,7 @@ export class IPWhitelistService {
           eq(fraudBlocks.type, 'whitelist'),
           eq(fraudBlocks.isActive, true)
         ));
-      
+
       // In production, use proper CIDR matching library
       // For now, check basic subnet matches
       for (const entry of cidrMatches || []) {
@@ -121,15 +121,15 @@ export class IPWhitelistService {
           }
         }
       }
-      
+
       return false;
-      
+
     } catch (error) {
       console.error('Error checking whitelist:', error);
       return false;
     }
   }
-  
+
   /**
    * Get all whitelisted IPs
    */
@@ -144,7 +144,7 @@ export class IPWhitelistService {
         .select()
         .from(fraudBlocks)
         .where(eq(fraudBlocks.type, 'whitelist'));
-      
+
       // Apply filters
       if (filters.active !== undefined) {
         query = query.where(and(
@@ -152,7 +152,7 @@ export class IPWhitelistService {
           eq(fraudBlocks.isActive, filters.active)
         ));
       }
-      
+
       if (filters.search) {
         query = query.where(and(
           eq(fraudBlocks.type, 'whitelist'),
@@ -162,14 +162,14 @@ export class IPWhitelistService {
           )
         ));
       }
-      
+
       // Apply pagination
       const page = filters.page || 1;
       const limit = filters.limit || 50;
       const offset = (page - 1) * limit;
-      
+
       const results = await query.limit(limit).offset(offset);
-      
+
       const whitelistEntries: WhitelistEntry[] = results.map(entry => {
         let data: any = {};
         try {
@@ -177,7 +177,7 @@ export class IPWhitelistService {
         } catch (e) {
           data = {};
         }
-        
+
         return {
           id: entry.id,
           ip: entry.value,
@@ -189,36 +189,36 @@ export class IPWhitelistService {
           createdAt: entry.createdAt
         };
       });
-      
+
       // Get total count
       const [totalCount] = await db
         .select({ count: db.count() })
         .from(fraudBlocks)
         .where(eq(fraudBlocks.type, 'whitelist'));
-      
+
       return {
         data: whitelistEntries,
         total: totalCount.count
       };
-      
+
     } catch (error) {
       console.error('Error getting whitelist:', error);
       return { data: [], total: 0 };
     }
   }
-  
+
   /**
    * Update whitelist entry
    */
   static async updateWhitelistEntry(id: string, updates: Partial<WhitelistEntry>): Promise<WhitelistEntry | null> {
     try {
       const updateData: any = {};
-      
+
       if (updates.ip) {updateData.value = updates.ip;}
       if (updates.cidr) {updateData.cidr = updates.cidr;}
       if (updates.isActive !== undefined) {updateData.isActive = updates.isActive;}
       if (updates.expiresAt) {updateData.expiresAt = updates.expiresAt;}
-      
+
       if (updates.description) {
         updateData.reason = `Whitelisted: ${updates.description}`;
         updateData.data = JSON.stringify({
@@ -228,22 +228,22 @@ export class IPWhitelistService {
           updatedAt: new Date().toISOString()
         });
       }
-      
+
       const [updated] = await db
         .update(fraudBlocks)
         .set(updateData)
         .where(eq(fraudBlocks.id, id))
         .returning();
-      
+
       if (!updated) {return null;}
-      
+
       let data: any = {};
       try {
         data = JSON.parse(updated.data as string || '{}');
       } catch (e) {
         data = {};
       }
-      
+
       return {
         id: updated.id,
         ip: updated.value,
@@ -254,13 +254,13 @@ export class IPWhitelistService {
         isActive: updated.isActive,
         createdAt: updated.createdAt
       };
-      
+
     } catch (error) {
       console.error('Error updating whitelist entry:', error);
       return null;
     }
   }
-  
+
   /**
    * Expire whitelist entry
    */
@@ -270,14 +270,14 @@ export class IPWhitelistService {
         .update(fraudBlocks)
         .set({ isActive: false })
         .where(eq(fraudBlocks.id, id));
-      
+
       console.log(`⏰ Expired whitelist entry: ${id}`);
-      
+
     } catch (error) {
       console.error('Error expiring whitelist entry:', error);
     }
   }
-  
+
   /**
    * Simple CIDR matching (basic implementation)
    */
@@ -285,37 +285,37 @@ export class IPWhitelistService {
     try {
       const [network, prefixLength] = cidr.split('/');
       const prefix = parseInt(prefixLength, 10);
-      
+
       if (prefix === 32) {
         return ip === network;
       }
-      
+
       // Convert IPs to numbers for comparison
       const ipNum = this.ipToNumber(ip);
       const networkNum = this.ipToNumber(network);
       const mask = (0xFFFFFFFF << (32 - prefix)) >>> 0;
-      
+
       return (ipNum & mask) === (networkNum & mask);
-      
+
     } catch (error) {
       console.error('Error in CIDR matching:', error);
       return false;
     }
   }
-  
+
   /**
    * Convert IP address to number
    */
   private static ipToNumber(ip: string): number {
     return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0);
   }
-  
+
   /**
    * Bulk whitelist operations
    */
   static async bulkAddToWhitelist(entries: Omit<WhitelistEntry, 'id' | 'createdAt'>[]): Promise<WhitelistEntry[]> {
     const results: WhitelistEntry[] = [];
-    
+
     for (const entry of entries) {
       try {
         const result = await this.addToWhitelist(entry);
@@ -324,10 +324,10 @@ export class IPWhitelistService {
         console.error(`Failed to whitelist ${entry.ip}:`, error);
       }
     }
-    
+
     return results;
   }
-  
+
   /**
    * Auto-whitelist trusted sources
    */
@@ -347,14 +347,14 @@ export class IPWhitelistService {
       }
       // Add more trusted sources as needed
     ];
-    
+
     for (const source of trustedSources) {
       const isAlreadyWhitelisted = await this.isWhitelisted(source.ip);
       if (!isAlreadyWhitelisted) {
         await this.addToWhitelist(source);
       }
     }
-    
+
     console.log('✅ Auto-whitelisted trusted sources');
   }
 }

@@ -1,10 +1,10 @@
-import { 
-  Gamepad2, 
-  Dices, 
-  Heart, 
-  TrendingUp, 
-  Shield, 
-  ShoppingCart, 
+import {
+  Gamepad2,
+  Dices,
+  Heart,
+  TrendingUp,
+  Shield,
+  ShoppingCart,
   Smartphone,
   Car,
   GraduationCap,
@@ -15,7 +15,7 @@ import {
   Camera,
   Briefcase,
   Package
-} from "lucide-react";
+} from 'lucide-react';
 
 interface CategoryProps {
   label: string;

@@ -13,7 +13,7 @@ export class LetsEncryptService {
     try {
       // Генерируем ключ аккаунта или загружаем существующий
       this.accountKey = await this.getOrCreateAccountKey();
-      
+
       // Используем только production API для реальных SSL сертификатов
       const directoryUrl = acme.directory.letsencrypt.production;
 
@@ -24,7 +24,7 @@ export class LetsEncryptService {
 
       // Создаем аккаунт если его нет
       await this.createAccount();
-      
+
       console.log('✅ Let\'s Encrypt ACME клиент инициализирован (Production API)');
     } catch (_error) {
       console.error('❌ Ошибка инициализации Let\'s Encrypt:', error instanceof Error ? error.message : String(error));
@@ -35,14 +35,14 @@ export class LetsEncryptService {
   // Получаем или создаем ключ аккаунта
   private static async getOrCreateAccountKey(): Promise<Buffer> {
     const keyPath = process.env.LETSENCRYPT_ACCOUNT_KEY_PATH || './.letsencrypt/account.key';
-    
+
     try {
       const fs = await import('fs/promises');
       return await fs.readFile(keyPath);
     } catch (_error) {
       // Файл не существует, создаем новый ключ
       const accountKey = await acme.crypto.createPrivateKey();
-      
+
       try {
         const fs = await import('fs/promises');
         const path = await import('path');
@@ -51,7 +51,7 @@ export class LetsEncryptService {
       } catch (writeError) {
         console.warn('Не удалось сохранить ключ аккаунта:', writeError);
       }
-      
+
       return accountKey;
     }
   }
@@ -110,7 +110,7 @@ export class LetsEncryptService {
 
       // Получаем авторизации
       const authorizations = await this.client!.getAuthorizations(order);
-      
+
       for (const authz of authorizations) {
         // Выбираем HTTP-01 challenge
         const httpChallenge = authz.challenges.find(c => c.type === 'http-01');
@@ -120,7 +120,7 @@ export class LetsEncryptService {
 
         // Получаем ключ авторизации
         const keyAuthorization = await this.client!.getChallengeKeyAuthorization(httpChallenge);
-        
+
         // Здесь нужно разместить файл на вашем сервере:
         // /.well-known/acme-challenge/{httpChallenge.token} -> keyAuthorization
         await this.deployChallengeFile(httpChallenge.token, keyAuthorization);
@@ -128,31 +128,31 @@ export class LetsEncryptService {
         // Даем время Let's Encrypt на проверку файла (3 секунды)
         console.log(`⏳ Ждем 3 секунды для готовности challenge файла...`);
         await new Promise(resolve => setTimeout(resolve, 3000));
-        
+
         // Уведомляем Let's Encrypt о готовности
         console.log(`📤 Уведомляем Let's Encrypt о готовности challenge для ${domain}...`);
         await this.client!.verifyChallenge(authz, httpChallenge);
-        
+
         // Ждем подтверждения с улучшенной логикой
         console.log(`⏳ Ждем валидацию challenge для ${domain} (максимум 20 секунд)...`);
-        
+
         try {
           // Используем более длительный таймаут но с проверками
           const validationPromise = this.client!.waitForValidStatus(authz);
-          const timeoutPromise = new Promise((_, reject) => 
+          const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Validation timeout')), 20000)
           );
-          
+
           await Promise.race([validationPromise, timeoutPromise]);
           console.log(`✅ Challenge успешно валидирован для ${domain}`);
-          
+
         } catch (_error) {
           console.warn(`⚠️ Таймаут или ошибка валидации для ${domain}, проверяем статус...`);
-          
+
           // Проверяем финальный статус авторизации
           const finalAuthz = await this.client!.getAuthorization(authz);
           console.log(`📋 Финальный статус авторизации: ${finalAuthz.status}`);
-          
+
           if (finalAuthz.status !== 'valid') {
             // Проверяем детали ошибки
             if (finalAuthz.challenges) {
@@ -164,10 +164,10 @@ export class LetsEncryptService {
             }
             throw new Error(`Challenge validation failed: ${finalAuthz.status}`);
           }
-          
+
           console.log(`✅ Авторизация в итоге действительна для ${domain}`);
         }
-        
+
         // Удаляем challenge файл
         await this.cleanupChallengeFile(httpChallenge.token);
       }
@@ -182,7 +182,7 @@ export class LetsEncryptService {
       try {
         await Promise.race([
           this.client!.finalizeOrder(order, csr),
-          new Promise((_, reject) => 
+          new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Order finalization timeout')), 30000)
           )
         ]);
@@ -191,14 +191,14 @@ export class LetsEncryptService {
         console.error(`❌ Ошибка финализации заказа для ${domain}:`, error.message);
         throw error;
       }
-      
+
       // Получаем сертификат с проверкой готовности
       console.log(`📥 Получаем сертификат для ${domain}...`);
       let certificate: string;
       try {
         certificate = await Promise.race([
           this.client!.getCertificate(order),
-          new Promise((_, reject) => 
+          new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Certificate retrieval timeout')), 30000)
           )
         ]) as string;
@@ -236,7 +236,7 @@ export class LetsEncryptService {
     } catch (_error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(`❌ Ошибка выдачи SSL сертификата для ${domain}:`, errorMessage);
-      
+
       // Обновляем статус на ошибку
       await db
         .update(customDomains)
@@ -258,10 +258,10 @@ export class LetsEncryptService {
   private static async deployChallengeFile(token: string, keyAuthorization: string): Promise<void> {
     const fs = await import('fs/promises');
     const path = await import('path');
-    
+
     const challengeDir = path.join(process.cwd(), 'public', '.well-known', 'acme-challenge');
     const challengeFile = path.join(challengeDir, token);
-    
+
     try {
       await fs.mkdir(challengeDir, { recursive: true });
       await fs.writeFile(challengeFile, keyAuthorization);
@@ -276,9 +276,9 @@ export class LetsEncryptService {
   private static async cleanupChallengeFile(token: string): Promise<void> {
     const fs = await import('fs/promises');
     const path = await import('path');
-    
+
     const challengeFile = path.join(process.cwd(), 'public', '.well-known', 'acme-challenge', token);
-    
+
     try {
       await fs.unlink(challengeFile);
       console.log(`🗑️ Challenge файл удален: ${challengeFile}`);
@@ -310,7 +310,7 @@ export class LetsEncryptService {
         try {
           console.log(`🔄 Обновляем сертификат для ${domain.domain}`);
           await this.issueCertificate(domain.domain, domain.id);
-          
+
           // Ждем между обновлениями чтобы не превысить rate limits
           await new Promise(resolve => setTimeout(resolve, 5000));
         } catch (_error) {
