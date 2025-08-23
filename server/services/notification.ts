@@ -1,4 +1,7 @@
 import { sendEmail } from './email';
+import { db } from '../db';
+import { userNotifications } from '../../shared/schema';
+import type { User } from '../../shared/schema';
 
 export interface NotificationEvent {
   type: 'user_registration' | 'user_blocked' | 'new_device_login' | 'fraud_detected' | 'payment_received' | 'new_referral' | 'referral_earning' | 'postback_failed' | 'postback_success_rate_low' | 'postback_high_error_rate';
@@ -240,9 +243,6 @@ export async function notifyNewReferral(referrer: any, referredUser: any): Promi
   try {
     console.log('🔗 Sending new referral notification to:', referrer.username);
     
-    const { db } = await import('../db');
-    const { userNotifications } = await import('@shared/schema');
-    
     // Сохраняем уведомление в базу данных
     await db.insert(userNotifications).values({
       userId: referrer.id,
@@ -284,9 +284,6 @@ export async function notifyReferralEarning(referrer: any, earningData: any): Pr
   try {
     console.log('💰 Sending referral earning notification to:', referrer.username);
     
-    const { db } = await import('../db');
-    const { userNotifications } = await import('@shared/schema');
-    
     // Сохраняем уведомление в базу данных
     await db.insert(userNotifications).values({
       userId: referrer.id,
@@ -326,11 +323,6 @@ export async function notifyReferralEarning(referrer: any, earningData: any): Pr
 
 // Эспорт экземпляра сервиса для использования в других модулях
 export const notificationService = NotificationService.getInstance();
-
-// Import dependencies for additional notification functions
-import { db } from '../db';
-import { userNotifications } from '../../shared/schema';
-import type { User } from '../../shared/schema';
 
 // Уведомление рекламодателю о новом запросе доступа к офферу
 export async function notifyOfferAccessRequest(
