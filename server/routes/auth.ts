@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { findUserByEmail, checkPassword } from '../services/users';
 import { db } from '../db';
 
@@ -12,7 +13,7 @@ const TEST_USERS = {
   'partner': { email: 'partner@example.com', password: 'partner123', role: 'PARTNER' }
 };
 
-router.post('/auth/login', async (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password, username } = req.body || {};
 
   console.log('🔐 [AUTH] Login attempt received:', {
@@ -28,9 +29,14 @@ router.post('/auth/login', async (req, res) => {
   }
 
   try {
-    // Try database authentication first
-    let user = null;
+    // Get the login identifier
     let loginIdentifier = email || username;
+    
+    console.log('🔍 [AUTH] Processing login for:', loginIdentifier);
+    
+    // First try fallback authentication for known test users
+    console.log('🔄 [AUTH] Checking fallback test user authentication...');
+    
 
     console.log('🔍 [AUTH] Checking database for user:', loginIdentifier);
 
@@ -158,6 +164,54 @@ router.post('/auth/login', async (req, res) => {
         }
       });
     }
+    
+    // Try database authentication only if fallback doesn't work
+    try {
+      console.log('🔍 [AUTH] Trying database authentication for:', loginIdentifier);
+      const user = await findUserByEmail(loginIdentifier.toLowerCase().trim());
+      
+      if (user && user.password_hash) {
+        console.log('✅ [AUTH] User found in database:', {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          hasPasswordHash: !!user.password_hash
+        });
+        
+        // Verify password with bcrypt
+        console.log('🔑 [AUTH] Verifying password with bcrypt...');
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        
+        if (isMatch) {
+          console.log('✅ [AUTH] Database password verification successful for:', user.email);
+          
+          const token = jwt.sign(
+            { sub: user.id, email: user.email, role: user.role, username: user.username },
+            process.env.JWT_SECRET!,
+            { expiresIn: '7d' }
+          );
+          
+          console.log('🔐 [AUTH] JWT token generated successfully');
+          
+          return res.json({
+            success: true,
+            token,
+            user: {
+              id: user.id,
+              email: user.email,
+              username: user.username,
+              role: user.role,
+              twoFactorEnabled: false
+            }
+          });
+        } else {
+          console.log('❌ [AUTH] Database password verification failed for:', user.email);
+        }
+      }
+    } catch (dbError) {
+      console.log('⚠️ [AUTH] Database authentication failed, continuing:', dbError.message);
+    }
+    
 
     console.log('❌ [AUTH] Authentication failed for:', loginIdentifier);
     return res.status(401).json({ error: 'Invalid credentials' });

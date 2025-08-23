@@ -71,6 +71,7 @@ export default [
         Event: 'readonly',
         CloseEvent: 'readonly',
         CustomEvent: 'readonly',
+        EventListener: 'readonly',
         // Additional browser APIs
         URL: 'readonly',
         URLSearchParams: 'readonly',
@@ -85,6 +86,9 @@ export default [
         Express: 'readonly',
         // Error types
         error: 'readonly',
+
+        // Express types
+        Express: 'readonly',
       },
     },
     plugins: {

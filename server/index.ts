@@ -17,7 +17,6 @@ import { adminRoutes } from './routes/admin-routes';
 import { invitationRoutes } from './routes/invitations';
 import { registerRoutes } from './routes'; // Import the main routes that contain registration endpoints
 import { requestLogger, errorLogger } from './middleware/logging';
-import { setupSwagger } from './config/swagger';
 import { errorHandler, notFoundHandler, setupGlobalErrorHandlers } from './middleware/errorHandler';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -114,7 +113,7 @@ ensureUsersTable().catch(console.error);
 
 // Mount authentication routes - ensure all auth endpoints are accessible
 console.log('🔐 [SERVER] Mounting authentication routes...');
-app.use(authRouter); // Original routes that define /api/auth/login (mount FIRST to avoid conflicts)
+app.use('/api/auth', authRouter);
 app.use('/api/auth/fixed', authFixedRouter); // Fixed auth routes at /api/auth/fixed/login
 // app.use('/api/auth/v2', authV2Router); // V2 auth routes at /api/auth/v2/login - TODO: Create this route or remove
 // app.use('/auth', authV2Router); // Mount V2 routes at /auth/login for compatibility - TODO: Create this route or remove
@@ -233,4 +232,3 @@ app.listen(PORT, () => {
   console.log(`📊 Enhanced API endpoints available at /api/admin/*`);
   console.log(`👥 Team invitations available at /api/invitations/*`);
 });
-app.use('/api/auth', authRouter);

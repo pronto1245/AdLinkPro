@@ -52,6 +52,8 @@ export function RequestAccessModal({ isOpen, onClose, offer }: RequestAccessModa
       queryClient.invalidateQueries({ queryKey: ['/api/partner/access-requests'] });
       handleClose();
     },
+    onError: (error: any) => {
+      const errorMessage = error.message || 'Ошибка при отправке запроса';
     onError: (error: Error) => {
       const errorMessage = error.message || 'Ошибка при отправке запроса';
       toast({

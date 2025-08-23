@@ -1,4 +1,5 @@
 import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import type { Express } from 'express';
 
@@ -21,7 +22,9 @@ const options: swaggerJSDoc.Options = {
     },
     servers: [
       {
-        url: process.env.API_URL || 'http://localhost:5000',
+        url: process.env.NODE_ENV === 'production'
+          ? 'https://api.adlinkpro.com'
+          : 'http://localhost:5000',
         description: process.env.NODE_ENV === 'production' ? 'Production server' : 'Development server'
       }
     ],
@@ -94,6 +97,8 @@ const options: swaggerJSDoc.Options = {
     './server/routes/*.js',
     './server/api-routes.ts',
     './server/auth.routes.ts'
+    './server/auth.routes.ts',
+    './server/index.ts'
   ]
 };
 
@@ -108,6 +113,20 @@ export function setupSwagger(app: Express): void {
   }));
 
   // JSON endpoint for the OpenAPI spec
+
+  // JSON endpoint for the OpenAPI spec
+  // Serve swagger documentation
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(specs, {
+      explorer: true,
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'AdLinkPro API Documentation'
+    })
+  );
+
+  // Serve swagger.json
   app.get('/api-docs.json', (_req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.send(specs);
