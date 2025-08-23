@@ -1,7 +1,18 @@
 import { Queue, Worker, Job } from 'bullmq';
-import { createClient } from 'redis';
 import { cacheService } from './cacheService';
-import { auditLog } from '../middleware/security';
+
+// Fraud detection data interface
+interface FraudData {
+  rapidClicks?: boolean;
+  suspiciousUA?: boolean;
+  proxyIP?: boolean;
+  deviceSpoofing?: boolean;
+  ipAddress?: string;
+  userAgent?: string;
+  sessionId?: string;
+  userId?: string;
+  timestamp?: number;
+}
 
 // Redis connection for queues
 const redisConnection = {
@@ -157,7 +168,7 @@ export class QueueService {
   }
 
   private async processNotificationJob(job: Job<NotificationJobData>) {
-    const { type, recipient, template, data, priority = 'normal' } = job.data;
+    const { type, recipient, template, data } = job.data;
 
     try {
       switch (type) {
@@ -264,7 +275,7 @@ export class QueueService {
       // Log successful postback
       await this.logPostbackDelivery(conversionId, partnerId, 'success', response.status);
 
-    } catch (_error) {
+    } catch (error) {
       console.error(`Postback delivery failed for conversion ${conversionId}:`, error);
       
       // Log failed postback
@@ -333,7 +344,7 @@ export class QueueService {
     await cacheService.set(key, current, 300); // 5 minutes
   }
 
-  private async sendEmailNotification(recipient: string, template: string, _data: any) {
+  private async sendEmailNotification(recipient: string, template: string, _data: unknown) {
     // Implement email notification sending
     console.log('Sending email notification:', { recipient, template });
   }
@@ -343,12 +354,12 @@ export class QueueService {
     console.log('Sending push notification:', { recipient, template });
   }
 
-  private async sendSMSNotification(recipient: string, template: string, _data: any) {
+  private async sendSMSNotification(recipient: string, template: string, _data: unknown) {
     // Implement SMS notification sending
     console.log('Sending SMS notification:', { recipient, template });
   }
 
-  private async calculateFraudScore(data: any): Promise<number> {
+  private async calculateFraudScore(data: FraudData): Promise<number> {
     // Implement fraud score calculation algorithm
     let score = 0;
     
@@ -361,7 +372,7 @@ export class QueueService {
     return Math.min(score, 100);
   }
 
-  private async identifyFraudIndicators(data: any): Promise<string[]> {
+  private async identifyFraudIndicators(data: FraudData): Promise<string[]> {
     const indicators: string[] = [];
     
     if (data.rapidClicks) {indicators.push('rapid_clicks');}
@@ -372,7 +383,7 @@ export class QueueService {
     return indicators;
   }
 
-  private async createFraudReport(data: any) {
+  private async createFraudReport(data: FraudData) {
     // Create fraud report in database
     console.log('Creating fraud report:', data);
   }

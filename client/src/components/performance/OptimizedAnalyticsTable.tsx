@@ -1,26 +1,13 @@
 import React, { memo, useMemo, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { Button } from '../ui/button';
 import { Users, DollarSign, TrendingUp, UserCheck, Building2, Globe, Shield, BarChart3, Eye } from 'lucide-react';
-
-interface AnalyticsData {
-  date: string;
-  uniques: number;
-  cr_value: string;
-  epc_value: string;
-  registrations: number;
-  deposits: number;
-  geo: string;
-  fraud_rejects: number;
-  partner: string;
-}
 
 interface OptimizedAnalyticsTableProps {
   currentPage: number;
   onNavigateToPartner: (partnerId: string) => void;
   onNavigateToGeo: (geo: string) => void;
   onNavigateToFraud: (offerId: string) => void;
-  dateFilter: string;
+  dateFilter?: string; // Made optional since it's not used
   offerId?: string;
 }
 
@@ -30,7 +17,6 @@ const OptimizedAnalyticsTable = memo(({
   onNavigateToPartner, 
   onNavigateToGeo, 
   onNavigateToFraud,
-  dateFilter,
   offerId 
 }: OptimizedAnalyticsTableProps) => {
   

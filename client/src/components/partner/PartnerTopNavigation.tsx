@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Settings, LogOut, Mail, User, Globe, DollarSign } from 'lucide-react';
+import { Settings, LogOut, Mail, User, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
