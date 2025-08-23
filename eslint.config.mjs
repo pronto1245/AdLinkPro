@@ -24,6 +24,7 @@ export default [
         exports: 'readonly',
         // Browser globals for client-side code
         window: 'readonly',
+        Window: 'readonly',
         document: 'readonly',
         localStorage: 'readonly',
         sessionStorage: 'readonly',
