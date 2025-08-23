@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { notificationService } from '../services/notification';
+import { RateLimitError } from '../utils/errors';
 
 // IP Blacklist storage (in production use Redis or database)
 const ipBlacklist = new Set<string>([
@@ -227,10 +228,8 @@ export const rateLimiter = (windowMs: number = 15 * 60 * 1000, maxRequests: numb
       
       if (entry.count >= maxRequests) {
         auditLog(req, 'RATE_LIMIT_EXCEEDED', undefined, false, { ip: clientIP, count: entry.count });
-        return res.status(429).json({ 
-          error: 'Too many requests', 
-          retryAfter: Math.ceil((entry.resetTime - now) / 1000) 
-        });
+        const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
+        throw new RateLimitError('Too many requests', retryAfter);
       }
       
       entry.count++;

@@ -1,0 +1,49 @@
+# Ignore files for Prettier formatting
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env*
+
+# Cache directories
+.cache/
+.tmp/
+
+# Database files
+*.db
+*.sqlite
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
+
+# Assets and static files
+public/
+static/
+assets/
+uploads/
+
+# Generated files
+migrations/
+drizzle/

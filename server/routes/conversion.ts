@@ -13,6 +13,41 @@ const requireAuth = async (req: any, res: any, next: any) => {
   next();
 };
 
+/**
+ * @swagger
+ * /api/conversion/event:
+ *   post:
+ *     tags: [Conversion]
+ *     summary: Track conversion event
+ *     description: Record a conversion event for affiliate tracking
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Event'
+ *     responses:
+ *       200:
+ *         description: Event tracked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                 eventId:
+ *                   type: string
+ *       400:
+ *         description: Invalid event data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post('/event', requireAuth, async (req, res) => {
   try {
     const { 

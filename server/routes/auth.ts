@@ -175,6 +175,7 @@ router.post('/login', (req, res) => {
     return res.json({ token: 'dummy-token' });
   }
   return res.status(401).json({ error: 'Invalid credentials' });
+
 });
 
 export default router;
