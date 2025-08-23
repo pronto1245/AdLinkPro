@@ -1,7 +1,5 @@
 import { Queue, Worker, Job } from 'bullmq';
-import { createClient } from 'redis';
 import { cacheService } from './cacheService';
-import { auditLog } from '../middleware/security';
 
 // Fraud detection data interface
 interface FraudData {
@@ -170,7 +168,7 @@ export class QueueService {
   }
 
   private async processNotificationJob(job: Job<NotificationJobData>) {
-    const { type, recipient, template, data, priority = 'normal' } = job.data;
+    const { type, recipient, template, data } = job.data;
 
     try {
       switch (type) {
@@ -277,7 +275,7 @@ export class QueueService {
       // Log successful postback
       await this.logPostbackDelivery(conversionId, partnerId, 'success', response.status);
 
-    } catch (_error) {
+    } catch (error) {
       console.error(`Postback delivery failed for conversion ${conversionId}:`, error);
       
       // Log failed postback
