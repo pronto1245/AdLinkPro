@@ -94,8 +94,8 @@ registerRoutes(app).then(() => {
   console.log('✅ Main registration routes loaded');
 }).catch(console.error);
 
-// Serve static files from client dist directory
-const distPath = path.join(__dirname, '..', 'client', 'dist');
+// Serve static files from dist directory
+const distPath = path.join(__dirname, '..', 'dist');
 app.use(express.static(distPath));
 
 app.get('/api/health', (_req, res) => {

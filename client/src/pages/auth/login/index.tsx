@@ -57,7 +57,7 @@ export default function Login() {
     try {
       // Login successful - backend now always returns token directly
       console.log("🔐 [LOGIN] Calling secureAuth.login...");
-      const result = await secureAuth.login(data.email, data.password);
+      const result = await secureAuth.login(data);
       
       console.log("🔐 [LOGIN] Login result:", {
         hasToken: !!result.token,
