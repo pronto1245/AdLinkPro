@@ -47,6 +47,8 @@ export default [
         RequestInfo: 'readonly',
         RequestInit: 'readonly',
         navigator: 'readonly',
+        atob: 'readonly',
+        btoa: 'readonly',
         // Node.js types
         NodeJS: 'readonly',
       },

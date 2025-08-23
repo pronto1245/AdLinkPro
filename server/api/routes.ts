@@ -2,8 +2,7 @@
 import express from "express";
 import { EventDto, AffiliateWebhookDto, PspWebhookDto } from "../../enhanced-postback-dto";
 import { normalize, mapExternalStatus, Status } from "../domain/status";
-import { enqueuePostbacks, ConversionRow } from "../queue/enqueue";
-import { eq, and } from "drizzle-orm";
+import { enqueuePostbacks } from "../queue/enqueue";
 
 export const router = express.Router();
 
@@ -21,7 +20,7 @@ interface DatabaseConversion {
   currency: string;
   revenue: string;
   conversionStatus: Status;
-  details: any;
+  details: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -52,7 +51,7 @@ async function insertConversion(data: Omit<DatabaseConversion, 'id' | 'createdAt
 }
 
 // Helper function to update conversion
-async function updateConversion(id: string, _data: Partial<DatabaseConversion>): Promise<DatabaseConversion> {
+async function updateConversion(id: string, updateData: Partial<DatabaseConversion>): Promise<DatabaseConversion> {
   const index = mockDatabase.findIndex(c => c.id === id);
   if (index === -1) {
     throw new Error('Conversion not found');
@@ -60,7 +59,7 @@ async function updateConversion(id: string, _data: Partial<DatabaseConversion>):
   
   mockDatabase[index] = {
     ...mockDatabase[index],
-    ...data,
+    ...updateData,
     updatedAt: new Date()
   };
   
