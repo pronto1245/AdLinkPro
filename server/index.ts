@@ -1,3 +1,4 @@
+import authRouter from './routes/auth';
 import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
@@ -145,3 +146,4 @@ app.listen(PORT, () => {
   console.log(`📊 Enhanced API endpoints available at /api/admin/*`);
   console.log(`👥 Team invitations available at /api/invitations/*`);
 });
+app.use('/api/auth', authRouter);
