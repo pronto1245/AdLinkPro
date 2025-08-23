@@ -5,7 +5,7 @@ import { auditLog } from '../middleware/security';
 export interface APIError {
   error: string;
   code?: string;
-  details?: any;
+  details?: unknown;
   timestamp?: Date;
 }
 
@@ -29,7 +29,7 @@ export function sendErrorResponse(
   statusCode: number,
   errorCode: ErrorCodes,
   message: string,
-  details?: any,
+  details?: unknown,
   auditAction?: string
 ): void {
   const errorResponse: APIError = {
@@ -63,7 +63,7 @@ export function sendAuthenticationRequired(req: Request, res: Response): void {
   );
 }
 
-export function sendInvalidToken(req: Request, res: Response, details?: any): void {
+export function sendInvalidToken(req: Request, res: Response, details?: unknown): void {
   sendErrorResponse(
     req,
     res,
@@ -109,7 +109,7 @@ export function sendValidationError(
   req: Request,
   res: Response,
   message: string,
-  details?: any
+  details?: unknown
 ): void {
   sendErrorResponse(
     req,
@@ -124,7 +124,7 @@ export function sendValidationError(
 export function sendSchemaParsingError(
   req: Request,
   res: Response,
-  originalError: any,
+  originalError: unknown,
   fallbackUsed = false
 ): void {
   sendErrorResponse(
@@ -143,7 +143,7 @@ export function sendSchemaParsingError(
 export function sendDatabaseError(
   req: Request,
   res: Response,
-  originalError: any,
+  originalError: unknown,
   fallbackUsed = false
 ): void {
   console.error('Database error:', originalError);
@@ -156,7 +156,7 @@ export function sendDatabaseError(
     fallbackUsed 
       ? 'Database operation failed, using fallback'
       : 'Database operation failed',
-    process.env.NODE_ENV !== 'production' ? originalError.message : undefined
+    process.env.NODE_ENV !== 'production' && originalError instanceof Error ? originalError.message : undefined
   );
 }
 
@@ -164,7 +164,7 @@ export function sendDatabaseError(
 export function sendJWTValidationError(
   req: Request,
   res: Response,
-  details?: any
+  details?: unknown
 ): void {
   sendErrorResponse(
     req,
@@ -180,7 +180,7 @@ export function sendJWTValidationError(
 export function sendInternalError(
   req: Request,
   res: Response,
-  originalError: any
+  originalError: unknown
 ): void {
   console.error('Internal server error:', originalError);
   
@@ -190,7 +190,7 @@ export function sendInternalError(
     500,
     ErrorCodes.INTERNAL_ERROR,
     'Internal server error',
-    process.env.NODE_ENV !== 'production' ? originalError.message : undefined
+    process.env.NODE_ENV !== 'production' && originalError instanceof Error ? originalError.message : undefined
   );
 }
 

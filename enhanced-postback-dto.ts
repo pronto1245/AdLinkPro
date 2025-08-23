@@ -8,7 +8,7 @@ export const EventDto = z.object({
   txid: z.string().min(1),
   value: z.number().optional().default(0),
   currency: z.string().length(3).optional(),
-  meta: z.record(z.any()).optional(),
+  meta: z.record(z.unknown()).optional(),
 });
 
 export const AffiliateWebhookDto = z.object({
@@ -17,7 +17,7 @@ export const AffiliateWebhookDto = z.object({
   status: z.enum(["approved","declined","pending","hold"]),
   payout: z.number().optional().default(0),
   currency: z.string().length(3).optional(),
-  raw: z.record(z.any()).optional(),
+  raw: z.record(z.unknown()).optional(),
 });
 
 export const PspWebhookDto = z.object({
@@ -26,7 +26,7 @@ export const PspWebhookDto = z.object({
   status: z.enum(["approved","declined","refunded","chargeback","success","failed","pending","reversed"]),
   amount: z.number().optional(),
   currency: z.string().length(3).optional(),
-  raw: z.record(z.any()).optional(),
+  raw: z.record(z.unknown()).optional(),
 });
 
 export type EventDtoType = z.infer<typeof EventDto>;

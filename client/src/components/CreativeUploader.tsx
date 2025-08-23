@@ -4,23 +4,29 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileText, X, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+interface UploadResult {
+  successful: Array<{
+    uploadURL: string;
+    name: string;
+    size: number;
+  }>;
+  failed: Array<unknown>;
+}
+
 interface CreativeUploaderProps {
   offerId?: string;
   maxNumberOfFiles?: number;
   maxFileSize?: number;
   onGetUploadParameters?: () => Promise<{ method: 'PUT'; url: string }>;
-  onComplete?: (_result: any) => void;
+  onComplete?: (result: UploadResult) => void;
   uploaded?: boolean;
   buttonClassName?: string;
 }
 
 export function CreativeUploader({ 
-  offerId: _offerId, 
-  maxNumberOfFiles: _maxNumberOfFiles = 1,
   maxFileSize = 50 * 1024 * 1024,
   onGetUploadParameters,
   onComplete,
-  uploaded: _uploaded = false,
   buttonClassName 
 }: CreativeUploaderProps) {
   const [uploading, setUploading] = useState(false);

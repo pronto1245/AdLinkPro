@@ -61,6 +61,9 @@ export default [
       'no-new-func': 'error',
       'no-console': 'off', // Allow console statements in development
       
+      // Disable base no-unused-vars and use TypeScript specific one
+      'no-unused-vars': 'off',
+      
       // TypeScript specific
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
