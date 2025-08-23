@@ -108,7 +108,7 @@ router.post('/auth/login', async (req, res) => {
               email: user.email,
               username: user.username,
               role: user.role,
-              twoFactorEnabled: user.twoFactorEnabled || false
+              twoFactorEnabled: false // System-wide disabled per user request
             }
           });
         } else {

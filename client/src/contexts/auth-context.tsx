@@ -52,11 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await apiLogin(username, password);
       
-      // If 2FA is required, return the response without setting user/token
-      if (response.requires2FA) {
-        return response;
-      }
-      
+      // 2FA is disabled system-wide, proceed directly with login
       // If login is successful, set user and token
       if (response.success && response.token && response.user) {
         setUser(response.user);

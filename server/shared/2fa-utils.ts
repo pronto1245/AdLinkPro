@@ -1,7 +1,9 @@
 // Shared data and utilities for 2FA
 import { tempTokens, recovery2FACodes } from "./2fa-storage";
+import { should2FABeSkipped } from "./2fa-config";
 
 // Demo users data - same as auth-v2.ts
+// 2FA is disabled for all users per system configuration
 export const users = [
   {
     id: "1",
@@ -10,7 +12,7 @@ export const users = [
     role: "OWNER",
     sub: "owner-1",
     username: "owner",
-    twoFactorEnabled: false,
+    twoFactorEnabled: false, // System-wide disabled
     twoFactorSecret: null,
   },
   {
@@ -20,7 +22,7 @@ export const users = [
     role: "ADVERTISER",
     sub: "adv-1",
     username: "advertiser",
-    twoFactorEnabled: false,
+    twoFactorEnabled: false, // System-wide disabled
     twoFactorSecret: null,
   },
   {
@@ -30,13 +32,19 @@ export const users = [
     role: "PARTNER",
     sub: "partner-1",
     username: "partner",
-    twoFactorEnabled: false,
+    twoFactorEnabled: false, // System-wide disabled
     twoFactorSecret: null,
   },
 ];
 
 // Simple TOTP verification (demo implementation)
+// Always returns true when 2FA is system-wide disabled
 export function verifyTOTP(secret: string, token: string): boolean {
+  // If 2FA is disabled system-wide, always return true to bypass verification
+  if (should2FABeSkipped()) {
+    return true;
+  }
+  
   // In a real implementation, use a proper TOTP library like 'speakeasy'
   // For demo purposes, we'll accept specific codes
   const validCodes = ["123456", "000000", "111111"];

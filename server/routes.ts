@@ -6269,11 +6269,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Toggle 2FA for user (Currently disabled system-wide)
   app.patch("/api/admin/users/:id/2fa", authenticateToken, requireRole(['super_admin']), async (req, res) => {
     try {
-      // 2FA is disabled system-wide, so always return false
+      // 2FA is disabled system-wide per user request
+      // "интеграции 2FA не нужна. пока делаем без интеграции 2FA"
       res.json({ 
         success: true, 
         twoFactorEnabled: false,
-        message: "2FA is disabled system-wide" 
+        message: "2FA отключена системно по запросу - пока делаем без интеграции 2FA" 
       });
     } catch (error) {
       console.error("Update 2FA error:", error);

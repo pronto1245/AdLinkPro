@@ -32,8 +32,11 @@ function json(path: string, body?: any, init: HttpInit = {}): Promise<any> {
 export { api, json, API_BASE };
 
 export type LoginResponse = {
+  success?: boolean;
   token: string;
-  user: { sub: number; email: string; role: string; username: string };
+  user: { sub?: number; id?: string; email: string; role: string; username: string };
+  // 2FA is disabled system-wide - kept for future compatibility
+  requires2FA?: never;
 };
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
