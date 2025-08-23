@@ -36,7 +36,7 @@ export interface AnalyticsJobData {
   userId?: string;
   offerId?: string;
   partnerId?: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   timestamp: Date;
 }
 
@@ -44,7 +44,7 @@ export interface NotificationJobData {
   type: 'email' | 'push' | 'sms';
   recipient: string;
   template: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   priority?: 'low' | 'normal' | 'high';
 }
 
@@ -56,7 +56,7 @@ export interface FraudDetectionJobData {
   deviceFingerprint?: string;
   partnerId: string;
   offerId: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 export interface CleanupJobData {
@@ -69,7 +69,7 @@ export interface PostbackJobData {
   conversionId: string;
   partnerId: string;
   postbackUrl: string;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   retryCount?: number;
 }
 
@@ -320,22 +320,22 @@ export class QueueService {
   }
 
   // Helper methods (would be implemented based on actual services)
-  private async processClickAnalytics(data: any, userId?: string, offerId?: string, partnerId?: string, timestamp?: Date) {
+  private async processClickAnalytics(data: unknown, userId?: string, offerId?: string, partnerId?: string, timestamp?: Date) {
     // Implement click analytics processing
     console.log('Processing click analytics:', { userId, offerId, partnerId, timestamp });
   }
 
-  private async processConversionAnalytics(data: any, userId?: string, offerId?: string, partnerId?: string, timestamp?: Date) {
+  private async processConversionAnalytics(data: unknown, userId?: string, offerId?: string, partnerId?: string, timestamp?: Date) {
     // Implement conversion analytics processing
     console.log('Processing conversion analytics:', { userId, offerId, partnerId, timestamp });
   }
 
-  private async processImpressionAnalytics(data: any, userId?: string, offerId?: string, partnerId?: string, timestamp?: Date) {
+  private async processImpressionAnalytics(data: unknown, userId?: string, offerId?: string, partnerId?: string, timestamp?: Date) {
     // Implement impression analytics processing
     console.log('Processing impression analytics:', { userId, offerId, partnerId, timestamp });
   }
 
-  private async updateRealTimeStats(type: string, _data: any) {
+  private async updateRealTimeStats(type: string, _data: unknown) {
     // Update real-time statistics in cache
     const key = `stats:realtime:${type}`;
     const current = await cacheService.get(key) || { count: 0 };
@@ -349,7 +349,7 @@ export class QueueService {
     console.log('Sending email notification:', { recipient, template });
   }
 
-  private async sendPushNotification(recipient: string, template: string, _data: any) {
+  private async sendPushNotification(recipient: string, template: string, _data: unknown) {
     // Implement push notification sending
     console.log('Sending push notification:', { recipient, template });
   }

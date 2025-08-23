@@ -104,7 +104,7 @@ export async function executeWithFallback<T>(
   try {
     const result = await operation();
     console.log(`✅ ${operationName} completed successfully`);
-    return { success: true, _data: result };
+    return { success: true, data: result };
   } catch (dbError: unknown) {
     const message = dbError instanceof Error ? dbError.message : 'Unknown error';
     console.log(`⚠️ ${operationName} failed, using fallback:`, message);
@@ -113,7 +113,7 @@ export async function executeWithFallback<T>(
     // but log the issue for later processing
     if (operationName.includes('registration') || operationName.includes('user creation')) {
       console.log(`📝 Using fallback data for ${operationName}`);
-      return { success: true, _data: fallbackData };
+      return { success: true, data: fallbackData };
     }
     
     sendDatabaseError(req, res, dbError, true);
