@@ -1,7 +1,7 @@
 import * as acme from 'acme-client';
 import crypto from 'crypto';
 import { db } from '../db.js';
-import { customDomains } from '../../shared/schema.js';
+import { customDomains } from '../../shared/schema';
 import { eq, and, lte } from 'drizzle-orm';
 
 export class LetsEncryptService {
