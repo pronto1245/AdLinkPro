@@ -29,98 +29,13 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    // Try database authentication first
-    let user = null;
+    // Get the login identifier
     let loginIdentifier = email || username;
     
-    console.log('🔍 [AUTH] Checking database for user:', loginIdentifier);
+    console.log('🔍 [AUTH] Processing login for:', loginIdentifier);
     
-    if (email) {
-      user = await findUserByEmail(email.toLowerCase().trim());
-    } else if (username) {
-      // Check if username is actually an email
-      if (username.includes('@')) {
-        user = await findUserByEmail(username.toLowerCase().trim());
-      } else {
-        // Look up user by username in test credentials
-        if (TEST_USERS[username.toLowerCase()]) {
-          const testUser = TEST_USERS[username.toLowerCase()];
-          console.log('🎯 [AUTH] Using test user credentials for:', username);
-          loginIdentifier = testUser.email;
-          user = await findUserByEmail(testUser.email);
-          
-          // If not in database, use fallback
-          if (!user && testUser.password === password) {
-            console.log('✅ [AUTH] Test user fallback authentication successful:', username);
-            const token = jwt.sign(
-              { sub: username, email: testUser.email, role: testUser.role, username },
-              process.env.JWT_SECRET!,
-              { expiresIn: '7d' }
-            );
-            
-            return res.json({
-              success: true,
-              token,
-              user: {
-                id: username,
-                email: testUser.email,
-                username: username,
-                role: testUser.role,
-                twoFactorEnabled: false
-              }
-            });
-          }
-        }
-      }
-    }
-    
-    if (user && user.password_hash) {
-      console.log('✅ [AUTH] User found in database:', {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        hasPasswordHash: !!user.password_hash
-      });
-      
-      // Verify password with bcrypt
-      console.log('🔑 [AUTH] Verifying password with bcrypt...');
-      try {
-        const isMatch = await bcrypt.compare(password, user.password_hash);
-        
-        if (isMatch) {
-          console.log('✅ [AUTH] Password verification successful for:', user.email);
-          
-          const token = jwt.sign(
-            { sub: user.id, email: user.email, role: user.role, username: user.username },
-            process.env.JWT_SECRET!,
-            { expiresIn: '7d' }
-          );
-          
-          console.log('🔐 [AUTH] JWT token generated successfully');
-          
-          return res.json({
-            success: true,
-            token,
-            user: {
-              id: user.id,
-              email: user.email,
-              username: user.username,
-              role: user.role,
-              twoFactorEnabled: false // System-wide disabled per user request
-            }
-          });
-        } else {
-          console.log('❌ [AUTH] Password verification failed for:', user.email);
-        }
-      } catch (bcryptError) {
-        console.error('❌ [AUTH] Bcrypt verification error:', bcryptError);
-      }
-    } else {
-      console.log('ℹ️ [AUTH] User not found in database or no password hash');
-    }
-    
-    // Fallback to test user credentials for development
-    console.log('🔄 [AUTH] Attempting fallback authentication...');
+    // First try fallback authentication for known test users
+    console.log('🔄 [AUTH] Checking fallback test user authentication...');
     
     // Check if login is for specific test user email/password combo
     const ownerFallback = (loginIdentifier === '9791207@gmail.com' || username === 'owner') && password === 'Affilix123!';
@@ -156,6 +71,53 @@ router.post('/login', async (req, res) => {
           twoFactorEnabled: false
         }
       });
+    }
+    
+    // Try database authentication only if fallback doesn't work
+    try {
+      console.log('🔍 [AUTH] Trying database authentication for:', loginIdentifier);
+      const user = await findUserByEmail(loginIdentifier.toLowerCase().trim());
+      
+      if (user && user.password_hash) {
+        console.log('✅ [AUTH] User found in database:', {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          hasPasswordHash: !!user.password_hash
+        });
+        
+        // Verify password with bcrypt
+        console.log('🔑 [AUTH] Verifying password with bcrypt...');
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        
+        if (isMatch) {
+          console.log('✅ [AUTH] Database password verification successful for:', user.email);
+          
+          const token = jwt.sign(
+            { sub: user.id, email: user.email, role: user.role, username: user.username },
+            process.env.JWT_SECRET!,
+            { expiresIn: '7d' }
+          );
+          
+          console.log('🔐 [AUTH] JWT token generated successfully');
+          
+          return res.json({
+            success: true,
+            token,
+            user: {
+              id: user.id,
+              email: user.email,
+              username: user.username,
+              role: user.role,
+              twoFactorEnabled: false
+            }
+          });
+        } else {
+          console.log('❌ [AUTH] Database password verification failed for:', user.email);
+        }
+      }
+    } catch (dbError) {
+      console.log('⚠️ [AUTH] Database authentication failed, continuing:', dbError.message);
     }
     
     console.log('❌ [AUTH] Authentication failed for:', loginIdentifier);
