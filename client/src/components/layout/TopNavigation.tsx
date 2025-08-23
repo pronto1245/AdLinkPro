@@ -11,7 +11,6 @@ import {
   FileText,
   Home,
   Menu,
-  X,
   TrendingUp,
   Shield,
   Users
@@ -46,7 +45,7 @@ import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
-import { createLogoutHandler, getUserInitials, getRoleDisplayName, getDashboardHref } from '@/lib/navigation-utils';
+import { createLogoutHandler, getUserInitials, getRoleDisplayName } from '@/lib/navigation-utils';
 import { validateToken, refreshTokenIfNeeded } from '@/lib/menu';
 import { routeByRole } from '@/utils/routeByRole';
 

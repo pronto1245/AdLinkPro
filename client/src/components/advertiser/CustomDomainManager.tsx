@@ -133,7 +133,7 @@ export function CustomDomainManager() {
     onError: (error: Error) => {
       toast({
         title: "Ошибка выдачи SSL",
-        description: error?.error || "Не удалось запустить выдачу SSL сертификата",
+        description: error.message || "Не удалось запустить выдачу SSL сертификата",
         variant: "destructive"
       });
     }

@@ -8,17 +8,15 @@ import {
   Users, 
   Target, 
   DollarSign, 
-  History, 
   Settings, 
   BarChart3, 
   HeadphonesIcon,
   ChevronLeft,
-  ChevronRight,
-  Send
+  ChevronRight
 } from 'lucide-react';
 import { useSidebar } from '@/contexts/sidebar-context';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { getDashboardHref, getUserDisplayName, getUserInitials, getRoleDisplayName } from '@/lib/navigation-utils';
+import { getDashboardHref, getRoleDisplayName } from '@/lib/navigation-utils';
 
 interface MenuItem {
   labelKey: string;
