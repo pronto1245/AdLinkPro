@@ -1570,6 +1570,80 @@ export const userAnalytics = pgTable("user_analytics", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Custom Domains table for white-label tracking
+export const customDomains = pgTable("custom_domains", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  domain: varchar("domain", { length: 255 }).notNull(),
+  advertiserId: varchar("advertiser_id", { length: 255 }).notNull().references(() => users.id),
+  type: domainTypeEnum("type").notNull(),
+  status: domainStatusEnum("status").notNull().default('pending'),
+  verificationValue: varchar("verification_value", { length: 255 }).notNull(),
+  targetValue: varchar("target_value", { length: 255 }),
+  errorMessage: text("error_message"),
+  lastChecked: timestamp("last_checked"),
+  nextCheck: timestamp("next_check"),
+  // SSL Certificate fields
+  sslStatus: varchar("ssl_status", { length: 50 }).default('none'), // none, pending, issued, expired, failed
+  sslCertificate: text("ssl_certificate"),
+  sslPrivateKey: text("ssl_private_key"),
+  sslValidUntil: timestamp("ssl_valid_until"),
+  sslIssuer: varchar("ssl_issuer", { length: 255 }),
+  sslErrorMessage: text("ssl_error_message"),
+  isActive: boolean("is_active").default(false),
+  verifiedAt: timestamp("verified_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const customDomainsRelations = relations(customDomains, ({ one }) => ({
+  advertiser: one(users, {
+    fields: [customDomains.advertiserId],
+    references: [users.id],
+  }),
+}));
+
+// Create aliases for backward compatibility first (needed for insert schemas)
+export const postbackProfiles = enhancedPostbackProfiles;
+export const postbackDeliveries = postbackDeliveryLogs;
+
+// Essential insert schemas needed by server routes
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+});
+export const insertOfferSchema = createInsertSchema(offers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertTicketSchema = createInsertSchema(tickets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertPostbackSchema = createInsertSchema(postbacks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertReceivedOfferSchema = createInsertSchema(receivedOffers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true,
+  createdAt: true,
+});
+export const insertClickSchema = createInsertSchema(clicks).omit({
+  id: true,
+  createdAt: true,
+});
+export const insertPostbackProfileSchema = createInsertSchema(postbackProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Insert schemas - TEMPORARILY COMMENTED OUT DUE TO DRIZZLE-ZOD SYNTAX ISSUES
 // These need to be fixed with proper omit syntax but are not critical for merge conflict resolution
 /*
@@ -1916,38 +1990,6 @@ export const insertOfferAccessRequestSchema = createInsertSchema(offerAccessRequ
 export type OfferAccessRequest = typeof offerAccessRequests.$inferSelect;
 export type InsertOfferAccessRequest = z.infer<typeof insertOfferAccessRequestSchema>;
 
-// Custom Domains table for white-label tracking
-export const customDomains = pgTable("custom_domains", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  domain: varchar("domain", { length: 255 }).notNull(),
-  advertiserId: varchar("advertiser_id", { length: 255 }).notNull().references(() => users.id),
-  type: domainTypeEnum("type").notNull(),
-  status: domainStatusEnum("status").notNull().default('pending'),
-  verificationValue: varchar("verification_value", { length: 255 }).notNull(),
-  targetValue: varchar("target_value", { length: 255 }),
-  errorMessage: text("error_message"),
-  lastChecked: timestamp("last_checked"),
-  nextCheck: timestamp("next_check"),
-  // SSL Certificate fields
-  sslStatus: varchar("ssl_status", { length: 50 }).default('none'), // none, pending, issued, expired, failed
-  sslCertificate: text("ssl_certificate"),
-  sslPrivateKey: text("ssl_private_key"),
-  sslValidUntil: timestamp("ssl_valid_until"),
-  sslIssuer: varchar("ssl_issuer", { length: 255 }),
-  sslErrorMessage: text("ssl_error_message"),
-  isActive: boolean("is_active").default(false),
-  verifiedAt: timestamp("verified_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-export const customDomainsRelations = relations(customDomains, ({ one }) => ({
-  advertiser: one(users, {
-    fields: [customDomains.advertiserId],
-    references: [users.id],
-  }),
-}));
-
 // API Tokens table
 export const apiTokens = pgTable("api_tokens", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -2038,7 +2080,5 @@ export type TeamInvitation = typeof teamInvitations.$inferSelect;
 
 // Note: insertPostbackSchema and insertReceivedOfferSchema are already defined above in this file
 
-// Create aliases for backward compatibility
-export const postbackProfiles = enhancedPostbackProfiles;
-export const postbackDeliveries = postbackDeliveryLogs;
+// Note: Aliases for postbackProfiles and postbackDeliveries are defined above in this file
 
