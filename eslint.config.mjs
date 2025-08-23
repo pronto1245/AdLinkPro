@@ -39,6 +39,7 @@ export default [
         HTMLDivElement: 'readonly',
         HTMLParagraphElement: 'readonly',
         HTMLHeadingElement: 'readonly',
+
         HTMLOListElement: 'readonly',
         HTMLLIElement: 'readonly',
         HTMLAnchorElement: 'readonly',

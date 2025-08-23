@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { db } from '../db';
-import { users, transactions, payouts, deposits } from '@shared/schema';
+import { users, payouts, deposits } from '@shared/schema';
 import { eq, desc, and, or, gte, lte, sql, sum } from 'drizzle-orm';
 import { auditLog } from '../middleware/security';
 import { applyOwnerIdFilter } from '../middleware/authorization';

@@ -80,9 +80,9 @@ interface OfferFormData {
 }
 
 interface OfferEditModalProps {
-  offer: any;
+  offer: Partial<OfferFormData> | null;
   onClose: () => void;
-  onSave: (offer: any) => void;
+  onSave: (offer: OfferFormData) => void;
 }
 
 const categories = [
@@ -90,7 +90,6 @@ const categories = [
   'gaming', 'finance', 'health', 'vpn', 'antivirus', 'education',
   'software', 'mobile_apps', 'nutra', 'beauty'
 ];
-
 
 const countries = [
   { code: 'afghanistan', name: '🇦🇫 Афганистан' },
