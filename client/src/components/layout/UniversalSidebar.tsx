@@ -34,7 +34,7 @@ import {
 export interface MenuItem {
   title: string;
   href: string;
-  icon: any;
+  icon: React.ComponentType<any>;
   description: string;
   roles?: string[];
   requiresToken?: boolean;

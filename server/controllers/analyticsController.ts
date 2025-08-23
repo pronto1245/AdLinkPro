@@ -8,13 +8,21 @@ import { eq, desc, and, gte, lte, sql, sum, count, avg } from 'drizzle-orm';
 import { auditLog } from '../middleware/security';
 import { applyOwnerIdFilter } from '../middleware/authorization';
 
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    role: string;
+    [key: string]: unknown;
+  };
+}
+
 export class AnalyticsController {
   /**
    * Get commission data with filtering and caching
    */
-  static async getCommissionData(req: Request, res: Response) {
+  static async getCommissionData(req: AuthenticatedRequest, res: Response) {
     try {
-      const currentUser = (req as any).user;
+      const currentUser = req.user;
       const {
         period = '30d',
         partnerId,
@@ -140,10 +148,10 @@ export class AnalyticsController {
   /**
    * Get financial chart data
    */
-  static async getFinancialChart(req: Request, res: Response) {
+  static async getFinancialChart(req: AuthenticatedRequest, res: Response) {
     try {
       const { period } = req.params;
-      const currentUser = (req as any).user;
+      const currentUser = req.user;
       const {
         partnerId,
         offerId,
@@ -298,9 +306,9 @@ export class AnalyticsController {
   /**
    * Get analytics summary
    */
-  static async getAnalyticsSummary(req: Request, res: Response) {
+  static async getAnalyticsSummary(req: AuthenticatedRequest, res: Response) {
     try {
-      const currentUser = (req as any).user;
+      const currentUser = req.user;
       const { period = '30d', partnerId, offerId } = req.query;
 
       // Create cache key
@@ -441,9 +449,9 @@ export class AnalyticsController {
   /**
    * Get partner analytics (for partners to view their own data)
    */
-  static async getPartnerAnalytics(req: Request, res: Response) {
+  static async getPartnerAnalytics(req: AuthenticatedRequest, res: Response) {
     try {
-      const currentUser = (req as any).user;
+      const currentUser = req.user;
 
       // Ensure partner can only see their own data
       if (currentUser.role !== 'super_admin' && currentUser.role !== 'advertiser') {

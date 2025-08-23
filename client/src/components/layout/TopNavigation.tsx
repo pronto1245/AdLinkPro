@@ -61,7 +61,7 @@ interface Notification {
 interface MenuItem {
   id: string;
   title: string;
-  icon: any;
+  icon: React.ComponentType<any>;
   description: string;
   href: string;
   roles?: string[];

@@ -80,9 +80,9 @@ interface OfferFormData {
 }
 
 interface OfferEditModalProps {
-  offer: any;
+  offer: Partial<OfferFormData> | null;
   onClose: () => void;
-  onSave: (offer: any) => void;
+  onSave: (offer: OfferFormData) => void;
 }
 
 const categories = [
