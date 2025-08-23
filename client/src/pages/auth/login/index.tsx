@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Shield, AlertTriangle, Loader2, CheckCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -10,104 +8,24 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
 
-import { secureAuth, SecureAPIError } from "@/lib/secure-api";
-import { loginSchema, LoginFormData } from "@/lib/validation";
-
-function roleToPath(role?: string) {
-  const r = (role || "").toLowerCase();
-  if (r === "advertiser") {return "/advertiser";}
-  if (r === "partner") {return "/partner";}
-  if (r === "owner") {return "/owner";}
-  if (r === "affiliate") {return "/partner";} // affiliate maps to partner route
-  if (r === "staff") {return "/dashboard/staff";}
-  if (r === "super_admin") {return "/dashboard/super-admin";}
-  return "/partner"; // default fallback
-}
+import { useLoginForm } from "@/hooks/useLoginForm";
 
 export default function Login() {
   const [, navigate] = useLocation();
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const { toast } = useToast();
 
-  // Login form
-  const loginForm = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      rememberMe: false,
-    },
-  });
+  // Extract redirectTo parameter from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const redirectTo = urlParams.get('next') || undefined;
 
-  // Handle login form submission
-  async function onLogin(data: LoginFormData) {
-    console.log("🔐 [LOGIN] Starting login process...", {
-      email: data.email,
-      hasPassword: !!data.password,
-      rememberMe: data.rememberMe
-    });
-    
-    setError("");
-    setLoading(true);
-
-    try {
-      // Login successful - backend now always returns token directly
-      console.log("🔐 [LOGIN] Calling secureAuth.login...");
-      const result = await secureAuth.login(data);
-      
-      console.log("🔐 [LOGIN] Login result:", {
-        hasToken: !!result.token,
-        result: result
-      });
-      
-      if (result.token) {
-        toast({
-          title: "Успешный вход",
-          description: "Перенаправляем в панель управления...",
-        });
-
-        // Get user info and navigate
-        console.log("🔐 [LOGIN] Getting user info...");
-        const user = await secureAuth.me();
-        console.log("🔐 [LOGIN] User info received:", user);
-        
-        const targetPath = roleToPath(user?.role);
-        console.log("🔐 [LOGIN] Navigating to:", targetPath);
-        navigate(targetPath);
-      } else {
-        console.warn("🔐 [LOGIN] No token in response:", result);
-        setError("Ошибка входа. Попробуйте снова.");
-      }
-    } catch (err) {
-      console.error("🔐 [LOGIN] Login error:", err);
-      
-      if (err instanceof SecureAPIError) {
-        console.error("🔐 [LOGIN] SecureAPI error:", {
-          status: err.status,
-          statusText: err.statusText,
-          code: err.code
-        });
-        
-        if (err.status === 401) {
-          setError("Неверный email или пароль");
-        } else if (err.status === 429) {
-          setError("Слишком много попыток входа. Попробуйте позже.");
-        } else {
-          setError(err.statusText || "Ошибка входа");
-        }
-      } else {
-        console.error("🔐 [LOGIN] Network or other error:", err);
-        setError("Ошибка соединения. Проверьте интернет-подключение.");
-      }
-    } finally {
-      console.log("🔐 [LOGIN] Setting loading to false...");
-      setLoading(false);
-    }
-  }
+  const {
+    form,
+    loading,
+    showPassword,
+    error,
+    handleSubmit,
+    togglePasswordVisibility,
+  } = useLoginForm({ redirectTo });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 px-4 py-8">
@@ -131,24 +49,24 @@ export default function Login() {
           {error && (
             <Alert className="mb-4" variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{error.message}</AlertDescription>
             </Alert>
           )}
 
           {/* Login Form */}
-          <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
-                {...loginForm.register("email")}
+                {...form.register("email")}
                 id="email"
                 type="email"
                 placeholder="example@company.com"
                 disabled={loading}
               />
-              {loginForm.formState.errors.email && (
+              {form.formState.errors.email && (
                 <p className="text-sm text-red-600 mt-1">
-                  {loginForm.formState.errors.email.message}
+                  {form.formState.errors.email.message}
                 </p>
               )}
             </div>
@@ -157,7 +75,7 @@ export default function Login() {
               <Label htmlFor="password">Пароль</Label>
               <div className="relative">
                 <Input
-                  {...loginForm.register("password")}
+                  {...form.register("password")}
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Введите пароль"
@@ -167,14 +85,14 @@ export default function Login() {
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={togglePasswordVisibility}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {loginForm.formState.errors.password && (
+              {form.formState.errors.password && (
                 <p className="text-sm text-red-600 mt-1">
-                  {loginForm.formState.errors.password.message}
+                  {form.formState.errors.password.message}
                 </p>
               )}
             </div>
@@ -182,9 +100,9 @@ export default function Login() {
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="rememberMe"
-                checked={loginForm.watch("rememberMe")}
+                checked={form.watch("rememberMe")}
                 onCheckedChange={(checked) => 
-                  loginForm.setValue("rememberMe", checked as boolean)
+                  form.setValue("rememberMe", checked as boolean)
                 }
               />
               <Label 
