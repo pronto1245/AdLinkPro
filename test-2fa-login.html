@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>2FA Disabled Login Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-form { background: #f5f5f5; padding: 20px; margin: 10px 0; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        input, button { margin: 5px; padding: 8px; }
+        .response { background: #e9e9e9; padding: 10px; margin-top: 10px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔐 2FA Disabled Login Test</h1>
+    <p>Тест показывает, что при входе 2FA не требуется согласно запросу пользователя.</p>
+
+    <div class="test-form">
+        <h3>Owner Login Test</h3>
+        <input type="text" id="ownerUsername" value="owner" placeholder="Username">
+        <input type="password" id="ownerPassword" value="Affilix123!" placeholder="Password">
+        <button onclick="testLogin('owner')">Test Owner Login</button>
+        <div id="ownerResult" class="response"></div>
+    </div>
+
+    <div class="test-form">
+        <h3>Advertiser Login Test</h3>
+        <input type="text" id="advertiserUsername" value="advertiser" placeholder="Username">
+        <input type="password" id="advertiserPassword" value="adv123" placeholder="Password">
+        <button onclick="testLogin('advertiser')">Test Advertiser Login</button>
+        <div id="advertiserResult" class="response"></div>
+    </div>
+
+    <div class="test-form">
+        <h3>Partner Login Test</h3>
+        <input type="text" id="partnerUsername" value="partner" placeholder="Username">
+        <input type="password" id="partnerPassword" value="partner123" placeholder="Password">
+        <button onclick="testLogin('partner')">Test Partner Login</button>
+        <div id="partnerResult" class="response"></div>
+    </div>
+
+    <script>
+        async function testLogin(userType) {
+            const username = document.getElementById(`${userType}Username`).value;
+            const password = document.getElementById(`${userType}Password`).value;
+            const resultDiv = document.getElementById(`${userType}Result`);
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.token) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Login Successful - No 2FA Required!</h4>
+                            <p><strong>User:</strong> ${data.user.username} (${data.user.role})</p>
+                            <p><strong>Email:</strong> ${data.user.email}</p>
+                            <p><strong>2FA Enabled:</strong> ${data.user.twoFactorEnabled} ← Should be false</p>
+                            <p><strong>Token:</strong> ${data.token.substring(0, 20)}...</p>
+                            <p><strong>No requires2FA field:</strong> ${'requires2FA' in data ? '❌ Present' : '✅ Absent'}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Login Failed</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Network Error</h4>
+                        <p>${error.message}</p>
+                        <p>Make sure the server is running on port 3000</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Test all automatically on page load (for demonstration)
+        window.onload = function() {
+            setTimeout(() => testLogin('owner'), 500);
+            setTimeout(() => testLogin('advertiser'), 1000);
+            setTimeout(() => testLogin('partner'), 1500);
+        };
+    </script>
+</body>
+</html>
