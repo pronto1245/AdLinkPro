@@ -10,21 +10,21 @@ import {
 export function validateWithFallback<T>(
   req: Request,
   res: Response,
-  schema: any, _data: any,
+  schema: unknown, _data: unknown,
   fallbackFields: Partial<T>
 ): { success: true; data: T } | { success: false } {
   try {
     // Try primary schema validation
-    const validatedData = schema.parse(data);
-    return { success: true, _data: validatedData };
+    const validatedData = (schema as any).parse(_data);
+    return { success: true, data: validatedData };
   } catch (schemaError: any) {
     console.log('❌ Schema validation error, attempting fallback:', schemaError.message);
     
     // Attempt fallback validation with essential fields
     try {
-      const fallbackData = createFallbackData(data, fallbackFields);
+      const fallbackData = createFallbackData(_data, fallbackFields);
       console.log('✅ Fallback validation successful');
-      return { success: true, _data: fallbackData as T };
+      return { success: true, data: fallbackData as T };
     } catch (fallbackError) {
       console.error('❌ Fallback validation also failed:', fallbackError);
       sendSchemaParsingError(req, res, schemaError, false);
