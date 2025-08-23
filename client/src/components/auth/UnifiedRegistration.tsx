@@ -497,7 +497,7 @@ export default function UnifiedRegistration({ config }: UnifiedRegistrationProps
                   <Label>Тип контакта</Label>
                   <Select
                     value={form.watch('contactType')}
-                    onValueChange={(value) => form.setValue('contactType', value as any)}
+                    onValueChange={(value: string) => form.setValue('contactType', value as 'email' | 'phone' | 'telegram')}
                     disabled={loading}
                   >
                     <SelectTrigger>
