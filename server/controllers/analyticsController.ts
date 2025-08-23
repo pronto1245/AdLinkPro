@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { db, queryCache } from '../db';
 import { 
-  users, offers, partnerOffers, trackingClicks, conversionData, 
-  analyticsData, statistics, transactions 
+  users, offers, trackingClicks, conversionData, 
+  transactions 
 } from '@shared/schema';
-import { eq, desc, and, or, gte, lte, sql, sum, count, avg } from 'drizzle-orm';
+import { eq, desc, and, gte, lte, sql, sum, count, avg } from 'drizzle-orm';
 import { auditLog } from '../middleware/security';
 import { applyOwnerIdFilter } from '../middleware/authorization';
 
@@ -444,7 +444,6 @@ export class AnalyticsController {
   static async getPartnerAnalytics(req: Request, res: Response) {
     try {
       const currentUser = (req as any).user;
-      const { period = '30d', offerId } = req.query;
 
       // Ensure partner can only see their own data
       if (currentUser.role !== 'super_admin' && currentUser.role !== 'advertiser') {
