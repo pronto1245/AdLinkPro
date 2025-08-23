@@ -26,7 +26,6 @@ const GeoDisplay: React.FC<GeoDisplayProps> = ({
   geoTargeting, 
   payout = 0, 
   currency = 'USD',
-  offerId: _offerId,
   payoutByGeo 
 }) => {
   const [showModal, setShowModal] = useState(false);

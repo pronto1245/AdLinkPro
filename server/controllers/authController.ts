@@ -1,20 +1,18 @@
-import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { db } from '../db';
 import { users } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { auditLog } from '../middleware/security';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+import { AuthenticatedRequest } from '../middleware/unifiedAuth';
 
 export class AuthController {
   /**
    * Get current user profile
    */
-  static async me(req: Request, res: Response) {
+  static async me(req: AuthenticatedRequest, res: Response) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = req.user?.id || req.user?.sub;
       
       if (!userId) {
         return res.status(401).json({ error: 'Not authenticated' });
@@ -59,9 +57,9 @@ export class AuthController {
   /**
    * Update user profile
    */
-  static async updateProfile(req: Request, res: Response) {
+  static async updateProfile(req: AuthenticatedRequest, res: Response) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = req.user?.id || req.user?.sub;
       const {
         firstName,
         lastName,
@@ -121,9 +119,9 @@ export class AuthController {
   /**
    * Change password
    */
-  static async changePassword(req: Request, res: Response) {
+  static async changePassword(req: AuthenticatedRequest, res: Response) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = req.user?.id || req.user?.sub;
       const { currentPassword, newPassword } = req.body;
 
       if (!userId) {

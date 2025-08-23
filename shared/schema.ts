@@ -1680,7 +1680,7 @@ export const createOfferFrontendSchema = z.object({
   status: z.string().optional(),
   payoutType: z.string().optional(),
   currency: z.string().optional(),
-  landingPages: z.any().optional(),
+  landingPages: z.record(z.unknown()).optional(),
   kpiConditions: z.union([z.string(), z.object({ ru: z.string(), en: z.string() })]).optional(),
   allowedTrafficSources: z.array(z.string()).optional(),
   trafficSources: z.array(z.string()).optional(),

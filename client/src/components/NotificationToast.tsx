@@ -15,7 +15,7 @@ export interface ToastNotification {
 
 interface NotificationToastProps {
   notification: ToastNotification;
-  onClose: (id: string) => void;
+  onClose: (_id: string) => void;
 }
 
 const icons = {
@@ -121,8 +121,8 @@ export function NotificationToast({ notification, onClose }: NotificationToastPr
 // Контекст для управления уведомлениями
 interface NotificationContextType {
   notifications: ToastNotification[];
-  showNotification: (notification: Omit<ToastNotification, 'id'>) => void;
-  removeNotification: (id: string) => void;
+  showNotification: (_notification: Omit<ToastNotification, 'id'>) => void;
+  removeNotification: (_id: string) => void;
   clearAll: () => void;
 }
 

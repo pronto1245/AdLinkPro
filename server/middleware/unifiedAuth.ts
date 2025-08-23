@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { db } from '../db';
 import { users } from '@shared/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { auditLog } from './security';
 import {
   sendAuthenticationRequired,
@@ -17,8 +17,17 @@ import {
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
-interface AuthenticatedRequest extends Request {
-  user?: any;
+interface JWTPayload {
+  sub?: string;
+  id?: string;
+  role: string;
+  iat?: number;
+  exp?: number;
+  [key: string]: unknown;
+}
+
+export interface AuthenticatedRequest extends Request {
+  user?: JWTPayload;
 }
 
 // Enhanced JWT token extraction and validation
@@ -62,7 +71,7 @@ export function authenticateToken(req: AuthenticatedRequest, res: Response, next
 
   try {
     console.log("🛡️  [AUTH_MIDDLEWARE] Verifying JWT token...");
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
     
     // Additional token payload validation
     if (!decoded.sub && !decoded.id) {
@@ -89,7 +98,7 @@ export function authenticateToken(req: AuthenticatedRequest, res: Response, next
     });
     
     next();
-  } catch (_error) {
+  } catch (error) {
     let errorDetails = 'Unknown JWT error';
     
     if (error instanceof jwt.JsonWebTokenError) {
@@ -229,7 +238,7 @@ export function requirePermission(permission: string) {
 }
 
 // Helper function to check user permissions based on role and settings
-function checkUserPermission(user: any, permission: string): boolean {
+function checkUserPermission(user: JWTPayload, permission: string): boolean {
   const rolePermissions: Record<string, string[]> = {
     OWNER: ['*'], // Owner has all permissions
     ADVERTISER: ['view_offers', 'create_offers', 'edit_own_offers', 'view_statistics'],
@@ -333,7 +342,7 @@ export function requireOwnership(resourceUserIdParam: string = 'userId') {
 }
 
 // Get authenticated user from request
-export function getAuthenticatedUser(req: AuthenticatedRequest): any {
+export function getAuthenticatedUser(req: AuthenticatedRequest): JWTPayload | undefined {
   return req.user;
 }
 

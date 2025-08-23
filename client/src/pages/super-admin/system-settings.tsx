@@ -23,7 +23,7 @@ import { Settings, Database, Shield, DollarSign, Globe, Zap, Plus, Edit, Save, T
 
 const systemSettingSchema = z.object({
   key: z.string().min(1, 'Key is required'),
-  value: z.any(),
+  value: z.unknown(),
   description: z.string().optional(),
   category: z.enum(['fraud', 'finance', 'general', 'security', 'integration', 'ui']),
   isPublic: z.boolean().default(false),

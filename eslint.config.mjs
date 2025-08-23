@@ -47,6 +47,8 @@ export default [
         RequestInfo: 'readonly',
         RequestInit: 'readonly',
         navigator: 'readonly',
+        atob: 'readonly',
+        btoa: 'readonly',
         // Node.js types
         NodeJS: 'readonly',
       },
@@ -60,6 +62,9 @@ export default [
       'no-implied-eval': 'error',
       'no-new-func': 'error',
       'no-console': 'off', // Allow console statements in development
+      
+      // Disable base no-unused-vars and use TypeScript specific one
+      'no-unused-vars': 'off',
       
       // TypeScript specific
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
