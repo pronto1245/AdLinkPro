@@ -41,6 +41,7 @@ export default [
         HTMLHeadingElement: 'readonly',
 
         HTMLOListElement: 'readonly',
+        HTMLUListElement: 'readonly',
         HTMLLIElement: 'readonly',
         HTMLAnchorElement: 'readonly',
         HTMLSpanElement: 'readonly',
@@ -48,6 +49,8 @@ export default [
         HTMLFormElement: 'readonly',
         HTMLTextAreaElement: 'readonly',
         HTMLSelectElement: 'readonly',
+        HTMLTableElement: 'readonly',
+        HTMLInputElement: 'readonly',
         KeyboardEvent: 'readonly',
         React: 'readonly',
         // WebSocket related
