@@ -6,9 +6,15 @@ export { apiClient } from './api/client';
 // Legacy API functions for backward compatibility
 import { authApi } from './api/auth';
 import { userApi } from './api/user';
+import { apiClient } from './api/client';
 
 export const API_BASE: string =
   (import.meta as { env?: Record<string, unknown> })?.env?.VITE_API_BASE as string || '';
+
+// Generic API function for backward compatibility
+export async function api<T>(url: string): Promise<T> {
+  return apiClient.get<T>(url);
+}
 
 // Legacy function wrappers
 export async function login(email: string, password: string) {
