@@ -111,7 +111,7 @@ export const logSuccess = (operation: string, details?: any) => {
 };
 
 // Business logic logger
-export const logBusiness = (event: string, data: any) => {
+export const logBusiness = (event: string, _data: any) => {
   logger.info('Business event', {
     event,
     data,

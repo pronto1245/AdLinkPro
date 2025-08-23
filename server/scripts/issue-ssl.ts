@@ -41,7 +41,7 @@ async function issueCertificateForDomain(domain: string) {
       process.exit(1);
     }
     
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Критическая ошибка:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }

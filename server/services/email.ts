@@ -35,8 +35,8 @@ export async function sendEmail(params: EmailParams): Promise<{ ok: boolean; ski
       subject: params.subject,
     };
     
-    if (params.text) sendData.text = params.text;
-    if (params.html) sendData.html = params.html;
+    if (params.text) {sendData.text = params.text;}
+    if (params.html) {sendData.html = params.html;}
     
     // Ensure at least text or html is provided
     if (!sendData.text && !sendData.html) {

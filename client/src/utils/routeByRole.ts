@@ -85,7 +85,7 @@ export function getRoleFromRoute(route: string): UserRole | null {
  * @returns User role or null if extraction fails
  */
 export function extractRoleFromToken(token: string | null): string | null {
-  if (!token) return null;
+  if (!token) {return null;}
   
   try {
     const payload = JSON.parse(atob((token.split('.')[1] || '').replace(/-/g,'+').replace(/_/g,'/')));

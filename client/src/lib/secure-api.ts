@@ -9,8 +9,8 @@ interface SecureRequestInit extends RequestInit {
 }
 
 function resolveUrl(path: string) {
-  if (!path) return '';
-  if (/^https?:\/\//i.test(path)) return path;
+  if (!path) {return '';}
+  if (/^https?:\/\//i.test(path)) {return path;}
   return `${API_BASE}${path}`;
 }
 
@@ -311,7 +311,7 @@ export const secureAuth = {
       console.log("✅ Registration server response:", result);
       
       return result;
-    } catch (error) {
+    } catch (_error) {
       // Add debugging for errors as required
       console.log("❌ Registration error:", error?.message || error);
       throw error;

@@ -50,14 +50,14 @@ async function checkRedisAvailability(): Promise<boolean> {
     await redis.ping();
     await redis.disconnect();
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
 
 // Initialize BullMQ queue only if Redis is available
 async function initializeQueue(): Promise<Queue<PostbackTask> | null> {
-  if (pbQueue) return pbQueue;
+  if (pbQueue) {return pbQueue;}
   
   const isRedisAvailable = await checkRedisAvailability();
   

@@ -26,7 +26,7 @@ const OfferEditModal: React.FC<OfferEditModalProps> = ({ offer, onClose, onSave 
     setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
-  if (!offer) return null;
+  if (!offer) {return null;}
 
   const isNew = !offer.id;
 

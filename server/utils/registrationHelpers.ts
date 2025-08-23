@@ -10,14 +10,13 @@ import {
 export function validateWithFallback<T>(
   req: Request,
   res: Response,
-  schema: any,
-  data: any,
+  schema: any, _data: any,
   fallbackFields: Partial<T>
 ): { success: true; data: T } | { success: false } {
   try {
     // Try primary schema validation
     const validatedData = schema.parse(data);
-    return { success: true, data: validatedData };
+    return { success: true, _data: validatedData };
   } catch (schemaError: any) {
     console.log('❌ Schema validation error, attempting fallback:', schemaError.message);
     
@@ -25,7 +24,7 @@ export function validateWithFallback<T>(
     try {
       const fallbackData = createFallbackData(data, fallbackFields);
       console.log('✅ Fallback validation successful');
-      return { success: true, data: fallbackData as T };
+      return { success: true, _data: fallbackData as T };
     } catch (fallbackError) {
       console.error('❌ Fallback validation also failed:', fallbackError);
       sendSchemaParsingError(req, res, schemaError, false);
@@ -104,7 +103,7 @@ export async function executeWithFallback<T>(
   try {
     const result = await operation();
     console.log(`✅ ${operationName} completed successfully`);
-    return { success: true, data: result };
+    return { success: true, _data: result };
   } catch (dbError: any) {
     console.log(`⚠️ ${operationName} failed, using fallback:`, dbError.message);
     
@@ -112,7 +111,7 @@ export async function executeWithFallback<T>(
     // but log the issue for later processing
     if (operationName.includes('registration') || operationName.includes('user creation')) {
       console.log(`📝 Using fallback data for ${operationName}`);
-      return { success: true, data: fallbackData };
+      return { success: true, _data: fallbackData };
     }
     
     sendDatabaseError(req, res, dbError, true);
@@ -194,7 +193,7 @@ export function validateRegistrationJWT(token: string): { isValid: boolean; erro
     if (!header.alg || !header.typ) {
       errors.push('JWT header missing required fields (alg, typ)');
     }
-  } catch (error) {
+  } catch (_error) {
     errors.push('JWT header is not valid JSON');
   }
   
@@ -206,7 +205,7 @@ export function validateRegistrationJWT(token: string): { isValid: boolean; erro
     if (!payload.exp) {
       errors.push('JWT payload missing expiration time (exp)');
     }
-  } catch (error) {
+  } catch (_error) {
     errors.push('JWT payload is not valid JSON');
   }
   
@@ -220,7 +219,7 @@ export function handleRegistrationError(
   error: any,
   operation: string
 ): void {
-  console.error(`Registration ${operation} error:`, error);
+  console.error(`Registration ${operation} error:`, _error);
   
   if (error.name === 'ValidationError') {
     sendValidationError(req, res, `${operation} validation failed`, error.message);
@@ -229,6 +228,6 @@ export function handleRegistrationError(
   } else if (error.message?.includes('database') || error.code?.startsWith('P')) {
     sendDatabaseError(req, res, error, false);
   } else {
-    sendInternalError(req, res, error);
+    sendInternalError(req, res, _error);
   }
 }

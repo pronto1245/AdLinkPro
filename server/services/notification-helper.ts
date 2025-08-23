@@ -35,8 +35,7 @@ export async function createNotification(data: NotificationData): Promise<void> 
       userId: data.userId,
       type: data.type,
       title: data.title,
-      message: data.message,
-      data: data.metadata || {},
+      message: data.message, _data: data.metadata || {},
       channel: 'system',
       status: 'sent',
       isRead: false
@@ -46,8 +45,7 @@ export async function createNotification(data: NotificationData): Promise<void> 
     try {
       if ((global as any).sendWebSocketNotification) {
         (global as any).sendWebSocketNotification(data.userId, {
-          type: 'notification',
-          data: {
+          type: 'notification', _data: {
             type: data.priority === 'urgent' ? 'error' : data.priority === 'high' ? 'warning' : 'info',
             title: data.title,
             message: data.message,

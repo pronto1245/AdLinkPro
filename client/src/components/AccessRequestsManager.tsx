@@ -126,7 +126,7 @@ export function AccessRequestsManager({ offerId, offerName }: AccessRequestsMana
   };
 
   const handleSubmitReview = () => {
-    if (!selectedRequest || !reviewData.action) return;
+    if (!selectedRequest || !reviewData.action) {return;}
     
     reviewMutation.mutate({
       requestId: selectedRequest.id,
@@ -138,7 +138,7 @@ export function AccessRequestsManager({ offerId, offerName }: AccessRequestsMana
 
   const getStatusBadge = (status: string) => {
     const config = statusConfig[status as keyof typeof statusConfig];
-    if (!config) return null;
+    if (!config) {return null;}
 
     const Icon = config.icon;
     return (

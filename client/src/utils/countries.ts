@@ -451,7 +451,7 @@ const countryNameToCode: Record<string, string> = {
 };
 
 export function getCountryName(input: string): string {
-  if (!input) return '';
+  if (!input) {return '';}
   
   // Сначала попробуем использовать как код
   if (countries[input.toUpperCase()]) {
@@ -468,7 +468,7 @@ export function getCountryName(input: string): string {
 }
 
 export function getCountryFlag(input: string): string {
-  if (!input) return '🌍';
+  if (!input) {return '🌍';}
   
   // Сначала попробуем использовать как код
   if (countries[input.toUpperCase()]) {
@@ -490,7 +490,7 @@ export function getCountryInfo(code: string): Country {
 
 // Функция для конвертации названия страны в код
 export function getCountryCodeByName(name: string): string {
-  if (!name) return '';
+  if (!name) {return '';}
   
   // Если это уже код (2 буквы в верхнем регистре)
   if (name.length === 2 && name === name.toUpperCase()) {

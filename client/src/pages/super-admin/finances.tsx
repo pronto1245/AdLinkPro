@@ -97,7 +97,7 @@ export default function FinancesManagement() {
       const response = await fetch(`/api/admin/financial-metrics/${dateFilter}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch financial metrics');
+      if (!response.ok) {throw new Error('Failed to fetch financial metrics');}
       return response.json();
     },
     staleTime: 30 * 1000, // 30 секунд для финансовых данных
@@ -117,7 +117,7 @@ export default function FinancesManagement() {
       const response = await fetch('/api/admin/finances', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch transactions');
+      if (!response.ok) {throw new Error('Failed to fetch transactions');}
       return response.json();
     },
     staleTime: 30 * 1000, // 30 секунд для финансовых данных
@@ -135,7 +135,7 @@ export default function FinancesManagement() {
       const response = await fetch('/api/admin/payout-requests', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch payout requests');
+      if (!response.ok) {throw new Error('Failed to fetch payout requests');}
       return response.json();
     },
     staleTime: 30 * 1000, // 30 секунд для финансовых данных
@@ -154,7 +154,7 @@ export default function FinancesManagement() {
       const response = await fetch('/api/admin/deposits', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch deposits');
+      if (!response.ok) {throw new Error('Failed to fetch deposits');}
       return response.json();
     },
     staleTime: 30 * 1000, // 30 секунд для финансовых данных
@@ -167,7 +167,7 @@ export default function FinancesManagement() {
       const response = await fetch('/api/admin/commission-data', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch commission data');
+      if (!response.ok) {throw new Error('Failed to fetch commission data');}
       return response.json();
     },
     staleTime: 30 * 1000, // 30 секунд для финансовых данных
@@ -180,7 +180,7 @@ export default function FinancesManagement() {
       const response = await fetch(`/api/admin/financial-chart/${dateFilter}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch chart data');
+      if (!response.ok) {throw new Error('Failed to fetch chart data');}
       return response.json();
     },
     staleTime: 30 * 1000, // 30 секунд для финансовых данных
@@ -194,7 +194,7 @@ export default function FinancesManagement() {
       const response = await fetch('/api/admin/crypto-portfolio', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch crypto portfolio');
+      if (!response.ok) {throw new Error('Failed to fetch crypto portfolio');}
       return response.json();
     },
   });
@@ -205,7 +205,7 @@ export default function FinancesManagement() {
       const response = await fetch('/api/admin/crypto-wallets', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch crypto wallets');
+      if (!response.ok) {throw new Error('Failed to fetch crypto wallets');}
       return response.json();
     },
   });
@@ -221,7 +221,7 @@ export default function FinancesManagement() {
         },
         body: JSON.stringify({ status, note }),
       });
-      if (!response.ok) throw new Error('Failed to update transaction');
+      if (!response.ok) {throw new Error('Failed to update transaction');}
       return response.json();
     },
     onSuccess: () => {
@@ -253,7 +253,7 @@ export default function FinancesManagement() {
         },
         body: JSON.stringify({ note }),
       });
-      if (!response.ok) throw new Error('Failed to process payout');
+      if (!response.ok) {throw new Error('Failed to process payout');}
       return response.json();
     },
     onSuccess: () => {
@@ -276,7 +276,7 @@ export default function FinancesManagement() {
         },
         body: JSON.stringify(invoiceData),
       });
-      if (!response.ok) throw new Error('Failed to create invoice');
+      if (!response.ok) {throw new Error('Failed to create invoice');}
       return response.json();
     },
     onSuccess: () => {
@@ -2011,7 +2011,7 @@ export default function FinancesManagement() {
                       }
                     });
                     
-                    if (!response.ok) throw new Error('Failed to deposit');
+                    if (!response.ok) {throw new Error('Failed to deposit');}
                     
                     toast({
                       title: "Пополнение оформлено",
@@ -2022,7 +2022,7 @@ export default function FinancesManagement() {
                     setDepositAmount('');
                     setWalletAddress('');
                     queryClient.invalidateQueries({ queryKey: ['/api/admin/crypto-portfolio'] });
-                  } catch (error) {
+                  } catch (_error) {
                     toast({
                       title: "Ошибка пополнения",
                       description: "Не удалось внести средства",
@@ -2102,7 +2102,7 @@ export default function FinancesManagement() {
                       }
                     });
                     
-                    if (!response.ok) throw new Error('Failed to withdraw');
+                    if (!response.ok) {throw new Error('Failed to withdraw');}
                     
                     toast({
                       title: "Вывод оформлен",
@@ -2113,7 +2113,7 @@ export default function FinancesManagement() {
                     setWithdrawAmount('');
                     setWalletAddress('');
                     queryClient.invalidateQueries({ queryKey: ['/api/admin/crypto-portfolio'] });
-                  } catch (error) {
+                  } catch (_error) {
                     toast({
                       title: "Ошибка вывода",
                       description: "Не удалось вывести средства",

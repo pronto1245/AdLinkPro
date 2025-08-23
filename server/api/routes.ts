@@ -52,7 +52,7 @@ async function insertConversion(data: Omit<DatabaseConversion, 'id' | 'createdAt
 }
 
 // Helper function to update conversion
-async function updateConversion(id: string, data: Partial<DatabaseConversion>): Promise<DatabaseConversion> {
+async function updateConversion(id: string, _data: Partial<DatabaseConversion>): Promise<DatabaseConversion> {
   const index = mockDatabase.findIndex(c => c.id === id);
   if (index === -1) {
     throw new Error('Conversion not found');

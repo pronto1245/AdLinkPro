@@ -118,7 +118,7 @@ export class EnhancedFraudService extends FraudService {
           riskScore += 30;
           reasons.push(`Historical high risk IP: ${ipHistory.riskScore}/100`);
         }
-      } catch (error) {
+      } catch (_error) {
         console.log('No IP history found for:', ip);
       }
       
@@ -231,8 +231,7 @@ export class EnhancedFraudService extends FraudService {
         ip: clickData.ip,
         clickId: clickData.clickId,
         description: `Auto-detected high risk activity: ${fraudResult.reasons.join(', ')}`,
-        riskScore: fraudResult.fraudScore,
-        data: JSON.stringify({
+        riskScore: fraudResult.fraudScore, _data: JSON.stringify({
           clickData,
           fraudResult,
           timestamp: new Date().toISOString(),
@@ -254,7 +253,7 @@ export class EnhancedFraudService extends FraudService {
    * Check for suspicious user agent patterns
    */
   private static isSuspiciousUserAgent(userAgent: string): boolean {
-    if (!userAgent) return true;
+    if (!userAgent) {return true;}
     
     const suspiciousPatterns = [
       /curl/i,

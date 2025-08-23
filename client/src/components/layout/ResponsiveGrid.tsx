@@ -23,11 +23,11 @@ export function ResponsiveGrid({
   const getGridClasses = () => {
     const classes = ['grid'];
     
-    if (cols.xs) classes.push(`grid-cols-${cols.xs}`);
-    if (cols.sm) classes.push(`sm:grid-cols-${cols.sm}`);
-    if (cols.md) classes.push(`md:grid-cols-${cols.md}`);
-    if (cols.lg) classes.push(`lg:grid-cols-${cols.lg}`);
-    if (cols.xl) classes.push(`xl:grid-cols-${cols.xl}`);
+    if (cols.xs) {classes.push(`grid-cols-${cols.xs}`);}
+    if (cols.sm) {classes.push(`sm:grid-cols-${cols.sm}`);}
+    if (cols.md) {classes.push(`md:grid-cols-${cols.md}`);}
+    if (cols.lg) {classes.push(`lg:grid-cols-${cols.lg}`);}
+    if (cols.xl) {classes.push(`xl:grid-cols-${cols.xl}`);}
     
     classes.push(`gap-${gap}`);
     

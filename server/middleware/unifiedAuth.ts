@@ -89,7 +89,7 @@ export function authenticateToken(req: AuthenticatedRequest, res: Response, next
     });
     
     next();
-  } catch (error) {
+  } catch (_error) {
     let errorDetails = 'Unknown JWT error';
     
     if (error instanceof jwt.JsonWebTokenError) {
@@ -100,7 +100,7 @@ export function authenticateToken(req: AuthenticatedRequest, res: Response, next
       errorDetails = 'Token not active yet';
     }
 
-    console.error("🛡️  [AUTH_MIDDLEWARE] Token verification failed:", errorDetails, error);
+    console.error("🛡️  [AUTH_MIDDLEWARE] Token verification failed:", errorDetails, _error);
     auditLog(req, 'INVALID_TOKEN', undefined, false, { error: errorDetails });
     return sendInvalidToken(req, res, { reason: errorDetails });
   }

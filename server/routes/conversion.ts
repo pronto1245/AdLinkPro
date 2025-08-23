@@ -86,8 +86,7 @@ router.post('/event', requireAuth, async (req, res) => {
     // Trigger postbacks
     const postbackEvent = {
       type: eventType as any,
-      clickId,
-      data: postbackData
+      clickId, _data: postbackData
     };
 
     console.log('About to trigger postbacks for event:', postbackEvent);

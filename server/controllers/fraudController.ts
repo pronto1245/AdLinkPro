@@ -32,8 +32,7 @@ export class FraudController {
           id: fraudAlerts.id,
           type: fraudAlerts.type,
           severity: fraudAlerts.severity,
-          description: fraudAlerts.description,
-          data: fraudAlerts.data,
+          description: fraudAlerts.description, _data: fraudAlerts.data,
           status: fraudAlerts.status,
           resolution: fraudAlerts.resolution,
           createdAt: fraudAlerts.createdAt,
@@ -199,7 +198,7 @@ export class FraudController {
       const { period = '30d' } = req.query;
 
       // Calculate date range
-      let startDate = new Date();
+      const startDate = new Date();
       switch (period) {
         case '7d':
           startDate.setDate(startDate.getDate() - 7);

@@ -242,7 +242,7 @@ export default function PostbacksNewPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/postback/profiles'] });
       toast({ title: t('postbacks.postbackDeleted', 'Профиль удален'), description: t('postbacks.deleteSuccessDesc', 'Профиль постбека успешно удален') });
     },
-    onError: (error) => {
+    onError: (_error) => {
       toast({ 
         title: "Ошибка удаления", 
         description: `Не удалось удалить профиль: ${error.message}`, 

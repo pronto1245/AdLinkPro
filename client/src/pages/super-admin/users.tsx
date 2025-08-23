@@ -35,7 +35,7 @@ export default function UsersManagement() {
       const response = await fetch('/api/admin/users', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch users');
+      if (!response.ok) {throw new Error('Failed to fetch users');}
       return response.json();
     },
   });
@@ -50,7 +50,7 @@ export default function UsersManagement() {
         },
         body: JSON.stringify(userData),
       });
-      if (!response.ok) throw new Error('Failed to create user');
+      if (!response.ok) {throw new Error('Failed to create user');}
       return response.json();
     },
     onSuccess: () => {
@@ -66,7 +66,7 @@ export default function UsersManagement() {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to delete user');
+      if (!response.ok) {throw new Error('Failed to delete user');}
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });

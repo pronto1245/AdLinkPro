@@ -167,12 +167,12 @@ export function WebSocketManager() {
       return;
     }
 
-    if (!token || wsRef.current) return;
+    if (!token || wsRef.current) {return;}
 
     try {
       const url = new URL(WS_URL);
-      if (token) url.searchParams.set('token', token);
-      if (user?.id) url.searchParams.set('userId', user.id);
+      if (token) {url.searchParams.set('token', token);}
+      if (user?.id) {url.searchParams.set('userId', user.id);}
       
       const ws = new WebSocket(url.toString());
       wsRef.current = ws;
@@ -183,8 +183,7 @@ export function WebSocketManager() {
         
         // Send initial authentication
         ws.send(JSON.stringify({
-          type: 'auth',
-          data: {
+          type: 'auth', _data: {
             token,
             userId: user?.id,
             role: user?.role,

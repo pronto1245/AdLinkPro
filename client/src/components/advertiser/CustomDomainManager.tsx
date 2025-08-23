@@ -88,7 +88,7 @@ export function CustomDomainManager() {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/profile/domains'] });
     },
     onError: (error: any) => {
-      console.error('Domain add error:', error);
+      console.error('Domain add error:', _error);
       toast({
         title: "❌ Ошибка добавления домена",
         description: error?.message || "Не удалось добавить домен. Проверьте правильность ввода и попробуйте снова.",

@@ -50,7 +50,7 @@ export class CacheService {
 
   // Generic cache operations
   async get<T>(key: string): Promise<T | null> {
-    if (!this.redis) return null;
+    if (!this.redis) {return null;}
 
     try {
       const cached = await this.redis.get(key);
@@ -62,7 +62,7 @@ export class CacheService {
   }
 
   async set(key: string, value: any, ttlSeconds: number = CACHE_CONFIG.DEFAULT_TTL): Promise<boolean> {
-    if (!this.redis) return false;
+    if (!this.redis) {return false;}
 
     try {
       await this.redis.setEx(key, ttlSeconds, JSON.stringify(value));
@@ -74,7 +74,7 @@ export class CacheService {
   }
 
   async del(key: string): Promise<boolean> {
-    if (!this.redis) return false;
+    if (!this.redis) {return false;}
 
     try {
       await this.redis.del(key);
@@ -86,7 +86,7 @@ export class CacheService {
   }
 
   async flush(): Promise<boolean> {
-    if (!this.redis) return false;
+    if (!this.redis) {return false;}
 
     try {
       await this.redis.flushDb();
@@ -185,7 +185,7 @@ export class CacheService {
   }
 
   async invalidateOffers() {
-    if (!this.redis) return false;
+    if (!this.redis) {return false;}
 
     try {
       const keys = await this.redis.keys('offers:*');
@@ -205,7 +205,7 @@ export class CacheService {
     return this.get(cacheKey);
   }
 
-  async setStats(type: string, data: any, userId?: string, timeframe: string = '24h') {
+  async setStats(type: string, _data: any, userId?: string, timeframe: string = '24h') {
     const cacheKey = `stats:${type}:${userId || 'global'}:${timeframe}`;
     return this.set(cacheKey, data, CACHE_CONFIG.STATS_TTL);
   }
@@ -257,7 +257,7 @@ export class CacheService {
 
   // Rate limiting cache
   async checkRateLimit(identifier: string, maxRequests: number, windowSeconds: number): Promise<boolean> {
-    if (!this.redis) return true; // Allow if cache unavailable
+    if (!this.redis) {return true;} // Allow if cache unavailable
 
     const key = `rate_limit:${identifier}`;
     
@@ -287,7 +287,7 @@ export class CacheService {
       const latency = Date.now() - start;
       
       return { redis: true, latency };
-    } catch (error) {
+    } catch (_error) {
       return { redis: false, latency: -1 };
     }
   }

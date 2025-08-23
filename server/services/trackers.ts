@@ -22,7 +22,7 @@ export async function sendPostbackToKeitaro(url: string, params: Record<string, 
       body: JSON.stringify(params)
     });
     
-    return { ok: response.ok, data: await response.json().catch(() => ({})) };
+    return { ok: response.ok, _data: await response.json().catch(() => ({})) };
   } catch (error) {
     console.error('[TRACKER] Keitaro error:', error);
     return { ok: false };
@@ -44,7 +44,7 @@ export async function sendPostbackToVoluum(url: string, params: Record<string, a
       }
     });
     
-    return { ok: response.ok, data: await response.text().catch(() => '') };
+    return { ok: response.ok, _data: await response.text().catch(() => '') };
   } catch (error) {
     console.error('[TRACKER] Voluum error:', error);
     return { ok: false };
@@ -66,7 +66,7 @@ export async function sendPostbackToBinom(url: string, params: Record<string, an
       }
     });
     
-    return { ok: response.ok, data: await response.text().catch(() => '') };
+    return { ok: response.ok, _data: await response.text().catch(() => '') };
   } catch (error) {
     console.error('[TRACKER] Binom error:', error);
     return { ok: false };
@@ -90,7 +90,7 @@ export async function sendPostbackToRedtrack(url: string, params: Record<string,
       body: JSON.stringify(params)
     });
     
-    return { ok: response.ok, data: await response.json().catch(() => ({})) };
+    return { ok: response.ok, _data: await response.json().catch(() => ({})) };
   } catch (error) {
     console.error('[TRACKER] RedTrack error:', error);
     return { ok: false };
@@ -112,7 +112,7 @@ export async function sendPostback(url: string, params: Record<string, any> = {}
       }
     });
     
-    return { ok: response.ok, data: await response.text().catch(() => '') };
+    return { ok: response.ok, _data: await response.text().catch(() => '') };
   } catch (error) {
     console.error('[POSTBACK] Generic postback error:', error);
     return { ok: false };

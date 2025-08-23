@@ -490,7 +490,7 @@ worker.on('failed', (job, err) => {
   console.log(`❌ Job ${job?.id} failed:`, err.message);
 });
 
-worker.on('error', (err) => {
+worker.on('error', (_err) => {
   console.error('🚨 Worker error:', err);
 });
 

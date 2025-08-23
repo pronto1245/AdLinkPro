@@ -127,7 +127,7 @@ export default function DomainVerification() {
       const data = await apiRequest(`/api/advertiser/domains/${domain.id}/instructions`);
       setInstructions(data.instructions);
       setSelectedDomain(domain);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Ошибка",
         description: "Не удалось получить инструкции",

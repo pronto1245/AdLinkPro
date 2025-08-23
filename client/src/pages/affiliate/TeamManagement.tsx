@@ -122,7 +122,7 @@ export default function TeamManagement() {
       });
     },
     onError: (error: any) => {
-      console.error('Create member error:', error);
+      console.error('Create member error:', _error);
       const errorMessage = error?.message || error?.error || "Не удалось добавить участника команды";
       toast({
         title: "Ошибка",
@@ -145,7 +145,7 @@ export default function TeamManagement() {
       });
     },
     onError: (error: any) => {
-      console.error('Update member error:', error);
+      console.error('Update member error:', _error);
       toast({
         title: "Ошибка",
         description: error?.message || "Не удалось обновить участника команды",

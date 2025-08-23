@@ -127,7 +127,7 @@ export default function UnifiedDashboard({ config }: UnifiedDashboardProps) {
 
   // Generate metric cards based on role and data
   const generateMetricCards = (): MetricCard[] => {
-    if (!dashboardData) return [];
+    if (!dashboardData) {return [];}
 
     const baseMetrics: MetricCard[] = [];
 

@@ -21,14 +21,9 @@ import {
   real,
   doublePrecision
 } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
+import { sql, relations } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
-import { relations } from 'drizzle-orm';
-import { sql, relations } from "drizzle-orm";
-import { pgTable, pgEnum, text, varchar, integer, decimal, timestamp, boolean, jsonb, uuid, serial, bigint, smallint, index, numeric, char } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
 
 export * from './postback-schema';
 // Добавьте другие модули по мере необходимости

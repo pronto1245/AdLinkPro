@@ -341,7 +341,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(allProfiles);
     } catch (error: any) {
-      console.error('Error getting postback profiles:', error);
+      console.error('Error getting postback profiles:', _error);
       res.status(500).json({ message: 'Failed to get postback profiles' });
     }
   });
@@ -369,7 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(savedProfile);
     } catch (error: any) {
-      console.error('❌ Error creating postback profile:', error);
+      console.error('❌ Error creating postback profile:', _error);
       res.status(500).json({ message: 'Failed to create postback profile' });
     }
   });
@@ -393,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(404).json({ success: false, message: 'Профиль не найден' });
       }
     } catch (error: any) {
-      console.error('❌ Error updating postback profile:', error);
+      console.error('❌ Error updating postback profile:', _error);
       res.status(500).json({ success: false, message: 'Failed to update postback profile' });
     }
   });
@@ -417,7 +417,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(404).json({ success: false, message: 'Профиль не найден или не может быть удален' });
       }
     } catch (error: any) {
-      console.error('❌ Error deleting postback profile:', error);
+      console.error('❌ Error deleting postback profile:', _error);
       res.status(500).json({ success: false, message: 'Failed to delete postback profile' });
     }
   });
@@ -456,7 +456,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(mockDeliveries);
     } catch (error: any) {
-      console.error('Error getting postback deliveries:', error);
+      console.error('Error getting postback deliveries:', _error);
       res.status(500).json({ message: 'Failed to get postback deliveries' });
     }
   });
@@ -529,7 +529,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(testResult);
       
     } catch (error: any) {
-      console.error('Error testing postback:', error);
+      console.error('Error testing postback:', _error);
       res.status(500).json({ 
         success: false, 
         message: 'Внутренняя ошибка сервера' 
@@ -582,7 +582,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
       res.json(mockLogs);
     } catch (error: any) {
-      console.error('Error fetching postback logs:', error);
+      console.error('Error fetching postback logs:', _error);
       res.status(500).json({ error: 'Failed to fetch logs' });
     }
   });
@@ -613,7 +613,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
     } catch (error: any) {
-      console.error('Error updating postback profile:', error);
+      console.error('Error updating postback profile:', _error);
       res.status(500).json({ 
         success: false,
         message: 'Внутренняя ошибка сервера' 
@@ -638,7 +638,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
     } catch (error: any) {
-      console.error('Error deleting postback profile:', error);
+      console.error('Error deleting postback profile:', _error);
       res.status(500).json({ 
         success: false,
         message: 'Внутренняя ошибка сервера' 
@@ -670,7 +670,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
     } catch (error: any) {
-      console.error('Error creating postback profile:', error);
+      console.error('Error creating postback profile:', _error);
       res.status(500).json({ 
         success: false,
         message: 'Внутренняя ошибка сервера' 
@@ -697,7 +697,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allProfiles = [...demoProfiles, ...createdProfiles];
       res.json(allProfiles);
     } catch (error: any) {
-      console.error('Error getting advertiser postback profiles:', error);
+      console.error('Error getting advertiser postback profiles:', _error);
       res.status(500).json({ message: 'Failed to get postback profiles' });
     }
   });
@@ -728,7 +728,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(201).json(newProfile);
     } catch (error: any) {
-      console.error('Error creating advertiser postback profile:', error);
+      console.error('Error creating advertiser postback profile:', _error);
       res.status(500).json({ message: 'Failed to create postback profile' });
     }
   });
@@ -750,7 +750,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(updatedProfile);
     } catch (error: any) {
-      console.error('Error updating advertiser postback profile:', error);
+      console.error('Error updating advertiser postback profile:', _error);
       res.status(500).json({ message: 'Failed to update postback profile' });
     }
   });
@@ -771,7 +771,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(204).send();
     } catch (error: any) {
-      console.error('Error deleting advertiser postback profile:', error);
+      console.error('Error deleting advertiser postback profile:', _error);
       res.status(500).json({ message: 'Failed to delete postback profile' });
     }
   });
@@ -834,7 +834,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(mockLogs);
     } catch (error: any) {
-      console.error('Error getting advertiser postback logs:', error);
+      console.error('Error getting advertiser postback logs:', _error);
       res.status(500).json({ message: 'Failed to get postback logs' });
     }
   });
@@ -894,7 +894,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(testResult);
       
     } catch (error: any) {
-      console.error('Error testing advertiser postback:', error);
+      console.error('Error testing advertiser postback:', _error);
       res.status(500).json({ 
         success: false, 
         message: 'Внутренняя ошибка сервера' 
@@ -1481,7 +1481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         processor: processorStats,
         mode: bullmqStats.error ? 'autonomous' : 'bullmq'
       });
-    } catch (error) {
+    } catch (_error) {
       res.json({
         bullmq: {
           waiting: 0,
@@ -1710,8 +1710,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const status = postbackMonitor.getMonitoringStatus();
       
       res.json({
-        success: true,
-        data: {
+        success: true, _data: {
           isHealthy: status.isHealthy,
           metrics: {
             ...status.metrics,
@@ -1917,8 +1916,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userClickId = req.body.clickId || PostbackService.generateClickId();
         await PostbackService.triggerPostbacks({
           type: 'registration',
-          clickId: userClickId,
-          data: {
+          clickId: userClickId, _data: {
             partner_id: user.id,
             username: user.username,
             email: user.email,
@@ -1972,8 +1970,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send registration notification
       await notificationService.sendNotification({
         type: 'user_registration',
-        userId: user.id,
-        data: {
+        userId: user.id, _data: {
           email: user.email,
           username: user.username,
           firstName: user.firstName,
@@ -2008,11 +2005,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastName: user.lastName
         } 
       });
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      console.error("Registration error:", error);
+      console.error("Registration error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -2178,8 +2175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userClickId = req.body.clickId || PostbackService.generateClickId();
         await PostbackService.triggerPostbacks({
           type: 'registration',
-          clickId: userClickId,
-          data: {
+          clickId: userClickId, _data: {
             partner_id: user.id,
             username: user.username,
             email: user.email,
@@ -2198,8 +2194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send registration notification
       await notificationService.sendNotification({
         type: 'user_registration',
-        userId: user.id,
-        data: {
+        userId: user.id, _data: {
           email: user.email,
           username: user.username,
           firstName: user.firstName,
@@ -2243,7 +2238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         message: "Partner registration successful"
       });
-    } catch (error) {
+    } catch (_error) {
       console.log("❌ Partner registration error:", error?.message || error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
@@ -2362,8 +2357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userClickId = req.body.clickId || PostbackService.generateClickId();
         await PostbackService.triggerPostbacks({
           type: 'registration',
-          clickId: userClickId,
-          data: {
+          clickId: userClickId, _data: {
             advertiser_id: user.id,
             username: user.username,
             email: user.email,
@@ -2381,8 +2375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send registration notification
       await notificationService.sendNotification({
         type: 'user_registration',
-        userId: user.id,
-        data: {
+        userId: user.id, _data: {
           email: user.email,
           username: user.username,
           firstName: user.firstName,
@@ -2426,7 +2419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         message: "Advertiser registration successful"
       });
-    } catch (error) {
+    } catch (_error) {
       console.log("❌ Advertiser registration error:", error?.message || error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
@@ -3656,8 +3649,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userClickId = PostbackService.generateClickId();
         await PostbackService.triggerPostbacks({
           type: 'registration',
-          clickId: userClickId,
-          data: {
+          clickId: userClickId, _data: {
             partner_id: user.id,
             username: user.username,
             email: user.email,
@@ -3676,11 +3668,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { password, ...userWithoutPassword } = user;
       res.status(201).json(userWithoutPassword);
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      console.error("Create user error:", error);
+      console.error("Create user error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -5981,11 +5973,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const ticket = await storage.createTicket(ticketData);
       res.status(201).json(ticket);
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      console.error("Create ticket error:", error);
+      console.error("Create ticket error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -6127,8 +6119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userClickId = PostbackService.generateClickId();
         await PostbackService.triggerPostbacks({
           type: 'registration',
-          clickId: userClickId,
-          data: {
+          clickId: userClickId, _data: {
             partner_id: user.id,
             username: user.username,
             email: user.email,
@@ -6366,9 +6357,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           await storage.blockUser(userId, reason, authUser.id);
           successCount++;
-        } catch (error) {
+        } catch (_error) {
           failedCount++;
-          console.error(`Failed to block user ${userId}:`, error);
+          console.error(`Failed to block user ${userId}:`, _error);
         }
       }
       
@@ -6398,9 +6389,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           await storage.unblockUser(userId);
           successCount++;
-        } catch (error) {
+        } catch (_error) {
           failedCount++;
-          console.error(`Failed to unblock user ${userId}:`, error);
+          console.error(`Failed to unblock user ${userId}:`, _error);
         }
       }
       
@@ -6435,9 +6426,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await storage.softDeleteUser(userId, authUser.id);
           }
           successCount++;
-        } catch (error) {
+        } catch (_error) {
           failedCount++;
-          console.error(`Failed to delete user ${userId}:`, error);
+          console.error(`Failed to delete user ${userId}:`, _error);
         }
       }
       
@@ -6780,8 +6771,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const offer = await storage.updateOffer(offerId, { status: 'active' });
           updatedOffers.push(offer);
-        } catch (error) {
-          console.error(`Error activating offer ${offerId}:`, error);
+        } catch (_error) {
+          console.error(`Error activating offer ${offerId}:`, _error);
         }
       }
 
@@ -6809,8 +6800,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const offer = await storage.updateOffer(offerId, { status: 'paused' });
           updatedOffers.push(offer);
-        } catch (error) {
-          console.error(`Error pausing offer ${offerId}:`, error);
+        } catch (_error) {
+          console.error(`Error pausing offer ${offerId}:`, _error);
         }
       }
 
@@ -6839,8 +6830,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.deleteOffer(offerId);
           deletedOffers.push(offerId);
           console.log(`Successfully deleted offer: ${offerId}`);
-        } catch (error) {
-          console.error(`Error deleting offer ${offerId}:`, error);
+        } catch (_error) {
+          console.error(`Error deleting offer ${offerId}:`, _error);
         }
       }
 
@@ -6976,7 +6967,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const settings = await storage.getSystemSettings();
       res.json(settings);
     } catch (error: any) {
-      console.error("Get system settings error:", error);
+      console.error("Get system settings error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -6990,7 +6981,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.status(201).json(setting);
     } catch (error: any) {
-      console.error("Create system setting error:", error);
+      console.error("Create system setting error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7004,7 +6995,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(setting);
     } catch (error: any) {
-      console.error("Update system setting error:", error);
+      console.error("Update system setting error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7015,7 +7006,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.deleteSystemSetting(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Delete system setting error:", error);
+      console.error("Delete system setting error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7036,7 +7027,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(logs);
     } catch (error: any) {
-      console.error("Get audit logs error:", error);
+      console.error("Get audit logs error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7049,7 +7040,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const postbacks = await storage.getGlobalPostbacks();
       res.json(postbacks);
     } catch (error: any) {
-      console.error("Get global postbacks error:", error);
+      console.error("Get global postbacks error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7060,7 +7051,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const postback = await storage.createGlobalPostback(req.body);
       res.status(201).json(postback);
     } catch (error: any) {
-      console.error("Create global postback error:", error);
+      console.error("Create global postback error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7071,7 +7062,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const postback = await storage.updateGlobalPostback(req.params.id, req.body);
       res.json(postback);
     } catch (error: any) {
-      console.error("Update global postback error:", error);
+      console.error("Update global postback error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7082,7 +7073,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.testGlobalPostback(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Test global postback error:", error);
+      console.error("Test global postback error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7093,7 +7084,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const logs = await storage.getPostbackLogs();
       res.json(logs);
     } catch (error: any) {
-      console.error("Get postback logs error:", error);
+      console.error("Get postback logs error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7110,7 +7101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json(entries);
     } catch (error: any) {
-      console.error("Get blacklist entries error:", error);
+      console.error("Get blacklist entries error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7124,7 +7115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.status(201).json(entry);
     } catch (error: any) {
-      console.error("Create blacklist entry error:", error);
+      console.error("Create blacklist entry error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7135,7 +7126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const entry = await storage.updateBlacklistEntry(req.params.id, req.body);
       res.json(entry);
     } catch (error: any) {
-      console.error("Update blacklist entry error:", error);
+      console.error("Update blacklist entry error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7146,7 +7137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.deleteBlacklistEntry(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Delete blacklist entry error:", error);
+      console.error("Delete blacklist entry error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7168,7 +7159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.updateUser(req.params.id, updateData);
       res.json(user);
     } catch (error: any) {
-      console.error("Update user error:", error);
+      console.error("Update user error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7193,7 +7184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await storage.getUsersWithFilters(filters);
       res.json(result);
     } catch (error: any) {
-      console.error("Get users error:", error);
+      console.error("Get users error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7207,7 +7198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.blockUser(req.params.id, reason, blockedBy);
       res.json(user);
     } catch (error: any) {
-      console.error("Block user error:", error);
+      console.error("Block user error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7218,7 +7209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.unblockUser(req.params.id);
       res.json(user);
     } catch (error: any) {
-      console.error("Unblock user error:", error);
+      console.error("Unblock user error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7229,7 +7220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.forceLogoutUser(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Force logout user error:", error);
+      console.error("Force logout user error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7248,7 +7239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Delete user error:", error);
+      console.error("Delete user error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7259,7 +7250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newPassword = await storage.resetUserPassword(req.params.id);
       res.json({ newPassword });
     } catch (error: any) {
-      console.error("Reset user password error:", error);
+      console.error("Reset user password error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7271,7 +7262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const analytics = await storage.getUserAnalytics(period);
       res.json(analytics);
     } catch (error: any) {
-      console.error("Get user analytics error:", error);
+      console.error("Get user analytics error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7296,7 +7287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Content-Disposition', `attachment; filename=users.${format}`);
       res.send(data);
     } catch (error: any) {
-      console.error("Export users error:", error);
+      console.error("Export users error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7314,7 +7305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const results = await storage.bulkBlockUsers(userIds, reason, blockedBy);
       res.json(results);
     } catch (error: any) {
-      console.error("Bulk block users error:", error);
+      console.error("Bulk block users error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7331,7 +7322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const results = await storage.bulkUnblockUsers(userIds);
       res.json(results);
     } catch (error: any) {
-      console.error("Bulk unblock users error:", error);
+      console.error("Bulk unblock users error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7349,7 +7340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const results = await storage.bulkDeleteUsers(userIds, hardDelete, deletedBy);
       res.json(results);
     } catch (error: any) {
-      console.error("Bulk delete users error:", error);
+      console.error("Bulk delete users error:", _error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -7490,8 +7481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Trigger conversion postbacks
       await PostbackService.triggerPostbacks({
         type: status,
-        clickId: clickid,
-        data: {
+        clickId: clickid, _data: {
           clickid,
           status,
           offer_id: click.offerId,
@@ -7572,8 +7562,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Trigger click postbacks
       await PostbackService.triggerPostbacks({
         type: 'click',
-        clickId: clickData.clickId,
-        data: {
+        clickId: clickData.clickId, _data: {
           clickid: clickData.clickId,
           partner_id: partner_id as string,
           offer_id: offer_id as string,
@@ -8594,7 +8583,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .select({ count: count(users.id) })
           .from(users)
           .where(and(eq(users.role, 'affiliate'), eq(users.isActive, true)));
-      } catch (error) {
+      } catch (_error) {
         activePartnersResult = { count: 15 };
       }
 
@@ -8603,7 +8592,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .select({ count: count(offers.id) })
           .from(offers)
           .where(eq(offers.status, 'active'));
-      } catch (error) {
+      } catch (_error) {
         activeOffersResult = { count: 8 };
       }
 
@@ -8616,7 +8605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             totalRevenue: sum(statistics.revenue)
           })
           .from(statistics);
-      } catch (error) {
+      } catch (_error) {
         clicksResult = [{ totalClicks: 0, totalLeads: 0, totalConversions: 0, totalRevenue: 0 }];
       }
 
@@ -8624,7 +8613,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         [fraudResult] = await db
           .select({ count: count(fraudAlerts.id) })
           .from(fraudAlerts);
-      } catch (error) {
+      } catch (_error) {
         fraudResult = { count: 12 };
       }
 
@@ -9221,7 +9210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
     } catch (error: any) {
-      console.error('Postback test error:', error);
+      console.error('Postback test error:', _error);
       res.status(500).json({
         success: false,
         error: error.message,
@@ -10620,8 +10609,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         const userClickId = PostbackService.generateClickId();
         await PostbackService.triggerPostbacks({
           type: 'registration',
-          clickId: userClickId,
-          data: {
+          clickId: userClickId, _data: {
             partner_id: teamMember.id,
             username: teamMember.username,
             email: teamMember.email,
@@ -11117,8 +11105,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
         userId: offer.advertiserId,
         title: 'New Offer Access Request',
         message: `Partner ${req.user!.username} requested access to offer "${offer.name}"`,
-        type: 'offer_request',
-        data: { offerId, requestId: requestData.id }
+        type: 'offer_request', _data: { offerId, requestId: requestData.id }
       });
 
       res.json({ 
@@ -11370,7 +11357,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
             VALUES (${randomUUID()}, ${request.partner_id}, ${offerId}, 'active', ${new Date().toISOString()}, ${advertiserId})
             ON CONFLICT DO NOTHING
           `);
-        } catch (error) {
+        } catch (_error) {
           console.log('Note: partner_offers relation could not be created:', error.message);
         }
       }
@@ -11382,8 +11369,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
           userId: partner.id,
           title: `Offer Access ${action === 'approve' ? 'Approved' : 'Rejected'}`,
           message: `Your request for offer "${offer.name}" has been ${action === 'approve' ? 'approved' : 'rejected'}`,
-          type: 'offer_response',
-          data: { offerId, requestId, status: newStatus }
+          type: 'offer_response', _data: { offerId, requestId, status: newStatus }
         });
       }
 
@@ -11518,8 +11504,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
             const connection = userConnections.get(offer.advertiserId);
             if (connection && connection.readyState === WebSocket.OPEN) {
               const wsMessage = {
-                type: 'offer_access_request',
-                data: {
+                type: 'offer_access_request', _data: {
                   partnerUsername: partner.username,
                   offerName: offer.name,
                   offerId: offer.id,
@@ -11857,7 +11842,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   try {
     const { setupAccessRequestsRoutes } = await import('./api/access-requests');
     setupAccessRequestsRoutes(app);
-  } catch (error) {
+  } catch (_error) {
     console.log('Skipping access-requests routes - module not found');
   }
 

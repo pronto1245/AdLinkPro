@@ -60,13 +60,13 @@ export default function BlacklistManagement() {
     queryKey: ['/api/admin/blacklist', searchTerm, typeFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      if (typeFilter !== 'all') params.append('type', typeFilter);
+      if (searchTerm) {params.append('search', searchTerm);}
+      if (typeFilter !== 'all') {params.append('type', typeFilter);}
       
       const response = await fetch(`/api/admin/blacklist?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch blacklist');
+      if (!response.ok) {throw new Error('Failed to fetch blacklist');}
       return response.json();
     },
   });

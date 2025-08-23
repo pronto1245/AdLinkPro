@@ -254,8 +254,8 @@ export class I18nService {
       i18n.addResourceBundle(language, this.config.namespace, data.translations, true, true);
       
       console.debug(`Loaded ${language} translations from server`);
-    } catch (error) {
-      console.error(`Failed to load ${language} translations from server:`, error);
+    } catch (_error) {
+      console.error(`Failed to load ${language} translations from server:`, _error);
       throw error;
     }
   }

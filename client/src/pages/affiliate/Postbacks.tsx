@@ -393,7 +393,7 @@ export function AffiliatePostbacks() {
       }, 500);
     },
     onError: (error: any) => {
-      console.error('🗑️ DELETE MUTATION - Error:', error);
+      console.error('🗑️ DELETE MUTATION - Error:', _error);
       toast({ 
         title: t('postbacks.deleteError', 'Ошибка удаления профиля'), 
         description: `Не удалось удалить профиль: ${error.message}`,
@@ -596,7 +596,7 @@ export function AffiliatePostbacks() {
               try {
                 const parsed = JSON.parse(e.target.value);
                 setLocalFormData({ ...localFormData, params_template: parsed });
-              } catch (error) {
+              } catch (_error) {
                 // Invalid JSON, don't update
               }
             }}

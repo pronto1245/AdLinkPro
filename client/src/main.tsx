@@ -54,7 +54,7 @@ i18nService.initialize().then(() => {
     </StrictMode>
   );
 }).catch(error => {
-  console.error('Failed to initialize i18n service:', error);
+  console.error('Failed to initialize i18n service:', _error);
   // Still render the app even if i18n fails
   createRoot(document.getElementById("root")!).render(
     <StrictMode>

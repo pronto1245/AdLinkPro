@@ -1,4 +1,3 @@
-import SuperAdmin from "@/pages/super-admin/dashboard";
 import React, { Suspense, lazy } from 'react';
 import { Switch, Route, Redirect } from 'wouter';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +9,6 @@ import ForgotPassword from '@/pages/auth/ForgotPassword';
 import ResetPassword from '@/pages/auth/ResetPassword';
 
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import AuthRedirector from '@/components/auth/AuthRedirector';
 import Unauthorized from '@/pages/Unauthorized';
 
 import RoleBasedLayout from '@/components/layout/RoleBasedLayout';
@@ -66,7 +64,7 @@ const withLayout = (C: React.ComponentType<any>) => function Wrapped() {
 function Router() {
   const { i18n } = useTranslation();
   React.useEffect(() => {
-    if (i18n.language !== 'ru') i18n.changeLanguage('ru');
+    if (i18n.language !== 'ru') {i18n.changeLanguage('ru');}
   }, [i18n]);
 
   return (

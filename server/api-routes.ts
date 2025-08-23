@@ -302,8 +302,7 @@ apiRouter.get('/postback/stats', async (req, res) => {
     };
     
     res.json({
-      success: true,
-      data: stats
+      success: true, _data: stats
     });
     
   } catch (error) {

@@ -594,7 +594,7 @@ export default function AdvertiserPartners() {
   };
 
   const handleBulkAction = (action: string) => {
-    if (selectedPartners.length === 0) return;
+    if (selectedPartners.length === 0) {return;}
     bulkMutation.mutate({ action, partnerIds: selectedPartners });
   };
 
@@ -654,11 +654,11 @@ export default function AdvertiserPartners() {
       partner.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       partner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       `${partner.firstName} ${partner.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
-    )) return false;
-    if (filters.status !== 'all' && partner.status !== filters.status) return false;
-    if (filters.tier !== 'all' && partner.tier !== filters.tier) return false;
-    if (filters.kycStatus !== 'all' && partner.kycStatus !== filters.kycStatus) return false;
-    if (filters.country !== 'all' && partner.country !== filters.country) return false;
+    )) {return false;}
+    if (filters.status !== 'all' && partner.status !== filters.status) {return false;}
+    if (filters.tier !== 'all' && partner.tier !== filters.tier) {return false;}
+    if (filters.kycStatus !== 'all' && partner.kycStatus !== filters.kycStatus) {return false;}
+    if (filters.country !== 'all' && partner.country !== filters.country) {return false;}
     return true;
   }) || [];
 

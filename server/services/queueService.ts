@@ -264,8 +264,8 @@ export class QueueService {
       // Log successful postback
       await this.logPostbackDelivery(conversionId, partnerId, 'success', response.status);
 
-    } catch (error) {
-      console.error(`Postback delivery failed for conversion ${conversionId}:`, error);
+    } catch (_error) {
+      console.error(`Postback delivery failed for conversion ${conversionId}:`, _error);
       
       // Log failed postback
       await this.logPostbackDelivery(conversionId, partnerId, 'failed', 0, error.message);
@@ -324,7 +324,7 @@ export class QueueService {
     console.log('Processing impression analytics:', { userId, offerId, partnerId, timestamp });
   }
 
-  private async updateRealTimeStats(type: string, data: any) {
+  private async updateRealTimeStats(type: string, _data: any) {
     // Update real-time statistics in cache
     const key = `stats:realtime:${type}`;
     const current = await cacheService.get(key) || { count: 0 };
@@ -333,17 +333,17 @@ export class QueueService {
     await cacheService.set(key, current, 300); // 5 minutes
   }
 
-  private async sendEmailNotification(recipient: string, template: string, data: any) {
+  private async sendEmailNotification(recipient: string, template: string, _data: any) {
     // Implement email notification sending
     console.log('Sending email notification:', { recipient, template });
   }
 
-  private async sendPushNotification(recipient: string, template: string, data: any) {
+  private async sendPushNotification(recipient: string, template: string, _data: any) {
     // Implement push notification sending
     console.log('Sending push notification:', { recipient, template });
   }
 
-  private async sendSMSNotification(recipient: string, template: string, data: any) {
+  private async sendSMSNotification(recipient: string, template: string, _data: any) {
     // Implement SMS notification sending
     console.log('Sending SMS notification:', { recipient, template });
   }
@@ -353,10 +353,10 @@ export class QueueService {
     let score = 0;
     
     // Basic fraud indicators
-    if (data.rapidClicks) score += 30;
-    if (data.suspiciousUA) score += 20;
-    if (data.proxyIP) score += 40;
-    if (data.deviceSpoofing) score += 35;
+    if (data.rapidClicks) {score += 30;}
+    if (data.suspiciousUA) {score += 20;}
+    if (data.proxyIP) {score += 40;}
+    if (data.deviceSpoofing) {score += 35;}
     
     return Math.min(score, 100);
   }
@@ -364,10 +364,10 @@ export class QueueService {
   private async identifyFraudIndicators(data: any): Promise<string[]> {
     const indicators: string[] = [];
     
-    if (data.rapidClicks) indicators.push('rapid_clicks');
-    if (data.suspiciousUA) indicators.push('suspicious_user_agent');
-    if (data.proxyIP) indicators.push('proxy_ip');
-    if (data.deviceSpoofing) indicators.push('device_spoofing');
+    if (data.rapidClicks) {indicators.push('rapid_clicks');}
+    if (data.suspiciousUA) {indicators.push('suspicious_user_agent');}
+    if (data.proxyIP) {indicators.push('proxy_ip');}
+    if (data.deviceSpoofing) {indicators.push('device_spoofing');}
     
     return indicators;
   }

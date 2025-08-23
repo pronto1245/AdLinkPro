@@ -111,7 +111,7 @@ export default function PartnerNotifications() {
       // Также обновляем дашборд для синхронизации
       queryClient.invalidateQueries({ queryKey: ['/api/partner/dashboard'] });
     },
-    onError: (error) => {
+    onError: (_error) => {
       toast({
         title: "Ошибка",
         description: "Не удалось отметить уведомление как прочитанное",
@@ -152,7 +152,7 @@ export default function PartnerNotifications() {
         description: "Уведомление удалено",
       });
     },
-    onError: (error) => {
+    onError: (_error) => {
       toast({
         title: "Ошибка",
         description: "Не удалось удалить уведомление",
@@ -173,7 +173,7 @@ export default function PartnerNotifications() {
         description: "Все уведомления отмечены как прочитанные",
       });
     },
-    onError: (error) => {
+    onError: (_error) => {
       toast({
         title: "Ошибка",
         description: "Не удалось отметить уведомления как прочитанные",

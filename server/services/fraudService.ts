@@ -100,7 +100,7 @@ export class FraudService {
    * Detect bot user agents
    */
   private static detectBot(userAgent: string): boolean {
-    if (!userAgent) return true;
+    if (!userAgent) {return true;}
     
     return this.BOT_PATTERNS.some(pattern => pattern.test(userAgent));
   }
@@ -109,7 +109,7 @@ export class FraudService {
    * Detect VPN/Proxy IPs (simplified implementation)
    */
   private static detectVPN(ip: string): boolean {
-    if (!ip) return false;
+    if (!ip) {return false;}
     
     // Check for private/local IPs
     if (this.SUSPICIOUS_IP_RANGES.some(range => range.test(ip))) {
@@ -194,8 +194,7 @@ export class FraudService {
       if (result.riskLevel === 'high') {
         await db.insert(fraudAlerts).values({
           type: 'high_risk_click',
-          description: `High risk click detected: ${result.reasons.join(', ')}`,
-          data: { clickId, fraudScore: result.fraudScore, reasons: result.reasons },
+          description: `High risk click detected: ${result.reasons.join(', ')}`, _data: { clickId, fraudScore: result.fraudScore, reasons: result.reasons },
           severity: 'high',
           isResolved: false
         });

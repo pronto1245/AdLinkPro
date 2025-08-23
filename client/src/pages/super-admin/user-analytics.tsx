@@ -53,15 +53,15 @@ export default function UserAnalytics() {
     queryKey: ['/api/admin/analytics/users', period, roleFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (period) params.append('period', period);
-      if (roleFilter !== 'all') params.append('role', roleFilter);
+      if (period) {params.append('period', period);}
+      if (roleFilter !== 'all') {params.append('role', roleFilter);}
       
       const response = await fetch(`/api/admin/analytics/users?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch analytics');
+      if (!response.ok) {throw new Error('Failed to fetch analytics');}
       return response.json();
     }
   });
@@ -75,7 +75,7 @@ export default function UserAnalytics() {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch fraud analytics');
+      if (!response.ok) {throw new Error('Failed to fetch fraud analytics');}
       return response.json();
     }
   });

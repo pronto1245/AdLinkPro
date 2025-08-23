@@ -24,7 +24,7 @@ function loadTranslations() {
     }
     
     console.log('Server-side translations loaded:', Array.from(translations.keys()));
-  } catch (error) {
+  } catch (_error) {
     console.error('Failed to load server translations:', error instanceof Error ? error.message : String(error));
   }
 }

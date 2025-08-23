@@ -193,7 +193,7 @@ export default function Finances() {
         description: `Финансовый отчёт в формате ${format.toUpperCase()} успешно загружен`,
         variant: "default"
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Ошибка",
         description: "Не удалось загрузить отчёт",

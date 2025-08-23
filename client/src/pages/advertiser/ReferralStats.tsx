@@ -70,7 +70,7 @@ const ReferralStats = () => {
         title: "Ссылка скопирована!",
         description: "Реферальная ссылка скопирована в буфер обмена",
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Ошибка",
         description: "Не удалось скопировать ссылку",

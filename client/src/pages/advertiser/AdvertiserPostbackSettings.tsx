@@ -138,7 +138,7 @@ export default function AdvertiserPostbackSettings() {
       }
     },
     onError: (error: any) => {
-      console.error('Test error:', error);
+      console.error('Test error:', _error);
       toast({
         title: "Ошибка",
         description: error.message || "Произошла ошибка при тестировании постбека",
@@ -149,7 +149,7 @@ export default function AdvertiserPostbackSettings() {
 
   // Update profile mutation
   const updateProfileMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string, data: any }) => 
+    mutationFn: ({ id, data }: { id: string, _data: any }) => 
       apiRequest(`/api/advertiser/postback/profiles/${id}`, 'PUT', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/postback/profiles'] });
@@ -223,7 +223,7 @@ export default function AdvertiserPostbackSettings() {
   };
 
   const handleUpdateProfile = (formData: FormData) => {
-    if (!editingProfile) return;
+    if (!editingProfile) {return;}
     
     const data = {
       name: formData.get('name'),

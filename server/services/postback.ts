@@ -101,7 +101,7 @@ export class PostbackService {
 
   // Validate IP whitelist
   static isIpWhitelisted(ip: string, whitelist: string): boolean {
-    if (!whitelist.trim()) return true; // No whitelist = allow all
+    if (!whitelist.trim()) {return true;} // No whitelist = allow all
     
     const allowedIps = whitelist.split(',').map(ip => ip.trim());
     return allowedIps.includes(ip) || allowedIps.includes('*');
@@ -199,7 +199,7 @@ export class PostbackService {
       };
 
       // Add signature if secret key is configured (disabled for now as template doesn't have this field)
-      let signature = '';
+      const signature = '';
       // if (postback.signatureKey) {
       //   signature = this.generateSignature(processedUrl, macros, postback.signatureKey);
       //   requestOptions.headers['X-Signature'] = signature;
@@ -260,7 +260,7 @@ export class PostbackService {
       };
 
     } catch (error: any) {
-      console.error('Postback sending failed:', error);
+      console.error('Postback sending failed:', _error);
       // Log failed attempt
       await db.insert(postbackLogs).values({
         postbackId,
@@ -446,7 +446,7 @@ export class PostbackService {
       };
 
     } catch (error: any) {
-      console.error('External tracker postback failed:', error);
+      console.error('External tracker postback failed:', _error);
       return {
         success: false,
         error: error.message,
@@ -660,7 +660,7 @@ export class PostbackService {
           return canRetry;
         })
         .map(async ({ postback_logs: logs, postback_templates: pb }) => {
-          if (!pb) return;
+          if (!pb) {return;}
 
           // Calculate retry delay with configurable exponential backoff
           let retryDelay = finalConfig.baseRetryDelay;
@@ -777,7 +777,7 @@ export class PostbackService {
     .orderBy(desc(postbackLogs.createdAt));
 
     // Apply filters (simplified for now)
-    let filteredQuery = query;
+    const filteredQuery = query;
 
     const limit = filters.limit || 50;
     const offset = filters.offset || 0;

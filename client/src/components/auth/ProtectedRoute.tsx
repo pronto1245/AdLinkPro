@@ -8,7 +8,7 @@ function getRoleFromToken(): string | null {
   // Use secure storage to get token (handles both new and old storage locations)
   const raw = secureStorage.getToken();
   const role = extractRoleFromToken(raw);
-  if (!role) return null;
+  if (!role) {return null;}
   
   // Role mapping for backward compatibility
   const map: Record<string,string> = { 
@@ -40,7 +40,7 @@ export default function ProtectedRoute({ path, roles, component: C, children }: 
   const [match] = useRoute(path);
   const { isAuthenticated, isLoading, token, user } = useAuth();
   
-  if (!match) return null;
+  if (!match) {return null;}
 
   // Show loading spinner while checking auth
   if (isLoading) {

@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       return response;
-    } catch (error) {
+    } catch (_error) {
       throw error;
     }
   }, []);
@@ -93,6 +93,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthCtx);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  if (!ctx) {throw new Error('useAuth must be used within AuthProvider');}
   return ctx;
 }

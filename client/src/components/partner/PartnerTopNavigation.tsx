@@ -50,7 +50,7 @@ export function PartnerTopNavigation() {
     window.location.href = '/affiliate/profile';
   };
 
-  if (!user) return null;
+  if (!user) {return null;}
 
   const userInitials = user.firstName && user.lastName 
     ? `${user.firstName[0]}${user.lastName[0]}` 
