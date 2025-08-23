@@ -8,7 +8,7 @@ interface QuickEventButtonsProps {
   baseLabel?: string;
 }
 
-export function QuickEventButtons({ clickid, baseLabel = 'test' }: QuickEventButtonsProps) {
+export function QuickEventButtons({ clickid, baseLabel: _baseLabel = 'test' }: QuickEventButtonsProps) {
   const { sendEvent } = useSendEvent();
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
 

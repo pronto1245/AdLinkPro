@@ -3,10 +3,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useLanguage } from '@/contexts/language-context';
 
 interface RevenueChartProps {
-  data?: any[];
+  data?: unknown[];
 }
 
-export default function RevenueChart({ data = [] }: RevenueChartProps) {
+export default function RevenueChart({ data: _data = [] }: RevenueChartProps) {
   const { t } = useLanguage();
 
   return (

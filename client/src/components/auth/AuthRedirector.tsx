@@ -14,7 +14,11 @@ export default function AuthRedirector({
     // Failed to get user from auth context
   }
   if (!user && typeof window !== 'undefined') {
-    try { user = JSON.parse(localStorage.getItem('auth:user') || 'null'); } catch {}
+    try { 
+      user = JSON.parse(localStorage.getItem('auth:user') || 'null'); 
+    } catch {
+      // Ignore parsing errors and keep user as null
+    }
   }
   
   if (user?.role) {

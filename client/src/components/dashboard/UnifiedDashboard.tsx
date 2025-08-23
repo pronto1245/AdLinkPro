@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/contexts/theme-context';
@@ -18,8 +17,7 @@ import {
   Target, 
   Activity,
   RefreshCw,
-  Bell,
-  Settings
+  Bell
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
@@ -56,7 +54,7 @@ export default function UnifiedDashboard({ config }: UnifiedDashboardProps) {
   const [notifications, setNotifications] = useState<any[]>([]);
 
   // WebSocket connection for real-time updates
-  const { isConnected, sendMessage } = useWebSocket(
+  const { isConnected } = useWebSocket(
     config.realTimeUpdates ? 'wss://localhost:8080' : null,
     {
       onMessage: (message) => {
