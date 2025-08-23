@@ -2,8 +2,10 @@ const API_BASE: string = (import.meta as any).env?.VITE_API_BASE || '';
 
 type HttpInit = RequestInit & { headers?: Record<string, string> };
 
+import { tokenStorage } from './security';
+
 async function api(path: string, init: HttpInit = {}): Promise<any> {
-  const token = localStorage.getItem('token') || localStorage.getItem('auth:token') || '';
+  const token = tokenStorage.getToken() || '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),

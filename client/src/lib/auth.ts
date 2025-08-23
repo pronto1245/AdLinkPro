@@ -1,18 +1,16 @@
 import { login as apiLogin, type LoginResponse } from './api';
+import { tokenStorage } from './security';
 
 export function getToken(): string | null {
-  return localStorage.getItem('token');
+  return tokenStorage.getToken();
 }
 
 export function setToken(t: string) {
-  localStorage.setItem('token', t);
+  tokenStorage.setToken(t);
 }
 
 export function clearToken() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('auth:user');
-  localStorage.removeItem('user');
-  localStorage.removeItem('role');
+  tokenStorage.clearToken();
 }
 
 export function logout() {
