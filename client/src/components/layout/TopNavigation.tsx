@@ -107,7 +107,7 @@ export function TopNavigation() {
   const getMenuItems = (): MenuItem[] => {
     if (!user) {return [];}
 
-    const userRole = user.role.toLowerCase();
+    const userRole = user.role?.toLowerCase() ?? 'guest';
     
     const baseItems: MenuItem[] = [
       {

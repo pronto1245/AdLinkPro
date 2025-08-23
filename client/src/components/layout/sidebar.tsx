@@ -76,7 +76,7 @@ function Sidebar({ className }: SidebarProps) {
   if (!user) {return null;}
 
   const filteredMenuItems = menuItems.filter(item => 
-    item.roles.includes(user.role)
+    item.roles.includes(user.role ?? '')
   );
 
   // Special handling for dashboard item

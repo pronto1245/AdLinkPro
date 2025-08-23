@@ -83,10 +83,11 @@ export default function DomainVerification() {
       setNewDomain('');
       queryClient.invalidateQueries({ queryKey: ['/api/advertiser/domains'] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : "Не удалось добавить домен";
       toast({
         title: "Ошибка",
-        description: error.message || "Не удалось добавить домен",
+        description: message,
         variant: "destructive"
       });
     }

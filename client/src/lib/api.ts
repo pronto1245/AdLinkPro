@@ -30,8 +30,10 @@ function json(path: string, body?: any, init: HttpInit = {}): Promise<any> {
 export { api, json, API_BASE };
 
 export type LoginResponse = {
-  token: string;
-  user: { sub: number; email: string; role: string; username: string };
+  success?: boolean;
+  requires2FA?: boolean;
+  token?: string;
+  user?: { sub: number; email: string; role: string; username: string };
 };
 
 export async function login(email: string, password: string): Promise<LoginResponse> {

@@ -1,6 +1,5 @@
 import { db } from '../db';
 import { users } from '@shared/schema';
-import { users } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
 
@@ -19,7 +18,7 @@ export async function findUserByEmail(email: string) {
   return result[0] || null;
 }
 
-export async function checkPassword(user: any, password: string) {
+export async function checkPassword(user: { password_hash?: string }, password: string) {
   if (!user?.password_hash) {return false;}
   return await bcrypt.compare(password, user.password_hash);
 }

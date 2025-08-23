@@ -2,10 +2,10 @@
 export interface TrackerResponse {
   ok: boolean;
   skipped?: boolean;
-  data?: any;
+  data?: unknown;
 }
 
-export async function sendPostbackToKeitaro(url: string, params: Record<string, any>): Promise<TrackerResponse> {
+export async function sendPostbackToKeitaro(url: string, params: Record<string, unknown>): Promise<TrackerResponse> {
   if (!process.env.KEITARO_TOKEN) {
     console.warn('[TRACKER] KEITARO_TOKEN not set — skipping postback (noop)');
     return { ok: true, skipped: true };
@@ -29,7 +29,7 @@ export async function sendPostbackToKeitaro(url: string, params: Record<string, 
   }
 }
 
-export async function sendPostbackToVoluum(url: string, params: Record<string, any>): Promise<TrackerResponse> {
+export async function sendPostbackToVoluum(url: string, _params: Record<string, unknown>): Promise<TrackerResponse> {
   if (!process.env.VOLUUM_TOKEN) {
     console.warn('[TRACKER] VOLUUM_TOKEN not set — skipping postback (noop)');
     return { ok: true, skipped: true };
@@ -51,7 +51,7 @@ export async function sendPostbackToVoluum(url: string, params: Record<string, a
   }
 }
 
-export async function sendPostbackToBinom(url: string, params: Record<string, any>): Promise<TrackerResponse> {
+export async function sendPostbackToBinom(url: string, _params: Record<string, unknown>): Promise<TrackerResponse> {
   if (!process.env.BINOM_TOKEN) {
     console.warn('[TRACKER] BINOM_TOKEN not set — skipping postback (noop)');
     return { ok: true, skipped: true };
@@ -73,7 +73,7 @@ export async function sendPostbackToBinom(url: string, params: Record<string, an
   }
 }
 
-export async function sendPostbackToRedtrack(url: string, params: Record<string, any>): Promise<TrackerResponse> {
+export async function sendPostbackToRedtrack(url: string, params: Record<string, unknown>): Promise<TrackerResponse> {
   if (!process.env.REDTRACK_TOKEN) {
     console.warn('[TRACKER] REDTRACK_TOKEN not set — skipping postback (noop)');
     return { ok: true, skipped: true };
@@ -98,7 +98,7 @@ export async function sendPostbackToRedtrack(url: string, params: Record<string,
 }
 
 // Универсальная функция для любого постбека
-export async function sendPostback(url: string, params: Record<string, any> = {}): Promise<TrackerResponse> {
+export async function sendPostback(url: string, _params: Record<string, unknown> = {}): Promise<TrackerResponse> {
   if (!url) {
     console.warn('[POSTBACK] endpoint not configured');
     return { ok: true, skipped: true };
